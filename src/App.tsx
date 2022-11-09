@@ -14,27 +14,30 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import 'react-tabulator/lib/styles.css'
 import Projects from './components/pages/Projects'
+import {useState} from "react";
 
 function App() {
+  const [sidebar, setSidebar] = useState(true);
   return (
     <Box className="App" sx={{display: "flex"}}>
       <CssBaseline />
         <AppBar position="fixed" >
           <Toolbar>
             <IconButton
+                onClick = {() => setSidebar(!sidebar)} 
                 size="large"
                 edge="start"
                 color="inherit"
                 aria-label="menu-toggle"
                 sx={{ mr: 2 }} 
             >
-                <MenuIcon/>
+              <MenuIcon/>
             </IconButton>
             <Typography>AusTrakka</Typography>
           </Toolbar>
         </AppBar>
       <Drawer 
-          open={true} 
+          open={sidebar} 
           variant="persistent" 
           sx={{width: 120, flexShrink: 0, zIndex: 10 }}>
         <Toolbar /> {/*For spacing*/}
