@@ -7,7 +7,7 @@ import {Typography} from "@mui/material";
 
 const Projects = () => {
   const [projectsList, setProjectsList] = useState([])
-  const tableRef = createRef<Tabulator>();
+  //const tableRef = createRef<Tabulator>();
   const columns = [
     { title: "Abbreviation", field: "abbreviation"},
     { title: "Name", field: "name" },
@@ -31,7 +31,7 @@ const Projects = () => {
       </Typography>
       
       <ReactTabulator
-        ref={tableRef}
+        //ref={tableRef}
         data={projectsList}
         columns={columns}
         layout={"fitData"}
