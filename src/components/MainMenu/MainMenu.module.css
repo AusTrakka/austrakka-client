@@ -1,0 +1,42 @@
+.logocontainer {
+    flex-grow: 1;
+}
+
+.logo {
+    height: 65px;
+    margin: 5px;
+    padding-left: 30px;
+}
+
+.toolbar {
+    background-color: var(--primary-blue);
+}
+
+.drawer { 
+    z-index: 10;
+    
+}
+.drawerpaper {
+    width: 150px;
+    padding: 0px;
+    padding-top: 1px;
+    justify-content: center;
+}
+.pagelist {
+    height: 100vh;
+    background-color: var(--primary-blue);
+    
+}
+
+.pagelist li a {
+    padding-top: 15px;
+    margin-left: 10px;
+    text-decoration: none;
+    color: white;
+    display: flex;
+}
+
+
+.pagelist li a:hover {
+    font-weight: bold;
+}

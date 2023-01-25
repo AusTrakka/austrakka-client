@@ -1,2 +1,43 @@
+:root {
+    --primary-blue: #0a3546;
+}
 
+@font-face {
+    font-family: "Roboto";
+    src: url('./assests/fonts/Roboto-Regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: "Roboto";
+    src: url('./assests/fonts/Roboto-Bold.ttf') format('truetype');
+    font-weight: bold;
+}
 
+html, body, span {
+    font-family: Roboto, 'Open Sans';
+}
+
+/* CSS that is applied across all pages */
+.page {
+    transition: margin-left 1s;
+    margin-left: 0px;
+    padding: 35px;
+}
+
+.pagePadded {
+    transition: margin-left 1s;
+    margin-left: 150px;
+    padding: 35px;
+}
+.pageHeader {
+    margin-bottom: 20px;
+}
+
+.breadcrumbs {
+    color: var(--primary-blue);
+}
+
+.pageTitle {
+    color: var(--primary-blue);
+    font-weight: bold;
+    font-size: 2rem;
+}
