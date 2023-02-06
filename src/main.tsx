@@ -6,12 +6,12 @@ import './index.css'
 import { StyledEngineProvider } from "@mui/material/styles"
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
+  //<React.StrictMode>
     <BrowserRouter>
       {/* StyledEngineProvider: Allows MUI's styles to be overridden */}
       <StyledEngineProvider injectFirst>
         <App />
       </StyledEngineProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  //</React.StrictMode>
 )

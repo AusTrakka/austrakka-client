@@ -24,7 +24,7 @@ html, body, span {
 }
 
 .pagePadded {
-    transition: margin-left 1s;
+    transition: margin-left 0.5s;
     margin-left: 150px;
     padding: 35px;
 }
@@ -32,8 +32,10 @@ html, body, span {
     margin-bottom: 20px;
 }
 
-.breadcrumbs {
-    color: var(--primary-blue);
+.breadcrumbs, .breadcrumbs #link {
+    color: var(--primary-blue) ;
+    text-decoration: none ;
+    padding-bottom: 10px;
 }
 
 .pageTitle {

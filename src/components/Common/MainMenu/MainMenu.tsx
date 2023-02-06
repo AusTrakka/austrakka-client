@@ -3,7 +3,7 @@ import {Routes, Route, NavLink} from 'react-router-dom'
 import { AppBar, Box, Button, CssBaseline, Drawer, Icon, IconButton, List, ListItem, Toolbar, Menu, MenuItem } from "@mui/material"
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
 import MenuIcon from '@mui/icons-material/Menu';
-import AusTrakkaLogo from '../../assests/logos/AusTrakka_logo_white.png'
+import AusTrakkaLogo from '../../../assests/logos/AusTrakka_logo_white.png'
 import styles from "./MainMenu.module.css"
 
 const settings = [
@@ -31,9 +31,6 @@ const pages = [
 interface FuncProps {
   handlePadding(arg: boolean): void;
 }
-
-//TODO: Update padding in parent components
-//TODO: What happens when page is switched?
 
 const MainMenu: React.FC<FuncProps> = (props) => {
     const [drawer, setDrawer] = useState(true);
