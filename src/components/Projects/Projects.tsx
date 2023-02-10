@@ -27,7 +27,6 @@ const Header = () => {
 
 const Projects = () => {
   const [projectsList, setProjectsList] = useState([])
-  const [pageStyling, updatePageStyling] = useState("pagePadded")
   const [loading, setLoading] = useState()
   const [selectedProject, setSelectedProject] = useState({})
   const [includeAll, setIncludeAll] = useState(false)
@@ -75,13 +74,6 @@ const Projects = () => {
       .catch(error => console.log(error))
   }
 
-  const handlePadding = (drawer: boolean | undefined) => {
-    if (drawer === true) {
-      updatePageStyling("pagePadded")
-    } else {
-      updatePageStyling("page")
-    }
-  };
   const rowClickHandler = (e: any, row: any) => {
     let selectedProject = row.getData()
     setSelectedProject(selectedProject)
@@ -89,19 +81,15 @@ const Projects = () => {
   
   return (
     <>
-      <MainMenu handlePadding={handlePadding} />
-      <div className={pageStyling}>
-          <Header />
-          <ReactTabulator
-            data={projectsList}
-            columns={columns}
-            layout={"fitData"}
-            events={{
-              rowClick: rowClickHandler,
-            }}
-          />
-      </div>
-
+      <Header />
+      <ReactTabulator
+        data={projectsList}
+        columns={columns}
+        layout={"fitData"}
+        events={{
+          rowClick: rowClickHandler,
+        }}
+      />
     </>
   )
 }

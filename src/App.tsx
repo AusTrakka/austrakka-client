@@ -1,6 +1,7 @@
 import './App.css'
 import {Routes, Route, NavLink, Router, RedirectFunction} from 'react-router-dom'
 import 'react-tabulator/lib/styles.css'
+import MainMenuLayout from './components/Layouts/MainMenuLayout'
 import Projects from './components/Projects/Projects'
 import Project from './components/Projects/Project'
 import Upload from './components/Upload/Upload'
@@ -14,10 +15,12 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<Login/>}/>
-        <Route path="/upload" element={<Upload/>} />
-        <Route path="/projects" element={<Projects/>}/>
-        <Route path="/projects/details" element={<Project/>}/>
         <Route path="/logout" element={<Logout/>}/>
+        <Route element={<MainMenuLayout/>}>
+          <Route path="/upload" element={<Upload/>} />
+          <Route path="/projects" element={<Projects/>}/>
+          <Route path="/projects/details" element={<Project/>}/>
+        </Route>
       </Routes>
     </>
   )

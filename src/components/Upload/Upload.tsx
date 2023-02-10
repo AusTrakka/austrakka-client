@@ -21,27 +21,14 @@ const Header = () => {
 }
 
 const Upload = () => {
-  const [pageStyling, updatePageStyling] = useState("pagePadded")
   useEffect(() => {
 
   }, [])
 
-  const handlePadding = (drawer: boolean | undefined) => {
-    if (drawer === true) {
-      updatePageStyling("pagePadded")
-    } else {
-      updatePageStyling("page")
-    }
-  };
-  
   return (
     <>
-        <MainMenu handlePadding={handlePadding} />
-        <div className={pageStyling}>
-          <Header />
-          {/* TODO: Add basic layout of Upload page here */}
-        </div>
-       
+      <Header />
+      {/* TODO: Add basic layout of Upload page here */}    
     </>
   )
 }
