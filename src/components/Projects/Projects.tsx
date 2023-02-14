@@ -7,7 +7,6 @@ import { IconButton } from "@mui/material"
 import SearchIcon from '@mui/icons-material/Search';
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
-import MainMenu from '../Common/MainMenu/MainMenu';
 import {isoDateLocalDate, callAPI} from "../../utilities/AppUtils"
 
 const Header = () => {

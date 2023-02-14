@@ -5,7 +5,6 @@ import 'react-tabulator/lib/styles.css';
 import { ReactTabulator } from 'react-tabulator'
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
-import MainMenu from '../Common/MainMenu/MainMenu';
 import {callAPI} from "../../utilities/AppUtils"
 
 
@@ -70,7 +69,6 @@ const Project = () => {
   
   return (
     <>
-      <MainMenu handlePadding={handlePadding} />
       <div className={pageStyling}>
           <Header project={selectedProjectName} />
       </div>
