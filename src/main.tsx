@@ -10,7 +10,6 @@ import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "./config/authConfig";
 
 export const msalInstance = new PublicClientApplication(msalConfig); 
-const navigate = useNavigate()
 
 // Adding MSAL events
 msalInstance.addEventCallback((event: EventMessage) => {
@@ -20,8 +19,7 @@ msalInstance.addEventCallback((event: EventMessage) => {
     if (event.eventType === EventType.LOGIN_SUCCESS) {
       msalInstance.setActiveAccount(account)
     } else if (event.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
-      navigate("/login")
-      sessionStorage.clear()
+      
     }
   }
 })

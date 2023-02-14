@@ -4,7 +4,7 @@ import 'react-tabulator/lib/styles.css';
 import {Typography, Button} from "@mui/material";
 import {NavLink} from 'react-router-dom'
 import styles from "./Login.module.css"
-import AusTrakkaLogo from "../../assests/logos/AusTrakka_Logo_cmyk.png"
+import AusTrakkaLogo from "../../assets/logos/AusTrakka_Logo_cmyk.png"
 import { useMsal, UnauthenticatedTemplate } from "@azure/msal-react";
 import { loginRequest } from "../../config/authConfig";
 

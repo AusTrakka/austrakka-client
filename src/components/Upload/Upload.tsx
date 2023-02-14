@@ -4,7 +4,6 @@ import 'react-tabulator/lib/styles.css';
 import { ReactTabulator } from 'react-tabulator'
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
-import MainMenu from '../Common/MainMenu/MainMenu';
 import styles from "./MainMenu.module.css"
 
 const Header = () => {
@@ -21,26 +20,14 @@ const Header = () => {
 }
 
 const Upload = () => {
-  const [pageStyling, updatePageStyling] = useState("pagePadded")
   useEffect(() => {
 
   }, [])
 
-  const handlePadding = (drawer: boolean | undefined) => {
-    if (drawer === true) {
-      updatePageStyling("pagePadded")
-    } else {
-      updatePageStyling("page")
-    }
-  };
-  
   return (
     <>
-        <MainMenu handlePadding={handlePadding} />
-        <div className={pageStyling}>
-          <Header />
-        </div>
-       
+      <Header />
+      {/* TODO: Add basic layout of Upload page here */}    
     </>
   )
 }
