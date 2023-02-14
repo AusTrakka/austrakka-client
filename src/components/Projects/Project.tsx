@@ -5,7 +5,7 @@ import 'react-tabulator/lib/styles.css';
 import { ReactTabulator } from 'react-tabulator'
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
-import {callAPI} from "../../utilities/AppUtils"
+import { getAnalyses, getSubmissions } from '../../utilities/resourceUtils';
 
 
 const Header = ( project :any ) => {
@@ -27,6 +27,7 @@ const Project = () => {
   const [pageStyling, updatePageStyling] = useState("pagePadded")
   const [loading, setLoading] = useState()
   const [projectSubmissions, setProjectSubmissions] = useState()
+  const [projectAnalyses, setProjectAnalyses] = useState()
   const [selectedProjectName] = useState(sessionStorage.getItem("selectedProjectName"))
   const [selectedProjectMemeberGroupId] = useState(sessionStorage.getItem("selectedProjectMemeberGroupId"))
   const [selectedProjectId] = useState(sessionStorage.getItem("selectedProjectId"))
@@ -38,25 +39,17 @@ const Project = () => {
   }, [])
 
   async function getProjectDetails() {
-    // Get submissions from Project Id
-    await callAPI(`/api/Submissions?groupContext=${selectedProjectMemeberGroupId}`, 'GET', {})
-      .then((response: any) => response.json())
-      .then((response_data) => {
-        console.log("Submissions: ")
-        console.log(response_data)
-        setProjectSubmissions(response_data);
-      })
+    // Get submissions 
+    await getSubmissions()
+      .then((response) => response.json())
+      .then((response_data) => { setProjectSubmissions(response_data) })
       .catch(error => console.log(error))
     
-    // Get analyses from Project Id  - https://localhost:5001/api/Analyses/?filters=ProjectId==1&includeall=False
-    await callAPI(`/api/Analyses/?filters=ProjectId==${selectedProjectId}&includeall=False`, 'GET', {})
-    .then((response: any) => response.json())
-    .then((response_data) => {
-      console.log("Analyses: ")
-      console.log(response_data)
-      setProjectSubmissions(response_data);
-    })
-    .catch(error => console.log(error))
+    // Get analyses  
+    await getAnalyses()
+    .then((response) => response.json())
+    .then((response_data) => { setProjectAnalyses(response_data) })
+    .catch(error => console.log(error)) 
   }
   
   const handlePadding = (drawer: boolean | undefined) => {
@@ -69,10 +62,7 @@ const Project = () => {
   
   return (
     <>
-      <div className={pageStyling}>
-          <Header project={selectedProjectName} />
-      </div>
-
+      <Header project={selectedProjectName} />
     </>
   )
 }
