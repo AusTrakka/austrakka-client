@@ -5,6 +5,9 @@ import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
 import MenuIcon from '@mui/icons-material/Menu';
 import AusTrakkaLogo from '../../../assests/logos/AusTrakka_logo_white.png'
 import styles from "./MainMenu.module.css"
+import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+
+import { LogoutButton } from '../LogoutButton';
 
 const settings = [
   {
@@ -35,6 +38,9 @@ interface FuncProps {
 const MainMenu: React.FC<FuncProps> = (props) => {
     const [drawer, setDrawer] = useState(true);
     const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+    const [user, setUser] = useState({})
+    const isAuthenticated = useIsAuthenticated();
+    const { instance } = useMsal()
 
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchor(event.currentTarget);
@@ -48,6 +54,12 @@ const MainMenu: React.FC<FuncProps> = (props) => {
       setDrawer(!drawer);
       props.handlePadding(!drawer)
     };
+
+    //Get current active account when component mounts
+    useEffect(()=> {
+      const currentAccount = instance.getActiveAccount()
+      if (currentAccount) { setUser(currentAccount)}
+    }, [instance])
 
     return (
         <Box sx={{display: "flex"}}>
@@ -65,10 +77,15 @@ const MainMenu: React.FC<FuncProps> = (props) => {
               <div className={styles.logocontainer}>
                 <img src={AusTrakkaLogo} alt="logo" className={styles.logo}/>
               </div>
-              {/* TODO: Button below to be replaced with a profile icon and menu */}
-              <Button href="/" variant="text" color="inherit">Logout</Button>
 
-              <IconButton
+              {/* REMOVE: Testing authentication response */}
+              {/* <Button variant="outlined" onClick={() => getToken()}>Refresh token</Button> */}
+              &nbsp;&nbsp;&nbsp;
+              {isAuthenticated ? <>{user.name}</> : null} &nbsp; &nbsp;
+              
+              <LogoutButton />
+
+              {/* <IconButton
                 size="large"
                 aria-label="account of current user"
                 aria-controls="menu-appbar"
@@ -96,7 +113,7 @@ const MainMenu: React.FC<FuncProps> = (props) => {
                   {settings.map((setting) =>(
                     <MenuItem key={setting.title} onClick={handleMenuClose}>{setting.title}</MenuItem>
                   ))}
-                </Menu>
+                </Menu> */}
             </Toolbar>
           </AppBar>
           <Drawer 

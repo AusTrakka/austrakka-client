@@ -7,8 +7,10 @@ import { IconButton } from "@mui/material"
 import SearchIcon from '@mui/icons-material/Search';
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
-import MainMenu from '../Common/MainMenu/MainMenu';
-import {isoDateLocalDate, callAPI} from "../../utilities/AppUtils"
+import { isoDateLocalDate } from '../../utilities/helperUtils';
+import { useMsal } from "@azure/msal-react";
+import { loginRequest } from "../../config/authConfig";
+import { getProjectList } from '../../utilities/resourceUtils';
 
 const Header = () => {
   return (
@@ -51,7 +53,14 @@ const Projects = () => {
   ];
   
   useEffect(() => {
-    getProjects()
+    getProjectList()
+    .then((response) => response.json())
+    .then((response_data) => {
+      setProjectsList(response_data);
+    })
+    .catch(error => {
+      console.error('There was an error retrieving project data!', error);
+    });
   }, [])
 
   useEffect(() => {
@@ -63,16 +72,6 @@ const Projects = () => {
       navigate("/projects/details")
     }
   }, [selectedProject])
-
-  async function getProjects() {
-    await callAPI(`/api/Projects?&includeall=${includeAll}`, 'GET', {})
-      .then((response: any) => response.json())
-      .then((response_data) => {
-        console.log(response_data)
-        setProjectsList(response_data);
-      })
-      .catch(error => console.log(error))
-  }
 
   const rowClickHandler = (e: any, row: any) => {
     let selectedProject = row.getData()
