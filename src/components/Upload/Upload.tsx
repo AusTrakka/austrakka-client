@@ -39,7 +39,6 @@ const Upload = () => {
         <MainMenu handlePadding={handlePadding} />
         <div className={pageStyling}>
           <Header />
-          {/* TODO: Add basic layout of Upload page here */}
         </div>
        
     </>
