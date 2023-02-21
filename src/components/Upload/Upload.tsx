@@ -6,18 +6,6 @@ import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import {Typography} from "@mui/material";
 import styles from "./MainMenu.module.css"
 
-const Header = () => {
-  return (
-    <div className="pageHeader">
-      <div className="breadcrumbs">
-          Home / Upload
-        </div>
-        <Typography className="pageTitle">
-            Upload
-        </Typography>
-    </div>
-  )
-}
 
 const Upload = () => {
   useEffect(() => {
@@ -26,8 +14,7 @@ const Upload = () => {
 
   return (
     <>
-      <Header />
-      {/* TODO: Add basic layout of Upload page here */}    
+  
     </>
   )
 }

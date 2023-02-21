@@ -1,5 +1,5 @@
 import React, {createRef, useEffect, useState} from 'react';
-import {Routes, Route, useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
 import 'react-tabulator/lib/styles.css';
 import { ReactTabulator, reactFormatter } from 'react-tabulator'
@@ -11,21 +11,6 @@ import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "../../config/authConfig";
 import { getProjectList } from '../../utilities/resourceUtils';
-
-const Header = () => {
-  return (
-    <>
-      <div className="pageHeader">
-        <div className="breadcrumbs">
-            Home / <Link id="link" to='/projects'>Projects</Link>
-          </div>
-          <Typography className="pageTitle">
-              Projects
-          </Typography>
-      </div>
-    </>
-  )
-}
 
 const Projects = () => {
   const [projectsList, setProjectsList] = useState([])
@@ -80,7 +65,6 @@ const Projects = () => {
   
   return (
     <>
-      <Header />
       <ReactTabulator
         data={projectsList}
         columns={columns}

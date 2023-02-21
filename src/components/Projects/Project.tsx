@@ -8,21 +8,6 @@ import {Typography} from "@mui/material";
 import { getAnalyses, getSubmissions } from '../../utilities/resourceUtils';
 
 
-const Header = ( project :any ) => {
-  return (
-    <>
-      <div className="pageHeader">
-        <div className="breadcrumbs">
-          Home / <Link id="link" to='/projects'>Projects</Link> / {project.project}
-        </div>
-        <Typography className="pageTitle">
-          {project.project}
-        </Typography>
-      </div>
-    </>
-  )
-}
-
 const Project = () => {
   const [pageStyling, updatePageStyling] = useState("pagePadded")
   const [loading, setLoading] = useState()
@@ -62,7 +47,7 @@ const Project = () => {
   
   return (
     <>
-      <Header project={selectedProjectName} />
+
     </>
   )
 }
