@@ -8,6 +8,7 @@ import { AppBar, Box, Button, CssBaseline, Drawer, Icon, IconButton, List, ListI
 import MenuIcon from '@mui/icons-material/Menu';
 
 import { Outlet } from 'react-router-dom';
+import { LogoutButton } from "../Common/LogoutButton";
 
 
 const settings = [
@@ -82,8 +83,7 @@ const MainMenuLayout = () => {
             <div className={styles.logocontainer}>
               <img src={AusTrakkaLogo} alt="logo" className={styles.logo}/>
             </div>
-            {/* TODO: Button below to be replaced with a profile icon and menu */}
-            <Button href="/" variant="text" color="inherit">Logout</Button>
+            <LogoutButton />
 
             <IconButton
               size="large"
