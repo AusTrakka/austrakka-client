@@ -1,66 +1,35 @@
 import './App.css'
-import {Routes, Route, NavLink} from 'react-router-dom'
-import {
-    AppBar,
-    Box,
-    Button,
-    CssBaseline,
-    Drawer,
-    IconButton,
-    List,
-    ListItem,
-    Toolbar, Typography
-} from "@mui/material"
-import MenuIcon from '@mui/icons-material/Menu';
+import {Routes, Route, NavLink, Router, RedirectFunction, Navigate} from 'react-router-dom'
 import 'react-tabulator/lib/styles.css'
-import Projects from './components/pages/Projects'
-import {useState} from "react";
+import MainMenuLayout from './components/Layouts/MainMenuLayout'
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+import Projects from './components/Projects/Projects'
+import Project from './components/Projects/Project'
+import Upload from './components/Upload/Upload'
+import Login from './components/Login/Login'
 
 function App() {
-  const [sidebar, setSidebar] = useState(true);
+
   return (
-    <Box className="App" sx={{display: "flex"}}>
-      <CssBaseline />
-        <AppBar position="fixed" >
-          <Toolbar>
-            <IconButton
-                onClick = {() => setSidebar(!sidebar)} 
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu-toggle"
-                sx={{ mr: 2 }} 
-            >
-              <MenuIcon/>
-            </IconButton>
-            <Typography>AusTrakka</Typography>
-          </Toolbar>
-        </AppBar>
-      <Drawer 
-          open={sidebar} 
-          variant="persistent" 
-          sx={{width: 120, flexShrink: 0, zIndex: 10 }}>
-        <Toolbar /> {/*For spacing*/}
-        <List>
-          <ListItem key="projects">
-            <NavLink to="/projects">
-                Projects
-            </NavLink>
-          </ListItem>
-          <ListItem key="upload">
-            <NavLink to="/upload">
-                Upload
-            </NavLink>
-          </ListItem>
-        </List>
-      </Drawer>
-      <Box sx={{flexGrow: 1}}>
-        <Toolbar/> {/*For spacing*/}
+    <>
+      <AuthenticatedTemplate>
         <Routes>
-          <Route path="/projects" element={<Projects/>}/>
+          <Route path="/" element={<Navigate to="/projects" />}/>
+          <Route path="/dashboard" element={<Navigate to="/projects" />}/>
+          <Route element={<MainMenuLayout/>}>
+            <Route path="/upload" element={<Upload/>} />
+            <Route path="/projects" element={<Projects/>}/>
+            <Route path="/projects/details" element={<Project/>}/>
+          </Route>
+          <Route path='*' element={<Navigate to="/projects" />} />
         </Routes>
-      </Box>
-    </Box>
+      </AuthenticatedTemplate>
+      <UnauthenticatedTemplate>
+        <Routes>
+            <Route path='*' element={<Login/>} />
+        </Routes>
+      </UnauthenticatedTemplate>
+    </>
   )
 }
 
