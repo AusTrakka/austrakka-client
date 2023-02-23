@@ -12,20 +12,6 @@ import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "../../config/authConfig";
 import { getProjectList } from '../../utilities/resourceUtils';
 
-const Header = () => {
-  return (
-    <>
-      <div className="pageHeader">
-        <div className="breadcrumbs">
-            Home / <Link id="link" to='/projects'>Projects</Link>
-          </div>
-          <Typography className="pageTitle">
-              Projects
-          </Typography>
-      </div>
-    </>
-  )
-}
 
 const ProjectsList = () => {
   const [projectsList, setProjectsList] = useState([])
@@ -80,7 +66,6 @@ const ProjectsList = () => {
   
   return (
     <>
-      <Header />
       <ReactTabulator
         data={projectsList}
         columns={columns}

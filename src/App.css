@@ -40,18 +40,34 @@ html, body, span {
     margin-left: 150px;
     padding: 35px;
 }
+
 .pageHeader {
     margin-bottom: 20px;
 }
 
-.breadcrumbs, .breadcrumbs #link {
+.breadcrumbs a {
     color: var(--primary-blue) ;
     text-decoration: none ;
     padding-bottom: 10px;
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-blue) ;
+    text-decoration: underline ;
+    padding-bottom: 10px;
+}
+
+.breadcrumbs p {
+    color: var(--primary-blue) ;
+}
+
+.breadcrumbs li {
+    color: var(--primary-blue) ;
 }
 
 .pageTitle {
     color: var(--primary-blue);
     font-weight: bold;
     font-size: 2rem;
+    padding-bottom: 15px;
 }
