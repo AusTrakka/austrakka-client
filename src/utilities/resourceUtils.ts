@@ -27,6 +27,9 @@ export async function callAPI(url:string, method:string, requestData:object) {
 export const getProjectList = () => {
     return callAPI("/api/Projects?&includeall=false", "GET", {})
 }
+export const getProjectDetails = () => {
+    return callAPI(`/api/Projects/${sessionStorage.getItem("selectedProjectId")}`, "GET", {})
+}
 
 export const getSubmissions = () => {
     return callAPI(`/api/Submissions?groupContext=${sessionStorage.getItem("selectedProjectMemeberGroupId")}`, 'GET', {})

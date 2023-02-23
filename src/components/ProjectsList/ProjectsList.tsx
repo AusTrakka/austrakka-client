@@ -27,7 +27,7 @@ const Header = () => {
   )
 }
 
-const Projects = () => {
+const ProjectsList = () => {
   const [projectsList, setProjectsList] = useState([])
   const [loading, setLoading] = useState()
   const [selectedProject, setSelectedProject] = useState({})
@@ -92,4 +92,4 @@ const Projects = () => {
     </>
   )
 }
-export default Projects;
+export default ProjectsList;
