@@ -13,21 +13,6 @@ import TreeList from './TreeList';
 import Plots from './Plots';
 
 
-const Header = ( project :any ) => {
-  return (
-    <>
-      <div className="pageHeader">
-        <div className="breadcrumbs">
-          Home / <Link id="link" to='/projects'>Projects</Link> / {project.project}
-        </div>
-        <Typography className="pageTitle">
-          {project.project}
-        </Typography>
-      </div>
-    </>
-  )
-}
-
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -112,7 +97,6 @@ const ProjectOverview = () => {
   
   return (
     <>
-      <Header project={selectedProjectName} />
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }} className={styles.tabs} >
         <Tabs value={state.tabValue} onChange={handleTabChange} /* aria-label="basic tabs example" */ >
           <Tab label="Summary" {...a11yProps(0)} />
