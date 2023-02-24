@@ -11,53 +11,47 @@ import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import Plots from './Plots';
+import CustomTabs from '../Common/CustomTabs';
 
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+// Define number of tabs and their titles
+interface TabContentProps {
+  index: number, 
+  title: string, 
+  component: JSX.Element
 }
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
+const projectOverviewTabs: TabContentProps[] = [
+  {
+    index: 0,
+    title: "Summary",
+    component: <></>
+  },
+  {
+    index: 1,
+    title: "Samples",
+    component: <></>
+  },
+  {
+    index: 2,
+    title: "Trees",
+    component: <></>
+  },
+  {
+    index: 3,
+    title: "Plots",
+    component: <></>
+  }
+]
 
 const ProjectOverview = () => {
   const [state, updateState] = useState({
     loading: false,
-    tabValue: 0,
+    projectDetails: {},
     totalSamples: 0,
     projectDesc: "",
     lastUpload: ""
   })
-  //
   const [projectSubmissions, setProjectSubmissions] = useState()
   const [projectAnalyses, setProjectAnalyses] = useState()
-  const [selectedProjectName] = useState(sessionStorage.getItem("selectedProjectName"))
   const [projectDetails, setProjectDetails] = useState()
 
   //Get project name and details from localStorage item (selected project Id)
@@ -90,33 +84,10 @@ const ProjectOverview = () => {
 
     //updateState({...state, projectDesc: projectDetails.data.description, totalSamples: 9})
   }
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    updateState({...state, tabValue: newValue});
-  };
   
   return (
     <>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }} className={styles.tabs} >
-        <Tabs value={state.tabValue} onChange={handleTabChange} /* aria-label="basic tabs example" */ >
-          <Tab label="Summary" {...a11yProps(0)} />
-          <Tab label="Samples" {...a11yProps(1)} />
-          <Tab label="Trees" {...a11yProps(2)} />
-          <Tab label="Plots" {...a11yProps(3)} />
-        </Tabs>
-      </Box>
-      <TabPanel value={state.tabValue} index={0}>
-        <Summary projectDesc={state.projectDesc} samples={state.totalSamples} lastUpload={state.lastUpload} />
-      </TabPanel>
-      <TabPanel value={state.tabValue} index={1}>
-       <Samples />
-      </TabPanel>
-      <TabPanel value={state.tabValue} index={2}>
-        <TreeList />
-      </TabPanel>
-      <TabPanel value={state.tabValue} index={3}>
-        <Plots />
-      </TabPanel>
+      <CustomTabs tabContent={projectOverviewTabs}/>
     </>
   )
 }
