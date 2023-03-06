@@ -81,7 +81,7 @@ const MainMenu: React.FC<FuncProps> = (props) => {
               {/* REMOVE: Testing authentication response */}
               {/* <Button variant="outlined" onClick={() => getToken()}>Refresh token</Button> */}
               &nbsp;&nbsp;&nbsp;
-              {isAuthenticated ? <>{user.name}</> : null} &nbsp; &nbsp;
+              {/*{isAuthenticated ? <>{user.name}</> : null} &nbsp; &nbsp;*/}
               
               <LogoutButton />
 

@@ -1,0 +1,12 @@
+parameters:
+  - name: webAppName
+    type: string
+
+steps:
+  - task: AzureRmWebAppDeployment@4
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: 'AusTrakka Platform'
+      appType: 'webAppLinux'
+      WebAppName: ${{ parameters.webAppName }}
+      packageForLinux: '$(System.DefaultWorkingDirectory)/dist'

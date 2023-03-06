@@ -1,0 +1,15 @@
+trigger:
+  branches:
+    include:
+      - Development
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - template: templates/build.yml
+  - template: templates/deploy.yml
+    parameters:
+      webAppName: 'app-autrnewclient-dev-ase-01'
