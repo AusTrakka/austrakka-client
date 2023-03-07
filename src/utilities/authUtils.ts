@@ -9,7 +9,7 @@ export async function getToken() {
 
     if (currentAccount) {
         const accessTokenRequest = {
-            scopes: ["api://53585fde-8bb4-4ad1-acbd-b558cb656f70/AusTrakka-AD-test-api"],
+            scopes: ["api://df125604-3b75-46d3-a8ea-e54dc3b5e402/AAP-AusTrakka-API"],
             account: currentAccount,
         };
         const accessToken = msalInstance
