@@ -6,6 +6,6 @@ steps:
   - task: AzureStaticWebApp@0
     inputs:
       app_location: 'dist'
-      skip_app_build: true
+      app_build_command: 'npm run build'
     env:
       azure_static_web_Apps_api_token: $(swa_token)

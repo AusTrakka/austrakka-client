@@ -8,8 +8,8 @@ steps:
     inputs:
       command: 'custom'
       customCommand: 'ci'
-  - task: Npm@1
-    displayName: 'npm run build'
-    inputs:
-      command: 'custom'
-      customCommand: 'run build'
+#  - task: Npm@1
+#    displayName: 'npm run build'
+#    inputs:
+#      command: 'custom'
+#      customCommand: 'run build'
