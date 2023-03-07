@@ -3,10 +3,9 @@ parameters:
     type: string
 
 steps:
-  - task: AzureRmWebAppDeployment@4
+  - task: AzureStaticWebApp@0
     inputs:
-      ConnectionType: 'AzureRM'
-      azureSubscription: 'AusTrakka Platform'
-      appType: 'webAppLinux'
-      WebAppName: ${{ parameters.webAppName }}
-      packageForLinux: '$(System.DefaultWorkingDirectory)/dist'
+      app_location: 'dist'
+      skip_app_build: true
+    env:
+      azure_static_web_Apps_api_token: $(swa_token)
