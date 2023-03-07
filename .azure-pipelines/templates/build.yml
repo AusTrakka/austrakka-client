@@ -1,11 +1,8 @@
-variables:
-  nodeVersion: 18
-
 steps:
   - task: NodeTool@0
     displayName: 'Install Node.js'
     inputs:
-      versionSpec: '$(nodeVersion).x'
+      versionSpec: '18.x'
   - task: Npm@1
     displayName: 'npm ci'
     inputs:
