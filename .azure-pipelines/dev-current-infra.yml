@@ -7,8 +7,9 @@ pr: none
 
 pool:
   vmImage: ubuntu-latest
-
-steps:
+jobs:
+- job: 'Build and Deploy'
+  steps:
   - template: templates/build.yml
   - template: templates/deploy.yml
     parameters:
