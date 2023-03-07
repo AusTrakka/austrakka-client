@@ -49,5 +49,5 @@
 }
 
 .button:hover {
-    background-color: #3e7784;    
+    background-color: var(--secondary-teal);    
 }
