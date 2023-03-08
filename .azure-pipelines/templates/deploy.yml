@@ -1,5 +1,5 @@
 parameters:
-  - name: webAppName
+  - name: environment
     type: string
 
 steps:
@@ -8,3 +8,4 @@ steps:
       app_location: 'dist'
       skip_app_build: true
       azure_static_web_Apps_api_token: $(swa_token)
+      config_file_location: 'swa-cli.config.${{ parameters.environment }}.json'
