@@ -10,6 +10,7 @@ pool:
 
 steps:
   - template: templates/build.yml
-  - template: templates/deploy.yml
+  - template: templates/create-swa-config.yml
     parameters:
       environment: 'dev'
+  - template: templates/deploy.yml
