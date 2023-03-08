@@ -8,7 +8,8 @@
     "dev": "env-cmd --environments dev vite",
     "pre-prod": "env-cmd --environments pre-prod vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@austrakka/alcmonavis": "^1.0.42",
@@ -29,7 +30,12 @@
   "devDependencies": {
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
     "@vitejs/plugin-react": "^2.1.0",
+    "eslint": "^8.35.0",
+    "eslint-import-resolver-typescript": "^3.5.3",
+    "eslint-plugin-import": "^2.27.5",
     "typescript": "^4.6.4",
     "vite": "^3.1.0"
   }
