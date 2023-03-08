@@ -7,7 +7,7 @@ steps:
     displayName: 'npm ci'
     inputs:
       command: 'custom'
-      customCommand: 'ci'
+      customCommand: 'install --dev'
   - task: Npm@1
     displayName: 'npm run build'
     inputs:
