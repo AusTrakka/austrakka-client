@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_logo_white.png'
+import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png'
 import styles from "./MainMenuLayout.module.css"
 import { NavLink, useLocation, Link } from 'react-router-dom'
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
