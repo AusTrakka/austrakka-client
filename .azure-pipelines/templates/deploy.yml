@@ -7,5 +7,4 @@ steps:
     inputs:
       app_location: 'dist'
       app_build_command: 'npm run build'
-    env:
       azure_static_web_Apps_api_token: $(swa_token)
