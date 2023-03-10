@@ -6,3 +6,22 @@ Run the following to lint code: `npm run lint`.
 
 We should endeavour to get this error/warning list down to 0.
 An `import/no-unresolved` error has already been the cause of a breaking build on Linux systems
+
+## Environment Variables
+
+Defaults are set in `.env`. These can be overriden by the calling shell.
+I have omitted storing the client and tenant IDs in the defaults for a few reasons:
+1. We shouldn't be making these public for no reason
+2. For anyone else looking at the project, these would not be relevant.
+3. We should get used to setting these values now; the new infra will require 
+management of your own Azure Client ID, and the Tenant ID may change.
+
+Note: Subscription key has been included in the defaults as it is meaningless and will not
+be relevant in the new infra.
+
+| Name                  | Description                                 |
+|-----------------------|---------------------------------------------|
+| VITE_AT_CLIENT_ID     | Client ID of the frontend Azure application |
+| VITE_AT_TENANT_ID     | Tenant ID of the target Azure account       |
+| VITE_REACT_API_URL    | The backend api url                         |
+| VITE_SUBSCRIPTION_KEY | The subscription key for APIM               |

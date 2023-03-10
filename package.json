@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev-backup": "vite",
-    "dev": "env-cmd --environments dev vite",
-    "pre-prod": "env-cmd --environments pre-prod vite",
+    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint ."
@@ -20,7 +19,6 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.9",
     "bootstrap": "^5.2.3",
-    "env-cmd": "^10.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
     "react-dom": "^18.2.0",
@@ -28,6 +26,7 @@
     "react-tabulator": "^0.18.1"
   },
   "devDependencies": {
+    "@julr/vite-plugin-validate-env": "^0.2.2",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
