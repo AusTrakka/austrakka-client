@@ -3,8 +3,8 @@ import {Routes, Route, NavLink, Router, RedirectFunction, Navigate} from 'react-
 import 'react-tabulator/lib/styles.css'
 import MainMenuLayout from './components/Layouts/MainMenuLayout'
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
-import Projects from './components/Projects/Projects'
-import Project from './components/Projects/Project'
+import ProjectsList from './components/ProjectsList/ProjectsList'
+import ProjectOverview from './components/ProjectOverview/ProjectOverview'
 import Upload from './components/Upload/Upload'
 import Login from './components/Login/Login'
 
@@ -18,8 +18,8 @@ function App() {
           <Route path="/dashboard" element={<Navigate to="/projects" />}/>
           <Route element={<MainMenuLayout/>}>
             <Route path="/upload" element={<Upload/>} />
-            <Route path="/projects" element={<Projects/>}/>
-            <Route path="/projects/details" element={<Project/>}/>
+            <Route path="/projects" element={<ProjectsList/>}/>
+            <Route path="/projects/details" element={<ProjectOverview/>}/>
           </Route>
           <Route path='*' element={<Navigate to="/projects" />} />
         </Routes>

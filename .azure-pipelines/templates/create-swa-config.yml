@@ -1,0 +1,10 @@
+parameters:
+  - name: environment
+    type: string
+
+steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        mv swa-cli.config.${{ parameters.environment }}.json swa-cli.config.json

@@ -3,7 +3,7 @@ import {Routes, Route, NavLink} from 'react-router-dom'
 import { AppBar, Box, Button, CssBaseline, Drawer, Icon, IconButton, List, ListItem, Toolbar, Menu, MenuItem } from "@mui/material"
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
 import MenuIcon from '@mui/icons-material/Menu';
-import AusTrakkaLogo from '../../../assests/logos/AusTrakka_logo_white.png'
+import AusTrakkaLogo from '../../../assests/logos/AusTrakka_Logo_white.png'
 import styles from "./MainMenu.module.css"
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 
@@ -81,7 +81,7 @@ const MainMenu: React.FC<FuncProps> = (props) => {
               {/* REMOVE: Testing authentication response */}
               {/* <Button variant="outlined" onClick={() => getToken()}>Refresh token</Button> */}
               &nbsp;&nbsp;&nbsp;
-              {isAuthenticated ? <>{user.name}</> : null} &nbsp; &nbsp;
+              {/*{isAuthenticated ? <>{user.name}</> : null} &nbsp; &nbsp;*/}
               
               <LogoutButton />
 

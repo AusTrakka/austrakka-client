@@ -1,5 +1,5 @@
 import React, {createRef, useEffect, useState} from 'react';
-import { useNavigate } from 'react-router-dom'
+import {Routes, Route, useNavigate, Link } from 'react-router-dom'
 import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
 import 'react-tabulator/lib/styles.css';
 import { ReactTabulator, reactFormatter } from 'react-tabulator'
@@ -12,7 +12,8 @@ import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "../../config/authConfig";
 import { getProjectList } from '../../utilities/resourceUtils';
 
-const Projects = () => {
+
+const ProjectsList = () => {
   const [projectsList, setProjectsList] = useState([])
   const [loading, setLoading] = useState()
   const [selectedProject, setSelectedProject] = useState({})
@@ -23,18 +24,7 @@ const Projects = () => {
     { title: "Abbreviation", field: "abbreviation"},
     { title: "Name", field: "name" },
     { title: "Description", field: "description"},
-    { title: "Project Analyses", field: "projectAnalyses", formatter: function(analyses:any){
-      let analysesDetails = analyses.getValue()
-      let list: string[] = []
-      analysesDetails.forEach((element: { name: string; }) => {
-        list.push(element.name)
-      });
-      return list.toString().replace(",", "<br />")
-    }},
-    { title: "Created", field: "created", formatter: function(datetime:any){ return isoDateLocalDate(datetime) }},
-    { title: "Last Updated", field: "lastUpdated", formatter: function(datetime:any){ return isoDateLocalDate(datetime) }},
-    { title: "Created By", field: "createdBy"},
-    { title: "Last Updated By", field: "lastUpdatedBy"}
+    { title: "Created", field: "created", formatter: function(datetime:any){ return isoDateLocalDate(datetime) }}
   ];
   
   useEffect(() => {
@@ -76,4 +66,4 @@ const Projects = () => {
     </>
   )
 }
-export default Projects;
+export default ProjectsList;

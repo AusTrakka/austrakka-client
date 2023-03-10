@@ -12,7 +12,9 @@ export async function callAPI(url:string, method:string, requestData:object) {
         method: method,
         headers: {
             "Accept": 'application/json',
-            "Authorization" :  `Bearer ${token}`
+            "Authorization" :  `Bearer ${token}`,
+            "Access-Control-Expose-Headers": "*",
+            "Ocp-Apim-Subscription-Key": import.meta.env.VITE_SUBSCRIPTION_KEY
         }
     }
     if(method !== "GET") {
@@ -26,6 +28,9 @@ export async function callAPI(url:string, method:string, requestData:object) {
 
 export const getProjectList = () => {
     return callAPI("/api/Projects?&includeall=false", "GET", {})
+}
+export const getProjectDetails = () => {
+    return callAPI(`/api/Projects/${sessionStorage.getItem("selectedProjectId")}`, "GET", {})
 }
 
 export const getSubmissions = () => {

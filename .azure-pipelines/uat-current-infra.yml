@@ -1,0 +1,16 @@
+trigger:
+  branches:
+    include:
+      - UAT
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - template: templates/build.yml
+  - template: templates/create-swa-config.yml
+    parameters:
+      environment: 'uat'
+  - template: templates/deploy.yml
