@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { Schema, ValidateEnv } from '@julr/vite-plugin-validate-env'
+import eslint from 'vite-plugin-eslint'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,6 +20,10 @@ export default defineConfig({
             VITE_SUBSCRIPTION_KEY: Schema.string({
                 message: "Subscription key used in APIM"
             }),
+      }),
+      eslint({
+          failOnWarning: false, // Move this to true once all linting issues have been resolved
+          failOnError: false, // Move this to true once all linting issues have been resolved
       })
   ]
 })
