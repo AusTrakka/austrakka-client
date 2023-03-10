@@ -21,7 +21,7 @@ be relevant in the new infra.
 
 | Name                  | Description                                 |
 |-----------------------|---------------------------------------------|
-| VITE_AT_CLIENT_ID     | Client ID of the frontend Azure application |
-| VITE_AT_TENANT_ID     | Tenant ID of the target Azure account       |
+| VITE_AT_CLIENT_ID     | Guid for target AusTrakka client app        |
+| VITE_AT_TENANT_ID     | Guid for target Azure Tenant                |
 | VITE_REACT_API_URL    | The backend api url                         |
 | VITE_SUBSCRIPTION_KEY | The subscription key for APIM               |
