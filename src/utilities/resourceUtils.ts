@@ -31,7 +31,7 @@ export const getProjectDetails = () => {
     return callAPI(`/api/Projects/${sessionStorage.getItem("selectedProjectId")}`, "GET", {})
 }
 
-export const getSubmissions = (urlParams: string) => { 
+export const getSamples = (urlParams: string) => { 
     return callAPI(`/api/MetadataSearch${urlParams}`, 'GET', {})
     //return callAPI(`/api/Submissions/x${urlParams}`, 'GET', {})
     //return callAPI(`/api/Submissions/x?includeall=False&groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`, 'GET', {})

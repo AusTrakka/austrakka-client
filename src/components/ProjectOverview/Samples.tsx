@@ -1,33 +1,22 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_SortingState, MRT_ColumnDef } from 'material-react-table';
-import { getSubmissions } from '../../utilities/resourceUtils';
+import { getSamples } from '../../utilities/resourceUtils';
 import styles from './ProjectOverview.module.css'
+import { ProjectSample } from '../../types/sample.interface';
 
 // TODO: move sample list state to parent component (headers and data)
-// TODO: move outside this file (already defined in ProjectOverview.tsx so also needs to be removed from there)
-interface ProjectSubmission {
-
-}
-
-interface ColumnHeader {
-  field: string;
-  title: string;
-  width?: number;
-  maxWidth?: number;
-  headerSort?: boolean;
-}
 
 interface SamplesProps {
-  sampleList: ProjectSubmission[],
+  sampleList: ProjectSample[],
   totalSamples: string,
-  setProjectSubmissions: Dispatch<SetStateAction<ProjectSubmission[]>>,
+  setProjectSamples: Dispatch<SetStateAction<ProjectSample[]>>,
 }
 
 const Samples = (props: SamplesProps) =>  {
-  const { sampleList, totalSamples, setProjectSubmissions } = props;
+  const { sampleList, totalSamples, setProjectSamples } = props;
   const [ isLoading, setIsLoading ] = useState(true)
   const [ isError, setIsError ] = useState(false)
-  const [samples, setSamples] = useState<ProjectSubmission[]>([])
+  const [samples, setSamples] = useState<ProjectSample[]>([])
   const [columns, setColumns] = useState<MRT_ColumnDef[]>([])
 
   const [globalFilter, setGlobalFilter] = useState('');
@@ -48,14 +37,14 @@ const Samples = (props: SamplesProps) =>  {
     // Only get samples when columns are already populated
     if(columns.length > 0) {
       setIsLoading(true)
-      getSamples()   
+      getProjectSamples()   
     }   
   }, [pagination.pageIndex, pagination.pageSize, columns]);
 
   async function getHeaders() {
     // TODO: replace this endpoint with a proper get headers endpoint
     // Using a intermediate endpoint for the time being until a "getColumns" endpoint is defined
-    await getSubmissions(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+    await getSamples(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
       .then((response) => {
         return response.json()
       })
@@ -74,14 +63,14 @@ const Samples = (props: SamplesProps) =>  {
       .catch(error => console.log(error))
   }
 
-  async function getSamples() {
+  async function getProjectSamples() {
     // TODO: Fix this URL params method to proper structure
     const url = new URL('http://localhost:5001/')
     url.searchParams.set('Page', `${pagination.pageIndex+1}`);
     url.searchParams.set('PageSize', `${pagination.pageSize}`);
     url.searchParams.set('groupContext', `${sessionStorage.getItem("selectedProjectMemberGroupId")}`);
 
-    await getSubmissions(url.search)
+    await getSamples(url.search)
       .then((response) => {
         return response.json()
       })

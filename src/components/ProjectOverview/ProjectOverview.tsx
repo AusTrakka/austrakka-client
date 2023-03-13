@@ -5,8 +5,9 @@ import 'react-tabulator/lib/styles.css';
 import { ReactTabulator } from 'react-tabulator'
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import { Typography, Box, Tab, Tabs, Paper } from "@mui/material";
-import { getAnalyses, getSubmissions, getProjectDetails } from '../../utilities/resourceUtils';
+import { getAnalyses, getSamples, getProjectDetails } from '../../utilities/resourceUtils';
 import styles from './ProjectOverview.module.css'
+import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
@@ -43,9 +44,6 @@ const projectOverviewTabs: TabContentProps[] = [
 ]
 
 //TODO: Define types for expected responses from the key endpoints and pass them to the initial states
-interface ProjectSubmission {
-
-}
 interface ProjectAnalyses {
 
 }
@@ -63,7 +61,7 @@ const ProjectOverview = () => {
     projectDesc: "",
     lastUpload: ""
   })
-  const [projectSubmissions, setProjectSubmissions] = useState<ProjectSubmission[]>([])
+  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
   const [projectAnalyses, setProjectAnalyses] = useState<ProjectAnalyses[]>([])
   const [projectDetails, setProjectDetails] = useState({description: ""})
   const [lastUpload, setlastUpload] = useState("")
@@ -76,7 +74,7 @@ const ProjectOverview = () => {
 
   useEffect(() => {
     populateTabComponents() //pushing stateful props based on API response
-  }, [projectDetails, projectAnalyses, projectSubmissions, state]) 
+  }, [projectDetails, projectAnalyses, projectSamples, state]) 
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage 
@@ -90,7 +88,7 @@ const ProjectOverview = () => {
     // Get submissions - TODO: shouldn't need this here... should be replaced with:
     // 1. getSamplesCount
     // 2. getLatestSampleUpload
-    await getSubmissions(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+    await getSamples(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
       .then((response) => {
         const count: string = response.headers.get('X-Total-Count')!
         //updateState({...state, totalSamples: count})
@@ -98,7 +96,7 @@ const ProjectOverview = () => {
         return response.json()
       })
       .then((response_data) => {
-        setProjectSubmissions(response_data)
+        setProjectSamples(response_data)
         // Get latest upload date
         let latestDate = new Date(
           Math.max(
@@ -125,7 +123,7 @@ const ProjectOverview = () => {
   function populateTabComponents() {
     projectOverviewTabs.forEach((tab) => {
       if (tab.title == "Summary") {tab.component = <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} />}
-      if (tab.title == "Samples") {tab.component = <Samples totalSamples={totalSamples} sampleList={projectSubmissions} setProjectSubmissions={setProjectSubmissions}/>}
+      if (tab.title == "Samples") {tab.component = <Samples totalSamples={totalSamples} sampleList={projectSamples} setProjectSamples={setProjectSamples}/>}
       if (tab.title == "Trees") {tab.component = <TreeList />}
       if (tab.title == "Plots") {tab.component = <Plots />}
     })
