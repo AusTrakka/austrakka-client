@@ -43,7 +43,15 @@ const projectOverviewTabs: TabContentProps[] = [
 ]
 
 //TODO: Define types for expected responses from the key endpoints and pass them to the initial states
+interface ProjectSubmission {
 
+}
+interface ProjectAnalyses {
+
+}
+interface ProjectDetails {
+
+}
 //
 
 const ProjectOverview = () => {
@@ -51,13 +59,16 @@ const ProjectOverview = () => {
   const [state, updateState] = useState({
     loading: false,
     projectDetails: {},
-    totalSamples: 0,
+    totalSamples: "",
     projectDesc: "",
     lastUpload: ""
   })
-  const [projectSubmissions, setProjectSubmissions] = useState([])
-  const [projectAnalyses, setProjectAnalyses] = useState()
+  const [projectSubmissions, setProjectSubmissions] = useState<ProjectSubmission[]>([])
+  const [projectAnalyses, setProjectAnalyses] = useState<ProjectAnalyses[]>([])
   const [projectDetails, setProjectDetails] = useState({description: ""})
+  const [lastUpload, setlastUpload] = useState("")
+  const [totalSamples, setTotalSamples] = useState("")
+  const [isOverviewLoading, setIsOverviewLoading] = useState(true)
 
   useEffect(() => {
     getProject() //API calls
@@ -76,9 +87,16 @@ const ProjectOverview = () => {
       })
       .catch(error => console.log(error))
 
-    // Get submissions 
-    await getSubmissions()
-      .then((response) => response.json())
+    // Get submissions - TODO: shouldn't need this here... should be replaced with:
+    // 1. getSamplesCount
+    // 2. getLatestSampleUpload
+    await getSubmissions(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+      .then((response) => {
+        const count: string = response.headers.get('X-Total-Count')!
+        //updateState({...state, totalSamples: count})
+        setTotalSamples(count)
+        return response.json()
+      })
       .then((response_data) => {
         setProjectSubmissions(response_data)
         // Get latest upload date
@@ -90,7 +108,8 @@ const ProjectOverview = () => {
             })
           )
         )
-        updateState({...state, lastUpload: latestDate.toDateString()})
+        //updateState({...state, lastUpload: latestDate.toDateString()})
+        setlastUpload(latestDate.toDateString())
       })
       .catch(error => console.log(error))
     
@@ -105,11 +124,12 @@ const ProjectOverview = () => {
 
   function populateTabComponents() {
     projectOverviewTabs.forEach((tab) => {
-      if (tab.title == "Summary") {tab.component = <Summary samples={projectSubmissions.length} lastUpload={state.lastUpload} projectDesc={projectDetails.description} />}
-      if (tab.title == "Samples") {tab.component = <Samples />}
+      if (tab.title == "Summary") {tab.component = <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} />}
+      if (tab.title == "Samples") {tab.component = <Samples totalSamples={totalSamples} sampleList={projectSubmissions} setProjectSubmissions={setProjectSubmissions}/>}
       if (tab.title == "Trees") {tab.component = <TreeList />}
       if (tab.title == "Plots") {tab.component = <Plots />}
     })
+    setIsOverviewLoading(false)
   }
   
   return (

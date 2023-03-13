@@ -30,15 +30,17 @@ html, body, span {
 
 /* CSS that is applied across all pages */
 .page {
-    transition: margin-left 1s;
     margin-left: 0px;
+    transition: transform 330ms ease-in-out;
     padding: 35px;
+    width: 100vw;
 }
 
 .pagePadded {
-    transition: margin-left 0.5s;
-    margin-left: 150px;
+    transform: translate(150px);
+    transition: transform 330ms ease-in-out;
     padding: 35px;
+    width: calc(100vw - 150px);
 }
 
 .pageHeader {

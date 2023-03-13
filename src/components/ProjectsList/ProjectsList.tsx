@@ -1,15 +1,7 @@
-import React, {createRef, useEffect, useState} from 'react';
-import {Routes, Route, useNavigate, Link } from 'react-router-dom'
-import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
-import 'react-tabulator/lib/styles.css';
-import { ReactTabulator, reactFormatter } from 'react-tabulator'
-import { IconButton } from "@mui/material"
-import SearchIcon from '@mui/icons-material/Search';
-import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
-import {Typography} from "@mui/material";
+import { useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom'
+import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
-import { useMsal } from "@azure/msal-react";
-import { loginRequest } from "../../config/authConfig";
 import { getProjectList } from '../../utilities/resourceUtils';
 
 
@@ -20,11 +12,11 @@ const ProjectsList = () => {
   const [includeAll, setIncludeAll] = useState(false)
   const navigate = useNavigate()
 
-  const columns = [
-    { title: "Abbreviation", field: "abbreviation"},
-    { title: "Name", field: "name" },
-    { title: "Description", field: "description"},
-    { title: "Created", field: "created", formatter: function(datetime:any){ return isoDateLocalDate(datetime) }}
+  const columns:MRT_ColumnDef[] = [
+    { header: "Abbreviation", accessorKey: "abbreviation"},
+    { header: "Name", accessorKey: "name"},
+    { header: "Description", accessorKey: "description"},
+    { header: "Created", accessorKey: "created", Cell: ({ cell }) => { return <div>{isoDateLocalDate(cell)}</div>}}
   ];
   
   useEffect(() => {
@@ -41,27 +33,35 @@ const ProjectsList = () => {
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
       const { projectMembers, name, projectId }: any = selectedProject
-      sessionStorage.setItem('selectedProjectMemeberGroupId', projectMembers.id)
+      sessionStorage.setItem('selectedProjectMemberGroupId', projectMembers.id)
       sessionStorage.setItem('selectedProjectName', name)
       sessionStorage.setItem('selectedProjectId', projectId)
       navigate("/projects/details")
     }
   }, [selectedProject])
 
-  const rowClickHandler = (e: any, row: any) => {
-    let selectedProject = row.getData()
+  const rowClickHandler = (row: any) => {
+    let selectedProject = row.original
     setSelectedProject(selectedProject)
   };
   
   return (
     <>
-      <ReactTabulator
-        data={projectsList}
+      <MaterialReactTable 
         columns={columns}
-        layout={"fitData"}
-        events={{
-          rowClick: rowClickHandler,
-        }}
+        data={projectsList}
+        enableStickyHeader
+        initialState={{ density: 'compact'}}
+        enableColumnResizing
+        enableFullScreenToggle={false}
+        enableHiding={false}
+        enableDensityToggle={false}
+        // Layout props
+        muiTableProps={{sx: {width: "auto", tableLayout: "auto",/*  '& td:last-child': {width: '100%'} */}}}
+        //Row click handler
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row)
+        })}
       />
     </>
   )

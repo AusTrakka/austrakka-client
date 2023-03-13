@@ -1,6 +1,5 @@
 import './App.css'
-import {Routes, Route, NavLink, Router, RedirectFunction, Navigate} from 'react-router-dom'
-import 'react-tabulator/lib/styles.css'
+import {Routes, Route, Navigate} from 'react-router-dom'
 import MainMenuLayout from './components/Layouts/MainMenuLayout'
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
 import ProjectsList from './components/ProjectsList/ProjectsList'
