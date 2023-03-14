@@ -101,7 +101,8 @@ const ProjectOverview = () => {
         let latestDate = new Date(
           Math.max(
             ...response_data.map((element:any) => {
-              let formattedDate = ((new Date (element.created)))
+              // TODO: Define new endpoint that provides the latest upload date from backend - the value retrieved here is not accurate
+              let formattedDate = ((new Date (element.LastUpdated)))
               return formattedDate
             })
           )
