@@ -136,7 +136,7 @@ const Samples = (props: SamplesProps) =>  {
         // Improving performance
         enableDensityToggle={false}
         enableFullScreenToggle={false}
-        memoMode="cells"
+        //memoMode="cells"
         enableRowVirtualization
       />
     </>
