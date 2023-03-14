@@ -36,7 +36,3 @@ export const getSamples = (urlParams: string) => {
     //return callAPI(`/api/Submissions/x${urlParams}`, 'GET', {})
     //return callAPI(`/api/Submissions/x?includeall=False&groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`, 'GET', {})
 }
-
-export const getAnalyses = () => {
-    return callAPI(`/api/Analyses/?filters=ProjectId==${sessionStorage.getItem("selectedProjectId")}&includeall=false`, 'GET', {})
-}

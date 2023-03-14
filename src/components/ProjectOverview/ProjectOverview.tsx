@@ -5,7 +5,7 @@ import 'react-tabulator/lib/styles.css';
 import { ReactTabulator } from 'react-tabulator'
 import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
 import { Typography, Box, Tab, Tabs, Paper } from "@mui/material";
-import { getAnalyses, getSamples, getProjectDetails } from '../../utilities/resourceUtils';
+import { getSamples, getProjectDetails } from '../../utilities/resourceUtils';
 import styles from './ProjectOverview.module.css'
 import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
@@ -43,26 +43,8 @@ const projectOverviewTabs: TabContentProps[] = [
   }
 ]
 
-//TODO: Define types for expected responses from the key endpoints and pass them to the initial states
-interface ProjectAnalyses {
-
-}
-interface ProjectDetails {
-
-}
-//
-
 const ProjectOverview = () => {
-  // TODO: Clear state on component unmount - for cleanliness when a user goes back and changes the project which they selected 
-  const [state, updateState] = useState({
-    loading: false,
-    projectDetails: {},
-    totalSamples: "",
-    projectDesc: "",
-    lastUpload: ""
-  })
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
-  const [projectAnalyses, setProjectAnalyses] = useState<ProjectAnalyses[]>([])
   const [projectDetails, setProjectDetails] = useState({description: ""})
   const [lastUpload, setlastUpload] = useState("")
   const [totalSamples, setTotalSamples] = useState("")
@@ -74,7 +56,7 @@ const ProjectOverview = () => {
 
   useEffect(() => {
     populateTabComponents() //pushing stateful props based on API response
-  }, [projectDetails, projectAnalyses, projectSamples, state]) 
+  }, [projectDetails, projectSamples, totalSamples, lastUpload]) 
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage 
@@ -85,40 +67,17 @@ const ProjectOverview = () => {
       })
       .catch(error => console.log(error))
 
-    // Get submissions - TODO: shouldn't need this here... should be replaced with:
-    // 1. getSamplesCount
-    // 2. getLatestSampleUpload
     await getSamples(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
       .then((response) => {
         const count: string = response.headers.get('X-Total-Count')!
-        //updateState({...state, totalSamples: count})
         setTotalSamples(count)
         return response.json()
       })
       .then((response_data) => {
         setProjectSamples(response_data)
-        // Get latest upload date
-        let latestDate = new Date(
-          Math.max(
-            ...response_data.map((element:any) => {
-              // TODO: Define new endpoint that provides the latest upload date from backend - the value retrieved here is not accurate
-              let formattedDate = ((new Date (element.LastUpdated)))
-              return formattedDate
-            })
-          )
-        )
-        //updateState({...state, lastUpload: latestDate.toDateString()})
-        setlastUpload(latestDate.toDateString())
       })
       .catch(error => console.log(error))
-    
-    // Get analyses  
-    await getAnalyses()
-      .then((response) => response.json())
-      .then((response_data) => {
-        setProjectAnalyses(response_data)
-      })
-      .catch(error => console.log(error))
+      // TODO: Define new endpoint that provides the latest upload date from backend
   }
 
   function populateTabComponents() {

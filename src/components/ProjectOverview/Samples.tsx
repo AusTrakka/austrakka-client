@@ -27,9 +27,7 @@ const Samples = (props: SamplesProps) =>  {
   });
   
   useEffect(() => {
-    //TODO: Integrate endpoints
-    // getSamplesCount - total of all samples 
-    // getColumns/columnVisibility: { fieldOne: false, fieldTwo: false }
+    //TODO: Integrate endpoint to get columns/column visibility: { fieldOne: false, fieldTwo: false }
     getHeaders()
   },[])
 
@@ -42,8 +40,7 @@ const Samples = (props: SamplesProps) =>  {
   }, [pagination.pageIndex, pagination.pageSize, columns]);
 
   async function getHeaders() {
-    // TODO: replace this endpoint with a proper get headers endpoint
-    // Using a intermediate endpoint for the time being until a "getColumns" endpoint is defined
+    // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
     await getSamples(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
       .then((response) => {
         return response.json()
