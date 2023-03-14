@@ -7,9 +7,9 @@ import { getProjectList } from '../../utilities/resourceUtils';
 
 const ProjectsList = () => {
   const [projectsList, setProjectsList] = useState([])
-  const [loading, setLoading] = useState()
+  const [isLoading, setIsLoading] = useState(true)
+  const [ isError, setIsError ] = useState(false)
   const [selectedProject, setSelectedProject] = useState({})
-  const [includeAll, setIncludeAll] = useState(false)
   const navigate = useNavigate()
 
   const columns:MRT_ColumnDef[] = [
@@ -24,9 +24,13 @@ const ProjectsList = () => {
     .then((response) => response.json())
     .then((response_data) => {
       setProjectsList(response_data);
+      setIsError(false)
+      setIsLoading(false)
     })
     .catch(error => {
       console.error('There was an error retrieving project data!', error);
+      setIsError(true)
+      setIsLoading(false)
     });
   }, [])
 
@@ -56,8 +60,23 @@ const ProjectsList = () => {
         enableFullScreenToggle={false}
         enableHiding={false}
         enableDensityToggle={false}
+        state={{
+          isLoading,
+          showAlertBanner: isError, 
+        }}
+        muiToolbarAlertBannerProps={
+          isError
+            ? {
+                color: 'error',
+                children: 'Error loading data',
+              }
+            : undefined
+        }
+        muiLinearProgressProps={({ isTopToolbar }) => ({
+          sx: { display: isTopToolbar ? 'block' : 'none' },
+        })}
         // Layout props
-        muiTableProps={{sx: {width: "auto", tableLayout: "auto",/*  '& td:last-child': {width: '100%'} */}}}
+        muiTableProps={{sx: {width: "auto", tableLayout: "auto", '& td:last-child': {width: '100%'}, '& th:last-child': {width: '100%'}}}}
         //Row click handler
         muiTableBodyRowProps={({ row }) => ({
           onClick: () => rowClickHandler(row)
