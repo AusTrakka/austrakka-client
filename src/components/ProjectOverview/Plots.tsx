@@ -1,7 +1,11 @@
 import React, {createRef, useEffect, useState} from 'react';
 import styles from './ProjectOverview.module.css'
 
-const Plots = () => {
+interface PlotsProps {
+  isPlotsLoading: boolean
+}
+
+const Plots = (props: PlotsProps) => {
   
   return (
     <>

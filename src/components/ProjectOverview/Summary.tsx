@@ -4,7 +4,7 @@ import styles from './ProjectOverview.module.css'
 
 interface SummaryProps {
   projectDesc: string,
-  totalSamples: string,
+  totalSamples: number,
   lastUpload: string,
   isOverviewLoading: boolean
 }

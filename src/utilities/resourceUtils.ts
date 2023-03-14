@@ -31,8 +31,12 @@ export const getProjectDetails = () => {
     return callAPI(`/api/Projects/${sessionStorage.getItem("selectedProjectId")}`, "GET", {})
 }
 
-export const getSamples = (urlParams: string) => { 
-    return callAPI(`/api/MetadataSearch${urlParams}`, 'GET', {})
+export const getSamples = (searchParams?: string) => { 
+    return callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {})
     //return callAPI(`/api/Submissions/x${urlParams}`, 'GET', {})
     //return callAPI(`/api/Submissions/x?includeall=False&groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`, 'GET', {})
+}
+
+export const getTotalSamples = () => {
+    return callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}&pageSize=1&page=1`, 'GET', {})
 }

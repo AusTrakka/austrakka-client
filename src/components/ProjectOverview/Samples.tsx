@@ -8,8 +8,9 @@ import { ProjectSample } from '../../types/sample.interface';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
-  totalSamples: string,
+  totalSamples: number,
   setProjectSamples: Dispatch<SetStateAction<ProjectSample[]>>,
+  isSamplesLoading: boolean
 }
 
 const Samples = (props: SamplesProps) =>  {
@@ -41,7 +42,7 @@ const Samples = (props: SamplesProps) =>  {
 
   async function getHeaders() {
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    await getSamples(`?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+    await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
       .then((response) => {
         return response.json()
       })
@@ -61,17 +62,18 @@ const Samples = (props: SamplesProps) =>  {
   }
 
   async function getProjectSamples() {
-    // TODO: Fix this URL params method to proper structure
-    const url = new URL('http://localhost:5001/')
-    url.searchParams.set('Page', `${pagination.pageIndex+1}`);
-    url.searchParams.set('PageSize', `${pagination.pageSize}`);
-    url.searchParams.set('groupContext', `${sessionStorage.getItem("selectedProjectMemberGroupId")}`);
+    const searchParams = new URLSearchParams({
+      "Page" : (pagination.pageIndex+1).toString(),
+      "PageSize" : (pagination.pageSize).toString(),
+      "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
+    })
 
-    await getSamples(url.search)
+    await getSamples(searchParams.toString())
       .then((response) => {
         return response.json()
       })
       .then((response_data) => {
+        console.log(response_data)
         setSamples(response_data)
         setIsLoading(false)
       })
@@ -123,7 +125,7 @@ const Samples = (props: SamplesProps) =>  {
           showAlertBanner: isError, 
         }}
         initialState={{ density: 'compact'}}
-        rowCount={parseInt(totalSamples)}
+        rowCount={totalSamples}
         // Layout props
         muiTableProps={{sx: {width: "auto", tableLayout: "auto", }}}
         // Column manipulation

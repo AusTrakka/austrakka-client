@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Typography, Box, Tab, Tabs, Paper, withStyles, styled } from "@mui/material";
 
 //// Types
+export interface TabContentProps {
+    index: number, 
+    title: string, 
+    component: JSX.Element
+}
 interface StyledTabsProps {
     children?: React.ReactNode;
     value: number;
@@ -10,16 +15,10 @@ interface StyledTabsProps {
 interface StyledTabProps {
     label: string;
 }
-
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
     value: number;
-}
-interface TabContentProps {
-    index: number, 
-    title: string, 
-    component: JSX.Element
 }
 interface CustomTabsProps {
     tabContent: TabContentProps[]

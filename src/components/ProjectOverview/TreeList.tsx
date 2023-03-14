@@ -1,7 +1,11 @@
 import React, {createRef, useEffect, useState} from 'react';
 import styles from './ProjectOverview.module.css'
 
-const TreeList = () => {
+interface TreesProps {
+  isTreesLoading: boolean
+}
+
+const TreeList = (props: TreesProps) => {
   
   return (
     <>
