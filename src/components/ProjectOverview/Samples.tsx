@@ -37,14 +37,14 @@ const Samples = (props: SamplesProps) =>  {
               }
             : undefined
         }
-        muiTableBodyProps={{
-          sx: {
-            //stripe the rows, make odd rows a darker color
-            '& tr:nth-of-type(odd)': {
-              backgroundColor: '#f5f5f5',
-            },
-          },
-        }}
+        // muiTableBodyProps={{
+        //   sx: {
+        //     //stripe the rows, make odd rows a darker color
+        //     '& tr:nth-of-type(odd)': {
+        //       backgroundColor: '#f5f5f5',
+        //     },
+        //   },
+        // }}
         muiLinearProgressProps={({ isTopToolbar }) => ({
           sx: { display: isTopToolbar ? 'block' : 'none' },
         })}

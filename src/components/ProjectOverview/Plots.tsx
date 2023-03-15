@@ -1,4 +1,4 @@
-import React, {createRef, useEffect, useState} from 'react';
+import React, {createRef, useEffect, useState, memo} from 'react';
 import styles from './ProjectOverview.module.css'
 
 interface PlotsProps {
@@ -13,4 +13,4 @@ const Plots = (props: PlotsProps) => {
     </>
   )
 }
-export default Plots;
+export default memo(Plots);

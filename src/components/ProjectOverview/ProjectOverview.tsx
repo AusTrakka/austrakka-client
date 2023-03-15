@@ -12,11 +12,12 @@ import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import Plots from './Plots';
-import CustomTabs from '../Common/CustomTabs';
+import CustomTabs, { TabPanel } from '../Common/CustomTabs';
 import {TabContentProps} from '../Common/CustomTabs'
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 
 const ProjectOverview = () => {
+  const [tabValue, setTabValue] = useState(0);
   const [projectDetails, setProjectDetails] = useState({description: ""})
   const [lastUpload, setlastUpload] = useState("")
   // Samples component states
@@ -115,12 +116,28 @@ const ProjectOverview = () => {
     {
       index: 0,
       title: "Summary",
-      component: <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} />
     },
     {
       index: 1,
       title: "Samples",
-      component: 
+    },
+    {
+      index: 2,
+      title: "Trees",
+    },
+    {
+      index: 3,
+      title: "Plots",
+    }
+  ]
+  
+  return (
+    <>
+      <CustomTabs value={tabValue}  setValue={setTabValue} tabContent={projectOverviewTabs}/>
+      <TabPanel value={tabValue} index={0}>
+        <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={1}>
         <Samples 
           totalSamples={totalSamples} 
           sampleList={projectSamples} 
@@ -130,22 +147,13 @@ const ProjectOverview = () => {
           samplesPagination={samplesPagination} 
           setSamplesPagination={setSamplesPagination}
         />
-    },
-    {
-      index: 2,
-      title: "Trees",
-      component: <TreeList isTreesLoading={isTreesLoading}/>
-    },
-    {
-      index: 3,
-      title: "Plots",
-      component: <Plots isPlotsLoading={isPlotsLoading}/>
-    }
-  ]
-  
-  return (
-    <>
-      <CustomTabs tabContent={projectOverviewTabs}/>
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        <TreeList isTreesLoading={isTreesLoading}/>
+      </TabPanel>
+      <TabPanel value={tabValue}index={3}>
+        <Plots isPlotsLoading={isPlotsLoading}/>
+      </TabPanel>
     </>
   )
 }

@@ -1,4 +1,4 @@
-import React, {createRef, useEffect, useState} from 'react';
+import React, {createRef, useEffect, useState, memo} from 'react';
 import { Card, CardContent, Typography } from "@mui/material";
 import styles from './ProjectOverview.module.css'
 
@@ -33,4 +33,4 @@ const Summary = (props: SummaryProps) => {
     </>
   )
 }
-export default Summary;
+export default memo(Summary);

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, Tab, Tabs, Paper, withStyles, styled } from "@mui/material";
+import { Typography, Box, Tab, Tabs, Paper, withStyles, styled, Fade } from "@mui/material";
 
 //// Types
 export interface TabContentProps {
     index: number, 
-    title: string, 
-    component: JSX.Element
+    title: string
 }
 interface StyledTabsProps {
     children?: React.ReactNode;
@@ -21,7 +20,9 @@ interface TabPanelProps {
     value: number;
 }
 interface CustomTabsProps {
-    tabContent: TabContentProps[]
+    tabContent: TabContentProps[],
+    value: number,
+    setValue: any //TODO: fix
 }
 ////
   
@@ -42,8 +43,6 @@ const StyledTabs = styled((props: StyledTabsProps) => (
     },
 });
   
-
-  
 const StyledTab = styled((props: StyledTabProps) => (
     <Tab disableRipple {...props} />
 ))(({ theme }) => ({
@@ -62,51 +61,42 @@ function a11yProps(index: number) {
     };
 }
   
-  function TabPanel(props: TabPanelProps) {
+export  function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
   
     return (
         <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-        >
-        {value === index && (
-            <Box sx={{ p: 3 }}>
-                {children}
-            </Box>
-        )}
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >   
+            {value === index && (
+                <Box sx={{ p: 3 }}>
+                    {children}
+                </Box>
+            )}
         </div>
     );
   }
   
 export default function CustomTabs(props: CustomTabsProps) {
-    const {tabContent} = props
-    const [value, setValue] = React.useState(0);
+    const {tabContent, value, setValue} = props
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue)
     }
     const Tabs = tabContent.map(tab => 
         <StyledTab key={tab.index} label={tab.title} {...a11yProps(tab.index)}/>
     )
-    const TabPanels = tabContent.map(tab => 
-        <TabPanel key={tab.index} value={value} index={tab.index}>
-            {tab.component}
-        </TabPanel>
-    )
   
     return (
-        <>
-            <Box>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <StyledTabs value={value} onChange={handleTabChange} >
-                    {Tabs}
-                </StyledTabs>
-                </Box>
+        <Box>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <StyledTabs value={value} onChange={handleTabChange} >
+                {Tabs}
+            </StyledTabs>
             </Box>
-            {TabPanels}
-        </>
+        </Box>
     );
 }
