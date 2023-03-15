@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
+import React, { useEffect, useState, Dispatch, SetStateAction, memo } from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_SortingState, MRT_ColumnDef } from 'material-react-table';
 import { getSamples } from '../../utilities/resourceUtils';
 import styles from './ProjectOverview.module.css'
@@ -9,93 +9,28 @@ import { ProjectSample } from '../../types/sample.interface';
 interface SamplesProps {
   sampleList: ProjectSample[],
   totalSamples: number,
-  setProjectSamples: Dispatch<SetStateAction<ProjectSample[]>>,
-  isSamplesLoading: boolean
+  isSamplesLoading: boolean,
+  sampleTableColumns: MRT_ColumnDef<{}>[],
+  isSamplesError: boolean,
+  samplesPagination: MRT_PaginationState,
+  setSamplesPagination: any, //TODO: fix
 }
 
 const Samples = (props: SamplesProps) =>  {
-  const { sampleList, totalSamples, setProjectSamples } = props;
-  const [ isLoading, setIsLoading ] = useState(true)
-  const [ isError, setIsError ] = useState(false)
-  const [samples, setSamples] = useState<ProjectSample[]>([])
-  const [columns, setColumns] = useState<MRT_ColumnDef[]>([])
-
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
-  const [pagination, setPagination] = useState<MRT_PaginationState>({
-    pageIndex: 0,
-    pageSize: 50, 
-  });
-  
-  useEffect(() => {
-    //TODO: Integrate endpoint to get columns/column visibility: { fieldOne: false, fieldTwo: false }
-    getHeaders()
-  },[])
-
-  useEffect(() => {
-    // Only get samples when columns are already populated
-    if(columns.length > 0) {
-      setIsLoading(true)
-      getProjectSamples()   
-    }   
-  }, [pagination.pageIndex, pagination.pageSize, columns]);
-
-  async function getHeaders() {
-    // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
-      .then((response) => {
-        return response.json()
-      })
-      .then((response_data) => {
-        if(response_data.length > 1) {
-          const columnHeaderArray = Object.keys(response_data[0])
-          const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
-          columnHeaderArray.forEach(element => {
-            columnBuilder.push({ accessorKey: element, header: element, })
-          }); 
-          setColumns(columnBuilder)
-        } else {
-          setIsLoading(false)
-        }
-      })
-      .catch(error => console.log(error))
-  }
-
-  async function getProjectSamples() {
-    const searchParams = new URLSearchParams({
-      "Page" : (pagination.pageIndex+1).toString(),
-      "PageSize" : (pagination.pageSize).toString(),
-      "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
-    })
-
-    await getSamples(searchParams.toString())
-      .then((response) => {
-        return response.json()
-      })
-      .then((response_data) => {
-        console.log(response_data)
-        setSamples(response_data)
-        setIsLoading(false)
-      })
-      .catch(error => {
-        console.log(error)
-        setIsLoading(false)
-        setIsError(true)
-      })
-  }
-
+  const { sampleList, totalSamples, isSamplesLoading, sampleTableColumns, isSamplesError, samplesPagination, setSamplesPagination } = props;
+  console.log("samplesss")
   return (
     <>
      <p className={styles.h1}>Samples</p><br />
       <MaterialReactTable 
-        columns={columns}
-        data={samples}
+        columns={sampleTableColumns}
+        data={sampleList}
         enableStickyHeader
         manualPagination
         manualFiltering
         columnResizeMode="onChange"
         muiToolbarAlertBannerProps={
-          isError
+          isSamplesError
             ? {
                 color: 'error',
                 children: 'Error loading data',
@@ -117,12 +52,11 @@ const Samples = (props: SamplesProps) =>  {
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000, 2000, 3000],
         }}
-        onPaginationChange={setPagination}
+        onPaginationChange={setSamplesPagination}
         state={{ 
-          pagination,
-          sorting,
-          isLoading,
-          showAlertBanner: isError, 
+          pagination: samplesPagination,
+          isLoading: isSamplesLoading,
+          showAlertBanner: isSamplesError, 
         }}
         initialState={{ density: 'compact'}}
         rowCount={totalSamples}
@@ -141,4 +75,4 @@ const Samples = (props: SamplesProps) =>  {
     </>
   )
 }
-export default Samples;
+export default memo(Samples);

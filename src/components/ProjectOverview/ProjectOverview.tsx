@@ -1,4 +1,4 @@
-import React, {createRef, useEffect, useState} from 'react';
+import React, {createRef, useEffect, useMemo, useState} from 'react';
 import {Routes, Route, Link} from 'react-router-dom'
 import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
 import 'react-tabulator/lib/styles.css';
@@ -14,21 +14,39 @@ import TreeList from './TreeList';
 import Plots from './Plots';
 import CustomTabs from '../Common/CustomTabs';
 import {TabContentProps} from '../Common/CustomTabs'
+import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 
 const ProjectOverview = () => {
-  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
   const [projectDetails, setProjectDetails] = useState({description: ""})
   const [lastUpload, setlastUpload] = useState("")
+  // Samples component states
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([])
+  const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
+    pageIndex: 0,
+    pageSize: 50, 
+  });
+  const [isSamplesLoading, setIsSamplesLoading] = useState(true)
+  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
   const [totalSamples, setTotalSamples] = useState(0)
+  const [isSamplesError, setIsSamplesError] = useState(false)
   // Loading states for each tab
   const [isOverviewLoading, setIsOverviewLoading] = useState(true)
-  const [isSamplesLoading, setIsSamplesLoading] = useState(true)
   const [isTreesLoading, setIsTreesLoading] = useState(true)
   const [isPlotsLoading, setIsPlotsLoading] = useState(true)
 
   useEffect(() => {
+    console.log("parent re render")
     getProject() //API calls
+    getSampleTableHeaders() 
   }, [])
+
+  useEffect(() => {
+    // Only get samples when columns are already populated
+    if(sampleTableColumns.length > 0) {
+      //setIsSamplesLoading(true)
+      getSamplesList()   
+    }   
+  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage 
@@ -51,6 +69,48 @@ const ProjectOverview = () => {
     // TODO: Define new endpoint that provides the latest upload date from backend
   }
 
+  async function getSamplesList() {
+    const searchParams = new URLSearchParams({
+      "Page" : (samplesPagination.pageIndex+1).toString(),
+      "PageSize" : (samplesPagination.pageSize).toString(),
+      "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
+    })
+    
+    await getSamples(searchParams.toString())
+      .then((response) => {
+        return response.json()
+      })
+      .then((response_data) => {
+        setProjectSamples(response_data)
+        setIsSamplesLoading(false)
+      })
+      .catch(error => {
+        console.log(error)
+        setIsSamplesLoading(false)
+        setIsSamplesError(true)
+      })
+  }
+  async function getSampleTableHeaders() {
+    //Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
+    await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+      .then((response) => {
+        return response.json()
+      })
+      .then((response_data) => {
+        if(response_data.length > 1) {
+          const columnHeaderArray = Object.keys(response_data[0])
+          const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
+          columnHeaderArray.forEach(element => {
+            columnBuilder.push({ accessorKey: element, header: element, })
+          }); 
+          setSampleTableColumns(columnBuilder)
+        } else {
+          setIsSamplesLoading(false)
+        }
+      })
+      .catch(error => console.log(error))
+  }
+
   const projectOverviewTabs: TabContentProps[] = [
     {
       index: 0,
@@ -60,7 +120,16 @@ const ProjectOverview = () => {
     {
       index: 1,
       title: "Samples",
-      component: <Samples totalSamples={totalSamples} sampleList={projectSamples} setProjectSamples={setProjectSamples} isSamplesLoading={isSamplesLoading}/>
+      component: 
+        <Samples 
+          totalSamples={totalSamples} 
+          sampleList={projectSamples} 
+          isSamplesLoading={isSamplesLoading} 
+          sampleTableColumns={sampleTableColumns} 
+          isSamplesError={isSamplesError} 
+          samplesPagination={samplesPagination} 
+          setSamplesPagination={setSamplesPagination}
+        />
     },
     {
       index: 2,
