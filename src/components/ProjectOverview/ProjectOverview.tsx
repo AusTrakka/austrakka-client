@@ -18,6 +18,9 @@ import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 
 const ProjectOverview = () => {
   const [tabValue, setTabValue] = useState(0);
+  // Project Overview component states
+  const [isOverviewLoading, setIsOverviewLoading] = useState(true)
+  const [isOverviewError, setIsOverviewError] = useState(false)
   const [projectDetails, setProjectDetails] = useState({description: ""})
   const [lastUpload, setlastUpload] = useState("")
   // Samples component states
@@ -30,13 +33,11 @@ const ProjectOverview = () => {
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
   const [totalSamples, setTotalSamples] = useState(0)
   const [isSamplesError, setIsSamplesError] = useState(false)
-  // Loading states for each tab
-  const [isOverviewLoading, setIsOverviewLoading] = useState(true)
+  
   const [isTreesLoading, setIsTreesLoading] = useState(true)
   const [isPlotsLoading, setIsPlotsLoading] = useState(true)
 
   useEffect(() => {
-    console.log("parent re render")
     getProject() //API calls
     getSampleTableHeaders() 
   }, [])
@@ -44,7 +45,7 @@ const ProjectOverview = () => {
   useEffect(() => {
     // Only get samples when columns are already populated
     if(sampleTableColumns.length > 0) {
-      //setIsSamplesLoading(true)
+      setIsSamplesLoading(true)
       getSamplesList()   
     }   
   }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
@@ -56,7 +57,10 @@ const ProjectOverview = () => {
       .then((response_data) => {
         setProjectDetails(response_data.data)
       })
-      .catch(error => console.log(error))
+      .catch(error => {
+        console.log(error)
+        setIsOverviewError(true)
+      })
 
     await getTotalSamples()
       .then((response) => {
@@ -64,7 +68,10 @@ const ProjectOverview = () => {
         setTotalSamples(parseInt(count))
         return response.json()
       })
-      .catch(error => console.log(error))
+      .catch(error => {
+        console.log(error)
+        setIsOverviewError(true)
+      })
     
     setIsOverviewLoading(false)
     // TODO: Define new endpoint that provides the latest upload date from backend
@@ -109,7 +116,11 @@ const ProjectOverview = () => {
           setIsSamplesLoading(false)
         }
       })
-      .catch(error => console.log(error))
+      .catch(error => {
+        console.log(error)
+        setIsSamplesLoading(false)
+        setIsSamplesError(true)
+      })
   }
 
   const projectOverviewTabs: TabContentProps[] = [
@@ -134,10 +145,10 @@ const ProjectOverview = () => {
   return (
     <>
       <CustomTabs value={tabValue}  setValue={setTabValue} tabContent={projectOverviewTabs}/>
-      <TabPanel value={tabValue} index={0}>
-        <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} />
+      <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
+        <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} isOverviewError={isOverviewError}/>
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
         <Samples 
           totalSamples={totalSamples} 
           sampleList={projectSamples} 
@@ -148,10 +159,10 @@ const ProjectOverview = () => {
           setSamplesPagination={setSamplesPagination}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={2}>
+      <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
         <TreeList isTreesLoading={isTreesLoading}/>
       </TabPanel>
-      <TabPanel value={tabValue}index={3}>
+      <TabPanel value={tabValue}index={3} tabLoader={isPlotsLoading}>
         <Plots isPlotsLoading={isPlotsLoading}/>
       </TabPanel>
     </>
