@@ -14,6 +14,6 @@ export const LogoutButton = () => {
         }
     }
     return (
-        <Button variant="contained" onClick={() => handleLogout("popup")}>Logout</Button>
+        <Button variant="contained" color="secondary" onClick={() => handleLogout("popup")}>Logout</Button>
     );
 }
