@@ -1,18 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Typography, Box, Tab, Tabs, Paper, LinearProgress, styled, Fade } from "@mui/material";
+import React from 'react';
+import { Box, Tab, Tabs, Paper, LinearProgress } from "@mui/material";
 
 //// Types
 export interface TabContentProps {
     index: number, 
     title: string
-}
-interface StyledTabsProps {
-    children?: React.ReactNode;
-    value: number;
-    onChange: (event: React.SyntheticEvent, newValue: number) => void;
-}
-interface StyledTabProps {
-    label: string;
 }
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -23,37 +15,9 @@ interface TabPanelProps {
 interface CustomTabsProps {
     tabContent: TabContentProps[],
     value: number,
-    setValue: any //TODO: fix
+    setValue: React.Dispatch<React.SetStateAction<number>>
 }
 ////
-  
-const StyledTabs = styled((props: StyledTabsProps) => (
-    <Tabs
-        {...props}
-        TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
-    />
-    ))({
-    '& .MuiTabs-indicator': {
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-    },
-    '& .MuiTabs-indicatorSpan': {
-        width: '100%',
-        backgroundColor: '#90CA6D',
-    },
-});
-  
-const StyledTab = styled((props: StyledTabProps) => (
-    <Tab disableRipple {...props} />
-))(({ theme }) => ({
-    textTransform: 'none',
-    color: '#353333',
-    '&.Mui-selected': {
-      color: '#353333',
-      fontWeight: 'bold'
-    }
-}));
 
 function a11yProps(index: number) {
     return {
@@ -73,7 +37,7 @@ export  function TabPanel(props: TabPanelProps) {
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >   
-        { tabLoader ? <><br /> <LinearProgress /></>: <>
+        { tabLoader ? <><LinearProgress color='secondary' /></>: <>
             {value === index && (
                 <Box sx={{ p: 3 }}>
                     {children}
@@ -90,16 +54,22 @@ export default function CustomTabs(props: CustomTabsProps) {
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue)
     }
-    const Tabs = tabContent.map(tab => 
-        <StyledTab key={tab.index} label={tab.title} {...a11yProps(tab.index)}/>
+    const InnerTabs = tabContent.map(tab => 
+        <Tab 
+            key={tab.index} 
+            label={tab.title} 
+            sx={{textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold'}}}
+            {...a11yProps(tab.index)}
+            disableRipple
+        />
     )
   
     return (
         <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <StyledTabs value={value} onChange={handleTabChange} >
-                {Tabs}
-            </StyledTabs>
+            <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary">
+                {InnerTabs}
+            </Tabs>
             </Box>
         </Box>
     );

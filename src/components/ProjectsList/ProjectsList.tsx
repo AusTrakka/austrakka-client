@@ -73,6 +73,7 @@ const ProjectsList = () => {
             : undefined
         }
         muiLinearProgressProps={({ isTopToolbar }) => ({
+          color: 'secondary',
           sx: { display: isTopToolbar ? 'block' : 'none' },
         })}
         // Layout props

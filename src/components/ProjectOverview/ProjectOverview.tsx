@@ -1,12 +1,5 @@
 import React, {createRef, useEffect, useMemo, useState} from 'react';
-import {Routes, Route, Link} from 'react-router-dom'
-import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
-import 'react-tabulator/lib/styles.css';
-import { ReactTabulator } from 'react-tabulator'
-import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
-import { Typography, Box, Tab, Tabs, Paper } from "@mui/material";
 import { getSamples, getProjectDetails, getTotalSamples } from '../../utilities/resourceUtils';
-import styles from './ProjectOverview.module.css'
 import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
 import Samples from './Samples';

@@ -49,8 +49,9 @@ const Samples = (props: SamplesProps) =>  {
         //   },
         // }}
         muiLinearProgressProps={({ isTopToolbar }) => ({
+          color: 'secondary',
           sx: { display: isTopToolbar ? 'block' : 'none' },
-        })}
+        })} 
         muiTableContainerProps={{ sx: { maxHeight: '75vh'} }}
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000, 2000, 3000],
