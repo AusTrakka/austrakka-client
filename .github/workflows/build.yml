@@ -12,5 +12,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+      - run: |
+          echo "" >> .env
+          echo "VITE_AT_CLIENT_ID=client_id" >> .env
+          echo "VITE_AT_TENANT_ID=tenant_id" >> .env
+          echo "VITE_API_SCOPE=api_scope" >> .env
       - run: npm ci
       - run: npm run build
