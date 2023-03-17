@@ -1,71 +1,47 @@
-import React, {createRef, useEffect, useState} from 'react';
-import {Routes, Route, Link} from 'react-router-dom'
-import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
-import 'react-tabulator/lib/styles.css';
-import { ReactTabulator } from 'react-tabulator'
-import {Tabulator} from "react-tabulator/lib/types/TabulatorTypes";
-import { Typography, Box, Tab, Tabs, Paper } from "@mui/material";
-import { getAnalyses, getSubmissions, getProjectDetails } from '../../utilities/resourceUtils';
-import styles from './ProjectOverview.module.css'
+import React, {createRef, useEffect, useMemo, useState} from 'react';
+import { getSamples, getProjectDetails, getTotalSamples } from '../../utilities/resourceUtils';
+import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import Plots from './Plots';
-import CustomTabs from '../Common/CustomTabs';
-
-// Define number of tabs and their titles
-interface TabContentProps {
-  index: number, 
-  title: string, 
-  component: JSX.Element
-}
-const projectOverviewTabs: TabContentProps[] = [
-  {
-    index: 0,
-    title: "Summary",
-    component: <></>
-  },
-  {
-    index: 1,
-    title: "Samples",
-    component: <></>
-  },
-  {
-    index: 2,
-    title: "Trees",
-    component: <></>
-  },
-  {
-    index: 3,
-    title: "Plots",
-    component: <></>
-  }
-]
-
-//TODO: Define types for expected responses from the key endpoints and pass them to the initial states
-
-//
+import CustomTabs, { TabPanel } from '../Common/CustomTabs';
+import {TabContentProps} from '../Common/CustomTabs'
+import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 
 const ProjectOverview = () => {
-  // TODO: Clear state on component unmount - for cleanliness when a user goes back and changes the project which they selected 
-  const [state, updateState] = useState({
-    loading: false,
-    projectDetails: {},
-    totalSamples: 0,
-    projectDesc: "",
-    lastUpload: ""
-  })
-  const [projectSubmissions, setProjectSubmissions] = useState([])
-  const [projectAnalyses, setProjectAnalyses] = useState()
+  const [tabValue, setTabValue] = useState(0);
+  // Project Overview component states
+  const [isOverviewLoading, setIsOverviewLoading] = useState(true)
+  const [isOverviewError, setIsOverviewError] = useState(false)
   const [projectDetails, setProjectDetails] = useState({description: ""})
+  const [lastUpload, setlastUpload] = useState("")
+  // Samples component states
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([])
+  const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
+    pageIndex: 0,
+    pageSize: 50, 
+  });
+  const [isSamplesLoading, setIsSamplesLoading] = useState(true)
+  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
+  const [totalSamples, setTotalSamples] = useState(0)
+  const [isSamplesError, setIsSamplesError] = useState(false)
+  
+  const [isTreesLoading, setIsTreesLoading] = useState(true)
+  const [isPlotsLoading, setIsPlotsLoading] = useState(true)
 
   useEffect(() => {
     getProject() //API calls
+    getSampleTableHeaders() 
   }, [])
 
   useEffect(() => {
-    populateTabComponents() //pushing stateful props based on API response
-  }, [projectDetails, projectAnalyses, projectSubmissions, state]) 
+    // Only get samples when columns are already populated
+    if(sampleTableColumns.length > 0) {
+      setIsSamplesLoading(true)
+      getSamplesList()   
+    }   
+  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage 
@@ -74,47 +50,114 @@ const ProjectOverview = () => {
       .then((response_data) => {
         setProjectDetails(response_data.data)
       })
-      .catch(error => console.log(error))
-
-    // Get submissions 
-    await getSubmissions()
-      .then((response) => response.json())
-      .then((response_data) => {
-        setProjectSubmissions(response_data)
-        // Get latest upload date
-        let latestDate = new Date(
-          Math.max(
-            ...response_data.map((element:any) => {
-              let formattedDate = ((new Date (element.created)))
-              return formattedDate
-            })
-          )
-        )
-        updateState({...state, lastUpload: latestDate.toDateString()})
+      .catch(error => {
+        console.log(error)
+        setIsOverviewError(true)
       })
-      .catch(error => console.log(error))
+
+    await getTotalSamples()
+      .then((response) => {
+        const count: string = response.headers.get('X-Total-Count')!
+        setTotalSamples(parseInt(count))
+        return response.json()
+      })
+      .catch(error => {
+        console.log(error)
+        setIsOverviewError(true)
+      })
     
-    // Get analyses  
-    await getAnalyses()
-      .then((response) => response.json())
-      .then((response_data) => {
-        setProjectAnalyses(response_data)
-      })
-      .catch(error => console.log(error))
+    setIsOverviewLoading(false)
+    // TODO: Define new endpoint that provides the latest upload date from backend
   }
 
-  function populateTabComponents() {
-    projectOverviewTabs.forEach((tab) => {
-      if (tab.title == "Summary") {tab.component = <Summary samples={projectSubmissions.length} lastUpload={state.lastUpload} projectDesc={projectDetails.description} />}
-      if (tab.title == "Samples") {tab.component = <Samples />}
-      if (tab.title == "Trees") {tab.component = <TreeList />}
-      if (tab.title == "Plots") {tab.component = <Plots />}
+  async function getSamplesList() {
+    const searchParams = new URLSearchParams({
+      "Page" : (samplesPagination.pageIndex+1).toString(),
+      "PageSize" : (samplesPagination.pageSize).toString(),
+      "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
     })
+    
+    await getSamples(searchParams.toString())
+      .then((response) => {
+        return response.json()
+      })
+      .then((response_data) => {
+        setProjectSamples(response_data)
+        setIsSamplesLoading(false)
+      })
+      .catch(error => {
+        console.log(error)
+        setIsSamplesLoading(false)
+        setIsSamplesError(true)
+      })
   }
+  async function getSampleTableHeaders() {
+    //Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
+    await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+      .then((response) => {
+        return response.json()
+      })
+      .then((response_data) => {
+        if(response_data.length > 1) {
+          const columnHeaderArray = Object.keys(response_data[0])
+          const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
+          columnHeaderArray.forEach(element => {
+            columnBuilder.push({ accessorKey: element, header: element, })
+          }); 
+          setSampleTableColumns(columnBuilder)
+        } else {
+          setIsSamplesLoading(false)
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        setIsSamplesLoading(false)
+        setIsSamplesError(true)
+      })
+  }
+
+  const projectOverviewTabs: TabContentProps[] = [
+    {
+      index: 0,
+      title: "Summary",
+    },
+    {
+      index: 1,
+      title: "Samples",
+    },
+    {
+      index: 2,
+      title: "Trees",
+    },
+    {
+      index: 3,
+      title: "Plots",
+    }
+  ]
   
   return (
     <>
-      <CustomTabs tabContent={projectOverviewTabs}/>
+      <CustomTabs value={tabValue}  setValue={setTabValue} tabContent={projectOverviewTabs}/>
+      <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
+        <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} isOverviewError={isOverviewError}/>
+      </TabPanel>
+      <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
+        <Samples 
+          totalSamples={totalSamples} 
+          sampleList={projectSamples} 
+          isSamplesLoading={isSamplesLoading} 
+          sampleTableColumns={sampleTableColumns} 
+          isSamplesError={isSamplesError} 
+          samplesPagination={samplesPagination} 
+          setSamplesPagination={setSamplesPagination}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
+        <TreeList isTreesLoading={isTreesLoading}/>
+      </TabPanel>
+      <TabPanel value={tabValue}index={3} tabLoader={isPlotsLoading}>
+        <Plots isPlotsLoading={isPlotsLoading}/>
+      </TabPanel>
     </>
   )
 }

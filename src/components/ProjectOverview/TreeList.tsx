@@ -1,7 +1,11 @@
-import React, {createRef, useEffect, useState} from 'react';
+import React, {createRef, useEffect, useState, memo} from 'react';
 import styles from './ProjectOverview.module.css'
 
-const TreeList = () => {
+interface TreesProps {
+  isTreesLoading: boolean
+}
+
+const TreeList = (props: TreesProps) => {
   
   return (
     <>
@@ -9,4 +13,4 @@ const TreeList = () => {
     </>
   )
 }
-export default TreeList;
+export default memo(TreeList);

@@ -1,11 +1,8 @@
-import React, {createRef, useEffect, useState} from 'react';
-import 'react-tabulator/css/bootstrap/tabulator_bootstrap.min.css';
-import 'react-tabulator/lib/styles.css';
-import {Typography, Button} from "@mui/material";
-import {NavLink} from 'react-router-dom'
+import { useEffect } from 'react';
+import { Button } from "@mui/material";
 import styles from "./Login.module.css"
 import AusTrakkaLogo from "../../assets/logos/AusTrakka_Logo_cmyk.png"
-import { useMsal, UnauthenticatedTemplate } from "@azure/msal-react";
+import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "../../config/authConfig";
 
 

@@ -1,60 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Typography, Box, Tab, Tabs, Paper, withStyles, styled } from "@mui/material";
+import React from 'react';
+import { Box, Tab, Tabs, Paper, LinearProgress } from "@mui/material";
 
 //// Types
-interface StyledTabsProps {
-    children?: React.ReactNode;
-    value: number;
-    onChange: (event: React.SyntheticEvent, newValue: number) => void;
+export interface TabContentProps {
+    index: number, 
+    title: string
 }
-interface StyledTabProps {
-    label: string;
-}
-
 interface TabPanelProps {
     children?: React.ReactNode;
+    tabLoader? : boolean,
     index: number;
     value: number;
 }
-interface TabContentProps {
-    index: number, 
-    title: string, 
-    component: JSX.Element
-}
 interface CustomTabsProps {
-    tabContent: TabContentProps[]
+    tabContent: TabContentProps[],
+    value: number,
+    setValue: React.Dispatch<React.SetStateAction<number>>
 }
 ////
-  
-const StyledTabs = styled((props: StyledTabsProps) => (
-    <Tabs
-        {...props}
-        TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
-    />
-    ))({
-    '& .MuiTabs-indicator': {
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-    },
-    '& .MuiTabs-indicatorSpan': {
-        width: '100%',
-        backgroundColor: '#90CA6D',
-    },
-});
-  
-
-  
-const StyledTab = styled((props: StyledTabProps) => (
-    <Tab disableRipple {...props} />
-))(({ theme }) => ({
-    textTransform: 'none',
-    color: '#353333',
-    '&.Mui-selected': {
-      color: '#353333',
-      fontWeight: 'bold'
-    }
-}));
 
 function a11yProps(index: number) {
     return {
@@ -63,51 +26,51 @@ function a11yProps(index: number) {
     };
 }
   
-  function TabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
+export  function TabPanel(props: TabPanelProps) {
+    const { children, tabLoader, value, index, ...other } = props;
   
     return (
         <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-        >
-        {value === index && (
-            <Box sx={{ p: 3 }}>
-                {children}
-            </Box>
-        )}
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >   
+        { tabLoader ? <><LinearProgress color='secondary' /></>: <>
+            {value === index && (
+                <Box sx={{ p: 3 }}>
+                    {children}
+                </Box>
+            )}
+            </>
+            }
         </div>
     );
   }
   
 export default function CustomTabs(props: CustomTabsProps) {
-    const {tabContent} = props
-    const [value, setValue] = React.useState(0);
+    const {tabContent, value, setValue} = props
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue)
     }
-    const Tabs = tabContent.map(tab => 
-        <StyledTab key={tab.index} label={tab.title} {...a11yProps(tab.index)}/>
-    )
-    const TabPanels = tabContent.map(tab => 
-        <TabPanel key={tab.index} value={value} index={tab.index}>
-            {tab.component}
-        </TabPanel>
+    const InnerTabs = tabContent.map(tab => 
+        <Tab 
+            key={tab.index} 
+            label={tab.title} 
+            sx={{textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold'}}}
+            {...a11yProps(tab.index)}
+            disableRipple
+        />
     )
   
     return (
-        <>
-            <Box>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <StyledTabs value={value} onChange={handleTabChange} >
-                    {Tabs}
-                </StyledTabs>
-                </Box>
+        <Box>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary">
+                {InnerTabs}
+            </Tabs>
             </Box>
-            {TabPanels}
-        </>
+        </Box>
     );
 }

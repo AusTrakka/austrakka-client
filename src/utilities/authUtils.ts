@@ -9,7 +9,7 @@ export async function getToken() {
 
     if (currentAccount) {
         const accessTokenRequest = {
-            scopes: ["api://df125604-3b75-46d3-a8ea-e54dc3b5e402/AAP-AusTrakka-API"],
+            scopes: [import.meta.env.VITE_API_SCOPE],
             account: currentAccount,
         };
         const accessToken = msalInstance

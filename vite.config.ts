@@ -20,6 +20,9 @@ export default defineConfig({
             VITE_SUBSCRIPTION_KEY: Schema.string({
                 message: "Subscription key used in APIM"
             }),
+            VITE_API_SCOPE: Schema.string({
+                message: "Scope URI for API application"
+            }),
       }),
       eslint({
           failOnWarning: false, // Move this to true once all linting issues have been resolved

@@ -5,6 +5,7 @@ interface ImportMetaEnv {
     readonly VITE_AT_TENANT_ID: string
     readonly VITE_REACT_API_URL: string
     readonly VITE_SUBSCRIPTION_KEY: string
+    readonly VITE_API_SCOPE: string
 }
 
 interface ImportMeta {
