@@ -24,9 +24,12 @@ export default defineConfig({
                 message: "Scope URI for API application"
             }),
       }),
-      eslint({
-          failOnWarning: false, // Move this to true once all linting issues have been resolved
-          failOnError: false, // Move this to true once all linting issues have been resolved
-      })
+      {
+          apply: 'build',
+          ...eslint({
+              failOnWarning: false, // Move this to true once all linting issues have been resolved
+              failOnError: false, // Move this to true once all linting issues have been resolved
+          })
+      }
   ]
 })
