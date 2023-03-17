@@ -1,0 +1,16 @@
+trigger:
+  branches:
+    include:
+      - Development
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - template: templates/build.yml
+  - template: templates/create-swa-config.yml
+    parameters:
+      environment: 'dev'
+  - template: templates/deploy.yml

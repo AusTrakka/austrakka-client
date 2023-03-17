@@ -1,41 +1,75 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+:root {
+    --primary-blue: #0a3546;
+    --primary-green: #90CA6D;
+    --primary-grey: #F6F7F8;
+    --secordary-dark-grey: #353333;
+    --secordary-light-grey: #B3B3B3;
+    --secordary-teal: #3E7784;
+    --secordary-light-green: #68934B;
+    --secordary-dark-green: #375C2B;
+    --secordary-blue: #014F86;
+    --secordary-purple: #B9A8D2;
+    --secordary-orange: #D7534C;
+    --secordary-red: #A81E2C;
+    --secordary-yellow: #FCAF17;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
+@font-face {
+    font-family: "Roboto";
+    src: url('./assets/fonts/Roboto-Regular.ttf') format('truetype');
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+@font-face {
+    font-family: "Roboto";
+    src: url('./assets/fonts/Roboto-Bold.ttf') format('truetype');
+    font-weight: bold;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+html, body, span {
+    font-family: Roboto, 'Open Sans';
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* CSS that is applied across all pages */
+.page {
+    margin-left: 0px;
+    transition: transform 330ms ease-in-out;
+    padding: 35px;
+    /* width: 100vw; */
 }
 
-.card {
-  padding: 2em;
+.pagePadded {
+    transform: translate(150px);
+    transition: transform 330ms ease-in-out;
+    padding: 35px;
+    width: calc(100vw - 220px); /* Calculated by subtracting padding and transform size from window width */
 }
 
-.read-the-docs {
-  color: #888;
+.pageHeader {
+    margin-bottom: 20px;
+}
+
+.breadcrumbs a {
+    color: var(--primary-blue) ;
+    text-decoration: none ;
+    padding-bottom: 10px;
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-blue) ;
+    text-decoration: underline ;
+    padding-bottom: 10px;
+}
+
+.breadcrumbs p {
+    color: var(--primary-blue) ;
+}
+
+.breadcrumbs li {
+    color: var(--primary-blue) ;
+}
+
+.pageTitle {
+    color: var(--primary-blue);
+    font-weight: bold;
+    font-size: 2rem;
+    padding-bottom: 15px;
 }
