@@ -1,5 +1,6 @@
 steps:
   - task: AzureStaticWebApp@0
+    displayName: 'Deploy SWA'
     inputs:
       app_location: 'dist'
       skip_app_build: true

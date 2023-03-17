@@ -4,6 +4,7 @@ parameters:
 
 steps:
   - task: Bash@3
+    displayName: 'Create SWA config'
     inputs:
       targetType: 'inline'
       script: |
