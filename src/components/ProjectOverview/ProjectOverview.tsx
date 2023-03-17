@@ -5,8 +5,7 @@ import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import Plots from './Plots';
-import CustomTabs, { TabPanel } from '../Common/CustomTabs';
-import {TabContentProps} from '../Common/CustomTabs'
+import CustomTabs, { TabPanel ,TabContentProps} from '../Common/CustomTabs';
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 
 const ProjectOverview = () => {

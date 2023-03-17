@@ -45,7 +45,7 @@ const ProjectsList = () => {
   }, [selectedProject])
 
   const rowClickHandler = (row: any) => {
-    let selectedProject = row.original
+    const selectedProject = row.original
     setSelectedProject(selectedProject)
   };
   

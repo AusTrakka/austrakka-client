@@ -5,10 +5,10 @@ interface HTTPOptions {
 }
 
 export async function callAPI(url:string, method:string, requestData:object) {
-    let base = import.meta.env.VITE_REACT_API_URL
+    const base = import.meta.env.VITE_REACT_API_URL
     const token = await getToken()
 
-    let options: HTTPOptions = {
+    const options: HTTPOptions = {
         method: method,
         headers: {
             "Accept": 'application/json',
