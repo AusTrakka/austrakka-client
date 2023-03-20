@@ -20,7 +20,18 @@ export async function callAPI(url:string, method:string, requestData:object) {
     if(method !== "GET") {
         options.body = JSON.stringify(requestData)
     }
-    return await fetch(base + url, options)
+    //return await fetch(base + url, options)
+    const apiRepsonse = await fetch(base + url, options)
+    .then((response) => response.json())
+    .then((response_data) => {
+        let resp = {"Status": "Success", "Data" : response_data.data}
+        return resp
+    })
+    .catch(error => {
+        let resp = {"Status": "Error", "Message" : error}
+        return resp
+    })
+    return apiRepsonse
 } 
 
 

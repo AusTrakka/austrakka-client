@@ -44,27 +44,30 @@ const ProjectOverview = () => {
   }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 
   async function getProject() {
-    // TODO: Get project details (/api/Projects/id) based on project id rather than session storage 
-    await getProjectDetails() 
-      .then((response) => response.json())
-      .then((response_data) => {
-        setProjectDetails(response_data.data)
-      })
-      .catch(error => {
-        console.log(error)
-        setIsOverviewError(true)
-      })
+    // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
+    const response = await getProjectDetails() 
+    if (response.Status == "Success") {
+      //setProjectDetails(response.Data)
+    }
+      // .then((response) => response.json())
+      // .then((response_data) => {
+      //   setProjectDetails(response_data.data)
+      // })
+      // .catch(error => {
+      //   console.log(error)
+      //   setIsOverviewError(true)
+      // })
 
-    await getTotalSamples()
-      .then((response) => {
-        const count: string = response.headers.get('X-Total-Count')!
-        setTotalSamples(parseInt(count))
-        return response.json()
-      })
-      .catch(error => {
-        console.log(error)
-        setIsOverviewError(true)
-      })
+    // await getTotalSamples()
+    //   .then((response) => {
+    //     const count: string = response.headers.get('X-Total-Count')!
+    //     setTotalSamples(parseInt(count))
+    //     return response.json()
+    //   })
+    //   .catch(error => {
+    //     console.log(error)
+    //     setIsOverviewError(true)
+    //   })
     
     setIsOverviewLoading(false)
     // TODO: Define new endpoint that provides the latest upload date from backend
@@ -77,43 +80,43 @@ const ProjectOverview = () => {
       "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
     })
     
-    await getSamples(searchParams.toString())
-      .then((response) => {
-        return response.json()
-      })
-      .then((response_data) => {
-        setProjectSamples(response_data)
-        setIsSamplesLoading(false)
-      })
-      .catch(error => {
-        console.log(error)
-        setIsSamplesLoading(false)
-        setIsSamplesError(true)
-      })
+    // await getSamples(searchParams.toString())
+    //   .then((response) => {
+    //     return response.json()
+    //   })
+    //   .then((response_data) => {
+    //     setProjectSamples(response_data)
+    //     setIsSamplesLoading(false)
+    //   })
+    //   .catch(error => {
+    //     console.log(error)
+    //     setIsSamplesLoading(false)
+    //     setIsSamplesError(true)
+    //   })
   }
   async function getSampleTableHeaders() {
     //Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
-      .then((response) => {
-        return response.json()
-      })
-      .then((response_data) => {
-        if(response_data.length > 1) {
-          const columnHeaderArray = Object.keys(response_data[0])
-          const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
-          columnHeaderArray.forEach(element => {
-            columnBuilder.push({ accessorKey: element, header: element, })
-          }); 
-          setSampleTableColumns(columnBuilder)
-        } else {
-          setIsSamplesLoading(false)
-        }
-      })
-      .catch(error => {
-        console.log(error)
-        setIsSamplesLoading(false)
-        setIsSamplesError(true)
-      })
+    // await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+    //   .then((response) => {
+    //     return response.json()
+    //   })
+    //   .then((response_data) => {
+    //     if(response_data.length > 1) {
+    //       const columnHeaderArray = Object.keys(response_data[0])
+    //       const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
+    //       columnHeaderArray.forEach(element => {
+    //         columnBuilder.push({ accessorKey: element, header: element, })
+    //       }); 
+    //       setSampleTableColumns(columnBuilder)
+    //     } else {
+    //       setIsSamplesLoading(false)
+    //     }
+    //   })
+    //   .catch(error => {
+    //     console.log(error)
+    //     setIsSamplesLoading(false)
+    //     setIsSamplesError(true)
+    //   })
   }
 
   const projectOverviewTabs: TabContentProps[] = [
