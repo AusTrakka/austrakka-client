@@ -82,7 +82,13 @@ const ProjectOverview = () => {
         return response.json()
       })
       .then((response_data) => {
-        setProjectSamples(response_data)
+        if (response_data.data !== null) {
+          setProjectSamples(response_data.data)
+        }
+        else {
+          console.error(response_data.messages)
+          setIsSamplesError(true)
+        } 
         setIsSamplesLoading(false)
       })
       .catch(error => {
@@ -98,8 +104,8 @@ const ProjectOverview = () => {
         return response.json()
       })
       .then((response_data) => {
-        if(response_data.length > 1) {
-          const columnHeaderArray = Object.keys(response_data[0])
+        if(response_data.data.length > 1) {
+          const columnHeaderArray = Object.keys(response_data.data[0])
           const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
           columnHeaderArray.forEach(element => {
             columnBuilder.push({ accessorKey: element, header: element, })
