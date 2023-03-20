@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react";
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png'
 import styles from "./MainMenuLayout.module.css"
-import { NavLink, useLocation, Link , Outlet } from 'react-router-dom'
+import { NavLink, useLocation, Link } from 'react-router-dom'
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
 import { AppBar, Box, Drawer,  IconButton, List, ListItem, Toolbar, Menu, MenuItem, Typography, Breadcrumbs } from "@mui/material"
 import MenuIcon from '@mui/icons-material/Menu';
 
+import { Outlet } from 'react-router-dom';
 import { LogoutButton } from "../Common/LogoutButton";
 
 
