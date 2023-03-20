@@ -1,5 +1,4 @@
-import * as React from 'react';
-import {memo} from 'react';
+import React, {createRef, useEffect, useState, memo} from 'react';
 import styles from './ProjectOverview.module.css'
 
 interface PlotsProps {

@@ -60,7 +60,7 @@ const MainMenuLayout = () => {
     setAnchor(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = (event: React.MouseEvent<HTMLElement>) => {
     setAnchor(null);
   };
 

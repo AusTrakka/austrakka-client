@@ -1,4 +1,4 @@
-import { Configuration } from '@azure/msal-browser'
+import { Configuration, LogLevel } from '@azure/msal-browser'
 
 export const msalConfig: Configuration = {
     auth: {

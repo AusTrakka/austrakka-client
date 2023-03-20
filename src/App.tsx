@@ -1,7 +1,7 @@
 import './App.css'
 import {Routes, Route, Navigate} from 'react-router-dom'
 import MainMenuLayout from './components/Layouts/MainMenuLayout'
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
 import ProjectsList from './components/ProjectsList/ProjectsList'
 import ProjectOverview from './components/ProjectOverview/ProjectOverview'
 import Upload from './components/Upload/Upload'

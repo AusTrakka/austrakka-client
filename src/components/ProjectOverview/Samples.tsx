@@ -1,5 +1,6 @@
-import { memo } from 'react';
-import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
+import React, { useEffect, useState, Dispatch, SetStateAction, memo, useMemo } from 'react';
+import MaterialReactTable, { MRT_PaginationState, MRT_SortingState, MRT_ColumnDef } from 'material-react-table';
+import { getSamples } from '../../utilities/resourceUtils';
 import styles from './ProjectOverview.module.css'
 import { ProjectSample } from '../../types/sample.interface';
 

@@ -1,5 +1,4 @@
-import * as React from 'react';
-import {useEffect, useState} from 'react';
+import React, {createRef, useEffect, useMemo, useState} from 'react';
 import { getSamples, getProjectDetails, getTotalSamples } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
@@ -15,7 +14,7 @@ const ProjectOverview = () => {
   const [isOverviewLoading, setIsOverviewLoading] = useState(true)
   const [isOverviewError, setIsOverviewError] = useState(false)
   const [projectDetails, setProjectDetails] = useState({description: ""})
-  const [lastUpload] = useState("")
+  const [lastUpload, setlastUpload] = useState("")
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([])
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
@@ -27,8 +26,8 @@ const ProjectOverview = () => {
   const [totalSamples, setTotalSamples] = useState(0)
   const [isSamplesError, setIsSamplesError] = useState(false)
   
-  const [isTreesLoading] = useState(true)
-  const [isPlotsLoading] = useState(true)
+  const [isTreesLoading, setIsTreesLoading] = useState(true)
+  const [isPlotsLoading, setIsPlotsLoading] = useState(true)
 
   useEffect(() => {
     getProject() //API calls
