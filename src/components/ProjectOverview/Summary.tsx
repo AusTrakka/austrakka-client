@@ -1,5 +1,5 @@
-import React, {createRef, useEffect, useState, memo} from 'react';
-import { Card, CardContent, Alert, AlertTitle, LinearProgress } from "@mui/material";
+import {memo} from 'react';
+import { Card, CardContent, Alert, AlertTitle } from "@mui/material";
 import styles from './ProjectOverview.module.css'
 
 interface SummaryProps {

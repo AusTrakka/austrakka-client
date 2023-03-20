@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { getToken } from "./authUtils"
 interface HTTPOptions {
     [key: string]: any

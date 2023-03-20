@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Tab, Tabs, Paper, LinearProgress } from "@mui/material";
+import * as React from 'react';
+import { Box, Tab, Tabs, LinearProgress } from "@mui/material";
 
 //// Types
 export interface TabContentProps {

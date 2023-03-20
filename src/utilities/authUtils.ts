@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { InteractionRequiredAuthError } from "@azure/msal-browser"
 import { msalInstance } from "../main";
-import { loginRequest, msalConfig } from "../config/authConfig"
 
 // Returns valid token or generates a new valid token
 export async function getToken() {

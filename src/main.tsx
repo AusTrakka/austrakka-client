@@ -1,5 +1,4 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
+import * as ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
@@ -18,7 +17,7 @@ msalInstance.addEventCallback((event: EventMessage) => {
     if (event.eventType === EventType.LOGIN_SUCCESS) {
       msalInstance.setActiveAccount(account)
     } else if (event.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
-      
+      // empty
     }
   }
 })
