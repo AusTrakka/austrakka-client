@@ -4,6 +4,14 @@ interface HTTPOptions {
     [key: string]: any
 }
 
+//TODO: Refine this type definition
+export interface ResponseObject {
+    status: string,
+    data?: any,
+    message?: string
+    headers?: any
+}
+
 export async function callAPI(url:string, method:string, requestData:object) {
     let base = import.meta.env.VITE_REACT_API_URL
     const token = await getToken()
@@ -22,14 +30,21 @@ export async function callAPI(url:string, method:string, requestData:object) {
     }
     //return await fetch(base + url, options)
     const apiRepsonse = await fetch(base + url, options)
-    .then((response) => response.json())
-    .then((response_data) => {
-        let resp = {"Status": "Success", "Data" : response_data.data}
-        return resp
+    .then((response) => 
+        response.json().then(data => ({
+            data: data,
+            headers: response.headers
+        })
+    ))
+    .then((resp) => {
+        if (resp.data !== null) {
+            return {"status": "success", "data" : resp.data.data, "headers": resp.headers}
+        } else {
+            return {"status": "error", "message" : resp.data.messages.ResponseMessage}
+        }
     })
     .catch(error => {
-        let resp = {"Status": "Error", "Message" : error}
-        return resp
+        return {"status": "error", "message" : error}
     })
     return apiRepsonse
 } 

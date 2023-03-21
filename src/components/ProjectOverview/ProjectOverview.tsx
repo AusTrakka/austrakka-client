@@ -8,6 +8,7 @@ import Plots from './Plots';
 import CustomTabs, { TabPanel } from '../Common/CustomTabs';
 import {TabContentProps} from '../Common/CustomTabs'
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
+import { ResponseObject } from '../../utilities/resourceUtils';
 
 const ProjectOverview = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -22,7 +23,7 @@ const ProjectOverview = () => {
     pageIndex: 0,
     pageSize: 50, 
   });
-  const [isSamplesLoading, setIsSamplesLoading] = useState(true)
+  const [isSamplesLoading, setIsSamplesLoading] = useState(false)
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([])
   const [totalSamples, setTotalSamples] = useState(0)
   const [isSamplesError, setIsSamplesError] = useState(false)
@@ -45,30 +46,19 @@ const ProjectOverview = () => {
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
-    const response = await getProjectDetails() 
-    if (response.Status == "Success") {
-      //setProjectDetails(response.Data)
+    const projectResponse: ResponseObject = await getProjectDetails() 
+    if (projectResponse.status == "success") {
+      setProjectDetails(projectResponse.data)
+    } else {
+      setIsOverviewError(true)
     }
-      // .then((response) => response.json())
-      // .then((response_data) => {
-      //   setProjectDetails(response_data.data)
-      // })
-      // .catch(error => {
-      //   console.log(error)
-      //   setIsOverviewError(true)
-      // })
-
-    // await getTotalSamples()
-    //   .then((response) => {
-    //     const count: string = response.headers.get('X-Total-Count')!
-    //     setTotalSamples(parseInt(count))
-    //     return response.json()
-    //   })
-    //   .catch(error => {
-    //     console.log(error)
-    //     setIsOverviewError(true)
-    //   })
-    
+    const totalSamplesResponse: ResponseObject = await getTotalSamples() 
+    if (totalSamplesResponse.status == "success") {
+      const count: string = totalSamplesResponse.headers.get('X-Total-Count')!
+      setTotalSamples(parseInt(count))
+    } else {
+      setIsOverviewError(true)
+    }
     setIsOverviewLoading(false)
     // TODO: Define new endpoint that provides the latest upload date from backend
   }
@@ -79,44 +69,35 @@ const ProjectOverview = () => {
       "PageSize" : (samplesPagination.pageSize).toString(),
       "groupContext" : `${sessionStorage.getItem("selectedProjectMemberGroupId")}`
     })
-    
-    // await getSamples(searchParams.toString())
-    //   .then((response) => {
-    //     return response.json()
-    //   })
-    //   .then((response_data) => {
-    //     setProjectSamples(response_data)
-    //     setIsSamplesLoading(false)
-    //   })
-    //   .catch(error => {
-    //     console.log(error)
-    //     setIsSamplesLoading(false)
-    //     setIsSamplesError(true)
-    //   })
+    const samplesResponse: ResponseObject = await getSamples(searchParams.toString())
+    if (samplesResponse.status == "success") {
+      setProjectSamples(samplesResponse.data) 
+      setIsSamplesLoading(false)     
+    } else {
+      setIsSamplesLoading(false)
+      setIsSamplesError(true)
+    }
   }
   async function getSampleTableHeaders() {
     //Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    // await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
-    //   .then((response) => {
-    //     return response.json()
-    //   })
-    //   .then((response_data) => {
-    //     if(response_data.length > 1) {
-    //       const columnHeaderArray = Object.keys(response_data[0])
-    //       const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
-    //       columnHeaderArray.forEach(element => {
-    //         columnBuilder.push({ accessorKey: element, header: element, })
-    //       }); 
-    //       setSampleTableColumns(columnBuilder)
-    //     } else {
-    //       setIsSamplesLoading(false)
-    //     }
-    //   })
-    //   .catch(error => {
-    //     console.log(error)
-    //     setIsSamplesLoading(false)
-    //     setIsSamplesError(true)
-    //   })
+    const samplesResponse: ResponseObject = await getSamples(`groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`)
+    if (samplesResponse.status == "success") {
+      if(samplesResponse.data.length > 1) {
+        const columnHeaderArray = Object.keys(samplesResponse.data[0])
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[]=[]
+        columnHeaderArray.forEach(element => {
+          columnBuilder.push({ accessorKey: element, header: element, })
+        }); 
+        setSampleTableColumns(columnBuilder)
+        setIsSamplesLoading(false)
+      } else {
+        setIsSamplesLoading(false)
+        setIsSamplesError(true)
+      }
+    } else {
+      setIsSamplesLoading(false)
+      setIsSamplesError(true)
+    }
   }
 
   const projectOverviewTabs: TabContentProps[] = [

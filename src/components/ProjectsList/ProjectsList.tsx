@@ -2,7 +2,7 @@ import { useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom'
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
-import { getProjectList } from '../../utilities/resourceUtils';
+import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
 
 
 const ProjectsList = () => {
@@ -20,18 +20,7 @@ const ProjectsList = () => {
   ];
   
   useEffect(() => {
-    getProjectList()
-    .then((response) => response.json())
-    .then((response_data) => {
-      setProjectsList(response_data);
-      setIsError(false)
-      setIsLoading(false)
-    })
-    .catch(error => {
-      console.error('There was an error retrieving project data!', error);
-      setIsError(true)
-      setIsLoading(false)
-    });
+    getProject()
   }, [])
 
   useEffect(() => {
@@ -43,6 +32,17 @@ const ProjectsList = () => {
       navigate("/projects/details")
     }
   }, [selectedProject])
+
+  async function getProject() {
+    const projectResponse: ResponseObject = await getProjectList()
+    if (projectResponse.status == "success") {
+      setProjectsList([]) // setProjectsList(response.data)
+      setIsLoading(false)
+    } else {
+      setIsError(true)
+      setIsLoading(false)
+    }
+  }
 
   const rowClickHandler = (row: any) => {
     let selectedProject = row.original
