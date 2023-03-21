@@ -27,8 +27,8 @@ export default defineConfig({
       {
           apply: 'build',
           ...eslint({
-              failOnWarning: false, // Move this to true once all linting issues have been resolved
-              failOnError: false, // Move this to true once all linting issues have been resolved
+              failOnWarning: false,
+              failOnError: false,
           })
       }
   ]
