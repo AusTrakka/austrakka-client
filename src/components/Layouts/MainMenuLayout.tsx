@@ -1,59 +1,59 @@
-
-import { useEffect, useState } from "react";
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png'
-import styles from "./MainMenuLayout.module.css"
-import { NavLink, useLocation, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import {
+  NavLink, useLocation, Link, Outlet,
+} from 'react-router-dom';
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
-import { AppBar, Box, Drawer,  IconButton, List, ListItem, Toolbar, Menu, MenuItem, Typography, Breadcrumbs } from "@mui/material"
+import {
+  AppBar, Box, Drawer, IconButton, List, ListItem, Toolbar, Menu, MenuItem, Typography, Breadcrumbs,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
-import { Outlet } from 'react-router-dom';
-import { LogoutButton } from "../Common/LogoutButton";
-
+import styles from './MainMenuLayout.module.css';
+import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png';
+import { LogoutButton } from '../Common/LogoutButton';
 
 const settings = [
   {
-    "title" : "Help",
+    title: 'Help',
   },
   {
-    "title" : "Logout",
-  }
-]
+    title: 'Logout',
+  },
+];
 
 const pages = [
   {
-    "title" : "Projects",
-    "link" : "/projects",
-    "icon" : <><Inventory /></>
+    title: 'Projects',
+    link: '/projects',
+    icon: <Inventory />,
   },
   {
-    "title" : "Upload",
-    "link" : "/upload",
-    "icon" : <><Upload /></>
-  }
-]
+    title: 'Upload',
+    link: '/upload',
+    icon: <Upload />,
+  },
+];
 
-const MainMenuLayout = () => {
-
-  const [pageStyling, updatePageStyling] = useState("pagePadded")
+function MainMenuLayout() {
+  const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const breadcrumbNameMap: { [key: string]: any } = {
     '/projects': 'Projects',
-    '/projects/details': sessionStorage.getItem("selectedProjectName"),
+    '/projects/details': sessionStorage.getItem('selectedProjectName'),
     '/upload': 'Upload',
   };
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  useEffect(()=> {
-  })
+  useEffect(() => {
+  });
 
   const handlePadding = (drawer: boolean | undefined) => {
     if (drawer === true) {
-      updatePageStyling("pagePadded")
+      updatePageStyling('pagePadded');
     } else {
-      updatePageStyling("page")
+      updatePageStyling('page');
     }
   };
 
@@ -67,25 +67,25 @@ const MainMenuLayout = () => {
 
   const handleDrawer = () => {
     setDrawer(!drawer);
-    handlePadding(!drawer)
-    };
+    handlePadding(!drawer);
+  };
 
-  return(
+  return (
     <>
-      <Box sx={{display: "flex"}}>
+      <Box sx={{ display: 'flex' }}>
         <AppBar className={styles.appbar}>
           <Toolbar className={styles.toolbar}>
             <IconButton
-                onClick = {() => handleDrawer()} 
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu-toggle"
+              onClick={() => handleDrawer()}
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu-toggle"
             >
-              <MenuIcon/>
+              <MenuIcon />
             </IconButton>
             <div className={styles.logocontainer}>
-              <img src={AusTrakkaLogo} alt="logo" className={styles.logo}/>
+              <img src={AusTrakkaLogo} alt="logo" className={styles.logo} />
             </div>
             <LogoutButton />
 
@@ -99,75 +99,82 @@ const MainMenuLayout = () => {
             >
               <AccountCircle />
             </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchor}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchor)}
-                onClose={handleMenuClose}
-              >
-                {settings.map((setting) =>(
-                  <MenuItem key={setting.title} onClick={handleMenuClose}>{setting.title}</MenuItem>
-                ))}
-              </Menu>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchor}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchor)}
+              onClose={handleMenuClose}
+            >
+              {settings.map((setting) => (
+                <MenuItem key={setting.title} onClick={handleMenuClose}>{setting.title}</MenuItem>
+              ))}
+            </Menu>
           </Toolbar>
         </AppBar>
-        <Drawer 
-          open={drawer} 
+        <Drawer
+          open={drawer}
           variant="persistent"
 
           className={styles.drawer}
           classes={{
             paper: styles.drawerpaper,
-            docked: styles.drawer
+            docked: styles.drawer,
           }}
         >
-          <Toolbar /> {/*For spacing*/}
-          <List className={styles.pagelist} >
-            {pages.map((page) =>(
+          <Toolbar />
+          {' '}
+          {/* For spacing */}
+          <List className={styles.pagelist}>
+            {pages.map((page) => (
               <ListItem key={page.title}>
                 <NavLink to={page.link}>
-                {page.icon} &nbsp; {page.title}
+                  {page.icon}
+                  {' '}
+&nbsp;
+                  {page.title}
                 </NavLink>
               </ListItem>
             ))}
           </List>
         </Drawer>
-        <Box sx={{flexGrow: 1}}>
-          <Toolbar/> {/*For spacing*/}
+        <Box sx={{ flexGrow: 1 }}>
+          <Toolbar />
+          {' '}
+          {/* For spacing */}
         </Box>
       </Box>
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">
-              <Breadcrumbs aria-label="breadcrumb">
-                <Link color="inherit" to="/">
-                  Home
-                </Link>
-                {pathnames.map((value, index) => {
-                  const last = index === pathnames.length - 1;
-                  const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link color="inherit" to="/">
+                Home
+              </Link>
+              {pathnames.map((value, index) => {
+                const last = index === pathnames.length - 1;
+                const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 
-                  return last ? (
-                    <Typography color="text.primary" key={to}>
-                      {breadcrumbNameMap[to]}
-                    </Typography>
-                  ) : (
-                    <Link color="inherit" to={to} key={to}>
-                      {breadcrumbNameMap[to]}
-                    </Link>
-                  );
-                })}
-              </Breadcrumbs>
-            </div>
+                return last ? (
+                  <Typography color="text.primary" key={to}>
+                    {breadcrumbNameMap[to]}
+                  </Typography>
+                ) : (
+                  <Link color="inherit" to={to} key={to}>
+                    {breadcrumbNameMap[to]}
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+          </div>
         </div>
         {pathnames.map((value, index) => {
           const last = index === pathnames.length - 1;
@@ -177,12 +184,12 @@ const MainMenuLayout = () => {
             <Typography className="pageTitle" key={to}>
               {breadcrumbNameMap[to]}
             </Typography>
-          ) : null
+          ) : null;
         })}
         <Outlet />
       </div>
     </>
   );
-};
+}
 
 export default MainMenuLayout;

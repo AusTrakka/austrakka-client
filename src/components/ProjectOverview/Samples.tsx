@@ -1,7 +1,9 @@
-import React, { useEffect, useState, Dispatch, SetStateAction, memo, useMemo } from 'react';
+import React, {
+  useEffect, useState, Dispatch, SetStateAction, memo, useMemo,
+} from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_SortingState, MRT_ColumnDef } from 'material-react-table';
 import { getSamples } from '../../utilities/resourceUtils';
-import styles from './ProjectOverview.module.css'
+import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 
 // TODO: move sample list state to parent component (headers and data)
@@ -13,19 +15,22 @@ interface SamplesProps {
   sampleTableColumns: MRT_ColumnDef<{}>[],
   isSamplesError: boolean,
   samplesPagination: MRT_PaginationState,
-  setSamplesPagination: any, //TODO: fix
+  setSamplesPagination: any, // TODO: fix
 }
 
-const Samples = (props: SamplesProps) =>  {
-  const { sampleList, totalSamples, isSamplesLoading, sampleTableColumns, isSamplesError, samplesPagination, setSamplesPagination } = props;
+function Samples(props: SamplesProps) {
+  const {
+    sampleList, totalSamples, isSamplesLoading, sampleTableColumns, isSamplesError, samplesPagination, setSamplesPagination,
+  } = props;
   // const columns = useMemo<MRT_ColumnDef[]>(
   //   () => sampleTableColumns,
   //   [],
   // );
   return (
     <>
-     <p className={styles.h1}>Samples</p><br />
-      <MaterialReactTable 
+      <p className={styles.h1}>Samples</p>
+      <br />
+      <MaterialReactTable
         columns={sampleTableColumns}
         data={sampleList}
         enableStickyHeader
@@ -35,9 +40,9 @@ const Samples = (props: SamplesProps) =>  {
         muiToolbarAlertBannerProps={
           isSamplesError
             ? {
-                color: 'error',
-                children: 'Error loading data',
-              }
+              color: 'error',
+              children: 'Error loading data',
+            }
             : undefined
         }
         // muiTableBodyProps={{
@@ -51,21 +56,21 @@ const Samples = (props: SamplesProps) =>  {
         muiLinearProgressProps={({ isTopToolbar }) => ({
           color: 'secondary',
           sx: { display: isTopToolbar ? 'block' : 'none' },
-        })} 
-        muiTableContainerProps={{ sx: { maxHeight: '75vh'} }}
+        })}
+        muiTableContainerProps={{ sx: { maxHeight: '75vh' } }}
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000, 2000, 3000],
         }}
         onPaginationChange={setSamplesPagination}
-        state={{ 
+        state={{
           pagination: samplesPagination,
           isLoading: isSamplesLoading,
-          showAlertBanner: isSamplesError, 
+          showAlertBanner: isSamplesError,
         }}
-        initialState={{ density: 'compact'}}
+        initialState={{ density: 'compact' }}
         rowCount={totalSamples}
         // Layout props
-        muiTableProps={{sx: {width: "auto", tableLayout: "auto", }}}
+        muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
         // Column manipulation
         enableColumnResizing
         enableColumnDragging
@@ -73,11 +78,11 @@ const Samples = (props: SamplesProps) =>  {
         // Improving performance
         enableDensityToggle={false}
         enableFullScreenToggle={false}
-        //memoMode="cells"
+        // memoMode="cells"
         enableRowVirtualization
         enableColumnVirtualization
       />
     </>
-  )
+  );
 }
 export default memo(Samples);
