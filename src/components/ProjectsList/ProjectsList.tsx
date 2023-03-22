@@ -1,8 +1,22 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
+import isoDateLocalDate from '../../utilities/helperUtils';
 import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
+
+type Project = {
+  abbreviation: string,
+  name: string,
+  description: string,
+  created: string
+};
+
+const columns:MRT_ColumnDef<Project>[] = [
+  { header: 'Abbreviation', accessorKey: 'abbreviation' },
+  { header: 'Name', accessorKey: 'name' },
+  { header: 'Description', accessorKey: 'description' },
+  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+];
 
 function ProjectsList() {
   const [projectsList, setProjectsList] = useState([]);
@@ -11,12 +25,17 @@ function ProjectsList() {
   const [selectedProject, setSelectedProject] = useState({});
   const navigate = useNavigate();
 
-  const columns:MRT_ColumnDef[] = [
-    { header: 'Abbreviation', accessorKey: 'abbreviation' },
-    { header: 'Name', accessorKey: 'name' },
-    { header: 'Description', accessorKey: 'description' },
-    { header: 'Created', accessorKey: 'created', Cell: ({ cell }) => <div>{isoDateLocalDate(cell)}</div> },
-  ];
+  async function getProject() {
+    const projectResponse: ResponseObject = await getProjectList();
+    if (projectResponse.status === 'success') {
+      // setProjectsList([]);
+      setProjectsList(projectResponse.data);
+      setIsLoading(false);
+    } else {
+      setIsError(true);
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
     getProject();
@@ -30,22 +49,11 @@ function ProjectsList() {
       sessionStorage.setItem('selectedProjectId', projectId);
       navigate('/projects/details');
     }
-  }, [selectedProject]);
-
-  async function getProject() {
-    const projectResponse: ResponseObject = await getProjectList();
-    if (projectResponse.status == 'success') {
-      setProjectsList([]); // setProjectsList(response.data)
-      setIsLoading(false);
-    } else {
-      setIsError(true);
-      setIsLoading(false);
-    }
-  }
+  }, [selectedProject, navigate]);
 
   const rowClickHandler = (row: any) => {
-    const selectedProject = row.original;
-    setSelectedProject(selectedProject);
+    const selectedProjectRow = row.original;
+    setSelectedProject(selectedProjectRow);
   };
 
   return (
@@ -74,13 +82,11 @@ function ProjectsList() {
         color: 'secondary',
         sx: { display: isTopToolbar ? 'block' : 'none' },
       })}
-        // Layout props
       muiTableProps={{
         sx: {
           width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
         },
       }}
-        // Row click handler
       muiTableBodyRowProps={({ row }) => ({
         onClick: () => rowClickHandler(row),
       })}

@@ -1,5 +1,5 @@
 import React, {
-  createRef, useEffect, useMemo, useState,
+  useEffect, useState,
 } from 'react';
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import {
@@ -18,7 +18,7 @@ function ProjectOverview() {
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
   const [isOverviewError, setIsOverviewError] = useState(false);
   const [projectDetails, setProjectDetails] = useState({ description: '' });
-  const [lastUpload, setlastUpload] = useState('');
+  const [lastUpload] = useState('');
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
@@ -29,35 +29,21 @@ function ProjectOverview() {
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState(false);
-
-  const [isTreesLoading, setIsTreesLoading] = useState(true);
-  const [isPlotsLoading, setIsPlotsLoading] = useState(true);
-
-  useEffect(() => {
-    getProject(); // API calls
-    getSampleTableHeaders();
-  }, []);
-
-  useEffect(() => {
-    // Only get samples when columns are already populated
-    if (sampleTableColumns.length > 0) {
-      setIsSamplesLoading(true);
-      getSamplesList();
-    }
-  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
+  const [isTreesLoading] = useState(true);
+  const [isPlotsLoading] = useState(true);
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
     const projectResponse: ResponseObject = await getProjectDetails();
-    if (projectResponse.status == 'success') {
+    if (projectResponse.status === 'success') {
       setProjectDetails(projectResponse.data);
     } else {
       setIsOverviewError(true);
     }
     const totalSamplesResponse: ResponseObject = await getTotalSamples();
-    if (totalSamplesResponse.status == 'success') {
-      const count: string = totalSamplesResponse.headers.get('X-Total-Count')!;
-      setTotalSamples(parseInt(count));
+    if (totalSamplesResponse.status === 'success') {
+      const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
+      setTotalSamples(+count);
     } else {
       setIsOverviewError(true);
     }
@@ -65,28 +51,13 @@ function ProjectOverview() {
     // TODO: Define new endpoint that provides the latest upload date from backend
   }
 
-  async function getSamplesList() {
-    const searchParams = new URLSearchParams({
-      Page: (samplesPagination.pageIndex + 1).toString(),
-      PageSize: (samplesPagination.pageSize).toString(),
-      groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
-    });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
-    if (samplesResponse.status == 'success') {
-      setProjectSamples(samplesResponse.data);
-      setIsSamplesLoading(false);
-    } else {
-      setIsSamplesLoading(false);
-      setIsSamplesError(true);
-    }
-  }
   async function getSampleTableHeaders() {
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
     const samplesResponse: ResponseObject = await getSamples(`groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}`);
-    if (samplesResponse.status == 'success') {
+    if (samplesResponse.status === 'success') {
       if (samplesResponse.data.length > 1) {
         const columnHeaderArray = Object.keys(samplesResponse.data[0]);
-        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> | { accessorKey: string; header: string; }[] = [];
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
         columnHeaderArray.forEach((element) => {
           columnBuilder.push({ accessorKey: element, header: element });
         });
@@ -101,6 +72,34 @@ function ProjectOverview() {
       setIsSamplesError(true);
     }
   }
+
+  useEffect(() => {
+    getProject(); // API calls
+    getSampleTableHeaders();
+  }, []);
+
+  useEffect(() => {
+    // Only get samples when columns are already populated
+    async function getSamplesList() {
+      const searchParams = new URLSearchParams({
+        Page: (samplesPagination.pageIndex + 1).toString(),
+        PageSize: (samplesPagination.pageSize).toString(),
+        groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+      });
+      const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+      if (samplesResponse.status === 'success') {
+        setProjectSamples(samplesResponse.data);
+        setIsSamplesLoading(false);
+      } else {
+        setIsSamplesLoading(false);
+        setIsSamplesError(true);
+      }
+    }
+    if (sampleTableColumns.length > 0) {
+      setIsSamplesLoading(true);
+      getSamplesList();
+    }
+  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 
   const projectOverviewTabs: TabContentProps[] = [
     {
@@ -125,7 +124,13 @@ function ProjectOverview() {
     <>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
       <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
-        <Summary totalSamples={totalSamples} lastUpload={lastUpload} projectDesc={projectDetails.description} isOverviewLoading={isOverviewLoading} isOverviewError={isOverviewError} />
+        <Summary
+          totalSamples={totalSamples}
+          lastUpload={lastUpload}
+          projectDesc={projectDetails.description}
+          // isOverviewLoading={isOverviewLoading}
+          isOverviewError={isOverviewError}
+        />
       </TabPanel>
       <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
         <Samples

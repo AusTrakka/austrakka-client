@@ -1,6 +1,4 @@
-import React, {
-  createRef, useEffect, useState, memo,
-} from 'react';
+import React, { memo } from 'react';
 import styles from './ProjectOverview.module.css';
 
 interface TreesProps {
@@ -8,8 +6,12 @@ interface TreesProps {
 }
 
 function TreeList(props: TreesProps) {
+  const { isTreesLoading } = props;
   return (
-    <p className={styles.h1}>Trees</p>
+    <>
+      <p className={styles.h1}>Trees</p>
+      {isTreesLoading}
+    </>
   );
 }
 export default memo(TreeList);

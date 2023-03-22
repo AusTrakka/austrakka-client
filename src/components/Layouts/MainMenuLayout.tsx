@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
@@ -10,7 +10,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 
 import styles from './MainMenuLayout.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png';
-import { LogoutButton } from '../Common/LogoutButton';
+import LogoutButton from '../Common/LogoutButton';
 
 const settings = [
   {
@@ -49,8 +49,8 @@ function MainMenuLayout() {
   useEffect(() => {
   });
 
-  const handlePadding = (drawer: boolean | undefined) => {
-    if (drawer === true) {
+  const handlePadding = (drawerState: boolean | undefined) => {
+    if (drawerState === true) {
       updatePageStyling('pagePadded');
     } else {
       updatePageStyling('page');
@@ -61,7 +61,7 @@ function MainMenuLayout() {
     setAnchor(event.currentTarget);
   };
 
-  const handleMenuClose = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuClose = () => {
     setAnchor(null);
   };
 
@@ -123,7 +123,6 @@ function MainMenuLayout() {
         <Drawer
           open={drawer}
           variant="persistent"
-
           className={styles.drawer}
           classes={{
             paper: styles.drawerpaper,

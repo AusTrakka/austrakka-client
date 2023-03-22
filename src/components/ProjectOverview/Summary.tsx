@@ -1,8 +1,6 @@
-import React, {
-  createRef, useEffect, useState, memo,
-} from 'react';
+import React, { memo } from 'react';
 import {
-  Card, CardContent, Alert, AlertTitle, LinearProgress,
+  Card, CardContent, Alert, AlertTitle,
 } from '@mui/material';
 import styles from './ProjectOverview.module.css';
 
@@ -10,7 +8,7 @@ interface SummaryProps {
   projectDesc: string,
   totalSamples: number,
   lastUpload: string,
-  isOverviewLoading: boolean,
+  // isOverviewLoading: boolean,
   isOverviewError: boolean
 }
 
@@ -19,7 +17,7 @@ function Summary(props: SummaryProps) {
     projectDesc, totalSamples, lastUpload, isOverviewError,
   } = props;
   return (
-    <>
+    <div>
       { isOverviewError
         ? (
           <Alert severity="error">
@@ -48,7 +46,7 @@ function Summary(props: SummaryProps) {
             </div>
           </>
         )}
-    </>
+    </div>
   );
 }
 export default memo(Summary);

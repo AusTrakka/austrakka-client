@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { getToken } from './authUtils';
+import getToken from './authUtils';
 
 interface HTTPOptions {
   [key: string]: any
@@ -9,11 +8,11 @@ interface HTTPOptions {
 export interface ResponseObject {
   status: string,
   data?: any,
-  message?: string
-  headers?: any
+  message?: string,
+  headers?: Headers
 }
 
-export async function callAPI(url:string, method:string, requestData:object) {
+async function callAPI(url:string, method:string, requestData:object) {
   const base = import.meta.env.VITE_REACT_API_URL;
   const token = await getToken();
 
@@ -37,7 +36,7 @@ export async function callAPI(url:string, method:string, requestData:object) {
     })))
     .then((resp) => {
       if (resp.data !== null) {
-        return { status: 'success', data: resp.data.data, headers: resp.headers };
+        return { status: 'success', data: resp.data, headers: resp.headers };
       }
       return { status: 'error', message: resp.data.messages.ResponseMessage };
     })
@@ -49,9 +48,5 @@ export async function callAPI(url:string, method:string, requestData:object) {
 
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
 export const getProjectDetails = () => callAPI(`/api/Projects/${sessionStorage.getItem('selectedProjectId')}`, 'GET', {});
-
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
-// return callAPI(`/api/Submissions/x${urlParams}`, 'GET', {})
-// return callAPI(`/api/Submissions/x?includeall=False&groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`, 'GET', {})
-
 export const getTotalSamples = () => callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}&pageSize=1&page=1`, 'GET', {});

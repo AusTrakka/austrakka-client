@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Box, Tab, Tabs, Paper, LinearProgress,
+  Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
 
 /// / Types
@@ -9,8 +9,8 @@ export interface TabContentProps {
   title: string
 }
 interface TabPanelProps {
-  children?: React.ReactNode;
-  tabLoader? : boolean,
+  children: React.ReactNode;
+  tabLoader : boolean,
   index: number;
   value: number;
 }
@@ -21,16 +21,9 @@ interface CustomTabsProps {
 }
 /// /
 
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
 export function TabPanel(props: TabPanelProps) {
   const {
-    children, tabLoader, value, index, ...other
+    children, tabLoader, value, index,
   } = props;
 
   return (
@@ -39,16 +32,15 @@ export function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      {...other}
     >
       { tabLoader ? <LinearProgress color="secondary" /> : (
-        <>
+        <div>
           {value === index && (
           <Box sx={{ p: 3 }}>
             {children}
           </Box>
           )}
-        </>
+        </div>
       )}
     </div>
   );
@@ -64,7 +56,6 @@ export default function CustomTabs(props: CustomTabsProps) {
       key={tab.index}
       label={tab.title}
       sx={{ textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
-      {...a11yProps(tab.index)}
       disableRipple
     />
   ));

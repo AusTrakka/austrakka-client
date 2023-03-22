@@ -1,8 +1,5 @@
-import React, {
-  useEffect, useState, Dispatch, SetStateAction, memo, useMemo,
-} from 'react';
-import MaterialReactTable, { MRT_PaginationState, MRT_SortingState, MRT_ColumnDef } from 'material-react-table';
-import { getSamples } from '../../utilities/resourceUtils';
+import React, { memo } from 'react';
+import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 
@@ -20,12 +17,14 @@ interface SamplesProps {
 
 function Samples(props: SamplesProps) {
   const {
-    sampleList, totalSamples, isSamplesLoading, sampleTableColumns, isSamplesError, samplesPagination, setSamplesPagination,
+    sampleList,
+    totalSamples,
+    isSamplesLoading,
+    sampleTableColumns,
+    isSamplesError,
+    samplesPagination,
+    setSamplesPagination,
   } = props;
-  // const columns = useMemo<MRT_ColumnDef[]>(
-  //   () => sampleTableColumns,
-  //   [],
-  // );
   return (
     <>
       <p className={styles.h1}>Samples</p>

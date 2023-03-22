@@ -1,7 +1,8 @@
+import React from 'react';
 import { useMsal } from '@azure/msal-react';
 import { Button } from '@mui/material';
 
-export function LogoutButton() {
+export default function LogoutButton() {
   const { instance } = useMsal();
   const logoutRequest = {
     account: instance.getActiveAccount(), // Bypasses the account selection screen on sign out

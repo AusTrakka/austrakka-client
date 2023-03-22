@@ -1,13 +1,14 @@
+import React from 'react';
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
+import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import { ThemeProvider } from '@mui/material';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectsList from './components/ProjectsList/ProjectsList';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
 import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
-import { theme } from './assets/themes/theme';
+import theme from './assets/themes/theme';
 
 function App() {
   return (
