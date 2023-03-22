@@ -28,8 +28,8 @@ function ProjectsList() {
   async function getProject() {
     const projectResponse: ResponseObject = await getProjectList();
     if (projectResponse.status === 'success') {
-      // setProjectsList([]);
-      setProjectsList(projectResponse.data);
+      setProjectsList([]);
+      // setProjectsList(projectResponse.data);
       setIsLoading(false);
     } else {
       setIsError(true);

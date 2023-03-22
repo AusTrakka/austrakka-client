@@ -36,7 +36,7 @@ async function callAPI(url:string, method:string, requestData:object) {
     })))
     .then((resp) => {
       if (resp.data !== null) {
-        return { status: 'success', data: resp.data, headers: resp.headers };
+        return { status: 'success', data: resp.data.data, headers: resp.headers };
       }
       return { status: 'error', message: resp.data.messages.ResponseMessage };
     })
