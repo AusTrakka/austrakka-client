@@ -12,10 +12,11 @@ msalInstance.addEventCallback((event: EventMessage) => {
     const { account } = payload;
     if (event.eventType === EventType.LOGIN_SUCCESS) {
       msalInstance.setActiveAccount(account);
-    } else if (event.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
-      // TODO: add logout redirect
-      console.log('logout user now');
     }
+    // TODO: add logout redirect
+    // else if (event.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
+    //   console.log('logout user now');
+    // }
   }
 });
 
@@ -35,12 +36,13 @@ export default async function getToken() {
         if (error instanceof InteractionRequiredAuthError) {
           msalInstance
             .acquireTokenPopup(accessTokenRequest)
-            .then((accessTokenResponse) => accessTokenResponse.accessToken)
-            .catch((tokenError) => {
-              console.log(tokenError);
-            });
+            .then((accessTokenResponse) => accessTokenResponse.accessToken);
+          // TODO: Catch token request errors
+          // .catch((tokenError) => {
+          //   console.log(tokenError);
+          // });
         }
-        console.log(error);
+        // console.log(error);
         return null;
       });
     return accessToken;
