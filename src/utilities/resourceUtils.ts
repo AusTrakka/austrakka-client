@@ -14,7 +14,6 @@ export async function callAPI(url:string, method:string, requestData:object) {
             "Accept": 'application/json',
             "Authorization" :  `Bearer ${token}`,
             "Access-Control-Expose-Headers": "*",
-            "Ocp-Apim-Subscription-Key": import.meta.env.VITE_SUBSCRIPTION_KEY
         }
     }
     if(method !== "GET") {
