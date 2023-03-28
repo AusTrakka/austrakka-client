@@ -1,10 +1,10 @@
 
-import { useState } from "react";
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_logo_white.png'
+import { useEffect, useState } from "react";
+import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png'
 import styles from "./MainMenuLayout.module.css"
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation, Link } from 'react-router-dom'
 import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
-import { AppBar, Box, Button, CssBaseline, Drawer, Icon, IconButton, List, ListItem, Toolbar, Menu, MenuItem } from "@mui/material"
+import { AppBar, Box, Drawer,  IconButton, List, ListItem, Toolbar, Menu, MenuItem, Typography, Breadcrumbs } from "@mui/material"
 import MenuIcon from '@mui/icons-material/Menu';
 
 import { Outlet } from 'react-router-dom';
@@ -33,14 +33,21 @@ const pages = [
   }
 ]
 
-interface FuncProps {
-  handlePadding(arg: boolean): void;
-}
-
-
 const MainMenuLayout = () => {
 
   const [pageStyling, updatePageStyling] = useState("pagePadded")
+  const [drawer, setDrawer] = useState(true);
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const breadcrumbNameMap: { [key: string]: any } = {
+    '/projects': 'Projects',
+    '/projects/details': sessionStorage.getItem("selectedProjectName"),
+    '/upload': 'Upload',
+  };
+  const location = useLocation();
+  const pathnames = location.pathname.split('/').filter((x) => x);
+
+  useEffect(()=> {
+  })
 
   const handlePadding = (drawer: boolean | undefined) => {
     if (drawer === true) {
@@ -49,9 +56,6 @@ const MainMenuLayout = () => {
       updatePageStyling("page")
     }
   };
-
-  const [drawer, setDrawer] = useState(true);
-  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchor(event.currentTarget);
@@ -141,9 +145,41 @@ const MainMenuLayout = () => {
           <Toolbar/> {/*For spacing*/}
         </Box>
       </Box>
-
       <div className={pageStyling}>
-        <Outlet/>
+        <div className="pageHeader">
+          <div className="breadcrumbs">
+              <Breadcrumbs aria-label="breadcrumb">
+                <Link color="inherit" to="/">
+                  Home
+                </Link>
+                {pathnames.map((value, index) => {
+                  const last = index === pathnames.length - 1;
+                  const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+
+                  return last ? (
+                    <Typography color="text.primary" key={to}>
+                      {breadcrumbNameMap[to]}
+                    </Typography>
+                  ) : (
+                    <Link color="inherit" to={to} key={to}>
+                      {breadcrumbNameMap[to]}
+                    </Link>
+                  );
+                })}
+              </Breadcrumbs>
+            </div>
+        </div>
+        {pathnames.map((value, index) => {
+          const last = index === pathnames.length - 1;
+          const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+
+          return last ? (
+            <Typography className="pageTitle" key={to}>
+              {breadcrumbNameMap[to]}
+            </Typography>
+          ) : null
+        })}
+        <Outlet />
       </div>
     </>
   );
