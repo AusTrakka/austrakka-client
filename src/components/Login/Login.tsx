@@ -11,15 +11,15 @@ function LoginButton() {
   const [loginError, setLoginError] = useState(false);
 
   const handleLogin = (loginType: string) => {
-    if (loginType === 'popup') {
-      instance.loginPopup(loginRequest).catch(() => {
+    if (loginType === 'redirect') {
+      instance.loginRedirect(loginRequest).catch(() => {
         setLoginError(true);
       });
     }
   };
   return (
     <>
-      <Button variant="contained" onClick={() => handleLogin('popup')}>Log in</Button>
+      <Button variant="contained" onClick={() => handleLogin('redirect')}>Log in</Button>
       { loginError
         ? (
           <Alert severity="error" sx={{ m: 2, textAlign: 'left' }}>

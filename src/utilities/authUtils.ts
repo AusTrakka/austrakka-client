@@ -21,7 +21,7 @@ msalInstance.addEventCallback((event: EventMessage) => {
 });
 
 // Returns valid token or generates a new valid token
-export default async function getToken() {
+export async function getToken() {
   const currentAccount = msalInstance.getActiveAccount();
 
   if (currentAccount) {
@@ -35,8 +35,8 @@ export default async function getToken() {
       .catch((error) => {
         if (error instanceof InteractionRequiredAuthError) {
           msalInstance
-            .acquireTokenPopup(accessTokenRequest)
-            .then((accessTokenResponse) => accessTokenResponse.accessToken);
+            .acquireTokenRedirect(accessTokenRequest);
+          //  .then((accessTokenResponse) => accessTokenResponse);
           // TODO: Catch token request errors
           // .catch((tokenError) => {
           //   console.log(tokenError);

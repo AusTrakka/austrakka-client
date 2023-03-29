@@ -10,11 +10,11 @@ export default function LogoutButton() {
     mainWindowRedirectUri: '/',
   };
   const handleLogout = (loginType: string) => {
-    if (loginType === 'popup') {
-      instance.logoutPopup(logoutRequest);
+    if (loginType === 'redirect') {
+      instance.logoutRedirect(logoutRequest);
     }
   };
   return (
-    <Button variant="contained" color="secondary" onClick={() => handleLogout('popup')}>Logout</Button>
+    <Button variant="contained" color="secondary" onClick={() => handleLogout('redirect')}>Logout</Button>
   );
 }

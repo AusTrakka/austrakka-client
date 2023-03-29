@@ -1,4 +1,4 @@
-import getToken from './authUtils';
+import { getToken } from './authUtils';
 
 interface HTTPOptions {
   [key: string]: any
