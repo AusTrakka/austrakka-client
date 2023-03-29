@@ -23,7 +23,7 @@ const ProjectsList = () => {
     getProjectList()
     .then((response) => response.json())
     .then((response_data) => {
-      setProjectsList(response_data);
+      setProjectsList(response_data.data);
       setIsError(false)
       setIsLoading(false)
     })
