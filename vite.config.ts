@@ -17,9 +17,6 @@ export default defineConfig({
             VITE_REACT_API_URL: Schema.string({
                 message: 'URL of the backend API'
             }),
-            VITE_SUBSCRIPTION_KEY: Schema.string({
-                message: "Subscription key used in APIM"
-            }),
             VITE_API_SCOPE: Schema.string({
                 message: "Scope URI for API application"
             }),
