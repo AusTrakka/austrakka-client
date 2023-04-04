@@ -22,18 +22,21 @@ function ProjectsList() {
   const [projectsList, setProjectsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
   const navigate = useNavigate();
 
   async function getProject() {
     const projectResponse: ResponseObject = await getProjectList();
-    if (projectResponse.status === 'success') {
-      setProjectsList([]);
-      // setProjectsList(projectResponse.data);
+    if (projectResponse.status === 'Success') {
+      setProjectsList(projectResponse.data);
       setIsLoading(false);
+      setIsError(false);
     } else {
       setIsError(true);
       setIsLoading(false);
+      setProjectsList([]);
+      setErrorMessage(projectResponse.message);
     }
   }
 
@@ -43,6 +46,7 @@ function ProjectsList() {
 
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
+      // TO DO: When moving away from session storage, project name will need passed as prop?
       const { projectMembers, name, projectId }: any = selectedProject;
       sessionStorage.setItem('selectedProjectMemberGroupId', projectMembers.id);
       sessionStorage.setItem('selectedProjectName', name);
@@ -74,7 +78,7 @@ function ProjectsList() {
           isError
             ? {
               color: 'error',
-              children: 'Error loading data',
+              children: errorMessage,
             }
             : undefined
         }

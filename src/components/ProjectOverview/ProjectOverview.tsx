@@ -16,7 +16,14 @@ function ProjectOverview() {
   const [tabValue, setTabValue] = useState(0);
   // Project Overview component states
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
-  const [isOverviewError, setIsOverviewError] = useState(false);
+  const [isOverviewError, setIsOverviewError] = useState({
+    detailsError: false,
+    detailsErrorMessage: '',
+    totalSamplesError: false,
+    totalSamplesErrorMessage: '',
+    latestDateError: true,
+    latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
+  });
   const [projectDetails, setProjectDetails] = useState({ description: '' });
   const [lastUpload] = useState('');
   // Samples component states
@@ -28,33 +35,49 @@ function ProjectOverview() {
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
-  const [isSamplesError, setIsSamplesError] = useState(false);
+  const [isSamplesError, setIsSamplesError] = useState({
+    samplesHeaderError: false,
+    sampleMetadataError: false,
+    samplesErrorMessage: '',
+  });
+  // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   const [isTreesLoading] = useState(true);
   const [isPlotsLoading] = useState(true);
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
     const projectResponse: ResponseObject = await getProjectDetails();
-    if (projectResponse.status === 'success') {
+    if (projectResponse.status === 'Success') {
       setProjectDetails(projectResponse.data);
+      setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
     } else {
-      setIsOverviewError(true);
+      setIsOverviewError((prevState) => ({
+        ...prevState,
+        detailsError: true,
+        detailsErrorMessage: projectResponse.message,
+      }));
     }
     const totalSamplesResponse: ResponseObject = await getTotalSamples();
-    if (totalSamplesResponse.status === 'success') {
+    if (totalSamplesResponse.status === 'Success') {
       const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
       setTotalSamples(+count);
+      setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
     } else {
-      setIsOverviewError(true);
+      setIsOverviewError((prevState) => ({
+        ...prevState,
+        totalSamplesError: true,
+        totalSamplesErrorMessage: projectResponse.message,
+      }));
     }
     setIsOverviewLoading(false);
     // TODO: Define new endpoint that provides the latest upload date from backend
   }
 
   async function getSampleTableHeaders() {
+    setIsSamplesLoading(true);
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
     const samplesResponse: ResponseObject = await getSamples(`groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}`);
-    if (samplesResponse.status === 'success') {
+    if (samplesResponse.status === 'Success') {
       if (samplesResponse.data.length > 1) {
         const columnHeaderArray = Object.keys(samplesResponse.data[0]);
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
@@ -62,14 +85,24 @@ function ProjectOverview() {
           columnBuilder.push({ accessorKey: element, header: element });
         });
         setSampleTableColumns(columnBuilder);
-        setIsSamplesLoading(false);
+        setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
       } else {
         setIsSamplesLoading(false);
-        setIsSamplesError(true);
+        setIsSamplesError((prevState) => ({
+          ...prevState,
+          samplesHeaderError: true,
+          samplesErrorMessage: samplesResponse.message,
+        }));
+        setSampleTableColumns([]);
       }
     } else {
       setIsSamplesLoading(false);
-      setIsSamplesError(true);
+      setIsSamplesError((prevState) => ({
+        ...prevState,
+        samplesHeaderError: true,
+        samplesErrorMessage: samplesResponse.message,
+      }));
+      setSampleTableColumns([]);
     }
   }
 
@@ -87,17 +120,24 @@ function ProjectOverview() {
         groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
       });
       const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
-      if (samplesResponse.status === 'success') {
+      if (samplesResponse.status === 'Success') {
         setProjectSamples(samplesResponse.data);
+        setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
         setIsSamplesLoading(false);
       } else {
         setIsSamplesLoading(false);
-        setIsSamplesError(true);
+        setIsSamplesError((prevState) => ({
+          ...prevState,
+          sampleMetadataError: true,
+          samplesErrorMessage: samplesResponse.message,
+        }));
+        setProjectSamples([]);
       }
     }
     if (sampleTableColumns.length > 0) {
-      setIsSamplesLoading(true);
       getSamplesList();
+    } else {
+      setProjectSamples([]);
     }
   }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 

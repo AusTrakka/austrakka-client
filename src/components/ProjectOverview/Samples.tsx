@@ -3,14 +3,16 @@ import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 
-// TODO: move sample list state to parent component (headers and data)
-
 interface SamplesProps {
   sampleList: ProjectSample[],
   totalSamples: number,
   isSamplesLoading: boolean,
   sampleTableColumns: MRT_ColumnDef<{}>[],
-  isSamplesError: boolean,
+  isSamplesError: {
+    samplesHeaderError: boolean,
+    sampleMetadataError: boolean,
+    samplesErrorMessage: string,
+  },
   samplesPagination: MRT_PaginationState,
   setSamplesPagination: any, // TODO: fix
 }
@@ -40,7 +42,7 @@ function Samples(props: SamplesProps) {
           isSamplesError
             ? {
               color: 'error',
-              children: 'Error loading data',
+              children: isSamplesError.samplesErrorMessage,
             }
             : undefined
         }
@@ -58,13 +60,13 @@ function Samples(props: SamplesProps) {
         })}
         muiTableContainerProps={{ sx: { maxHeight: '75vh' } }}
         muiTablePaginationProps={{
-          rowsPerPageOptions: [10, 25, 50, 100, 500, 1000, 2000, 3000],
+          rowsPerPageOptions: [10, 25, 50, 100, 500, 1000],
         }}
         onPaginationChange={setSamplesPagination}
         state={{
           pagination: samplesPagination,
           isLoading: isSamplesLoading,
-          showAlertBanner: isSamplesError,
+          showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
         }}
         initialState={{ density: 'compact' }}
         rowCount={totalSamples}
