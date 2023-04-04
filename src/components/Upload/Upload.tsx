@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 
-const Upload = () => {
+function Upload() {
   useEffect(() => {
 
-  }, [])
+  }, []);
 
   return (
     <>
-  
+
     </>
-  )
+  );
 }
 export default Upload;
