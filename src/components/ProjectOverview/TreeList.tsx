@@ -1,16 +1,17 @@
-import React, {createRef, useEffect, useState, memo} from 'react';
-import styles from './ProjectOverview.module.css'
+import React, { memo } from 'react';
+import styles from './ProjectOverview.module.css';
 
 interface TreesProps {
   isTreesLoading: boolean
 }
 
-const TreeList = (props: TreesProps) => {
-  
+function TreeList(props: TreesProps) {
+  const { isTreesLoading } = props;
   return (
     <>
       <p className={styles.h1}>Trees</p>
+      {isTreesLoading}
     </>
-  )
+  );
 }
 export default memo(TreeList);

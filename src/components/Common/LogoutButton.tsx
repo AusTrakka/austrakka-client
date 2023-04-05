@@ -1,19 +1,20 @@
-import { useMsal } from "@azure/msal-react";
-import { Button } from "@mui/material";
+import React from 'react';
+import { useMsal } from '@azure/msal-react';
+import { Button } from '@mui/material';
 
-export const LogoutButton = () => {
-    const { instance } = useMsal();
-    const logoutRequest = {
-        account: instance.getActiveAccount(), // Bypasses the account selection screen on sign out
-        postLogoutRedirectUri: "/",
-        mainWindowRedirectUri: "/",
+export default function LogoutButton() {
+  const { instance } = useMsal();
+  const logoutRequest = {
+    account: instance.getActiveAccount(), // Bypasses the account selection screen on sign out
+    postLogoutRedirectUri: '/',
+    mainWindowRedirectUri: '/',
+  };
+  const handleLogout = (loginType: string) => {
+    if (loginType === 'redirect') {
+      instance.logoutRedirect(logoutRequest);
     }
-    const handleLogout = (loginType: string) => {
-        if (loginType === "popup") {
-            instance.logoutPopup(logoutRequest)
-        }
-    }
-    return (
-        <Button variant="contained" color="secondary" onClick={() => handleLogout("popup")}>Logout</Button>
-    );
+  };
+  return (
+    <Button variant="contained" color="secondary" onClick={() => handleLogout('redirect')}>Logout</Button>
+  );
 }
