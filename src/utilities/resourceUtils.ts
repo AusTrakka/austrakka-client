@@ -1,42 +1,77 @@
-import { useState, useEffect } from "react";
-import { getToken } from "./authUtils"
+import { getToken } from './authUtils';
+
 interface HTTPOptions {
-    [key: string]: any
+  [key: string]: any
 }
 
-export async function callAPI(url:string, method:string, requestData:object) {
-    let base = import.meta.env.VITE_REACT_API_URL
-    const token = await getToken()
+// TODO: Refine this type definition
+export interface ResponseObject {
+  status: string,
+  data?: any,
+  message: string,
+  headers?: Headers,
+  error?: any,
+}
 
-    let options: HTTPOptions = {
-        method: method,
-        headers: {
-            "Accept": 'application/json',
-            "Authorization" :  `Bearer ${token}`
+async function callAPI(url:string, method:string, requestData:object) {
+  const genericErrorMessage = 'There was an error, please report this to an AusTrakka admin.';
+  const base = import.meta.env.VITE_REACT_API_URL;
+  const token = await getToken();
+
+  const options: HTTPOptions = {
+    method,
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'Access-Control-Expose-Headers': '*',
+      'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
+    },
+  };
+  if (method !== 'GET') {
+    options.body = JSON.stringify(requestData);
+  }
+  const apiRepsonse = await fetch(base + url, options)
+    .then((response) => response.json().then((data) => ({
+      data,
+      headers: response.headers,
+      statusOk: response.ok, // response.ok returns true if the status property is 200-299
+    })))
+    .then((resp) => {
+      // GET API calls
+      if (method === 'GET') {
+        if (resp.data.data !== null && resp.statusOk) {
+          return {
+            status: 'Success',
+            message: resp.data.messages[0]?.ResponseMessage,
+            data: resp.data.data,
+            headers: resp.headers,
+          };
         }
-    }
-    if(method !== "GET") {
-        options.body = JSON.stringify(requestData)
-    }
-    return await fetch(base + url, options)
-} 
-
-
-// Definition of endpoints 
-
-export const getProjectList = () => {
-    return callAPI("/api/Projects?&includeall=false", "GET", {})
+        return {
+          status: 'Error',
+          message: resp.data.messages[0]?.ResponseMessage || genericErrorMessage,
+        };
+      }
+      // non-GET API calls - don't validate data
+      if (method !== 'GET' && resp.statusOk) {
+        return {
+          status: 'Success',
+          message: resp.data.messages[0]?.ResponseMessage,
+          data: resp.data.data,
+        };
+      }
+      return {
+        status: 'Error',
+        message: resp.data.messages[0]?.ResponseMessage || genericErrorMessage,
+      };
+    })
+    .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
+  return apiRepsonse;
 }
-export const getProjectDetails = () => {
-    return callAPI(`/api/Projects/${sessionStorage.getItem("selectedProjectId")}`, "GET", {})
-}
 
-export const getSamples = (searchParams?: string) => { 
-    return callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {})
-    //return callAPI(`/api/Submissions/x${urlParams}`, 'GET', {})
-    //return callAPI(`/api/Submissions/x?includeall=False&groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}`, 'GET', {})
-}
+// Definition of endpoints
 
-export const getTotalSamples = () => {
-    return callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem("selectedProjectMemberGroupId")}&pageSize=1&page=1`, 'GET', {})
-}
+export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
+export const getProjectDetails = () => callAPI(`/api/Projects/${sessionStorage.getItem('selectedProjectId')}`, 'GET', {});
+export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
+export const getTotalSamples = () => callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}&pageSize=1&page=1`, 'GET', {});

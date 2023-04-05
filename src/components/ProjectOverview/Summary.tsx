@@ -1,42 +1,65 @@
-import React, {createRef, useEffect, useState, memo} from 'react';
-import { Card, CardContent, Alert, AlertTitle, LinearProgress } from "@mui/material";
-import styles from './ProjectOverview.module.css'
+import React, { memo } from 'react';
+import {
+  Card, CardContent, Alert, Tooltip, Box,
+} from '@mui/material';
+import { ErrorOutline } from '@mui/icons-material/';
+import styles from './ProjectOverview.module.css';
 
 interface SummaryProps {
   projectDesc: string,
   totalSamples: number,
   lastUpload: string,
-  isOverviewLoading: boolean,
-  isOverviewError: boolean
+  // isOverviewLoading: boolean,
+  isOverviewError: {
+    detailsError: boolean,
+    detailsErrorMessage: string,
+    totalSamplesError: boolean,
+    totalSamplesErrorMessage: string,
+    latestDateError: boolean,
+    latestDateErrorMessage: string,
+  }
 }
 
-const Summary = (props: SummaryProps) => {
-  const { projectDesc, totalSamples, lastUpload, isOverviewError } = props;
+function Summary(props: SummaryProps) {
+  const {
+    projectDesc, totalSamples, lastUpload, isOverviewError,
+  } = props;
   return (
     <>
-        { isOverviewError ? 
-          <Alert severity="error">
-            <AlertTitle>Error</AlertTitle>
-            There has been an error loading your project summary, please try again later.
-          </Alert>
-          :
-          <>
-            <p className={styles.h1}>Project description</p>
-            {projectDesc}
-            <br /><br /><br />
-            <div>
-            <Card className={styles.squareTile}>
-              <CardContent>
-                <p className={styles.cardCategory}>Samples</p>
-                <p className={styles.cardTitle}>Total uploaded samples</p>
-                <p className={styles.cardStat}>{totalSamples}</p>
-                Last sample upload: {lastUpload}
-              </CardContent>
-            </Card>
-            </div>
-          </>
-        }
+      <p className={styles.h1}>Project description</p>
+      { isOverviewError.detailsError
+        ? <Alert severity="error">{isOverviewError.detailsErrorMessage}</Alert>
+        : (
+          <p>
+            { projectDesc }
+          </p>
+        )}
+      <br />
+      <br />
+      <br />
+      <div>
+        <Card className={styles.squareTile}>
+          <CardContent>
+            <p className={styles.cardCategory}>Samples</p>
+            <p className={styles.cardTitle}>Total uploaded samples</p>
+            { isOverviewError.totalSamplesError
+              ? <Alert severity="error">{isOverviewError.totalSamplesErrorMessage}</Alert>
+              : <p className={styles.cardStat}>{totalSamples}</p>}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ paddingRight: 1 }}>
+                Last sample upload:
+              </Box>
+              { isOverviewError.latestDateError ? (
+                <Tooltip title={isOverviewError.latestDateErrorMessage}>
+                  <ErrorOutline color="error" />
+                </Tooltip>
+              )
+                : <p>{ lastUpload }</p>}
+            </Box>
+          </CardContent>
+        </Card>
+      </div>
     </>
-  )
+  );
 }
 export default memo(Summary);

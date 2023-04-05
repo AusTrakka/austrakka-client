@@ -1,16 +1,18 @@
-import React, {createRef, useEffect, useState, memo} from 'react';
-import styles from './ProjectOverview.module.css'
+import React, { memo } from 'react';
+import styles from './ProjectOverview.module.css';
 
 interface PlotsProps {
   isPlotsLoading: boolean
 }
 
-const Plots = (props: PlotsProps) => {
-  
+function Plots(props: PlotsProps) {
+  const { isPlotsLoading } = props;
+
   return (
     <>
-        <p className={styles.h1}>Plots</p>
+      <p className={styles.h1}>Plots</p>
+      {isPlotsLoading}
     </>
-  )
+  );
 }
 export default memo(Plots);
