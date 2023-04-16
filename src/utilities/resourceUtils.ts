@@ -72,6 +72,6 @@ async function callAPI(url:string, method:string, requestData:object) {
 // Definition of endpoints
 
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
-export const getProjectDetails = () => callAPI(`/api/Projects/${sessionStorage.getItem('selectedProjectId')}`, 'GET', {});
+export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbrev/${abbrev}`, 'GET', {});
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = () => callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}&pageSize=1&page=1`, 'GET', {});

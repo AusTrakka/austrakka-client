@@ -46,12 +46,8 @@ function ProjectsList() {
 
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
-      // TO DO: When moving away from session storage, project name will need passed as prop?
-      const { projectMembers, name, projectId }: any = selectedProject;
-      sessionStorage.setItem('selectedProjectMemberGroupId', projectMembers.id);
-      sessionStorage.setItem('selectedProjectName', name);
-      sessionStorage.setItem('selectedProjectId', projectId);
-      navigate('/projects/details');
+      const { abbreviation }: any = selectedProject;
+      navigate(`/projects/${abbreviation}`);
     }
   }, [selectedProject, navigate]);
 

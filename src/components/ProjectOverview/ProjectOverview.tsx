@@ -11,8 +11,10 @@ import Samples from './Samples';
 import TreeList from './TreeList';
 import Plots from './Plots';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
+import { useParams } from 'react-router-dom';
 
 function ProjectOverview() {
+  const { projectAbbrev } = useParams();
   const [tabValue, setTabValue] = useState(0);
   // Project Overview component states
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
@@ -46,7 +48,7 @@ function ProjectOverview() {
 
   async function getProject() {
     // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
-    const projectResponse: ResponseObject = await getProjectDetails();
+    const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
     if (projectResponse.status === 'Success') {
       setProjectDetails(projectResponse.data);
       setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));

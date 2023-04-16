@@ -20,7 +20,7 @@ function App() {
           <Route element={<MainMenuLayout />}>
             <Route path="/upload" element={<Upload />} />
             <Route path="/projects" element={<ProjectsList />} />
-            <Route path="/projects/details" element={<ProjectOverview />} />
+            <Route path="/projects/:projectAbbrev" element={<ProjectOverview />} />
           </Route>
           <Route path="*" element={<Navigate to="/projects" />} />
         </Routes>
