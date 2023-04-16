@@ -9,7 +9,7 @@ import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
-import Plots from './Plots';
+import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { useParams } from 'react-router-dom';
 
@@ -189,7 +189,7 @@ function ProjectOverview() {
         <TreeList isTreesLoading={isTreesLoading} />
       </TabPanel>
       <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
-        <Plots isPlotsLoading={isPlotsLoading} />
+        <PlotList isPlotsLoading={isPlotsLoading} />
       </TabPanel>
     </>
   );

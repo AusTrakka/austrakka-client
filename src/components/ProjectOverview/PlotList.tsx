@@ -1,11 +1,11 @@
 import React, { memo } from 'react';
 import styles from './ProjectOverview.module.css';
 
-interface PlotsProps {
+interface PlotListProps {
   isPlotsLoading: boolean
 }
 
-function Plots(props: PlotsProps) {
+function PlotList(props: PlotListProps) {
   const { isPlotsLoading } = props;
 
   return (
@@ -15,4 +15,4 @@ function Plots(props: PlotsProps) {
     </>
   );
 }
-export default memo(Plots);
+export default memo(PlotList);
