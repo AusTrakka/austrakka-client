@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import {
-  getSamples, getProjectDetails, getTotalSamples, ResponseObject,
+  ResponseObject, getSamples, getProjectDetails, getPlots, getTotalSamples
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import Summary from './Summary';
@@ -12,6 +12,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { useParams } from 'react-router-dom';
+import { PlotListing, Project } from '../../types/dtos';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -26,7 +27,7 @@ function ProjectOverview() {
     latestDateError: true,
     latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
   });
-  const [projectDetails, setProjectDetails] = useState({ description: '' });
+  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   const [lastUpload] = useState('');
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
@@ -43,11 +44,13 @@ function ProjectOverview() {
     samplesErrorMessage: '',
   });
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
+  // Trees component states
   const [isTreesLoading] = useState(true);
-  const [isPlotsLoading] = useState(true);
+  // Plots component states
+  const [projectPlots, setProjectPlots] = useState<PlotListing[]>([])
+  const [isPlotsLoading, setIsPlotsLoading] = useState(true);
 
   async function getProject() {
-    // TODO: Get project details (/api/Projects/id) based on project id rather than session storage
     const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
     if (projectResponse.status === 'Success') {
       setProjectDetails(projectResponse.data);
@@ -114,6 +117,12 @@ function ProjectOverview() {
   }, []);
 
   useEffect(() => {
+    if (projectDetails){
+      getPlotList();
+    }
+  }, [projectDetails])
+
+  useEffect(() => {
     // Only get samples when columns are already populated
     async function getSamplesList() {
       const searchParams = new URLSearchParams({
@@ -143,6 +152,18 @@ function ProjectOverview() {
     }
   }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
 
+  async function getPlotList() {
+    const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId);
+    if (plotsResponse.status === 'Success'){
+      setProjectPlots(plotsResponse.data as PlotListing[])
+      setIsPlotsLoading(false)
+    } else {
+      setIsPlotsLoading(false)
+      setProjectPlots([])
+      // TODO set plots errors
+    }
+  }
+
   const projectOverviewTabs: TabContentProps[] = [
     {
       index: 0,
@@ -169,7 +190,7 @@ function ProjectOverview() {
         <Summary
           totalSamples={totalSamples}
           lastUpload={lastUpload}
-          projectDesc={projectDetails.description}
+          projectDesc={projectDetails ? projectDetails.description : ''}
           // isOverviewLoading={isOverviewLoading}
           isOverviewError={isOverviewError}
         />
@@ -189,7 +210,7 @@ function ProjectOverview() {
         <TreeList isTreesLoading={isTreesLoading} />
       </TabPanel>
       <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
-        <PlotList isPlotsLoading={isPlotsLoading} />
+        <PlotList isPlotsLoading={isPlotsLoading} projectAbbrev={projectAbbrev!} plotList={projectPlots} />
       </TabPanel>
     </>
   );
