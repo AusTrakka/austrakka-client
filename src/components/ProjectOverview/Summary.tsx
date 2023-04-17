@@ -44,7 +44,7 @@ function Summary(props: SummaryProps) {
             <p className={styles.cardTitle}>Total uploaded samples</p>
             { isOverviewError.totalSamplesError
               ? <Alert severity="error">{isOverviewError.totalSamplesErrorMessage}</Alert>
-              : <p className={styles.cardStat}>{totalSamples}</p>}
+              : <p className={styles.cardStat}>{totalSamples.toLocaleString('en-US')}</p>}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Box sx={{ paddingRight: 1 }}>
                 Last sample upload:
