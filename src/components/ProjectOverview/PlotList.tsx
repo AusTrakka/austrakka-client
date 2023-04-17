@@ -24,7 +24,7 @@ function PlotList(props: PlotListProps) {
   const navigate = useNavigate()
 
   const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectAbbrev}/plot/${row.original.abbreviation}`)
+    navigate(`/projects/${projectAbbrev}/plots/${row.original.abbreviation}`)
   };
 
   return (

@@ -22,7 +22,7 @@ function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/projects" element={<ProjectsList />} />
             <Route path="/projects/:projectAbbrev" element={<ProjectOverview />} />
-            <Route path="/projects/:projectAbbrev/plot/:plotAbbrev" element={<PlotDetail/>}/>
+            <Route path="/projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail/>}/>
           </Route>
           <Route path="*" element={<Navigate to="/projects" />} />
         </Routes>
