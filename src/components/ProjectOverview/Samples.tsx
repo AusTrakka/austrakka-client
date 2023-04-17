@@ -67,6 +67,7 @@ function Samples(props: SamplesProps) {
       <MaterialReactTable
         columns={sampleTableColumns}
         data={sampleList}
+        enableColumnFilters={false}
         enableStickyHeader
         manualPagination
         manualFiltering
