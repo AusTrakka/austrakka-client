@@ -4,6 +4,7 @@ import {
   Box, IconButton, Tooltip, CircularProgress,
 } from '@mui/material';
 import { FileDownload } from '@mui/icons-material';
+import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 
@@ -32,9 +33,31 @@ function Samples(props: SamplesProps) {
     setSamplesPagination,
   } = props;
   const [exportCSVLoading, setExportCSVLoading] = useState(false);
+  const generateFilename = () => {
+    const dateObject = new Date();
+    const year = dateObject.toLocaleString('default', { year: 'numeric' });
+    const month = dateObject.toLocaleString('default', { month: '2-digit' });
+    const day = dateObject.toLocaleString('default', { day: '2-digit' });
+    const h = dateObject.getHours();
+    const m = dateObject.getMinutes();
+    const s = dateObject.getSeconds();
+    return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
+  };
+  const csvOptions = {
+    fieldSeparator: ',',
+    quoteStrings: '"',
+    decimalSeparator: '.',
+    showLabels: true,
+    useBom: true,
+    useKeysAsHeaders: false,
+    headers: sampleTableColumns.map((c) => c.header),
+    filename: generateFilename(),
+  };
+  const csvExporter = new ExportToCsv(csvOptions);
   const exportCSV = () => {
     setExportCSVLoading(true);
-    // TODO: Export CSV functionaility here and remove setTimeout
+    // TODO: Get sampleList that is not paginated
+    csvExporter.generateCsv(sampleList);
     setTimeout(() => setExportCSVLoading(false), 3000);
   };
   const ExportButton = (
@@ -51,7 +74,7 @@ function Samples(props: SamplesProps) {
           />
         )
         : null}
-      <Tooltip title="Export CSV">
+      <Tooltip title="Export to CSV" placement="top">
         <IconButton
           onClick={() => {
             exportCSV();
