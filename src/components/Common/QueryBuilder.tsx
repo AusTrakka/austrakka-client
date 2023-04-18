@@ -197,7 +197,7 @@ function QueryBuilder(props: QueryBuilderProps) {
       <CloseIcon fontSize="small" />
     </IconButton>
   );
-  const filteredMessage = `Filtered to ${samplesCount.toLocaleString('en-US')} of ${totalSamples.toLocaleString('en-US')} records.`;
+  const filteredMessage = `Filtered to ${samplesCount.toLocaleString('en-US')} of ${totalSamples.toLocaleString('en-US')} records. `;
   return (
     <Box sx={{
       boxShadow: 1, borderRadius: 1, padding: 1, marginBottom: 2, display: 'flex',
@@ -225,6 +225,17 @@ function QueryBuilder(props: QueryBuilderProps) {
         { isOpen
           ? (
             <Box>
+              <Snackbar
+                open={samplesCount === 0 && filterList.length > 0}
+                autoHideDuration={3000}
+                message={filterErrorMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                action={action}
+              >
+                <Alert severity="info" elevation={6}>
+                  All filter conditions must match a record for it to appear in the results.
+                </Alert>
+              </Snackbar>
               <form onSubmit={(event) => handleFilterAdd(event)}>
                 <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
                   <InputLabel id="field-simple-select-label">Field</InputLabel>
