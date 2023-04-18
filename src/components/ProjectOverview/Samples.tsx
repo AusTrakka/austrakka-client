@@ -1,5 +1,9 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
+import {
+  Box, IconButton, Tooltip, CircularProgress,
+} from '@mui/material';
+import { FileDownload } from '@mui/icons-material';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 
@@ -27,6 +31,38 @@ function Samples(props: SamplesProps) {
     samplesPagination,
     setSamplesPagination,
   } = props;
+  const [exportCSVLoading, setExportCSVLoading] = useState(false);
+  const exportCSV = () => {
+    setExportCSVLoading(true);
+    // TODO: Export CSV functionaility here and remove setTimeout
+    setTimeout(() => setExportCSVLoading(false), 3000);
+  };
+  const ExportButton = (
+    <div>
+      {exportCSVLoading
+        ? (
+          <CircularProgress
+            color="secondary"
+            size={40}
+            sx={{
+              position: 'absolute',
+              zIndex: 1,
+            }}
+          />
+        )
+        : null}
+      <Tooltip title="Export CSV">
+        <IconButton
+          onClick={() => {
+            exportCSV();
+          }}
+          disabled={exportCSVLoading}
+        >
+          <FileDownload />
+        </IconButton>
+      </Tooltip>
+    </div>
+  );
   return (
     <>
       <p className={styles.h1}>Samples</p>
@@ -82,6 +118,11 @@ function Samples(props: SamplesProps) {
         // memoMode="cells"
         enableRowVirtualization
         enableColumnVirtualization
+        renderToolbarInternalActions={() => (
+          <Box>
+            {ExportButton}
+          </Box>
+        )}
       />
     </>
   );
