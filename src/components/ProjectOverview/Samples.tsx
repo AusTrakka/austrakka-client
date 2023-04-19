@@ -1,12 +1,15 @@
 import React, { memo, useState } from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import {
-  Box, IconButton, Tooltip, CircularProgress,
+  Box, IconButton, Tooltip,
+  CircularProgress, Dialog, DialogActions,
+  DialogContent, DialogContentText, DialogTitle, Button,
 } from '@mui/material';
 import { FileDownload } from '@mui/icons-material';
 import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
+import { ResponseObject, getSamples } from '../../utilities/resourceUtils';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
@@ -33,6 +36,8 @@ function Samples(props: SamplesProps) {
     setSamplesPagination,
   } = props;
   const [exportCSVLoading, setExportCSVLoading] = useState(false);
+  const [exportCSVError, setExportCSVError] = useState(false);
+  // const [exportData, setExportData] = useState();
   const generateFilename = () => {
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });
@@ -54,11 +59,28 @@ function Samples(props: SamplesProps) {
     filename: generateFilename(),
   };
   const csvExporter = new ExportToCsv(csvOptions);
+  // TODO: Move this up to the parent component - will cause error if totalSamples > backend limit
+  async function getSamplesList() {
+    const searchParams = new URLSearchParams({
+      Page: '1',
+      PageSize: (totalSamples).toString(),
+      groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+    });
+    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    if (samplesResponse.status === 'Success') {
+      // setExportData(samplesResponse.data);
+      csvExporter.generateCsv(samplesResponse.data);
+      setExportCSVLoading(false);
+      setExportCSVError(true);
+    } else {
+      // TODO: Add error dialog
+      setExportCSVLoading(false);
+      setExportCSVError(true);
+    }
+  }
   const exportCSV = () => {
     setExportCSVLoading(true);
-    // TODO: Get sampleList that is not paginated
-    csvExporter.generateCsv(sampleList);
-    setTimeout(() => setExportCSVLoading(false), 3000);
+    getSamplesList();
   };
   const ExportButton = (
     <div>
@@ -86,10 +108,28 @@ function Samples(props: SamplesProps) {
       </Tooltip>
     </div>
   );
+  const handleDialogClose = () => {
+    setExportCSVError(false);
+  };
   return (
     <>
       <p className={styles.h1}>Samples</p>
       <br />
+      <Dialog onClose={handleDialogClose} open={exportCSVError}>
+        <DialogTitle id="alert-dialog-title">
+          Your data could not be exported to CSV.
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            There has been an error exporting your data to CSV.
+            <br />
+            Please try again later, or contact an AusTrakka admin.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
       <MaterialReactTable
         columns={sampleTableColumns}
         data={sampleList}
