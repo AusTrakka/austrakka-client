@@ -24,8 +24,8 @@ export default defineConfig({
       {
           apply: 'build',
           ...eslint({
-              failOnWarning: false,
-              failOnError: false,
+              failOnWarning: true,
+              failOnError: true,
           })
       }
   ]
