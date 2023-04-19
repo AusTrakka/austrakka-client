@@ -141,7 +141,6 @@ function ProjectOverview() {
 
   useEffect(() => {
     // Only get samples when columns are already populated
-    // TODO: Pass queryString to this endpoint
     async function getSamplesList() {
       const searchParams = new URLSearchParams({
         Page: (samplesPagination.pageIndex + 1).toString(),

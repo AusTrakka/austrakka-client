@@ -53,7 +53,6 @@ function Samples(props: SamplesProps) {
     <>
       <p className={styles.h1}>Samples</p>
       <br />
-      {/* TODO: Pass totalSamples and sampelCount to query builder to show filtering message */}
       <QueryBuilder
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
