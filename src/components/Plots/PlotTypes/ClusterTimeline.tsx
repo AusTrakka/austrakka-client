@@ -35,7 +35,6 @@ const defaultSpec: TopLevelSpec = {
 // This should probably be for all plottypes, so move out
 interface SpecificPlotProps {
   plot: Plot | undefined | null,
-  projectId: number
 }
 
 const ClusterTimeline = (props: SpecificPlotProps) => {

@@ -7,9 +7,10 @@ import { ResponseObject, getPlotDetails, getProjectDetails } from "../../utiliti
 
 const PlotDetail = () => {
 
+  // Note that if the project abbrev is wrong in the URL, there will be no effect
+  // We use the plot abbrev to get the correct project
   const {projectAbbrev, plotAbbrev} = useParams();
   const [plot, setPlot] = useState<Plot | null>()
-  const [projectId, setProjectId] = useState<number | null>()
 
   useEffect(() => {
     // Get plot details, including plot type
@@ -21,28 +22,18 @@ const PlotDetail = () => {
         // TODO display error banner if we failed to load the plot
       }
     }
-    // Get projectId for purposes of plot metadata retrieval
-    const getProjectId = async () => {
-      const plotResponse: ResponseObject = await getProjectDetails(projectAbbrev!)
-      if (plotResponse.status === "Success"){
-        setProjectId(plotResponse.data.projectId)
-      } else {
-        // TODO display error banner if we failed to load the project details
-      }
-    }
 
     getPlot();
-    getProjectId();
-  } ,[plotAbbrev, projectAbbrev])
+  }, [plotAbbrev])
 
   // TODO display error banner if plot type is unrecognised 
   const renderPlot = () => {
-    if(!plot || !projectId){
+    if(!plot){
       return <Typography>Loading plot</Typography>
     }
     switch (plot.plotType){
       case "ClusterTimeline":
-        return <ClusterTimeline plot={plot} projectId={projectId}/>
+        return <ClusterTimeline plot={plot}/>
       default:
         return <Typography>Plot type {plot.plotType} cannot be rendered</Typography>
     }
