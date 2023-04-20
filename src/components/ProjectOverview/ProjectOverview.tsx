@@ -86,9 +86,9 @@ function ProjectOverview() {
     setIsSamplesLoading(true);
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
     // TODO should just get the first row of data?
-    const samplesResponse: ResponseObject = await getSamples(`groupContext=${projectDetails!.projectMembers.id}`);
+    const samplesResponse: ResponseObject = await getSamples(`pageSize=1&page=1&groupContext=${projectDetails!.projectMembers.id}`);
     if (samplesResponse.status === 'Success') {
-      if (samplesResponse.data.length > 1) {
+      if (samplesResponse.data.length >= 1) {
         const columnHeaderArray = Object.keys(samplesResponse.data[0]);
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
         columnHeaderArray.forEach((element) => {
