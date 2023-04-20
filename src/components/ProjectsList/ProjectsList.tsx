@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
+import { Typography } from '@mui/material';
 
 type Project = {
   abbreviation: string,
@@ -57,6 +58,10 @@ function ProjectsList() {
   };
 
   return (
+    <>
+    <Typography className="pageTitle">
+      Projects    
+    </Typography>
     <MaterialReactTable
       columns={columns}
       data={projectsList}
@@ -91,6 +96,7 @@ function ProjectsList() {
         onClick: () => rowClickHandler(row),
       })}
     />
+    </>
   );
 }
 export default ProjectsList;

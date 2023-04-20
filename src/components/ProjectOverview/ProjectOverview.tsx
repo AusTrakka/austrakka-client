@@ -13,6 +13,7 @@ import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { useParams } from 'react-router-dom';
 import { PlotListing, Project } from '../../types/dtos';
+import { Typography } from '@mui/material';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -201,6 +202,9 @@ function ProjectOverview() {
 
   return (
     <>
+      <Typography className="pageTitle">
+        {projectDetails ? projectDetails.name : ""}    
+      </Typography>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
       <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
         <Summary

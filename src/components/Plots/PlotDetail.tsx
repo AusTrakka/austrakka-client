@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plot } from "../../types/dtos"
 import { useParams } from "react-router-dom";
-import { Typography } from "@mui/material";
+import { Alert, Typography } from "@mui/material";
 import ClusterTimeline from "./PlotTypes/ClusterTimeline";
 import { ResponseObject, getPlotDetails, getProjectDetails } from "../../utilities/resourceUtils";
 
@@ -39,7 +39,14 @@ const PlotDetail = () => {
     }
   }
   
-  return(renderPlot())
+  return(
+    <>
+      <Typography className="pageTitle">
+        {plot ? plot.name : ""}    
+      </Typography>
+      {renderPlot()}
+    </>
+    )
 }
 
 export default PlotDetail;
