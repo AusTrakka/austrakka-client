@@ -75,3 +75,4 @@ export const getProjectList = () => callAPI('/api/Projects?&includeall=false', '
 export const getProjectDetails = () => callAPI(`/api/Projects/${sessionStorage.getItem('selectedProjectId')}`, 'GET', {});
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = () => callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}&pageSize=1&page=1`, 'GET', {});
+export const getDisplayFields = () => callAPI(`/api/Group/display-fields?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}`, 'GET', {});

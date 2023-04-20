@@ -3,9 +3,11 @@ import React, {
 } from 'react';
 import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import {
-  getSamples, getProjectDetails, getTotalSamples, ResponseObject,
+  getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
+import { DisplayFields } from '../../types/fields.interface';
+import { Filter } from '../Common/QueryBuilder';
 import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
@@ -35,11 +37,16 @@ function ProjectOverview() {
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
+  const [samplesCount, setSamplesCount] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState({
     samplesHeaderError: false,
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [queryString, setQueryString] = useState('');
+  const [filterList, setFilterList] = useState<Filter[]>([]);
+  const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   const [isTreesLoading] = useState(true);
   const [isPlotsLoading] = useState(true);
@@ -105,11 +112,32 @@ function ProjectOverview() {
       setSampleTableColumns([]);
     }
   }
-
   useEffect(() => {
     getProject(); // API calls
     getSampleTableHeaders();
   }, []);
+
+  useEffect(() => {
+    async function getFilterFields() {
+      if (sampleTableColumns.length > 0) {
+        // TODO: Below should replace getSamples() call for getting table headers eventually
+        const displayFieldsResponse: ResponseObject = await getDisplayFields();
+        // Intermediate solution:
+        // Filtering displayField response to capture only values that are in the table
+        const res = displayFieldsResponse.data.filter(
+          (df: { columnName: string; }) => sampleTableColumns.some(
+            (column) => column.header === df.columnName,
+          ),
+        );
+        // Alphabetically order the fields
+        res.sort(
+          (a: any, b: any) => a.columnName.localeCompare(b.columnName),
+        );
+        setDisplayFields(res);
+      }
+    }
+    getFilterFields();
+  }, [sampleTableColumns]);
 
   useEffect(() => {
     // Only get samples when columns are already populated
@@ -118,12 +146,16 @@ function ProjectOverview() {
         Page: (samplesPagination.pageIndex + 1).toString(),
         PageSize: (samplesPagination.pageSize).toString(),
         groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+        filters: queryString,
       });
       const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
       if (samplesResponse.status === 'Success') {
         setProjectSamples(samplesResponse.data);
         setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
         setIsSamplesLoading(false);
+        const count: string = samplesResponse.headers?.get('X-Total-Count')!;
+        setSamplesCount(+count);
+        //   setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
       } else {
         setIsSamplesLoading(false);
         setIsSamplesError((prevState) => ({
@@ -139,7 +171,7 @@ function ProjectOverview() {
     } else {
       setProjectSamples([]);
     }
-  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns]);
+  }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns, queryString]);
   // TODO: Move export to CSV logic here
   //
   const projectOverviewTabs: TabContentProps[] = [
@@ -176,12 +208,19 @@ function ProjectOverview() {
       <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
         <Samples
           totalSamples={totalSamples}
+          samplesCount={samplesCount}
           sampleList={projectSamples}
           isSamplesLoading={isSamplesLoading}
           sampleTableColumns={sampleTableColumns}
           isSamplesError={isSamplesError}
           samplesPagination={samplesPagination}
           setSamplesPagination={setSamplesPagination}
+          isFiltersOpen={isFiltersOpen}
+          setIsFiltersOpen={setIsFiltersOpen}
+          setQueryString={setQueryString}
+          filterList={filterList}
+          setFilterList={setFilterList}
+          displayFields={displayFields}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>

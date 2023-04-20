@@ -1,19 +1,25 @@
+/* eslint-disable react/jsx-pascal-case */
 import React, { memo, useState } from 'react';
-import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
+import MaterialReactTable, {
+  MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
+} from 'material-react-table';
+import { FilterList, FileDownload, Close } from '@mui/icons-material';
 import {
-  Box, IconButton, Tooltip,
+  Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle,
 } from '@mui/material';
-import { FileDownload, Close } from '@mui/icons-material';
 import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 import { getSamples, ResponseObject } from '../../utilities/resourceUtils';
+import { DisplayFields } from '../../types/fields.interface';
+import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
   totalSamples: number,
+  samplesCount: number,
   isSamplesLoading: boolean,
   sampleTableColumns: MRT_ColumnDef<{}>[],
   isSamplesError: {
@@ -23,17 +29,30 @@ interface SamplesProps {
   },
   samplesPagination: MRT_PaginationState,
   setSamplesPagination: any, // TODO: fix
+  isFiltersOpen: boolean,
+  setIsFiltersOpen: any,
+  setQueryString: any,
+  setFilterList: any,
+  filterList: Filter[],
+  displayFields: DisplayFields[],
 }
 
 function Samples(props: SamplesProps) {
   const {
     sampleList,
     totalSamples,
+    samplesCount,
     isSamplesLoading,
     sampleTableColumns,
     isSamplesError,
     samplesPagination,
     setSamplesPagination,
+    isFiltersOpen,
+    setIsFiltersOpen,
+    setQueryString,
+    filterList,
+    setFilterList,
+    displayFields,
   } = props;
   const [exportCSVLoading, setExportCSVLoading] = useState(false);
   const [exportCSVError, setExportCSVError] = useState(false);
@@ -110,6 +129,7 @@ function Samples(props: SamplesProps) {
   const handleDialogClose = () => {
     setExportCSVError(false);
   };
+  const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
     <>
       <p className={styles.h1}>Samples</p>
@@ -137,9 +157,20 @@ function Samples(props: SamplesProps) {
           Please try again later, or contact an AusTrakka admin.
         </Alert>
       </Dialog>
+      <QueryBuilder
+        isOpen={isFiltersOpen}
+        setIsOpen={setIsFiltersOpen}
+        setQueryString={setQueryString}
+        fieldList={displayFields}
+        filterList={filterList}
+        setFilterList={setFilterList}
+        totalSamples={totalSamples}
+        samplesCount={samplesCount}
+      />
       <MaterialReactTable
         columns={sampleTableColumns}
         data={sampleList}
+        enableColumnFilters={false}
         enableStickyHeader
         manualPagination
         manualFiltering
@@ -175,7 +206,7 @@ function Samples(props: SamplesProps) {
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
         }}
         initialState={{ density: 'compact' }}
-        rowCount={totalSamples}
+        rowCount={samplesCount}
         // Layout props
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
         // Column manipulation
@@ -188,9 +219,25 @@ function Samples(props: SamplesProps) {
         // memoMode="cells"
         enableRowVirtualization
         enableColumnVirtualization
-        renderToolbarInternalActions={() => (
+        renderToolbarInternalActions={({ table }) => (
           <Box>
             {ExportButton}
+            <IconButton
+              onClick={() => {
+                setIsFiltersOpen(!isFiltersOpen);
+              }}
+            >
+              <FilterList />
+            </IconButton>
+            <MRT_ShowHideColumnsButton table={table} />
+          </Box>
+        )}
+        renderBottomToolbar={({ table }) => (
+          <Box sx={{ justifyContent: 'flex-end' }}>
+            <MRT_TablePagination table={table} />
+            <Typography variant="caption" display="block" align="right" padding={1}>
+              {totalSamplesDisplay}
+            </Typography>
           </Box>
         )}
       />
