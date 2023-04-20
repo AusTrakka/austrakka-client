@@ -53,7 +53,7 @@ function ProjectOverview() {
   async function getProject() {
     const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
     if (projectResponse.status === 'Success') {
-      setProjectDetails(projectResponse.data);
+      setProjectDetails(projectResponse.data as Project);
       setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
     } else {
       setIsOverviewError((prevState) => ({
@@ -62,7 +62,10 @@ function ProjectOverview() {
         detailsErrorMessage: projectResponse.message,
       }));
     }
-    const totalSamplesResponse: ResponseObject = await getTotalSamples();
+  }
+
+  async function getProjectSummary() {
+    const totalSamplesResponse: ResponseObject = await getTotalSamples(projectDetails!.projectMembers.id);
     if (totalSamplesResponse.status === 'Success') {
       const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
       setTotalSamples(+count);
@@ -71,7 +74,7 @@ function ProjectOverview() {
       setIsOverviewError((prevState) => ({
         ...prevState,
         totalSamplesError: true,
-        totalSamplesErrorMessage: projectResponse.message,
+        totalSamplesErrorMessage: totalSamplesResponse.message,
       }));
     }
     setIsOverviewLoading(false);
@@ -81,7 +84,8 @@ function ProjectOverview() {
   async function getSampleTableHeaders() {
     setIsSamplesLoading(true);
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    const samplesResponse: ResponseObject = await getSamples(`groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}`);
+    // TODO should just get the first row of data?
+    const samplesResponse: ResponseObject = await getSamples(`groupContext=${projectDetails!.projectMembers.id}`);
     if (samplesResponse.status === 'Success') {
       if (samplesResponse.data.length > 1) {
         const columnHeaderArray = Object.keys(samplesResponse.data[0]);
@@ -112,9 +116,14 @@ function ProjectOverview() {
   }
 
   useEffect(() => {
-    getProject(); // API calls
-    getSampleTableHeaders();
+    getProject(); 
   }, []);
+
+  useEffect(() => {
+    if (projectDetails){ 
+      getSampleTableHeaders();
+    }
+  }, [projectDetails])
 
   useEffect(() => {
     if (projectDetails){
@@ -123,12 +132,19 @@ function ProjectOverview() {
   }, [projectDetails])
 
   useEffect(() => {
+    if (projectDetails){
+      getProjectSummary()
+    }
+  }, [projectDetails])
+
+  useEffect(() => {
     // Only get samples when columns are already populated
+    // effects should trigger getProject -> getHeaders -> this function
     async function getSamplesList() {
       const searchParams = new URLSearchParams({
         Page: (samplesPagination.pageIndex + 1).toString(),
         PageSize: (samplesPagination.pageSize).toString(),
-        groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+        groupContext: `${projectDetails!.projectMembers.id}`,
       });
       const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
       if (samplesResponse.status === 'Success') {

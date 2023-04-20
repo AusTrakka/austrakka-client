@@ -5,7 +5,15 @@ export interface Project {
   projectId: number,
   abbreviation: string,
   name: string,
-  description: string
+  description: string,
+  projectMembers: {
+    id: number,
+    name: string
+  },
+  projectAnalyses: {
+    id: number,
+    name: string
+  }[]
   // could add auditable fields - created, createdBy
 }
 
@@ -17,7 +25,10 @@ export interface Plot {
   plotType: string,
   spec: string,
   projectId: number,
-  // also projectName, and isActive. projectAbbrev??
+  projectName: string
+  projectAbbrev: string
+  projectGroupId: number
+  isActive: boolean
 }
 
 export interface PlotListing {
