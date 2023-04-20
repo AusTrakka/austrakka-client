@@ -6,7 +6,6 @@ import {
   Backdrop, Alert, AlertTitle,
 } from '@mui/material';
 import { FileDownload, Close } from '@mui/icons-material';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
@@ -74,7 +73,6 @@ function Samples(props: SamplesProps) {
       setExportCSVLoading(false);
       setExportCSVError(false);
     } else {
-      // TODO: Add error dialog
       setExportCSVLoading(false);
       setExportCSVError(true);
     }
