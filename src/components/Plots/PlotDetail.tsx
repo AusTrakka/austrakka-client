@@ -26,7 +26,6 @@ const PlotDetail = () => {
     getPlot();
   }, [plotAbbrev])
 
-  // TODO display error banner if plot type is unrecognised 
   const renderPlot = () => {
     if(!plot){
       return <Typography>Loading plot</Typography>
@@ -35,7 +34,7 @@ const PlotDetail = () => {
       case "ClusterTimeline":
         return <ClusterTimeline plot={plot}/>
       default:
-        return <Typography>Plot type {plot.plotType} cannot be rendered</Typography>
+        return <Alert severity="error">Plot type {plot.plotType} cannot be rendered</Alert>
     }
   }
   
