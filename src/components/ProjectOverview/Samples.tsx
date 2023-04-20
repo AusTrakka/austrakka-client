@@ -31,6 +31,7 @@ interface SamplesProps {
   setSamplesPagination: any, // TODO: fix
   isFiltersOpen: boolean,
   setIsFiltersOpen: any,
+  queryString: string,
   setQueryString: any,
   setFilterList: any,
   filterList: Filter[],
@@ -49,6 +50,7 @@ function Samples(props: SamplesProps) {
     setSamplesPagination,
     isFiltersOpen,
     setIsFiltersOpen,
+    queryString,
     setQueryString,
     filterList,
     setFilterList,
@@ -84,6 +86,7 @@ function Samples(props: SamplesProps) {
       Page: '1',
       PageSize: (totalSamples).toString(),
       groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+      filters: queryString,
     });
     const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
     if (samplesResponse.status === 'Success') {
@@ -101,30 +104,28 @@ function Samples(props: SamplesProps) {
     getSamplesList();
   };
   const ExportButton = (
-    <div>
-      {exportCSVLoading
-        ? (
-          <CircularProgress
-            color="secondary"
-            size={40}
-            sx={{
-              position: 'absolute',
-              zIndex: 1,
-            }}
-          />
-        )
-        : null}
-      <Tooltip title="Export to CSV" placement="top">
-        <IconButton
-          onClick={() => {
-            exportCSV();
-          }}
-          disabled={exportCSVLoading}
-        >
-          <FileDownload />
-        </IconButton>
-      </Tooltip>
-    </div>
+    <Tooltip title="Export to CSV" placement="top">
+      <IconButton
+        onClick={() => {
+          exportCSV();
+        }}
+        disabled={exportCSVLoading}
+      >
+        {exportCSVLoading
+          ? (
+            <CircularProgress
+              color="secondary"
+              size={40}
+              sx={{
+                position: 'absolute',
+                zIndex: 1,
+              }}
+            />
+          )
+          : null}
+        <FileDownload />
+      </IconButton>
+    </Tooltip>
   );
   const handleDialogClose = () => {
     setExportCSVError(false);

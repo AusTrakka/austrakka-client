@@ -217,6 +217,7 @@ function ProjectOverview() {
           setSamplesPagination={setSamplesPagination}
           isFiltersOpen={isFiltersOpen}
           setIsFiltersOpen={setIsFiltersOpen}
+          queryString={queryString}
           setQueryString={setQueryString}
           filterList={filterList}
           setFilterList={setFilterList}
