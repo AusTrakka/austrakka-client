@@ -280,6 +280,7 @@ function QueryBuilder(props: QueryBuilderProps) {
                         label="Value"
                         value={newFilter.value === '' ? null : newFilter.value}
                         onChange={(newValue) => handleFilterDateChange(newValue)}
+                        format="YYYY-MM-DD"
                         slotProps={{
                           textField: {
                             size: 'small',
@@ -325,7 +326,7 @@ function QueryBuilder(props: QueryBuilderProps) {
                         </b>
                         {' '}
                         {filter.fieldType === 'date'
-                          ? filter.value.format('DD/MM/YYYY')
+                          ? filter.value.format('YYYY-MM-DD')
                           : filter.value}
                       </>
                     )}
