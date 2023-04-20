@@ -28,12 +28,12 @@ interface SamplesProps {
     samplesErrorMessage: string,
   },
   samplesPagination: MRT_PaginationState,
-  setSamplesPagination: any, // TODO: fix
+  setSamplesPagination: React.Dispatch<React.SetStateAction<MRT_PaginationState>>,
   isFiltersOpen: boolean,
-  setIsFiltersOpen: any,
+  setIsFiltersOpen: React.Dispatch<React.SetStateAction<boolean>>,
   queryString: string,
-  setQueryString: any,
-  setFilterList: any,
+  setQueryString: React.Dispatch<React.SetStateAction<string>>,
+  setFilterList: React.Dispatch<React.SetStateAction<Filter[]>>,
   filterList: Filter[],
   displayFields: DisplayFields[],
 }
