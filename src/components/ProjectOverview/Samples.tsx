@@ -109,7 +109,7 @@ function Samples(props: SamplesProps) {
         onClick={() => {
           exportCSV();
         }}
-        disabled={exportCSVLoading}
+        disabled={exportCSVLoading || sampleList.length < 1}
       >
         {exportCSVLoading
           ? (
