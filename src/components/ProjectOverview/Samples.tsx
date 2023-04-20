@@ -2,14 +2,15 @@ import React, { memo, useState } from 'react';
 import MaterialReactTable, { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
 import {
   Box, IconButton, Tooltip,
-  CircularProgress, Dialog, DialogActions,
-  DialogContent, DialogContentText, DialogTitle, Button,
+  CircularProgress, Dialog,
+  Backdrop, Alert, AlertTitle,
 } from '@mui/material';
-import { FileDownload } from '@mui/icons-material';
+import { FileDownload, Close } from '@mui/icons-material';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
-import { ResponseObject, getSamples } from '../../utilities/resourceUtils';
+import { getSamples, ResponseObject } from '../../utilities/resourceUtils';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
@@ -71,7 +72,7 @@ function Samples(props: SamplesProps) {
       // setExportData(samplesResponse.data);
       csvExporter.generateCsv(samplesResponse.data);
       setExportCSVLoading(false);
-      setExportCSVError(true);
+      setExportCSVError(false);
     } else {
       // TODO: Add error dialog
       setExportCSVLoading(false);
@@ -114,21 +115,29 @@ function Samples(props: SamplesProps) {
   return (
     <>
       <p className={styles.h1}>Samples</p>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
+        open={exportCSVLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <br />
       <Dialog onClose={handleDialogClose} open={exportCSVError}>
-        <DialogTitle id="alert-dialog-title">
-          Your data could not be exported to CSV.
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            There has been an error exporting your data to CSV.
-            <br />
-            Please try again later, or contact an AusTrakka admin.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}>Close</Button>
-        </DialogActions>
+        <Alert severity="error" sx={{ padding: 3 }}>
+          <IconButton
+            aria-label="close"
+            onClick={handleDialogClose}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <Close />
+          </IconButton>
+          <AlertTitle sx={{ paddingBottom: 1 }}>
+            <strong>Your data could not be exported to CSV.</strong>
+          </AlertTitle>
+          There has been an error exporting your data to CSV.
+          <br />
+          Please try again later, or contact an AusTrakka admin.
+        </Alert>
       </Dialog>
       <MaterialReactTable
         columns={sampleTableColumns}
