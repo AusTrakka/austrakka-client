@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect } from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
 } from 'material-react-table';
@@ -12,7 +12,6 @@ import {
 import { ExportToCsv } from 'export-to-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
-import { getSamples, ResponseObject } from '../../utilities/resourceUtils';
 import { DisplayFields } from '../../types/fields.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 
@@ -31,11 +30,17 @@ interface SamplesProps {
   setSamplesPagination: React.Dispatch<React.SetStateAction<MRT_PaginationState>>,
   isFiltersOpen: boolean,
   setIsFiltersOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  queryString: string,
   setQueryString: React.Dispatch<React.SetStateAction<string>>,
   setFilterList: React.Dispatch<React.SetStateAction<Filter[]>>,
   filterList: Filter[],
   displayFields: DisplayFields[],
+  getExportData: any, // TODO: fix
+  exportData: ProjectSample[],
+  setExportData: React.Dispatch<React.SetStateAction<ProjectSample[]>>,
+  exportCSVLoading: boolean,
+  setExportCSVLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  exportCSVError: boolean,
+  setExportCSVError:React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 function Samples(props: SamplesProps) {
@@ -50,15 +55,19 @@ function Samples(props: SamplesProps) {
     setSamplesPagination,
     isFiltersOpen,
     setIsFiltersOpen,
-    queryString,
     setQueryString,
     filterList,
     setFilterList,
     displayFields,
+    getExportData,
+    exportData,
+    setExportData,
+    exportCSVLoading,
+    setExportCSVLoading,
+    exportCSVError,
+    setExportCSVError,
   } = props;
-  const [exportCSVLoading, setExportCSVLoading] = useState(false);
-  const [exportCSVError, setExportCSVError] = useState(false);
-  // const [exportData, setExportData] = useState();
+
   const generateFilename = () => {
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });
@@ -69,45 +78,42 @@ function Samples(props: SamplesProps) {
     const s = dateObject.getSeconds();
     return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
   };
-  const csvOptions = {
-    fieldSeparator: ',',
-    quoteStrings: '"',
-    decimalSeparator: '.',
-    showLabels: true,
-    useBom: true,
-    useKeysAsHeaders: false,
-    headers: sampleTableColumns.map((c) => c.header),
-    filename: generateFilename(),
-  };
-  const csvExporter = new ExportToCsv(csvOptions);
-  // TODO: Move this up to the parent component - will cause error if totalSamples > backend limit
-  async function getSamplesList() {
-    const searchParams = new URLSearchParams({
-      Page: '1',
-      PageSize: (totalSamples).toString(),
-      groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
-      filters: queryString,
-    });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
-    if (samplesResponse.status === 'Success') {
-      // setExportData(samplesResponse.data);
-      csvExporter.generateCsv(samplesResponse.data);
-      setExportCSVLoading(false);
-      setExportCSVError(false);
-    } else {
-      setExportCSVLoading(false);
-      setExportCSVError(true);
-    }
-  }
-  const exportCSV = () => {
-    setExportCSVLoading(true);
-    getSamplesList();
-  };
+  useEffect(
+    () => {
+      if (exportData.length > 0 && exportCSVLoading && !exportCSVError) {
+        const csvOptions = {
+          fieldSeparator: ',',
+          quoteStrings: '"',
+          decimalSeparator: '.',
+          showLabels: true,
+          useBom: true,
+          useKeysAsHeaders: false,
+          headers: sampleTableColumns.map((c) => c.header),
+          filename: generateFilename(),
+        };
+        const csvExporter = new ExportToCsv(csvOptions);
+        csvExporter.generateCsv(exportData);
+        setExportCSVLoading(false);
+        setExportCSVError(false);
+        setExportData([]);
+      }
+    },
+    [
+      exportCSVError,
+      exportCSVLoading,
+      exportData,
+      sampleTableColumns,
+      setExportCSVError,
+      setExportCSVLoading,
+      setExportData,
+    ],
+  );
+
   const ExportButton = (
     <Tooltip title="Export to CSV" placement="top">
       <IconButton
         onClick={() => {
-          exportCSV();
+          getExportData();
         }}
         disabled={exportCSVLoading || sampleList.length < 1}
       >

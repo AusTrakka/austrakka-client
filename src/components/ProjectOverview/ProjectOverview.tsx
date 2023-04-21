@@ -47,6 +47,9 @@ function ProjectOverview() {
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
+  const [exportCSVLoading, setExportCSVLoading] = useState(false);
+  const [exportCSVError, setExportCSVError] = useState(false);
+  const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   const [isTreesLoading] = useState(true);
   const [isPlotsLoading] = useState(true);
@@ -172,8 +175,23 @@ function ProjectOverview() {
       setProjectSamples([]);
     }
   }, [samplesPagination.pageIndex, samplesPagination.pageSize, sampleTableColumns, queryString]);
-  // TODO: Move export to CSV logic here
-  //
+
+  const getExportData = async () => {
+    setExportCSVLoading(true);
+    const searchParams = new URLSearchParams({
+      Page: '1',
+      PageSize: (totalSamples).toString(),
+      groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+      filters: queryString,
+    });
+    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    if (samplesResponse.status === 'Success') {
+      setExportData(samplesResponse.data);
+    } else {
+      setExportCSVLoading(false);
+      setExportCSVError(true);
+    }
+  };
   const projectOverviewTabs: TabContentProps[] = [
     {
       index: 0,
@@ -217,11 +235,17 @@ function ProjectOverview() {
           setSamplesPagination={setSamplesPagination}
           isFiltersOpen={isFiltersOpen}
           setIsFiltersOpen={setIsFiltersOpen}
-          queryString={queryString}
           setQueryString={setQueryString}
           filterList={filterList}
           setFilterList={setFilterList}
           displayFields={displayFields}
+          getExportData={getExportData}
+          setExportData={setExportData}
+          exportCSVLoading={exportCSVLoading}
+          setExportCSVLoading={setExportCSVLoading}
+          exportCSVError={exportCSVError}
+          setExportCSVError={setExportCSVError}
+          exportData={exportData}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
