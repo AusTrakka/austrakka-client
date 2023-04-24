@@ -81,21 +81,27 @@ function Samples(props: SamplesProps) {
   useEffect(
     () => {
       if (exportData.length > 0 && exportCSVLoading && !exportCSVError) {
-        const csvOptions = {
-          fieldSeparator: ',',
-          quoteStrings: '"',
-          decimalSeparator: '.',
-          showLabels: true,
-          useBom: true,
-          useKeysAsHeaders: false,
-          headers: sampleTableColumns.map((c) => c.header),
-          filename: generateFilename(),
-        };
-        const csvExporter = new ExportToCsv(csvOptions);
-        csvExporter.generateCsv(exportData);
-        setExportCSVLoading(false);
-        setExportCSVError(false);
-        setExportData([]);
+        try {
+          const csvOptions = {
+            fieldSeparator: ',',
+            quoteStrings: '"',
+            decimalSeparator: '.',
+            showLabels: true,
+            useBom: true,
+            useKeysAsHeaders: false,
+            headers: sampleTableColumns.map((c) => c.header),
+            filename: generateFilename(),
+          };
+          const csvExporter = new ExportToCsv(csvOptions);
+          csvExporter.generateCsv(exportData);
+          setExportCSVLoading(false);
+          setExportCSVError(false);
+          setExportData([]);
+        } catch (error) {
+          setExportCSVLoading(false);
+          setExportCSVError(true);
+          setExportData([]);
+        }
       }
     },
     [
