@@ -76,8 +76,8 @@ export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbr
 export const getPlots = (projectId: number) => callAPI(`/api/Plots/project/${projectId}`, 'GET', {});
 export const getPlotDetails = (abbrev: string) => callAPI(`/api/Plots/abbrev/${abbrev}`, 'GET', {});
 export const getPlotData = (groupId: number, fields: string[]) => {
-  const fieldsQuery: string = fields.map(field => `fields=${field}`).join('&')
-  return callAPI(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, 'GET', {})
+  const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
+  return callAPI(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, 'GET', {});
 };
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});

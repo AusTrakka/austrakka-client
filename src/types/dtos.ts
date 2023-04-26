@@ -1,4 +1,3 @@
-
 // These are view models; should correspond to server-side DTOs
 
 export interface Project {

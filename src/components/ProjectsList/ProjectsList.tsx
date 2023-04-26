@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { Typography } from '@mui/material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
-import { Typography } from '@mui/material';
 
 type Project = {
   abbreviation: string,
@@ -59,23 +59,23 @@ function ProjectsList() {
 
   return (
     <>
-    <Typography className="pageTitle">
-      Projects    
-    </Typography>
-    <MaterialReactTable
-      columns={columns}
-      data={projectsList}
-      enableStickyHeader
-      initialState={{ density: 'compact' }}
-      enableColumnResizing
-      enableFullScreenToggle={false}
-      enableHiding={false}
-      enableDensityToggle={false}
-      state={{
-        isLoading,
-        showAlertBanner: isError,
-      }}
-      muiToolbarAlertBannerProps={
+      <Typography className="pageTitle">
+        Projects
+      </Typography>
+      <MaterialReactTable
+        columns={columns}
+        data={projectsList}
+        enableStickyHeader
+        initialState={{ density: 'compact' }}
+        enableColumnResizing
+        enableFullScreenToggle={false}
+        enableHiding={false}
+        enableDensityToggle={false}
+        state={{
+          isLoading,
+          showAlertBanner: isError,
+        }}
+        muiToolbarAlertBannerProps={
           isError
             ? {
               color: 'error',
@@ -83,19 +83,19 @@ function ProjectsList() {
             }
             : undefined
         }
-      muiLinearProgressProps={({ isTopToolbar }) => ({
-        color: 'secondary',
-        sx: { display: isTopToolbar ? 'block' : 'none' },
-      })}
-      muiTableProps={{
-        sx: {
-          width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-        },
-      }}
-      muiTableBodyRowProps={({ row }) => ({
-        onClick: () => rowClickHandler(row),
-      })}
-    />
+        muiLinearProgressProps={({ isTopToolbar }) => ({
+          color: 'secondary',
+          sx: { display: isTopToolbar ? 'block' : 'none' },
+        })}
+        muiTableProps={{
+          sx: {
+            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+          },
+        }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+        })}
+      />
     </>
   );
 }

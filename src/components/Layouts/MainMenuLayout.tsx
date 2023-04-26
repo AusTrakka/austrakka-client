@@ -46,12 +46,12 @@ function MainMenuLayout() {
   const [drawer, setDrawer] = useState(true);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const breadcrumbNameMap: { [key: string]: any } = {
-    'projects': 'Projects',
-    'plots': 'Plots',
-    'upload': 'Upload',
+    projects: 'Projects',
+    plots: 'Plots',
+    upload: 'Upload',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots']
+  const breadcrumbNoLink: string[] = ['plots'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -186,21 +186,21 @@ function MainMenuLayout() {
               <Link color="inherit" to="/">
                 Home
               </Link>
-                {pathnames.map((value, index) => {
-                  const last = index === pathnames.length - 1;
-                  const nolink = breadcrumbNoLink.includes(value);
-                  const to = `/${pathnames.slice(0, index + 1).join('/')}`;
-                  const displayValue = value in breadcrumbNameMap ? breadcrumbNameMap[value] : value
+              {pathnames.map((value, index) => {
+                const last = index === pathnames.length - 1;
+                const nolink = breadcrumbNoLink.includes(value);
+                const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+                const displayValue = value in breadcrumbNameMap ? breadcrumbNameMap[value] : value;
 
-                  return (last || nolink) ? (
-                    <Typography color="text.primary" key={to}>
-                      {displayValue}
-                    </Typography>
-                  ) : (
-                    <Link color="inherit" to={to} key={to}>
-                      {displayValue}
-                    </Link>
-                  );
+                return (last || nolink) ? (
+                  <Typography color="text.primary" key={to}>
+                    {displayValue}
+                  </Typography>
+                ) : (
+                  <Link color="inherit" to={to} key={to}>
+                    {displayValue}
+                  </Link>
+                );
               })}
             </Breadcrumbs>
           </div>
