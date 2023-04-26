@@ -30,7 +30,7 @@ async function callAPI(url:string, method:string, requestData:object) {
   if (method !== 'GET') {
     options.body = JSON.stringify(requestData);
   }
-  const apiRepsonse = await fetch(base + url, options)
+  const apiResponse = await fetch(base + url, options)
     .then((response) => response.json().then((data) => ({
       data,
       headers: response.headers,
@@ -66,7 +66,7 @@ async function callAPI(url:string, method:string, requestData:object) {
       };
     })
     .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiRepsonse;
+  return apiResponse;
 }
 
 // Definition of endpoints
@@ -81,3 +81,4 @@ export const getPlotData = (groupId: number, fields: string[]) => {
 };
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
+export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});

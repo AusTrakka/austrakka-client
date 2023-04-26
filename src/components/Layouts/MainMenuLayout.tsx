@@ -2,22 +2,29 @@ import React, { useEffect, useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
-import { Inventory, Upload, AccountCircle } from '@mui/icons-material/';
 import {
-  AppBar, Box, Drawer, IconButton, List, ListItem, Toolbar, Menu, MenuItem, Typography, Breadcrumbs,
+  Inventory, Upload, AccountCircle, Help, MoreVert,
+} from '@mui/icons-material/';
+import {
+  AppBar, Box, Drawer, IconButton, List,
+  ListItem, Toolbar, Menu, MenuItem, Typography,
+  Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
+import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png';
 import LogoutButton from '../Common/LogoutButton';
 
 const settings = [
   {
-    title: 'Help',
+    title: 'Profile',
+    icon: <AccountCircle fontSize="small" />,
   },
   {
-    title: 'Logout',
+    title: 'Help',
+    icon: <Help fontSize="small" />,
   },
 ];
 
@@ -48,8 +55,17 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
+  const [username, setUsername] = useState('');
+  const [user, setUser] = useState('');
+  const { accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+
   useEffect(() => {
-  });
+    if (account && account.name && account.username) {
+      setUser(account.name);
+      setUsername(account.username);
+    }
+  }, [account]);
 
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
@@ -89,8 +105,9 @@ function MainMenuLayout() {
             <div className={styles.logocontainer}>
               <img src={AusTrakkaLogo} alt="logo" className={styles.logo} />
             </div>
-            <LogoutButton />
-
+            <Tooltip title={username}>
+              <Typography>{user}</Typography>
+            </Tooltip>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -99,7 +116,7 @@ function MainMenuLayout() {
               onClick={handleMenu}
               color="inherit"
             >
-              <AccountCircle />
+              <MoreVert />
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -117,8 +134,17 @@ function MainMenuLayout() {
               onClose={handleMenuClose}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting.title} onClick={handleMenuClose}>{setting.title}</MenuItem>
+                <MenuItem key={setting.title} onClick={handleMenuClose} disabled>
+                  <ListItemIcon>
+                    {setting.icon}
+                  </ListItemIcon>
+                  <ListItemText>
+                    {setting.title}
+                  </ListItemText>
+                </MenuItem>
               ))}
+              <Divider />
+              <LogoutButton />
             </Menu>
           </Toolbar>
         </AppBar>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { Button } from '@mui/material';
+import { MenuItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Logout } from '@mui/icons-material/';
 
 export default function LogoutButton() {
   const { instance } = useMsal();
@@ -15,6 +16,9 @@ export default function LogoutButton() {
     }
   };
   return (
-    <Button variant="contained" color="secondary" onClick={() => handleLogout('redirect')}>Logout</Button>
+    <MenuItem onClick={() => handleLogout('redirect')}>
+      <ListItemIcon><Logout /></ListItemIcon>
+      <ListItemText>Logout</ListItemText>
+    </MenuItem>
   );
 }
