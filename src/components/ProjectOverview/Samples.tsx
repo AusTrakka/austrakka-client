@@ -34,7 +34,7 @@ interface SamplesProps {
   setFilterList: React.Dispatch<React.SetStateAction<Filter[]>>,
   filterList: Filter[],
   displayFields: DisplayFields[],
-  getExportData: any, // TODO: fix
+  getExportData: Function,
   exportData: ProjectSample[],
   setExportData: React.Dispatch<React.SetStateAction<ProjectSample[]>>,
   exportCSVLoading: boolean,
