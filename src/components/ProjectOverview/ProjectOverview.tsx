@@ -15,7 +15,7 @@ import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { useParams } from 'react-router-dom';
 import { PlotListing, Project } from '../../types/dtos';
-import { Typography } from '@mui/material';
+import { Alert, Typography } from '@mui/material';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -69,6 +69,7 @@ function ProjectOverview() {
         detailsError: true,
         detailsErrorMessage: projectResponse.message,
       }));
+      setIsOverviewLoading(false);
     }
   }
 
@@ -92,7 +93,6 @@ function ProjectOverview() {
   async function getSampleTableHeaders() {
     setIsSamplesLoading(true);
     // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-    // TODO should just get the first row of data?
     const samplesResponse: ResponseObject = await getSamples(`pageSize=1&page=1&groupContext=${projectDetails!.projectMembers.id}`);
     if (samplesResponse.status === 'Success') {
       if (samplesResponse.data.length >= 1) {
@@ -128,21 +128,11 @@ function ProjectOverview() {
 
   useEffect(() => {
     if (projectDetails){ 
+      getProjectSummary();
       getSampleTableHeaders();
-    }
-  }, [projectDetails])
-
-  useEffect(() => {
-    if (projectDetails){
       getPlotList();
     }
-  }, [projectDetails])
-
-  useEffect(() => {
-    if (projectDetails){
-      getProjectSummary()
-    }
-  }, [projectDetails])
+  }, [projectDetails]);
 
   useEffect(() => {
     async function getFilterFields() {
@@ -235,43 +225,56 @@ function ProjectOverview() {
 
   return (
     <>
-      <Typography className="pageTitle">
-        {projectDetails ? projectDetails.name : ""}    
-      </Typography>
-      <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
-      <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
-        <Summary
-          totalSamples={totalSamples}
-          lastUpload={lastUpload}
-          projectDesc={projectDetails ? projectDetails.description : ''}
-          // isOverviewLoading={isOverviewLoading}
-          isOverviewError={isOverviewError}
-        />
-      </TabPanel>
-      <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
-        <Samples
-          totalSamples={totalSamples}
-          samplesCount={samplesCount}
-          sampleList={projectSamples}
-          isSamplesLoading={isSamplesLoading}
-          sampleTableColumns={sampleTableColumns}
-          isSamplesError={isSamplesError}
-          samplesPagination={samplesPagination}
-          setSamplesPagination={setSamplesPagination}
-          isFiltersOpen={isFiltersOpen}
-          setIsFiltersOpen={setIsFiltersOpen}
-          setQueryString={setQueryString}
-          filterList={filterList}
-          setFilterList={setFilterList}
-          displayFields={displayFields}
-        />
-      </TabPanel>
-      <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
-        <TreeList isTreesLoading={isTreesLoading} />
-      </TabPanel>
-      <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
-        <PlotList isPlotsLoading={isPlotsLoading} projectAbbrev={projectAbbrev!} plotList={projectPlots} />
-      </TabPanel>
+      {
+      isOverviewError.detailsError
+        ? (
+          <Alert severity="error">
+            {isOverviewError.detailsErrorMessage}
+          </Alert>
+        )
+        : (
+          <>
+            <Typography className="pageTitle">
+              {projectDetails ? projectDetails.name : ''}
+            </Typography>
+            <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
+            <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
+              <Summary
+                totalSamples={totalSamples}
+                lastUpload={lastUpload}
+                projectDesc={projectDetails ? projectDetails.description : ''}
+            // isOverviewLoading={isOverviewLoading}
+                isOverviewError={isOverviewError}
+              />
+            </TabPanel>
+            <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
+              <Samples
+                totalSamples={totalSamples}
+                samplesCount={samplesCount}
+                sampleList={projectSamples}
+                isSamplesLoading={isSamplesLoading}
+                sampleTableColumns={sampleTableColumns}
+                isSamplesError={isSamplesError}
+                samplesPagination={samplesPagination}
+                setSamplesPagination={setSamplesPagination}
+                isFiltersOpen={isFiltersOpen}
+                setIsFiltersOpen={setIsFiltersOpen}
+                setQueryString={setQueryString}
+                filterList={filterList}
+                setFilterList={setFilterList}
+                displayFields={displayFields}
+              />
+            </TabPanel>
+            <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
+              <TreeList isTreesLoading={isTreesLoading} />
+            </TabPanel>
+            <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
+              <PlotList isPlotsLoading={isPlotsLoading} projectAbbrev={projectAbbrev!} plotList={projectPlots} />
+            </TabPanel>
+          </>
+        )
+    }
+
     </>
   );
 }
