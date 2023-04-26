@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { memo, useEffect } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
 } from 'material-react-table';
@@ -78,6 +78,12 @@ function Samples(props: SamplesProps) {
     const s = dateObject.getSeconds();
     return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
   };
+  const updateExportedStates = useCallback((isExported: boolean) => {
+    setExportCSVLoading(false);
+    setExportCSVError(!isExported);
+    setExportData([]);
+  }, [setExportCSVError, setExportCSVLoading, setExportData]);
+
   useEffect(
     () => {
       if (exportData.length > 0 && exportCSVLoading && !exportCSVError) {
@@ -94,25 +100,13 @@ function Samples(props: SamplesProps) {
           };
           const csvExporter = new ExportToCsv(csvOptions);
           csvExporter.generateCsv(exportData);
-          setExportCSVLoading(false);
-          setExportCSVError(false);
-          setExportData([]);
+          updateExportedStates(true);
         } catch (error) {
-          setExportCSVLoading(false);
-          setExportCSVError(true);
-          setExportData([]);
+          updateExportedStates(false);
         }
       }
     },
-    [
-      exportCSVError,
-      exportCSVLoading,
-      exportData,
-      sampleTableColumns,
-      setExportCSVError,
-      setExportCSVLoading,
-      setExportData,
-    ],
+    [exportCSVError, exportCSVLoading, exportData, sampleTableColumns, updateExportedStates],
   );
 
   const ExportButton = (
