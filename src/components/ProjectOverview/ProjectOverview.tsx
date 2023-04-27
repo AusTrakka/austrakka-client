@@ -221,7 +221,7 @@ function ProjectOverview() {
     const searchParams = new URLSearchParams({
       Page: '1',
       PageSize: (totalSamples).toString(),
-      groupContext: `${sessionStorage.getItem('selectedProjectMemberGroupId')}`,
+      groupContext: `${projectDetails!.projectMembers.id}`,
       filters: queryString,
     });
     const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
