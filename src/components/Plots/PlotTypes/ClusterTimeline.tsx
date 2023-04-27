@@ -60,6 +60,7 @@ function ClusterTimeline(props: SpecificPlotProps) {
         setData(response.data);
       } else {
         // TODO error handling if getPlotData fails
+        // eslint-disable-next-line no-console
         console.error(response.message);
       }
     };
