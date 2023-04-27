@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { Typography } from '@mui/material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
 
@@ -46,12 +47,8 @@ function ProjectsList() {
 
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
-      // TO DO: When moving away from session storage, project name will need passed as prop?
-      const { projectMembers, name, projectId }: any = selectedProject;
-      sessionStorage.setItem('selectedProjectMemberGroupId', projectMembers.id);
-      sessionStorage.setItem('selectedProjectName', name);
-      sessionStorage.setItem('selectedProjectId', projectId);
-      navigate('/projects/details');
+      const { abbreviation }: any = selectedProject;
+      navigate(`/projects/${abbreviation}`);
     }
   }, [selectedProject, navigate]);
 
@@ -61,20 +58,24 @@ function ProjectsList() {
   };
 
   return (
-    <MaterialReactTable
-      columns={columns}
-      data={projectsList}
-      enableStickyHeader
-      initialState={{ density: 'compact' }}
-      enableColumnResizing
-      enableFullScreenToggle={false}
-      enableHiding={false}
-      enableDensityToggle={false}
-      state={{
-        isLoading,
-        showAlertBanner: isError,
-      }}
-      muiToolbarAlertBannerProps={
+    <>
+      <Typography className="pageTitle">
+        Projects
+      </Typography>
+      <MaterialReactTable
+        columns={columns}
+        data={projectsList}
+        enableStickyHeader
+        initialState={{ density: 'compact' }}
+        enableColumnResizing
+        enableFullScreenToggle={false}
+        enableHiding={false}
+        enableDensityToggle={false}
+        state={{
+          isLoading,
+          showAlertBanner: isError,
+        }}
+        muiToolbarAlertBannerProps={
           isError
             ? {
               color: 'error',
@@ -82,19 +83,20 @@ function ProjectsList() {
             }
             : undefined
         }
-      muiLinearProgressProps={({ isTopToolbar }) => ({
-        color: 'secondary',
-        sx: { display: isTopToolbar ? 'block' : 'none' },
-      })}
-      muiTableProps={{
-        sx: {
-          width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-        },
-      }}
-      muiTableBodyRowProps={({ row }) => ({
-        onClick: () => rowClickHandler(row),
-      })}
-    />
+        muiLinearProgressProps={({ isTopToolbar }) => ({
+          color: 'secondary',
+          sx: { display: isTopToolbar ? 'block' : 'none' },
+        })}
+        muiTableProps={{
+          sx: {
+            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+          },
+        }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+        })}
+      />
+    </>
   );
 }
 export default ProjectsList;

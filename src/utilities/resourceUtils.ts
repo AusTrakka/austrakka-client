@@ -30,7 +30,7 @@ async function callAPI(url:string, method:string, requestData:object) {
   if (method !== 'GET') {
     options.body = JSON.stringify(requestData);
   }
-  const apiRepsonse = await fetch(base + url, options)
+  const apiResponse = await fetch(base + url, options)
     .then((response) => response.json().then((data) => ({
       data,
       headers: response.headers,
@@ -66,13 +66,19 @@ async function callAPI(url:string, method:string, requestData:object) {
       };
     })
     .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiRepsonse;
+  return apiResponse;
 }
 
 // Definition of endpoints
 
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
-export const getProjectDetails = () => callAPI(`/api/Projects/${sessionStorage.getItem('selectedProjectId')}`, 'GET', {});
+export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbrev/${abbrev}`, 'GET', {});
+export const getPlots = (projectId: number) => callAPI(`/api/Plots/project/${projectId}`, 'GET', {});
+export const getPlotDetails = (abbrev: string) => callAPI(`/api/Plots/abbrev/${abbrev}`, 'GET', {});
+export const getPlotData = (groupId: number, fields: string[]) => {
+  const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
+  return callAPI(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, 'GET', {});
+};
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
-export const getTotalSamples = () => callAPI(`/api/MetadataSearch/?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}&pageSize=1&page=1`, 'GET', {});
-export const getDisplayFields = () => callAPI(`/api/Group/display-fields?groupContext=${sessionStorage.getItem('selectedProjectMemberGroupId')}`, 'GET', {});
+export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
+export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
