@@ -12,6 +12,7 @@ import ProjectOverview from './components/ProjectOverview/ProjectOverview';
 import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
+import PlotDetail from './components/Plots/PlotDetail';
 
 function App() {
   return (
@@ -24,7 +25,8 @@ function App() {
             <Route element={<MainMenuLayout />}>
               <Route path="/upload" element={<Upload />} />
               <Route path="/projects" element={<ProjectsList />} />
-              <Route path="/projects/details" element={<ProjectOverview />} />
+              <Route path="/projects/:projectAbbrev" element={<ProjectOverview />} />
+              <Route path="/projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
             </Route>
             <Route path="*" element={<Navigate to="/projects" />} />
           </Routes>
