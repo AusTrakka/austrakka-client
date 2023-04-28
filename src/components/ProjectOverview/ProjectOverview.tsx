@@ -38,6 +38,7 @@ function ProjectOverview() {
     pageIndex: 0,
     pageSize: 50,
   });
+  const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
@@ -174,6 +175,40 @@ function ProjectOverview() {
     getFilterFields();
   }, [projectDetails, sampleTableColumns]);
 
+  useEffect(() => {
+    const getColumnOrder = () => {
+      function compareFields(field1: { columnOrder: number; }, field2: { columnOrder: number; }) {
+        if (field1.columnOrder < field2.columnOrder) {
+          return -1; // sort field1 before field2
+        }
+        if (field1.columnOrder > field2.columnOrder) {
+          return 1; // sort field1 after field2
+        }
+        return 0; // keep original order of field1 and field2
+      }
+      const orderedArray: string[] = [];
+      // 1. Order fields in an array from fieldList
+      const sortedDisplayFields = displayFields.sort(compareFields);
+      sortedDisplayFields.forEach((field) => {
+        orderedArray.push(field.columnName);
+      });
+      // 2. Find additional fields - in sampleTableColumns but not displayFields
+      const additionalFields = sampleTableColumns.filter(
+        (column: { header: string; }) => !displayFields.some(
+          (df) => df.columnName === column.header,
+        ),
+      );
+      // 3. Append additional fields to beginning of array
+      additionalFields.forEach((field) => {
+        orderedArray.unshift(field.header);
+      });
+      setColumnOrderArray(orderedArray);
+    };
+    if (displayFields.length > 0 && sampleTableColumns.length > 0) {
+      getColumnOrder();
+    }
+  }, [displayFields, sampleTableColumns]);
+
   useEffect(
     () => {
     // Only get samples when columns are already populated
@@ -270,6 +305,7 @@ function ProjectOverview() {
               filterList={filterList}
               setFilterList={setFilterList}
               displayFields={displayFields}
+              columnOrderArray={columnOrderArray}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>

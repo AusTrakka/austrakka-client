@@ -3,7 +3,9 @@ import React, { memo } from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
 } from 'material-react-table';
-import { Box, IconButton, Typography } from '@mui/material';
+import {
+  Box, IconButton, Typography,
+} from '@mui/material';
 import { FilterList } from '@mui/icons-material';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
@@ -29,6 +31,7 @@ interface SamplesProps {
   setFilterList: any,
   filterList: Filter[],
   displayFields: DisplayFields[],
+  columnOrderArray: string[],
 }
 
 function Samples(props: SamplesProps) {
@@ -47,6 +50,7 @@ function Samples(props: SamplesProps) {
     filterList,
     setFilterList,
     displayFields,
+    columnOrderArray,
   } = props;
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
@@ -100,6 +104,7 @@ function Samples(props: SamplesProps) {
           pagination: samplesPagination,
           isLoading: isSamplesLoading,
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
+          columnOrder: columnOrderArray,
         }}
         initialState={{ density: 'compact' }}
         rowCount={samplesCount}
