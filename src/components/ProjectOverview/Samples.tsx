@@ -1,5 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { memo, useCallback, useEffect } from 'react';
+import React, {
+  memo, useCallback, useEffect, useRef,
+} from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
 } from 'material-react-table';
@@ -9,7 +11,7 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle,
 } from '@mui/material';
-import { ExportToCsv } from 'export-to-csv';
+import { CSVLink } from 'react-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
@@ -67,6 +69,7 @@ function Samples(props: SamplesProps) {
     exportCSVError,
     setExportCSVError,
   } = props;
+  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
   const generateFilename = () => {
     const dateObject = new Date();
@@ -88,18 +91,7 @@ function Samples(props: SamplesProps) {
     () => {
       if (exportData.length > 0 && exportCSVLoading && !exportCSVError) {
         try {
-          const csvOptions = {
-            fieldSeparator: ',',
-            quoteStrings: '"',
-            decimalSeparator: '.',
-            showLabels: true,
-            useBom: true,
-            useKeysAsHeaders: false,
-            headers: sampleTableColumns.map((c) => c.header),
-            filename: generateFilename(),
-          };
-          const csvExporter = new ExportToCsv(csvOptions);
-          csvExporter.generateCsv(exportData);
+          csvLink?.current?.link.click();
           updateExportedStates(true);
         } catch (error) {
           updateExportedStates(false);
@@ -110,28 +102,36 @@ function Samples(props: SamplesProps) {
   );
 
   const ExportButton = (
-    <Tooltip title="Export to CSV" placement="top">
-      <IconButton
-        onClick={() => {
-          getExportData();
-        }}
-        disabled={exportCSVLoading || sampleList.length < 1}
-      >
-        {exportCSVLoading
-          ? (
-            <CircularProgress
-              color="secondary"
-              size={40}
-              sx={{
-                position: 'absolute',
-                zIndex: 1,
-              }}
-            />
-          )
-          : null}
-        <FileDownload />
-      </IconButton>
-    </Tooltip>
+    <>
+      <CSVLink
+        data={exportData}
+        ref={csvLink}
+        style={{ display: 'none' }}
+        filename={generateFilename() || 'austrakka_export.csv'}
+      />
+      <Tooltip title="Export to CSV" placement="top">
+        <IconButton
+          onClick={() => {
+            getExportData();
+          }}
+          disabled={exportCSVLoading || sampleList.length < 1}
+        >
+          {exportCSVLoading
+            ? (
+              <CircularProgress
+                color="secondary"
+                size={40}
+                sx={{
+                  position: 'absolute',
+                  zIndex: 1,
+                }}
+              />
+            )
+            : null}
+          <FileDownload />
+        </IconButton>
+      </Tooltip>
+    </>
   );
   const handleDialogClose = () => {
     setExportCSVError(false);
