@@ -188,7 +188,8 @@ function ProjectOverview() {
       }
       const orderedArray: string[] = [];
       // 1. Order fields in an array from fieldList
-      const sortedDisplayFields = displayFields.sort(compareFields);
+      const copy = [...displayFields]; // Creating copy of original array so it's not overridden
+      const sortedDisplayFields = copy.sort(compareFields);
       sortedDisplayFields.forEach((field) => {
         orderedArray.push(field.columnName);
       });
