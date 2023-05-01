@@ -193,9 +193,9 @@ function ProjectOverview() {
       sortedDisplayFields.forEach((field) => {
         orderedArray.push(field.columnName);
       });
-      // 2. Find additional fields - in sampleTableColumns but not displayFields
+      // 2. Find additional fields - in sampleTableColumns but not sortedDisplayFields
       const additionalFields = sampleTableColumns.filter(
-        (column: { header: string; }) => !displayFields.some(
+        (column: { header: string; }) => !sortedDisplayFields.some(
           (df) => df.columnName === column.header,
         ),
       );
