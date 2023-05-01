@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, {
-  memo, useCallback, useEffect, useRef, Dispatch, SetStateAction,
+  memo, useEffect, useRef, Dispatch, SetStateAction,
 } from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
@@ -16,6 +16,7 @@ import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
+import LoadingState from '../../constants/loadingState';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
@@ -39,10 +40,8 @@ interface SamplesProps {
   getExportData: Function,
   exportData: ProjectSample[],
   setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
-  exportCSVLoading: boolean,
-  setExportCSVLoading: Dispatch<SetStateAction<boolean>>,
-  exportCSVError: boolean,
-  setExportCSVError: Dispatch<SetStateAction<boolean>>,
+  exportCSVStatus: LoadingState,
+  setExportCSVStatus: Dispatch<SetStateAction<LoadingState>>,
 }
 
 function Samples(props: SamplesProps) {
@@ -64,10 +63,8 @@ function Samples(props: SamplesProps) {
     getExportData,
     exportData,
     setExportData,
-    exportCSVLoading,
-    setExportCSVLoading,
-    exportCSVError,
-    setExportCSVError,
+    exportCSVStatus,
+    setExportCSVStatus,
   } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
@@ -81,24 +78,21 @@ function Samples(props: SamplesProps) {
     const s = dateObject.getSeconds();
     return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
   };
-  const updateExportedStates = useCallback((isExported: boolean) => {
-    setExportCSVLoading(false);
-    setExportCSVError(!isExported);
-    setExportData([]);
-  }, [setExportCSVError, setExportCSVLoading, setExportData]);
 
   useEffect(
     () => {
-      if (exportData.length > 0 && exportCSVLoading && !exportCSVError) {
+      if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
         try {
           csvLink?.current?.link.click();
-          updateExportedStates(true);
+          setExportCSVStatus(LoadingState.IDLE);
+          setExportData([]);
         } catch (error) {
-          updateExportedStates(false);
+          setExportCSVStatus(LoadingState.ERROR);
+          setExportData([]);
         }
       }
     },
-    [exportCSVError, exportCSVLoading, exportData, sampleTableColumns, updateExportedStates],
+    [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
   );
 
   const ExportButton = (
@@ -114,9 +108,9 @@ function Samples(props: SamplesProps) {
           onClick={() => {
             getExportData();
           }}
-          disabled={exportCSVLoading || sampleList.length < 1}
+          disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
         >
-          {exportCSVLoading
+          {exportCSVStatus === LoadingState.LOADING
             ? (
               <CircularProgress
                 color="secondary"
@@ -134,7 +128,7 @@ function Samples(props: SamplesProps) {
     </>
   );
   const handleDialogClose = () => {
-    setExportCSVError(false);
+    setExportCSVStatus(LoadingState.IDLE);
   };
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
@@ -142,12 +136,12 @@ function Samples(props: SamplesProps) {
       <p className={styles.h1}>Samples</p>
       <Backdrop
         sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
-        open={exportCSVLoading}
+        open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
       <br />
-      <Dialog onClose={handleDialogClose} open={exportCSVError}>
+      <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
             aria-label="close"

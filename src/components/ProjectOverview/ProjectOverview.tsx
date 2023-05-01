@@ -16,6 +16,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { PlotListing, Project } from '../../types/dtos';
+import LoadingState from '../../constants/loadingState';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -51,8 +52,7 @@ function ProjectOverview() {
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
-  const [exportCSVLoading, setExportCSVLoading] = useState(false);
-  const [exportCSVError, setExportCSVError] = useState(false);
+  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
@@ -217,7 +217,7 @@ function ProjectOverview() {
   );
 
   const getExportData = async () => {
-    setExportCSVLoading(true);
+    setExportCSVStatus(LoadingState.LOADING);
     const searchParams = new URLSearchParams({
       Page: '1',
       PageSize: (totalSamples).toString(),
@@ -228,8 +228,7 @@ function ProjectOverview() {
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {
-      setExportCSVLoading(false);
-      setExportCSVError(true);
+      setExportCSVStatus(LoadingState.ERROR);
     }
   };
   const projectOverviewTabs: TabContentProps[] = [
@@ -291,10 +290,8 @@ function ProjectOverview() {
               displayFields={displayFields}
               getExportData={getExportData}
               setExportData={setExportData}
-              exportCSVLoading={exportCSVLoading}
-              setExportCSVLoading={setExportCSVLoading}
-              exportCSVError={exportCSVError}
-              setExportCSVError={setExportCSVError}
+              exportCSVStatus={exportCSVStatus}
+              setExportCSVStatus={setExportCSVStatus}
               exportData={exportData}
             />
           </TabPanel>
