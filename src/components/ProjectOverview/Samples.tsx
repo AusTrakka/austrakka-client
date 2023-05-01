@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, {
-  memo, useCallback, useEffect, useRef,
+  memo, useCallback, useEffect, useRef, Dispatch, SetStateAction,
 } from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
@@ -29,20 +29,20 @@ interface SamplesProps {
     samplesErrorMessage: string,
   },
   samplesPagination: MRT_PaginationState,
-  setSamplesPagination: React.Dispatch<React.SetStateAction<MRT_PaginationState>>,
+  setSamplesPagination: Dispatch<SetStateAction<MRT_PaginationState>>,
   isFiltersOpen: boolean,
-  setIsFiltersOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  setQueryString: React.Dispatch<React.SetStateAction<string>>,
-  setFilterList: React.Dispatch<React.SetStateAction<Filter[]>>,
+  setIsFiltersOpen: Dispatch<SetStateAction<boolean>>,
+  setQueryString: Dispatch<SetStateAction<string>>,
+  setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
   displayFields: DisplayFields[],
   getExportData: Function,
   exportData: ProjectSample[],
-  setExportData: React.Dispatch<React.SetStateAction<ProjectSample[]>>,
+  setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
   exportCSVLoading: boolean,
-  setExportCSVLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setExportCSVLoading: Dispatch<SetStateAction<boolean>>,
   exportCSVError: boolean,
-  setExportCSVError:React.Dispatch<React.SetStateAction<boolean>>,
+  setExportCSVError: Dispatch<SetStateAction<boolean>>,
 }
 
 function Samples(props: SamplesProps) {
