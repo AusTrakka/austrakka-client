@@ -16,6 +16,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { PlotListing, Project } from '../../types/dtos';
+import LoadingState from '../../constants/loadingState';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -51,6 +52,8 @@ function ProjectOverview() {
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
+  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
   const [isTreesLoading] = useState(true);
@@ -213,6 +216,21 @@ function ProjectOverview() {
       sampleTableColumns, queryString],
   );
 
+  const getExportData = async () => {
+    setExportCSVStatus(LoadingState.LOADING);
+    const searchParams = new URLSearchParams({
+      Page: '1',
+      PageSize: (totalSamples).toString(),
+      groupContext: `${projectDetails!.projectMembers.id}`,
+      filters: queryString,
+    });
+    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    if (samplesResponse.status === 'Success') {
+      setExportData(samplesResponse.data);
+    } else {
+      setExportCSVStatus(LoadingState.ERROR);
+    }
+  };
   const projectOverviewTabs: TabContentProps[] = [
     {
       index: 0,
@@ -270,6 +288,11 @@ function ProjectOverview() {
               filterList={filterList}
               setFilterList={setFilterList}
               displayFields={displayFields}
+              getExportData={getExportData}
+              setExportData={setExportData}
+              exportCSVStatus={exportCSVStatus}
+              setExportCSVStatus={setExportCSVStatus}
+              exportData={exportData}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
