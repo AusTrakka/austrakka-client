@@ -30,6 +30,7 @@ interface SamplesProps {
     samplesErrorMessage: string,
   },
   samplesPagination: MRT_PaginationState,
+  columnOrderArray: string[],
   setSamplesPagination: Dispatch<SetStateAction<MRT_PaginationState>>,
   isFiltersOpen: boolean,
   setIsFiltersOpen: Dispatch<SetStateAction<boolean>>,
@@ -60,6 +61,7 @@ function Samples(props: SamplesProps) {
     filterList,
     setFilterList,
     displayFields,
+    columnOrderArray,
     getExportData,
     exportData,
     setExportData,
@@ -205,6 +207,7 @@ function Samples(props: SamplesProps) {
           pagination: samplesPagination,
           isLoading: isSamplesLoading,
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
+          columnOrder: columnOrderArray,
         }}
         initialState={{ density: 'compact' }}
         rowCount={samplesCount}
