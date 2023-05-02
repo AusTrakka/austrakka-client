@@ -1,14 +1,22 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { memo } from 'react';
+import React, {
+  memo, useEffect, useRef, Dispatch, SetStateAction,
+} from 'react';
 import MaterialReactTable, {
   MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
 } from 'material-react-table';
-import { Box, IconButton, Typography } from '@mui/material';
-import { FilterList } from '@mui/icons-material';
+import { FilterList, FileDownload, Close } from '@mui/icons-material';
+import {
+  Box, IconButton, Tooltip, Typography,
+  CircularProgress, Dialog,
+  Backdrop, Alert, AlertTitle,
+} from '@mui/material';
+import { CSVLink } from 'react-csv';
 import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
+import LoadingState from '../../constants/loadingState';
 
 interface SamplesProps {
   sampleList: ProjectSample[],
@@ -22,13 +30,19 @@ interface SamplesProps {
     samplesErrorMessage: string,
   },
   samplesPagination: MRT_PaginationState,
-  setSamplesPagination: any, // TODO: fix
+  columnOrderArray: string[],
+  setSamplesPagination: Dispatch<SetStateAction<MRT_PaginationState>>,
   isFiltersOpen: boolean,
-  setIsFiltersOpen: any,
-  setQueryString: any,
-  setFilterList: any,
+  setIsFiltersOpen: Dispatch<SetStateAction<boolean>>,
+  setQueryString: Dispatch<SetStateAction<string>>,
+  setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
   displayFields: DisplayFields[],
+  getExportData: Function,
+  exportData: ProjectSample[],
+  setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
+  exportCSVStatus: LoadingState,
+  setExportCSVStatus: Dispatch<SetStateAction<LoadingState>>,
 }
 
 function Samples(props: SamplesProps) {
@@ -47,12 +61,105 @@ function Samples(props: SamplesProps) {
     filterList,
     setFilterList,
     displayFields,
+    columnOrderArray,
+    getExportData,
+    exportData,
+    setExportData,
+    exportCSVStatus,
+    setExportCSVStatus,
   } = props;
+  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
+
+  const generateFilename = () => {
+    const dateObject = new Date();
+    const year = dateObject.toLocaleString('default', { year: 'numeric' });
+    const month = dateObject.toLocaleString('default', { month: '2-digit' });
+    const day = dateObject.toLocaleString('default', { day: '2-digit' });
+    const h = dateObject.getHours();
+    const m = dateObject.getMinutes();
+    const s = dateObject.getSeconds();
+    return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
+  };
+
+  useEffect(
+    () => {
+      if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
+        try {
+          csvLink?.current?.link.click();
+          setExportCSVStatus(LoadingState.IDLE);
+          setExportData([]);
+        } catch (error) {
+          setExportCSVStatus(LoadingState.ERROR);
+          setExportData([]);
+        }
+      }
+    },
+    [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
+  );
+
+  const ExportButton = (
+    <>
+      <CSVLink
+        data={exportData}
+        ref={csvLink}
+        style={{ display: 'none' }}
+        filename={generateFilename() || 'austrakka_export.csv'}
+      />
+      <Tooltip title="Export to CSV" placement="top">
+        <IconButton
+          onClick={() => {
+            getExportData();
+          }}
+          disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
+        >
+          {exportCSVStatus === LoadingState.LOADING
+            ? (
+              <CircularProgress
+                color="secondary"
+                size={40}
+                sx={{
+                  position: 'absolute',
+                  zIndex: 1,
+                }}
+              />
+            )
+            : null}
+          <FileDownload />
+        </IconButton>
+      </Tooltip>
+    </>
+  );
+  const handleDialogClose = () => {
+    setExportCSVStatus(LoadingState.IDLE);
+  };
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
     <>
       <p className={styles.h1}>Samples</p>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
+        open={exportCSVStatus === LoadingState.LOADING}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <br />
+      <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
+        <Alert severity="error" sx={{ padding: 3 }}>
+          <IconButton
+            aria-label="close"
+            onClick={handleDialogClose}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <Close />
+          </IconButton>
+          <AlertTitle sx={{ paddingBottom: 1 }}>
+            <strong>Your data could not be exported to CSV.</strong>
+          </AlertTitle>
+          There has been an error exporting your data to CSV.
+          <br />
+          Please try again later, or contact an AusTrakka admin.
+        </Alert>
+      </Dialog>
       <QueryBuilder
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
@@ -100,6 +207,7 @@ function Samples(props: SamplesProps) {
           pagination: samplesPagination,
           isLoading: isSamplesLoading,
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
+          columnOrder: columnOrderArray,
         }}
         initialState={{ density: 'compact' }}
         rowCount={samplesCount}
@@ -117,6 +225,7 @@ function Samples(props: SamplesProps) {
         enableColumnVirtualization
         renderToolbarInternalActions={({ table }) => (
           <Box>
+            {ExportButton}
             <IconButton
               onClick={() => {
                 setIsFiltersOpen(!isFiltersOpen);
