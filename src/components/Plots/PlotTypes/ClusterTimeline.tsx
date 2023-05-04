@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { VegaLite } from 'react-vega';
 import { TopLevelSpec } from 'vega-lite';
-import { Plot } from '../../../types/dtos';
-import { ResponseObject, getPlotData } from '../../../utilities/resourceUtils';
+import { Plot, MetaDataColumn } from '../../../types/dtos';
+import { ResponseObject, getPlotData, getDisplayFields } from '../../../utilities/resourceUtils';
 
 const SAMPLE_ID_FIELD = 'SampleName';
 
@@ -34,20 +34,28 @@ const defaultSpec: TopLevelSpec = {
 // This should probably be for all plottypes, so move out
 interface SpecificPlotProps {
   plot: Plot | undefined | null,
+  plotErrorMsg: string | null,
+  setPlotErrorMsg: Function,
 }
 
 function ClusterTimeline(props: SpecificPlotProps) {
-  const { plot } = props;
+  const { plot, plotErrorMsg, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [data, setData] = useState([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[] | null>(null);
+  // This represents "visualisable" fields: categorical, and string fields with canVisualise=true
+  const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
+  // TODO get available date fields in the dataset
 
   // Set spec on load
   useEffect(() => {
-    if (plot?.spec && plot?.spec.length > 0) {
-      // May need to adjust e.g. width and height in spec
-      setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-    } else {
-      setSpec(defaultSpec);
+    // Only try to set spec (including setting default spec) if plot has loaded
+    if (plot) {
+      if (plot.spec && plot.spec.length > 0) {
+        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
+      } else {
+        setSpec(defaultSpec);
+      }
     }
   }, [plot]);
 
@@ -55,28 +63,64 @@ function ClusterTimeline(props: SpecificPlotProps) {
   useEffect(() => {
     const updatePlotData = async (fields: string[]) => {
       const response = await getPlotData(plot!.projectGroupId, fields) as ResponseObject;
-      getPlotData(plot!.projectId, fields);
       if (response.status === 'Success') {
         setData(response.data);
       } else {
-        // TODO error handling if getPlotData fails
         console.error(response.message);
+        setPlotErrorMsg('Unable to load plot data');
       }
     };
 
-    // Currently hard-coded to match spec; nees to be queried and used to modify spec via controls
-    const fields = [SAMPLE_ID_FIELD, 'Date_coll', 'cgMLST', 'Serotype'];
+    // For now get all display fields, but could do ID + Date_coll + categorical
+    if (plot && displayFields && displayFields.length > 0) {
+      const fields = [SAMPLE_ID_FIELD, ...displayFields.map(field => field.columnName)];
+      updatePlotData(fields);
+    }
+  }, [setPlotErrorMsg, displayFields, plot]);
+
+  // Get project's total fields and visualisable (psuedo-categorical) fields on load
+  useEffect(() => {
+    const updateFields = async () => {
+      const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
+      if (response.status === 'Success') {
+        const fields = response.data as MetaDataColumn[];
+        setDisplayFields(fields);
+        // Note this does not include numerical or date fields
+        // For now this need only depend on canVisualise
+        setCategoricalFields(fields
+          .filter(field => field.canVisualise)
+          .map(field => field.columnName));
+      } else {
+        // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
+        console.error(response.message);
+      }
+    }
 
     if (plot) {
-      updatePlotData(fields);
+      updateFields();
     }
   }, [plot]);
 
+  const renderControls = () => {
+    // Dummy for now
+    return <></>;
+  };
+
+  const renderPlot = () => {
+    if (spec && data) {
+      return <VegaLite spec={spec!} data={{ inputdata: data }} />;
+    }
+    if (!plotErrorMsg || (plotErrorMsg.length === 0)) {
+      return <div>Loading plot</div>
+    }
+    return <></>
+  };
+
   return (
-    /* TODO error banner; loading placeholder */
-    (spec && data)
-      ? <VegaLite spec={spec!} data={{ inputdata: data }} />
-      : <div>Loading plot</div>
+    <>
+    {renderControls()}
+    {renderPlot()}
+    </>
   );
 }
 

@@ -51,7 +51,13 @@ function PlotDetail() {
     // Could use React.createElement instead of a switch statement
     switch (plot!.plotType) {
       case 'ClusterTimeline':
-        return <ClusterTimeline plot={plot} />;
+        return (
+          <ClusterTimeline
+            plot={plot}
+            plotErrorMsg={errorMsg}
+            setPlotErrorMsg={setErrorMsg}
+          />
+        );
       default:
         // eslint-disable-next-line react/jsx-no-useless-fragment
         return <></>;
