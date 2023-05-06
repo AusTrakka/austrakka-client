@@ -7,6 +7,10 @@ import { ResponseObject, getPlotData, getDisplayFields } from '../../../utilitie
 
 const SAMPLE_ID_FIELD = 'SampleName';
 
+// We will check for these in order in the given dataset, and use the first found as default
+// Possible enhancement: allow preferred field to be specified in the database, overriding these
+const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster'];
+
 // Assumed fields here are Date_coll, Seq_ID(SAMPLE_ID_FIELD)
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -43,22 +47,30 @@ const defaultSpec: TopLevelSpec = {
 // This should probably be for all plottypes, so move out
 interface SpecificPlotProps {
   plot: Plot | undefined | null,
-  plotErrorMsg: string | null,
   setPlotErrorMsg: Function,
 }
 
 function ClusterTimeline(props: SpecificPlotProps) {
-  const { plot, plotErrorMsg, setPlotErrorMsg } = props;
+  const { plot, setPlotErrorMsg } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [data, setData] = useState([]);
-  // TODO can't hardcode to cgMLST; must have preferred defaults and check available
-  const [yAxisField, setYAxisField] = useState<string>("cgMLST");
+  const [yAxisField, setYAxisField] = useState<string>("");
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[] | null>(null);
   // This represents "visualisable" fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   // TODO get available date fields in the dataset
+
+  // Get the field to populate a selector when fields first loaded
+  const getStartingField = (preferredFields, availableFields) => {
+    for (const preferredField of preferredFields) {
+      if (availableFields.includes(preferredField)) {
+        return preferredField;
+      }
+    }
+    return availableFields[0];
+  };
 
   // Set spec on load
   useEffect(() => {
@@ -100,9 +112,12 @@ function ClusterTimeline(props: SpecificPlotProps) {
         setDisplayFields(fields);
         // Note this does not include numerical or date fields
         // For now this selection need only depend on canVisualise
-        setCategoricalFields(fields
+        const catFields = fields
           .filter(field => field.canVisualise)
-          .map(field => field.columnName));
+          .map(field => field.columnName);
+        setCategoricalFields(catFields);
+        // Set default y-axis field
+        setYAxisField(getStartingField(preferredYAxisFields, catFields));
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
         console.error(response.message);
@@ -140,7 +155,7 @@ function ClusterTimeline(props: SpecificPlotProps) {
     const addYAxisToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => {
       if (oldSpec === null) {
         return null;
-      };
+      }
       return (
         {
           ...oldSpec,
@@ -155,9 +170,9 @@ function ClusterTimeline(props: SpecificPlotProps) {
       );
     };
 
-    // maybe check field not empty
-    setSpec(addYAxisToSpec);
-
+    if (yAxisField.length > 0) {
+      setSpec(addYAxisToSpec);
+    }
   }, [yAxisField]);
 
   const handleYAxisSelect = (event: SelectChangeEvent) => {

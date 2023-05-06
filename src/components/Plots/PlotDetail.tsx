@@ -38,8 +38,8 @@ function PlotDetail() {
   }, [plot]);
 
   const renderPlot = () => {
-    // TODO this will not display loading if the e.g. ClusterTimeline component is loading data
-    //      naively we can't pass the loading state into a component without knowing which
+    // TODO this will not display loading if the e.g. ClusterTimeline component is loading data.
+    //      Naively, we can't pass the loading state into a component without knowing which
     //      plot type component to use. Will probably require a separate loading state
     if (isPlotLoading) {
       // TODO a better loading indicator than simple text
@@ -54,7 +54,6 @@ function PlotDetail() {
         return (
           <ClusterTimeline
             plot={plot}
-            plotErrorMsg={errorMsg}
             setPlotErrorMsg={setErrorMsg}
           />
         );
