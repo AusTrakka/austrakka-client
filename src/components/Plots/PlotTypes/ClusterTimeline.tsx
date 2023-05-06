@@ -17,12 +17,20 @@ const defaultSpec: TopLevelSpec = {
       as: 'jitter',
     },
   ],
-  width: 900,
-  height: 900,
+  width: 'container',
+  height: { step: 70 },
   mark: 'point',
   encoding: {
-    x: { field: 'Date_coll', type: 'temporal' },
-    y: { field: 'cgMLST', type: 'nominal' },
+    x: {
+      field: 'Date_coll',
+      type: 'temporal',
+      axis: { grid: false },
+    },
+    y: {
+      field: 'cgMLST',
+      type: 'nominal',
+      axis: { grid: true },
+    },
     yOffset: { field: 'jitter', type: 'quantitative' },
     color: {
       field: 'cgMLST',
