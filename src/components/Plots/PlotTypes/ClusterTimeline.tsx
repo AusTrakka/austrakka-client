@@ -10,6 +10,8 @@ const SAMPLE_ID_FIELD = 'SampleName';
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
 const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster'];
+const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster'];
+const preferredDateFields = ['Date_coll'];
 
 // Assumed fields here are Date_coll, Seq_ID(SAMPLE_ID_FIELD)
 const defaultSpec: TopLevelSpec = {
@@ -57,12 +59,15 @@ function ClusterTimeline(props: SpecificPlotProps) {
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [data, setData] = useState([]);
   const [yAxisField, setYAxisField] = useState<string>("");
+  const [colourField, setColourField] = useState<string>("");
+  const [dateField, setDateField] = useState<string>("");
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[] | null>(null);
   // This represents "visualisable" fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  // TODO get available date fields in the dataset
+  const [dateFields, setDateFields] = useState<string[]>([]);
 
   // Get the field to populate a selector when fields first loaded
+  // If preferred field is not of the correct type it will simply appear unavailable
   const getStartingField = (preferredFields, availableFields) => {
     for (const preferredField of preferredFields) {
       if (availableFields.includes(preferredField)) {
@@ -70,6 +75,19 @@ function ClusterTimeline(props: SpecificPlotProps) {
       }
     }
     return availableFields[0];
+  };
+
+  const setFieldInSpec = (oldSpec: TopLevelSpec|null, field: string, value: string): TopLevelSpec|null => {
+    if (oldSpec === null) {
+      return null;
+    }
+    // A shallow copy of unaltered elements; replace altered
+    // Note we do not change other properties of specified field, e.g. type
+    let newSpec = {...oldSpec};
+    newSpec.encoding = {...oldSpec.encoding};
+    newSpec['encoding'][field] = {...oldSpec['encoding'][field]};
+    newSpec['encoding'][field]['field'] = value;
+    return newSpec;
   };
 
   // Set spec on load
@@ -112,12 +130,17 @@ function ClusterTimeline(props: SpecificPlotProps) {
         setDisplayFields(fields);
         // Note this does not include numerical or date fields
         // For now this selection need only depend on canVisualise
-        const catFields = fields
+        const localCatFields = fields
           .filter(field => field.canVisualise)
           .map(field => field.columnName);
-        setCategoricalFields(catFields);
-        // Set default y-axis field
-        setYAxisField(getStartingField(preferredYAxisFields, catFields));
+        setCategoricalFields(localCatFields);
+        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+        setColourField(getStartingField(preferredColourFields, localCatFields));
+        const localDateFields = fields
+          .filter(field => field.primitiveType === 'date')
+          .map(field => field.columnName);
+        setDateFields(localDateFields);
+        setDateField(getStartingField(preferredDateFields, localDateFields));
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
         console.error(response.message);
@@ -152,46 +175,70 @@ function ClusterTimeline(props: SpecificPlotProps) {
 }, [spec, data, plotDiv]);
 
   useEffect(() => {
-    const addYAxisToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => {
-      if (oldSpec === null) {
-        return null;
-      }
-      return (
-        {
-          ...oldSpec,
-          encoding: {
-            ...oldSpec!.encoding,
-            y: {
-              ...oldSpec!.encoding!.y,  // already ordinal
-              field: yAxisField,
-            },
-          },
-        }
-      );
-    };
+    const addYAxisToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => setFieldInSpec(oldSpec, 'y', yAxisField);
 
     if (yAxisField.length > 0) {
       setSpec(addYAxisToSpec);
     }
   }, [yAxisField]);
 
-  const handleYAxisSelect = (event: SelectChangeEvent) => {
-    setYAxisField(event.target.value);
-  };
+  useEffect(() => {
+    const addColourToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => setFieldInSpec(oldSpec, 'color', colourField);
+
+    if (colourField.length > 0) {
+      setSpec(addColourToSpec);
+    }
+  }, [colourField]);
+
+  useEffect(() => {
+    const addDateFieldToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => setFieldInSpec(oldSpec, 'x', dateField);
+
+    if (dateField.length > 0) {
+      setSpec(addDateFieldToSpec);
+    }
+  }, [dateField]);
 
   const renderControls = () => (
     <Box sx={{ margin: 5 }}>
-      <FormControl fullWidth>
+      <FormControl sx={{ marginX: 3 }}>
         <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
         <Select
           labelId="y-axis-select-label"
           id="y-axis-select"
           value={yAxisField}
           label="Y-Axis"
-          onChange={handleYAxisSelect}
+          onChange={(e) => setYAxisField(e.target.value)}
         >
           {
             categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl sx={{ marginX: 3 }}>
+        <InputLabel id="colour-field-select-label">Colour</InputLabel>
+        <Select
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={colourField}
+          label="Colour"
+          onChange={(e) => setColourField(e.target.value)}
+        >
+          {
+            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl sx={{ marginX: 3 }}>
+        <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
+        <Select
+          labelId="date-field-select-label"
+          id="date-field-select"
+          value={dateField}
+          label="X-Axis"
+          onChange={(e) => setDateField(e.target.value)}
+        >
+          {
+            dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
