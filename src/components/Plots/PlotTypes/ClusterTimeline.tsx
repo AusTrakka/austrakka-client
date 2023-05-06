@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { compile, TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
+import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { Plot, MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getPlotData, getDisplayFields } from '../../../utilities/resourceUtils';
 
@@ -52,6 +53,8 @@ function ClusterTimeline(props: SpecificPlotProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [data, setData] = useState([]);
+  // TODO can't hardcode to cgMLST; must have preferred defaults and check available
+  const [yAxisField, setYAxisField] = useState<string>("cgMLST");
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[] | null>(null);
   // This represents "visualisable" fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -129,13 +132,56 @@ function ClusterTimeline(props: SpecificPlotProps) {
     if (spec && data && plotDiv?.current) {
       createVegaView();
     }
+  // Review: old vegaView is just being cleaned up and should NOT be a dependency?
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, data, plotDiv]);
+}, [spec, data, plotDiv]);
 
-  const renderControls = () => {
-    // Dummy for now
-    return <></>;
+  useEffect(() => {
+    const addYAxisToSpec = (oldSpec: TopLevelSpec|null): TopLevelSpec|null => {
+      if (oldSpec === null) {
+        return null;
+      };
+      return (
+        {
+          ...oldSpec,
+          encoding: {
+            ...oldSpec!.encoding,
+            y: {
+              ...oldSpec!.encoding!.y,  // already ordinal
+              field: yAxisField,
+            },
+          },
+        }
+      );
+    };
+
+    // maybe check field not empty
+    setSpec(addYAxisToSpec);
+
+  }, [yAxisField]);
+
+  const handleYAxisSelect = (event: SelectChangeEvent) => {
+    setYAxisField(event.target.value);
   };
+
+  const renderControls = () => (
+    <Box sx={{ margin: 5 }}>
+      <FormControl fullWidth>
+        <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
+        <Select
+          labelId="y-axis-select-label"
+          id="y-axis-select"
+          value={yAxisField}
+          label="Y-Axis"
+          onChange={handleYAxisSelect}
+        >
+          {
+            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+    </Box>
+  );
 
   return (
     <>
