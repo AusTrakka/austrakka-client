@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { VegaLite } from 'react-vega';
-import { TopLevelSpec } from 'vega-lite';
+import React, { useState, useEffect, useRef } from 'react';
+import { compile, TopLevelSpec } from 'vega-lite';
+import { parse, View as VegaView } from 'vega';
 import { Plot, MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getPlotData, getDisplayFields } from '../../../utilities/resourceUtils';
 
@@ -40,6 +40,8 @@ interface SpecificPlotProps {
 
 function ClusterTimeline(props: SpecificPlotProps) {
   const { plot, plotErrorMsg, setPlotErrorMsg } = props;
+  const plotDiv = useRef<HTMLDivElement>(null);
+  const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [data, setData] = useState([]);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[] | null>(null);
@@ -49,7 +51,6 @@ function ClusterTimeline(props: SpecificPlotProps) {
 
   // Set spec on load
   useEffect(() => {
-    // Only try to set spec (including setting default spec) if plot has loaded
     if (plot) {
       if (plot.spec && plot.spec.length > 0) {
         setSpec(JSON.parse(plot.spec) as TopLevelSpec);
@@ -71,7 +72,7 @@ function ClusterTimeline(props: SpecificPlotProps) {
       }
     };
 
-    // For now get all display fields, but could do ID + Date_coll + categorical
+    // For now get all display fields, but could do ID + dates + categorical
     if (plot && displayFields && displayFields.length > 0) {
       const fields = [SAMPLE_ID_FIELD, ...displayFields.map(field => field.columnName)];
       updatePlotData(fields);
@@ -81,12 +82,13 @@ function ClusterTimeline(props: SpecificPlotProps) {
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
     const updateFields = async () => {
+      // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         setDisplayFields(fields);
         // Note this does not include numerical or date fields
-        // For now this need only depend on canVisualise
+        // For now this selection need only depend on canVisualise
         setCategoricalFields(fields
           .filter(field => field.canVisualise)
           .map(field => field.columnName));
@@ -94,32 +96,43 @@ function ClusterTimeline(props: SpecificPlotProps) {
         // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
         console.error(response.message);
       }
-    }
+    };
 
     if (plot) {
       updateFields();
     }
   }, [plot]);
 
+  // Render plot by creating vega view
+  useEffect(() => {
+    const createVegaView = async () => {
+      if (vegaView) {
+        vegaView.finalize();
+      }
+      const compiledSpec = compile(spec!).spec;
+      compiledSpec.data![0]['values'] = data;
+      const view = await new VegaView(parse(compiledSpec))
+        .initialize(plotDiv.current!)
+        .runAsync();
+      setVegaView(view);
+    };
+
+    // For now we recreate view if data changes, not just if spec changes
+    if (spec && data && plotDiv?.current) {
+      createVegaView();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spec, data, plotDiv]);
+
   const renderControls = () => {
     // Dummy for now
     return <></>;
   };
 
-  const renderPlot = () => {
-    if (spec && data) {
-      return <VegaLite spec={spec!} data={{ inputdata: data }} />;
-    }
-    if (!plotErrorMsg || (plotErrorMsg.length === 0)) {
-      return <div>Loading plot</div>
-    }
-    return <></>
-  };
-
   return (
     <>
-    {renderControls()}
-    {renderPlot()}
+      {renderControls()}
+      <div id="#plot-container" ref={plotDiv} />
     </>
   );
 }
