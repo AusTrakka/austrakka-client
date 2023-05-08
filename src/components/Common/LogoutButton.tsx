@@ -6,7 +6,7 @@ import { Logout } from '@mui/icons-material/';
 export default function LogoutButton() {
   const { instance } = useMsal();
   const logoutRequest = {
-    account: instance.getActiveAccount(), // Bypasses the account selection screen on sign out
+    account: instance.getActiveAccount(),
     postLogoutRedirectUri: '/',
     mainWindowRedirectUri: '/',
   };

@@ -1,5 +1,4 @@
 import {
-  InteractionRequiredAuthError,
   PublicClientApplication, EventType, EventMessage, AuthenticationResult,
 } from '@azure/msal-browser';
 import { msalConfig } from '../config/authConfig';
@@ -13,39 +12,25 @@ msalInstance.addEventCallback((event: EventMessage) => {
     if (event.eventType === EventType.LOGIN_SUCCESS) {
       msalInstance.setActiveAccount(account);
     }
-    // TODO: add logout redirect
-    // else if (event.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
-    //   console.log('logout user now');
-    // }
   }
 });
 
 // Returns valid token or generates a new valid token
 export async function getToken() {
   const currentAccount = msalInstance.getActiveAccount();
-
   if (currentAccount) {
-    const accessTokenRequest = {
+    const request = {
       scopes: [import.meta.env.VITE_API_SCOPE],
-      account: currentAccount,
+      account: currentAccount || undefined,
     };
-    const accessToken = msalInstance
-      .acquireTokenSilent(accessTokenRequest)
-      .then((accessTokenResponse) => accessTokenResponse.accessToken)
-      .catch((error) => {
-        if (error instanceof InteractionRequiredAuthError) {
-          msalInstance
-            .acquireTokenRedirect(accessTokenRequest);
-          //  .then((accessTokenResponse) => accessTokenResponse);
-          // TODO: Catch token request errors
-          // .catch((tokenError) => {
-          //   console.log(tokenError);
-          // });
-        }
-        // console.log(error);
-        return null;
-      });
-    return accessToken;
+    return msalInstance.acquireTokenSilent(request).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      // fallback to interaction when silent call fails
+      // TODO: This is the wrong spot, needs to be in component tree
+      // msalInstance.acquireTokenRedirect(request);
+      return null;
+    });
   }
   return null;
 }
