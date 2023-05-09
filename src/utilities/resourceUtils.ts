@@ -23,7 +23,7 @@ async function callAPI(url:string, method:string, requestData:object) {
     return {
       status: 'Error',
       message: 'There has been an error, please try reloading the page or logging in again.',
-    };
+    } as ResponseObject;
   }
   const options: HTTPOptions = {
     method,
@@ -73,7 +73,7 @@ async function callAPI(url:string, method:string, requestData:object) {
       };
     })
     .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiResponse;
+  return apiResponse as ResponseObject;
 }
 
 // Definition of endpoints
