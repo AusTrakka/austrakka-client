@@ -18,19 +18,16 @@ msalInstance.addEventCallback((event: EventMessage) => {
 // Returns valid token or generates a new valid token
 export async function getToken() {
   const currentAccount = msalInstance.getActiveAccount();
-  if (currentAccount) {
-    const request = {
-      scopes: [import.meta.env.VITE_API_SCOPE],
-      account: currentAccount || undefined,
-    };
-    return msalInstance.acquireTokenSilent(request).catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      // fallback to interaction when silent call fails
-      // TODO: This is the wrong spot, needs to be in component tree
-      // msalInstance.acquireTokenRedirect(request);
-      return null;
-    });
-  }
-  return null;
+  const request = {
+    scopes: [import.meta.env.VITE_API_SCOPE],
+    account: currentAccount || undefined,
+  };
+  return msalInstance.acquireTokenSilent(request).catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    // fallback to interaction when silent call fails
+    // TODO: This is the wrong spot, needs to be in component tree but unsure how
+    // msalInstance.acquireTokenRedirect(request);
+    return null;
+  });
 }
