@@ -25,8 +25,8 @@ export async function getToken() {
   return msalInstance.acquireTokenSilent(request).catch((error) => {
     // eslint-disable-next-line no-console
     console.error(error);
-    // fallback to interaction when silent call fails
-    // TODO: This is the wrong spot, needs to be in component tree but unsure how
+    // TODO: This is the wrong spot, needs to be in component tree
+    // If we want to fallback to interaction when silent call fails
     // msalInstance.acquireTokenRedirect(request);
     return null;
   });
