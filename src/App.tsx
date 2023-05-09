@@ -1,11 +1,17 @@
 import React from 'react';
 import './App.css';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
+import {
+  Routes, Route, Navigate, useNavigate,
+} from 'react-router-dom';
+import {
+  AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate, MsalProvider,
+} from '@azure/msal-react';
+import { IPublicClientApplication, InteractionType } from '@azure/msal-browser';
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
+import CustomNavigationClient from './utilities/NavigationClient';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectsList from './components/ProjectsList/ProjectsList';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
@@ -14,28 +20,42 @@ import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 
-function App() {
+interface AppProps {
+  msalInstance: IPublicClientApplication;
+}
+
+function App({ msalInstance }: AppProps) {
+  const navigate = useNavigate();
+  const navigationClient = new CustomNavigationClient(navigate);
+  msalInstance.setNavigationClient(navigationClient);
+
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <AuthenticatedTemplate>
-          <Routes>
-            <Route path="/" element={<Navigate to="/projects" />} />
-            <Route path="/dashboard" element={<Navigate to="/projects" />} />
-            <Route element={<MainMenuLayout />}>
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/projects" element={<ProjectsList />} />
-              <Route path="/projects/:projectAbbrev" element={<ProjectOverview />} />
-              <Route path="/projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/projects" />} />
-          </Routes>
-        </AuthenticatedTemplate>
-        <UnauthenticatedTemplate>
-          <Routes>
-            <Route path="*" element={<Login />} />
-          </Routes>
-        </UnauthenticatedTemplate>
+        <MsalProvider instance={msalInstance}>
+          <AuthenticatedTemplate>
+            <MsalAuthenticationTemplate
+              interactionType={InteractionType.Redirect}
+            >
+              <Routes>
+                <Route path="/" element={<Navigate to="/projects" />} />
+                {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+                <Route element={<MainMenuLayout />}>
+                  <Route path="upload" element={<Upload />} />
+                  <Route path="projects" element={<ProjectsList />} />
+                  <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
+                  <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/projects" />} />
+              </Routes>
+            </MsalAuthenticationTemplate>
+          </AuthenticatedTemplate>
+          <UnauthenticatedTemplate>
+            <Routes>
+              <Route path="*" element={<Login />} />
+            </Routes>
+          </UnauthenticatedTemplate>
+        </MsalProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );
