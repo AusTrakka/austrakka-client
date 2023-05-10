@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { Plot } from '../../types/dtos';
-import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import { ResponseObject, getPlotDetails } from '../../utilities/resourceUtils';
+import ClusterTimeline from './PlotTypes/ClusterTimeline';
+import EpiCurve from './PlotTypes/EpiCurve';
+import Custom from './PlotTypes/Custom';
+
+const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'Custom'];
 
 function PlotDetail() {
   // Note that if the project abbrev is wrong in the URL, there will be no effect
@@ -29,9 +33,8 @@ function PlotDetail() {
   }, [plotAbbrev]);
 
   useEffect(() => {
-    const KNOWN_TYPES = ['ClusterTimeline'];
     if (plot) {
-      if (!KNOWN_TYPES.includes(plot!.plotType)) {
+      if (!KNOWN_PLOT_TYPES.includes(plot!.plotType)) {
         setErrorMsg(`Plot type ${plot!.plotType} cannot be rendered`);
       }
     }
@@ -53,6 +56,20 @@ function PlotDetail() {
       case 'ClusterTimeline':
         return (
           <ClusterTimeline
+            plot={plot}
+            setPlotErrorMsg={setErrorMsg}
+          />
+        );
+      case 'EpiCurve':
+        return (
+          <EpiCurve
+            plot={plot}
+            setPlotErrorMsg={setErrorMsg}
+          />
+        );
+      case 'Custom':
+        return (
+          <Custom
             plot={plot}
             setPlotErrorMsg={setErrorMsg}
           />
