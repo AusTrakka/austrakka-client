@@ -54,10 +54,10 @@ function ClusterTimeline(props: PlotTypeProps) {
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [yAxisField, setYAxisField] = useState<string>("");
-  const [colourField, setColourField] = useState<string>("");
+  const [yAxisField, setYAxisField] = useState<string>('');
+  const [colourField, setColourField] = useState<string>('');
   const [dateFields, setDateFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useState<string>("");
+  const [dateField, setDateField] = useState<string>('');
 
   // Set spec on load
   useEffect(() => {
