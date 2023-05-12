@@ -84,14 +84,14 @@ function EpiCurve(props: PlotTypeProps) {
   }, [dateField]);
 
   const renderControls = () => (
-    <Box sx={{ margin: 5 }}>
-      <FormControl sx={{ marginX: 3 }}>
+    <Box sx={{ float: 'right', marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
           labelId="date-field-select-label"
           id="date-field-select"
           value={dateField}
-          label="X-Axis"
+          label="X-Axis Date Field"
           onChange={(e) => setDateField(e.target.value)}
         >
           {
