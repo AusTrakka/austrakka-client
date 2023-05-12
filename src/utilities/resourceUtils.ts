@@ -18,11 +18,18 @@ async function callAPI(url:string, method:string, requestData:object) {
   const base = import.meta.env.VITE_REACT_API_URL;
   const token = await getToken();
 
+  // Check if token is null/undefined before making API call
+  if (!token) {
+    return {
+      status: 'Error',
+      message: 'There has been an error, please try reloading the page or logging in again.',
+    } as ResponseObject;
+  }
   const options: HTTPOptions = {
     method,
     headers: {
       Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token?.accessToken}`,
       'Access-Control-Expose-Headers': '*',
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
@@ -66,7 +73,7 @@ async function callAPI(url:string, method:string, requestData:object) {
       };
     })
     .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiResponse;
+  return apiResponse as ResponseObject;
 }
 
 // Definition of endpoints

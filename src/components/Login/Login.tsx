@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Alert } from '@mui/material';
 import { useMsal } from '@azure/msal-react';
+import { InteractionStatus } from '@azure/msal-browser';
 import styles from './Login.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import { loginRequest } from '../../config/authConfig';
 
 // TODO: Add login loading and login failure features
 function LoginButton() {
-  const { instance } = useMsal();
+  const { instance, inProgress } = useMsal();
   const [loginError, setLoginError] = useState(false);
 
   const handleLogin = (loginType: string) => {
@@ -19,7 +20,13 @@ function LoginButton() {
   };
   return (
     <>
-      <Button variant="contained" onClick={() => handleLogin('redirect')}>Log in</Button>
+      <Button
+        variant="contained"
+        onClick={() => handleLogin('redirect')}
+        disabled={inProgress === InteractionStatus.Login}
+      >
+        Log in
+      </Button>
       { loginError
         ? (
           <Alert severity="error" sx={{ m: 2, textAlign: 'left' }}>
