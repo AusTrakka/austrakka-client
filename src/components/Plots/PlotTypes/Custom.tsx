@@ -36,6 +36,7 @@ function Custom(props: PlotTypeProps) {
         // We can't know which fields the custom spec needs; retrieve all
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...fields.map(field => field.columnName)]);
       } else {
+        // eslint-disable-next-line no-console
         console.error(response.message);
       }
     };

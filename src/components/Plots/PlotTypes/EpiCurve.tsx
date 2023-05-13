@@ -65,6 +65,7 @@ function EpiCurve(props: PlotTypeProps) {
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields]);
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
+        // eslint-disable-next-line no-console
         console.error(response.message);
       }
     };

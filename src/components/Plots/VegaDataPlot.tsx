@@ -27,6 +27,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       if (response.status === 'Success') {
         setData(response.data);
       } else {
+        // eslint-disable-next-line no-console
         console.error(response.message);
         setPlotErrorMsg('Unable to load plot data');
       }
