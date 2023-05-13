@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
+import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 
 interface VegaDataPlotProps {
@@ -44,7 +45,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         vegaView.finalize();
       }
       const compiledSpec = compile(spec!).spec;
-      compiledSpec.data![0].values = data;
+      (compiledSpec.data![0] as InlineData).values = data;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();

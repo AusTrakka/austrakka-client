@@ -1,6 +1,6 @@
 // Pure functions used in plot pages
 
-/* Disabling to make e.g. newSpec['encoding'][field] clearer */
+/* Disabling to make e.g. newSpec['encoding'][field]['field'] clearer */
 /* eslint-disable @typescript-eslint/dot-notation */
 
 import { TopLevelSpec } from 'vega-lite';
@@ -17,16 +17,19 @@ export const getStartingField = (preferredFields: string[], availableFields: str
 };
 
 // Update a spec to replace a field value, returning the new object
-export const setFieldInSpec =
-(oldSpec: TopLevelSpec | null, field: string, value: string): TopLevelSpec | null => {
+export const setFieldInSpec
+= (oldSpec: TopLevelSpec | null, field: string, value: string): TopLevelSpec | null => {
+  // Note that we cast TopLevelSpecs to any here as .encoding is not guaranteed on TopLevelSpec.
+  // We are reliant on using specs which do have .encoding, but more specific types are not
+  // currently exported from vega-lite for us to assert this.
   if (oldSpec === null) {
     return null;
   }
   // A shallow copy of unaltered elements; replace altered
   // Note we do not change other properties of specified field, e.g. type
-  const newSpec: TopLevelSpec = { ...oldSpec };
-  newSpec.encoding = { ...oldSpec.encoding };
-  newSpec['encoding'][field] = { ...oldSpec['encoding'][field] };
+  const newSpec: any = { ...oldSpec };
+  newSpec.encoding = { ...(oldSpec as any).encoding };
+  newSpec['encoding'][field] = { ...(oldSpec as any)['encoding'][field] };
   newSpec['encoding'][field]['field'] = value;
-  return newSpec;
+  return newSpec as TopLevelSpec;
 };
