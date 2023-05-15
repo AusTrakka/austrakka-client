@@ -3,59 +3,36 @@ import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
-import VegaDataPlot from '../VegaDataPlot';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
+import PlotTypeProps from '../../../types/plottypeprops.interface';
+import VegaDataPlot from '../VegaDataPlot';
+
+// TODO consider <None> as a colour field - remove whole colour entry from encoding
 
 const SAMPLE_ID_FIELD = 'SampleName';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster'];
-const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster'];
 const preferredDateFields = ['Date_coll'];
 
-// Assumed fields here are Date_coll, Seq_ID(SAMPLE_ID_FIELD)
+// For now, no colour field
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-  description: 'Categorical faceted timeline diagram with jitter - e.g. cluster timeline',
-  data: { name: 'inputdata' }, // for Vega-Lite an object, for Vega a list of objects
-  transform: [
-    {
-      calculate: '0.8*sqrt(-2*log(random()))*cos(2*PI*random())',
-      as: 'jitter',
-    },
-  ],
+  description: 'A bar chart with samples binned by date (epi curve).',
+  data: { name: 'inputdata' },
   width: 'container',
-  height: { step: 70 },
-  mark: 'point',
+  mark: 'bar',
   encoding: {
-    x: {
-      field: 'Date_coll',
-      type: 'temporal',
-      axis: { grid: false },
-    },
-    y: {
-      field: 'cgMLST',
-      type: 'nominal',
-      axis: { grid: true },
-    },
-    yOffset: { field: 'jitter', type: 'quantitative' },
-    color: {
-      field: 'cgMLST',
-    },
-    tooltip: { field: SAMPLE_ID_FIELD, type: 'nominal' },
+    x: { field: 'Date_coll', type: 'temporal' },
+    y: { aggregate: 'count' },
+    tooltip: [{ field: 'Date_coll', type: 'temporal' }, { aggregate: 'count' }],
   },
 };
 
-function ClusterTimeline(props: PlotTypeProps) {
+function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
-  // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
-  const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [yAxisField, setYAxisField] = useState<string>('');
-  const [colourField, setColourField] = useState<string>('');
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
 
@@ -79,19 +56,13 @@ function ClusterTimeline(props: PlotTypeProps) {
         const fields = response.data as MetaDataColumn[];
         // Note this does not include numerical or date fields
         // For now this selection need only depend on canVisualise
-        const localCatFields = fields
-          .filter(field => field.canVisualise)
-          .map(field => field.columnName);
-        setCategoricalFields(localCatFields);
-        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-        setColourField(getStartingField(preferredColourFields, localCatFields));
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
         setDateFields(localDateFields);
         setDateField(getStartingField(preferredDateFields, localDateFields));
-        // For this plot retrieve categorical and date fields
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localCatFields, ...localDateFields]);
+        // For this plot for now only use date fields, to bin
+        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields]);
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
         // eslint-disable-next-line no-console
@@ -105,24 +76,6 @@ function ClusterTimeline(props: PlotTypeProps) {
   }, [plot]);
 
   useEffect(() => {
-    const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setFieldInSpec(oldSpec, 'y', yAxisField);
-
-    if (yAxisField.length > 0) {
-      setSpec(addYAxisToSpec);
-    }
-  }, [yAxisField]);
-
-  useEffect(() => {
-    const addColourToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setFieldInSpec(oldSpec, 'color', colourField);
-
-    if (colourField.length > 0) {
-      setSpec(addColourToSpec);
-    }
-  }, [colourField]);
-
-  useEffect(() => {
     const addDateFieldToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setFieldInSpec(oldSpec, 'x', dateField);
 
@@ -132,36 +85,8 @@ function ClusterTimeline(props: PlotTypeProps) {
   }, [dateField]);
 
   const renderControls = () => (
-    <Box sx={{ float: 'right', marginX: 10 }}>
-      <FormControl size="small" sx={{ margin: 1 }}>
-        <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
-        <Select
-          labelId="y-axis-select-label"
-          id="y-axis-select"
-          value={yAxisField}
-          label="Y-Axis"
-          onChange={(e) => setYAxisField(e.target.value)}
-        >
-          {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
-          }
-        </Select>
-      </FormControl>
-      <FormControl size="small" sx={{ margin: 1 }}>
-        <InputLabel id="colour-field-select-label">Colour</InputLabel>
-        <Select
-          labelId="colour-field-select-label"
-          id="colour-field-select"
-          value={colourField}
-          label="Colour"
-          onChange={(e) => setColourField(e.target.value)}
-        >
-          {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
-          }
-        </Select>
-      </FormControl>
-      <FormControl size="small" sx={{ margin: 1 }}>
+    <Box sx={{ float: 'right', marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
           labelId="date-field-select-label"
@@ -191,4 +116,4 @@ function ClusterTimeline(props: PlotTypeProps) {
   );
 }
 
-export default ClusterTimeline;
+export default EpiCurve;
