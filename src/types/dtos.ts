@@ -12,7 +12,8 @@ export interface Project {
   projectAnalyses: {
     id: number,
     name: string
-  }[]
+  }[],
+  created: Date
   // could add auditable fields - created, createdBy
 }
 
