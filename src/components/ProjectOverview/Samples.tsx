@@ -3,7 +3,11 @@ import React, {
   memo, useEffect, useRef, Dispatch, SetStateAction,
 } from 'react';
 import MaterialReactTable, {
-  MRT_PaginationState, MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_TablePagination,
+  MRT_PaginationState,
+  MRT_ColumnDef,
+  MRT_ShowHideColumnsButton,
+  MRT_TablePagination,
+  MRT_SortingState,
 } from 'material-react-table';
 import { FilterList, FileDownload, Close } from '@mui/icons-material';
 import {
@@ -32,6 +36,8 @@ interface SamplesProps {
   samplesPagination: MRT_PaginationState,
   columnOrderArray: string[],
   setSamplesPagination: Dispatch<SetStateAction<MRT_PaginationState>>,
+  setSorting: Dispatch<SetStateAction<MRT_SortingState>>,
+  sorting: MRT_SortingState,
   isFiltersOpen: boolean,
   setIsFiltersOpen: Dispatch<SetStateAction<boolean>>,
   setQueryString: Dispatch<SetStateAction<string>>,
@@ -55,6 +61,8 @@ function Samples(props: SamplesProps) {
     isSamplesError,
     samplesPagination,
     setSamplesPagination,
+    setSorting,
+    sorting,
     isFiltersOpen,
     setIsFiltersOpen,
     setQueryString,
@@ -205,10 +213,13 @@ function Samples(props: SamplesProps) {
         onPaginationChange={setSamplesPagination}
         state={{
           pagination: samplesPagination,
+          sorting,
           isLoading: isSamplesLoading,
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
           columnOrder: columnOrderArray,
         }}
+        manualSorting
+        onSortingChange={setSorting}
         initialState={{ density: 'compact' }}
         rowCount={samplesCount}
         // Layout props
