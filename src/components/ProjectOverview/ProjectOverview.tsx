@@ -1,7 +1,7 @@
 import React, {
   useEffect, useState,
 } from 'react';
-import { MRT_PaginationState, MRT_ColumnDef } from 'material-react-table';
+import { MRT_PaginationState, MRT_ColumnDef, MRT_SortingState } from 'material-react-table';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
@@ -17,6 +17,8 @@ import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { PlotListing, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
+
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -35,6 +37,7 @@ function ProjectOverview() {
   const [lastUpload] = useState('');
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 50,
@@ -202,10 +205,15 @@ function ProjectOverview() {
           (df) => df.columnName === column.header,
         ),
       );
-      // 3. Append additional fields to beginning of array
-      additionalFields.forEach((field) => {
-        orderedArray.unshift(field.header);
-      });
+      // 3. Append additional fields to end of array, excluding Seq_ID
+      additionalFields
+        .filter((field) => field.header !== SAMPLE_ID_FIELD)
+        .forEach((field) => orderedArray.push(field.header));
+      // 4. Append Seq_ID to beginning of array
+      if (additionalFields.map((field) => field.header).includes(SAMPLE_ID_FIELD)) {
+        orderedArray.unshift(SAMPLE_ID_FIELD);
+      }
+      // Done
       setColumnOrderArray(orderedArray);
     };
     if (displayFields.length > 0 && sampleTableColumns.length > 0) {
@@ -218,11 +226,20 @@ function ProjectOverview() {
     // Only get samples when columns are already populated
     // effects should trigger getProject -> getHeaders -> this function
       async function getSamplesList() {
+        let sortString = '';
+        if (sorting.length !== 0) {
+          if (sorting[0].desc === false) {
+            sortString = sorting[0].id;
+          } else {
+            sortString = `-${sorting[0].id}`;
+          }
+        }
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
           groupContext: `${projectDetails!.projectMembers.id}`,
           filters: queryString,
+          sorts: sortString,
         });
         const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
         if (samplesResponse.status === 'Success') {
@@ -249,7 +266,7 @@ function ProjectOverview() {
       }
     },
     [projectDetails, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString],
+      sampleTableColumns, queryString, sorting],
   );
 
   const getExportData = async () => {
@@ -316,6 +333,8 @@ function ProjectOverview() {
               isSamplesLoading={isSamplesLoading}
               sampleTableColumns={sampleTableColumns}
               isSamplesError={isSamplesError}
+              sorting={sorting}
+              setSorting={setSorting}
               samplesPagination={samplesPagination}
               setSamplesPagination={setSamplesPagination}
               isFiltersOpen={isFiltersOpen}
