@@ -58,7 +58,7 @@ function ProjectOverview() {
   const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
-  const [isTreesLoading] = useState(true);
+  const [isTreesLoading] = useState(false);
   // Plots component states
   const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);

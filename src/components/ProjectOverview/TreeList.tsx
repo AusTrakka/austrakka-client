@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import styles from './ProjectOverview.module.css';
+import MaterialReactTable from 'material-react-table';
+import { Alert } from '@mui/material';
 
 interface TreesProps {
   isTreesLoading: boolean
@@ -9,8 +10,19 @@ function TreeList(props: TreesProps) {
   const { isTreesLoading } = props;
   return (
     <>
-      <p className={styles.h1}>Trees</p>
       {isTreesLoading}
+      <Alert
+        severity="info"
+        sx={{ marginBottom: 3 }}
+      >
+        Please note -
+        the tree viewer feature is not ready just yet,
+        but we will let you know when it is!
+      </Alert>
+      <MaterialReactTable
+        columns={[]}
+        data={[]}
+      />
     </>
   );
 }
