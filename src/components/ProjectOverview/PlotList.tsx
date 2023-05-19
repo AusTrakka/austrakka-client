@@ -49,6 +49,9 @@ function PlotList(props: PlotListProps) {
         // Row click handler
       muiTableBodyRowProps={({ row }) => ({
         onClick: () => rowClickHandler(row),
+        sx: {
+          cursor: 'pointer',
+        },
       })}
     />
   );
