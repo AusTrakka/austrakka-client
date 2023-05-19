@@ -18,6 +18,8 @@ import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { PlotListing, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 
+const SAMPLE_ID_FIELD = 'Seq_ID';
+
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
   const [tabValue, setTabValue] = useState(0);
@@ -203,10 +205,15 @@ function ProjectOverview() {
           (df) => df.columnName === column.header,
         ),
       );
-      // 3. Append additional fields to beginning of array
-      additionalFields.forEach((field) => {
-        orderedArray.unshift(field.header);
-      });
+      // 3. Append additional fields to end of array, excluding Seq_ID
+      additionalFields
+        .filter((field) => field.header !== SAMPLE_ID_FIELD)
+        .forEach((field) => orderedArray.push(field.header));
+      // 4. Append Seq_ID to beginning of array
+      if (additionalFields.map((field) => field.header).includes(SAMPLE_ID_FIELD)) {
+        orderedArray.unshift(SAMPLE_ID_FIELD);
+      }
+      // Done
       setColumnOrderArray(orderedArray);
     };
     if (displayFields.length > 0 && sampleTableColumns.length > 0) {
