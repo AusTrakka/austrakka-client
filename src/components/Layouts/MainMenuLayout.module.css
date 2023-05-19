@@ -3,13 +3,9 @@
 }
 
 .logo {
-    height: 65px;
+    height: 45px;
     margin: 5px;
     padding-left: 30px;
-}
-
-.toolbar {
-    background-color: var(--primary-blue);
 }
 
 .drawer { 

@@ -92,7 +92,7 @@ function MainMenuLayout() {
     <>
       <Box sx={{ display: 'flex' }}>
         <AppBar className={styles.appbar}>
-          <Toolbar className={styles.toolbar}>
+          <Toolbar variant="dense">
             <IconButton
               onClick={() => handleDrawer()}
               size="large"
@@ -183,7 +183,7 @@ function MainMenuLayout() {
             docked: styles.drawer,
           }}
         >
-          <Toolbar />
+          <Toolbar variant="dense" />
           {' '}
           {/* For spacing */}
           <List className={styles.pagelist}>
@@ -200,7 +200,7 @@ function MainMenuLayout() {
           </List>
         </Drawer>
         <Box sx={{ flexGrow: 1 }}>
-          <Toolbar />
+          <Toolbar variant="dense" />
           {' '}
           {/* For spacing */}
         </Box>
