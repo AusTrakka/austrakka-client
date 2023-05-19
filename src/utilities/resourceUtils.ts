@@ -81,6 +81,7 @@ async function callAPI(url:string, method:string, requestData:object) {
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
 export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbrev/${abbrev}`, 'GET', {});
 export const getPlots = (projectId: number) => callAPI(`/api/Plots/project/${projectId}`, 'GET', {});
+export const getTrees = (projectId: number) => callAPI(`/api/Analyses/?filters=ProjectId==${projectId}`, 'GET', {});
 export const getPlotDetails = (abbrev: string) => callAPI(`/api/Plots/abbrev/${abbrev}`, 'GET', {});
 export const getPlotData = (groupId: number, fields: string[]) => {
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
