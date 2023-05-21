@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { useNavigate } from 'react-router-dom';
 import { Alert } from '@mui/material';
 
 interface TreesProps {
@@ -19,7 +20,13 @@ const treeTableColumns: MRT_ColumnDef[] = [
 ];
 
 function TreeList(props: TreesProps) {
-  const { isTreesLoading, treeList, treeListError, treeListErrorMessage } = props;
+  const { isTreesLoading, treeList, treeListError, treeListErrorMessage, projectAbbrev } = props;
+  const navigate = useNavigate();
+
+  const rowClickHandler = (row: any) => {
+    navigate(`/projects/${projectAbbrev}/Trees/${row.original.analysisId}`);
+  };
+
   return (
     <>
       {isTreesLoading}
@@ -56,6 +63,13 @@ function TreeList(props: TreesProps) {
             }
             : undefined
         }
+            // Row click handler
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
       />
     </>
   );
