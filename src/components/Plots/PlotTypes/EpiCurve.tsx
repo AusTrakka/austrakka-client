@@ -23,7 +23,11 @@ const defaultSpec: TopLevelSpec = {
   width: 'container',
   mark: 'bar',
   encoding: {
-    x: { field: 'Date_coll', type: 'temporal' },
+    x: {
+      timeUnit: 'yearmonthdate',
+      field: 'Date_coll',
+      type: 'temporal',
+    },
     y: { aggregate: 'count' },
     tooltip: [{ field: 'Date_coll', type: 'temporal' }, { aggregate: 'count' }],
   },
