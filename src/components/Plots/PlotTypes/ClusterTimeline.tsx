@@ -11,8 +11,8 @@ const SAMPLE_ID_FIELD = 'SampleName';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster'];
-const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster'];
+const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
 const preferredDateFields = ['Date_coll'];
 
 // Assumed fields here are Date_coll, Seq_ID(SAMPLE_ID_FIELD)
@@ -22,7 +22,7 @@ const defaultSpec: TopLevelSpec = {
   data: { name: 'inputdata' }, // for Vega-Lite an object, for Vega a list of objects
   transform: [
     {
-      calculate: '0.8*sqrt(-2*log(random()))*cos(2*PI*random())',
+      calculate: '(floor(random()*2)*2-1)*(pow(random(),2))',
       as: 'jitter',
     },
   ],
@@ -38,7 +38,7 @@ const defaultSpec: TopLevelSpec = {
     y: {
       field: 'cgMLST',
       type: 'nominal',
-      axis: { grid: true },
+      axis: { grid: true, tickBand: 'extent' },
     },
     yOffset: { field: 'jitter', type: 'quantitative' },
     color: {
