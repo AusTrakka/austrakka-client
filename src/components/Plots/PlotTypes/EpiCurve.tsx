@@ -9,7 +9,7 @@ import VegaDataPlot from '../VegaDataPlot';
 
 // TODO consider <None> as a colour field - remove whole colour entry from encoding
 
-const SAMPLE_ID_FIELD = 'SampleName';
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
