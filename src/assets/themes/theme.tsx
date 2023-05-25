@@ -10,9 +10,6 @@ const theme: ThemeOptions = createTheme({
     secondary: {
       main: '#90ca6d',
     },
-    background: {
-      paper: '#f9f9f9',
-    },
   },
   typography: {
     h1: {

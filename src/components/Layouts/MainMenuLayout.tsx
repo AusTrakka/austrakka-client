@@ -49,6 +49,8 @@ function MainMenuLayout() {
     projects: 'Projects',
     plots: 'Plots',
     upload: 'Upload',
+    sequences: 'Sequences',
+    metadata: 'Metadata',
   };
   // These values in the breadcrumb cannot be navigated to
   const breadcrumbNoLink: string[] = ['plots'];
