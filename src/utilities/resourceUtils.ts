@@ -44,10 +44,6 @@ async function callAPI(url:string, method:string, requestData:object) {
       statusOk: response.ok, // response.ok returns true if the status property is 200-299
     })))
     .then((resp) => {
-      if (url.includes('JobInstance')) {
-        // eslint-disable-next-line no-param-reassign
-        resp.data = { data: resp.data, messages: [] }; // mash data into expected shape
-      }
       // GET API calls
       if (method === 'GET') {
         if (resp.data.data !== null && resp.statusOk) {
