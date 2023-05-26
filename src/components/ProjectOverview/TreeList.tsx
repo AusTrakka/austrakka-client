@@ -1,12 +1,10 @@
 import React, { memo } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useNavigate } from 'react-router-dom';
-import { Alert } from '@mui/material';
 
 interface TreesProps {
   isTreesLoading: boolean,
   treeList: any,
-  // eslint-disable-next-line react/no-unused-prop-types
   projectAbbrev: string,
   treeListError: boolean,
   treeListErrorMessage: string,
@@ -24,20 +22,12 @@ function TreeList(props: TreesProps) {
   const navigate = useNavigate();
 
   const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectAbbrev}/Trees/${row.original.analysisId}`);
+    navigate(`/projects/${projectAbbrev}/trees/${row.original.analysisId}`);
   };
 
   return (
     <>
       {isTreesLoading}
-      <Alert
-        severity="info"
-        sx={{ marginBottom: 3 }}
-      >
-        Please note -
-        the tree viewer feature is not ready just yet,
-        but we will let you know when it is!
-      </Alert>
       <MaterialReactTable
         columns={treeTableColumns}
         data={treeList}
