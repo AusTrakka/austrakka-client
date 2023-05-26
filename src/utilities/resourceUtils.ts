@@ -81,12 +81,13 @@ async function callAPI(url:string, method:string, requestData:object) {
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
 export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbrev/${abbrev}`, 'GET', {});
 export const getPlots = (projectId: number) => callAPI(`/api/Plots/project/${projectId}`, 'GET', {});
-export const getTrees = (projectId: number) => callAPI(`/api/Analyses/?filters=ProjectId==${projectId}`, 'GET', {});
 export const getPlotDetails = (abbrev: string) => callAPI(`/api/Plots/abbrev/${abbrev}`, 'GET', {});
 export const getPlotData = (groupId: number, fields: string[]) => {
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callAPI(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, 'GET', {});
 };
+export const getTrees = (projectId: number) => callAPI(`/api/Analyses/?filters=ProjectId==${projectId}`, 'GET', {});
+export const getTreeData = (analysisId: number) => callAPI(`/api/JobInstance/${analysisId}/LatestVersion`, 'GET', {});
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
