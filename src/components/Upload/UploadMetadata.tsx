@@ -6,7 +6,7 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 function UploadInstructions() {
   return (
     <>
-      <Typography variant="h4">
+      <Typography variant="h3">
         Instructions
       </Typography>
       <Typography>Please use the supplied pro forma to submit metadata for samples.</Typography>
@@ -75,10 +75,7 @@ function UploadMetadata() {
 
   return (
     <Box>
-      <Typography className="pageTitle">
-        Upload Metadata
-      </Typography>
-      <Typography variant="h3">
+      <Typography variant="h2" color="primary" sx={{ marginBottom: '10px' }}>
         Upload Metadata
       </Typography>
       <Grid container>
@@ -86,7 +83,7 @@ function UploadMetadata() {
           <UploadInstructions />
         </Grid>
         <Grid item xs={4}>
-          <Typography variant="h4">Upload Pro forma</Typography>
+          <Typography variant="h3">Upload Pro forma</Typography>
           <Typography>Select the pro forma and file you would like to upload.</Typography>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel id="proforma-simple-select-label">Pro forma</InputLabel>
