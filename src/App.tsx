@@ -19,6 +19,7 @@ import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
+import TreeDetail from './components/Trees/TreeDetail';
 
 interface AppProps {
   msalInstance: IPublicClientApplication;
@@ -45,6 +46,7 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects" element={<ProjectsList />} />
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:analysisId" element={<TreeDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/projects" />} />
               </Routes>

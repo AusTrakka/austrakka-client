@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
+  getTrees,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
@@ -60,7 +61,11 @@ function ProjectOverview() {
   const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
-  const [isTreesLoading] = useState(true);
+  const [isTreesLoading, setIsTreesLoading] = useState(true);
+  const [projectTrees, setProjectTrees] = useState<[]>([]);
+  const [treeListError, setTreeListError] = useState(false);
+  const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
+
   // Plots component states
   const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
@@ -137,6 +142,20 @@ function ProjectOverview() {
       }
     }
 
+    async function getTreeList() {
+      const treeListResponse: ResponseObject = await getTrees(projectDetails!.projectId);
+      if (treeListResponse.status === 'Success') {
+        setProjectTrees(treeListResponse.data);
+        setTreeListError(false);
+        setIsTreesLoading(false);
+      } else {
+        setIsTreesLoading(false);
+        setProjectTrees([]);
+        setTreeListError(true);
+        setTreeListErrorMessage(treeListResponse.message);
+      }
+    }
+
     async function getPlotList() {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId);
       if (plotsResponse.status === 'Success') {
@@ -152,6 +171,7 @@ function ProjectOverview() {
     if (projectDetails) {
       getProjectSummary();
       getSampleTableHeaders();
+      getTreeList();
       getPlotList();
     }
   }, [projectDetails]);
@@ -352,7 +372,13 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
-            <TreeList isTreesLoading={isTreesLoading} />
+            <TreeList
+              isTreesLoading={isTreesLoading}
+              projectAbbrev={projectAbbrev!}
+              treeList={projectTrees}
+              treeListError={treeListError}
+              treeListErrorMessage={treeListErrorMessage}
+            />
           </TabPanel>
           <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
             <PlotList

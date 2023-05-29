@@ -94,6 +94,9 @@ function ProjectsList() {
         }}
         muiTableBodyRowProps={({ row }) => ({
           onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
         })}
       />
     </>

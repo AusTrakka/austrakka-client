@@ -73,5 +73,5 @@ html, body, span {
     color: var(--primary-blue);
     font-weight: bold;
     font-size: 2rem;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
 }
