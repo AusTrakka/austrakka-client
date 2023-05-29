@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
-import styles from './ProjectOverview.module.css';
 
 interface PlotListProps {
   isPlotsLoading: boolean
@@ -25,36 +24,36 @@ function PlotList(props: PlotListProps) {
   };
 
   return (
-    <>
-      <p className={styles.h1}>Plots</p>
-      <MaterialReactTable
-        columns={plotTableColumns}
-        data={plotList}
-        state={{
-          isLoading: isPlotsLoading,
-        }}
-        enableStickyHeader
-        initialState={{ density: 'compact' }}
-        enableColumnResizing
-        enableFullScreenToggle={false}
-        enableHiding={false}
-        enableDensityToggle={false}
-        muiLinearProgressProps={({ isTopToolbar }) => ({
-          color: 'secondary',
-          sx: { display: isTopToolbar ? 'block' : 'none' },
-        })}
+    <MaterialReactTable
+      columns={plotTableColumns}
+      data={plotList}
+      state={{
+        isLoading: isPlotsLoading,
+      }}
+      enableStickyHeader
+      initialState={{ density: 'compact' }}
+      enableColumnResizing
+      enableFullScreenToggle={false}
+      enableHiding={false}
+      enableDensityToggle={false}
+      muiLinearProgressProps={({ isTopToolbar }) => ({
+        color: 'secondary',
+        sx: { display: isTopToolbar ? 'block' : 'none' },
+      })}
         // Layout props
-        muiTableProps={{
-          sx: {
-            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-          },
-        }}
+      muiTableProps={{
+        sx: {
+          width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+        },
+      }}
         // Row click handler
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-        })}
-      />
-    </>
+      muiTableBodyRowProps={({ row }) => ({
+        onClick: () => rowClickHandler(row),
+        sx: {
+          cursor: 'pointer',
+        },
+      })}
+    />
   );
 }
 export default memo(PlotList);

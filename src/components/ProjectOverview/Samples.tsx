@@ -13,10 +13,9 @@ import { FilterList, FileDownload, Close } from '@mui/icons-material';
 import {
   Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle,
+  Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
-import styles from './ProjectOverview.module.css';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
@@ -113,7 +112,7 @@ function Samples(props: SamplesProps) {
         style={{ display: 'none' }}
         filename={generateFilename() || 'austrakka_export.csv'}
       />
-      <Tooltip title="Export to CSV" placement="top">
+      <Tooltip title="Export to CSV" placement="top" arrow>
         <IconButton
           onClick={() => {
             getExportData();
@@ -143,14 +142,12 @@ function Samples(props: SamplesProps) {
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
     <>
-      <p className={styles.h1}>Samples</p>
       <Backdrop
         sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <br />
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -237,13 +234,23 @@ function Samples(props: SamplesProps) {
         renderToolbarInternalActions={({ table }) => (
           <Box>
             {ExportButton}
-            <IconButton
-              onClick={() => {
-                setIsFiltersOpen(!isFiltersOpen);
-              }}
-            >
-              <FilterList />
-            </IconButton>
+            <Tooltip title="Show/Hide filters" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  setIsFiltersOpen(!isFiltersOpen);
+                }}
+                disabled={sampleList.length < 1 && filterList.length < 1}
+              >
+                <Badge
+                  badgeContent={filterList.length}
+                  color="primary"
+                  showZero
+                  invisible={sampleList.length < 1 && filterList.length < 1}
+                >
+                  <FilterList />
+                </Badge>
+              </IconButton>
+            </Tooltip>
             <MRT_ShowHideColumnsButton table={table} />
           </Box>
         )}
