@@ -55,15 +55,11 @@ function EpiCurve(props: PlotTypeProps) {
     }
   }, [plot]);
 
-  // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
     const updateFields = async () => {
-      // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
-        // Note this does not include numerical or date fields
-        // For now this selection need only depend on canVisualise
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
@@ -72,7 +68,7 @@ function EpiCurve(props: PlotTypeProps) {
         // For this plot for now only use date fields, to bin
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields]);
       } else {
-        // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
+        // TODO error handling if getDisplayFields fails, possibly also if no date fields
         // eslint-disable-next-line no-console
         console.error(response.message);
       }

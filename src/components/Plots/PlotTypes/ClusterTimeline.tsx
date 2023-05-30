@@ -73,7 +73,6 @@ function ClusterTimeline(props: PlotTypeProps) {
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
     const updateFields = async () => {
-      // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
