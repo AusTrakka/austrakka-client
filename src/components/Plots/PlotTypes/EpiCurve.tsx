@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
@@ -21,15 +21,17 @@ const defaultSpec: TopLevelSpec = {
   description: 'A bar chart with samples binned by date (epi curve).',
   data: { name: 'inputdata' },
   width: 'container',
-  mark: 'bar',
+  mark: { type: 'bar', tooltip: true },
   encoding: {
     x: {
-      timeUnit: 'yearmonthdate',
+      timeUnit: {
+        unit: 'yearmonthdate',
+        step: 1,
+      },
       field: 'Date_coll',
       type: 'temporal',
     },
     y: { aggregate: 'count' },
-    tooltip: [{ field: 'Date_coll', type: 'temporal' }, { aggregate: 'count' }],
   },
 };
 
@@ -39,6 +41,8 @@ function EpiCurve(props: PlotTypeProps) {
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
+  const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
+  const [dateBinStep, setDateBinStep] = useState<int>(1);
 
   // Set spec on load
   useEffect(() => {
@@ -88,8 +92,56 @@ function EpiCurve(props: PlotTypeProps) {
     }
   }, [dateField]);
 
+  useEffect(() => {
+    const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+      newSpec.encoding.x.timeUnit = { unit: dateBinUnit, step: dateBinStep };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    // Restriction of step to numbers >= 1 appears to be handled by control
+    setSpec(setDateBinningInSpec);
+  }, [dateBinStep, dateBinUnit]);
+
   const renderControls = () => (
-    <Box sx={{ float: 'right', marginX: 1 }}>
+    <Box sx={{ float: 'right', marginX: 10 }}>
+      {/*<FormGroup>*/}
+        <FormControl size="small" sx={{ marginX: 1, width: 80 }}>
+          <TextField
+            sx={{padding: 0}}
+            type="number"
+            id="date-bin-size-select"
+            label="Bin Size"
+            size="small"
+            inputProps={{ min: 1 }}
+            value={dateBinStep}
+            onChange={(e) => setDateBinStep(e.target.value)}
+          />
+        </FormControl>
+        <FormControl size="small" sx={{ marginX: 1 }}>
+          <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
+          <Select
+            labelId="date-bin-unit-select-label"
+            id="date-bin-unit-select"
+            label="Bin Unit"
+            value={dateBinUnit}
+            onChange={(e) => {setDateBinUnit(e.target.value)}}
+          >
+            {
+              [
+                <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
+                <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
+                <MenuItem value="yearweek">Week</MenuItem>,
+                <MenuItem value="year">Year</MenuItem>,
+              ]
+            }
+          </Select>
+        </FormControl>
+      {/*</FormGroup>*/}
       <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
