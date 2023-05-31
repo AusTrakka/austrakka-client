@@ -132,7 +132,7 @@ function ClusterTimeline(props: PlotTypeProps) {
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
-      <FormControl size="small" sx={{ margin: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
         <Select
           labelId="y-axis-select-label"
@@ -146,7 +146,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ margin: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="colour-field-select-label">Colour</InputLabel>
         <Select
           labelId="colour-field-select-label"
@@ -160,7 +160,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ margin: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
           labelId="date-field-select-label"
