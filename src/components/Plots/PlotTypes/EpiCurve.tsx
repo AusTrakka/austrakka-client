@@ -15,7 +15,6 @@ const SAMPLE_ID_FIELD = 'SampleName';
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
 const preferredDateFields = ['Date_coll'];
 
-// For now, no colour field
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   description: 'A bar chart with samples binned by date (epi curve).',
@@ -40,9 +39,11 @@ function EpiCurve(props: PlotTypeProps) {
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
   const [dateFields, setDateFields] = useState<string[]>([]);
+  const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
   const [dateBinStep, setDateBinStep] = useState<int>(1);
+  const [colourField, setColourField] = useState<string>('none');
 
   // Set spec on load
   useEffect(() => {
@@ -60,13 +61,17 @@ function EpiCurve(props: PlotTypeProps) {
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
+        const localCatFields = fields
+          .filter(field => field.canVisualise)
+          .map(field => field.columnName);
+        setCategoricalFields(localCatFields);
+        // Note we do not set a preferred starting colour field; starting value is None
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
         setDateFields(localDateFields);
         setDateField(getStartingField(preferredDateFields, localDateFields));
-        // For this plot for now only use date fields, to bin
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields]);
+        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields, ...localCatFields]);
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no date fields
         // eslint-disable-next-line no-console
@@ -87,6 +92,26 @@ function EpiCurve(props: PlotTypeProps) {
       setSpec(addDateFieldToSpec);
     }
   }, [dateField]);
+
+  useEffect(() => {
+    // Does not use generic setFieldInSpec, for now, as we handle 'none'
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (colourField === 'none') {
+        // Remove colour from encoding
+        const { color, ...newEncoding } = (oldSpec as any).encoding;
+        newSpec.encoding = newEncoding;
+      } else {
+        // Set colour in encoding
+        newSpec.encoding = { ...(oldSpec as any).encoding };
+        newSpec.encoding.color = { field: colourField };
+      }
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setColorInSpec);
+  }, [colourField]);
 
   useEffect(() => {
     const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -150,6 +175,21 @@ function EpiCurve(props: PlotTypeProps) {
         >
           {
             dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1 }}>
+        <InputLabel id="colour-field-select-label">Colour</InputLabel>
+        <Select
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={colourField}
+          label="Colour"
+          onChange={(e) => setColourField(e.target.value)}
+        >
+          <MenuItem value="none">None</MenuItem>
+          {
+            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
