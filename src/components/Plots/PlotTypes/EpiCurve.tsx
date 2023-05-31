@@ -132,6 +132,7 @@ function EpiCurve(props: PlotTypeProps) {
                 <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
                 <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
                 <MenuItem value="yearweek">Week</MenuItem>,
+                <MenuItem value="yearmonth">Month</MenuItem>,
                 <MenuItem value="year">Year</MenuItem>,
               ]
             }
