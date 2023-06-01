@@ -11,6 +11,6 @@ steps:
       targetType: 'inline'
       script: |
         $json = (get-content ./swa-cli.config.prod.json) | convertfrom-json
-        $json.configurations.'austrakka-client'.appName = ${{ parameters.appName }}
-        $json.configurations.'austrakka-client'.resourceGroup = ${{ parameters.resourceGroup }}
+        $json.configurations.'austrakka-client'.appName = "${{ parameters.appName }}"
+        $json.configurations.'austrakka-client'.resourceGroup = "${{ parameters.resourceGroup }}"
         $json | ConvertTo-Json > swa-cli.config.json
