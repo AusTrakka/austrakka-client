@@ -1,0 +1,14 @@
+trigger: none
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - template: templates/build.yml
+  - template: templates/swa-config.yml
+    parameters:
+      appName: $(appName)
+      resourceGroup: $(resourceGroup)
+  - template: templates/deploy.yml
