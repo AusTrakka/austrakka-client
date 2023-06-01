@@ -7,7 +7,7 @@ pool:
 
 steps:
   - template: templates/build.yml
-  - template: templates/swa-config.yml
+  - template: templates/create-swa-config.yml
     parameters:
       appName: $(appName)
       resourceGroup: $(resourceGroup)
