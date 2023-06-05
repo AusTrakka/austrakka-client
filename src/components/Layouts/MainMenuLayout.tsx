@@ -48,10 +48,11 @@ function MainMenuLayout() {
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
+    trees: 'Trees',
     upload: 'Upload',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots'];
+  const breadcrumbNoLink: string[] = ['plots', 'trees'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
