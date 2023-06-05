@@ -30,7 +30,10 @@ const defaultSpec: TopLevelSpec = {
       field: 'Date_coll',
       type: 'temporal',
     },
-    y: { aggregate: 'count' },
+    y: { 
+      aggregate: 'count',
+      stack: 'zero',
+    },
   },
 };
 
@@ -44,6 +47,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
   const [dateBinStep, setDateBinStep] = useState<int>(1);
   const [colourField, setColourField] = useState<string>('none');
+  const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
   useEffect(() => {
@@ -128,6 +132,21 @@ function EpiCurve(props: PlotTypeProps) {
     setSpec(setDateBinningInSpec);
   }, [dateBinStep, dateBinUnit]);
 
+  useEffect(() => {
+    const setStackTypeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.y = { ...(oldSpec as any).encoding.y };
+      newSpec.encoding.y.stack = stackType;
+
+      return newSpec as TopLevelSpec;
+    }
+
+    setSpec(setStackTypeInSpec);
+  }, [stackType]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       {/*<FormGroup>*/}
@@ -191,6 +210,19 @@ function EpiCurve(props: PlotTypeProps) {
           {
             categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1 }}>
+        <InputLabel id="colour-field-select-label">Chart type</InputLabel>
+        <Select
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={stackType}
+          label="Colour"
+          onChange={(e) => setStackType(e.target.value)}
+        >
+          <MenuItem value="zero">Stacked</MenuItem>
+          <MenuItem value="normalize">Proportional</MenuItem>
         </Select>
       </FormControl>
     </Box>
