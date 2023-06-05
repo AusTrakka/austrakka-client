@@ -45,7 +45,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
-  const [dateBinStep, setDateBinStep] = useState<int>(1);
+  const [dateBinStep, setDateBinStep] = useState<number>(1);
   const [colourField, setColourField] = useState<string>('none');
   const [stackType, setStackType] = useState<string>('zero');
 
