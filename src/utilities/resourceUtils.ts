@@ -51,7 +51,7 @@ async function callAPI(url:string, method:string, requestData:object) {
             status: 'Success',
             message: resp.data.messages[0]?.ResponseMessage,
             data: resp.data.data,
-            headers: resp.headers,
+            // headers: resp.headers,
           };
         }
         return {
@@ -91,3 +91,6 @@ export const getTreeData = (analysisId: number) => callAPI(`/api/JobInstance/${a
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
+
+// Testing dashboards
+export const getTestProjectDashboard = (id: number) => callAPI(`/api/ProjectDashboards/${id}`, 'GET', {});
