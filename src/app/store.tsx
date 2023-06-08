@@ -12,9 +12,9 @@ const store = configureStore({
     stCountsState: stCountsReducer,
     projectDashboardState: projectDashboardReducer,
   },
-  // middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-  //   serializableCheck: false,
-  // }),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+    serializableCheck: false,
+  }),
 });
 
 export default store;

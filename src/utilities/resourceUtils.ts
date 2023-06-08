@@ -51,7 +51,7 @@ async function callAPI(url:string, method:string, requestData:object) {
             status: 'Success',
             message: resp.data.messages[0]?.ResponseMessage,
             data: resp.data.data,
-            // headers: resp.headers,
+            headers: resp.headers,
           };
         }
         return {
