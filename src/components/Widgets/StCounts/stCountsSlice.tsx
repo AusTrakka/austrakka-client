@@ -24,6 +24,7 @@ export const fetchStCounts = createAsyncThunk(
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
     console.log(timeFilter);
+    console.log("fetchStCounts");
     // eslint-disable-next-line no-promise-executor-return
     await new Promise(resolve => setTimeout(resolve, 1000));
     const response = {

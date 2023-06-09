@@ -10,21 +10,13 @@ export default function SampleSummary() {
   const { data, loading } = useAppSelector((state) => state.sampleSummaryState);
   const sampleSummaryDispatch = useAppDispatch();
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-  const firstRender = useFirstRender();
 
   useEffect(() => {
     if (loading === 'idle') {
       sampleSummaryDispatch(fetchSummary(timeFilter));
     }
   }, [loading, sampleSummaryDispatch, timeFilter]);
-
-  /// TESTING
-  useEffect(() => {
-    if (!firstRender) {
-      sampleSummaryDispatch(fetchSummary(timeFilter));
-    }
-  }, [firstRender, sampleSummaryDispatch, timeFilter]);
-  ///
+  
   return (
     <Box>
       { loading === LoadingState.SUCCESS ? (

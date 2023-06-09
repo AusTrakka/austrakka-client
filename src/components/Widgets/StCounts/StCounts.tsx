@@ -12,9 +12,7 @@ export default function StCounts() {
   const { data, loading } = useAppSelector(selectStCounts);
   const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-  const firstRender = useFirstRender();
 
-  //   const x = useAppSelector(testSelector);
   // TODO: Create custome selector to derive data in correct format
   //   const data = useAppSelector(state => {
   //     const initialData = state.submittingLabsState.data;
@@ -29,14 +27,6 @@ export default function StCounts() {
       stCountsDispatch(fetchStCounts(timeFilter));
     }
   }, [loading, stCountsDispatch, timeFilter]);
-
-  /// TESTING
-  useEffect(() => {
-    if (!firstRender) {
-      stCountsDispatch(fetchStCounts(timeFilter));
-    }
-  }, [firstRender, stCountsDispatch, timeFilter]);
-  ///
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [

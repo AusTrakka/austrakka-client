@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import Components from '../components';
+import Components, {ComponentActions} from '../components';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter } from './projectDashboardSlice';
-import { ProjectDashboardComponent } from './project.dashboard.interface';
+import { ProjectDashboardWidget } from './project.dashboard.interface';
 import LoadingState from '../../../constants/loadingState';
 
 interface ProjectDashboardProps {
@@ -15,11 +15,12 @@ interface ProjectDashboardProps {
 function DateSelector() {
   // Get initial date filter state from redux store
   // Set new date filter state from redux store
-  const projectDashboardDispatch = useAppDispatch();
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const dispatch = useAppDispatch();
+  const { timeFilter, data } = useAppSelector((state) => state.projectDashboardState);
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
-    projectDashboardDispatch(updateTimeFilter(event.target.value as string));
+    dispatch(updateTimeFilter(event.target.value as string));
+    data.data.map((widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)));
   };
 
   return (
@@ -37,17 +38,16 @@ function DateSelector() {
 
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectId } = props;
-  const dateFilter = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
   const { data, loading } = useAppSelector((state) => state.projectDashboardState);
   const projectDashboardDispatch = useAppDispatch();
 
   useEffect(() => {
     console.log('Rendering project dashboard');
     console.log(projectId);
-    if (loading === 'idle' && projectId !== null) {
+    if (projectId !== null) {
       projectDashboardDispatch(fetchProjectDashboard(projectId));
     }
-  }, [loading, projectDashboardDispatch, projectId]);
+  }, [projectDashboardDispatch, projectId]);
 
   return (
     <Box>
@@ -58,12 +58,12 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               {projectDesc}
               <DateSelector />
             </Grid>
-            {data.data.map((component: ProjectDashboardComponent) => (
+            {data.data.map((widget: ProjectDashboardWidget) => (
             // TODO: Investigate fluid grids with multiple breakpoints
-              <Grid item xs={component.width} minWidth={300} key={component.name}>
+              <Grid item xs={widget.width} minWidth={300} key={widget.name}>
                 <Card sx={{ padding: 1 }}>
                   <CardContent>
-                    {Components(component, dateFilter)}
+                    {Components(widget)}
                   </CardContent>
                 </Card>
               </Grid>

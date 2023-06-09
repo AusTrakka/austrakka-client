@@ -22,6 +22,7 @@ export const fetchSummary = createAsyncThunk(
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
     console.log(timeFilter);
+    console.log("fetchSummary");
     // eslint-disable-next-line no-promise-executor-return
     await new Promise(resolve => setTimeout(resolve, 1000));
     const response = {

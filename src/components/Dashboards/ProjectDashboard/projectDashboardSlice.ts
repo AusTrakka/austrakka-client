@@ -2,14 +2,14 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject, getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
-import { ProjectDashboardComponent } from './project.dashboard.interface';
+import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
 
 interface ProjectDashboardState {
   loading: LoadingState
   timeFilter: string
-  data: ProjectDashboardComponent | any
+  data: ProjectDashboardWidget | any
 }
 
 const initialState: ProjectDashboardState = {

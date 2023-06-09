@@ -11,21 +11,12 @@ export default function SubmittingLabs() {
   const { data, loading } = useAppSelector((state) => state.submittingLabsState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
   const submittingLabsDispatch = useAppDispatch();
-  const firstRender = useFirstRender();
 
   useEffect(() => {
     if (loading === 'idle') {
       submittingLabsDispatch(fetchSubmittingLabs(timeFilter));
     }
   }, [loading, submittingLabsDispatch, timeFilter]);
-
-  /// TESTING
-  useEffect(() => {
-    if (!firstRender) {
-      submittingLabsDispatch(fetchSubmittingLabs(timeFilter));
-    }
-  }, [firstRender, submittingLabsDispatch, timeFilter]);
-  ///
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
