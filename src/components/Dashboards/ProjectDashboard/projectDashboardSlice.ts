@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject, getTestProjectDashboard } from '../../../utilities/resourceUtils';
+import { ResponseObject, getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardComponent } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
@@ -20,8 +20,12 @@ const initialState: ProjectDashboardState = {
 
 export const fetchProjectDashboard = createAsyncThunk(
   'dashboard/fetchProjectDashboard',
-  async (a, { rejectWithValue, fulfillWithValue }):Promise<ResponseObject | unknown> => {
-    const response = await getTestProjectDashboard(1);
+  async (
+    projectId: number,
+    { rejectWithValue, fulfillWithValue },
+  ):Promise<ResponseObject | unknown> => {
+    const response = await getProjectDashboard(projectId);
+    console.log(response);
     if (response.status === 'Success') { return fulfillWithValue(response); }
     return rejectWithValue(response);
   },

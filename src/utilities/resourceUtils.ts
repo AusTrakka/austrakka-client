@@ -93,4 +93,4 @@ export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
 
 // Testing dashboards
-export const getTestProjectDashboard = (id: number) => callAPI(`/api/ProjectDashboards/${id}`, 'GET', {});
+export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/dashboard-widgets/${projectId}`, 'GET', {});

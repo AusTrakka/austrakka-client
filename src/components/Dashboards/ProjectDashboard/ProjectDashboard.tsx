@@ -9,6 +9,7 @@ import LoadingState from '../../../constants/loadingState';
 
 interface ProjectDashboardProps {
   projectDesc: string,
+  projectId: any // TODO: Fix
 }
 
 function DateSelector() {
@@ -35,28 +36,29 @@ function DateSelector() {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc } = props;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [dateFilter, setDateFilter] = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
+  const { projectDesc, projectId } = props;
+  const dateFilter = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
   const { data, loading } = useAppSelector((state) => state.projectDashboardState);
   const projectDashboardDispatch = useAppDispatch();
 
   useEffect(() => {
-    if (loading === 'idle') {
-      projectDashboardDispatch(fetchProjectDashboard());
+    console.log('Rendering project dashboard');
+    console.log(projectId);
+    if (loading === 'idle' && projectId !== null) {
+      projectDashboardDispatch(fetchProjectDashboard(projectId));
     }
-  }, [loading, projectDashboardDispatch]);
+  }, [loading, projectDashboardDispatch, projectId]);
 
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        <Grid container item xs={12} justifyContent="space-between">
-          {projectDesc}
-          <DateSelector />
-        </Grid>
         { loading === LoadingState.SUCCESS ? (
           <>
-            {data.data.widgets.map((component: ProjectDashboardComponent) => (
+            <Grid container item xs={12} justifyContent="space-between">
+              {projectDesc}
+              <DateSelector />
+            </Grid>
+            {data.data.map((component: ProjectDashboardComponent) => (
             // TODO: Investigate fluid grids with multiple breakpoints
               <Grid item xs={component.width} minWidth={300} key={component.name}>
                 <Card sx={{ padding: 1 }}>
