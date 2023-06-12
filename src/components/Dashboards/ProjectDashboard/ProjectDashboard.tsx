@@ -38,16 +38,17 @@ function DateSelector() {
 
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectId } = props;
-  const { data, loading } = useAppSelector((state) => state.projectDashboardState);
-  const projectDashboardDispatch = useAppDispatch();
+  const { data, loading, projectIdInRedux } = useAppSelector((state) => state.projectDashboardState);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     console.log('Rendering project dashboard');
     console.log(projectId);
-    if (projectId !== null) {
-      projectDashboardDispatch(fetchProjectDashboard(projectId));
+    if (projectId !== null && projectId != projectIdInRedux) {
+      dispatch(fetchProjectDashboard(projectId));
+        // data.data?.map((widget: any) => dispatch(ComponentActions[widget.name](data.timeFilter)));
     }
-  }, [projectDashboardDispatch, projectId]);
+  }, [dispatch, projectId]);
 
   return (
     <Box>
