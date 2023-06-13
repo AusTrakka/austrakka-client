@@ -348,6 +348,8 @@ function ProjectOverview() {
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
+              setFilterList={setFilterList}
+              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>

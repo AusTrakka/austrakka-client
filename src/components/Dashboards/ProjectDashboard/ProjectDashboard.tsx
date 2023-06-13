@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, Dispatch, SetStateAction } from 'react';
 import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import Components, {ComponentActions} from '../components';
+import Components, { ComponentActions } from '../components';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter } from './projectDashboardSlice';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import LoadingState from '../../../constants/loadingState';
+import { Filter } from '../../Common/QueryBuilder';
 
 interface ProjectDashboardProps {
   projectDesc: string,
-  projectId: any // TODO: Fix
+  projectId: any, // TODO: Fix
+  setFilterList: Dispatch<SetStateAction<Filter[]>>,
+  setTabValue: Dispatch<SetStateAction<number>>,
 }
 
 function DateSelector() {
@@ -20,7 +23,9 @@ function DateSelector() {
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
-    data.data.map((widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)));
+    data.data.map(
+      (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string))
+    );
   };
 
   return (
@@ -37,18 +42,23 @@ function DateSelector() {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId } = props;
-  const { data, loading, projectIdInRedux } = useAppSelector((state) => state.projectDashboardState);
+  const { projectDesc, projectId, setFilterList, setTabValue } = props;
+  const {
+    data,
+    loading,
+    projectIdInRedux,
+  } = useAppSelector((state) => state.projectDashboardState);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     console.log('Rendering project dashboard');
     console.log(projectId);
-    if (projectId !== null && projectId != projectIdInRedux) {
+    if (projectId !== null && projectId !== projectIdInRedux) {
       dispatch(fetchProjectDashboard(projectId));
         // data.data?.map((widget: any) => dispatch(ComponentActions[widget.name](data.timeFilter)));
     }
-  }, [dispatch, projectId]);
+  }, [dispatch, projectId, projectIdInRedux]);
 
   return (
     <Box>
@@ -64,7 +74,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               <Grid item xs={widget.width} minWidth={300} key={widget.name}>
                 <Card sx={{ padding: 1 }}>
                   <CardContent>
-                    {Components(widget)}
+                    {Components(widget, setFilterList, setTabValue)}
                   </CardContent>
                 </Card>
               </Grid>

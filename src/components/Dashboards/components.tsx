@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch } from 'react';
 // import { ResponseObject, getTotalSamples } from '../../utilities/resourceUtils';
 import DashboardTimeFilter from '../../constants/dashboardTimeFilter';
 
@@ -25,13 +25,15 @@ export const ComponentActions: any = {
   overview: fetchSummary,
   labSampleCounts: fetchSubmittingLabs,
   stCounts: fetchStCounts,
-}
+};
 
 export default function renderComponent(
   component: { name: keyof ComponentsType ; width: number; order: number; },
+  setFilterList: any, // TODO: Fix
+  setTabValue: Dispatch<React.SetStateAction<number>>,
 ) {
   if (typeof Components[component.name] !== 'undefined') {
-    return React.createElement(Components[component.name], {component});
+    return React.createElement(Components[component.name], { setFilterList, setTabValue });
   }
   // Returns nothing if a matching React component doesn't exist
   return React.createElement(
