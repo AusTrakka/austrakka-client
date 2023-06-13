@@ -1,9 +1,7 @@
-import {AsyncThunk} from "@reduxjs/toolkit";
-
 export interface ComponentsType {
-  overview: () => JSX.Element,
-  labSampleCounts: () => JSX.Element,
-  stCounts: () => JSX.Element,
+  overview: (props: any) => JSX.Element,
+  labSampleCounts: (props: any) => JSX.Element,
+  stCounts: (props: any) => JSX.Element,
 }
 
 export interface ProjectDashboardWidget {

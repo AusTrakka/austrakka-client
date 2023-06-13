@@ -3,7 +3,6 @@ import { Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSubmittingLabs } from './sumbittingLabsSlice';
-import { useFirstRender } from '../../../utilities/helperUtils';
 import LoadingState from '../../../constants/loadingState';
 
 export default function SubmittingLabs() {

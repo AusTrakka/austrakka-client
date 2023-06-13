@@ -1,15 +1,13 @@
 import React, { Dispatch } from 'react';
-// import { ResponseObject, getTotalSamples } from '../../utilities/resourceUtils';
-import DashboardTimeFilter from '../../constants/dashboardTimeFilter';
 
 // Importing all possible dashboard components
 import SampleSummary from '../Widgets/SampleSummary/SampleSummary';
 import SubmittingLabs from '../Widgets/SubmittingLabs/SubmittingLabs';
 import StCounts from '../Widgets/StCounts/StCounts';
 import { ComponentsType } from './ProjectDashboard/project.dashboard.interface';
-import {fetchSummary} from "../Widgets/SampleSummary/sampleSummarySlice";
-import {fetchStCounts} from "../Widgets/StCounts/stCountsSlice";
-import {fetchSubmittingLabs} from "../Widgets/SubmittingLabs/sumbittingLabsSlice";
+import { fetchSummary } from '../Widgets/SampleSummary/sampleSummarySlice';
+import { fetchStCounts } from '../Widgets/StCounts/stCountsSlice';
+import { fetchSubmittingLabs } from '../Widgets/SubmittingLabs/sumbittingLabsSlice';
 
 // OBJECT Components:
 // Object that maps the React components (above) to the name we have

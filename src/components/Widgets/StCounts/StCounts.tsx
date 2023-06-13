@@ -4,7 +4,6 @@ import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
-import { useFirstRender } from '../../../utilities/helperUtils';
 
 export default function StCounts() {
   // Get initial state from store

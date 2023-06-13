@@ -10,7 +10,7 @@ import { Filter } from '../../Common/QueryBuilder';
 
 interface ProjectDashboardProps {
   projectDesc: string,
-  projectId: any, // TODO: Fix
+  projectId: number | null,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   setTabValue: Dispatch<SetStateAction<number>>,
 }
@@ -24,7 +24,7 @@ function DateSelector() {
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
     data.data.map(
-      (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string))
+      (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
     );
   };
 
@@ -52,11 +52,8 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    console.log('Rendering project dashboard');
-    console.log(projectId);
     if (projectId !== null && projectId !== projectIdInRedux) {
       dispatch(fetchProjectDashboard(projectId));
-        // data.data?.map((widget: any) => dispatch(ComponentActions[widget.name](data.timeFilter)));
     }
   }, [dispatch, projectId, projectIdInRedux]);
 

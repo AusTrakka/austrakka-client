@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
-import {PayloadAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject, getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
-import {ComponentActions} from "../components";
+import { ComponentActions } from '../components';
 
 interface ProjectDashboardState {
   loading: LoadingState
@@ -16,6 +16,7 @@ interface ProjectDashboardState {
 
 const initialState: ProjectDashboardState = {
   loading: LoadingState.IDLE,
+  // This initial state might need to reflect state of user dashboard time filter
   timeFilter: DashboardTimeFilter.ALL,
   projectIdInRedux: 0,
   data: [],
@@ -28,10 +29,11 @@ export const fetchProjectDashboard = createAsyncThunk(
     { rejectWithValue, fulfillWithValue, dispatch },
   ):Promise<ResponseObject | unknown> => {
     const response = await getProjectDashboard(projectId);
-    console.log(response);
-    let payload = { projectId: projectId, response: response}
+    const payload = { projectId, response };
     if (response.status === 'Success') {
-      response.data?.map((widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)));
+      response.data?.map(
+        (widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)),
+      );
       return fulfillWithValue(payload);
     }
     return rejectWithValue(payload);
