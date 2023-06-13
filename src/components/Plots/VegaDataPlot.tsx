@@ -46,7 +46,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         vegaView.finalize();
       }
       const compiledSpec = compile(spec!).spec;
-      (compiledSpec.data![0] as InlineData).values = data;
+      const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
+      (compiledSpec.data![dataIndex] as InlineData).values = data;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
