@@ -10,6 +10,7 @@ import { ComponentActions } from '../components';
 interface ProjectDashboardState {
   loading: LoadingState
   timeFilter: string
+  timeFilterObject: any // TODO: Fix
   projectIdInRedux: any
   data: ProjectDashboardWidget | any
 }
@@ -18,6 +19,7 @@ const initialState: ProjectDashboardState = {
   loading: LoadingState.IDLE,
   // This initial state might need to reflect state of user dashboard time filter
   timeFilter: DashboardTimeFilter.ALL,
+  timeFilterObject: {},
   projectIdInRedux: 0,
   data: [],
 };
@@ -47,6 +49,9 @@ const projectDashboardSlice = createSlice({
     updateTimeFilter: (state, action) => {
       state.timeFilter = action.payload;
     },
+    updateTimeFilterObject: (state, action) => {
+      state.timeFilterObject = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchProjectDashboard.pending, (state) => {
@@ -66,6 +71,6 @@ const projectDashboardSlice = createSlice({
 
 export const selectProjectDashboard = (state: AppState) => state.projectDashboardState;
 
-export const { updateTimeFilter } = projectDashboardSlice.actions;
+export const { updateTimeFilter, updateTimeFilterObject } = projectDashboardSlice.actions;
 
 export default projectDashboardSlice.reducer;

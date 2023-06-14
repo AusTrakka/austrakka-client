@@ -1,9 +1,10 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
 import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import dayjs from 'dayjs';
 import Components, { ComponentActions } from '../components';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchProjectDashboard, updateTimeFilter } from './projectDashboardSlice';
+import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import LoadingState from '../../../constants/loadingState';
 import { Filter } from '../../Common/QueryBuilder';
@@ -23,6 +24,29 @@ function DateSelector() {
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
+
+    // TODO: Handle LAST_SEQUENCING date
+    if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
+      dispatch(updateTimeFilterObject(
+        {
+          field: 'Uploaded',
+          fieldType: 'date',
+          condition: '>',
+          value: dayjs().subtract(7, 'days'),
+        },
+      ));
+    } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
+      dispatch(updateTimeFilterObject(
+        {
+          field: 'Uploaded',
+          fieldType: 'date',
+          condition: '>',
+          value: dayjs().subtract(1, 'month'),
+        },
+      ));
+    }
+    //
+
     data.data.map(
       (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
     );
@@ -64,7 +88,9 @@ function ProjectDashboard(props: ProjectDashboardProps) {
           <>
             <Grid container item xs={12} justifyContent="space-between">
               {projectDesc}
-              <DateSelector />
+              { data.data.length !== 0 ? (
+                <DateSelector />
+              ) : null }
             </Grid>
             {data.data.map((widget: ProjectDashboardWidget) => (
             // TODO: Investigate fluid grids with multiple breakpoints

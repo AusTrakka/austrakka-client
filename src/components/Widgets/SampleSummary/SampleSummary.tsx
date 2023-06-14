@@ -12,8 +12,8 @@ export default function SampleSummary(props: any) {
   // Get initial state from store
   const { data, loading } = useAppSelector((state) => state.sampleSummaryState);
   const sampleSummaryDispatch = useAppDispatch();
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-  const filters = [
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
+  const testFilters = [
     {
       field: 'cgMLST',
       fieldType: 'string',
@@ -28,32 +28,46 @@ export default function SampleSummary(props: any) {
     }
   }, [loading, sampleSummaryDispatch, timeFilter]);
 
+  const handleDrilldownFilters = (drilldownFilters: any) => {
+    // Only append timeFilterObject if it actually contains a filter
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilters, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilters);
+    }
+    setTabValue(1);
+  };
+
   return (
     <Box>
       { loading === LoadingState.SUCCESS ? (
-        <Grid container spacing={2} direction="row" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h4" paddingBottom={1}>
-              Total uploaded samples
-            </Typography>
-            {data.data.total}
+        <>
+          <Grid container spacing={2} direction="row" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h4" paddingBottom={1}>
+                Total uploaded samples
+              </Typography>
+              {data.data.total}
+            </Grid>
+            <Grid item>
+              <Typography variant="h4" paddingBottom={1}>
+                Latest sample upload
+              </Typography>
+              {data.data.latestUploadedDate}
+            </Grid>
+            <Grid item>
+              <Typography variant="h4" paddingBottom={1}>
+                Samples recieved, not sequenced
+              </Typography>
+              {data.data.samplesNotSequenced}
+            </Grid>
           </Grid>
-          <Grid item>
-            <Typography variant="h4" paddingBottom={1}>
-              Latest sample upload
-            </Typography>
-            {data.data.latestUploadedDate}
-          </Grid>
-          <Grid item>
-            <Typography variant="h4" paddingBottom={1}>
-              Samples recieved, not sequenced
-            </Typography>
-            {data.data.samplesNotSequenced}
-          </Grid>
-          <Button variant="contained" onClick={() => { setFilterList(filters); setTabValue(1); }}>
-            Update query string
+          <br />
+          <Button variant="contained" onClick={() => { handleDrilldownFilters(testFilters); }}>
+            Mock drilldown (cgMLST = 2)
           </Button>
-        </Grid>
+        </>
       )
         : (
           'Loading...'
