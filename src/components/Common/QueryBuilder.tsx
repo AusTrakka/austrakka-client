@@ -84,12 +84,14 @@ function QueryBuilder(props: QueryBuilderProps) {
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
 
   useEffect(() => {
-    const copy = [...filterList];
-    for (let i = 0; i < copy.length; i += 1) {
-      copy[i].shakeElement = false;
+    if (filterList.filter(e => e.shakeElement === true).length > 0) {
+      const copy = [...filterList];
+      for (let i = 0; i < copy.length; i += 1) {
+        copy[i].shakeElement = false;
+      }
+      setFilterList(copy);
     }
-    setFilterList(copy);
-  });
+  }, [filterList, isOpen, setFilterList]);
 
   useEffect(() => {
     // Building query string
