@@ -75,6 +75,15 @@ export class Phylocanvas extends PhylocanvasGL {
     );
     this.clickHandlers = [];
     this.view.style.backgroundImage = ''; // remove logo
+
+    this.addClickHandler((info: any, event: any) => {
+      // select clade
+      const node = this.pickNodeFromLayer(info);
+      this.selectInternalNode(
+        node,
+        event.srcEvent.metaKey || event.srcEvent.ctrlKey,
+      );
+    });
   }
 
   addClickHandler(fn: Function) {
@@ -84,6 +93,29 @@ export class Phylocanvas extends PhylocanvasGL {
   handleClick(info: any, event: any) {
     super.handleClick(info, event);
     this.clickHandlers.forEach((fn: Function) => fn(info, event));
+  }
+
+  static getLeafNodeIds(node: any) {
+    // depth first search
+    const ids: Array<string> = [];
+    const traverse = (n: any) => {
+      if (!n.isLeaf) {
+        for (let i = 0; i < n.children.length; i += 1) {
+          traverse(n.children[i]);
+        }
+      } else {
+        ids.push(n.id);
+      }
+    };
+    traverse(node);
+    return ids;
+  }
+
+  selectInternalNode(node: any, append = false) {
+    if (node && !node.isLeaf) {
+      const ids = Phylocanvas.getLeafNodeIds(node);
+      this.selectLeafNodes(ids, append);
+    }
   }
   // add additional methods here...
 }
