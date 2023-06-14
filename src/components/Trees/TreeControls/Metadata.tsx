@@ -5,6 +5,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import InputSlider from './Slider';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -26,32 +28,45 @@ function getStyles(column: string, selectedColumns: string[], theme: Theme) {
   };
 }
 
-export default function MetadataColumnSelect(
-  { columns, onChange }: { columns: string[], onChange: CallableFunction },
+interface MetadataState {
+  columns: string[]
+  alignLabels: boolean
+  showBlockHeaders: boolean
+  blockHeaderFontSize: number,
+  blockPadding: number,
+  blockSize: number,
+}
+
+export default function MetadataControls(
+  { columns, state, onChange }: {
+    columns: string[],
+    state: MetadataState,
+    onChange: CallableFunction },
 ) {
   const theme = useTheme();
-  const [selectedColumns, setSelectedColumns] = React.useState<string[]>([]);
 
-  const handleChange = (event: SelectChangeEvent<typeof selectedColumns>) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedColumns(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
-    onChange(value);
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>,
+  ) => {
+    // Detect if the event is coming from a checkbox
+    const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
+    onChange({
+      ...state,
+      [event.target.name]:
+        isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
+    });
   };
 
   return (
-    <div>
-      <FormControl sx={{ m: 1, width: 300 }}>
-        <InputLabel id="multiple-name-label">Column</InputLabel>
+    <Grid>
+      <FormControl fullWidth size="small">
+        <InputLabel id="column-label">Columns</InputLabel>
         <Select
-          labelId="multiple-name-label"
-          id="multiple-name"
+          labelId="column-label"
+          id="column"
           multiple
-          value={selectedColumns}
+          name="columns"
+          value={state.columns}
           onChange={handleChange}
           input={<OutlinedInput label="Column" />}
           MenuProps={MenuProps}
@@ -60,13 +75,59 @@ export default function MetadataColumnSelect(
             <MenuItem
               key={column}
               value={column}
-              style={getStyles(column, selectedColumns, theme)}
+              style={getStyles(column, state.columns, theme)}
             >
               {column}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-    </div>
+      <FormControl fullWidth>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch checked={state.alignLabels} onChange={handleChange} name="alignLabels" />
+          }
+            label="Align metadata"
+          />
+          <FormControlLabel
+            control={
+              <Switch checked={state.showBlockHeaders} onChange={handleChange} name="showBlockHeaders" />
+          }
+            label="Show headers"
+          />
+        </FormGroup>
+      </FormControl>
+      <FormControl fullWidth>
+        <InputSlider
+          name="blockHeaderFontSize"
+          label="Font size"
+          value={state.blockHeaderFontSize}
+          onChange={handleChange}
+          min={1}
+          max={24}
+        />
+      </FormControl>
+      <FormControl fullWidth>
+        <InputSlider
+          name="blockSize"
+          label="Block size"
+          value={state.blockSize}
+          onChange={handleChange}
+          min={1}
+          max={50}
+        />
+      </FormControl>
+      <FormControl fullWidth>
+        <InputSlider
+          name="blockPadding"
+          label="Padding"
+          value={state.blockPadding}
+          onChange={handleChange}
+          min={1}
+          max={20}
+        />
+      </FormControl>
+    </Grid>
   );
 }
