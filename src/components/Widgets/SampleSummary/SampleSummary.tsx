@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Box, Button, Grid, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
@@ -9,16 +10,28 @@ export default function SampleSummary(props: any) {
     setFilterList,
     setTabValue,
   } = props;
+
   // Get initial state from store
   const { data, loading } = useAppSelector((state) => state.sampleSummaryState);
   const sampleSummaryDispatch = useAppDispatch();
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const testFilters = [
+
+  // Drilldown filters
+  const allSamplesFilter: any [] = [];
+  const hasSequenceFilter = [
     {
-      field: 'cgMLST',
+      field: 'hasSequence',
       fieldType: 'string',
       condition: '==*',
-      value: '2',
+      value: 'false',
+    },
+  ];
+  const latestUploadFilter = [
+    {
+      field: 'Uploaded',
+      fieldType: 'date',
+      condition: '>',
+      value: dayjs(), // TODO: Convert data.data.latestUploadedDate to dayjs object
     },
   ];
 
@@ -29,6 +42,7 @@ export default function SampleSummary(props: any) {
   }, [loading, sampleSummaryDispatch, timeFilter]);
 
   const handleDrilldownFilters = (drilldownFilters: any) => {
+    // TODO: Don't append time filter for latest upload drilldown
     // Only append timeFilterObject if it actually contains a filter
     if (Object.keys(timeFilterObject).length !== 0) {
       const appendedFilters = [...drilldownFilters, timeFilterObject];
@@ -42,32 +56,41 @@ export default function SampleSummary(props: any) {
   return (
     <Box>
       { loading === LoadingState.SUCCESS ? (
-        <>
-          <Grid container spacing={2} direction="row" justifyContent="space-between">
-            <Grid item>
-              <Typography variant="h4" paddingBottom={1}>
-                Total uploaded samples
-              </Typography>
-              {data.data.total}
-            </Grid>
-            <Grid item>
-              <Typography variant="h4" paddingBottom={1}>
-                Latest sample upload
-              </Typography>
-              {data.data.latestUploadedDate}
-            </Grid>
-            <Grid item>
-              <Typography variant="h4" paddingBottom={1}>
-                Samples recieved, not sequenced
-              </Typography>
-              {data.data.samplesNotSequenced}
-            </Grid>
+        <Grid container spacing={2} direction="row" justifyContent="space-between">
+          <Grid item>
+            <Typography variant="h5" paddingBottom={1} color="primary.main">
+              Total uploaded samples
+            </Typography>
+            <Typography variant="h2" paddingBottom={1} color="primary.main">
+              {parseFloat(data.data.total).toLocaleString('en-US')}
+            </Typography>
+            <Button size="small" onClick={() => handleDrilldownFilters(allSamplesFilter)}>
+              View samples
+            </Button>
           </Grid>
-          <br />
-          <Button variant="contained" onClick={() => { handleDrilldownFilters(testFilters); }}>
-            Mock drilldown (cgMLST = 2)
-          </Button>
-        </>
+          <Grid item>
+            <Typography variant="h5" paddingBottom={1} color="primary.main">
+              Latest sample upload
+            </Typography>
+            <Typography variant="h2" paddingBottom={1} color="primary.main">
+              {data.data.latestUploadedDate}
+            </Typography>
+            <Button size="small" onClick={() => handleDrilldownFilters(latestUploadFilter)}>
+              View samples
+            </Button>
+          </Grid>
+          <Grid item>
+            <Typography variant="h5" paddingBottom={1} color="primary.main">
+              Records without sequences
+            </Typography>
+            <Typography variant="h2" paddingBottom={1} color="primary.main">
+              {parseFloat(data.data.samplesNotSequenced).toLocaleString('en-US')}
+            </Typography>
+            <Button size="small" onClick={() => handleDrilldownFilters(hasSequenceFilter)}>
+              View samples
+            </Button>
+          </Grid>
+        </Grid>
       )
         : (
           'Loading...'

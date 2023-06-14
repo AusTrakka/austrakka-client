@@ -36,7 +36,7 @@ export default function SubmittingLabs() {
       { loading === LoadingState.SUCCESS ? (
         <>
           <Typography variant="h4" paddingBottom={3}>
-            Submitting labs
+            Submitting organisations
           </Typography>
           <MaterialReactTable
             columns={columns}

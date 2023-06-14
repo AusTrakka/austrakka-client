@@ -33,6 +33,7 @@ export const fetchProjectDashboard = createAsyncThunk(
     const response = await getProjectDashboard(projectId);
     const payload = { projectId, response };
     if (response.status === 'Success') {
+      // TODO: Order array based on "order" properties
       response.data?.map(
         (widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)),
       );

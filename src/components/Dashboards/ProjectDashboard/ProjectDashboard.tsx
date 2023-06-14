@@ -25,7 +25,7 @@ function DateSelector() {
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
 
-    // TODO: Handle LAST_SEQUENCING date
+    // LAST_SEQUENCING date filter needs to be set at the widget level
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
       dispatch(updateTimeFilterObject(
         {
@@ -44,6 +44,8 @@ function DateSelector() {
           value: dayjs().subtract(1, 'month'),
         },
       ));
+    } else {
+      dispatch(updateTimeFilterObject({}));
     }
     //
 
