@@ -84,9 +84,11 @@ function QueryBuilder(props: QueryBuilderProps) {
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
 
   useEffect(() => {
-    for (let i = 0; i < filterList.length; i += 1) {
-      filterList[i].shakeElement = false;
+    const copy = [...filterList];
+    for (let i = 0; i < copy.length; i += 1) {
+      copy[i].shakeElement = false;
     }
+    setFilterList(copy);
   });
 
   useEffect(() => {
