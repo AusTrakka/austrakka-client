@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
+import { TreeExportFuctions } from '../Tree';
 
 interface Option {
   exportFunction: CallableFunction
@@ -33,11 +34,39 @@ const base64toBlob = (base64Image: string) => {
   return blob;
 };
 
-export default function ExportButton({ options }: { options: Option[] }) {
+interface Props {
+  analysisName: string,
+  phylocanvasRef: React.RefObject<TreeExportFuctions>,
+}
+
+export default function ExportButton(
+  { analysisName, phylocanvasRef }: Props,
+) {
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-
+  const options: Option[] = [
+    {
+      exportFunction: () => phylocanvasRef.current?.exportSVG(),
+      label: 'Export SVG',
+      fileName: `${analysisName}.svg`,
+    },
+    {
+      exportFunction: () => phylocanvasRef.current?.exportPNG(),
+      label: 'Export PNG',
+      fileName: `${analysisName}.png`,
+    },
+    {
+      exportFunction: () => phylocanvasRef.current?.exportNewick(),
+      label: 'Export Newick',
+      fileName: `${analysisName}.newick`,
+    },
+    {
+      exportFunction: () => phylocanvasRef.current?.exportJSON(),
+      label: 'Export JSON',
+      fileName: `${analysisName}.json`,
+    },
+  ];
   const download = (blob: Blob | string, filename: string) => {
     let blobData: Blob;
     if (typeof blob === 'string') {

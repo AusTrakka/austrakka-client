@@ -14,11 +14,11 @@ export default function Search(
 ) {
   return (
     <Autocomplete
-      sx={{ maxHeight: '200px', overflow: 'auto', paddingY: 1 }}
+      sx={{ maxHeight: '200px', overflow: 'auto', paddingTop: 1 }}
       multiple
       id="tags-outlined"
       size="small"
-      limitTags={3}
+      limitTags={1}
       getOptionLabel={(option) => option}
       filterSelectedOptions
       options={options}

@@ -29,8 +29,7 @@ function getStyles(column: string, selectedColumns: string[], theme: Theme) {
 }
 
 interface MetadataState {
-  columns: string[]
-  alignLabels: boolean
+  blocks: string[]
   showBlockHeaders: boolean
   blockHeaderFontSize: number,
   blockPadding: number,
@@ -41,21 +40,11 @@ export default function MetadataControls(
   { columns, state, onChange }: {
     columns: string[],
     state: MetadataState,
-    onChange: CallableFunction },
+    onChange: (
+      event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
+    ) => void; },
 ) {
   const theme = useTheme();
-
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>,
-  ) => {
-    // Detect if the event is coming from a checkbox
-    const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
-    onChange({
-      ...state,
-      [event.target.name]:
-        isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
-    });
-  };
 
   return (
     <Grid>
@@ -65,9 +54,9 @@ export default function MetadataControls(
           labelId="column-label"
           id="column"
           multiple
-          name="columns"
-          value={state.columns}
-          onChange={handleChange}
+          name="blocks"
+          value={state.blocks}
+          onChange={onChange}
           input={<OutlinedInput label="Column" />}
           MenuProps={MenuProps}
         >
@@ -75,7 +64,7 @@ export default function MetadataControls(
             <MenuItem
               key={column}
               value={column}
-              style={getStyles(column, state.columns, theme)}
+              style={getStyles(column, state.blocks, theme)}
             >
               {column}
             </MenuItem>
@@ -86,13 +75,7 @@ export default function MetadataControls(
         <FormGroup>
           <FormControlLabel
             control={
-              <Switch checked={state.alignLabels} onChange={handleChange} name="alignLabels" />
-          }
-            label="Align metadata"
-          />
-          <FormControlLabel
-            control={
-              <Switch checked={state.showBlockHeaders} onChange={handleChange} name="showBlockHeaders" />
+              <Switch checked={state.showBlockHeaders} onChange={onChange} name="showBlockHeaders" />
           }
             label="Show headers"
           />
@@ -103,7 +86,7 @@ export default function MetadataControls(
           name="blockHeaderFontSize"
           label="Font size"
           value={state.blockHeaderFontSize}
-          onChange={handleChange}
+          onChange={onChange}
           min={1}
           max={24}
         />
@@ -113,7 +96,7 @@ export default function MetadataControls(
           name="blockSize"
           label="Block size"
           value={state.blockSize}
-          onChange={handleChange}
+          onChange={onChange}
           min={1}
           max={50}
         />
@@ -123,7 +106,7 @@ export default function MetadataControls(
           name="blockPadding"
           label="Padding"
           value={state.blockPadding}
-          onChange={handleChange}
+          onChange={onChange}
           min={1}
           max={20}
         />
