@@ -1,16 +1,15 @@
 import React, { SyntheticEvent, createRef, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, AnalysisResultMetadata } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
 import { ResponseObject, getTreeData, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
-import { TreeMetadata, TreeType, TreeTypes } from './PhylocanvasGL';
+import { TreeMetadata, TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
 import Search from './TreeControls/Search';
-import InputSlider from './TreeControls/Slider';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 
 function TreeDetail() {
