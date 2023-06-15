@@ -1,8 +1,8 @@
-import React, { SyntheticEvent, createRef, useCallback, useEffect, useState } from 'react';
+import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { JobInstance, AnalysisResultMetadata } from '../../types/dtos';
+import { JobInstance } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
 import { ResponseObject, getTreeData, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
@@ -11,6 +11,7 @@ import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
 import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
+import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 
 function TreeDetail() {
   const { analysisId } = useParams();
@@ -37,42 +38,6 @@ function TreeDetail() {
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const mapData = useCallback(
-    (dataArray: AnalysisResultMetadata[]) => {
-      let colorIndex = 0;
-      const valueColorMap: Record<string, string> = {};
-
-      function getUniqueColor(value: string): string {
-        // Check if value was already mapped to a color
-        if (valueColorMap[value]) {
-          return valueColorMap[value];
-        }
-
-        // Generate a unique color (here we use HSL colors for simplicity)
-        const color = `hsl(${(colorIndex * 15) % 360}, 100%, 50%)`;
-
-        // Increment the color index and store the color mapping
-        colorIndex += 1;
-        valueColorMap[value] = color;
-
-        return color;
-      }
-
-      const result: TreeMetadata = {};
-      for (const data of dataArray) {
-        result[data.sampleId] = {};
-        for (const metadataValue of data.metadataValues) {
-          result[data.sampleId][metadataValue.key] = {
-            colour: getUniqueColor(metadataValue.value),
-            label: metadataValue.value,
-          };
-        }
-      }
-      return result;
-    },
-    [],
-  );
-
   useEffect(() => {
     const getMetadata = async () => {
       const metadataResponse: ResponseObject = await getTreeMetaData(
@@ -80,7 +45,7 @@ function TreeDetail() {
         Number(tree?.jobInstanceId),
       );
       if (metadataResponse.status === 'Success') {
-        setTreeMetadata(mapData(metadataResponse.data));
+        setTreeMetadata(mapMetadataToPhylocanvas(metadataResponse.data));
       } else {
         setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
       }
@@ -99,7 +64,7 @@ function TreeDetail() {
       getMetadata();
       getDisplayFields();
     }
-  }, [analysisId, mapData, tree]);
+  }, [analysisId, tree]);
 
   useEffect(() => {
     // Get tree details, including tree type
