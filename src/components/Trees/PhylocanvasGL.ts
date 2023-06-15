@@ -1,4 +1,4 @@
-import { PhylocanvasGL, plugins, TreeTypes } from '@phylocanvas/phylocanvas.gl';
+import { PhylocanvasGL, plugins } from '@phylocanvas/phylocanvas.gl';
 
 type MetadataValue = { 'colour': string, 'label': string };
 export type TreeMetadata = Record<string, Record<string, MetadataValue>>;
@@ -8,7 +8,15 @@ interface Size {
   height: number;
 }
 
-type TreeType = typeof TreeTypes[keyof typeof TreeTypes];
+export const TreeTypes: Record<string, string> = {
+  Circular: 'cr',
+  Diagonal: 'dg',
+  Hierarchical: 'hr',
+  Radial: 'rd',
+  Rectangular: 'rc',
+};
+
+export type TreeType = typeof TreeTypes[keyof typeof TreeTypes];
 
 export interface PhylocanvasProps {
   source: string;
@@ -48,7 +56,7 @@ export interface PhylocanvasProps {
   selectedIds?: any[]; // Replace any[] with the actual type if known
   shapeBorderAlpha?: number;
   shapeBorderWidth?: number;
-  // showBlockLabels?: boolean;
+  showBlockLabels?: boolean;
   showBranchLengths?: boolean;
   showEdges?: boolean;
   showInternalLabels?: boolean;
