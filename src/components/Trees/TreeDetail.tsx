@@ -1,22 +1,42 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { SyntheticEvent, createRef, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Grid, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, AnalysisResultMetadata } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
 import { ResponseObject, getTreeData, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
-import Tree from './Tree';
-import { TreeMetadata } from './PhylocanvasGL';
-import MetadataColumnSelect from './TreeControls/Metadata';
+import Tree, { TreeExportFuctions } from './Tree';
+import { TreeMetadata, TreeType, TreeTypes } from './PhylocanvasGL';
+import MetadataControls from './TreeControls/Metadata';
+import ExportButton from './TreeControls/Export';
+import Search from './TreeControls/Search';
+import InputSlider from './TreeControls/Slider';
+import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 
 function TreeDetail() {
   const { analysisId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
+  const treeRef = createRef<TreeExportFuctions>();
   const [treeMetadata, setTreeMetadata] = useState<TreeMetadata>({});
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   // control hooks
-  const [blocks, setBlocks] = useState<string[]>([]);
+  const [state, setState] = useState({
+    blocks: [],
+    alignLabels: true,
+    showBlockHeaders: true,
+    blockHeaderFontSize: 13,
+    blockPadding: 3,
+    blockSize: 16,
+    showLeafLabels: false,
+    fontSize: 16,
+    nodeSize: 6,
+    type: TreeTypes.Rectangular,
+    showInternalLabels: false,
+    showBranchLengths: false,
+  });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const mapData = useCallback(
     (dataArray: AnalysisResultMetadata[]) => {
@@ -108,17 +128,17 @@ function TreeDetail() {
     if (tree) {
       return (
         <Tree
+          ref={treeRef}
           source={tree.newickTree}
           resizeWidthTo=".treeContainer" // auto-resize width to container
           size={{ width: 600, height: 600 }}
           showLabels
-          showLeafLabels={false}
           interactive
           metadata={treeMetadata}
-          blocks={blocks}
-          alignLabels
-          showBlockHeaders
-          nodeSize={4}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={setSelectedIds}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...state}
         />
       );
     }
@@ -126,21 +146,85 @@ function TreeDetail() {
     return <></>;
   };
 
+  const handleSearch = (
+    event: SyntheticEvent<Element, Event>,
+    value: string[],
+  ) => {
+    setSelectedIds(value);
+  };
+
+  const handleStateChange = (
+    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>,
+  ) => {
+    // Detect if the event is coming from a checkbox
+    const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
+    setState({
+      ...state,
+      [event.target.name]:
+        isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
+    });
+  };
+
   const renderControls = () => {
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
+    const ids = Object.keys(treeMetadata);
 
     if (tree) {
       return (
-        <Grid item xs={2} sx={{ minWidth: '350px' }}>
-          <div>
-            Controls
-            <MetadataColumnSelect
-              columns={visualisableColumns}
-              onChange={setBlocks}
-            />
-          </div>
+        <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
+          {/* <Typography>Controls</Typography> */}
+          <Search
+            options={ids}
+            selectedIds={selectedIds}
+            onChange={handleSearch}
+          />
+          <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
+            <InputLabel id="tree-type-label">Type</InputLabel>
+            <Select
+              labelId="tree-type-label"
+              id="tree-type"
+              value={[state.type]}
+              name="type"
+              label="Type"
+              onChange={handleStateChange}
+            >
+              {
+                  Object.keys(TreeTypes).map((type) => (
+                    <MenuItem key={type} value={TreeTypes[type]}>{type}</MenuItem>
+                  ))
+                }
+            </Select>
+          </FormControl>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+            >
+              <Typography>Nodes & labels</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <NodeAndLabelControls
+                state={state}
+                onChange={handleStateChange}
+              />
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+            >
+              <Typography>Metadata</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <MetadataControls
+                columns={visualisableColumns}
+                state={state}
+                onChange={handleStateChange}
+              />
+            </AccordionDetails>
+          </Accordion>
+          <ExportButton analysisName={tree.analysisName} phylocanvasRef={treeRef} />
         </Grid>
       );
     }
