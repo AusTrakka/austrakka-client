@@ -8,6 +8,7 @@ import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from 
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import LoadingState from '../../../constants/loadingState';
 import { Filter } from '../../Common/QueryBuilder';
+import BasicDashboard from '../Templates/BasicDashboard';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -48,7 +49,6 @@ function DateSelector() {
       dispatch(updateTimeFilterObject({}));
     }
     //
-
     data.data.map(
       (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
     );
@@ -94,7 +94,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
                 <DateSelector />
               ) : null }
             </Grid>
-            {data.data.map((widget: ProjectDashboardWidget) => (
+            <Grid container item xs={12} sx={{ marginTop: 1, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
+              <BasicDashboard
+                setFilterList={setFilterList}
+                setTabValue={setTabValue}
+              />
+            </Grid>
+
+            {/* {data.data.map((widget: ProjectDashboardWidget) => (
             // TODO: Investigate fluid grids with multiple breakpoints
               <Grid item xs={widget.width} minWidth={300} key={widget.name}>
                 <Card sx={{ padding: 1 }}>
@@ -103,7 +110,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
                   </CardContent>
                 </Card>
               </Grid>
-            ))}
+            ))} */}
           </>
         )
           : (

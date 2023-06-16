@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import dayjs from 'dayjs';
+import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
+import DrilldownButton from '../../Common/DrilldownButton';
 
 export default function SampleSummary(props: any) {
   const {
@@ -56,39 +58,45 @@ export default function SampleSummary(props: any) {
   return (
     <Box>
       { loading === LoadingState.SUCCESS ? (
-        <Grid container spacing={2} direction="row" justifyContent="space-between">
+        <Grid container spacing={6} direction="row" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5" paddingBottom={1} color="primary.main">
+            <FileUploadOutlined color="primary" />
+            <Typography variant="h5" paddingBottom={1} color="primary">
               Total uploaded samples
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
               {parseFloat(data.data.total).toLocaleString('en-US')}
             </Typography>
-            <Button size="small" onClick={() => handleDrilldownFilters(allSamplesFilter)}>
-              View samples
-            </Button>
+            <DrilldownButton
+              title="View Samples"
+              onClick={() => handleDrilldownFilters(allSamplesFilter)}
+            />
           </Grid>
           <Grid item>
-            <Typography variant="h5" paddingBottom={1} color="primary.main">
+            <Event color="primary" />
+            <Typography variant="h5" paddingBottom={1} color="primary">
               Latest sample upload
             </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary.main">
+            <Typography variant="h2" paddingBottom={1} color="primary">
               {data.data.latestUploadedDate}
             </Typography>
-            <Button size="small" onClick={() => handleDrilldownFilters(latestUploadFilter)}>
-              View samples
-            </Button>
+            <DrilldownButton
+              title="View Samples"
+              onClick={() => handleDrilldownFilters(latestUploadFilter)}
+            />
           </Grid>
           <Grid item>
-            <Typography variant="h5" paddingBottom={1} color="primary.main">
+            <RuleOutlined color="primary" />
+            <Typography variant="h5" paddingBottom={1} color="primary">
               Records without sequences
             </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary.main">
+            <Typography variant="h2" paddingBottom={1} color="primary">
               {parseFloat(data.data.samplesNotSequenced).toLocaleString('en-US')}
             </Typography>
-            <Button size="small" onClick={() => handleDrilldownFilters(hasSequenceFilter)}>
-              View samples
-            </Button>
+            <DrilldownButton
+              title="View Samples"
+              onClick={() => handleDrilldownFilters(hasSequenceFilter)}
+            />
           </Grid>
         </Grid>
       )
