@@ -1,9 +1,75 @@
 import React, { useEffect, useMemo } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
+import { VegaLite } from 'react-vega';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
+import testData from './testStData';
+
+function STChart() {
+  const initSelect = () => {
+    const copy = testData.map((item) => ({
+      ...item,
+    }));
+    return copy;
+  };
+
+  const spec = {
+    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+    width: 500,
+    // height: 'container',
+    data: {
+      values: initSelect(),
+    },
+    mark: { type: 'bar', tooltip: true, stroke: 'black', cursor: 'pointer' },
+    params: [
+      {
+        name: 'stValue',
+        select: { type: 'point', fields: ['stValue'] },
+        bind: 'legend',
+      },
+      {
+        name: 'hover',
+        select: { type: 'point', on: 'mouseover', clear: 'mouseout' },
+      },
+    ],
+    config: {
+      legend: {
+        symbolStrokeWidth: 0,
+      },
+    },
+    encoding: {
+      x: { timeUnit: 'month', field: 'created', type: 'temporal', title: 'Sample created date (month)' },
+      y: { aggregate: 'count', title: 'Count of Samples' },
+      color: { field: 'stValue', title: 'ST Value' },
+      opacity: {
+        condition: { param: 'stValue', value: 1 },
+        value: 0.2,
+      },
+      strokeWidth: {
+        condition: [
+          {
+            param: 'hover',
+            empty: false,
+            value: 1,
+          },
+        ],
+        value: 0,
+      },
+    },
+  };
+
+  return (
+    <Box>
+      <VegaLite
+        spec={spec}
+        actions={false}
+        renderer="svg"
+      />
+    </Box>
+  );
+}
 
 export default function StCounts() {
   // Get initial state from store
@@ -11,13 +77,6 @@ export default function StCounts() {
   const { data, loading } = useAppSelector(selectStCounts);
   const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-
-  // TODO: Create custome selector to derive data in correct format
-  //   const data = useAppSelector(state => {
-  //     const initialData = state.submittingLabsState.data;
-  //     const aggregatedData = initialData;
-  //     return aggregatedData;
-  //   });
 
   const stCountsDispatch = useAppDispatch();
 
@@ -42,14 +101,14 @@ export default function StCounts() {
   );
 
   return (
-    <Box>
+    <Box sx={{ flexGrow: 1 }}>
       { loading === LoadingState.SUCCESS ? (
         <>
           <Typography variant="h4" paddingBottom={3}>
             ST Counts
           </Typography>
           <Grid container direction="row" alignItems="center" spacing={4}>
-            <Grid item>
+            <Grid item xs="auto">
               <MaterialReactTable
                 columns={columns}
                 data={aggregatedCounts}
@@ -73,9 +132,8 @@ export default function StCounts() {
                 }}
               />
             </Grid>
-            <Grid item>
-              {/* TODO: Draw plot from data */}
-              Plot
+            <Grid item xs>
+              <STChart data={data} />
             </Grid>
           </Grid>
         </>
