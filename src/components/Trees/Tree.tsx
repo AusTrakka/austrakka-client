@@ -11,6 +11,7 @@ export type TreeExportFuctions = {
   exportSVG(): Blob;
   exportPNG(): Blob;
   exportJSON(): string;
+  fitInCanvas(): void;
 };
 
 const Tree = React.forwardRef(
@@ -31,6 +32,9 @@ const Tree = React.forwardRef(
       },
       exportJSON() {
         return tree.current?.exportJSON();
+      },
+      fitInCanvas() {
+        return tree.current?.fitInCanvas();
       },
     }));
 

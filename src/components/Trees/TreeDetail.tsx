@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
@@ -12,6 +12,7 @@ import ExportButton from './TreeControls/Export';
 import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
+import TreeNavigation from './TreeControls/TreeNavigation';
 
 function TreeDetail() {
   const { analysisId } = useParams();
@@ -139,28 +140,27 @@ function TreeDetail() {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
           {/* <Typography>Controls</Typography> */}
-          <Search
-            options={ids}
-            selectedIds={selectedIds}
-            onChange={handleSearch}
-          />
-          <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
-            <InputLabel id="tree-type-label">Type</InputLabel>
-            <Select
-              labelId="tree-type-label"
-              id="tree-type"
-              value={[state.type]}
-              name="type"
-              label="Type"
-              onChange={handleStateChange}
+          <Grid item sx={{ marginBottom: 1 }}>
+            <Search
+              options={ids}
+              selectedIds={selectedIds}
+              onChange={handleSearch}
+            />
+          </Grid>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
             >
-              {
-                  Object.keys(TreeTypes).map((type) => (
-                    <MenuItem key={type} value={TreeTypes[type]}>{type}</MenuItem>
-                  ))
-                }
-            </Select>
-          </FormControl>
+              <Typography>Tree & Navigation</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TreeNavigation
+                state={state}
+                onChange={handleStateChange}
+                fitInCanvas={() => treeRef.current?.fitInCanvas()}
+              />
+            </AccordionDetails>
+          </Accordion>
           <Accordion>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
