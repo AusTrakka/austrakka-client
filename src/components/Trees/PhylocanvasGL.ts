@@ -18,6 +18,14 @@ export const TreeTypes: Record<string, string> = {
 
 export type TreeType = typeof TreeTypes[keyof typeof TreeTypes];
 
+export interface Node {
+  id: string;
+  isLeaf: boolean;
+  children: Node[];
+  parent: Node | null;
+  [key: string]: any;
+}
+
 export interface PhylocanvasProps {
   source: string;
   size: Size;
@@ -53,7 +61,7 @@ export interface PhylocanvasProps {
   rootId?: null | string;
   rotatedIds?: any[]; // Replace any[] with the actual type if known
   scaleLineAlpha?: boolean;
-  selectedIds?: any[]; // Replace any[] with the actual type if known
+  selectedIds?: string[];
   shapeBorderAlpha?: number;
   shapeBorderWidth?: number;
   showBlockLabels?: boolean;
@@ -87,7 +95,7 @@ export class Phylocanvas extends PhylocanvasGL {
     this.addClickHandler((info: any, event: any) => {
       // select clade
       const node = this.pickNodeFromLayer(info);
-      this.selectInternalNode(
+      this.selectLeavesFromInternalNode(
         node,
         event.srcEvent.metaKey || event.srcEvent.ctrlKey,
       );
@@ -119,7 +127,38 @@ export class Phylocanvas extends PhylocanvasGL {
     return ids;
   }
 
-  selectInternalNode(node: any, append = false) {
+  static getMRCA(leafNodes: Node[]): Node | null {
+    const leafCount = leafNodes.length;
+    if (leafCount === 0) return null;
+
+    if (leafCount === 1) return leafNodes[0].parent || leafNodes[0];
+
+    const visitCounts = new Map<Node, number>();
+    let nodesToCheck = leafNodes.slice();
+
+    while (nodesToCheck.length > 0) {
+      const nextNodes: Node[] = [];
+
+      for (const node of nodesToCheck) {
+        const count = (visitCounts.get(node) || 0) + 1;
+        if (count === leafCount) {
+          // This is the MRCA.
+          return node;
+        }
+
+        visitCounts.set(node, count);
+        if (node.parent) {
+          nextNodes.push(node.parent);
+        }
+      }
+
+      nodesToCheck = nextNodes;
+    }
+
+    return null; // return null if no common ancestor is found
+  }
+
+  selectLeavesFromInternalNode(node: any, append = false) {
     if (node && !node.isLeaf) {
       const ids = Phylocanvas.getLeafNodeIds(node);
       this.selectLeafNodes(ids, append);

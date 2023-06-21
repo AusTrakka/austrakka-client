@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useImperativeHandle } from 'react';
-import { Phylocanvas, PhylocanvasProps } from './PhylocanvasGL';
+import { Phylocanvas, PhylocanvasProps, Node } from './PhylocanvasGL';
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
@@ -12,6 +12,7 @@ export type TreeExportFuctions = {
   exportPNG(): Blob;
   exportJSON(): string;
   fitInCanvas(): void;
+  nodes: { ids: { [key: string]: Node } };
 };
 
 const Tree = React.forwardRef(
@@ -36,6 +37,7 @@ const Tree = React.forwardRef(
       fitInCanvas() {
         return tree.current?.fitInCanvas();
       },
+      nodes: tree.current?.getGraphAfterLayout(),
     }));
 
     useEffect(() => {
@@ -52,7 +54,7 @@ const Tree = React.forwardRef(
         }
         tree.current = new Phylocanvas(treeDiv.current, { ...otherProps });
         tree.current.addClickHandler(() => {
-        // save the selectedIds in the state
+          // save the selectedIds in the state
           onSelectedIdsChange(tree.current?.props.selectedIds);
         });
       }

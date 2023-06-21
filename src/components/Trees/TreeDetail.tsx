@@ -11,8 +11,8 @@ import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
 import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
-import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import TreeNavigation from './TreeControls/TreeNavigation';
+import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 
 function TreeDetail() {
   const { analysisId } = useParams();
@@ -22,6 +22,7 @@ function TreeDetail() {
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [rootId, setRootId] = useState<string | null>(null);
   // control hooks
   const [state, setState] = useState({
     blocks: [],
@@ -102,6 +103,7 @@ function TreeDetail() {
           metadata={treeMetadata}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
+          rootId={rootId}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
         />
@@ -130,6 +132,11 @@ function TreeDetail() {
     });
   };
 
+  const handleJumpToSubtree = (subtreeRootId: string | null) => {
+    setSelectedIds([]);
+    setRootId(subtreeRootId);
+  };
+
   const renderControls = () => {
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
@@ -156,8 +163,10 @@ function TreeDetail() {
             <AccordionDetails>
               <TreeNavigation
                 state={state}
+                selectedIds={selectedIds}
                 onChange={handleStateChange}
-                fitInCanvas={() => treeRef.current?.fitInCanvas()}
+                onJumpToSubtree={handleJumpToSubtree}
+                phylocanvasRef={treeRef}
               />
             </AccordionDetails>
           </Accordion>
