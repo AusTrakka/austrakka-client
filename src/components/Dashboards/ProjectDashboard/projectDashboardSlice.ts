@@ -5,7 +5,7 @@ import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
-import { ComponentActions } from '../components';
+import { DashboardTemplateActions } from '../../../config/dashboardsConfig';
 
 interface ProjectDashboardState {
   loading: LoadingState
@@ -29,14 +29,27 @@ export const fetchProjectDashboard = createAsyncThunk(
   async (
     projectId: number,
     { rejectWithValue, fulfillWithValue, dispatch },
-  ):Promise<ResponseObject | unknown> => {
-    const response = await getProjectDashboard(projectId);
+  ):Promise<ResponseObject | unknown > => {
+    // const response = await getProjectDashboard(projectId);
+    const response = {
+      status: 'Success',
+      data: {
+        dashboardName: 'basic',
+      },
+    };
     const payload = { projectId, response };
     if (response.status === 'Success') {
-      // TODO: Order array based on "order" properties
-      response.data?.map(
-        (widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)),
+      // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
+      const dispatchProps = {
+        projectId,
+        timeFilter: DashboardTimeFilter.ALL,
+      };
+      DashboardTemplateActions[response.data.dashboardName].map(
+        (dispatchEvent: any) => dispatch(dispatchEvent(dispatchProps)),
       );
+      // response.data?.map(
+      //   (widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)),
+      // );
       return fulfillWithValue(payload);
     }
     return rejectWithValue(payload);

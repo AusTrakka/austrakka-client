@@ -9,6 +9,7 @@ function BasicDashboard(props: any) {
   const {
     setFilterList,
     setTabValue,
+    projectId,
   } = props;
   useEffect(() => {
 
@@ -22,7 +23,11 @@ function BasicDashboard(props: any) {
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SampleSummary setFilterList={setFilterList} setTabValue={setTabValue} />
+                  <SampleSummary
+                    projectId={projectId}
+                    setFilterList={setFilterList}
+                    setTabValue={setTabValue}
+                  />
                 </CardContent>
               </Card>
             </Grid>

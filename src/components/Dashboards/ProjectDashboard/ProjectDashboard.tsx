@@ -1,14 +1,12 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
-import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import dayjs from 'dayjs';
-import Components, { ComponentActions } from '../components';
+import renderDashboard, { DashboardTemplateActions } from '../../../config/dashboardsConfig';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
-import { ProjectDashboardWidget } from './project.dashboard.interface';
 import LoadingState from '../../../constants/loadingState';
 import { Filter } from '../../Common/QueryBuilder';
-import BasicDashboard from '../Templates/BasicDashboard';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -17,7 +15,8 @@ interface ProjectDashboardProps {
   setTabValue: Dispatch<SetStateAction<number>>,
 }
 
-function DateSelector() {
+function DateSelector(props: any) {
+  const { projectId } = props;
   // Get initial date filter state from redux store
   // Set new date filter state from redux store
   const dispatch = useAppDispatch();
@@ -26,7 +25,6 @@ function DateSelector() {
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
 
-    // LAST_SEQUENCING date filter needs to be set at the widget level
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
       dispatch(updateTimeFilterObject(
         {
@@ -48,20 +46,35 @@ function DateSelector() {
     } else {
       dispatch(updateTimeFilterObject({}));
     }
-    //
-    data.data.map(
-      (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
+    // TODO: Create timeFilterString to pass to widget asyncthunks
+    // Maybe time filter (event value) can be converted into date filter string here
+    // Then we don't pass the event value, we pass the formatted strign to the asyncthunk
+
+    const disptachProps = {
+      projectId,
+      timeFilter: event.target.value as string,
+    };
+    DashboardTemplateActions[data.data.dashboardName].map(
+      (dispatchEvent: any) => dispatch(dispatchEvent(disptachProps)),
     );
+    // data.data.map(
+    //   (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
+    // );
   };
 
   return (
     <FormControl variant="standard">
       <InputLabel>Date filter</InputLabel>
       <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
-        <MenuItem value={DashboardTimeFilter.ALL}>All time</MenuItem>
-        <MenuItem value={DashboardTimeFilter.LAST_WEEK}>Last week</MenuItem>
-        <MenuItem value={DashboardTimeFilter.LAST_MONTH}>Last month</MenuItem>
-        <MenuItem value={DashboardTimeFilter.LAST_SEQUENCING}>Since last sequencing run</MenuItem>
+        <MenuItem value={DashboardTimeFilter.ALL}>
+          All time
+        </MenuItem>
+        <MenuItem value={DashboardTimeFilter.LAST_WEEK}>
+          Last week
+        </MenuItem>
+        <MenuItem value={DashboardTimeFilter.LAST_MONTH}>
+          Last month
+        </MenuItem>
       </Select>
     </FormControl>
   );
@@ -91,18 +104,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             <Grid container item xs={12} justifyContent="space-between">
               {projectDesc}
               { data.data.length !== 0 ? (
-                <DateSelector />
+                <DateSelector projectId={projectId} />
               ) : null }
             </Grid>
-            <Grid container item xs={12} sx={{ marginTop: 1, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              <BasicDashboard
-                setFilterList={setFilterList}
-                setTabValue={setTabValue}
-              />
+            <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
+              {renderDashboard(data.data.dashboardName, projectId, setFilterList, setTabValue)}
             </Grid>
 
             {/* {data.data.map((widget: ProjectDashboardWidget) => (
-            // TODO: Investigate fluid grids with multiple breakpoints
               <Grid item xs={widget.width} minWidth={300} key={widget.name}>
                 <Card sx={{ padding: 1 }}>
                   <CardContent>

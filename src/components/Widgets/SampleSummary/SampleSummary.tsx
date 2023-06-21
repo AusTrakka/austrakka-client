@@ -11,6 +11,7 @@ export default function SampleSummary(props: any) {
   const {
     setFilterList,
     setTabValue,
+    projectId,
   } = props;
 
   // Get initial state from store
@@ -28,27 +29,36 @@ export default function SampleSummary(props: any) {
       value: 'false',
     },
   ];
-  const latestUploadFilter = [
-    {
-      field: 'Uploaded',
-      fieldType: 'date',
-      condition: '>',
-      value: dayjs(), // TODO: Convert data.data.latestUploadedDate to dayjs object
-    },
-  ];
+  const getLastUploadFilter = (date: any) => {
+    const latestUploadFilter = [
+      {
+        field: 'Uploaded',
+        fieldType: 'date',
+        condition: '>',
+        value: dayjs(date),
+      },
+    ];
+    return latestUploadFilter;
+  };
 
   useEffect(() => {
     if (loading === 'idle') {
-      sampleSummaryDispatch(fetchSummary(timeFilter));
+      // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
+      const dispatchProps = { projectId, timeFilter };
+      sampleSummaryDispatch(fetchSummary(dispatchProps));
     }
-  }, [loading, sampleSummaryDispatch, timeFilter]);
+  }, [loading, sampleSummaryDispatch, timeFilter, projectId]);
 
-  const handleDrilldownFilters = (drilldownFilters: any) => {
-    // TODO: Don't append time filter for latest upload drilldown
-    // Only append timeFilterObject if it actually contains a filter
+  const handleDrilldownFilters = (drilldownName: string, drilldownFilters: any) => {
+    // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {
-      const appendedFilters = [...drilldownFilters, timeFilterObject];
-      setFilterList(appendedFilters);
+      // AppendtimeFilterObject for drills down other than latest_upload
+      if (drilldownName === 'all_samples' || drilldownName === 'has_sequence') {
+        const appendedFilters = [...drilldownFilters, timeFilterObject];
+        setFilterList(appendedFilters);
+      } else {
+        setFilterList(drilldownFilters);
+      }
     } else {
       setFilterList(drilldownFilters);
     }
@@ -69,7 +79,7 @@ export default function SampleSummary(props: any) {
             </Typography>
             <DrilldownButton
               title="View Samples"
-              onClick={() => handleDrilldownFilters(allSamplesFilter)}
+              onClick={() => handleDrilldownFilters('all_samples', allSamplesFilter)}
             />
           </Grid>
           <Grid item>
@@ -82,7 +92,7 @@ export default function SampleSummary(props: any) {
             </Typography>
             <DrilldownButton
               title="View Samples"
-              onClick={() => handleDrilldownFilters(latestUploadFilter)}
+              onClick={() => handleDrilldownFilters('lastest_upload', getLastUploadFilter(data.data.latestUploadedDate))}
             />
           </Grid>
           <Grid item>
@@ -95,7 +105,7 @@ export default function SampleSummary(props: any) {
             </Typography>
             <DrilldownButton
               title="View Samples"
-              onClick={() => handleDrilldownFilters(hasSequenceFilter)}
+              onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
             />
           </Grid>
         </Grid>

@@ -2,7 +2,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SampleSummary } from './sample.summary.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject } from '../../../utilities/resourceUtils';
+import { ResponseObject, getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 
 interface SampleSummaryState {
@@ -18,7 +18,8 @@ const initialState: SampleSummaryState = {
 export const fetchSummary = createAsyncThunk(
   'summary/fetchSummary',
   async (
-    timeFilter: string,
+    // { timeFilter, projectId }: { timeFilter: string, projectId: any },
+    dispatchProps: any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
     // eslint-disable-next-line no-promise-executor-return

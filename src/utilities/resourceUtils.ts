@@ -94,3 +94,4 @@ export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display
 
 // Testing dashboards
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/dashboard-widgets/${projectId}`, 'GET', {});
+export const getProjectDashboardOveriew = (projectId: number, searchParams?: string) => callAPI(`/api/DashboardSearch/overview/?groupContext=${projectId}&filters=${searchParams}`, 'GET', {});

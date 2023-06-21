@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import React, { Dispatch } from 'react';
 
 // Importing all possible dashboard components
