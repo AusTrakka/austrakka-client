@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useImperativeHandle } from 'react';
-import { Phylocanvas, PhylocanvasProps, Node } from './PhylocanvasGL';
+import { Phylocanvas } from './PhylocanvasGL';
+import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
@@ -12,7 +13,7 @@ export type TreeExportFuctions = {
   exportPNG(): Blob;
   exportJSON(): string;
   fitInCanvas(): void;
-  nodes: { ids: { [key: string]: Node } };
+  nodes: { ids: { [key: string]: PhylocanvasNode } };
 };
 
 const Tree = React.forwardRef(

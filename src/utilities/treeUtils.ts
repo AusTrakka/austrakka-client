@@ -1,4 +1,4 @@
-import { TreeMetadata } from '../components/Trees/PhylocanvasGL';
+import { PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { AnalysisResultMetadata } from '../types/dtos';
 
 // Convert metadate into phylocanvas format
@@ -22,7 +22,7 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
     return color;
   }
 
-  const result: TreeMetadata = {};
+  const result: PhylocanvasMetadata = {};
   for (const data of dataArray) {
     result[data.sampleId] = {};
     for (const metadataValue of data.metadataValues) {

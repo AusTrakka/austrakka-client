@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import { TreeTypes, Node, Phylocanvas } from '../PhylocanvasGL';
+import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
+import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { TreeExportFuctions } from '../Tree';
 
 interface State {
@@ -20,8 +21,8 @@ interface TreeNavigationProps {
 export default function TreeNavigation(
   { state, selectedIds, onChange, onJumpToSubtree, phylocanvasRef }: TreeNavigationProps,
 ) {
-  const [nodes, setNodes] = React.useState<{ [key: string]: Node } | null>(null);
-  const [history, setHistory] = React.useState<Array<Node | null>>([null]);
+  const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
+  const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
   const [historyIndex, setHistoryIndex] = React.useState<number>(0);
 
   React.useEffect(() => {
@@ -38,7 +39,7 @@ export default function TreeNavigation(
 
   const handleJumpToSubtree = () => {
     if (nodes) {
-      const selectedNodes: Node[] = selectedIds.map((id) => nodes[id]);
+      const selectedNodes: PhylocanvasNode[] = selectedIds.map((id) => nodes[id]);
       const mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
         if (mrca.totalSubtreeLength === 0) {

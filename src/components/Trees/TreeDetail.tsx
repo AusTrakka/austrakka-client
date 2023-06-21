@@ -4,9 +4,10 @@ import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChang
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
+import { PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
-import { TreeMetadata, TreeTypes } from './PhylocanvasGL';
+import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
 import Search from './TreeControls/Search';
@@ -18,7 +19,7 @@ function TreeDetail() {
   const { analysisId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
-  const [treeMetadata, setTreeMetadata] = useState<TreeMetadata>({});
+  const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -47,7 +48,7 @@ function TreeDetail() {
         Number(tree?.jobInstanceId),
       );
       if (metadataResponse.status === 'Success') {
-        setTreeMetadata(mapMetadataToPhylocanvas(metadataResponse.data));
+        setPhylocanvasMetadata(mapMetadataToPhylocanvas(metadataResponse.data));
       } else {
         setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
       }
@@ -100,7 +101,7 @@ function TreeDetail() {
           size={{ width: 600, height: 600 }}
           showLabels
           interactive
-          metadata={treeMetadata}
+          metadata={phylocanvasMetadata}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
           rootId={rootId}
@@ -133,7 +134,6 @@ function TreeDetail() {
   };
 
   const handleJumpToSubtree = (subtreeRootId: string | null) => {
-    setSelectedIds([]);
     setRootId(subtreeRootId);
   };
 
@@ -141,7 +141,7 @@ function TreeDetail() {
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
-    const ids = Object.keys(treeMetadata);
+    const ids = Object.keys(phylocanvasMetadata);
 
     if (tree) {
       return (
