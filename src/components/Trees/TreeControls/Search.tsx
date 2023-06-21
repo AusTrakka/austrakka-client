@@ -14,7 +14,6 @@ export default function Search(
 ) {
   return (
     <Autocomplete
-      sx={{ maxHeight: '200px', overflow: 'auto', paddingTop: 1 }}
       multiple
       id="tags-outlined"
       size="small"
@@ -24,14 +23,30 @@ export default function Search(
       options={options}
       value={selectedIds}
       onChange={onChange}
-      renderInput={(params) => (
-        <TextField
-        // eslint-disable-next-line react/jsx-props-no-spreading
-          {...params}
-          label="Search"
-          placeholder="..."
-        />
-      )}
+      renderInput={params => {
+        const { InputProps, ...restParams } = params;
+        const { startAdornment, ...restInputProps } = InputProps;
+        return (
+          <TextField
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...restParams}
+            label="Search"
+            placeholder="..."
+            InputProps={{
+              ...restInputProps,
+              startAdornment: (
+                <div style={{
+                  maxHeight: '250px',
+                  overflowY: 'auto',
+                }}
+                >
+                  {startAdornment}
+                </div>
+              ),
+            }}
+          />
+        );
+      }}
     />
   );
 }
