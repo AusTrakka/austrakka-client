@@ -18,24 +18,14 @@ const initialState: SampleSummaryState = {
 export const fetchSummary = createAsyncThunk(
   'summary/fetchSummary',
   async (
-    // { timeFilter, projectId }: { timeFilter: string, projectId: any },
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
-    // eslint-disable-next-line no-promise-executor-return
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const response = {
-      status: 'Success',
-      message: 'Request succeeded',
-      data:
-        {
-          total: '2000',
-          latestUploadedDate: '2023-05-03T00:00:00.00Z',
-          samplesNotSequenced: '20',
-        },
-
-    };
-    if (response.status === 'Success') { return fulfillWithValue(response); }
+    const { projectId } = dispatchProps;
+    const response = await getProjectDashboardOveriew(projectId, '');
+    if (response.status === 'Success') {
+      return fulfillWithValue(response);
+    }
     return rejectWithValue(response);
   },
 );

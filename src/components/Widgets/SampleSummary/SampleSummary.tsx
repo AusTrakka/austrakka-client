@@ -108,6 +108,7 @@ export default function SampleSummary(props: any) {
               onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
             />
           </Grid>
+          {data.message}
         </Grid>
       )
         : (
