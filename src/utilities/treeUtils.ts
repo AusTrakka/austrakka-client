@@ -7,6 +7,9 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
   const valueColorMap: Record<string, string> = {};
 
   function getUniqueColor(value: string): string {
+    if (!value) {
+      return 'rgba(0,0,0,0)';
+    }
     // Check if value was already mapped to a color
     if (valueColorMap[value]) {
       return valueColorMap[value];

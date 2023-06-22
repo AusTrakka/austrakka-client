@@ -146,7 +146,6 @@ function TreeDetail() {
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
-          {/* <Typography>Controls</Typography> */}
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
