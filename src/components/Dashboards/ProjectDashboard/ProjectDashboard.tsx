@@ -75,7 +75,7 @@ function DateSelector(props: any) {
       projectId,
       timeFilter: event.target.value as string,
     };
-    DashboardTemplateActions[data.data.dashboardName].map(
+    DashboardTemplateActions[data.data].map(
       (dispatchEvent: any) => dispatch(dispatchEvent(disptachProps)),
     );
     // data.data.map(
@@ -129,7 +129,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               ) : null }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              {renderDashboard(data.data.dashboardName, projectId, setFilterList, setTabValue)}
+              {renderDashboard(data.data, projectId, setFilterList, setTabValue)}
             </Grid>
 
             {/* {data.data.map((widget: ProjectDashboardWidget) => (

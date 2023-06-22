@@ -30,13 +30,7 @@ export const fetchProjectDashboard = createAsyncThunk(
     projectId: number,
     { rejectWithValue, fulfillWithValue, dispatch },
   ):Promise<ResponseObject | unknown > => {
-    // const response = await getProjectDashboard(projectId);
-    const response = {
-      status: 'Success',
-      data: {
-        dashboardName: 'basic',
-      },
-    };
+    const response = await getProjectDashboard(projectId);
     const payload = { projectId, response };
     if (response.status === 'Success') {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
@@ -44,9 +38,12 @@ export const fetchProjectDashboard = createAsyncThunk(
         projectId,
         timeFilter: DashboardTimeFilter.ALL,
       };
-      DashboardTemplateActions[response.data.dashboardName].map(
-        (dispatchEvent: any) => dispatch(dispatchEvent(dispatchProps)),
-      );
+      // TODO: Improve what's shown on the UI if DashboardTemplateActions[response.data] = undefined
+      if (DashboardTemplateActions[response.data] !== undefined) {
+        DashboardTemplateActions[response.data].map(
+          (dispatchEvent: any) => dispatch(dispatchEvent(dispatchProps)),
+        );
+      }
       // response.data?.map(
       //   (widget: any) => dispatch(ComponentActions[widget.name](response.data.timeFilter)),
       // );
@@ -78,6 +75,7 @@ const projectDashboardSlice = createSlice({
     });
     builder.addCase(fetchProjectDashboard.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
+      state.projectIdInRedux = action.payload.projectId;
       state.data = action.payload.message;
     });
   },

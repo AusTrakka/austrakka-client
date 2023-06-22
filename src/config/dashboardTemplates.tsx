@@ -1,6 +1,7 @@
 import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
 
 const DashboardTemplates :any = {
-  basic: BasicDashboard,
+  test: BasicDashboard,
+  default: BasicDashboard,
 };
 export default DashboardTemplates;
