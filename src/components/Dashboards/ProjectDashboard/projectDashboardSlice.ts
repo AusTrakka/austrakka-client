@@ -5,7 +5,7 @@ import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
-import { DashboardTemplateActions } from '../../../config/dashboardsConfig';
+import DashboardTemplateActions from '../../../config/dashboardActions';
 
 interface ProjectDashboardState {
   loading: LoadingState

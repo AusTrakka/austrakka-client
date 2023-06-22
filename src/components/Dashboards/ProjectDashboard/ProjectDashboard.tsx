@@ -1,7 +1,8 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
 import { Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import dayjs from 'dayjs';
-import renderDashboard, { DashboardTemplateActions } from '../../../config/dashboardsConfig';
+import DashboardTemplateActions from '../../../config/dashboardActions';
+import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
@@ -13,6 +14,26 @@ interface ProjectDashboardProps {
   projectId: number | null,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   setTabValue: Dispatch<SetStateAction<number>>,
+}
+
+function renderDashboard(
+  dashboardName: any,
+  projectId: any,
+  setFilterList: any,
+  setTabValue: Dispatch<React.SetStateAction<number>>,
+) {
+  if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
+    return React.createElement(
+      DashboardTemplates[dashboardName],
+      { projectId, setFilterList, setTabValue },
+    );
+  }
+  // Returns nothing if a matching React dashboard template component doesn't exist
+  return React.createElement(
+    () => (
+      null
+    ),
+  );
 }
 
 function DateSelector(props: any) {
