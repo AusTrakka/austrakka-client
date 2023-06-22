@@ -75,3 +75,23 @@ export interface MetaDataColumn {
   isActive: boolean
   minWidth: number
 }
+
+interface MetadataValue {
+  key: string;
+  value: string;
+}
+
+export interface AnalysisResultMetadata {
+  created: string;
+  createdBy: string | null; // Assuming createdBy can be string or null
+  isCurrent: boolean;
+  lastUpdated: string;
+  lastUpdatedBy: string | null; // Assuming lastUpdatedBy can be string or null
+  metadataValues: MetadataValue[];
+  ownerGroup: string;
+  sampleId: string;
+  sharedGroups: string[]; // Assuming this is an array of strings
+  status: boolean;
+  submissionId: number;
+  versionId: number;
+}
