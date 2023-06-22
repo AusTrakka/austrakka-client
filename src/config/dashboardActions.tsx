@@ -1,10 +1,10 @@
 import { fetchSummary } from '../components/Widgets/SampleSummary/sampleSummarySlice';
 import { fetchStCounts } from '../components/Widgets/StCounts/stCountsSlice';
-import { fetchSubmittingLabs } from '../components/Widgets/SubmittingLabs/sumbittingLabsSlice';
+import { fetchSubmittingOrgs } from '../components/Widgets/SubmittingOrgs/sumbittingOrgsSlice';
 
 const DashboardTemplateActions: any = {
-  test: [fetchSummary, fetchStCounts, fetchSubmittingLabs],
-  default: [fetchSummary, fetchStCounts, fetchSubmittingLabs],
+  test: [fetchSummary, fetchStCounts, fetchSubmittingOrgs],
+  default: [fetchSummary, fetchStCounts, fetchSubmittingOrgs],
 };
 
 export default DashboardTemplateActions;

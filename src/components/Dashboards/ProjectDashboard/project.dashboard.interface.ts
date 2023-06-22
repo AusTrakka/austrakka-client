@@ -1,6 +1,6 @@
 export interface ComponentsType {
   overview: (props: any) => JSX.Element,
-  labSampleCounts: (props: any) => JSX.Element,
+  orgSampleCounts: (props: any) => JSX.Element,
   stCounts: (props: any) => JSX.Element,
 }
 

@@ -27,15 +27,17 @@ const initialState: ProjectDashboardState = {
 export const fetchProjectDashboard = createAsyncThunk(
   'dashboard/fetchProjectDashboard',
   async (
-    projectId: number,
+    thunkObj: any,
     { rejectWithValue, fulfillWithValue, dispatch },
   ):Promise<ResponseObject | unknown > => {
+    const { projectId, groupId } = thunkObj;
     const response = await getProjectDashboard(projectId);
     const payload = { projectId, response };
     if (response.status === 'Success') {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
       const dispatchProps = {
         projectId,
+        groupId,
         timeFilter: DashboardTimeFilter.ALL,
       };
       // TODO: Improve what's shown on the UI if DashboardTemplateActions[response.data] = undefined

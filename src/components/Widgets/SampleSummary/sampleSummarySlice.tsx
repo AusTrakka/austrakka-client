@@ -21,8 +21,8 @@ export const fetchSummary = createAsyncThunk(
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
-    const { projectId } = dispatchProps;
-    const response = await getProjectDashboardOveriew(projectId, '');
+    const { projectId, groupId } = dispatchProps;
+    const response = await getProjectDashboardOveriew(groupId, '');
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

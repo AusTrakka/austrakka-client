@@ -2,20 +2,20 @@ import React, { useEffect, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchSubmittingLabs } from './sumbittingLabsSlice';
+import { fetchSubmittingOrgs } from './sumbittingOrgsSlice';
 import LoadingState from '../../../constants/loadingState';
 
-export default function SubmittingLabs() {
+export default function SubmittingOrgs() {
   // Get initial state from store
-  const { data, loading } = useAppSelector((state) => state.submittingLabsState);
+  const { data, loading } = useAppSelector((state) => state.submittingOrgsState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-  const submittingLabsDispatch = useAppDispatch();
+  const submittingOrgsDispatch = useAppDispatch();
 
   useEffect(() => {
     if (loading === 'idle') {
-      submittingLabsDispatch(fetchSubmittingLabs(timeFilter));
+      submittingOrgsDispatch(fetchSubmittingOrgs(timeFilter));
     }
-  }, [loading, submittingLabsDispatch, timeFilter]);
+  }, [loading, submittingOrgsDispatch, timeFilter]);
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [

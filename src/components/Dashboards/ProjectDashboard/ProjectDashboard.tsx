@@ -12,6 +12,7 @@ import { Filter } from '../../Common/QueryBuilder';
 interface ProjectDashboardProps {
   projectDesc: string,
   projectId: number | null,
+  groupId: number | null,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   setTabValue: Dispatch<SetStateAction<number>>,
 }
@@ -19,13 +20,14 @@ interface ProjectDashboardProps {
 function renderDashboard(
   dashboardName: any,
   projectId: any,
+  groupId: any,
   setFilterList: any,
   setTabValue: Dispatch<React.SetStateAction<number>>,
 ) {
   if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
     return React.createElement(
       DashboardTemplates[dashboardName],
-      { projectId, setFilterList, setTabValue },
+      { projectId, groupId, setFilterList, setTabValue },
     );
   }
   // Returns nothing if a matching React dashboard template component doesn't exist
@@ -37,7 +39,7 @@ function renderDashboard(
 }
 
 function DateSelector(props: any) {
-  const { projectId } = props;
+  const { projectId, groupId } = props;
   // Get initial date filter state from redux store
   // Set new date filter state from redux store
   const dispatch = useAppDispatch();
@@ -73,6 +75,7 @@ function DateSelector(props: any) {
 
     const disptachProps = {
       projectId,
+      groupId,
       timeFilter: event.target.value as string,
     };
     DashboardTemplateActions[data.data].map(
@@ -102,7 +105,7 @@ function DateSelector(props: any) {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, setFilterList, setTabValue } = props;
+  const { projectDesc, projectId, groupId, setFilterList, setTabValue } = props;
   const {
     data,
     loading,
@@ -113,9 +116,10 @@ function ProjectDashboard(props: ProjectDashboardProps) {
 
   useEffect(() => {
     if (projectId !== null && projectId !== projectIdInRedux) {
-      dispatch(fetchProjectDashboard(projectId));
+      const thunkObj = { projectId, groupId };
+      dispatch(fetchProjectDashboard(thunkObj));
     }
-  }, [dispatch, projectId, projectIdInRedux]);
+  }, [dispatch, projectId, groupId, projectIdInRedux]);
 
   return (
     <Box>
@@ -125,11 +129,11 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             <Grid container item xs={12} justifyContent="space-between">
               {projectDesc}
               { data.data.length !== 0 ? (
-                <DateSelector projectId={projectId} />
+                <DateSelector projectId={projectId} groupId={groupId} />
               ) : null }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              {renderDashboard(data.data, projectId, setFilterList, setTabValue)}
+              {renderDashboard(data.data, projectId, groupId, setFilterList, setTabValue)}
             </Grid>
 
             {/* {data.data.map((widget: ProjectDashboardWidget) => (

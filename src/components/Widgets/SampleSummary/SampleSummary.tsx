@@ -12,6 +12,7 @@ export default function SampleSummary(props: any) {
     setFilterList,
     setTabValue,
     projectId,
+    groupId,
   } = props;
 
   // Get initial state from store
@@ -23,10 +24,10 @@ export default function SampleSummary(props: any) {
   const allSamplesFilter: any [] = [];
   const hasSequenceFilter = [
     {
-      field: 'hasSequence',
+      field: 'Has_sequences',
       fieldType: 'string',
-      condition: '==*',
-      value: 'false',
+      condition: '!=*',
+      value: 'true',
     },
   ];
   const getLastUploadFilter = (date: any) => {
@@ -44,10 +45,10 @@ export default function SampleSummary(props: any) {
   useEffect(() => {
     if (loading === 'idle') {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
-      const dispatchProps = { projectId, timeFilter };
+      const dispatchProps = { groupId, projectId, timeFilter };
       sampleSummaryDispatch(fetchSummary(dispatchProps));
     }
-  }, [loading, sampleSummaryDispatch, timeFilter, projectId]);
+  }, [loading, sampleSummaryDispatch, timeFilter, projectId, groupId]);
 
   const handleDrilldownFilters = (drilldownName: string, drilldownFilters: any) => {
     // Append timeFilterObject for last_week and last_month filters
@@ -88,11 +89,11 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDate}
+              {data.data.latestUploadedDateUtc}
             </Typography>
             <DrilldownButton
               title="View Samples"
-              onClick={() => handleDrilldownFilters('lastest_upload', getLastUploadFilter(data.data.latestUploadedDate))}
+              onClick={() => handleDrilldownFilters('lastest_upload', getLastUploadFilter(data.data.latestUploadedDateUtc))}
             />
           </Grid>
           <Grid item>

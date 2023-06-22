@@ -1,7 +1,7 @@
 import { Card, CardContent, Grid } from '@mui/material';
 import React, { useEffect } from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
-import SubmittingLabs from '../../Widgets/SubmittingLabs/SubmittingLabs';
+import SubmittingOrgs from '../../Widgets/SubmittingOrgs/SubmittingOrgs';
 import StCounts from '../../Widgets/StCounts/StCounts';
 
 // TODO: Set a max card height and handle scroll voerflow
@@ -10,6 +10,7 @@ function BasicDashboard(props: any) {
     setFilterList,
     setTabValue,
     projectId,
+    groupId,
   } = props;
   useEffect(() => {
 
@@ -25,6 +26,7 @@ function BasicDashboard(props: any) {
                 <CardContent>
                   <SampleSummary
                     projectId={projectId}
+                    groupId={groupId}
                     setFilterList={setFilterList}
                     setTabValue={setTabValue}
                   />
@@ -45,14 +47,14 @@ function BasicDashboard(props: any) {
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SubmittingLabs />
+                  <SubmittingOrgs />
                 </CardContent>
               </Card>
             </Grid>
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SubmittingLabs />
+                  <SubmittingOrgs />
                 </CardContent>
               </Card>
             </Grid>

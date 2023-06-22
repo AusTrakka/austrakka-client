@@ -1,14 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSummarySlice';
-import submittingLabsReducer from '../components/Widgets/SubmittingLabs/sumbittingLabsSlice';
+import submittingOrgsReducer from '../components/Widgets/SubmittingOrgs/sumbittingOrgsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
 
 const store = configureStore({
   reducer: {
     sampleSummaryState: sampleSummaryReducer,
-    submittingLabsState: submittingLabsReducer,
+    submittingOrgsState: submittingOrgsReducer,
     stCountsState: stCountsReducer,
     projectDashboardState: projectDashboardReducer,
   },

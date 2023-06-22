@@ -3,12 +3,12 @@ import React, { Dispatch } from 'react';
 
 // Importing all possible dashboard components
 import SampleSummary from '../Widgets/SampleSummary/SampleSummary';
-import SubmittingLabs from '../Widgets/SubmittingLabs/SubmittingLabs';
+import SubmittingOrgs from '../Widgets/SubmittingOrgs/SubmittingOrgs';
 import StCounts from '../Widgets/StCounts/StCounts';
 import { ComponentsType } from './ProjectDashboard/project.dashboard.interface';
 import { fetchSummary } from '../Widgets/SampleSummary/sampleSummarySlice';
 import { fetchStCounts } from '../Widgets/StCounts/stCountsSlice';
-import { fetchSubmittingLabs } from '../Widgets/SubmittingLabs/sumbittingLabsSlice';
+import { fetchSubmittingOrgs } from '../Widgets/SubmittingOrgs/sumbittingOrgsSlice';
 
 // OBJECT Components:
 // Object that maps the React components (above) to the name we have
@@ -16,13 +16,13 @@ import { fetchSubmittingLabs } from '../Widgets/SubmittingLabs/sumbittingLabsSli
 // this would include ALL possible dashboard components
 const Components:ComponentsType = {
   overview: SampleSummary,
-  labSampleCounts: SubmittingLabs,
+  orgSampleCounts: SubmittingOrgs,
   stCounts: StCounts,
 };
 
 export const ComponentActions: any = {
   overview: fetchSummary,
-  labSampleCounts: fetchSubmittingLabs,
+  orgSampleCounts: fetchSubmittingOrgs,
   stCounts: fetchStCounts,
 };
 

@@ -92,6 +92,7 @@ export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearc
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
 
-// Testing dashboards
+// Project dashboards endpoints
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/assigned-dashboard/${projectId}`, 'GET', {});
 export const getProjectDashboardOveriew = (projectId: number, searchParams?: string) => callAPI(`/api/DashboardSearch/overview/?groupContext=${projectId}&filters=${searchParams}`, 'GET', {});
+export const getDashboardFields = () => callAPI('/api/DashboardSearch/select-fields-by-date', 'GET', {});

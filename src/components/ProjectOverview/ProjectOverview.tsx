@@ -348,6 +348,7 @@ function ProjectOverview() {
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
+              groupId={projectDetails ? projectDetails!.projectMembers.id : null}
               setFilterList={setFilterList}
               setTabValue={setTabValue}
             />
