@@ -56,16 +56,6 @@ export default function ExportButton(
       label: 'Export PNG',
       fileName: `${analysisName}.png`,
     },
-    {
-      exportFunction: () => phylocanvasRef.current?.exportNewick(),
-      label: 'Export Newick',
-      fileName: `${analysisName}.newick`,
-    },
-    {
-      exportFunction: () => phylocanvasRef.current?.exportJSON(),
-      label: 'Export JSON',
-      fileName: `${analysisName}.json`,
-    },
   ];
   const download = (blob: Blob | string, filename: string) => {
     let blobData: Blob;
