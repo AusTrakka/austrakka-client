@@ -71,7 +71,13 @@ function STChart() {
   );
 }
 
-export default function StCounts() {
+export default function StCounts(props: any) {
+  const {
+    setFilterList,
+    setTabValue,
+    projectId,
+    groupId,
+  } = props;
   // Get initial state from store
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, loading } = useAppSelector(selectStCounts);
@@ -81,15 +87,16 @@ export default function StCounts() {
   const stCountsDispatch = useAppDispatch();
 
   useEffect(() => {
+    const dispatchProps = { groupId, projectId, timeFilter };
     if (loading === 'idle') {
-      stCountsDispatch(fetchStCounts(timeFilter));
+      stCountsDispatch(fetchStCounts(dispatchProps));
     }
-  }, [loading, stCountsDispatch, timeFilter]);
+  }, [loading, stCountsDispatch, timeFilter, projectId, groupId]);
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
       {
-        accessorKey: 'stValue',
+        accessorKey: 'ST',
         header: 'ST Value',
       },
       {

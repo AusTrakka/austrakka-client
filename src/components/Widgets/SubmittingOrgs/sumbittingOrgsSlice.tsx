@@ -1,9 +1,10 @@
 /* eslint-disable no-param-reassign */
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { SubmittingOrgs } from './submitting.orgs.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject } from '../../../utilities/resourceUtils';
+import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
+import { aggregateArrayObjects } from '../../../utilities/helperUtils';
 
 interface SubmittingOrgsState {
   loading: string
@@ -18,44 +19,14 @@ const initialState: SubmittingOrgsState = {
 export const fetchSubmittingOrgs = createAsyncThunk(
   'counts/fetchSubmittingOrgs',
   async (
-    timeFilter:string,
+    dispatchProps:any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
-    // eslint-disable-next-line no-promise-executor-return
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const response = {
-      status: 'Success',
-      message: '',
-      data: [
-        {
-          ownerGroup: 'LAB1',
-          orgName: 'LAB1',
-          samplesUploaded: '12',
-        },
-        {
-          ownerGroup: 'LAB2',
-          orgName: 'LAB2',
-          samplesUploaded: '320',
-        },
-        {
-          ownerGroup: 'LAB3',
-          orgName: 'LAB3',
-          samplesUploaded: '180',
-        },
-        {
-          ownerGroup: 'LAB4',
-          orgName: 'LAB4',
-          samplesUploaded: '38',
-        },
-        {
-          ownerGroup: 'LAB5',
-          orgName: 'LAB5',
-          samplesUploaded: '50',
-        },
-
-      ],
-    } as ResponseObject;
-    if (response.status === 'Success') { return fulfillWithValue(response); }
+    const { groupId } = dispatchProps;
+    const response = await getDashboardFields(groupId, 'Owner_group');
+    if (response.status === 'Success') {
+      return fulfillWithValue(response);
+    }
     return rejectWithValue(response);
   },
 );
@@ -81,5 +52,12 @@ const submittingOrgsSlice = createSlice({
 
 //
 export const selectSubmittingOrgs = (state: AppState) => state.submittingOrgsState;
+export const selectAggregatedOrgs = createSelector(
+  selectSubmittingOrgs,
+  (submittingOrgs) => {
+    const counts = aggregateArrayObjects('Owner_group', submittingOrgs.data.data);
+    return counts;
+  },
+);
 
 export default submittingOrgsSlice.reducer;

@@ -2,30 +2,38 @@ import React, { useEffect, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchSubmittingOrgs } from './sumbittingOrgsSlice';
+import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
 import LoadingState from '../../../constants/loadingState';
 
-export default function SubmittingOrgs() {
+export default function SubmittingOrgs(props: any) {
+  const {
+    setFilterList,
+    setTabValue,
+    projectId,
+    groupId,
+  } = props;
   // Get initial state from store
-  const { data, loading } = useAppSelector((state) => state.submittingOrgsState);
+  const { loading } = useAppSelector((state) => state.submittingOrgsState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
   const submittingOrgsDispatch = useAppDispatch();
+  const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
 
   useEffect(() => {
+    const dispatchProps = { groupId, projectId, timeFilter };
     if (loading === 'idle') {
-      submittingOrgsDispatch(fetchSubmittingOrgs(timeFilter));
+      submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
     }
-  }, [loading, submittingOrgsDispatch, timeFilter]);
+  }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
       {
-        accessorKey: 'orgName',
+        accessorKey: 'Owner_group',
         header: 'Lab',
       },
       {
-        accessorKey: 'samplesUploaded',
-        header: 'Samples uploaded',
+        accessorKey: 'sampleCount',
+        header: 'Sample count',
       },
     ],
     [],
@@ -40,7 +48,7 @@ export default function SubmittingOrgs() {
           </Typography>
           <MaterialReactTable
             columns={columns}
-            data={data.data}
+            data={aggregatedCounts}
             defaultColumn={{
               size: 0,
               minSize: 30,

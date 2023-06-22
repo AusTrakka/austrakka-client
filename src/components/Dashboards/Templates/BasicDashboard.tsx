@@ -36,7 +36,12 @@ function BasicDashboard(props: any) {
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <StCounts />
+                  <StCounts
+                    projectId={projectId}
+                    groupId={groupId}
+                    setFilterList={setFilterList}
+                    setTabValue={setTabValue}
+                  />
                 </CardContent>
               </Card>
             </Grid>
@@ -47,14 +52,19 @@ function BasicDashboard(props: any) {
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SubmittingOrgs />
+                  <SubmittingOrgs
+                    projectId={projectId}
+                    groupId={groupId}
+                    setFilterList={setFilterList}
+                    setTabValue={setTabValue}
+                  />
                 </CardContent>
               </Card>
             </Grid>
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SubmittingOrgs />
+                  &nbsp;
                 </CardContent>
               </Card>
             </Grid>

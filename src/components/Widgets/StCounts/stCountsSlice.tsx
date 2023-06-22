@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { StCounts } from './st.counts.interface';
-import { ResponseObject } from '../../../utilities/resourceUtils';
+import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 // eslint-disable-next-line import/no-cycle
 import { AppState } from '../../../types/app.interface';
-import testData from './testStData';
+import { aggregateArrayObjects } from '../../../utilities/helperUtils';
 
 interface StCountsState {
   loading: string
@@ -20,17 +20,14 @@ const initialState: StCountsState = {
 export const fetchStCounts = createAsyncThunk(
   'stCountsSlice/fetchStCounts',
   async (
-    timeFilter: string,
+    dispatchProps: any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
-    // eslint-disable-next-line no-promise-executor-return
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const response = {
-      status: 'Success',
-      message: 'Request succeeded',
-      data: testData,
-    };
-    if (response.status === 'Success') { return fulfillWithValue(response); }
+    const { groupId } = dispatchProps;
+    const response = await getDashboardFields(groupId, 'ST');
+    if (response.status === 'Success') {
+      return fulfillWithValue(response);
+    }
     return rejectWithValue(response);
   },
 );
@@ -60,32 +57,8 @@ export const selectStCounts = (state: AppState) => state.stCountsState;
 export const selectAggregatedStCounts = createSelector(
   selectStCounts,
   (stCounts) => {
-    const initialArray = stCounts.data.data;
-    const aggregatedCounts = [];
-    const map = new Map();
-    if (initialArray !== undefined) {
-      for (let i = 0; i < initialArray.length; i += 1) {
-        let found = false;
-        for (const [key, value] of map) {
-          if (key === initialArray[i].stValue) {
-            found = true;
-            const newValue = value + 1;
-            map.set(initialArray[i].stValue, newValue);
-            break;
-          }
-        }
-        if (!found) { map.set(initialArray[i].stValue, 1); }
-      }
-
-      for (const [key, value] of map) {
-        const obj = { stValue: '', sampleCount: 0 };
-        obj.stValue = key;
-        obj.sampleCount = value;
-        aggregatedCounts.push(obj);
-      }
-    }
-
-    return aggregatedCounts;
+    const counts = aggregateArrayObjects('ST', stCounts.data.data);
+    return counts;
   },
 );
 
