@@ -20,9 +20,20 @@ export default function Search(
       limitTags={1}
       getOptionLabel={(option) => option}
       filterSelectedOptions
+      freeSolo
       options={options}
       value={selectedIds}
-      onChange={onChange}
+      onChange={(event, newValue, reason, details) => {
+        let selected: string[];
+        if (reason === 'createOption') {
+          const option = details?.option;
+          const matches = options.filter((o) => o.includes(option as string));
+          selected = newValue.slice(0, -1).concat(matches).filter((v, i, a) => a.indexOf(v) === i);
+        } else {
+          selected = newValue;
+        }
+        onChange(event, selected, reason);
+      }}
       renderInput={params => {
         const { InputProps, ...restParams } = params;
         const { startAdornment, ...restInputProps } = InputProps;
