@@ -26,8 +26,8 @@ export default function SampleSummary(props: any) {
     {
       field: 'Has_sequences',
       fieldType: 'string',
-      condition: '!=*',
-      value: 'true',
+      condition: '==*',
+      value: 'false',
     },
   ];
   const getLastUploadFilter = (date: any) => {
