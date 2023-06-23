@@ -1,9 +1,21 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
 import LoadingState from '../../../constants/loadingState';
+
+const columns:MRT_ColumnDef<any>[] = [
+  {
+    header: 'Submitting organisation',
+    accessorKey: 'Owner_group',
+    Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
+  },
+  {
+    header: 'Sample Count',
+    accessorKey: 'sampleCount',
+  },
+];
 
 export default function SubmittingOrgs(props: any) {
   const {
@@ -24,20 +36,6 @@ export default function SubmittingOrgs(props: any) {
       submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
     }
   }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
-
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
-      {
-        accessorKey: 'Owner_group',
-        header: 'Lab',
-      },
-      {
-        accessorKey: 'sampleCount',
-        header: 'Sample count',
-      },
-    ],
-    [],
-  );
 
   return (
     <Box>
