@@ -1,5 +1,5 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
-import { Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import dayjs from 'dayjs';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
@@ -81,9 +81,6 @@ function DateSelector(props: any) {
     DashboardTemplateActions[data.data].map(
       (dispatchEvent: any) => dispatch(dispatchEvent(disptachProps)),
     );
-    // data.data.map(
-    //   (widget: any) => dispatch(ComponentActions[widget.name](event.target.value as string)),
-    // );
   };
 
   return (
@@ -124,7 +121,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        { loading === LoadingState.SUCCESS ? (
+        { loading === LoadingState.SUCCESS && (
           <>
             <Grid container item xs={12} justifyContent="space-between">
               {projectDesc}
@@ -135,21 +132,21 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
               {renderDashboard(data.data, projectId, groupId, setFilterList, setTabValue)}
             </Grid>
-
-            {/* {data.data.map((widget: ProjectDashboardWidget) => (
-              <Grid item xs={widget.width} minWidth={300} key={widget.name}>
-                <Card sx={{ padding: 1 }}>
-                  <CardContent>
-                    {Components(widget, setFilterList, setTabValue)}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))} */}
           </>
-        )
-          : (
-            'Loading...'
-          )}
+        )}
+        { loading === LoadingState.ERROR && (
+          <Grid item xs={12}>
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              {`An error has occurred while loading your dashboard - ${data.message}`}
+            </Alert>
+          </Grid>
+        )}
+        { loading === LoadingState.LOADING && (
+          <Grid item xs={12}>
+            Loading...
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

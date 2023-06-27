@@ -78,7 +78,7 @@ const projectDashboardSlice = createSlice({
     builder.addCase(fetchProjectDashboard.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
       state.projectIdInRedux = action.payload.projectId;
-      state.data = action.payload.message;
+      state.data = action.payload.response;
     });
   },
 });
