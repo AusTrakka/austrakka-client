@@ -138,7 +138,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
           <Grid item xs={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
-              {`An error has occurred while loading your dashboard - ${data.message}`}
+              {`An error occurred while loading your dashboard - ${data.message}`}
             </Alert>
           </Grid>
         )}

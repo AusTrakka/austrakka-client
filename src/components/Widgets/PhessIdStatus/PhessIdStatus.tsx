@@ -18,8 +18,8 @@ const columns:MRT_ColumnDef<any>[] = [
 
 export default function PhessIdStatus(props: any) {
   const {
-    setFilterList,
-    setTabValue,
+    // setFilterList,
+    // setTabValue,
     projectId,
     groupId,
   } = props;
@@ -38,39 +38,37 @@ export default function PhessIdStatus(props: any) {
 
   return (
     <Box>
+      <Typography variant="h5" paddingBottom={3} color="primary">
+        PHESS Id Status
+      </Typography>
       { loading === LoadingState.SUCCESS && (
-        <>
-          <Typography variant="h5" paddingBottom={3} color="primary">
-            PHESS Id Status
-          </Typography>
-          <MaterialReactTable
-            columns={columns}
-            data={aggregatedCounts}
-            defaultColumn={{
-              size: 0,
-              minSize: 30,
-            }}
-            initialState={{ density: 'compact' }}
+      <MaterialReactTable
+        columns={columns}
+        data={aggregatedCounts}
+        defaultColumn={{
+          size: 0,
+          minSize: 30,
+        }}
+        initialState={{ density: 'compact' }}
             // Stripping down features
-            enableColumnActions={false}
-            enableColumnFilters={false}
-            enablePagination={false}
-            enableSorting={false}
-            enableBottomToolbar={false}
-            enableTopToolbar={false}
-            muiTableBodyRowProps={{ hover: false }}
-            muiTablePaperProps={{
-              sx: {
-                boxShadow: 'none',
-              },
-            }}
-          />
-        </>
+        enableColumnActions={false}
+        enableColumnFilters={false}
+        enablePagination={false}
+        enableSorting={false}
+        enableBottomToolbar={false}
+        enableTopToolbar={false}
+        muiTableBodyRowProps={{ hover: false }}
+        muiTablePaperProps={{
+          sx: {
+            boxShadow: 'none',
+          },
+        }}
+      />
       )}
       { loading === LoadingState.ERROR && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {`An error has occurred while loading this widget - ${data.message}`}
+          {data.message}
         </Alert>
       )}
       { loading === LoadingState.LOADING && (

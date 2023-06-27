@@ -116,7 +116,7 @@ export default function SampleSummary(props: any) {
         <Grid container item>
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {`An error has occurred while loading this widget - ${data.message}`}
+            {data.message}
           </Alert>
         </Grid>
         )}

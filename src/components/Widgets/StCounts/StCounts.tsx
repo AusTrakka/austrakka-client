@@ -94,8 +94,8 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    setFilterList,
-    setTabValue,
+    // setFilterList,
+    // setTabValue,
     projectId,
     groupId,
   } = props;
@@ -131,48 +131,46 @@ export default function StCounts(props: any) {
   return (
     // <Box sx={{ flexGrow: 1 }}>
     <Box>
+      <Typography variant="h5" paddingBottom={1} color="primary">
+        ST Counts
+      </Typography>
       { loading === LoadingState.SUCCESS && (
-        <>
-          <Typography variant="h5" paddingBottom={1} color="primary">
-            ST Counts
-          </Typography>
-          <Grid container direction="row" alignItems="center" spacing={2}>
-            <Grid item xs={3}>
-              <MaterialReactTable
-                columns={columns}
-                data={aggregatedCounts}
-                defaultColumn={{
-                  size: 0,
-                  minSize: 30,
-                }}
-                initialState={{ density: 'compact' }}
+      <Grid container direction="row" alignItems="center" spacing={2}>
+        <Grid item xs={3}>
+          <MaterialReactTable
+            columns={columns}
+            data={aggregatedCounts}
+            defaultColumn={{
+              size: 0,
+              minSize: 30,
+            }}
+            initialState={{ density: 'compact' }}
                 // Stripping down features
-                enableColumnActions={false}
-                enableColumnFilters={false}
-                enablePagination={false}
-                enableSorting={false}
-                enableBottomToolbar={false}
-                enableTopToolbar={false}
-                muiTableBodyRowProps={{ hover: false }}
-                muiTablePaperProps={{
-                  sx: {
-                    boxShadow: 'none',
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={9}>
-              <STChart
-                stData={data.data}
-              />
-            </Grid>
-          </Grid>
-        </>
+            enableColumnActions={false}
+            enableColumnFilters={false}
+            enablePagination={false}
+            enableSorting={false}
+            enableBottomToolbar={false}
+            enableTopToolbar={false}
+            muiTableBodyRowProps={{ hover: false }}
+            muiTablePaperProps={{
+              sx: {
+                boxShadow: 'none',
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={9}>
+          <STChart
+            stData={data.data}
+          />
+        </Grid>
+      </Grid>
       )}
       { loading === LoadingState.ERROR && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {`An error has occurred while loading this widget - ${data.message}`}
+          {data.message}
         </Alert>
       )}
       { loading === LoadingState.LOADING && (

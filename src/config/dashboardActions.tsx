@@ -3,7 +3,7 @@ import { fetchStCounts } from '../components/Widgets/StCounts/stCountsSlice';
 import { fetchSubmittingOrgs } from '../components/Widgets/SubmittingOrgs/sumbittingOrgsSlice';
 
 const DashboardTemplateActions: any = {
-  test: [fetchSummary, fetchStCounts, fetchSubmittingOrgs],
+  vicdh: [fetchSummary, fetchStCounts, fetchSubmittingOrgs],
   default: [fetchSummary, fetchStCounts, fetchSubmittingOrgs],
 };
 
