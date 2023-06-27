@@ -2,14 +2,13 @@ import React, { useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
+import { fetchQcStatus, selectAggregatedQcStatus } from './qcStatusSlice';
 import LoadingState from '../../../constants/loadingState';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
-    header: 'Submitting organisation',
-    accessorKey: 'Owner_group',
-    Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
+    header: 'Status',
+    accessorKey: 'Qc_status',
   },
   {
     header: 'Sample Count',
@@ -17,7 +16,7 @@ const columns:MRT_ColumnDef<any>[] = [
   },
 ];
 
-export default function SubmittingOrgs(props: any) {
+export default function QcStatus(props: any) {
   const {
     setFilterList,
     setTabValue,
@@ -25,24 +24,24 @@ export default function SubmittingOrgs(props: any) {
     groupId,
   } = props;
   // Get initial state from store
-  const { loading } = useAppSelector((state) => state.submittingOrgsState);
+  const { loading } = useAppSelector((state) => state.qcStatusState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
-  const submittingOrgsDispatch = useAppDispatch();
-  const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
+  const dispatch = useAppDispatch();
+  const aggregatedCounts = useAppSelector(selectAggregatedQcStatus);
 
   useEffect(() => {
     const dispatchProps = { groupId, projectId, timeFilter };
     if (loading === 'idle') {
-      submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
+      dispatch(fetchQcStatus(dispatchProps));
     }
-  }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
+  }, [loading, dispatch, timeFilter, projectId, groupId]);
 
   return (
     <Box>
       { loading === LoadingState.SUCCESS ? (
         <>
           <Typography variant="h5" paddingBottom={3} color="primary">
-            Submitting organisations
+            QC Status
           </Typography>
           <MaterialReactTable
             columns={columns}

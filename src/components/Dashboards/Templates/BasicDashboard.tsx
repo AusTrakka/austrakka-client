@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
 import SubmittingOrgs from '../../Widgets/SubmittingOrgs/SubmittingOrgs';
 import StCounts from '../../Widgets/StCounts/StCounts';
+import QcStatus from '../../Widgets/QcStatus/QcStatus';
+import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
 
 // TODO: Set a max card height and handle scroll voerflow
 function BasicDashboard(props: any) {
@@ -64,7 +66,24 @@ function BasicDashboard(props: any) {
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  &nbsp;
+                  <QcStatus
+                    projectId={projectId}
+                    groupId={groupId}
+                    setFilterList={setFilterList}
+                    setTabValue={setTabValue}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item>
+              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                <CardContent>
+                  <PhessIdStatus
+                    projectId={projectId}
+                    groupId={groupId}
+                    setFilterList={setFilterList}
+                    setTabValue={setTabValue}
+                  />
                 </CardContent>
               </Card>
             </Grid>

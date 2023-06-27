@@ -4,11 +4,15 @@ import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSumm
 import submittingOrgsReducer from '../components/Widgets/SubmittingOrgs/sumbittingOrgsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
+import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
+import phessIdStatusReducer from '../components/Widgets/PhessIdStatus/phessIdStatusSlice';
 
 const store = configureStore({
   reducer: {
     sampleSummaryState: sampleSummaryReducer,
     submittingOrgsState: submittingOrgsReducer,
+    qcStatusState: qcStatusReducer,
+    phessIdStatusState: phessIdStatusReducer,
     stCountsState: stCountsReducer,
     projectDashboardState: projectDashboardReducer,
   },
