@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchQcStatus, selectAggregatedQcStatus } from './qcStatusSlice';
@@ -24,7 +24,7 @@ export default function QcStatus(props: any) {
     groupId,
   } = props;
   // Get initial state from store
-  const { loading } = useAppSelector((state) => state.qcStatusState);
+  const { loading, data } = useAppSelector((state) => state.qcStatusState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedQcStatus);
@@ -38,7 +38,7 @@ export default function QcStatus(props: any) {
 
   return (
     <Box>
-      { loading === LoadingState.SUCCESS ? (
+      { loading === LoadingState.SUCCESS && (
         <>
           <Typography variant="h5" paddingBottom={3} color="primary">
             QC Status
@@ -66,10 +66,16 @@ export default function QcStatus(props: any) {
             }}
           />
         </>
-      )
-        : (
-          'Loading...'
-        )}
+      )}
+      { loading === LoadingState.ERROR && (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error has occurred while loading this widget - ${data.message}`}
+        </Alert>
+      )}
+      { loading === LoadingState.LOADING && (
+        <div>Loading...</div>
+      )}
     </Box>
   );
 }

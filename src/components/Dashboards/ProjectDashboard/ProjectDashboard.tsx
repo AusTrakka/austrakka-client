@@ -86,7 +86,7 @@ function DateSelector(props: any) {
   return (
     <FormControl variant="standard">
       <InputLabel>Date filter</InputLabel>
-      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
+      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange} disabled>
         <MenuItem value={DashboardTimeFilter.ALL}>
           All time
         </MenuItem>

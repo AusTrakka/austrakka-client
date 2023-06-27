@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
@@ -68,8 +68,9 @@ export default function SampleSummary(props: any) {
 
   return (
     <Box>
-      { loading === LoadingState.SUCCESS ? (
-        <Grid container spacing={6} direction="row" justifyContent="space-between">
+      <Grid container spacing={6} direction="row" justifyContent="space-between">
+        { loading === LoadingState.SUCCESS && (
+        <>
           <Grid item>
             <FileUploadOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
@@ -109,12 +110,22 @@ export default function SampleSummary(props: any) {
               onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
             />
           </Grid>
-          {data.message}
-        </Grid>
-      )
-        : (
-          'Loading...'
+        </>
         )}
+        { loading === LoadingState.ERROR && (
+        <Grid container item>
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {`An error has occurred while loading this widget - ${data.message}`}
+          </Alert>
+        </Grid>
+        )}
+        { loading === LoadingState.LOADING && (
+        <Grid container item>
+          Loading...
+        </Grid>
+        )}
+      </Grid>
     </Box>
   );
 }

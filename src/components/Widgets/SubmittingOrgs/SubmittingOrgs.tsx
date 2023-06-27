@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
@@ -25,7 +25,7 @@ export default function SubmittingOrgs(props: any) {
     groupId,
   } = props;
   // Get initial state from store
-  const { loading } = useAppSelector((state) => state.submittingOrgsState);
+  const { loading, data } = useAppSelector((state) => state.submittingOrgsState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
   const submittingOrgsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
@@ -39,7 +39,7 @@ export default function SubmittingOrgs(props: any) {
 
   return (
     <Box>
-      { loading === LoadingState.SUCCESS ? (
+      { loading === LoadingState.SUCCESS && (
         <>
           <Typography variant="h5" paddingBottom={3} color="primary">
             Submitting organisations
@@ -67,10 +67,16 @@ export default function SubmittingOrgs(props: any) {
             }}
           />
         </>
-      )
-        : (
-          'Loading...'
-        )}
+      )}
+      { loading === LoadingState.ERROR && (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error has occurred while loading this widget - ${data.message}`}
+        </Alert>
+      )}
+      { loading === LoadingState.LOADING && (
+        <div>Loading...</div>
+      )}
     </Box>
   );
 }

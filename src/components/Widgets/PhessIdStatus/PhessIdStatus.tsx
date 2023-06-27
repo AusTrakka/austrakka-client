@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
@@ -24,7 +24,7 @@ export default function PhessIdStatus(props: any) {
     groupId,
   } = props;
   // Get initial state from store
-  const { loading } = useAppSelector((state) => state.phessIdStatusState);
+  const { loading, data } = useAppSelector((state) => state.phessIdStatusState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
@@ -38,7 +38,7 @@ export default function PhessIdStatus(props: any) {
 
   return (
     <Box>
-      { loading === LoadingState.SUCCESS ? (
+      { loading === LoadingState.SUCCESS && (
         <>
           <Typography variant="h5" paddingBottom={3} color="primary">
             PHESS Id Status
@@ -66,10 +66,16 @@ export default function PhessIdStatus(props: any) {
             }}
           />
         </>
-      )
-        : (
-          'Loading...'
-        )}
+      )}
+      { loading === LoadingState.ERROR && (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error has occurred while loading this widget - ${data.message}`}
+        </Alert>
+      )}
+      { loading === LoadingState.LOADING && (
+        <div>Loading...</div>
+      )}
     </Box>
   );
 }

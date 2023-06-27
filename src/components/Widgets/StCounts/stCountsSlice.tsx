@@ -46,7 +46,7 @@ const stCountsSlice = createSlice({
     });
     builder.addCase(fetchStCounts.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
-      state.data = action.payload.message;
+      state.data = action.payload;
     });
   },
 });

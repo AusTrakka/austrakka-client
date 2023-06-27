@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
@@ -131,7 +131,7 @@ export default function StCounts(props: any) {
   return (
     // <Box sx={{ flexGrow: 1 }}>
     <Box>
-      { loading === LoadingState.SUCCESS ? (
+      { loading === LoadingState.SUCCESS && (
         <>
           <Typography variant="h5" paddingBottom={1} color="primary">
             ST Counts
@@ -168,10 +168,16 @@ export default function StCounts(props: any) {
             </Grid>
           </Grid>
         </>
-      )
-        : (
-          'Loading...'
-        )}
+      )}
+      { loading === LoadingState.ERROR && (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error has occurred while loading this widget - ${data.message}`}
+        </Alert>
+      )}
+      { loading === LoadingState.LOADING && (
+        <div>Loading...</div>
+      )}
     </Box>
   );
 }

@@ -44,7 +44,7 @@ const summarySlice = createSlice({
     });
     builder.addCase(fetchSummary.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
-      state.data = action.payload.message;
+      state.data = action.payload;
     });
   },
 });

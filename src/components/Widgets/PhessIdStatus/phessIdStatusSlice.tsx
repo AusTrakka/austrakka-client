@@ -45,7 +45,7 @@ const phessIdStatusSlice = createSlice({
     });
     builder.addCase(fetchPhessIdStatus.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
-      state.data = action.payload.message;
+      state.data = action.payload;
     });
   },
 });
