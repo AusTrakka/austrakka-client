@@ -1,72 +1,93 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { VegaLite } from 'react-vega';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { parse, View as VegaView } from 'vega';
+import { TopLevelSpec, compile } from 'vega-lite';
+import { InlineData } from 'vega-lite/build/src/data';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
-import testData from './testStData';
 
-function STChart() {
-  const initSelect = () => {
-    const copy = testData.map((item) => ({
-      ...item,
-    }));
-    return copy;
-  };
+const spec: TopLevelSpec = {
+  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+  data: {
+    name: 'inputdata',
+  },
+  width: 'container',
+  mark: { type: 'bar', tooltip: true },
+  encoding: {
+    x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
+    y: { aggregate: 'count', title: 'Count of Samples' },
+    color: { field: 'ST', title: 'ST Value' },
+  },
+  // params: [
+  //   {
+  //     name: 'ST',
+  //     select: { type: 'point', fields: ['ST'] },
+  //     bind: 'legend',
+  //   },
+  //   {
+  //     name: 'hover',
+  //     select: { type: 'point', on: 'mouseover', clear: 'mouseout' },
+  //   },
+  // ],
+  // encoding: {
+  //   x: {
+  //     timeUnit: 'yearmonthdate',
+  //     field: 'Date_created',
+  //     type: 'temporal',
+  //     title: 'Sample created date',
+  //     // scale: { type: 'utc' }
+  //   },
+  //   y: { aggregate: 'count', title: 'Count of Samples' },
+  //   color: { field: 'ST', title: 'ST Value' },
+  //   opacity: {
+  //     condition: { param: 'ST', value: 1 },
+  //     value: 0.2,
+  //   },
+  //   strokeWidth: {
+  //     condition: [
+  //       {
+  //         param: 'hover',
+  //         empty: false,
+  //         value: 1,
+  //       },
+  //     ],
+  //     value: 0,
+  //   },
+  // },
+};
 
-  const spec = {
-    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-    width: 500,
-    // height: 'container',
-    data: {
-      values: initSelect(),
-    },
-    mark: { type: 'bar', tooltip: true, stroke: 'black', cursor: 'pointer' },
-    params: [
-      {
-        name: 'stValue',
-        select: { type: 'point', fields: ['stValue'] },
-        bind: 'legend',
-      },
-      {
-        name: 'hover',
-        select: { type: 'point', on: 'mouseover', clear: 'mouseout' },
-      },
-    ],
-    config: {
-      legend: {
-        symbolStrokeWidth: 0,
-      },
-    },
-    encoding: {
-      x: { timeUnit: 'month', field: 'created', type: 'temporal', title: 'Sample created date (month)' },
-      y: { aggregate: 'count', title: 'Count of Samples' },
-      color: { field: 'stValue', title: 'ST Value' },
-      opacity: {
-        condition: { param: 'stValue', value: 1 },
-        value: 0.2,
-      },
-      strokeWidth: {
-        condition: [
-          {
-            param: 'hover',
-            empty: false,
-            value: 1,
-          },
-        ],
-        value: 0,
-      },
-    },
-  };
+function STChart(props: any) {
+  const { stData } = props;
+  const plotDiv = useRef<HTMLDivElement>(null);
+  const [vegaView, setVegaView] = useState<VegaView | null>(null);
+
+  useEffect(() => {
+    const createVegaView = async () => {
+      if (vegaView) {
+        vegaView.finalize();
+      }
+      const compiledSpec = compile(spec!).spec;
+      const copy = stData.map((item: any) => ({
+        ...item,
+      }));
+      (compiledSpec.data![0] as InlineData).values = copy;
+      const view = await new VegaView(parse(compiledSpec))
+        .initialize(plotDiv.current!)
+        .runAsync();
+      setVegaView(view);
+    };
+
+    if (stData && plotDiv?.current) {
+      createVegaView();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stData, plotDiv]);
 
   return (
     <Box>
-      <VegaLite
-        spec={spec}
-        actions={false}
-        renderer="svg"
-      />
+      <div id="#plot-container" ref={plotDiv} />
     </Box>
   );
 }
@@ -108,14 +129,15 @@ export default function StCounts(props: any) {
   );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    // <Box sx={{ flexGrow: 1 }}>
+    <Box>
       { loading === LoadingState.SUCCESS ? (
         <>
-          <Typography variant="h4" paddingBottom={3}>
+          <Typography variant="h5" paddingBottom={1} color="primary">
             ST Counts
           </Typography>
-          <Grid container direction="row" alignItems="center" spacing={4}>
-            <Grid item xs="auto">
+          <Grid container direction="row" alignItems="center" spacing={2}>
+            <Grid item xs={3}>
               <MaterialReactTable
                 columns={columns}
                 data={aggregatedCounts}
@@ -139,8 +161,10 @@ export default function StCounts(props: any) {
                 }}
               />
             </Grid>
-            <Grid item xs>
-              <STChart data={data} />
+            <Grid item xs={9}>
+              <STChart
+                stData={data.data}
+              />
             </Grid>
           </Grid>
         </>
