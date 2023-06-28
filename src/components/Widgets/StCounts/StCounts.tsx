@@ -111,7 +111,7 @@ export default function StCounts(props: any) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, loading } = useAppSelector(selectStCounts);
   const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
 
   const stCountsDispatch = useAppDispatch();
 
@@ -124,16 +124,19 @@ export default function StCounts(props: any) {
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
-    setFilterList(
-      [
-        {
-          field: stFieldName,
-          fieldType: 'string',
-          condition: '==*',
-          value: selectedRow.ST,
-        },
-      ],
-    );
+    const drilldownFilter = [{
+      field: stFieldName,
+      fieldType: 'string',
+      condition: '==*',
+      value: selectedRow.ST,
+    }];
+    // Append timeFilterObject for last_week and last_month filters
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilter, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilter);
+    }
     setTabValue(1); // Navigate to "Samples" tab
   };
 

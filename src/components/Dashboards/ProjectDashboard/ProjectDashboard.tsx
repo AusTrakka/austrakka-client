@@ -51,7 +51,7 @@ function DateSelector(props: any) {
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
       dispatch(updateTimeFilterObject(
         {
-          field: 'Uploaded',
+          field: 'Date_created',
           fieldType: 'date',
           condition: '>',
           value: dayjs().subtract(7, 'days'),
@@ -60,7 +60,7 @@ function DateSelector(props: any) {
     } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
       dispatch(updateTimeFilterObject(
         {
-          field: 'Uploaded',
+          field: 'Date_created',
           fieldType: 'date',
           condition: '>',
           value: dayjs().subtract(1, 'month'),

@@ -39,7 +39,7 @@ export default function PhessIdStatus(props: any) {
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        PHESS Id Status
+        PHESS ID Status
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <MaterialReactTable

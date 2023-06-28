@@ -28,7 +28,7 @@ export default function SubmittingOrgs(props: any) {
   } = props;
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.submittingOrgsState);
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const submittingOrgsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
 
@@ -41,16 +41,19 @@ export default function SubmittingOrgs(props: any) {
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
-    setFilterList(
-      [
-        {
-          field: submittingOrgFieldName,
-          fieldType: 'string',
-          condition: '==*',
-          value: selectedRow.Owner_group,
-        },
-      ],
-    );
+    const drilldownFilter = [{
+      field: submittingOrgFieldName,
+      fieldType: 'string',
+      condition: '==*',
+      value: selectedRow.Owner_group,
+    }];
+    // Append timeFilterObject for last_week and last_month filters
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilter, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilter);
+    }
     setTabValue(1); // Navigate to "Samples" tab
   };
 
