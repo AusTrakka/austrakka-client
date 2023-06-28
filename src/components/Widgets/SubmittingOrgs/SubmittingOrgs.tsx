@@ -5,10 +5,12 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
 import LoadingState from '../../../constants/loadingState';
 
+const submittingOrgFieldName = 'Owner_group';
+
 const columns:MRT_ColumnDef<any>[] = [
   {
     header: 'Submitting organisation',
-    accessorKey: 'Owner_group',
+    accessorKey: submittingOrgFieldName,
     Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
   },
   {
@@ -19,8 +21,8 @@ const columns:MRT_ColumnDef<any>[] = [
 
 export default function SubmittingOrgs(props: any) {
   const {
-    // setFilterList,
-    // setTabValue,
+    setFilterList,
+    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -36,6 +38,21 @@ export default function SubmittingOrgs(props: any) {
       submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
     }
   }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    setFilterList(
+      [
+        {
+          field: submittingOrgFieldName,
+          fieldType: 'string',
+          condition: '==*',
+          value: selectedRow.Owner_group,
+        },
+      ],
+    );
+    setTabValue(1); // Navigate to "Samples" tab
+  };
 
   return (
     <Box>
@@ -58,7 +75,12 @@ export default function SubmittingOrgs(props: any) {
         enableSorting={false}
         enableBottomToolbar={false}
         enableTopToolbar={false}
-        muiTableBodyRowProps={{ hover: false }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         muiTablePaperProps={{
           sx: {
             boxShadow: 'none',

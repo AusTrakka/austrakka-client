@@ -8,6 +8,8 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
 
+const stFieldName = 'ST';
+
 const spec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   data: {
@@ -19,7 +21,7 @@ const spec: TopLevelSpec = {
     x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
     y: { aggregate: 'count', title: 'Count of Samples' },
     color: {
-      field: 'ST',
+      field: stFieldName,
       title: 'ST Value',
       scale: { scheme: 'spectral' },
     },
@@ -124,7 +126,7 @@ export default function StCounts(props: any) {
     setFilterList(
       [
         {
-          field: 'ST',
+          field: stFieldName,
           fieldType: 'string',
           condition: '==*',
           value: selectedRow.ST,
@@ -137,7 +139,7 @@ export default function StCounts(props: any) {
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
       {
-        accessorKey: 'ST',
+        accessorKey: stFieldName,
         header: 'ST Value',
       },
       {
