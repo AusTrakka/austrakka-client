@@ -72,7 +72,6 @@ export default function SubmittingOrgs(props: any) {
         enableColumnActions={false}
         enableColumnFilters={false}
         enablePagination={false}
-        enableSorting={false}
         enableBottomToolbar={false}
         enableTopToolbar={false}
         muiTableBodyRowProps={({ row }) => ({
@@ -86,6 +85,8 @@ export default function SubmittingOrgs(props: any) {
             boxShadow: 'none',
           },
         }}
+        muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+        enableStickyHeader
       />
       )}
       { loading === LoadingState.ERROR && (

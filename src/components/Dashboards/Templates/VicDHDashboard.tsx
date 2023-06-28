@@ -18,7 +18,7 @@ function VicDHDashboard(props: any) {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item lg={8} xs={12}>
+        <Grid item xl={8} xs={12}>
           <Grid container direction="column" spacing={2}>
             <Grid item>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
@@ -48,7 +48,7 @@ function VicDHDashboard(props: any) {
         </Grid>
         <Grid item xs>
           <Grid container direction="row" spacing={2}>
-            <Grid item lg={12} xs={4}>
+            <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <SubmittingOrgs
@@ -60,7 +60,7 @@ function VicDHDashboard(props: any) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item lg={12} xs={4}>
+            <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <QcStatus
@@ -72,7 +72,7 @@ function VicDHDashboard(props: any) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item lg={12} xs={4}>
+            <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <PhessIdStatus

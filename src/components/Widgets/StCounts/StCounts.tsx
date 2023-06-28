@@ -16,6 +16,7 @@ const spec: TopLevelSpec = {
     name: 'inputdata',
   },
   width: 'container',
+  height: 250,
   mark: { type: 'bar', tooltip: true },
   encoding: {
     x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
@@ -171,7 +172,6 @@ export default function StCounts(props: any) {
             enableColumnActions={false}
             enableColumnFilters={false}
             enablePagination={false}
-            enableSorting={false}
             enableBottomToolbar={false}
             enableTopToolbar={false}
             muiTableBodyRowProps={({ row }) => ({
@@ -185,6 +185,8 @@ export default function StCounts(props: any) {
                 boxShadow: 'none',
               },
             }}
+            muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+            enableStickyHeader
           />
         </Grid>
         <Grid item xl={9} xs={8}>
