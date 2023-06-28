@@ -18,7 +18,11 @@ const spec: TopLevelSpec = {
   encoding: {
     x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
     y: { aggregate: 'count', title: 'Count of Samples' },
-    color: { field: 'ST', title: 'ST Value' },
+    color: {
+      field: 'ST',
+      title: 'ST Value',
+      scale: { scheme: 'spectral' },
+    },
   },
   // params: [
   //   {
@@ -59,7 +63,7 @@ const spec: TopLevelSpec = {
 };
 
 function STChart(props: any) {
-  const { stData } = props;
+  const { stData, stDataAggregated } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
 
@@ -73,6 +77,7 @@ function STChart(props: any) {
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;
+      compiledSpec.legends![0].columns = Math.ceil(stDataAggregated.length / 16);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -183,6 +188,7 @@ export default function StCounts(props: any) {
         <Grid item xs={9}>
           <STChart
             stData={data.data}
+            stDataAggregated={aggregatedCounts}
           />
         </Grid>
       </Grid>
