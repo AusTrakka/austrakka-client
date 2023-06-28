@@ -94,8 +94,8 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    // setFilterList,
-    // setTabValue,
+    setFilterList,
+    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -113,6 +113,21 @@ export default function StCounts(props: any) {
       stCountsDispatch(fetchStCounts(dispatchProps));
     }
   }, [loading, stCountsDispatch, timeFilter, projectId, groupId]);
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    setFilterList(
+      [
+        {
+          field: 'ST',
+          fieldType: 'string',
+          condition: '==*',
+          value: selectedRow.ST,
+        },
+      ],
+    );
+    setTabValue(1); // Navigate to "Samples" tab
+  };
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
@@ -152,7 +167,12 @@ export default function StCounts(props: any) {
             enableSorting={false}
             enableBottomToolbar={false}
             enableTopToolbar={false}
-            muiTableBodyRowProps={{ hover: false }}
+            muiTableBodyRowProps={({ row }) => ({
+              onClick: () => rowClickHandler(row),
+              sx: {
+                cursor: 'pointer',
+              },
+            })}
             muiTablePaperProps={{
               sx: {
                 boxShadow: 'none',
