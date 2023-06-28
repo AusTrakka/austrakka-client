@@ -156,7 +156,7 @@ export default function StCounts(props: any) {
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <Grid container direction="row" alignItems="center" spacing={2}>
-        <Grid item xs={3}>
+        <Grid item xl={3} xs={4}>
           <MaterialReactTable
             columns={columns}
             data={aggregatedCounts}
@@ -185,7 +185,7 @@ export default function StCounts(props: any) {
             }}
           />
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xl={9} xs={8}>
           <STChart
             stData={data.data}
             stDataAggregated={aggregatedCounts}
