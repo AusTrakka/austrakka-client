@@ -27,9 +27,9 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
 
   const result: PhylocanvasMetadata = {};
   for (const data of dataArray) {
-    result[data.sampleId] = {};
+    result[data.sampleName] = {};
     for (const metadataValue of data.metadataValues) {
-      result[data.sampleId][metadataValue.key] = {
+      result[data.sampleName][metadataValue.key] = {
         colour: getUniqueColor(metadataValue.value),
         label: metadataValue.value,
       };
