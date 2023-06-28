@@ -3,7 +3,7 @@ import React from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
 import SubmittingOrgs from '../../Widgets/SubmittingOrgs/SubmittingOrgs';
 import StCounts from '../../Widgets/StCounts/StCounts';
-import QcStatus from '../../Widgets/QcStatus/QcStatus';
+// import QcStatus from '../../Widgets/QcStatus/QcStatus';
 import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
 
 // TODO: Set a max card height and handle scroll voerflow
