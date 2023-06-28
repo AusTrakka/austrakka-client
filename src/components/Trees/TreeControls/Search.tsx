@@ -26,8 +26,20 @@ export default function Search(
       onChange={(event, newValue, reason, details) => {
         let selected: string[];
         if (reason === 'createOption') {
-          const option = details?.option;
-          const matches = options.filter((o) => o.includes(option as string));
+          let option = details?.option;
+          let matches;
+
+          if (option?.includes('*')) {
+            // Replace * with .*
+            option = option.replace(/\*/g, '.*');
+            // Create a regex pattern
+            const regex = new RegExp(`^${option}$`, 'i');
+            matches = options.filter((o) => regex.test(o));
+          } else {
+            // For exact match
+            matches = options.filter((o) => o === option);
+          }
+
           selected = newValue.slice(0, -1).concat(matches).filter((v, i, a) => a.indexOf(v) === i);
         } else {
           selected = newValue;
