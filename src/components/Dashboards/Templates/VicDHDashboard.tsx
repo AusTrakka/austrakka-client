@@ -60,7 +60,7 @@ function VicDHDashboard(props: any) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xl={12} xs={4}>
+            {/* <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <QcStatus
@@ -71,7 +71,7 @@ function VicDHDashboard(props: any) {
                   />
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid> */}
             <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
