@@ -11,13 +11,14 @@ import {
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
 import { Filter } from '../Common/QueryBuilder';
-import Summary from './Summary';
+// import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { PlotListing, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
+import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 
 const SAMPLE_ID_FIELD = 'Seq_ID';
 
@@ -35,7 +36,7 @@ function ProjectOverview() {
     latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
   });
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
-  const [lastUpload] = useState('');
+  // const [lastUpload] = useState('');
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -337,12 +338,19 @@ function ProjectOverview() {
           </Typography>
           <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
-            <Summary
+            {/* <Summary
               totalSamples={totalSamples}
               lastUpload={lastUpload}
               projectDesc={projectDetails ? projectDetails.description : ''}
             // isOverviewLoading={isOverviewLoading}
               isOverviewError={isOverviewError}
+            /> */}
+            <ProjectDashboard
+              projectDesc={projectDetails ? projectDetails.description : ''}
+              projectId={projectDetails ? projectDetails!.projectId : null}
+              groupId={projectDetails ? projectDetails!.projectMembers.id : null}
+              setFilterList={setFilterList}
+              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
