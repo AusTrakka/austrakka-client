@@ -89,7 +89,7 @@ export interface AnalysisResultMetadata {
   lastUpdatedBy: string | null; // Assuming lastUpdatedBy can be string or null
   metadataValues: MetadataValue[];
   ownerGroup: string;
-  sampleId: string;
+  sampleName: string;
   sharedGroups: string[]; // Assuming this is an array of strings
   status: boolean;
   submissionId: number;
