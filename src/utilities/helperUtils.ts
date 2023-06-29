@@ -51,18 +51,8 @@ export function generateDateFilterString(
 ) {
   let filterString = '';
   if (Object.keys(dateObject).length !== 0) {
-    const date = dateObject.value;
-    // dayStart = date and time that is selected in date picker
-    // dayEnd = dayStart + 86399000ms
-    const dayStart = date.$d.toISOString().split('.')[0];
-    const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString().split('.')[0];
-    if (dateObject.condition === '==') {
-      filterString = `SSKV>=${dateObject.field}|${dayStart},SSKV<=${dateObject.field}|${dayEnd},`;
-    } else if (dateObject.condition === '<') {
-      filterString = `SSKV${dateObject.condition}=${dateObject.field}|${dayEnd},`;
-    } else if (dateObject.condition === '>') {
-      filterString = `SSKV${dateObject.condition}=${dateObject.field}|${dayStart},`;
-    }
+    const date = `${dateObject.value.$d.toISOString().split('.')[0]}`;
+    filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
   }
   return filterString;
 }
