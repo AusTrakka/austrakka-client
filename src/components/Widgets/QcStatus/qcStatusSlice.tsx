@@ -4,7 +4,8 @@ import { QcStatus } from './qc.status.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
-import { aggregateArrayObjects } from '../../../utilities/helperUtils';
+import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
+import type { RootState } from '../../../app/store';
 
 interface QcStatusState {
   loading: string
@@ -20,10 +21,12 @@ export const fetchQcStatus = createAsyncThunk(
   'counts/fetchQcStatus',
   async (
     dispatchProps:any,
-    { rejectWithValue, fulfillWithValue },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const { groupId } = dispatchProps;
-    const response = await getDashboardFields(groupId, 'Qc_status');
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
+    const response = await getDashboardFields(groupId, 'Qc_status', filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }
