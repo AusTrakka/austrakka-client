@@ -44,3 +44,25 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
   }
   return aggregatedCounts;
 }
+
+// Generic function to create filter string in SSKV format from date filter object
+export function generateDateFilterString(
+  dateObject: { field: string, condition: string, fieldType: string, value: any },
+) {
+  let filterString = '';
+  if (Object.keys(dateObject).length !== 0) {
+    const date = dateObject.value;
+    // dayStart = date and time that is selected in date picker
+    // dayEnd = dayStart + 86399000ms
+    const dayStart = date.$d.toISOString().split('.')[0];
+    const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString().split('.')[0];
+    if (dateObject.condition === '==') {
+      filterString = `SSKV>=${dateObject.field}|${dayStart},SSKV<=${dateObject.field}|${dayEnd},`;
+    } else if (dateObject.condition === '<') {
+      filterString = `SSKV${dateObject.condition}=${dateObject.field}|${dayEnd},`;
+    } else if (dateObject.condition === '>') {
+      filterString = `SSKV${dateObject.condition}=${dateObject.field}|${dayStart},`;
+    }
+  }
+  return filterString;
+}
