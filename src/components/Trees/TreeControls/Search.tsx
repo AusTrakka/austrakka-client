@@ -20,9 +20,32 @@ export default function Search(
       limitTags={1}
       getOptionLabel={(option) => option}
       filterSelectedOptions
+      freeSolo
       options={options}
       value={selectedIds}
-      onChange={onChange}
+      onChange={(event, newValue, reason, details) => {
+        let selected: string[];
+        if (reason === 'createOption') {
+          let option = details?.option;
+          let matches;
+
+          if (option?.includes('*')) {
+            // Replace * with .*
+            option = option.replace(/\*/g, '.*');
+            // Create a regex pattern
+            const regex = new RegExp(`^${option}$`, 'i');
+            matches = options.filter((o) => regex.test(o));
+          } else {
+            // For exact match
+            matches = options.filter((o) => o === option);
+          }
+
+          selected = newValue.slice(0, -1).concat(matches).filter((v, i, a) => a.indexOf(v) === i);
+        } else {
+          selected = newValue;
+        }
+        onChange(event, selected, reason);
+      }}
       renderInput={params => {
         const { InputProps, ...restParams } = params;
         const { startAdornment, ...restInputProps } = InputProps;
