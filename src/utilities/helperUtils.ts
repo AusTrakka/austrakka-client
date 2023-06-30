@@ -44,3 +44,15 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
   }
   return aggregatedCounts;
 }
+
+// Generic function to create filter string in SSKV format from date filter object
+export function generateDateFilterString(
+  dateObject: { field: string, condition: string, fieldType: string, value: any },
+) {
+  let filterString = '';
+  if (Object.keys(dateObject).length !== 0) {
+    const date = `${dateObject.value.$d.toISOString().split('.')[0]}`;
+    filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
+  }
+  return filterString;
+}
