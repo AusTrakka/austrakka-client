@@ -4,6 +4,8 @@ import { SampleSummary } from './sample.summary.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
+import type { RootState } from '../../../app/store';
+import { generateDateFilterString } from '../../../utilities/helperUtils';
 
 interface SampleSummaryState {
   loading: LoadingState
@@ -19,10 +21,12 @@ export const fetchSummary = createAsyncThunk(
   'summary/fetchSummary',
   async (
     dispatchProps: any,
-    { rejectWithValue, fulfillWithValue },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const { groupId } = dispatchProps;
-    const response = await getProjectDashboardOveriew(groupId, '');
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
+    const response = await getProjectDashboardOveriew(groupId, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

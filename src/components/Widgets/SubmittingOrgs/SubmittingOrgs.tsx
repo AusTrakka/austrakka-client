@@ -5,10 +5,12 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
 import LoadingState from '../../../constants/loadingState';
 
+const submittingOrgFieldName = 'Owner_group';
+
 const columns:MRT_ColumnDef<any>[] = [
   {
     header: 'Submitting organisation',
-    accessorKey: 'Owner_group',
+    accessorKey: submittingOrgFieldName,
     Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
   },
   {
@@ -19,14 +21,14 @@ const columns:MRT_ColumnDef<any>[] = [
 
 export default function SubmittingOrgs(props: any) {
   const {
-    // setFilterList,
-    // setTabValue,
+    setFilterList,
+    setTabValue,
     projectId,
     groupId,
   } = props;
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.submittingOrgsState);
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const submittingOrgsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
 
@@ -36,6 +38,24 @@ export default function SubmittingOrgs(props: any) {
       submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
     }
   }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    const drilldownFilter = [{
+      field: submittingOrgFieldName,
+      fieldType: 'string',
+      condition: '==*',
+      value: selectedRow.Owner_group,
+    }];
+    // Append timeFilterObject for last_week and last_month filters
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilter, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilter);
+    }
+    setTabValue(1); // Navigate to "Samples" tab
+  };
 
   return (
     <Box>
@@ -55,15 +75,21 @@ export default function SubmittingOrgs(props: any) {
         enableColumnActions={false}
         enableColumnFilters={false}
         enablePagination={false}
-        enableSorting={false}
         enableBottomToolbar={false}
         enableTopToolbar={false}
-        muiTableBodyRowProps={{ hover: false }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         muiTablePaperProps={{
           sx: {
             boxShadow: 'none',
           },
         }}
+        muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+        enableStickyHeader
       />
       )}
       { loading === LoadingState.ERROR && (

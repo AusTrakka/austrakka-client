@@ -18,14 +18,14 @@ const columns:MRT_ColumnDef<any>[] = [
 
 export default function PhessIdStatus(props: any) {
   const {
-    // setFilterList,
-    // setTabValue,
+    setFilterList,
+    setTabValue,
     projectId,
     groupId,
   } = props;
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.phessIdStatusState);
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
 
@@ -36,10 +36,28 @@ export default function PhessIdStatus(props: any) {
     }
   }, [loading, dispatch, timeFilter, projectId, groupId]);
 
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    const drilldownFilter = [{
+      field: 'PHESS_ID',
+      fieldType: 'string',
+      condition: selectedRow.status === 'Missing' ? '==*' : '!=*',
+      value: 'null-or-empty',
+    }];
+    // Append timeFilterObject for last_week and last_month filters
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilter, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilter);
+    }
+    setTabValue(1); // Navigate to "Samples" tab
+  };
+
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        PHESS Id Status
+        PHESS ID Status
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <MaterialReactTable
@@ -57,12 +75,18 @@ export default function PhessIdStatus(props: any) {
         enableSorting={false}
         enableBottomToolbar={false}
         enableTopToolbar={false}
-        muiTableBodyRowProps={{ hover: false }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         muiTablePaperProps={{
           sx: {
             boxShadow: 'none',
           },
         }}
+        enableStickyHeader
       />
       )}
       { loading === LoadingState.ERROR && (

@@ -4,7 +4,8 @@ import { SubmittingOrgs } from './submitting.orgs.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
-import { aggregateArrayObjects } from '../../../utilities/helperUtils';
+import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
+import type { RootState } from '../../../app/store';
 
 interface SubmittingOrgsState {
   loading: string
@@ -20,10 +21,12 @@ export const fetchSubmittingOrgs = createAsyncThunk(
   'counts/fetchSubmittingOrgs',
   async (
     dispatchProps:any,
-    { rejectWithValue, fulfillWithValue },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const { groupId } = dispatchProps;
-    const response = await getDashboardFields(groupId, 'Owner_group');
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
+    const response = await getDashboardFields(groupId, 'Owner_group', filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

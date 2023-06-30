@@ -33,7 +33,7 @@ export default function SampleSummary(props: any) {
   const getLastUploadFilter = (date: any) => {
     const latestUploadFilter = [
       {
-        field: 'Uploaded',
+        field: 'Date_created',
         fieldType: 'date',
         condition: '>',
         value: dayjs(date),

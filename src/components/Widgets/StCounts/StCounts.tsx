@@ -8,17 +8,24 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
 
+const stFieldName = 'ST';
+
 const spec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   data: {
     name: 'inputdata',
   },
   width: 'container',
+  height: 250,
   mark: { type: 'bar', tooltip: true },
   encoding: {
     x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
     y: { aggregate: 'count', title: 'Count of Samples' },
-    color: { field: 'ST', title: 'ST Value' },
+    color: {
+      field: stFieldName,
+      title: 'ST Value',
+      scale: { scheme: 'spectral' },
+    },
   },
   // params: [
   //   {
@@ -59,7 +66,7 @@ const spec: TopLevelSpec = {
 };
 
 function STChart(props: any) {
-  const { stData } = props;
+  const { stData, stDataAggregated } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
 
@@ -73,6 +80,7 @@ function STChart(props: any) {
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;
+      compiledSpec.legends![0].columns = Math.ceil(stDataAggregated.length / 16);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -94,8 +102,8 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    // setFilterList,
-    // setTabValue,
+    setFilterList,
+    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -103,7 +111,7 @@ export default function StCounts(props: any) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, loading } = useAppSelector(selectStCounts);
   const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
-  const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
 
   const stCountsDispatch = useAppDispatch();
 
@@ -114,10 +122,28 @@ export default function StCounts(props: any) {
     }
   }, [loading, stCountsDispatch, timeFilter, projectId, groupId]);
 
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    const drilldownFilter = [{
+      field: stFieldName,
+      fieldType: 'string',
+      condition: '==*',
+      value: selectedRow.ST,
+    }];
+    // Append timeFilterObject for last_week and last_month filters
+    if (Object.keys(timeFilterObject).length !== 0) {
+      const appendedFilters = [...drilldownFilter, timeFilterObject];
+      setFilterList(appendedFilters);
+    } else {
+      setFilterList(drilldownFilter);
+    }
+    setTabValue(1); // Navigate to "Samples" tab
+  };
+
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
       {
-        accessorKey: 'ST',
+        accessorKey: stFieldName,
         header: 'ST Value',
       },
       {
@@ -136,7 +162,7 @@ export default function StCounts(props: any) {
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <Grid container direction="row" alignItems="center" spacing={2}>
-        <Grid item xs={3}>
+        <Grid item xl={3} xs={4}>
           <MaterialReactTable
             columns={columns}
             data={aggregatedCounts}
@@ -149,20 +175,27 @@ export default function StCounts(props: any) {
             enableColumnActions={false}
             enableColumnFilters={false}
             enablePagination={false}
-            enableSorting={false}
             enableBottomToolbar={false}
             enableTopToolbar={false}
-            muiTableBodyRowProps={{ hover: false }}
+            muiTableBodyRowProps={({ row }) => ({
+              onClick: () => rowClickHandler(row),
+              sx: {
+                cursor: 'pointer',
+              },
+            })}
             muiTablePaperProps={{
               sx: {
                 boxShadow: 'none',
               },
             }}
+            muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+            enableStickyHeader
           />
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xl={9} xs={8}>
           <STChart
             stData={data.data}
+            stDataAggregated={aggregatedCounts}
           />
         </Grid>
       </Grid>
