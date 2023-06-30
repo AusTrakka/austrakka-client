@@ -47,28 +47,30 @@ function DateSelector(props: any) {
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
+    let filterObject = {};
+    let value;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
-      dispatch(updateTimeFilterObject(
-        {
-          field: 'Date_created',
-          fieldType: 'date',
-          condition: '>',
-          value: dayjs().subtract(7, 'days'),
-        },
-      ));
+      value = dayjs().subtract(7, 'days');
     } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
-      dispatch(updateTimeFilterObject(
-        {
-          field: 'Date_created',
-          fieldType: 'date',
-          condition: '>',
-          value: dayjs().subtract(1, 'month'),
-        },
-      ));
-    } else {
-      dispatch(updateTimeFilterObject({}));
+      value = dayjs().subtract(1, 'month');
     }
+
+    if (value !== undefined) {
+      filterObject = {
+        field: 'Date_created',
+        fieldType: 'date',
+        condition: '>',
+        value,
+      };
+    }
+
+    dispatch(updateTimeFilterObject(filterObject));
+
+    // TODO: Create timeFilterString to pass to widget asyncthunks
+    // Maybe time filter (event value) can be converted into date filter string here
+    // Then we don't pass the event value, we pass the formatted strign to the asyncthunk
+
     const disptachProps = {
       projectId,
       groupId,
