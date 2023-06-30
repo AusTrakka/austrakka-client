@@ -5,7 +5,8 @@ import { ResponseObject, getDashboardFields } from '../../../utilities/resourceU
 import LoadingState from '../../../constants/loadingState';
 // eslint-disable-next-line import/no-cycle
 import { AppState } from '../../../types/app.interface';
-import { aggregateArrayObjects } from '../../../utilities/helperUtils';
+import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
+import type { RootState } from '../../../app/store';
 
 interface StCountsState {
   loading: string
@@ -21,10 +22,12 @@ export const fetchStCounts = createAsyncThunk(
   'stCountsSlice/fetchStCounts',
   async (
     dispatchProps: any,
-    { rejectWithValue, fulfillWithValue },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const { groupId } = dispatchProps;
-    const response = await getDashboardFields(groupId, 'ST');
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
+    const response = await getDashboardFields(groupId, 'ST', filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

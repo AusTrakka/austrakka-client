@@ -67,10 +67,6 @@ function DateSelector(props: any) {
 
     dispatch(updateTimeFilterObject(filterObject));
 
-    // TODO: Create timeFilterString to pass to widget asyncthunks
-    // Maybe time filter (event value) can be converted into date filter string here
-    // Then we don't pass the event value, we pass the formatted strign to the asyncthunk
-
     const disptachProps = {
       projectId,
       groupId,
@@ -84,7 +80,7 @@ function DateSelector(props: any) {
   return (
     <FormControl variant="standard">
       <InputLabel>Date filter</InputLabel>
-      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange} disabled>
+      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
         <MenuItem value={DashboardTimeFilter.ALL}>
           All time
         </MenuItem>
