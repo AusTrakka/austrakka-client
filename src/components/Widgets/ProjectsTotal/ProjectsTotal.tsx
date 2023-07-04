@@ -10,7 +10,7 @@ import DrilldownButton from '../../Common/DrilldownButton';
 const columns:MRT_ColumnDef<any>[] = [
   {
     header: 'Project Name',
-    accessorKey: 'sampleCount',
+    accessorKey: 'projectName',
   },
   {
     header: 'Samples uploaded',
@@ -26,19 +26,18 @@ export default function ProjectsTotal() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const dispatchProps = { timeFilter };
     if (loading === 'idle') {
-      dispatch(fetchProjectsTotal(dispatchProps));
+      dispatch(fetchProjectsTotal());
     }
-  }, [loading, dispatch, timeFilter]);
+  }, [loading, dispatch, timeFilter, data]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
   };
 
   const rowClickHandler = (row: any) => {
-    // TODO: Navigate to relevant project page
-    console.log(row);
+    const selectedRow = row.original;
+    navigate(`/projects/${selectedRow.abbreviation}`);
   };
 
   return (
@@ -50,7 +49,7 @@ export default function ProjectsTotal() {
       <>
         <MaterialReactTable
           columns={columns}
-          data={[]}
+          data={[data.data]} // TODO: Once endpoint fixed - remove the []
           defaultColumn={{
             size: 0,
             minSize: 30,
@@ -76,6 +75,7 @@ export default function ProjectsTotal() {
           muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
           enableStickyHeader
         />
+        <br />
         <DrilldownButton
           title="View projects list"
           onClick={navigateToProjectList}

@@ -10,7 +10,7 @@ import { fetchPhessIdOverall } from './phessIdOverallSlice';
 const columns:MRT_ColumnDef<any>[] = [
   {
     header: 'Project Name',
-    accessorKey: 'sampleCount',
+    accessorKey: 'projectName',
   },
   {
     header: 'PHESS ID Missing',
@@ -26,9 +26,8 @@ export default function PhessIdOverall() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const dispatchProps = { timeFilter };
     if (loading === 'idle') {
-      dispatch(fetchPhessIdOverall(dispatchProps));
+      dispatch(fetchPhessIdOverall());
     }
   }, [loading, dispatch, timeFilter]);
 
@@ -37,8 +36,8 @@ export default function PhessIdOverall() {
   };
 
   const rowClickHandler = (row: any) => {
-    // TODO: Navigate to relevant project page
-    console.log(row);
+    const selectedRow = row.original;
+    navigate(`/projects/${selectedRow.abbreviation}`);
   };
 
   return (
