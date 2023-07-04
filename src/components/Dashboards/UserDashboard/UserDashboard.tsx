@@ -7,6 +7,7 @@ import LoadingState from '../../../constants/loadingState';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/ProjectsTotal/ProjectsTotal';
+import PhessIdOverall from '../../Widgets/PhessIdOverall/PhessIdOverall';
 
 interface UserDashboardProps {
 }
@@ -59,6 +60,14 @@ function UserDashboard(props: UserDashboardProps) {
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <ProjectsTotal />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item lg={4} md={6} xs={8}>
+              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                <CardContent>
+                  {/* TODO: Only render this widget if data from widget endpoint !== empty array */}
+                  <PhessIdOverall />
                 </CardContent>
               </Card>
             </Grid>

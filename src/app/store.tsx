@@ -9,6 +9,7 @@ import phessIdStatusReducer from '../components/Widgets/PhessIdStatus/phessIdSta
 import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
 import userOverviewReducer from '../components/Widgets/UserOverview/userOverviewSlice';
 import projectsTotalReducer from '../components/Widgets/ProjectsTotal/projectsTotalSlice';
+import phessIdOverallReducer from '../components/Widgets/PhessIdOverall/phessIdOverallSlice';
 
 const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ const store = configureStore({
     userDashboardState: userDashboardReducer,
     userOverviewState: userOverviewReducer,
     projectTotalState: projectsTotalReducer,
+    phessIdOverallState: phessIdOverallReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,

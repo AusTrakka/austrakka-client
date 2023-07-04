@@ -16,4 +16,5 @@ export interface AppState {
   userDashboardState: any,
   userOverviewState: any,
   projectTotalState: any,
+  phessIdOverallState: any,
 }
