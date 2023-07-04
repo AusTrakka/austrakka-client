@@ -12,5 +12,7 @@ export interface AppState {
   qcStatusState: QcStatus,
   phessIdStatusState: PhessIdStatus,
   stCountsState: StCounts,
-  projectDashboardState: any
+  projectDashboardState: any,
+  userDashboardState: any,
+  userOverviewState: any,
 }

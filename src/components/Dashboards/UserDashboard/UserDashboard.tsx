@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
-import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
+import UserOverview from '../../Widgets/UserOverview/UserOverview';
 
 interface UserDashboardProps {
 }
@@ -37,22 +38,19 @@ function DateSelector(props: any) {
 function UserDashboard(props: UserDashboardProps) {
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-
-  }, []);
-
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
         <Grid container item xs={12} justifyContent="space-between">
           <Typography variant="h2" color="primary">Dashboard</Typography>
           <DateSelector />
-          {/* { data.data.length !== 0 ? (
-            <DateSelector />
-          ) : null } */}
         </Grid>
         <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-          Busy building!
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <UserOverview />
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Box>

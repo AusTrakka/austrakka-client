@@ -6,6 +6,8 @@ import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/p
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
 import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
 import phessIdStatusReducer from '../components/Widgets/PhessIdStatus/phessIdStatusSlice';
+import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
+import userOverviewReducer from '../components/Widgets/UserOverview/userOverviewSlice';
 
 const store = configureStore({
   reducer: {
@@ -15,6 +17,8 @@ const store = configureStore({
     phessIdStatusState: phessIdStatusReducer,
     stCountsState: stCountsReducer,
     projectDashboardState: projectDashboardReducer,
+    userDashboardState: userDashboardReducer,
+    userOverviewState: userOverviewReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,

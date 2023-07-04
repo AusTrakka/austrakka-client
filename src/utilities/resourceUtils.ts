@@ -102,3 +102,8 @@ export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/assigned-dashboard/${projectId}`, 'GET', {});
 export const getProjectDashboardOveriew = (groupId: number, searchParams?: string) => callAPI(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`, 'GET', {});
 export const getDashboardFields = (groupId: number, fields?: string) => callAPI(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&fields=${fields}`, 'GET', {});
+
+// User dashboard endpoints
+export const getUserDashboardOveriew = () => callAPI('/api/DashboardSearch/user-dashboard/overview', 'GET', {});
+export const getUserDashboardProjects = () => callAPI('/api/DashboardSearch/user-dashboard/projects-total', 'GET', {});
+export const getUserDashboardPhessStatus = () => callAPI('/api/DashboardSearch/user-dashboard/phess-status', 'GET', {});
