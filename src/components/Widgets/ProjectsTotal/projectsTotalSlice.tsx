@@ -4,6 +4,8 @@ import { ProjectsTotal } from './projects.total.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getUserDashboardProjects } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
+import { generateDateFilterString } from '../../../utilities/helperUtils';
+import type { RootState } from '../../../app/store';
 
 interface ProjectsTotalState {
   loading: string
@@ -18,10 +20,12 @@ const initialState: ProjectsTotalState = {
 export const fetchProjectsTotal = createAsyncThunk(
   'counts/fetchProjectsTotal',
   async (
-    props: any,
-    { rejectWithValue, fulfillWithValue },
+    _: void,
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const response = await getUserDashboardProjects();
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
+    const response = await getUserDashboardProjects(filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }
@@ -49,6 +53,6 @@ const projectsTotalSlice = createSlice({
 });
 
 //
-export const selectProjectsTotal = (state: AppState) => state.userOverviewState;
+export const selectProjectsTotal = (state: AppState) => state.projectTotalState;
 
 export default projectsTotalSlice.reducer;

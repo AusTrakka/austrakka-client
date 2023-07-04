@@ -4,6 +4,8 @@ import { UserOverview } from './user.overview.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getUserDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
+import { generateDateFilterString } from '../../../utilities/helperUtils';
+import type { RootState } from '../../../app/store';
 
 interface UserOverviewState {
   loading: string
@@ -18,10 +20,12 @@ const initialState: UserOverviewState = {
 export const fetchUserOverview = createAsyncThunk(
   'counts/fetchUserOverview',
   async (
-    props: any,
-    { rejectWithValue, fulfillWithValue },
+    _: void,
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const response = await getUserDashboardOveriew();
+    const state = getState() as RootState;
+    const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
+    const response = await getUserDashboardOveriew(filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

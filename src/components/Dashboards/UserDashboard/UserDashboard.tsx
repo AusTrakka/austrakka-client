@@ -8,6 +8,10 @@ import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/ProjectsTotal/ProjectsTotal';
 import PhessIdOverall from '../../Widgets/PhessIdOverall/PhessIdOverall';
+import { updateTimeFilter, updateTimeFilterObject } from './userDashboardSlice';
+import { fetchUserOverview } from '../../Widgets/UserOverview/userOverviewSlice';
+import { fetchProjectsTotal } from '../../Widgets/ProjectsTotal/projectsTotalSlice';
+import { fetchPhessIdOverall } from '../../Widgets/PhessIdOverall/phessIdOverallSlice';
 
 interface UserDashboardProps {
 }
@@ -16,13 +20,37 @@ function DateSelector(props: any) {
   const dispatch = useAppDispatch();
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
-    // Update time filter object and call dispatches
+    dispatch(updateTimeFilter(event.target.value as string));
+    let filterObject = {};
+    let value;
+
+    if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
+      value = dayjs().subtract(7, 'days');
+    } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
+      value = dayjs().subtract(1, 'month');
+    }
+
+    if (value !== undefined) {
+      filterObject = {
+        field: 'Date_created',
+        fieldType: 'date',
+        condition: '>',
+        value,
+      };
+    }
+
+    dispatch(updateTimeFilterObject(filterObject));
+
+    // Dispatch widget async thunks
+    dispatch(fetchUserOverview());
+    dispatch(fetchProjectsTotal());
+    dispatch(fetchPhessIdOverall());
   };
 
   return (
     <FormControl variant="standard">
       <InputLabel>Date filter</InputLabel>
-      <Select autoWidth value={DashboardTimeFilter.ALL} onChange={onTimeFilterChange} disabled>
+      <Select autoWidth value={DashboardTimeFilter.ALL} onChange={onTimeFilterChange}>
         <MenuItem value={DashboardTimeFilter.ALL}>
           All time
         </MenuItem>
