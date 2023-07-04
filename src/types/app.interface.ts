@@ -15,4 +15,5 @@ export interface AppState {
   projectDashboardState: any,
   userDashboardState: any,
   userOverviewState: any,
+  projectTotalState: any,
 }

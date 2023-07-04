@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserOverview/UserOverview';
+import ProjectsTotal from '../../Widgets/ProjectsTotal/ProjectsTotal';
 
 interface UserDashboardProps {
 }
@@ -46,11 +47,22 @@ function UserDashboard(props: UserDashboardProps) {
           <DateSelector />
         </Grid>
         <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-            <CardContent>
-              <UserOverview />
-            </CardContent>
-          </Card>
+          <Grid container spacing={2}>
+            <Grid item lg={8} md={12}>
+              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                <CardContent>
+                  <UserOverview />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item lg={4} md={6} xs={8}>
+              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                <CardContent>
+                  <ProjectsTotal />
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </Box>

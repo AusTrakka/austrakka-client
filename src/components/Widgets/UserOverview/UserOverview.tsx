@@ -18,10 +18,6 @@ export default function UserOverview() {
     }
   }, [loading, dispatch, timeFilter]);
 
-  //   const rowClickHandler = (row: any) => {
-  //     console.log(row);
-  //   };
-
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
