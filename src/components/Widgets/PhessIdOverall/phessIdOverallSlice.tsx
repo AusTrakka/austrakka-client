@@ -2,7 +2,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { PhessIdOverall } from './phess.id.overall.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject, getUserDashboardProjects } from '../../../utilities/resourceUtils';
+import { ResponseObject, getUserDashboardPhessStatus } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
@@ -25,7 +25,7 @@ export const fetchPhessIdOverall = createAsyncThunk(
   ):Promise<ResponseObject | unknown> => {
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
-    const response = await getUserDashboardProjects(filterString);
+    const response = await getUserDashboardPhessStatus(filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }
