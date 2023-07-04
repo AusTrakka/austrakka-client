@@ -49,27 +49,29 @@ function UserDashboard(props: UserDashboardProps) {
         </Grid>
         <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
           <Grid container spacing={2}>
-            <Grid item lg={8} md={12}>
+            <Grid container item xs={12}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <UserOverview />
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item lg={4} md={6} xs={8}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <ProjectsTotal />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item lg={4} md={6} xs={8}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  {/* TODO: Only render this widget if data from widget endpoint !== empty array */}
-                  <PhessIdOverall />
-                </CardContent>
-              </Card>
+            <Grid container item xs={12} spacing={2}>
+              <Grid item>
+                <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                  <CardContent>
+                    <ProjectsTotal />
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item>
+                {/* TODO: Only render this widget if data from widget endpoint !== empty array */}
+                <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                  <CardContent>
+                    <PhessIdOverall />
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
