@@ -37,7 +37,7 @@ export default function ProjectsTotal() {
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
-    navigate(`/projects/${selectedRow.abbreviation}`);
+    navigate(`/projects/${selectedRow.abbrev}`);
   };
 
   return (
