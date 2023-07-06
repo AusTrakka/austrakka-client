@@ -12,9 +12,8 @@ export default function UserOverview() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { timeFilter };
     if (loading === 'idle') {
-      dispatch(fetchUserOverview(dispatchProps));
+      dispatch(fetchUserOverview());
     }
   }, [loading, dispatch, timeFilter]);
 
