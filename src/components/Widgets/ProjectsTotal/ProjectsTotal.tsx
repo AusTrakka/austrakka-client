@@ -77,7 +77,7 @@ export default function ProjectsTotal() {
         />
         <br />
         <DrilldownButton
-          title="View projects list"
+          title="View all projects"
           onClick={navigateToProjectList}
         />
       </>

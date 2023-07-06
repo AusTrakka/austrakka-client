@@ -77,7 +77,7 @@ export default function PhessIdOverall() {
         />
         <br />
         <DrilldownButton
-          title="View projects list"
+          title="View all projects"
           onClick={navigateToProjectList}
         />
       </>
