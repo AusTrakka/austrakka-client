@@ -49,7 +49,7 @@ export default function ProjectsTotal() {
       <>
         <MaterialReactTable
           columns={columns}
-          data={[data.data]} // TODO: Once endpoint fixed - remove the []
+          data={data.data}
           defaultColumn={{
             size: 0,
             minSize: 30,
@@ -72,7 +72,7 @@ export default function ProjectsTotal() {
               boxShadow: 'none',
             },
           }}
-          muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+          muiTableContainerProps={{ sx: { maxHeight: '400px' } }}
           enableStickyHeader
         />
         <br />

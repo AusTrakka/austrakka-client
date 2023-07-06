@@ -49,7 +49,7 @@ export default function PhessIdOverall() {
       <>
         <MaterialReactTable
           columns={columns}
-          data={[]}
+          data={data.data}
           defaultColumn={{
             size: 0,
             minSize: 30,
@@ -72,9 +72,10 @@ export default function PhessIdOverall() {
               boxShadow: 'none',
             },
           }}
-          muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
+          muiTableContainerProps={{ sx: { maxHeight: '400px' } }}
           enableStickyHeader
         />
+        <br />
         <DrilldownButton
           title="View projects list"
           onClick={navigateToProjectList}
