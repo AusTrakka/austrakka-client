@@ -29,7 +29,7 @@ export default function ProjectsTotal() {
     if (loading === 'idle') {
       dispatch(fetchProjectsTotal());
     }
-  }, [loading, dispatch, timeFilter, data]);
+  }, [loading, dispatch, timeFilter]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
