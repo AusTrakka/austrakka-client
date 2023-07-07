@@ -67,13 +67,13 @@ function DateSelector(props: any) {
 
     dispatch(updateTimeFilterObject(filterObject));
 
-    const disptachProps = {
+    const dispatchProps = {
       projectId,
       groupId,
       timeFilter: event.target.value as string,
     };
     DashboardTemplateActions[data.data].map(
-      (dispatchEvent: any) => dispatch(dispatchEvent(disptachProps)),
+      (dispatchEvent: any) => dispatch(dispatchEvent(dispatchProps)),
     );
   };
 
