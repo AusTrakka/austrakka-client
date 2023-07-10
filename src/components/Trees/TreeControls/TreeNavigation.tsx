@@ -107,7 +107,7 @@ export default function TreeNavigation(
     }
   };
   const versionClickHandler = (version: any) => {
-    navigate(`/projects/${projectAbbrev}/analyses/${analysisId}/trees/${version.jobInstanceId}`);
+    navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
   };
   return (
     <Grid>

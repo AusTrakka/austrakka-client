@@ -54,11 +54,11 @@ function MainMenuLayout() {
     projects: 'Projects',
     plots: 'Plots',
     trees: 'Trees',
-    analyses: 'Analyses',
+    versions: 'Versions',
     upload: 'Upload',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses'];
+  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 

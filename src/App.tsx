@@ -47,7 +47,7 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects" element={<ProjectsList />} />
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                  <Route path="projects/:projectAbbrev/analyses/:analysisId/trees/:jobInstanceId" element={<TreeDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
