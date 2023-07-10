@@ -38,10 +38,8 @@ export default function TreeNavigation(
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
   const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
   const [historyIndex, setHistoryIndex] = React.useState<number>(0);
-  React.useEffect(() => {
-    // Don't do anything if nodes is already set
-    if (nodes !== null) return;
 
+  React.useEffect(() => {
     // Don't do anything if phylocanvasRef or phylocanvasRef.current.nodes is not yet set
     const phyloNodes = phylocanvasRef?.current?.nodes;
     if (!phyloNodes) return;
@@ -53,16 +51,12 @@ export default function TreeNavigation(
   const handleJumpToSubtree = () => {
     if (nodes) {
       const selectedNodes: PhylocanvasNode[] = selectedIds.map((id) => nodes[id]);
-      const mrca = Phylocanvas.getMRCA(selectedNodes);
+      let mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
-        if (mrca.totalSubtreeLength === 0) {
-          // TODO: Phylocanvas can render a tree totalSubtreeLength == 0
-          // This could break with the parent is also a node with totalSubtreeLength == 0
-          const parent = mrca.parent || null;
-          onJumpToSubtree(parent?.id || null);
-        } else {
-          onJumpToSubtree(mrca.id);
+        while (mrca?.totalSubtreeLength === 0) {
+          mrca = mrca.parent;
         }
+        onJumpToSubtree(mrca?.id || null);
         // append to history
         const newHistory = history.slice(0, historyIndex + 1);
         setHistory([...newHistory, mrca]);
@@ -106,8 +100,15 @@ export default function TreeNavigation(
       phylocanvasRef.current?.fitInCanvas();
     }
   };
+  const resetHistory = () => {
+    setHistory([null]);
+    setHistoryIndex(0);
+  };
   const versionClickHandler = (version: any) => {
     navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
+    setNodes(null);
+    handleGoToRoot();
+    resetHistory();
   };
   return (
     <Grid>
