@@ -3,6 +3,8 @@ import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, S
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { TreeExportFuctions } from '../Tree';
+import { JobInstance } from '../../../types/dtos';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface State {
   type: string,
@@ -10,6 +12,8 @@ interface State {
 
 interface TreeNavigationProps {
   state: State,
+  currentVersion: string,
+  versions: JobInstance[],
   selectedIds: string[],
   onChange: (
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
@@ -19,12 +23,21 @@ interface TreeNavigationProps {
 }
 
 export default function TreeNavigation(
-  { state, selectedIds, onChange, onJumpToSubtree, phylocanvasRef }: TreeNavigationProps,
+  {
+    state,
+    currentVersion,
+    versions,
+    selectedIds,
+    onChange,
+    onJumpToSubtree,
+    phylocanvasRef,
+  }: TreeNavigationProps,
 ) {
+  const navigate = useNavigate();
+  const { projectAbbrev, analysisId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
   const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
   const [historyIndex, setHistoryIndex] = React.useState<number>(0);
-
   React.useEffect(() => {
     // Don't do anything if nodes is already set
     if (nodes !== null) return;
@@ -93,8 +106,35 @@ export default function TreeNavigation(
       phylocanvasRef.current?.fitInCanvas();
     }
   };
+  const versionClickHandler = (version: any) => {
+    navigate(`/projects/${projectAbbrev}/analyses/${analysisId}/trees/${version.jobInstanceId}`);
+  };
   return (
     <Grid>
+      <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
+        <InputLabel id="tree-version-label">Version</InputLabel>
+        <Select
+          fullWidth
+          labelId="tree-version-label"
+          id="tree-version"
+          value={[currentVersion]}
+          name="version"
+          label="Version"
+          onChange={onChange}
+        >
+          {
+            versions.map((version) => (
+              <MenuItem
+                key={version.jobInstanceId}
+                value={version.version}
+                onClick={() => versionClickHandler(version)}
+              >
+                {version.versionName}
+              </MenuItem>
+            ))
+          }
+        </Select>
+      </FormControl>
       <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
         <InputLabel id="tree-type-label">Type</InputLabel>
         <Select
