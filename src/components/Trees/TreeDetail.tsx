@@ -209,7 +209,7 @@ function TreeDetail() {
       {renderControls()}
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
-          {tree ? tree.analysisName : ''}
+          {tree ? `${tree.analysisName} - ${tree.version}` : ''}
         </Typography>
         {renderTree()}
       </Grid>
