@@ -123,7 +123,7 @@ export default function TreeNavigation(
           onChange={onChange}
         >
           {
-            versions.map((version) => (
+            versions.filter((version => version.version !== null)).map((version) => (
               <MenuItem
                 key={version.jobInstanceId}
                 value={version.version}
