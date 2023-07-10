@@ -22,7 +22,7 @@ function TreeList(props: TreesProps) {
   const navigate = useNavigate();
 
   const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectAbbrev}/trees/${row.original.analysisId}`);
+    navigate(`/projects/${projectAbbrev}/analyses/${row.original.analysisId}/trees/latest`);
   };
 
   return (
