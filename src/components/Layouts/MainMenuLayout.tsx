@@ -3,7 +3,7 @@ import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
 import {
-  Inventory, Upload, AccountCircle, Help, MoreVert,
+  Inventory, Upload, AccountCircle, Help, MoreVert, Dashboard,
 } from '@mui/icons-material/';
 import {
   AppBar, Box, Drawer, IconButton, List,
@@ -29,6 +29,11 @@ const settings = [
 ];
 
 const pages = [
+  {
+    title: 'Dashboard',
+    link: '/',
+    icon: <Dashboard />,
+  },
   {
     title: 'Projects',
     link: '/projects',
