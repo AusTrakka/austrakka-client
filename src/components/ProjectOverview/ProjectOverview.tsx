@@ -11,13 +11,14 @@ import {
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
 import { Filter } from '../Common/QueryBuilder';
-import Summary from './Summary';
+// import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { PlotListing, Project } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
+import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 
 const SAMPLE_ID_FIELD = 'Seq_ID';
 
@@ -35,7 +36,7 @@ function ProjectOverview() {
     latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
   });
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
-  const [lastUpload] = useState('');
+  // const [lastUpload] = useState('');
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -111,32 +112,34 @@ function ProjectOverview() {
 
     async function getSampleTableHeaders() {
       setIsSamplesLoading(true);
-      // Using a intermediate endpoint for the time being until a "get columns" endpoint is defined
-      const samplesResponse: ResponseObject = await getSamples(`pageSize=1&page=1&groupContext=${projectDetails!.projectMembers.id}`);
-      if (samplesResponse.status === 'Success') {
-        if (samplesResponse.data.length >= 1) {
-          const columnHeaderArray = Object.keys(samplesResponse.data[0]);
-          const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-          columnHeaderArray.forEach((element) => {
-            columnBuilder.push({ accessorKey: element, header: element });
-          });
-          setSampleTableColumns(columnBuilder);
-          setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
-        } else {
-          setIsSamplesLoading(false);
-          setIsSamplesError((prevState) => ({
-            ...prevState,
-            samplesHeaderError: true,
-            samplesErrorMessage: samplesResponse.message,
-          }));
-          setSampleTableColumns([]);
-        }
+      const tableHeadersResponse: ResponseObject = await getDisplayFields(
+        projectDetails!.projectMembers.id,
+      );
+      if (tableHeadersResponse.status === 'Success') {
+        const columnHeaderArray = tableHeadersResponse.data;
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+        columnHeaderArray.forEach((element: MetaDataColumn) => {
+          if (element.primitiveType === 'boolean') {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
+            });
+          } else {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+            });
+          }
+        });
+        setSampleTableColumns(columnBuilder);
+        setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
       } else {
         setIsSamplesLoading(false);
         setIsSamplesError((prevState) => ({
           ...prevState,
           samplesHeaderError: true,
-          samplesErrorMessage: samplesResponse.message,
+          samplesErrorMessage: tableHeadersResponse.message,
         }));
         setSampleTableColumns([]);
       }
@@ -180,6 +183,7 @@ function ProjectOverview() {
     async function getFilterFields() {
       if (sampleTableColumns.length > 0) {
         // TODO: Below should replace getSamples() call for getting table headers eventually
+        // TODO: getFilterFields() and getSampleTableHeaders() should be combined
         const displayFieldsResponse: ResponseObject = await getDisplayFields(
           projectDetails!.projectMembers.id,
         );
@@ -337,12 +341,19 @@ function ProjectOverview() {
           </Typography>
           <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
-            <Summary
+            {/* <Summary
               totalSamples={totalSamples}
               lastUpload={lastUpload}
               projectDesc={projectDetails ? projectDetails.description : ''}
             // isOverviewLoading={isOverviewLoading}
               isOverviewError={isOverviewError}
+            /> */}
+            <ProjectDashboard
+              projectDesc={projectDetails ? projectDetails.description : ''}
+              projectId={projectDetails ? projectDetails!.projectId : null}
+              groupId={projectDetails ? projectDetails!.projectMembers.id : null}
+              setFilterList={setFilterList}
+              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
