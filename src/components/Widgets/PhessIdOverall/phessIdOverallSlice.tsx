@@ -9,11 +9,13 @@ import type { RootState } from '../../../app/store';
 
 interface PhessIdOverallState {
   loading: string
+  hidePhessWidget: boolean
   data: PhessIdOverall | any
 }
 
 const initialState: PhessIdOverallState = {
   loading: 'idle',
+  hidePhessWidget: false,
   data: [],
 };
 
@@ -44,6 +46,10 @@ const phessIdOverallSlice = createSlice({
     builder.addCase(fetchPhessIdOverall.fulfilled, (state, action: PayloadAction<any>) => {
       state.data = action.payload;
       state.loading = LoadingState.SUCCESS;
+      // Hide widget if the user isn't a viewer in any projects with PHESS_ID configured
+      if (!action.payload.data.length) {
+        state.hidePhessWidget = true;
+      }
     });
     builder.addCase(fetchPhessIdOverall.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;

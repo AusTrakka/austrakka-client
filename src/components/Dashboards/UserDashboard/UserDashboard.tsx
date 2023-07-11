@@ -67,6 +67,7 @@ function DateSelector(props: any) {
 
 function UserDashboard(props: UserDashboardProps) {
   const dispatch = useAppDispatch();
+  const { hidePhessWidget } = useAppSelector((state) => state.phessIdOverallState);
 
   return (
     <Box>
@@ -93,12 +94,17 @@ function UserDashboard(props: UserDashboardProps) {
                 </Card>
               </Grid>
               <Grid item>
-                {/* TODO: Only render this widget if data from widget endpoint !== empty array */}
-                <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                  <CardContent>
-                    <PhessIdOverall />
-                  </CardContent>
-                </Card>
+                {
+                  hidePhessWidget ?
+                    null
+                    : (
+                      <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                        <CardContent>
+                          <PhessIdOverall />
+                        </CardContent>
+                      </Card>
+                    )
+                  }
               </Grid>
             </Grid>
           </Grid>
