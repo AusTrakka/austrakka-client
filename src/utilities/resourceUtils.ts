@@ -92,7 +92,9 @@ export const getPlotData = (groupId: number, fields: string[]) => {
   return callAPI(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, 'GET', {});
 };
 export const getTrees = (projectId: number) => callAPI(`/api/Analyses/?filters=ProjectId==${projectId}`, 'GET', {});
-export const getTreeData = (analysisId: number) => callAPI(`/api/JobInstance/${analysisId}/LatestVersion`, 'GET', {});
+export const getTreeData = (jobInstanceId: number) => callAPI(`/api/JobInstance/${jobInstanceId}`, 'GET', {});
+export const getLatestTreeData = (analysisId: number) => callAPI(`/api/JobInstance/${analysisId}/LatestVersion`, 'GET', {});
+export const getTreeVersions = (analysisId: number) => callAPI(`/api/JobInstance/${analysisId}/AllVersions`, 'GET', {});
 export const getTreeMetaData = (analysisId: number, jobInstanceId: number) => callAPI(`/api/analysisResults/${analysisId}/metadata/${jobInstanceId}`, 'GET', {});
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
