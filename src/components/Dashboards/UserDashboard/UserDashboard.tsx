@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, Dispatch, SetStateAction } from 'react';
-import { Alert, AlertTitle, Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import React from 'react';
+import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/ProjectsTotal/ProjectsTotal';
@@ -18,6 +17,7 @@ interface UserDashboardProps {
 
 function DateSelector(props: any) {
   const dispatch = useAppDispatch();
+  const { timeFilter } = useAppSelector((state) => state.userDashboardState);
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
@@ -50,7 +50,7 @@ function DateSelector(props: any) {
   return (
     <FormControl variant="standard">
       <InputLabel>Date filter</InputLabel>
-      <Select autoWidth value={DashboardTimeFilter.ALL} onChange={onTimeFilterChange}>
+      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
         <MenuItem value={DashboardTimeFilter.ALL}>
           All time
         </MenuItem>
@@ -67,6 +67,7 @@ function DateSelector(props: any) {
 
 function UserDashboard(props: UserDashboardProps) {
   const dispatch = useAppDispatch();
+  const { hidePhessWidget } = useAppSelector((state) => state.phessIdOverallState);
 
   return (
     <Box>
@@ -93,12 +94,17 @@ function UserDashboard(props: UserDashboardProps) {
                 </Card>
               </Grid>
               <Grid item>
-                {/* TODO: Only render this widget if data from widget endpoint !== empty array */}
-                <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                  <CardContent>
-                    <PhessIdOverall />
-                  </CardContent>
-                </Card>
+                {
+                  hidePhessWidget ?
+                    null
+                    : (
+                      <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+                        <CardContent>
+                          <PhessIdOverall />
+                        </CardContent>
+                      </Card>
+                    )
+                  }
               </Grid>
             </Grid>
           </Grid>
