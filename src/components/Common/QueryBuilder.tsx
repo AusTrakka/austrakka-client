@@ -128,26 +128,31 @@ function QueryBuilder(props: QueryBuilderProps) {
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       const targetFieldProps = fieldList.find((field) => field.columnName === event.target.value);
+      let defaultCondition = '';
+      if (targetFieldProps?.primitiveType === 'date') {
+        setConditions(dateConditions);
+        setSelectedFieldType('date');
+        defaultCondition = '>';
+      } else if (targetFieldProps?.primitiveType === 'number') {
+        setConditions(numberConditions);
+        setSelectedFieldType('number');
+        defaultCondition = '==';
+      } else if (targetFieldProps?.primitiveType === 'boolean') {
+        setConditions(booleanConditions);
+        setSelectedFieldType('boolean');
+        defaultCondition = '==*';
+      } else {
+        setConditions(stringConditions);
+        setSelectedFieldType('string');
+        defaultCondition = '==*';
+      }
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
         fieldType: targetFieldProps?.primitiveType || 'string',
-        condition: '',
+        condition: defaultCondition,
         value: '',
       });
-      if (targetFieldProps?.primitiveType === 'date') {
-        setConditions(dateConditions);
-        setSelectedFieldType('date');
-      } else if (targetFieldProps?.primitiveType === 'number') {
-        setConditions(numberConditions);
-        setSelectedFieldType('number');
-      } else if (targetFieldProps?.primitiveType === 'boolean') {
-        setConditions(booleanConditions);
-        setSelectedFieldType('boolean');
-      } else {
-        setConditions(stringConditions);
-        setSelectedFieldType('string');
-      }
     } else {
       setNewFilter({
         ...newFilter,
