@@ -43,6 +43,7 @@ const defaultSpec: TopLevelSpec = {
     yOffset: { field: 'jitter', type: 'quantitative' },
     color: {
       field: 'cgMLST',
+      scale: { scheme: 'spectral' },
     },
     tooltip: { field: SAMPLE_ID_FIELD, type: 'nominal' },
   },

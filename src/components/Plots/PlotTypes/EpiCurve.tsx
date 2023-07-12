@@ -109,7 +109,10 @@ function EpiCurve(props: PlotTypeProps) {
       } else {
         // Set colour in encoding
         newSpec.encoding = { ...(oldSpec as any).encoding };
-        newSpec.encoding.color = { field: colourField };
+        newSpec.encoding.color = {
+          field: colourField,
+          scale: { scheme: 'spectral' },
+        };
       }
       return newSpec as TopLevelSpec;
     };
