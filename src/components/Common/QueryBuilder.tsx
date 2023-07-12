@@ -77,9 +77,14 @@ function QueryBuilder(props: QueryBuilderProps) {
     { key: '<=', value: '<=', name: 'Less than or equal to' },
     { key: '>=', value: '>=', name: 'Greater than or equal to' },
   ];
+  const booleanConditions = [
+    { key: '==*', value: '==*', name: 'Equals' },
+    { key: '!=*', value: '!=*', name: 'Doesn\'t Equal' },
+  ];
+
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
-  const [showDate, setShowDate] = useState(false);
+  const [selectedFieldType, setSelectedFieldType] = useState('string');
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
 
@@ -132,13 +137,16 @@ function QueryBuilder(props: QueryBuilderProps) {
       });
       if (targetFieldProps?.primitiveType === 'date') {
         setConditions(dateConditions);
-        setShowDate(true);
+        setSelectedFieldType('date');
       } else if (targetFieldProps?.primitiveType === 'number') {
         setConditions(numberConditions);
-        setShowDate(false);
+        setSelectedFieldType('number');
+      } else if (targetFieldProps?.primitiveType === 'boolean') {
+        setConditions(booleanConditions);
+        setSelectedFieldType('boolean');
       } else {
         setConditions(stringConditions);
-        setShowDate(false);
+        setSelectedFieldType('string');
       }
     } else {
       setNewFilter({
@@ -202,6 +210,65 @@ function QueryBuilder(props: QueryBuilderProps) {
     </IconButton>
   );
   const filteredMessage = `Filtered to ${samplesCount.toLocaleString('en-US')} of ${totalSamples.toLocaleString('en-US')} records. `;
+
+  const renderValueElement = () => {
+    switch (selectedFieldType) {
+      case 'date':
+        return (
+          <DatePicker
+            label="Value"
+            value={newFilter.value === '' ? null : newFilter.value}
+            onChange={(newValue) => handleFilterDateChange(newValue)}
+            format="YYYY-MM-DD"
+            slotProps={{
+              textField: {
+                size: 'small',
+              },
+            }}
+          />
+        );
+      case 'boolean':
+        return (
+          <>
+            <InputLabel id="condition-simple-select-label">Value</InputLabel>
+            <Select
+              labelId="condition-simple-select-label"
+              id="value-simple-select"
+              label="Value"
+              name="value"
+              value={newFilter.value}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="true">
+                True
+              </MenuItem>
+              <MenuItem value="false">
+                False
+              </MenuItem>
+              ;
+            </Select>
+          </>
+        );
+      // Default return captures string and number types
+      default:
+        return (
+          <TextField
+            id="outlined-basic"
+            label="Value"
+            variant="outlined"
+            name="value"
+            type={newFilter.fieldType === 'number' ? 'number' : undefined}
+            value={newFilter.value}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              handleFilterChange(event);
+            }}
+            size="small"
+            inputProps={{ maxLength: 25 }}
+          />
+        );
+    }
+  };
+
   return (
     <Box sx={{
       boxShadow: 1, borderRadius: 1, padding: 1, marginBottom: 2, display: 'flex',
@@ -277,36 +344,8 @@ function QueryBuilder(props: QueryBuilderProps) {
                     ;
                   </Select>
                 </FormControl>
-                <FormControl sx={{ m: 1, minWidth: 120 }}>
-                  {showDate
-                    ? (
-                      <DatePicker
-                        label="Value"
-                        value={newFilter.value === '' ? null : newFilter.value}
-                        onChange={(newValue) => handleFilterDateChange(newValue)}
-                        format="YYYY-MM-DD"
-                        slotProps={{
-                          textField: {
-                            size: 'small',
-                          },
-                        }}
-                      />
-                    )
-                    : (
-                      <TextField
-                        id="outlined-basic"
-                        label="Value"
-                        variant="outlined"
-                        name="value"
-                        type={newFilter.fieldType === 'number' ? 'number' : undefined}
-                        value={newFilter.value}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                          handleFilterChange(event);
-                        }}
-                        size="small"
-                        inputProps={{ maxLength: 25 }}
-                      />
-                    )}
+                <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+                  {renderValueElement()}
                 </FormControl>
                 <IconButton type="submit"><AddCircle color="secondary" sx={{ p: 1 }} /></IconButton>
                 <Button size="small" variant="contained" onClick={clearFilters} disabled={filterList.length <= 0}>
