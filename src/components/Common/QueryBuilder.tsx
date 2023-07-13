@@ -38,6 +38,8 @@ const shake = keyframes`
   100% { transform: translateY(0) }
 `;
 
+const nullOrEmptyString = 'null-or-empty';
+
 function QueryBuilder(props: QueryBuilderProps) {
   const {
     isOpen,
@@ -63,11 +65,15 @@ function QueryBuilder(props: QueryBuilderProps) {
     { key: '_=*', value: '_=*', name: 'Starts With' },
     { key: '==*', value: '==*', name: 'Equals' },
     { key: '!=*', value: '!=*', name: 'Doesn\'t Equal' },
+    { key: '==NULL', value: '==*NULL', name: 'Is null or empty' },
+    { key: '!=NULL', value: '!=*NULL', name: 'Is not null or empty' },
   ];
   const dateConditions = [
     { key: '==', value: '==', name: 'On' },
     { key: '<', value: '<', name: 'On and before' },
     { key: '>', value: '>', name: 'On and after' },
+    { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
+    { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
   ];
   const numberConditions = [
     { key: '==', value: '==', name: 'Equals' },
@@ -76,10 +82,14 @@ function QueryBuilder(props: QueryBuilderProps) {
     { key: '>', value: '>', name: 'Greater than' },
     { key: '<=', value: '<=', name: 'Less than or equal to' },
     { key: '>=', value: '>=', name: 'Greater than or equal to' },
+    { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
+    { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
   ];
   const booleanConditions = [
     { key: '==*', value: '==*', name: 'Equals' },
     { key: '!=*', value: '!=*', name: 'Doesn\'t Equal' },
+    { key: '==NULL', value: '==*NULL', name: 'Is null or empty' },
+    { key: '!=NULL', value: '!=*NULL', name: 'Is not null or empty' },
   ];
 
   const [newFilter, setNewFilter] = useState(initialFilterState);
@@ -87,6 +97,7 @@ function QueryBuilder(props: QueryBuilderProps) {
   const [selectedFieldType, setSelectedFieldType] = useState('string');
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
+  const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
 
   useEffect(() => {
     if (filterList.filter(e => e.shakeElement === true).length > 0) {
@@ -104,7 +115,7 @@ function QueryBuilder(props: QueryBuilderProps) {
     filterList.forEach((filter) => {
       let newString = '';
       // For date fields, build filter string in SSKV syntax
-      if (filter.fieldType === 'date') {
+      if (filter.fieldType === 'date' && filter.value !== nullOrEmptyString) {
         const date = filter.value;
         // dayStart = date and time that is selected in date picker
         // dayEnd = dayStart + 86399000ms
@@ -146,6 +157,7 @@ function QueryBuilder(props: QueryBuilderProps) {
         setSelectedFieldType('string');
         defaultCondition = '==*';
       }
+      setNullOrEmptyFlag(false);
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
@@ -154,6 +166,11 @@ function QueryBuilder(props: QueryBuilderProps) {
         value: '',
       });
     } else {
+      if (event.target.name === 'condition' && event.target.value.includes('NULL')) {
+        setNullOrEmptyFlag(true); // Disable "value" elements on the UI
+      } else {
+        setNullOrEmptyFlag(false);
+      }
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
@@ -169,7 +186,7 @@ function QueryBuilder(props: QueryBuilderProps) {
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const isEmpty = Object.values(newFilter).some((x) => x === null || x === '');
-    if (!isEmpty) {
+    if (!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) {
       let doesExist = false;
       for (let i = 0; i < filterList.length; i += 1) {
         const filter = filterList[i];
@@ -187,7 +204,15 @@ function QueryBuilder(props: QueryBuilderProps) {
         setFilterErrorMessage('This filter has already been applied.');
         setNewFilter(initialFilterState);
       } else {
-        setFilterList((prevState) => [...prevState, newFilter]);
+        // New filter has to be built custom due to possibility of nullOrEmpty field
+        const filter: Filter = {
+          field: newFilter.field,
+          condition: nullOrEmptyFlag ? newFilter.condition.replace('NULL', '') : newFilter.condition,
+          value: nullOrEmptyFlag ? nullOrEmptyString : newFilter.value,
+          fieldType: newFilter.fieldType,
+          shakeElement: newFilter.shakeElement,
+        };
+        setFilterList((prevState) => [...prevState, filter]);
         setNewFilter(initialFilterState);
       }
     }
@@ -230,6 +255,7 @@ function QueryBuilder(props: QueryBuilderProps) {
                 size: 'small',
               },
             }}
+            disabled={nullOrEmptyFlag}
           />
         );
       case 'boolean':
@@ -243,6 +269,7 @@ function QueryBuilder(props: QueryBuilderProps) {
               name="value"
               value={newFilter.value}
               onChange={handleFilterChange}
+              disabled={nullOrEmptyFlag}
             >
               <MenuItem value="true">
                 True
@@ -269,6 +296,7 @@ function QueryBuilder(props: QueryBuilderProps) {
             }}
             size="small"
             inputProps={{ maxLength: 25 }}
+            disabled={nullOrEmptyFlag}
           />
         );
     }
@@ -365,15 +393,15 @@ function QueryBuilder(props: QueryBuilderProps) {
                         {filter.field}
                         {' '}
                         <b>
-                          {filter.fieldType === 'date'
+                          {filter.fieldType === 'date' && filter.value !== nullOrEmptyString
                             ? (dateConditions.find((c) => c.value === filter.condition))?.name
-                            : null}
+                            : (numberConditions.find((c) => c.value === filter.condition))?.name}
                           {filter.fieldType === 'number'
                             ? (numberConditions.find((c) => c.value === filter.condition))?.name
                             : (stringConditions.find((c) => c.value === filter.condition))?.name}
                         </b>
                         {' '}
-                        {filter.fieldType === 'date'
+                        {filter.fieldType === 'date' && filter.value !== nullOrEmptyString
                           ? filter.value.format('YYYY-MM-DD')
                           : filter.value}
                       </>
