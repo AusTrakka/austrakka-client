@@ -170,7 +170,7 @@ function EpiCurve(props: PlotTypeProps) {
           onChange={(e) => setDateBinStep(parseInt(e.target.value, 10))}
         />
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1, marginTop: 1}}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
         <Select
           labelId="date-bin-unit-select-label"
