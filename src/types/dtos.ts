@@ -31,6 +31,29 @@ export interface Plot {
   isActive: boolean
 }
 
+export interface JobInstance {
+  jobInstanceId: number;
+  analysisId: number;
+  analysisName: string;
+  projectId: number;
+  projectMembersGroupId: number;
+  projectName: string;
+  startTime: string;
+  completedTime: string;
+  wasScheduled: boolean;
+  resultsDataId: number;
+  treeId: number;
+  newickTree: string;
+  isApproved: boolean;
+  isActive: boolean;
+  versionName: string;
+  version: string;
+  created: string;
+  lastUpdated: string;
+  createdBy: string;
+  lastUpdatedBy: string;
+}
+
 export interface PlotListing {
   plotId: number,
   abbreviation: string,
@@ -51,4 +74,24 @@ export interface MetaDataColumn {
   isDisplayedAsDefault: boolean
   isActive: boolean
   minWidth: number
+}
+
+interface MetadataValue {
+  key: string;
+  value: string;
+}
+
+export interface AnalysisResultMetadata {
+  created: string;
+  createdBy: string | null; // Assuming createdBy can be string or null
+  isCurrent: boolean;
+  lastUpdated: string;
+  lastUpdatedBy: string | null; // Assuming lastUpdatedBy can be string or null
+  metadataValues: MetadataValue[];
+  ownerGroup: string;
+  sampleName: string;
+  sharedGroups: string[]; // Assuming this is an array of strings
+  status: boolean;
+  submissionId: number;
+  versionId: number;
 }

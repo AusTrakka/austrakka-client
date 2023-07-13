@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
@@ -15,17 +15,25 @@ const SAMPLE_ID_FIELD = 'Seq_ID';
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
 const preferredDateFields = ['Date_coll'];
 
-// For now, no colour field
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   description: 'A bar chart with samples binned by date (epi curve).',
   data: { name: 'inputdata' },
   width: 'container',
-  mark: 'bar',
+  mark: { type: 'bar', tooltip: true },
   encoding: {
-    x: { field: 'Date_coll', type: 'temporal' },
-    y: { aggregate: 'count' },
-    tooltip: [{ field: 'Date_coll', type: 'temporal' }, { aggregate: 'count' }],
+    x: {
+      timeUnit: {
+        unit: 'yearmonthdate',
+        step: 1,
+      },
+      field: 'Date_coll',
+      type: 'temporal',
+    },
+    y: {
+      aggregate: 'count',
+      stack: 'zero',
+    },
   },
 };
 
@@ -34,7 +42,12 @@ function EpiCurve(props: PlotTypeProps) {
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
   const [dateFields, setDateFields] = useState<string[]>([]);
+  const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
+  const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
+  const [dateBinStep, setDateBinStep] = useState<number>(1);
+  const [colourField, setColourField] = useState<string>('none');
+  const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
   useEffect(() => {
@@ -47,24 +60,24 @@ function EpiCurve(props: PlotTypeProps) {
     }
   }, [plot]);
 
-  // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
     const updateFields = async () => {
-      // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
-        // Note this does not include numerical or date fields
-        // For now this selection need only depend on canVisualise
+        const localCatFields = fields
+          .filter(field => field.canVisualise)
+          .map(field => field.columnName);
+        setCategoricalFields(localCatFields);
+        // Note we do not set a preferred starting colour field; starting value is None
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
         setDateFields(localDateFields);
         setDateField(getStartingField(preferredDateFields, localDateFields));
-        // For this plot for now only use date fields, to bin
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields]);
+        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields, ...localCatFields]);
       } else {
-        // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
+        // TODO error handling if getDisplayFields fails, possibly also if no date fields
         // eslint-disable-next-line no-console
         console.error(response.message);
       }
@@ -84,8 +97,90 @@ function EpiCurve(props: PlotTypeProps) {
     }
   }, [dateField]);
 
+  useEffect(() => {
+    // Does not use generic setFieldInSpec, for now, as we handle 'none'
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (colourField === 'none') {
+        // Remove colour from encoding
+        const { color, ...newEncoding } = (oldSpec as any).encoding;
+        newSpec.encoding = newEncoding;
+      } else {
+        // Set colour in encoding
+        newSpec.encoding = { ...(oldSpec as any).encoding };
+        newSpec.encoding.color = { field: colourField };
+      }
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setColorInSpec);
+  }, [colourField]);
+
+  useEffect(() => {
+    const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+      newSpec.encoding.x.timeUnit = { unit: dateBinUnit, step: dateBinStep };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    // Restriction of step to numbers >= 1 appears to be handled by control
+    setSpec(setDateBinningInSpec);
+  }, [dateBinStep, dateBinUnit]);
+
+  useEffect(() => {
+    const setStackTypeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.y = { ...(oldSpec as any).encoding.y };
+      newSpec.encoding.y.stack = stackType;
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setStackTypeInSpec);
+  }, [stackType]);
+
   const renderControls = () => (
-    <Box sx={{ float: 'right', marginX: 1 }}>
+    <Box sx={{ float: 'right', marginX: 10 }}>
+      <FormControl size="small" sx={{ marginX: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="date-bin-size-select"
+          label="Bin Size"
+          size="small"
+          inputProps={{ min: 1 }}
+          value={dateBinStep}
+          onChange={(e) => setDateBinStep(parseInt(e.target.value, 10))}
+        />
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1 }}>
+        <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
+        <Select
+          labelId="date-bin-unit-select-label"
+          id="date-bin-unit-select"
+          label="Bin Unit"
+          value={dateBinUnit}
+          onChange={(e) => { setDateBinUnit(e.target.value); }}
+        >
+          {
+            [
+              <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
+              <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
+              <MenuItem value="yearweek">Week</MenuItem>,
+              <MenuItem value="yearmonth">Month</MenuItem>,
+              <MenuItem value="year">Year</MenuItem>,
+            ]
+          }
+        </Select>
+      </FormControl>
       <FormControl size="small" sx={{ marginX: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
@@ -98,6 +193,34 @@ function EpiCurve(props: PlotTypeProps) {
           {
             dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1 }}>
+        <InputLabel id="colour-field-select-label">Colour</InputLabel>
+        <Select
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={colourField}
+          label="Colour"
+          onChange={(e) => setColourField(e.target.value)}
+        >
+          <MenuItem value="none">None</MenuItem>
+          {
+            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1 }}>
+        <InputLabel id="colour-field-select-label">Chart type</InputLabel>
+        <Select
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={stackType}
+          label="Colour"
+          onChange={(e) => setStackType(e.target.value)}
+        >
+          <MenuItem value="zero">Stacked</MenuItem>
+          <MenuItem value="normalize">Proportional</MenuItem>
         </Select>
       </FormControl>
     </Box>
