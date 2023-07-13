@@ -158,7 +158,7 @@ function EpiCurve(props: PlotTypeProps) {
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
-      <FormControl size="small" sx={{ marginX: 1, width: 80 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
         <TextField
           sx={{ padding: 0 }}
           type="number"
@@ -170,7 +170,7 @@ function EpiCurve(props: PlotTypeProps) {
           onChange={(e) => setDateBinStep(parseInt(e.target.value, 10))}
         />
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1}}>
         <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
         <Select
           labelId="date-bin-unit-select-label"
@@ -190,7 +190,7 @@ function EpiCurve(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
           labelId="date-field-select-label"
@@ -204,7 +204,7 @@ function EpiCurve(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Colour</InputLabel>
         <Select
           labelId="colour-field-select-label"
@@ -219,7 +219,7 @@ function EpiCurve(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Chart type</InputLabel>
         <Select
           labelId="colour-field-select-label"
