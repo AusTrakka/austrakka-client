@@ -36,6 +36,11 @@ const defaultSpec: TopLevelSpec = {
     },
   },
 };
+const legendSpec = {
+  orient: 'bottom',
+  columns: 6,
+  symbolLimit: 0, // no limit
+};
 
 function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
@@ -112,6 +117,7 @@ function EpiCurve(props: PlotTypeProps) {
         newSpec.encoding.color = {
           field: colourField,
           scale: { scheme: 'spectral' },
+          legend: legendSpec,
         };
       }
       return newSpec as TopLevelSpec;
