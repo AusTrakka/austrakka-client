@@ -11,6 +11,7 @@ import {
   AddBox, IndeterminateCheckBox, AddCircle,
 } from '@mui/icons-material';
 import { DisplayFields } from '../../types/fields.interface';
+import FieldTypes from '../../constants/fieldTypes';
 
 export interface Filter {
   shakeElement?: boolean,
@@ -94,7 +95,7 @@ function QueryBuilder(props: QueryBuilderProps) {
 
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
-  const [selectedFieldType, setSelectedFieldType] = useState('string');
+  const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
@@ -115,7 +116,7 @@ function QueryBuilder(props: QueryBuilderProps) {
     filterList.forEach((filter) => {
       let newString = '';
       // For date fields, build filter string in SSKV syntax
-      if (filter.fieldType === 'date' && filter.value !== nullOrEmptyString) {
+      if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
         const date = filter.value;
         // dayStart = date and time that is selected in date picker
         // dayEnd = dayStart + 86399000ms
@@ -140,28 +141,28 @@ function QueryBuilder(props: QueryBuilderProps) {
     if (event.target.name === 'field') {
       const targetFieldProps = fieldList.find((field) => field.columnName === event.target.value);
       let defaultCondition = '';
-      if (targetFieldProps?.primitiveType === 'date') {
+      if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
-        setSelectedFieldType('date');
+        setSelectedFieldType(FieldTypes.DATE);
         defaultCondition = '>';
-      } else if (targetFieldProps?.primitiveType === 'number') {
+      } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
         setConditions(numberConditions);
-        setSelectedFieldType('number');
+        setSelectedFieldType(FieldTypes.NUMBER);
         defaultCondition = '==';
-      } else if (targetFieldProps?.primitiveType === 'boolean') {
+      } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
-        setSelectedFieldType('boolean');
+        setSelectedFieldType(FieldTypes.BOOLEAN);
         defaultCondition = '==*';
       } else {
         setConditions(stringConditions);
-        setSelectedFieldType('string');
+        setSelectedFieldType(FieldTypes.STRING);
         defaultCondition = '==*';
       }
       setNullOrEmptyFlag(false);
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
-        fieldType: targetFieldProps?.primitiveType || 'string',
+        fieldType: targetFieldProps?.primitiveType || FieldTypes.STRING,
         condition: defaultCondition,
         value: '',
       });
@@ -289,7 +290,7 @@ function QueryBuilder(props: QueryBuilderProps) {
             label="Value"
             variant="outlined"
             name="value"
-            type={newFilter.fieldType === 'number' ? 'number' : undefined}
+            type={newFilter.fieldType === FieldTypes.NUMBER ? FieldTypes.NUMBER : undefined}
             value={newFilter.value}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               handleFilterChange(event);
@@ -393,17 +394,24 @@ function QueryBuilder(props: QueryBuilderProps) {
                         {filter.field}
                         {' '}
                         <b>
-                          {filter.fieldType === 'date' && filter.value !== nullOrEmptyString
-                            ? (dateConditions.find((c) => c.value === filter.condition))?.name
-                            : (numberConditions.find((c) => c.value === filter.condition))?.name}
-                          {filter.fieldType === 'number'
-                            ? (numberConditions.find((c) => c.value === filter.condition))?.name
-                            : (stringConditions.find((c) => c.value === filter.condition))?.name}
+                          {
+                            filter.fieldType === FieldTypes.DATE
+                            && filter.value !== nullOrEmptyString
+                              ? (dateConditions.find((c) => c.value === filter.condition))?.name
+                              : (numberConditions.find((c) => c.value === filter.condition))?.name
+                          }
+                          {
+                            filter.fieldType === FieldTypes.NUMBER
+                              ? (numberConditions.find((c) => c.value === filter.condition))?.name
+                              : (stringConditions.find((c) => c.value === filter.condition))?.name
+                          }
                         </b>
                         {' '}
-                        {filter.fieldType === 'date' && filter.value !== nullOrEmptyString
-                          ? filter.value.format('YYYY-MM-DD')
-                          : filter.value}
+                        {
+                          filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString
+                            ? filter.value.format('YYYY-MM-DD')
+                            : filter.value
+                        }
                       </>
                     )}
                     onDelete={() => handleFilterDelete(filter)}
