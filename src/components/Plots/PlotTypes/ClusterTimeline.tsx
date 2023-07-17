@@ -7,7 +7,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 
-const SAMPLE_ID_FIELD = 'SampleName';
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
