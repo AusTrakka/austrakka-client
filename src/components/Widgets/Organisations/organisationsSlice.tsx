@@ -1,24 +1,24 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
-import { SubmittingOrgs } from './submitting.orgs.interface';
+import { Organisations } from './organisations.interface';
 import { AppState } from '../../../types/app.interface';
 import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
 
-interface SubmittingOrgsState {
+interface OrganisationsState {
   loading: string
-  data: SubmittingOrgs | any
+  data: Organisations | any
 }
 
-const initialState: SubmittingOrgsState = {
+const initialState: OrganisationsState = {
   loading: 'idle',
   data: [],
 };
 
-export const fetchSubmittingOrgs = createAsyncThunk(
-  'counts/fetchSubmittingOrgs',
+export const fetchOrganisations = createAsyncThunk(
+  'counts/fetchOrganisations',
   async (
     dispatchProps:any,
     { rejectWithValue, fulfillWithValue, getState },
@@ -34,19 +34,19 @@ export const fetchSubmittingOrgs = createAsyncThunk(
   },
 );
 
-const submittingOrgsSlice = createSlice({
-  name: 'submittingOrgsSlice',
+const organisationsSlice = createSlice({
+  name: 'organisationsSlice',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchSubmittingOrgs.pending, (state) => {
+    builder.addCase(fetchOrganisations.pending, (state) => {
       state.loading = LoadingState.LOADING;
     });
-    builder.addCase(fetchSubmittingOrgs.fulfilled, (state, action: PayloadAction<any>) => {
+    builder.addCase(fetchOrganisations.fulfilled, (state, action: PayloadAction<any>) => {
       state.data = action.payload;
       state.loading = LoadingState.SUCCESS;
     });
-    builder.addCase(fetchSubmittingOrgs.rejected, (state, action: PayloadAction<any>) => {
+    builder.addCase(fetchOrganisations.rejected, (state, action: PayloadAction<any>) => {
       state.loading = LoadingState.ERROR;
       state.data = action.payload;
     });
@@ -54,13 +54,13 @@ const submittingOrgsSlice = createSlice({
 });
 
 //
-export const selectSubmittingOrgs = (state: AppState) => state.submittingOrgsState;
+export const selectOrganisations = (state: AppState) => state.organisationsState;
 export const selectAggregatedOrgs = createSelector(
-  selectSubmittingOrgs,
-  (submittingOrgs) => {
-    const counts = aggregateArrayObjects('Owner_group', submittingOrgs.data.data);
+  selectOrganisations,
+  (organisations) => {
+    const counts = aggregateArrayObjects('Owner_group', organisations.data.data);
     return counts;
   },
 );
 
-export default submittingOrgsSlice.reducer;
+export default organisationsSlice.reducer;
