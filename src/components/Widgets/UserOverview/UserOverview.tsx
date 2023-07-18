@@ -10,13 +10,18 @@ export default function UserOverview() {
   const { loading, data } = useAppSelector((state) => state.userOverviewState);
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const dispatch = useAppDispatch();
+  function FormatDate(dateUTC: string): string
+  {
+    var date = new Date(dateUTC);
+    return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "shortGeneric" }).format(date).toString()
+  }
+  
 
   useEffect(() => {
     if (loading === 'idle') {
       dispatch(fetchUserOverview());
     }
   }, [loading, dispatch, timeFilter]);
-
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
@@ -37,8 +42,11 @@ export default function UserOverview() {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDateUtc}
+              {
+              FormatDate(data.data.latestUploadedDateUtc)
+              }
             </Typography>
+            
           </Grid>
           <Grid item>
             <RuleOutlined color="primary" />
