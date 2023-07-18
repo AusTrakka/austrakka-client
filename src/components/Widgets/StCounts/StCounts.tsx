@@ -27,6 +27,11 @@ const spec: TopLevelSpec = {
       scale: { scheme: 'spectral' },
     },
   },
+  config: {
+    legend: {
+      symbolLimit: 0,
+    },
+  },
   // params: [
   //   {
   //     name: 'ST',
