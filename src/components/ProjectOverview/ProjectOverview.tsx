@@ -125,7 +125,17 @@ function ProjectOverview() {
               header: `${element.columnName}`,
               Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
             });
-          } else {
+          
+          }
+          else if(element.columnName == 'Date_created' || element.columnName == 'Date_updated')
+          {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({cell}) => (new Date(String(cell.getValue())).toLocaleString()),
+            });
+          }
+          else {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,

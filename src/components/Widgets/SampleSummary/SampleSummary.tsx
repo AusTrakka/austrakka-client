@@ -42,6 +42,12 @@ export default function SampleSummary(props: any) {
     return latestUploadFilter;
   };
 
+  function FormatDate(dateUTC: string): string
+  {
+    var date = new Date(dateUTC);
+    return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "shortGeneric" }).format(date).toString()
+  }
+
   useEffect(() => {
     if (loading === 'idle') {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
@@ -90,7 +96,7 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDateUtc}
+              {FormatDate(data.data.latestUploadedDateUtc)}
             </Typography>
             <DrilldownButton
               title="View Samples"
