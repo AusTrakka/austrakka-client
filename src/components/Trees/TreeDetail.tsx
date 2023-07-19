@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
 import { DisplayFields } from '../../types/fields.interface';
 import { PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { ResponseObject, getTreeData, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
+import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -16,11 +16,12 @@ import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 
 function TreeDetail() {
-  const { analysisId } = useParams();
+  const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
+  const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [rootId, setRootId] = useState<string | null>(null);
@@ -63,16 +64,32 @@ function TreeDetail() {
         setErrorMsg(`DisplayFields for tree ${analysisId} could not be loaded`);
       }
     };
+    const getVersions = async () => {
+      const versionsResponse: ResponseObject = await getTreeVersions(
+        Number(analysisId),
+      );
+      if (versionsResponse.status === 'Success') {
+        setVersions(versionsResponse.data);
+      } else {
+        setErrorMsg(`Versions for tree ${analysisId} could not be loaded`);
+      }
+    };
     if (tree) {
       getMetadata();
       getDisplayFields();
+      getVersions();
     }
   }, [analysisId, tree]);
 
   useEffect(() => {
     // Get tree details, including tree type
     const getTree = async () => {
-      const treeResponse: ResponseObject = await getTreeData(Number(analysisId));
+      let treeResponse: ResponseObject;
+      if (jobInstanceId === 'latest') {
+        treeResponse = await getLatestTreeData(Number(analysisId));
+      } else {
+        treeResponse = await getTreeData(Number(jobInstanceId));
+      }
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
       } else {
@@ -80,9 +97,8 @@ function TreeDetail() {
       }
       setIsTreeLoading(false);
     };
-
     getTree();
-  }, [analysisId]);
+  }, [analysisId, jobInstanceId]);
 
   const renderTree = () => {
     if (isTreeLoading) {
@@ -162,6 +178,8 @@ function TreeDetail() {
             <AccordionDetails>
               <TreeNavigation
                 state={state}
+                currentVersion={tree.version}
+                versions={versions}
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
                 onJumpToSubtree={handleJumpToSubtree}
@@ -209,7 +227,7 @@ function TreeDetail() {
       {renderControls()}
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
-          {tree ? tree.analysisName : ''}
+          {tree ? `${tree.analysisName} - ${tree.versionName}` : ''}
         </Typography>
         {renderTree()}
       </Grid>

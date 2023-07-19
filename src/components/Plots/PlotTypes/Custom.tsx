@@ -11,7 +11,7 @@ import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUti
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 
-const SAMPLE_ID_FIELD = 'SampleName';
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
