@@ -16,6 +16,10 @@ const columns:MRT_ColumnDef<any>[] = [
     header: 'Samples uploaded',
     accessorKey: 'total',
   },
+  {
+    header: 'Latest date created',
+    accessorKey: 'latestDateCreated',
+  },
 ];
 
 export default function ProjectsTotal() {
