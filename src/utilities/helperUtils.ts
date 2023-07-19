@@ -14,7 +14,7 @@ export function isoDateLocalDateNoTime(datetime: any) {
 
 export function formatDate(dateUTC: any) {
   const date = new Date(dateUTC);
-  return new Intl.DateTimeFormat('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'shortGeneric' }).format(date).toString();
+  return new Intl.DateTimeFormat('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' }).format(date).toString();
 }
 
 export function useFirstRender() {

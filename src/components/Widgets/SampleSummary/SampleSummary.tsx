@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
+import { formatDate } from '../../../utilities/helperUtils';
 
 export default function SampleSummary(props: any) {
   const {
@@ -44,7 +45,7 @@ export default function SampleSummary(props: any) {
 
   function FormatDate(dateUTC: string): string {
     const date = new Date(dateUTC);
-    return new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'shortGeneric' }).format(date).toString();
+    return formatDate(date);
   }
 
   useEffect(() => {
