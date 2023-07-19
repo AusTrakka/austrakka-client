@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useNavigate } from 'react-router-dom';
-
+import isoDateLocalDate from '../../utilities/helperUtils';
 interface TreesProps {
   isTreesLoading: boolean,
   treeList: any,
@@ -14,7 +14,7 @@ const treeTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'abbreviation', header: 'Abbreviation' },
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created' },
+  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
 ];
 
 function TreeList(props: TreesProps) {

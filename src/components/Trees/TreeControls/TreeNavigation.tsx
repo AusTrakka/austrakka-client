@@ -5,6 +5,7 @@ import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { TreeExportFuctions } from '../Tree';
 import { JobInstance } from '../../../types/dtos';
+import isoDateLocalDate from '../../../utilities/helperUtils';
 
 interface State {
   type: string,
@@ -130,7 +131,9 @@ export default function TreeNavigation(
                 value={version.version}
                 onClick={() => versionClickHandler(version)}
               >
-                {version.versionName}
+                {
+                isoDateLocalDate(version.versionName.replaceAll('-', '/'))
+                }
               </MenuItem>
             ))
           }

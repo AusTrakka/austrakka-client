@@ -120,8 +120,8 @@ function QueryBuilder(props: QueryBuilderProps) {
         const date = filter.value;
         // dayStart = date and time that is selected in date picker
         // dayEnd = dayStart + 86399000ms
-        const dayStart = date.$d.toISOString().split('.')[0];
-        const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString().split('.')[0];
+        const dayStart = date.$d.toISOString();
+        const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
         if (filter.condition === '==') {
           newString = `SSKV>=${filter.field}|${dayStart},SSKV<=${filter.field}|${dayEnd},`;
         } else if (filter.condition === '<') {

@@ -4,17 +4,14 @@ import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchUserOverview } from './userOverviewSlice';
+import {formatDate} from '../../../utilities/helperUtils'
 
 export default function UserOverview() {
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.userOverviewState);
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const dispatch = useAppDispatch();
-  function FormatDate(dateUTC: string): string
-  {
-    var date = new Date(dateUTC);
-    return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "shortGeneric" }).format(date).toString()
-  }
+  
   
 
   useEffect(() => {
@@ -43,10 +40,10 @@ export default function UserOverview() {
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
               {
-              FormatDate(data.data.latestUploadedDateUtc)
+              formatDate(data.data.latestUploadedDateUtc)
               }
             </Typography>
-            
+
           </Grid>
           <Grid item>
             <RuleOutlined color="primary" />
