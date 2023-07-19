@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
+import { formatDate } from '../../../utilities/helperUtils';
 
 export default function SampleSummary(props: any) {
   const {
@@ -41,6 +42,11 @@ export default function SampleSummary(props: any) {
     ];
     return latestUploadFilter;
   };
+
+  function FormatDate(dateUTC: string): string {
+    const date = new Date(dateUTC);
+    return formatDate(date);
+  }
 
   useEffect(() => {
     if (loading === 'idle') {
@@ -90,7 +96,7 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDateUtc}
+              {FormatDate(data.data.latestUploadedDateUtc)}
             </Typography>
             <DrilldownButton
               title="View Samples"

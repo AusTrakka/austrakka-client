@@ -1,9 +1,20 @@
 import { useEffect, useRef } from 'react';
 
 export default function isoDateLocalDate(datetime: any) {
-  const isoDate = new Date(datetime.getValue());
-  const localDate = isoDate.toLocaleDateString();
+  let isoDate = null;
+  isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
+  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
+}
+export function isoDateLocalDateNoTime(datetime: any) {
+  const isoDate = new Date(datetime.getValue());
+  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
+  return localDate;
+}
+
+export function formatDate(dateUTC: any) {
+  const date = new Date(dateUTC);
+  return new Intl.DateTimeFormat('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' }).format(date).toString();
 }
 
 export function useFirstRender() {
@@ -51,7 +62,7 @@ export function generateDateFilterString(
 ) {
   let filterString = '';
   if (Object.keys(dateObject).length !== 0) {
-    const date = `${dateObject.value.$d.toISOString().split('.')[0]}`;
+    const date = `${dateObject.value.$d.toISOString()}`;
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
   }
   return filterString;
