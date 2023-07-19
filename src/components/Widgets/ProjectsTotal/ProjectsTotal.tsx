@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../Common/DrilldownButton';
+import isoDateLocalDate from '../../../utilities/helperUtils';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
@@ -17,8 +18,9 @@ const columns:MRT_ColumnDef<any>[] = [
     accessorKey: 'total',
   },
   {
-    header: 'Latest date created',
+    header: 'Latest sample created',
     accessorKey: 'latestDateCreated',
+    Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</>,
   },
 ];
 
