@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { TreeExportFuctions } from '../Tree';
+import { JobInstance } from '../../../types/dtos';
 
 interface State {
   type: string,
@@ -10,6 +12,8 @@ interface State {
 
 interface TreeNavigationProps {
   state: State,
+  currentVersion: string,
+  versions: JobInstance[],
   selectedIds: string[],
   onChange: (
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
@@ -19,16 +23,23 @@ interface TreeNavigationProps {
 }
 
 export default function TreeNavigation(
-  { state, selectedIds, onChange, onJumpToSubtree, phylocanvasRef }: TreeNavigationProps,
+  {
+    state,
+    currentVersion,
+    versions,
+    selectedIds,
+    onChange,
+    onJumpToSubtree,
+    phylocanvasRef,
+  }: TreeNavigationProps,
 ) {
+  const navigate = useNavigate();
+  const { projectAbbrev, analysisId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
   const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
   const [historyIndex, setHistoryIndex] = React.useState<number>(0);
 
   React.useEffect(() => {
-    // Don't do anything if nodes is already set
-    if (nodes !== null) return;
-
     // Don't do anything if phylocanvasRef or phylocanvasRef.current.nodes is not yet set
     const phyloNodes = phylocanvasRef?.current?.nodes;
     if (!phyloNodes) return;
@@ -40,16 +51,12 @@ export default function TreeNavigation(
   const handleJumpToSubtree = () => {
     if (nodes) {
       const selectedNodes: PhylocanvasNode[] = selectedIds.map((id) => nodes[id]);
-      const mrca = Phylocanvas.getMRCA(selectedNodes);
+      let mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
-        if (mrca.totalSubtreeLength === 0) {
-          // TODO: Phylocanvas can render a tree totalSubtreeLength == 0
-          // This could break with the parent is also a node with totalSubtreeLength == 0
-          const parent = mrca.parent || null;
-          onJumpToSubtree(parent?.id || null);
-        } else {
-          onJumpToSubtree(mrca.id);
+        while (mrca?.totalSubtreeLength === 0) {
+          mrca = mrca.parent;
         }
+        onJumpToSubtree(mrca?.id || null);
         // append to history
         const newHistory = history.slice(0, historyIndex + 1);
         setHistory([...newHistory, mrca]);
@@ -93,8 +100,42 @@ export default function TreeNavigation(
       phylocanvasRef.current?.fitInCanvas();
     }
   };
+  const resetHistory = () => {
+    setHistory([null]);
+    setHistoryIndex(0);
+  };
+  const versionClickHandler = (version: any) => {
+    navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
+    setNodes(null);
+    handleGoToRoot();
+    resetHistory();
+  };
   return (
     <Grid>
+      <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
+        <InputLabel id="tree-version-label">Version</InputLabel>
+        <Select
+          fullWidth
+          labelId="tree-version-label"
+          id="tree-version"
+          value={[currentVersion]}
+          name="version"
+          label="Version"
+          onChange={onChange}
+        >
+          {
+            versions.filter((version => version.version !== null)).map((version) => (
+              <MenuItem
+                key={version.jobInstanceId}
+                value={version.version}
+                onClick={() => versionClickHandler(version)}
+              >
+                {version.versionName}
+              </MenuItem>
+            ))
+          }
+        </Select>
+      </FormControl>
       <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
         <InputLabel id="tree-type-label">Type</InputLabel>
         <Select

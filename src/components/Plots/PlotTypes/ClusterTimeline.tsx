@@ -7,7 +7,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 
-const SAMPLE_ID_FIELD = 'SampleName';
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -43,6 +43,7 @@ const defaultSpec: TopLevelSpec = {
     yOffset: { field: 'jitter', type: 'quantitative' },
     color: {
       field: 'cgMLST',
+      scale: { scheme: 'spectral' },
     },
     tooltip: { field: SAMPLE_ID_FIELD, type: 'nominal' },
   },
@@ -132,7 +133,7 @@ function ClusterTimeline(props: PlotTypeProps) {
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
         <Select
           labelId="y-axis-select-label"
@@ -146,7 +147,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Colour</InputLabel>
         <Select
           labelId="colour-field-select-label"
@@ -160,7 +161,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1 }}>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
           labelId="date-field-select-label"
