@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import isoDateLocalDate from '../../utilities/helperUtils';
+
 interface PlotListProps {
   isPlotsLoading: boolean
   plotList: object[]
@@ -11,7 +12,7 @@ interface PlotListProps {
 const plotTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</>  },
+  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
 ];
 
 function PlotList(props: PlotListProps) {

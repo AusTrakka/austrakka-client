@@ -1,25 +1,20 @@
 import { useEffect, useRef } from 'react';
-import { dateTimeExprToExpr } from 'vega-lite/build/src/datetime';
-import { CONTINUOUS_DOMAIN_SCALES } from 'vega-lite/build/src/scale';
 
 export default function isoDateLocalDate(datetime: any) {
-  console.log(datetime)
-  var isoDate = null;
-  typeof datetime.getValue === 'function' ? isoDate = new Date(datetime.getValue()) :  isoDate = new Date(Date.parse(datetime));
-  console.log(datetime.getValue === 'function');
-  const localDate = isoDate.toLocaleString("sv-SE", {year : 'numeric', month : 'numeric', day :'numeric', hour: 'numeric', minute: 'numeric'});
+  let isoDate = null;
+  isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
+  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
 export function isoDateLocalDateNoTime(datetime: any) {
   const isoDate = new Date(datetime.getValue());
-  const localDate = isoDate.toLocaleString("sv-SE", {year : 'numeric', month : 'numeric', day :'numeric'});
+  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
 }
 
-export function formatDate(dateUTC: any)
-{
-  var date = new Date(dateUTC);
-  return new Intl.DateTimeFormat('en-US', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "shortGeneric" }).format(date).toString()
+export function formatDate(dateUTC: any) {
+  const date = new Date(dateUTC);
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'shortGeneric' }).format(date).toString();
 }
 
 export function useFirstRender() {

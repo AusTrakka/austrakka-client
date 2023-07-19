@@ -19,7 +19,8 @@ import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { MetaDataColumn, PlotListing, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils'
+import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+
 const SAMPLE_ID_FIELD = 'Seq_ID';
 
 function ProjectOverview() {
@@ -125,17 +126,13 @@ function ProjectOverview() {
               header: `${element.columnName}`,
               Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
             });
-          
-          }
-          else if(element.primitiveType === 'date')
-          {
+          } else if (element.primitiveType === 'date') {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
-              Cell: ({cell}: any) => (element.columnName == "Date_coll" ? isoDateLocalDateNoTime(cell) : isoDateLocalDate(cell)),
+              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell) : isoDateLocalDate(cell)),
             });
-          }
-          else {
+          } else {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,

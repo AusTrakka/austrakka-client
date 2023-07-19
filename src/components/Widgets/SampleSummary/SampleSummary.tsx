@@ -42,10 +42,9 @@ export default function SampleSummary(props: any) {
     return latestUploadFilter;
   };
 
-  function FormatDate(dateUTC: string): string
-  {
-    var date = new Date(dateUTC);
-    return new Intl.DateTimeFormat('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: "shortGeneric" }).format(date).toString()
+  function FormatDate(dateUTC: string): string {
+    const date = new Date(dateUTC);
+    return new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'shortGeneric' }).format(date).toString();
   }
 
   useEffect(() => {
