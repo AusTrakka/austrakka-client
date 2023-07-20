@@ -84,6 +84,7 @@ async function callAPI(url:string, method:string, requestData:object) {
 
 export const getProjectList = () => callAPI('/api/Projects?&includeall=false', 'GET', {});
 export const getProjectDetails = (abbrev: string) => callAPI(`/api/Projects/abbrev/${abbrev}`, 'GET', {});
+export const getGroupList = () => callAPI('/api/Group', 'GET', {});
 export const getGroupDisplayFields = (group: number) => callAPI(`/api/group/display-fields?GroupContext=${group}&filterSubmissionProperties=true`, 'GET', {});
 export const getPlots = (projectId: number) => callAPI(`/api/Plots/project/${projectId}`, 'GET', {});
 export const getPlotDetails = (abbrev: string) => callAPI(`/api/Plots/abbrev/${abbrev}`, 'GET', {});

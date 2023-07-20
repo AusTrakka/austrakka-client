@@ -2,6 +2,7 @@ import React, {
   memo, useEffect, useState,
 } from 'react';
 import { Box, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { ResponseObject, getGroupList } from '../../utilities/resourceUtils';
 
 function OrgGroupSelector(props: any) {
   const { selectedGroup, setSelectedGroup, groups } = props;
@@ -34,17 +35,24 @@ function OrgGroupSelector(props: any) {
 
 function OrganisationOverview() {
   const [selectedGroup, setSelectedGroup] = useState('');
-  const groups = [
-    { name: 'Dummy group 1' },
-    { name: 'Dummy group 2' },
-    { name: 'Dummy group 3' },
-  ];
+  const [groups, setGroups] = useState([]);
+
+  async function getGroups() {
+    const groupResponse: ResponseObject = await getGroupList();
+    if (groupResponse.status === 'Success') {
+      setGroups(groupResponse.data);
+    } else {
+      console.log(groupResponse);
+    }
+  }
   useEffect(
     () => {
-
+      getGroups();
     },
     [],
   );
+  // TODO:
+  // - Once group is selected, get display fields and relevant samples
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
