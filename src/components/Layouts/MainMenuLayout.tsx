@@ -3,7 +3,7 @@ import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
 import {
-  Inventory, Upload, AccountCircle, Help, MoreVert, Dashboard,
+  Inventory, Upload, AccountCircle, Help, MoreVert, Dashboard, AccountTree,
 } from '@mui/icons-material/';
 import {
   AppBar, Box, Drawer, IconButton, List,
@@ -40,6 +40,11 @@ const pages = [
     icon: <Inventory />,
   },
   {
+    title: 'Organisation',
+    link: '/org',
+    icon: <AccountTree />,
+  },
+  {
     title: 'Upload',
     link: '/upload',
     icon: <Upload />,
@@ -56,6 +61,7 @@ function MainMenuLayout() {
     trees: 'Trees',
     versions: 'Versions',
     upload: 'Upload',
+    org: 'Organisation Overview',
   };
   // These values in the breadcrumb cannot be navigated to
   const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions'];
