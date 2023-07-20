@@ -33,8 +33,9 @@ html, body, span {
 .page {
     margin-left: 0px;
     transition: all 330ms ease-in-out;
-    padding: 35px;
+    padding: 35px 35px 0px 35px;
     /* width: 100vw; */
+    min-height: 100vh;
 }
 
 .pagePadded {

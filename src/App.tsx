@@ -21,6 +21,8 @@ import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
+import TreeDetail from './components/Trees/TreeDetail';
+import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 
 interface AppProps {
   msalInstance: IPublicClientApplication;
@@ -40,17 +42,18 @@ function App({ msalInstance }: AppProps) {
               interactionType={InteractionType.Redirect}
             >
               <Routes>
-                <Route path="/" element={<Navigate to="/projects" />} />
                 {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
                 <Route element={<MainMenuLayout />}>
+                  <Route path="/" element={<UserDashboard />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/projects" />} />
+                <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </MsalAuthenticationTemplate>
           </AuthenticatedTemplate>

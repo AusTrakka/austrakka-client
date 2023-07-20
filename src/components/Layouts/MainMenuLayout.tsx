@@ -3,7 +3,7 @@ import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
 import {
-  Inventory, Upload, AccountCircle, Help, MoreVert,
+  Inventory, Upload, AccountCircle, Help, MoreVert, Dashboard,
 } from '@mui/icons-material/';
 import {
   AppBar, Box, Drawer, IconButton, List,
@@ -30,6 +30,11 @@ const settings = [
 
 const pages = [
   {
+    title: 'Dashboard',
+    link: '/',
+    icon: <Dashboard />,
+  },
+  {
     title: 'Projects',
     link: '/projects',
     icon: <Inventory />,
@@ -48,12 +53,14 @@ function MainMenuLayout() {
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
+    trees: 'Trees',
+    versions: 'Versions',
     upload: 'Upload',
     sequences: 'Sequences',
     metadata: 'Metadata',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots'];
+  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
