@@ -4,8 +4,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
+import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
+import ExportVegaPlot from './ExportVegaPlot';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -63,7 +65,16 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   }, [spec, data, plotDiv]);
 
   return (
-    <div id="#plot-container" ref={plotDiv} />
+    <Grid container direction="row">
+      <Grid item xs={11}>
+        <div id="#plot-container" ref={plotDiv} />
+      </Grid>
+      <Grid item xs={1}>
+        <ExportVegaPlot
+          vegaView={vegaView}
+        />
+      </Grid>
+    </Grid>
   );
 }
 
