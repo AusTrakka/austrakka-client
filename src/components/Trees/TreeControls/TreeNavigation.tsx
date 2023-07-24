@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
@@ -41,7 +41,7 @@ export default function TreeNavigation(
   const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
   const [historyIndex, setHistoryIndex] = React.useState<number>(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Don't do anything if phylocanvasRef or phylocanvasRef.current.nodes is not yet set
     const phyloNodes = phylocanvasRef?.current?.nodes;
     if (!phyloNodes) return;
@@ -67,6 +67,17 @@ export default function TreeNavigation(
       }
     }
   };
+
+  useEffect(() => {
+    if (state.rootId === null) return;
+    if (historyIndex !== 0) return;
+    if (history.length !== 1) return;
+    if (!nodes) return;
+    const newHistory = history.slice(0, historyIndex + 1);
+    setHistory([...newHistory, nodes[state.rootId]]);
+    setHistoryIndex(newHistory.length);
+  }, [history, nodes, historyIndex, state.rootId]);
+
   const handleGoToRoot = () => {
     onJumpToSubtree(null);
     const newHistory = history.slice(0, historyIndex + 1);
@@ -130,7 +141,7 @@ export default function TreeNavigation(
               <MenuItem
                 key={version.jobInstanceId}
                 value={version.version}
-                onClick={() => versionClickHandler(version)}
+                onClick={() => { versionClickHandler(version); }}
               >
                 {
                 isoDateLocalDate(version.versionName.replaceAll('-', '/'))
@@ -165,7 +176,7 @@ export default function TreeNavigation(
         Jump to subtree
       </Button>
       <ButtonGroup fullWidth>
-        <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
+        <Button variant="outlined" disabled={state.rootId === null && !history[historyIndex]?.parent} onClick={handleParent}>
           Parent
         </Button>
         <Button variant="outlined" disabled={historyIndex <= 0} onClick={handleBack}>
