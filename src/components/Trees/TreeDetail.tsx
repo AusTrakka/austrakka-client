@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
@@ -16,24 +16,9 @@ import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import isoDateLocalDate, { createStateFromQueryParams } from '../../utilities/helperUtils';
 import useQueryParams from '../../utilities/navigationUtils';
+import TreeState from '../../types/tree.inferface';
 
-interface State {
-  rootId: string | null;
-  blocks: any[];
-  alignLabels: boolean;
-  showBlockHeaders: boolean;
-  blockHeaderFontSize: number;
-  blockPadding: number;
-  blockSize: number;
-  showLeafLabels: boolean;
-  fontSize: number;
-  nodeSize: number;
-  type: string; // replace with the correct type of TreeTypes
-  showInternalLabels: boolean;
-  showBranchLengths: boolean;
-}
-
-const defaultState: State = {
+const defaultState: TreeState = {
   rootId: null,
   blocks: [],
   alignLabels: true,
@@ -50,6 +35,7 @@ const defaultState: State = {
 };
 
 function TreeDetail() {
+  const navigate = useNavigate();
   const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
@@ -59,9 +45,28 @@ function TreeDetail() {
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const queryParams: Partial<State> = useQueryParams(defaultState);
-  const [state, setState] = useState<State>(createStateFromQueryParams(defaultState, queryParams));
+  const queryParams: Partial<TreeState> = useQueryParams(defaultState);
+  const [state, setState] = useState<TreeState>(
+    createStateFromQueryParams(defaultState, queryParams),
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Update the URL when state changes
+  useEffect(() => {
+    // Create a new URLSearchParams instance
+    const searchParams = new URLSearchParams();
+    // Use Object.entries to loop over state
+    Object.entries(state).forEach(([key, value]) => {
+      // If the value differs from the default, append it to searchParams
+      if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
+        searchParams.append(key, String(value));
+      }
+    });
+    // Convert searchParams to a string
+    const queryString = searchParams.toString();
+    // Update the URL without navigating
+    navigate({ search: `?${queryString}` }, { replace: true });
+  }, [state, navigate]);
 
   // control hooks
   useEffect(() => {
