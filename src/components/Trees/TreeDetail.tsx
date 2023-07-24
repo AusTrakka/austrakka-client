@@ -14,7 +14,40 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import isoDateLocalDate, { createStateFromQueryParams } from '../../utilities/helperUtils';
+import useQueryParams from '../../utilities/navigationUtils';
+
+interface State {
+  rootId: string | null;
+  blocks: any[];
+  alignLabels: boolean;
+  showBlockHeaders: boolean;
+  blockHeaderFontSize: number;
+  blockPadding: number;
+  blockSize: number;
+  showLeafLabels: boolean;
+  fontSize: number;
+  nodeSize: number;
+  type: string; // replace with the correct type of TreeTypes
+  showInternalLabels: boolean;
+  showBranchLengths: boolean;
+}
+
+const defaultState: State = {
+  rootId: null,
+  blocks: [],
+  alignLabels: true,
+  showBlockHeaders: true,
+  blockHeaderFontSize: 13,
+  blockPadding: 3,
+  blockSize: 16,
+  showLeafLabels: true,
+  fontSize: 16,
+  nodeSize: 6,
+  type: TreeTypes.Rectangular,
+  showInternalLabels: false,
+  showBranchLengths: false,
+};
 
 function TreeDetail() {
   const { analysisId, jobInstanceId } = useParams();
@@ -25,24 +58,12 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [rootId, setRootId] = useState<string | null>(null);
-  // control hooks
-  const [state, setState] = useState({
-    blocks: [],
-    alignLabels: true,
-    showBlockHeaders: true,
-    blockHeaderFontSize: 13,
-    blockPadding: 3,
-    blockSize: 16,
-    showLeafLabels: true,
-    fontSize: 16,
-    nodeSize: 6,
-    type: TreeTypes.Rectangular,
-    showInternalLabels: false,
-    showBranchLengths: false,
-  });
+
+  const queryParams: Partial<State> = useQueryParams(defaultState);
+  const [state, setState] = useState<State>(createStateFromQueryParams(defaultState, queryParams));
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // control hooks
   useEffect(() => {
     const getMetadata = async () => {
       const metadataResponse: ResponseObject = await getTreeMetaData(
@@ -121,7 +142,6 @@ function TreeDetail() {
           metadata={phylocanvasMetadata}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
-          rootId={rootId}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
         />
@@ -151,7 +171,10 @@ function TreeDetail() {
   };
 
   const handleJumpToSubtree = (subtreeRootId: string | null) => {
-    setRootId(subtreeRootId);
+    setState({
+      ...state,
+      rootId: subtreeRootId,
+    });
   };
 
   const renderControls = () => {
