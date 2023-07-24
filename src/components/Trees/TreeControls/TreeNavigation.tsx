@@ -9,6 +9,7 @@ import isoDateLocalDate from '../../../utilities/helperUtils';
 
 interface State {
   type: string,
+  rootId: string | null,
 }
 
 interface TreeNavigationProps {
@@ -157,7 +158,7 @@ export default function TreeNavigation(
           }
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={!history[historyIndex]?.parent} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
+      <Button variant="outlined" disabled={state.rootId === null && !history[historyIndex]?.parent} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
         Go to Root
       </Button>
       <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
