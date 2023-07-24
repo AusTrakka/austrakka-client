@@ -34,7 +34,7 @@ function TreeDetail() {
     blockHeaderFontSize: 13,
     blockPadding: 3,
     blockSize: 16,
-    showLeafLabels: false,
+    showLeafLabels: true,
     fontSize: 16,
     nodeSize: 6,
     type: TreeTypes.Rectangular,
