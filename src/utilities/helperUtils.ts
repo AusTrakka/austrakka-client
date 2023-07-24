@@ -67,3 +67,15 @@ export function generateDateFilterString(
   }
   return filterString;
 }
+
+export function createStateFromQueryParams<T extends {}>(defaults: T, queryParams: Partial<T>): T {
+  const state: any = { ...defaults };
+
+  Object.keys(defaults).forEach((key) => {
+    if (key in queryParams) {
+      state[key] = queryParams[key as keyof T];
+    }
+  });
+
+  return state as T;
+}
