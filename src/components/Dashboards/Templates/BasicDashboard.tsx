@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
-import SubmittingOrgs from '../../Widgets/SubmittingOrgs/SubmittingOrgs';
+import Organisations from '../../Widgets/Organisations/Organisations';
 
 // TODO: Set a max card height and handle scroll voerflow
 function BasicDashboard(props: any) {
@@ -30,7 +30,7 @@ function BasicDashboard(props: any) {
         <Grid item lg={4} md={6} xs={8}>
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
-              <SubmittingOrgs
+              <Organisations
                 projectId={projectId}
                 groupId={groupId}
                 setFilterList={setFilterList}

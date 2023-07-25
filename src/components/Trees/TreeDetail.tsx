@@ -14,6 +14,7 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
+import isoDateLocalDate from '../../utilities/helperUtils';
 
 function TreeDetail() {
   const { analysisId, jobInstanceId } = useParams();
@@ -227,7 +228,7 @@ function TreeDetail() {
       {renderControls()}
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
-          {tree ? `${tree.analysisName} - ${tree.versionName}` : ''}
+          {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
         </Typography>
         {renderTree()}
       </Grid>

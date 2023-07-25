@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchSubmittingOrgs, selectAggregatedOrgs } from './sumbittingOrgsSlice';
+import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
 import LoadingState from '../../../constants/loadingState';
 
 const submittingOrgFieldName = 'Owner_group';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
-    header: 'Submitting organisation',
+    header: 'Owner organisation',
     accessorKey: submittingOrgFieldName,
     Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
   },
@@ -19,7 +19,7 @@ const columns:MRT_ColumnDef<any>[] = [
   },
 ];
 
-export default function SubmittingOrgs(props: any) {
+export default function Organisations(props: any) {
   const {
     setFilterList,
     setTabValue,
@@ -27,17 +27,17 @@ export default function SubmittingOrgs(props: any) {
     groupId,
   } = props;
   // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.submittingOrgsState);
+  const { loading, data } = useAppSelector((state) => state.organisationsState);
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const submittingOrgsDispatch = useAppDispatch();
+  const organisationsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
 
   useEffect(() => {
     const dispatchProps = { groupId, projectId, timeFilter };
     if (loading === 'idle') {
-      submittingOrgsDispatch(fetchSubmittingOrgs(dispatchProps));
+      organisationsDispatch(fetchOrganisations(dispatchProps));
     }
-  }, [loading, submittingOrgsDispatch, timeFilter, projectId, groupId]);
+  }, [loading, organisationsDispatch, timeFilter, projectId, groupId]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
@@ -60,7 +60,7 @@ export default function SubmittingOrgs(props: any) {
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Submitting organisations
+        Owner organisations
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <MaterialReactTable

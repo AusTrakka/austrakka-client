@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
+import { formatDate } from '../../../utilities/helperUtils';
 
 export default function SampleSummary(props: any) {
   const {
@@ -90,7 +91,7 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDateUtc}
+              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
             </Typography>
             <DrilldownButton
               title="View Samples"
