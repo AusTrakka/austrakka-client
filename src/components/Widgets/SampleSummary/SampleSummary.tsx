@@ -96,7 +96,7 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {FormatDate(data.data.latestUploadedDateUtc)}
+              { data.data.latestUploadedDateUtc ? FormatDate(data.data.latestUploadedDateUtc) : '-'}
             </Typography>
             <DrilldownButton
               title="View Samples"
