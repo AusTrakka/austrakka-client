@@ -4,19 +4,18 @@ import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchUserOverview } from './userOverviewSlice';
+import { formatDate } from '../../../utilities/helperUtils';
 
 export default function UserOverview() {
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.userOverviewState);
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const dispatch = useAppDispatch();
-
   useEffect(() => {
     if (loading === 'idle') {
       dispatch(fetchUserOverview());
     }
   }, [loading, dispatch, timeFilter]);
-
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
@@ -37,8 +36,9 @@ export default function UserOverview() {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {data.data.latestUploadedDateUtc}
+              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
             </Typography>
+
           </Grid>
           <Grid item>
             <RuleOutlined color="primary" />

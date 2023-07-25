@@ -4,11 +4,11 @@ import { PhessIdStatus } from '../components/Widgets/PhessIdStatus/phess.id.inte
 import { QcStatus } from '../components/Widgets/QcStatus/qc.status.interface';
 import { SampleSummary } from '../components/Widgets/SampleSummary/sample.summary.interface';
 import { StCounts } from '../components/Widgets/StCounts/st.counts.interface';
-import { SubmittingOrgs } from '../components/Widgets/SubmittingOrgs/submitting.orgs.interface';
+import { Organisations } from '../components/Widgets/Organisations/organisations.interface';
 
 export interface AppState {
   sampleSummaryState: SampleSummary,
-  submittingOrgsState: SubmittingOrgs,
+  organisationsState: Organisations,
   qcStatusState: QcStatus,
   phessIdStatusState: PhessIdStatus,
   stCountsState: StCounts,

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSummarySlice';
-import submittingOrgsReducer from '../components/Widgets/SubmittingOrgs/sumbittingOrgsSlice';
+import organisationsReducer from '../components/Widgets/Organisations/organisationsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
 import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
@@ -14,7 +14,7 @@ import phessIdOverallReducer from '../components/Widgets/PhessIdOverall/phessIdO
 const store = configureStore({
   reducer: {
     sampleSummaryState: sampleSummaryReducer,
-    submittingOrgsState: submittingOrgsReducer,
+    organisationsState: organisationsReducer,
     qcStatusState: qcStatusReducer,
     phessIdStatusState: phessIdStatusReducer,
     stCountsState: stCountsReducer,

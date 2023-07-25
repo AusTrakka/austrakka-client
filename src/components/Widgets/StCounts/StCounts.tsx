@@ -7,6 +7,7 @@ import { InlineData } from 'vega-lite/build/src/data';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
+import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 const stFieldName = 'ST';
 
@@ -25,6 +26,11 @@ const spec: TopLevelSpec = {
       field: stFieldName,
       title: 'ST Value',
       scale: { scheme: 'spectral' },
+    },
+  },
+  config: {
+    legend: {
+      symbolLimit: 0,
     },
   },
   // params: [
@@ -94,9 +100,16 @@ function STChart(props: any) {
   }, [stData, plotDiv]);
 
   return (
-    <Box>
-      <div id="#plot-container" ref={plotDiv} />
-    </Box>
+    <Grid container direction="row">
+      <Grid item xs={11}>
+        <div id="#plot-container" ref={plotDiv} />
+      </Grid>
+      <Grid item xs={1}>
+        <ExportVegaPlot
+          vegaView={vegaView}
+        />
+      </Grid>
+    </Grid>
   );
 }
 
