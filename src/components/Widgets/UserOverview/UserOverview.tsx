@@ -36,9 +36,7 @@ export default function UserOverview() {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {
-              formatDate(data.data.latestUploadedDateUtc)
-              }
+              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
             </Typography>
 
           </Grid>
