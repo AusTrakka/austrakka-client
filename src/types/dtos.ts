@@ -1,5 +1,4 @@
-// These are view models; should correspond to server-side DTOs
-
+// These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
   abbreviation: string,
@@ -62,6 +61,12 @@ export interface PlotListing {
   plotType: string,
   projectId: number,
   // also projectName, and isActive. projectAbbrev??
+}
+
+export interface Member {
+  roles: string[],
+  displayName: string,
+  lastLoggedIn: string,
 }
 
 export interface MetaDataColumn {

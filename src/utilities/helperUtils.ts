@@ -19,7 +19,6 @@ export function formatDate(dateUTC: any) {
 
 export function useFirstRender() {
   const firstRender = useRef(true);
-
   useEffect(() => {
     firstRender.current = false;
   }, []);
