@@ -52,7 +52,9 @@ export default function TreeNavigation(
 
   const handleJumpToSubtree = () => {
     if (nodes) {
-      const selectedNodes: PhylocanvasNode[] = selectedIds.map((id) => nodes[id]);
+      const selectedNodes: PhylocanvasNode[] = selectedIds.map(
+        (id) => nodes[id],
+      ).filter((node) => node !== undefined);
       let mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
         while (mrca?.totalSubtreeLength === 0) {
@@ -117,7 +119,8 @@ export default function TreeNavigation(
     setHistory([null]);
     setHistoryIndex(0);
   };
-  const versionClickHandler = (version: any) => {
+  const versionClickHandler = (version: JobInstance) => {
+    if (version.version === currentVersion) return;
     navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
     setNodes(null);
     handleGoToRoot();
@@ -169,14 +172,14 @@ export default function TreeNavigation(
           }
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={state.rootId === null && !history[historyIndex]?.parent} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
+      <Button variant="outlined" disabled={!history[historyIndex]?.parent} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
         Go to Root
       </Button>
       <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
         Jump to subtree
       </Button>
       <ButtonGroup fullWidth>
-        <Button variant="outlined" disabled={state.rootId === null && !history[historyIndex]?.parent} onClick={handleParent}>
+        <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
           Parent
         </Button>
         <Button variant="outlined" disabled={historyIndex <= 0} onClick={handleBack}>

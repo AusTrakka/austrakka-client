@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useQueryParamsForObject, useQueryParamsForPrimitive } from './navigationUtils';
 
 export default function isoDateLocalDate(datetime: any) {
   let isoDate = null;
@@ -68,14 +69,26 @@ export function generateDateFilterString(
   return filterString;
 }
 
-export function createStateFromQueryParams<T extends {}>(defaults: T, queryParams: Partial<T>): T {
-  const state: any = { ...defaults };
+export function useStateFromSearchParamsForPrimitive<T extends string | number | null>(
+  paramName: string,
+  defaultState: T,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const searchParams = new URLSearchParams(window.location.search);
+  const stateSearchParams = useQueryParamsForPrimitive<T>(paramName, defaultState, searchParams);
+  return useState<T>(stateSearchParams);
+}
 
-  Object.keys(defaults).forEach((key) => {
-    if (key in queryParams) {
-      state[key] = queryParams[key as keyof T];
+export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
+  defaultState: T,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const searchParams = new URLSearchParams(window.location.search);
+  const stateSearchParams = useQueryParamsForObject<T>(defaultState, searchParams);
+  const state: T = { ...defaultState };
+  Object.keys(defaultState).forEach((key) => {
+    const queryValue = stateSearchParams[key as keyof T];
+    if (queryValue !== undefined) {
+      state[key as keyof T] = queryValue;
     }
   });
-
-  return state as T;
+  return useState<T>(state);
 }

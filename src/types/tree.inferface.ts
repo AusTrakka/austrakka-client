@@ -1,5 +1,4 @@
 export default interface TreeState {
-  rootId: string | null;
   blocks: any[];
   alignLabels: boolean;
   showBlockHeaders: boolean;
