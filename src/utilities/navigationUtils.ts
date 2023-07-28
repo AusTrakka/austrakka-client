@@ -22,25 +22,11 @@ function parse<T>(value: string | null, defaultValue: T): T {
   }
 }
 
-export function useQueryParamsForPrimitive<T>(
-  paramName: string,
+export default function getQueryParamOrDefault<T>(
+  paramName: string | number | symbol,
   defaultState: T,
   searchParams: URLSearchParams,
 ): T {
-  const paramValue = searchParams.get(paramName);
+  const paramValue = searchParams.get(String(paramName));
   return parse(paramValue, defaultState);
-}
-
-export function useQueryParamsForObject<T extends Record<string, any>>(
-  defaultState: T,
-  searchParams: URLSearchParams,
-): Partial<T> {
-  const result: Partial<T> = {};
-
-  Object.keys(defaultState).forEach(key => {
-    const value = searchParams.get(key);
-    // Cast the value to the appropriate type
-    result[key as keyof T] = parse(value, defaultState[key as keyof T]);
-  });
-  return result;
 }
