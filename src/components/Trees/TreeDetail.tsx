@@ -47,7 +47,7 @@ function TreeDetail() {
   );
   const rootIdDefault: string = '0';
   const searchParams = new URLSearchParams(window.location.search);
-  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive<string>(
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
     'rootId',
     rootIdDefault,
     searchParams,
