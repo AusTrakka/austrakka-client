@@ -87,7 +87,7 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   Object.keys(defaultState).forEach((key) => {
     const queryValue = stateSearchParams[key as keyof T];
     if (queryValue !== undefined) {
-      state[key as keyof T] = queryValue;
+      state[key as keyof T] = queryValue as T[keyof T]; // Cast the value to the appropriate type
     }
   });
   return useState<T>(state);
