@@ -69,7 +69,8 @@ export function generateDateFilterString(
   return filterString;
 }
 
-export function useStateFromSearchParamsForPrimitive<T extends string | number | boolean | null>(
+export function useStateFromSearchParamsForPrimitive
+<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
