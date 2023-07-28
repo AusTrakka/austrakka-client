@@ -45,8 +45,8 @@ function TreeDetail() {
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
-  const rootIdDefault: string | null = null;
-  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive<string | null>(
+  const rootIdDefault: string = '0';
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive<string>(
     'rootId',
     rootIdDefault,
   );
@@ -222,7 +222,7 @@ function TreeDetail() {
                 versions={versions}
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
-                onJumpToSubtree={setRootId}
+                onJumpToSubtree={(id: string) => setRootId(id)}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>
