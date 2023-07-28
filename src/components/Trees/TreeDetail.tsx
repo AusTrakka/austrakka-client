@@ -15,7 +15,7 @@ import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
-import TreeState from '../../types/tree.inferface';
+import TreeState from '../../types/tree.interface';
 
 const defaultState: TreeState = {
   blocks: [],
