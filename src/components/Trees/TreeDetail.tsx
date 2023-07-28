@@ -45,9 +45,10 @@ function TreeDetail() {
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
+  const rootIdDefault: string | null = null;
   const [rootId, setRootId] = useStateFromSearchParamsForPrimitive<string | null>(
     'rootId',
-    null,
+    rootIdDefault,
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -73,7 +74,7 @@ function TreeDetail() {
       currentSearchParams.delete('rootId');
     }
     // If the rootId differs from the default, append it to searchParams
-    if (rootId !== null) {
+    if (rootId !== rootIdDefault) {
       currentSearchParams.append('rootId', String(rootId));
     }
 
@@ -216,6 +217,7 @@ function TreeDetail() {
             <AccordionDetails>
               <TreeNavigation
                 state={state}
+                rootId={rootId}
                 currentVersion={tree.version}
                 versions={versions}
                 selectedIds={selectedIds}

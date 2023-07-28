@@ -1,23 +1,34 @@
+function parse<T>(value: string | null, defaultValue: T): T {
+  if (value === undefined || value === null) {
+    return defaultValue as T;
+  }
+  if (value === 'null') {
+    return null as T;
+  }
+  const expectedType = typeof defaultValue;
+
+  if (Array.isArray(defaultValue)) {
+    // Parse as array of strings
+    return value.split(',') as T;
+  }
+  // Parse based on the type of the corresponding key in defaultState
+  switch (expectedType) {
+    case 'boolean':
+      return (value === 'true') as T;
+    case 'number':
+      return Number(value) as T;
+    default:
+      return value as T;
+  }
+}
+
 export function useQueryParamsForPrimitive<T>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
 ): T {
-  const paramValue = searchParams.has(paramName) ? searchParams.get(paramName) : undefined;
-  if (paramValue === undefined || paramValue === defaultState) {
-    return defaultState;
-  }
-  if (paramValue === null) {
-    return null as unknown as T;
-  }
-
-  // Cast the value to the appropriate type
-  switch (typeof defaultState) {
-    case 'number':
-      return parseFloat(paramValue) as unknown as T;
-    default:
-      return paramValue as unknown as T;
-  }
+  const paramValue = searchParams.get(paramName);
+  return parse(paramValue, defaultState);
 }
 
 export function useQueryParamsForObject<T extends Record<string, any>>(
@@ -28,20 +39,8 @@ export function useQueryParamsForObject<T extends Record<string, any>>(
 
   Object.keys(defaultState).forEach(key => {
     const value = searchParams.get(key);
-    if (value !== null) {
-      // Cast the value to the appropriate type
-      switch (typeof defaultState[key as keyof T]) {
-        case 'string':
-          result[key as keyof T] = value as unknown as T[keyof T];
-          break;
-        case 'number':
-          result[key as keyof T] = parseFloat(value) as unknown as T[keyof T];
-          break;
-        default:
-          // No-op for other types. Adjust this if you want to support other types.
-          break;
-      }
-    }
+    // Cast the value to the appropriate type
+    result[key as keyof T] = parse(value, defaultState[key as keyof T]);
   });
   return result;
 }

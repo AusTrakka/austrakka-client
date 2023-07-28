@@ -69,7 +69,7 @@ export function generateDateFilterString(
   return filterString;
 }
 
-export function useStateFromSearchParamsForPrimitive<T extends string | number | null>(
+export function useStateFromSearchParamsForPrimitive<T extends string | number | boolean | null>(
   paramName: string,
   defaultState: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
