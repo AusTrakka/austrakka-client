@@ -270,7 +270,7 @@ function TreeDetail() {
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
-          {rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderTree()}
       </Grid>
