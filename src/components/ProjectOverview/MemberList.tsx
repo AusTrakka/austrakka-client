@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { Chip } from '@mui/material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 
 interface MembersProps {
@@ -9,25 +10,20 @@ interface MembersProps {
   memberListErrorMessage: string,
 }
 
-// const treeTableColumns: MRT_ColumnDef[] = [
-//   { accessorKey: 'abbreviation', header: 'Abbreviation' },
-//   { accessorKey: 'name', header: 'Name' },
-//   { accessorKey: 'description', header: 'Description' },
-// eslint-disable-next-line max-len
-//   { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
-// ];
-function reduceList(cell : any): string {
+function renderList(cell : any): JSX.Element[] {
   const roles = cell.getValue();
   if (Array.isArray(roles)) {
-    return roles.join(', ');
+    return roles.map((r) => (
+      <Chip label={r} style={{ margin: '3px' }} />
+    ));
   }
 
-  return roles;
+  return [<Chip label={roles} />];
 }
 
 const memberTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'displayName', header: 'Name' },
-  { accessorKey: 'roles', header: 'Roles', Cell: ({ cell }: any) => <>{reduceList(cell)}</> },
+  { accessorKey: 'roles', header: 'Roles', Cell: ({ cell }: any) => <>{renderList(cell)}</> },
   { accessorKey: 'lastLoggedIn', header: 'Last Logged In', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
 ];
 
