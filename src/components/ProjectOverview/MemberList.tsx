@@ -14,11 +14,11 @@ function renderList(cell : any): JSX.Element[] {
   const roles = cell.getValue();
   if (Array.isArray(roles)) {
     return roles.map((r) => (
-      <Chip label={r} style={{ margin: '3px' }} />
+      <Chip key={r} label={r} style={{ margin: '3px' }} />
     ));
   }
 
-  return [<Chip label={roles} />];
+  return [<Chip key={roles} label={roles} />];
 }
 
 const memberTableColumns: MRT_ColumnDef[] = [
