@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import getQueryParamOrDefault from './navigationUtils';
 
 export default function isoDateLocalDate(datetime: any) {
   let isoDate = null;
@@ -65,4 +66,28 @@ export function generateDateFilterString(
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
   }
   return filterString;
+}
+
+export function useStateFromSearchParamsForPrimitive
+<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+  paramName: string,
+  defaultState: T,
+  searchParams: URLSearchParams,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
+  return useState<T>(stateSearchParams);
+}
+
+export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
+  defaultState: T,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const searchParams = new URLSearchParams(window.location.search);
+  const state: T = { ...defaultState };
+  Object.keys(defaultState).forEach((key) => {
+    const queryValue = getQueryParamOrDefault<T[keyof T]>(key, defaultState[key], searchParams);
+    if (queryValue !== undefined) {
+      state[key as keyof T] = queryValue; // Cast the value to the appropriate type
+    }
+  });
+  return useState<T>(state);
 }

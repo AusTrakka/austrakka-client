@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
@@ -14,9 +14,26 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import TreeState from '../../types/tree.interface';
+
+const defaultState: TreeState = {
+  blocks: [],
+  alignLabels: true,
+  showBlockHeaders: true,
+  blockHeaderFontSize: 13,
+  blockPadding: 3,
+  blockSize: 16,
+  showLeafLabels: true,
+  fontSize: 16,
+  nodeSize: 6,
+  type: TreeTypes.Rectangular,
+  showInternalLabels: false,
+  showBranchLengths: false,
+};
 
 function TreeDetail() {
+  const navigate = useNavigate();
   const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
@@ -25,24 +42,51 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [rootId, setRootId] = useState<string | null>(null);
-  // control hooks
-  const [state, setState] = useState({
-    blocks: [],
-    alignLabels: true,
-    showBlockHeaders: true,
-    blockHeaderFontSize: 13,
-    blockPadding: 3,
-    blockSize: 16,
-    showLeafLabels: false,
-    fontSize: 16,
-    nodeSize: 6,
-    type: TreeTypes.Rectangular,
-    showInternalLabels: false,
-    showBranchLengths: false,
-  });
+  const [state, setState] = useStateFromSearchParamsForObject(
+    defaultState,
+  );
+  const rootIdDefault: string = '0';
+  const searchParams = new URLSearchParams(window.location.search);
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
+    'rootId',
+    rootIdDefault,
+    searchParams,
+  );
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // Update the URL when state changes
+  useEffect(() => {
+    // Create a new URLSearchParams instance
+    const currentSearchParams = new URLSearchParams(window.location.search);
+
+    Object.entries(state).forEach(([key, value]) => {
+      // If the key exists in the current searchParams, delete it
+      if (currentSearchParams.has(key)) {
+        currentSearchParams.delete(key);
+      }
+      // If the value differs from the default, append it to searchParams
+      if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
+        currentSearchParams.append(key, String(value));
+      }
+    });
+
+    // If the rootId exists in the current searchParams, delete it
+    if (currentSearchParams.has('rootId')) {
+      currentSearchParams.delete('rootId');
+    }
+    // If the rootId differs from the default, append it to searchParams
+    if (rootId !== rootIdDefault) {
+      currentSearchParams.append('rootId', String(rootId));
+    }
+
+    // Convert searchParams to a string
+    const queryString = currentSearchParams.toString();
+    // Update the URL without navigating
+    navigate({ search: `?${queryString}` }, { replace: true });
+  }, [state, navigate, rootId]);
+
+  // control hooks
   useEffect(() => {
     const getMetadata = async () => {
       const metadataResponse: ResponseObject = await getTreeMetaData(
@@ -150,10 +194,6 @@ function TreeDetail() {
     });
   };
 
-  const handleJumpToSubtree = (subtreeRootId: string | null) => {
-    setRootId(subtreeRootId);
-  };
-
   const renderControls = () => {
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
@@ -179,11 +219,12 @@ function TreeDetail() {
             <AccordionDetails>
               <TreeNavigation
                 state={state}
+                rootId={rootId}
                 currentVersion={tree.version}
                 versions={versions}
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
-                onJumpToSubtree={handleJumpToSubtree}
+                onJumpToSubtree={(id: string) => setRootId(id)}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>
@@ -229,6 +270,7 @@ function TreeDetail() {
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
+          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderTree()}
       </Grid>
