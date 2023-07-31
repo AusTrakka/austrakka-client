@@ -3,11 +3,15 @@ import getQueryParamOrDefault from './navigationUtils';
 
 export default function isoDateLocalDate(datetime: any) {
   let isoDate = null;
+  if (datetime?.getValue() === null) return '';
+  // need to check if the value passed is a object or a value since
+  // components that fetch from the database pass json objects and ui components pass values.
   isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
 export function isoDateLocalDateNoTime(datetime: any) {
+  if (datetime?.getValue() === null) return '';
   const isoDate = new Date(datetime.getValue());
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
