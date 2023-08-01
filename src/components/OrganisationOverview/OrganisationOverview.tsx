@@ -1,76 +1,85 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Box, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import { MRT_ColumnDef, MRT_PaginationState, MRT_SortingState } from 'material-react-table';
-import { ResponseObject, getDisplayFields, getGroupList } from '../../utilities/resourceUtils';
-import OrganisationSamples from './OrganisationSamples';
-import Samples from '../ProjectOverview/Samples';
+import { Box, FormControl, Grid, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { Error } from '@mui/icons-material';
+import { ResponseObject, getGroupList } from '../../utilities/resourceUtils';
+import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
-import { DisplayFields } from '../../types/fields.interface';
-import { Filter } from '../Common/QueryBuilder';
-import { ProjectSample } from '../../types/sample.interface';
-import { MetaDataColumn } from '../../types/dtos';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { Group } from '../../types/dtos';
 
 function OrgGroupSelector(props: any) {
-  const { selectedGroup, setSelectedGroup, groups } = props;
+  const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
 
   return (
-    <FormControl variant="standard" sx={{ marginX: 1, marginTop: 1, minWidth: 220 }}>
-      <InputLabel id="org-select-label">Organisation group</InputLabel>
-      <Select
-        labelId="org-select-label"
-        id="org-select"
-        value={selectedGroup}
-        onChange={(e) => setSelectedGroup(e.target.value)}
-        label="Organisation group"
-        autoWidth
-      >
-        { groups.map((group: any) => (
-          <MenuItem
-            value={group}
-            key={group.name}
+    <Grid container direction="row" justifyContent="center" alignItems="flex-end">
+      <Grid item sx={{ marginBottom: 1 }}>
+        {groupStatus === LoadingState.ERROR
+          ? (
+            <Tooltip title={groupStatusMessage}>
+              <Error color="error" />
+            </Tooltip>
+          )
+          : null }
+      </Grid>
+      <Grid item>
+        <FormControl
+          variant="standard"
+          sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
+          error={groupStatus === LoadingState.ERROR}
+        >
+          <InputLabel id="org-select-label">Organisation group</InputLabel>
+          <Select
+            labelId="org-select-label"
+            id="org-select"
+            defaultValue=""
+            value={groups.length !== 0 ? selectedGroup : ''}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            label="Organisation group"
+            autoWidth
           >
-            {group.name}
-          </MenuItem>
-        )) }
-        { groups.length === 0 ? (
-          <MenuItem disabled>No owner groups available</MenuItem>
-        ) : null}
-      </Select>
-    </FormControl>
+            { groups.map((group: any) => (
+              <MenuItem
+                value={group}
+                key={group.name}
+              >
+                {group.name}
+              </MenuItem>
+            )) }
+            { groups.length === 0 ? (
+              <MenuItem disabled>No owner groups available</MenuItem>
+            ) : null}
+          </Select>
+          {groupStatus === LoadingState.LOADING
+            ? (
+              <LinearProgress
+                color="secondary"
+              />
+            )
+            : null }
+        </FormControl>
+      </Grid>
+
+    </Grid>
   );
 }
 
 function OrganisationOverview() {
-  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<Group>({
+    groupId: undefined,
+    name: '',
+    lastUpdated: '',
+    lastUpdatedBy: '',
+    created: '',
+    createdBy: '',
+    organisation: {
+      abbreviation: '',
+    },
+  });
   const [groups, setGroups] = useState([]);
-
-  // Below is a cut and paste from ProjectOverview.tsx
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
-  const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
-    pageIndex: 0,
-    pageSize: 50,
-  });
-  const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
-  const [isSamplesLoading, setIsSamplesLoading] = useState(false);
-  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
-  const [totalSamples, setTotalSamples] = useState(0);
-  const [samplesCount, setSamplesCount] = useState(0);
-  const [isSamplesError, setIsSamplesError] = useState({
-    samplesHeaderError: false,
-    sampleMetadataError: false,
-    samplesErrorMessage: '',
-  });
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [queryString, setQueryString] = useState('');
-  const [filterList, setFilterList] = useState<Filter[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [exportData, setExportData] = useState<ProjectSample[]>([]);
-  ///
+  const [groupStatus, setGroupStatus] = useState(LoadingState.IDLE);
+  const [groupStatusMessage, setGroupStatusMessage] = useState('');
 
   async function getGroups() {
+    setGroupStatus(LoadingState.LOADING);
     const groupResponse: ResponseObject = await getGroupList();
     if (groupResponse.status === 'Success') {
       // Filter out only owner groups
@@ -79,61 +88,37 @@ function OrganisationOverview() {
       if (ownerGroups.length) {
         setSelectedGroup(ownerGroups[0]);
       }
+      setGroupStatus(LoadingState.SUCCESS);
     } else {
-      // TODO: Set error message here - endpoint error message
-      console.log(groupResponse);
+      setGroupStatus(LoadingState.ERROR);
+      setGroupStatusMessage(groupResponse.message);
     }
   }
 
   useEffect(() => {
     getGroups();
   }, []);
-  useEffect(() => {
-    // 1: GET TABLE HEADERS & FILTER FIELDS - can be custom hook
-    // 2: GET COLUMN ORDER - an be custom hook
-    // 3: GET SAMPLES
-    // 4: GET EXPORT DATA
-
-  }, [selectedGroup]);
-
-  const getExportData = async () => {
-  };
 
   return (
     <Box>
-      <Grid container direction="row" spacing={2}>
-        <Grid container item xs={12} justifyContent="space-between">
-          <Typography variant="h2" color="primary">Organisation Overview</Typography>
-          <OrgGroupSelector
-            groups={groups}
-            selectedGroup={selectedGroup}
-            setSelectedGroup={setSelectedGroup}
-          />
+      <Grid container direction="row">
+        <Grid container justifyContent="space-between">
+          <Grid item>
+            <Typography variant="h2" color="primary">Organisation Overview</Typography>
+          </Grid>
+          <Grid item alignItems="center">
+            <OrgGroupSelector
+              groups={groups}
+              groupStatus={groupStatus}
+              groupStatusMessage={groupStatusMessage}
+              selectedGroup={selectedGroup}
+              setSelectedGroup={setSelectedGroup}
+            />
+          </Grid>
         </Grid>
       </Grid>
-      <Samples
-        totalSamples={totalSamples}
-        samplesCount={samplesCount}
-        sampleList={projectSamples}
-        isSamplesLoading={isSamplesLoading}
-        sampleTableColumns={sampleTableColumns}
-        isSamplesError={isSamplesError}
-        sorting={sorting}
-        setSorting={setSorting}
-        samplesPagination={samplesPagination}
-        setSamplesPagination={setSamplesPagination}
-        isFiltersOpen={isFiltersOpen}
-        setIsFiltersOpen={setIsFiltersOpen}
-        setQueryString={setQueryString}
-        filterList={filterList}
-        setFilterList={setFilterList}
-        displayFields={displayFields}
-        columnOrderArray={columnOrderArray}
-        getExportData={getExportData}
-        setExportData={setExportData}
-        exportCSVStatus={exportCSVStatus}
-        setExportCSVStatus={setExportCSVStatus}
-        exportData={exportData}
+      <SampleTable
+        groupContext={selectedGroup.groupId}
       />
     </Box>
   );
