@@ -14,7 +14,7 @@ function renderList(cell : any): JSX.Element[] {
   const roles = cell.getValue();
   if (Array.isArray(roles)) {
     return roles.map((r) => (
-      <Chip key={r} label={r} style={{ margin: '3px' }} />
+      <Chip key={r} label={r} color="primary" variant="outlined" style={{ margin: '3px', outlineColor: '#0a3546' }} />
     ));
   }
 
