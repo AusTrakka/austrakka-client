@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { FormControl, FormControlLabel, FormGroup, Grid, SelectChangeEvent, Switch } from '@mui/material';
+import { FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Switch } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import InputSlider from './Slider';
+import getStyles, { MenuProps } from './utils';
 
 interface State {
   alignLabels: boolean,
@@ -8,18 +10,44 @@ interface State {
   showInternalLabels: boolean,
   showBranchLengths: boolean,
   fontSize: number,
-  nodeSize: number
+  nodeSize: number,
+  labelBlocks: string[],
 }
 
 export default function NodeAndLabelControls(
-  { state, onChange }: {
+  { columns, state, onChange }: {
+    columns: string[],
     state: State,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
     ) => void; },
 ) {
+  const theme = useTheme();
   return (
     <Grid>
+      <FormControl fullWidth size="small">
+        <InputLabel id="column-label">Columns</InputLabel>
+        <Select
+          labelId="column-label"
+          id="column"
+          multiple
+          name="labelBlocks"
+          value={state.labelBlocks}
+          onChange={onChange}
+          input={<OutlinedInput label="Column" />}
+          MenuProps={MenuProps}
+        >
+          {columns.map((column) => (
+            <MenuItem
+              key={column}
+              value={column}
+              style={getStyles(column, state.labelBlocks, theme)}
+            >
+              {column}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <FormControl fullWidth>
         <FormGroup>
           <FormControlLabel
