@@ -95,3 +95,31 @@ export interface AnalysisResultMetadata {
   submissionId: number;
   versionId: number;
 }
+
+export interface Group {
+  groupId: number | undefined,
+  name: string,
+  lastUpdated: string,
+  lastUpdatedBy: string,
+  created: string,
+  createdBy: string,
+  organisation: {
+    abbreviation: string
+  }
+}
+
+export interface DisplayField {
+  canVisualise: boolean,
+  columnName: string,
+  columnOrder: number,
+  isActive: boolean,
+  isDisplayedAsDefault: boolean,
+  metaDataColumnId: number,
+  metaDataColumnTypeId: number,
+  minWidth: number,
+  primitiveType: string,
+}
+
+export interface Sample {
+
+}
