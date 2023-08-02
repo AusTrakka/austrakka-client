@@ -65,6 +65,10 @@ export interface PlotListing {
 
 export interface Member {
   roles: string[],
+  organization:{
+    id: number,
+    name: string,
+  },
   displayName: string,
   lastLoggedIn: string,
 }
