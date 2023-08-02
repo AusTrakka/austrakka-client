@@ -14,7 +14,7 @@ function renderList(cell : any): JSX.Element[] {
   const roles = cell.getValue();
   if (Array.isArray(roles)) {
     return roles.map((r) => (
-      <Chip key={r} label={r} color="primary" variant="outlined" style={{ margin: '3px', outlineColor: '#0a3546' }} />
+      <Chip key={r} label={r} color="primary" variant="outlined" style={{ margin: '3px' }} />
     ));
   }
 
@@ -23,6 +23,7 @@ function renderList(cell : any): JSX.Element[] {
 
 const memberTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'displayName', header: 'Name' },
+  { accessorKey: 'organization.abbreviation', header: 'Organisations' },
   { accessorKey: 'roles', header: 'Roles', Cell: ({ cell }: any) => <>{renderList(cell)}</> },
   { accessorKey: 'lastLoggedIn', header: 'Last Logged In', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
 ];
