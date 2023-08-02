@@ -18,6 +18,7 @@ export default function isoDateLocalDate(datetime: any) {
 }
 
 export function isoDateLocalDateNoTime(datetime: any) {
+  if (datetime?.getValue() === null) return '';
   const isoDate = new Date(datetime.getValue());
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
