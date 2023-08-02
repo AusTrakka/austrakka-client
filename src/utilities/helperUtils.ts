@@ -3,7 +3,15 @@ import getQueryParamOrDefault from './navigationUtils';
 
 export default function isoDateLocalDate(datetime: any) {
   let isoDate = null;
-  if (datetime?.getValue() === null) return '';
+  if (datetime.getValue === 'function') {
+    if (datetime.getValue() === null) {
+      return null;
+    }
+
+    isoDate = new Date(datetime.getValue());
+  } else {
+    isoDate = new Date(Date.parse(datetime));
+  }
   isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
