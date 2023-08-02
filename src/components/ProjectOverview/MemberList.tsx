@@ -68,7 +68,6 @@ function MemberList(props: MembersProps) {
   const handleExportCSV = () => {
     try {
       setExportCSVStatus(LoadingState.LOADING);
-      console.log(memberList);
       const td = memberList.map((member) => ({
         roles: member.roles,
         // eslint-disable-next-line max-len
@@ -76,10 +75,10 @@ function MemberList(props: MembersProps) {
         displayName: member.displayName,
         lastLoggedIn: member.lastLoggedIn,
       }));
-      console.log(td);
       setTransformedData(td);
       setExportCSVStatus(LoadingState.SUCCESS);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error exporting data:', error);
       setExportCSVStatus(LoadingState.ERROR);
     }
