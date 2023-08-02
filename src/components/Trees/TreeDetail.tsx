@@ -31,6 +31,7 @@ const defaultState: TreeState = {
   showInternalLabels: false,
   showBranchLengths: false,
   labelBlocks: [],
+  keyValueLabelBlocks: false,
 };
 
 interface Style {
@@ -73,7 +74,9 @@ function TreeDetail() {
       }
       // If the value differs from the default, append it to searchParams
       if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
-        currentSearchParams.append(key, String(value));
+        if (!(value instanceof Array && value.length === 0)) {
+          currentSearchParams.append(key, String(value));
+        }
       }
     });
 
@@ -135,6 +138,7 @@ function TreeDetail() {
   useEffect(() => {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
+      const delimiter = '|';
       // find the length of the longest label for each block
       const blockLengths: Record<string, number> = {};
       blockLengths.id = 0;
@@ -159,14 +163,26 @@ function TreeDetail() {
             if (!value[block].label) {
               return ' '.repeat(blockLengths[block]);
             }
-            return value[block].label + ' '.repeat(blockLengths[block] - value[block].label.length);
+            let prefix = '';
+            if (state.keyValueLabelBlocks) {
+              prefix = `${block}=`;
+            }
+            if (state.alignLabels) {
+              return prefix + value[block].label.padEnd(blockLengths[block], ' ');
+            }
+            return prefix + value[block].label;
           },
         );
-        newStyles[nodeId] = { label: `${nodeId + ' '.repeat(blockLengths.id - nodeId.length)} ${label.join(' ')}` };
+        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;        
+        if (state.alignLabels) {
+          newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
+        } else {
+          newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
+        }
       }
       setStyles(newStyles);
     }
-  }, [state.labelBlocks, phylocanvasMetadata]);
+  }, [state.labelBlocks, state.keyValueLabelBlocks, phylocanvasMetadata, state.alignLabels]);
 
   useEffect(() => {
     // Get tree details, including tree type

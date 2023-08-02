@@ -12,6 +12,7 @@ interface State {
   fontSize: number,
   nodeSize: number,
   labelBlocks: string[],
+  keyValueLabelBlocks: boolean,
 }
 
 export default function NodeAndLabelControls(
@@ -50,6 +51,20 @@ export default function NodeAndLabelControls(
       </FormControl>
       <FormControl fullWidth>
         <FormGroup>
+          {state.labelBlocks.length > 0 ? (
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={state.keyValueLabelBlocks}
+                  onChange={onChange}
+                  name="keyValueLabelBlocks"
+                />
+                )}
+              label="Key value label pairs"
+            />
+          )
+            :
+            <div />}
           <FormControlLabel
             control={(
               <Switch

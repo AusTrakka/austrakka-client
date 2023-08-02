@@ -14,4 +14,5 @@ export default interface TreeState {
   showBranchLengths: boolean;
   // extra state for the tree controls
   labelBlocks: string[];
+  keyValueLabelBlocks: boolean;
 }
