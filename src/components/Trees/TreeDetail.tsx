@@ -30,7 +30,13 @@ const defaultState: TreeState = {
   type: TreeTypes.Rectangular,
   showInternalLabels: false,
   showBranchLengths: false,
+  labelBlocks: [],
+  keyValueLabelBlocks: false,
 };
+
+interface Style {
+  label: string;
+}
 
 function TreeDetail() {
   const navigate = useNavigate();
@@ -42,6 +48,7 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [styles, setStyles] = useState<Record<string, Style>>({});
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
@@ -67,7 +74,9 @@ function TreeDetail() {
       }
       // If the value differs from the default, append it to searchParams
       if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
-        currentSearchParams.append(key, String(value));
+        if (!(value instanceof Array && value.length === 0)) {
+          currentSearchParams.append(key, String(value));
+        }
       }
     });
 
@@ -127,6 +136,55 @@ function TreeDetail() {
   }, [analysisId, tree]);
 
   useEffect(() => {
+    if (phylocanvasMetadata) {
+      const newStyles: Record<string, Style> = {};
+      const delimiter = '|';
+      // find the length of the longest label for each block
+      const blockLengths: Record<string, number> = {};
+      blockLengths.id = 0;
+      for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        const nodeIdLength = nodeId.length;
+        if (nodeIdLength > blockLengths.id) {
+          blockLengths.id = nodeIdLength;
+        }
+        for (const [block, blockValue] of Object.entries(value)) {
+          const length = blockValue.label ? blockValue.label.length : 0;
+          // check if the block has been seen before
+          if (!(block in blockLengths)) {
+            blockLengths[block] = length;
+          } else if (length > blockLengths[block]) {
+            blockLengths[block] = blockValue.label.length;
+          }
+        }
+      }
+      for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        const label = state.labelBlocks.map(
+          (block) => {
+            if (!value[block].label) {
+              return ' '.repeat(blockLengths[block]);
+            }
+            let prefix = '';
+            if (state.keyValueLabelBlocks) {
+              prefix = `${block}=`;
+            }
+            if (state.alignLabels) {
+              return prefix + value[block].label.padEnd(blockLengths[block], ' ');
+            }
+            return prefix + value[block].label;
+          },
+        );
+        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
+        if (state.alignLabels) {
+          newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
+        } else {
+          newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
+        }
+      }
+      setStyles(newStyles);
+    }
+  }, [state.labelBlocks, state.keyValueLabelBlocks, phylocanvasMetadata, state.alignLabels]);
+
+  useEffect(() => {
     // Get tree details, including tree type
     const getTree = async () => {
       let treeResponse: ResponseObject;
@@ -166,6 +224,7 @@ function TreeDetail() {
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
           rootId={rootId}
+          styles={styles}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
         />
@@ -237,6 +296,7 @@ function TreeDetail() {
             </AccordionSummary>
             <AccordionDetails>
               <NodeAndLabelControls
+                columns={visualisableColumns}
                 state={state}
                 onChange={handleStateChange}
               />
