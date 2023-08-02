@@ -67,7 +67,7 @@ export interface Member {
   roles: string[],
   organization:{
     id: number,
-    name: string,
+    abbreviation: string,
   },
   displayName: string,
   lastLoggedIn: string,

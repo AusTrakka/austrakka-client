@@ -437,6 +437,7 @@ function ProjectOverview() {
               memberList={projectMembers}
               memberListError={memberListError}
               memberListErrorMessage={memberListErrorMessage}
+              projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
         </>
