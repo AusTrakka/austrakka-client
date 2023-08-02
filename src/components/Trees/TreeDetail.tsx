@@ -173,7 +173,7 @@ function TreeDetail() {
             return prefix + value[block].label;
           },
         );
-        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;        
+        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
         if (state.alignLabels) {
           newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
         } else {
