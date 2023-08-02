@@ -1,12 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import getQueryParamOrDefault from './navigationUtils';
 
 export default function isoDateLocalDate(datetime: any) {
   let isoDate = null;
+  if (datetime.getValue === 'function') {
+    if (datetime.getValue() === null) {
+      return null;
+    }
+
+    isoDate = new Date(datetime.getValue());
+  } else {
+    isoDate = new Date(Date.parse(datetime));
+  }
   isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
+
 export function isoDateLocalDateNoTime(datetime: any) {
+  if (datetime?.getValue() === null) return '';
   const isoDate = new Date(datetime.getValue());
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
@@ -19,7 +31,6 @@ export function formatDate(dateUTC: any) {
 
 export function useFirstRender() {
   const firstRender = useRef(true);
-
   useEffect(() => {
     firstRender.current = false;
   }, []);
@@ -66,4 +77,28 @@ export function generateDateFilterString(
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
   }
   return filterString;
+}
+
+export function useStateFromSearchParamsForPrimitive
+<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+  paramName: string,
+  defaultState: T,
+  searchParams: URLSearchParams,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
+  return useState<T>(stateSearchParams);
+}
+
+export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
+  defaultState: T,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const searchParams = new URLSearchParams(window.location.search);
+  const state: T = { ...defaultState };
+  Object.keys(defaultState).forEach((key) => {
+    const queryValue = getQueryParamOrDefault<T[keyof T]>(key, defaultState[key], searchParams);
+    if (queryValue !== undefined) {
+      state[key as keyof T] = queryValue; // Cast the value to the appropriate type
+    }
+  });
+  return useState<T>(state);
 }
