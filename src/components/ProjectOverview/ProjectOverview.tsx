@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
-  getTrees,
+  getTrees, getGroupMembers,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayFields } from '../../types/fields.interface';
@@ -15,8 +15,9 @@ import { Filter } from '../Common/QueryBuilder';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
+import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -71,6 +72,11 @@ function ProjectOverview() {
   // Plots component states
   const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
+
+  const [projectMembers, setProjectMemebers] = useState<Member[]>([]);
+  const [isMembersLoading, setIsMembersLoading] = useState(true);
+  const [memberListError, setMemberListError] = useState(false);
+  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
 
   useEffect(() => {
     async function getProject() {
@@ -178,11 +184,27 @@ function ProjectOverview() {
       }
     }
 
+    async function getMemberList() {
+      // eslint-disable-next-line max-len
+      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id);
+      if (memberListResponse.status === 'Success') {
+        setProjectMemebers(memberListResponse.data as Member[]);
+        setMemberListError(false);
+        setIsMembersLoading(false);
+      } else {
+        setIsMembersLoading(false);
+        setProjectMemebers([]);
+        setMemberListError(true);
+        setMemberListErrorMessage(memberListResponse.message);
+      }
+    }
+
     if (projectDetails) {
       getProjectSummary();
       getSampleTableHeaders();
       getTreeList();
       getPlotList();
+      getMemberList();
     }
   }, [projectDetails]);
 
@@ -332,6 +354,10 @@ function ProjectOverview() {
       index: 3,
       title: 'Plots',
     },
+    {
+      index: 4,
+      title: 'Members',
+    },
   ];
 
   return (
@@ -403,6 +429,14 @@ function ProjectOverview() {
               isPlotsLoading={isPlotsLoading}
               projectAbbrev={projectAbbrev!}
               plotList={projectPlots}
+            />
+          </TabPanel>
+          <TabPanel value={tabValue} index={4} tabLoader={isPlotsLoading}>
+            <MemberList
+              isMembersLoading={isMembersLoading}
+              memberList={projectMembers}
+              memberListError={memberListError}
+              memberListErrorMessage={memberListErrorMessage}
             />
           </TabPanel>
         </>
