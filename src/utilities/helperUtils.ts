@@ -10,6 +10,7 @@ export default function isoDateLocalDate(datetime: any) {
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
+
 export function isoDateLocalDateNoTime(datetime: any) {
   if (datetime?.getValue() === null) return '';
   const isoDate = new Date(datetime.getValue());
@@ -24,7 +25,6 @@ export function formatDate(dateUTC: any) {
 
 export function useFirstRender() {
   const firstRender = useRef(true);
-
   useEffect(() => {
     firstRender.current = false;
   }, []);

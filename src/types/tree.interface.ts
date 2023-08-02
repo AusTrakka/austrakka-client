@@ -1,4 +1,5 @@
 export default interface TreeState {
+  // state for phylocanvas
   blocks: any[];
   alignLabels: boolean;
   showBlockHeaders: boolean;
@@ -11,4 +12,7 @@ export default interface TreeState {
   type: string; // replace with the correct type of TreeTypes
   showInternalLabels: boolean;
   showBranchLengths: boolean;
+  // extra state for the tree controls
+  labelBlocks: string[];
+  keyValueLabelBlocks: boolean;
 }
