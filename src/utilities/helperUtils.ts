@@ -1,25 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import getQueryParamOrDefault from './navigationUtils';
 
-export default function isoDateLocalDate(datetime: any) {
-  let isoDate = null;
-  if (datetime.getValue === 'function') {
-    if (datetime.getValue() === null) {
-      return null;
-    }
-
-    isoDate = new Date(datetime.getValue());
-  } else {
-    isoDate = new Date(Date.parse(datetime));
-  }
-  isoDate = typeof datetime.getValue === 'function' ? new Date(datetime.getValue()) : new Date(Date.parse(datetime));
+export default function isoDateLocalDate(datetime: string) {
+  if (!datetime) return null;
+  const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
 
-export function isoDateLocalDateNoTime(datetime: any) {
-  if (datetime?.getValue() === null) return '';
-  const isoDate = new Date(datetime.getValue());
+export function isoDateLocalDateNoTime(datetime: string) {
+  if (!datetime) return null;
+  const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
 }

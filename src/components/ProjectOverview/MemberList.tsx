@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { memo, useEffect, useRef, useState } from 'react';
-import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton } from 'material-react-table';
-import { Alert, AlertTitle, Badge, Box, Chip, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
-import { Close, FileDownload, FilterList } from '@mui/icons-material';
+import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_ToggleFiltersButton } from 'material-react-table';
+import { Alert, AlertTitle, Box, Chip, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
+import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
@@ -31,7 +31,7 @@ const memberTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'displayName', header: 'Name' },
   { accessorKey: 'organization.abbreviation', header: 'Organisations' },
   { accessorKey: 'roles', header: 'Roles', Cell: ({ cell }: any) => <>{renderList(cell)}</> },
-  { accessorKey: 'lastLoggedIn', header: 'Last Logged In', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+  { accessorKey: 'lastLoggedIn', header: 'Last Logged In', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function MemberList(props: MembersProps) {
@@ -71,7 +71,7 @@ function MemberList(props: MembersProps) {
       const td = memberList.map((member) => ({
         roles: member.roles,
         // eslint-disable-next-line max-len
-        organization: member.organization.abbreviation, // Assuming organization is an object with a 'name' property
+        organization: member.organization?.abbreviation, // Assuming organization is an object with a 'name' property
         displayName: member.displayName,
         lastLoggedIn: member.lastLoggedIn,
       }));
@@ -172,21 +172,7 @@ function MemberList(props: MembersProps) {
         renderToolbarInternalActions={({ table }) => (
           <Box>
             {ExportButton}
-            <Tooltip title="Show/Hide filters" placement="top" arrow>
-              <IconButton
-                onClick={handleExportCSV}
-                disabled={memberList.length < 1}
-              >
-                <Badge
-                  badgeContent={memberList.length}
-                  color="primary"
-                  showZero
-                  invisible={memberList.length < 1}
-                >
-                  <FilterList />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <MRT_ToggleFiltersButton table={table} />
             <MRT_ShowHideColumnsButton table={table} />
           </Box>
         )}

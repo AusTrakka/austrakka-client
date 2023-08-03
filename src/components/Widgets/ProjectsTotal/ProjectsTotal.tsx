@@ -20,7 +20,7 @@ const columns:MRT_ColumnDef<any>[] = [
   {
     header: 'Latest sample created',
     accessorKey: 'latestDateCreated',
-    Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</>,
+    Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</>,
   },
 ];
 
