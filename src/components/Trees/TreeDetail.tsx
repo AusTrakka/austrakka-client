@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
@@ -39,7 +39,6 @@ interface Style {
 }
 
 function TreeDetail() {
-  const navigate = useNavigate();
   const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
@@ -61,39 +60,6 @@ function TreeDetail() {
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  // Update the URL when state changes
-  useEffect(() => {
-    // Create a new URLSearchParams instance
-    const currentSearchParams = new URLSearchParams(window.location.search);
-
-    Object.entries(state).forEach(([key, value]) => {
-      // If the key exists in the current searchParams, delete it
-      if (currentSearchParams.has(key)) {
-        currentSearchParams.delete(key);
-      }
-      // If the value differs from the default, append it to searchParams
-      if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
-        if (!(value instanceof Array && value.length === 0)) {
-          currentSearchParams.append(key, String(value));
-        }
-      }
-    });
-
-    // If the rootId exists in the current searchParams, delete it
-    if (currentSearchParams.has('rootId')) {
-      currentSearchParams.delete('rootId');
-    }
-    // If the rootId differs from the default, append it to searchParams
-    if (rootId !== rootIdDefault) {
-      currentSearchParams.append('rootId', String(rootId));
-    }
-
-    // Convert searchParams to a string
-    const queryString = currentSearchParams.toString();
-    // Update the URL without navigating
-    navigate({ search: `?${queryString}` }, { replace: true });
-  }, [state, navigate, rootId]);
 
   // control hooks
   useEffect(() => {
