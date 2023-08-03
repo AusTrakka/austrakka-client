@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
@@ -39,7 +39,8 @@ interface Style {
 }
 
 function TreeDetail() {
-  const { analysisId, jobInstanceId } = useParams();
+  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
+  const navigate = useNavigate();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
@@ -225,6 +226,12 @@ function TreeDetail() {
     ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);
 
+    const handleJumpToSubtree = (id: string) => {
+      if (!tree) return;
+      navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${tree.jobInstanceId}`, { replace: true });
+      setRootId(id);
+    };
+
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
@@ -249,7 +256,7 @@ function TreeDetail() {
                 versions={versions}
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
-                onJumpToSubtree={(id: string) => setRootId(id)}
+                onJumpToSubtree={handleJumpToSubtree}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>
