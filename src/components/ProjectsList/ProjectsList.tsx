@@ -16,7 +16,7 @@ const columns:MRT_ColumnDef<Project>[] = [
   { header: 'Abbreviation', accessorKey: 'abbreviation' },
   { header: 'Name', accessorKey: 'name' },
   { header: 'Description', accessorKey: 'description' },
-  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function ProjectsList() {
