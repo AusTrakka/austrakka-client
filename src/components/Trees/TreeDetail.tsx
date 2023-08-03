@@ -127,21 +127,22 @@ function TreeDetail() {
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
         const label = state.labelBlocks.map(
           (block) => {
-            if (!value[block].label) {
-              return ' '.repeat(blockLengths[block]);
-            }
             let prefix = '';
+            const blockLength = blockLengths[block];
             if (state.keyValueLabelBlocks) {
               prefix = `${block}=`;
             }
+            if (!value[block].label) {
+              return prefix + ' '.repeat(blockLength);
+            }
             if (state.alignLabels) {
-              return prefix + value[block].label.padEnd(blockLengths[block], ' ');
+              return prefix + value[block].label.padEnd(blockLength, ' ');
             }
             return prefix + value[block].label;
           },
         );
         const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
-        if (state.alignLabels) {
+        if (state.alignLabels && formattedBlocksString.length > 0) {
           newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
         } else {
           newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
