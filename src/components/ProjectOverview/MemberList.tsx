@@ -154,7 +154,6 @@ function MemberList(props: MembersProps) {
         initialState={{ density: 'compact' }}
         enableColumnResizing
         enableFullScreenToggle={false}
-        enableHiding={false}
         enableDensityToggle={false}
         muiTableProps={{
           sx: {
