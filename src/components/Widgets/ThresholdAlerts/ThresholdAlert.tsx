@@ -8,6 +8,8 @@ import theme from '../../../assets/themes/theme';
 
 interface ThresholdAlertProps {
   alertRow: ThresholdAlertDTO;
+  setFilterList: Function,
+  setTabValue: Function,
 }
 
 const alertColours:{[key: string]: string} = {
@@ -19,11 +21,22 @@ const alertColours:{[key: string]: string} = {
 
 export default function ThresholdAlert(props: ThresholdAlertProps)
 {
-  const { alertRow } = props;
+  const { alertRow, setFilterList, setTabValue } = props;
+
+  const rowClickHandler = () => {
+    const drilldownFilter = [{
+      field: alertRow.categoryField,
+      fieldType: 'string',
+      condition: '==*',
+      value: alertRow.categoryValue,
+    }];
+    setFilterList(drilldownFilter);
+    setTabValue(1); // Navigate to "Samples" tab
+  };
 
   return (
     <Card variant="outlined" sx={{bgcolor: alertColours[alertRow.alertLevel]}}>
-      <CardActionArea>
+      <CardActionArea onClick={() => rowClickHandler()}>
         <CardContent>
         <Stack direction="row" 
               spacing={1}
@@ -39,7 +52,7 @@ export default function ThresholdAlert(props: ThresholdAlertProps)
           </Stack>
         </CardContent>
       </CardActionArea>
-    </Card> 
+    </Card>
   )
 }
 

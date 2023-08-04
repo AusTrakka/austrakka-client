@@ -28,7 +28,7 @@ function VicDHAlertsDashboard(props: any) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xl={4} md={4}>
+        <Grid item xl={4} md={3}>
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <PhessIdStatus
@@ -52,7 +52,7 @@ function VicDHAlertsDashboard(props: any) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xl={4} md={4}>
+        <Grid item xl={4} md={5}>
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <ThresholdAlerts

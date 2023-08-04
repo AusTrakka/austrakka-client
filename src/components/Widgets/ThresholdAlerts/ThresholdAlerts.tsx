@@ -56,7 +56,7 @@ export default function ThresholdAlerts(props: any) {
               .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => 
                 b.alertLevelOrder - a.alertLevelOrder)
               .map((alertRow: ThresholdAlertDTO) => (
-                <ThresholdAlert { ...{alertRow} } />
+                <ThresholdAlert { ...{alertRow, setFilterList,setTabValue} } />
             ))
           }
         </Stack>
