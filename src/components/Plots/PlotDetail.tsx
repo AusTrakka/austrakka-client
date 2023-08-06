@@ -8,7 +8,12 @@ import EpiCurve from './PlotTypes/EpiCurve';
 import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
 
-const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'BarChart', 'Custom'];
+const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Custom];
+
+var plotTypes = {};
+plotComponents.forEach(component => {
+  plotTypes[component.name] = component;
+});
 
 function PlotDetail() {
   // Note that if the project abbrev is wrong in the URL, there will be no effect
@@ -35,7 +40,7 @@ function PlotDetail() {
 
   useEffect(() => {
     if (plot) {
-      if (!KNOWN_PLOT_TYPES.includes(plot!.plotType)) {
+      if (typeof plotTypes[plot!.plotType] == 'undefined') {
         setErrorMsg(`Plot type ${plot!.plotType} cannot be rendered`);
       }
     }
@@ -52,40 +57,11 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    // Could use React.createElement instead of a switch statement
-    switch (plot!.plotType) {
-      case 'ClusterTimeline':
-        return (
-          <ClusterTimeline
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      case 'EpiCurve':
-        return (
-          <EpiCurve
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      case 'BarChart':
-        return (
-          <BarChart
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      case 'Custom':
-        return (
-          <Custom
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      default:
-        // eslint-disable-next-line react/jsx-no-useless-fragment
-        return <></>;
-    }
+    if (typeof plotTypes[plot!.plotType] == 'undefined'){ return <></>; }
+    return React.createElement(
+      plotTypes[plot!.plotType],
+      { plot: plot, setPlotErrorMsg: setErrorMsg },
+    );
   };
 
   return (
