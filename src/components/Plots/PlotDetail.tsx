@@ -5,9 +5,10 @@ import { Plot } from '../../types/dtos';
 import { ResponseObject, getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
+import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
 
-const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'Custom'];
+const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'BarChart', 'Custom'];
 
 function PlotDetail() {
   // Note that if the project abbrev is wrong in the URL, there will be no effect
@@ -63,6 +64,13 @@ function PlotDetail() {
       case 'EpiCurve':
         return (
           <EpiCurve
+            plot={plot}
+            setPlotErrorMsg={setErrorMsg}
+          />
+        );
+      case 'BarChart':
+        return (
+          <BarChart
             plot={plot}
             setPlotErrorMsg={setErrorMsg}
           />
