@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, Alert, Typography, Stack, CardActionArea, CardContent, AlertColor } from '@mui/material';
+import { Card, Typography, Stack, CardActionArea, CardContent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { ThresholdAlertDTO } from '../../../types/dtos';
 import theme from '../../../assets/themes/theme';
@@ -12,15 +12,14 @@ interface ThresholdAlertProps {
   setTabValue: Function,
 }
 
-const alertColours:{[key: string]: string} = {
-  "No Alert": 'white',
-  "Monitor": alpha(theme.palette.info.light, 0.3),
-  "Review": alpha(theme.palette.warning.light, 0.3),
-  "Investigate": alpha(theme.palette.error.light, 0.3),
-}
+const alertColours:{ [key: string]: string } = {
+  'No Alert': 'white',
+  'Monitor': alpha(theme.palette.info.light, 0.3),
+  'Review': alpha(theme.palette.warning.light, 0.3),
+  'Investigate': alpha(theme.palette.error.light, 0.3),
+};
 
-export default function ThresholdAlert(props: ThresholdAlertProps)
-{
+export default function ThresholdAlert(props: ThresholdAlertProps) {
   const { alertRow, setFilterList, setTabValue } = props;
 
   const rowClickHandler = () => {
@@ -35,14 +34,18 @@ export default function ThresholdAlert(props: ThresholdAlertProps)
   };
 
   return (
-    <Card variant="outlined" sx={{bgcolor: alertColours[alertRow.alertLevel]}}>
+    <Card variant="outlined" sx={{ bgcolor: alertColours[alertRow.alertLevel] }}>
       <CardActionArea onClick={() => rowClickHandler()}>
         <CardContent>
-        <Stack direction="row" 
-              spacing={1}
-              justifyContent="space-between">
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="space-between"
+          >
             <Typography>
-              {alertRow.categoryField}:<b>{alertRow.categoryValue}</b>
+              {alertRow.categoryField}
+              :
+              <b>{alertRow.categoryValue}</b>
             </Typography>
             <Typography>
               {(alertRow.ratio == null) ?
@@ -53,8 +56,5 @@ export default function ThresholdAlert(props: ThresholdAlertProps)
         </CardContent>
       </CardActionArea>
     </Card>
-  )
+  );
 }
-
-
-    

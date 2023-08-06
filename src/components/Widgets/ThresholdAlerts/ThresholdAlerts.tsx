@@ -18,23 +18,20 @@ export default function ThresholdAlerts(props: any) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId, };
+    const dispatchProps = { groupId, projectId };
     if (loading === 'idle') {
       dispatch(fetchThresholdAlerts(dispatchProps));
     }
   }, [loading, dispatch, projectId, groupId]);
 
-  // Descending severity, then alphabetical by category, then by descending recent count 
+  // Descending severity, then alphabetical by category, then by descending recent count
   const sortAlerts = (a: ThresholdAlertDTO, b: ThresholdAlertDTO) => {
-    if( a.alertLevelOrder != b.alertLevelOrder ) 
-      return b.alertLevelOrder - a.alertLevelOrder;
-    if( b.categoryField != a.categoryField )
-      return a.categoryField.localeCompare(b.categoryField);
-    if( a.recentCount != b.recentCount )
-      return b.recentCount - a.recentCount;
+    if (a.alertLevelOrder !== b.alertLevelOrder) { return b.alertLevelOrder - a.alertLevelOrder; }
+    if (b.categoryField !== a.categoryField) return a.categoryField.localeCompare(b.categoryField);
+    if (a.recentCount !== b.recentCount) return b.recentCount - a.recentCount;
     // For now no sort on ratio
     return 0;
-  }
+  };
 
   return (
     <Box>
@@ -52,13 +49,14 @@ export default function ThresholdAlerts(props: any) {
           {
             // Sort by order, descending
             data.data.slice()
-              .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => sortAlerts(a,b))
+              .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => sortAlerts(a, b))
               .map((alertRow: ThresholdAlertDTO) => (
-                <ThresholdAlert { ...{alertRow, setFilterList,setTabValue} } />
-            ))
+                <ThresholdAlert {...{ alertRow, setFilterList, setTabValue }} />
+              ))
           }
         </Stack>
-      )}
+        )
+}
       { loading === LoadingState.LOADING && (
         <div>Loading...</div>
       )}

@@ -28,8 +28,8 @@ async function callAPI(url:string, method:string, requestData:object) {
   const options: HTTPOptions = {
     method,
     headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token?.accessToken}`,
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token?.accessToken}`,
       'Access-Control-Expose-Headers': '*',
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },

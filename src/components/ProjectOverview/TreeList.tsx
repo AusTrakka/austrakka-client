@@ -43,7 +43,7 @@ function TreeList(props: TreesProps) {
         enableDensityToggle={false}
         muiTableProps={{
           sx: {
-            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
           },
         }}
         muiToolbarAlertBannerProps={
