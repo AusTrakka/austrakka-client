@@ -40,7 +40,7 @@ function VicDHAlertsDashboard(props: any) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xl={4} md={4}>
+        <Grid item xl={3} md={4}>
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <Organisations
@@ -52,8 +52,8 @@ function VicDHAlertsDashboard(props: any) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xl={4} md={5}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+        <Grid item xl={5} md={5}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', maxHeight: '70vh', overflow: 'auto' }}>
             <CardContent>
               <ThresholdAlerts
                 projectId={projectId}
