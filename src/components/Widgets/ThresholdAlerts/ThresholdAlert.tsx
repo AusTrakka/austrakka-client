@@ -46,8 +46,8 @@ export default function ThresholdAlert(props: ThresholdAlertProps)
             </Typography>
             <Typography>
               {(alertRow.ratio == null) ?
-                alertRow.alertLevel :
-                `${alertRow.alertLevel} (ratio=${alertRow.ratio.toFixed(1)})`}
+                `${alertRow.alertLevel} (N=${alertRow.recentCount})` :
+                `${alertRow.alertLevel} (N=${alertRow.recentCount}, ratio=${alertRow.ratio.toFixed(1)})`}
             </Typography>
           </Stack>
         </CardContent>

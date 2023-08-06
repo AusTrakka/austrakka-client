@@ -111,4 +111,5 @@ export interface ThresholdAlertDTO {
   categoryField: string;
   categoryValue: string;
   ratio: number | null;
+  recentCount: number;
 }

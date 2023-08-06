@@ -6,19 +6,6 @@ import LoadingState from '../../../constants/loadingState';
 import ThresholdAlert from './ThresholdAlert';
 import { ThresholdAlertDTO } from '../../../types/dtos';
 
-const fakeData: ThresholdAlertDTO[] = [
-  {alertLevelOrder: 0,
-    alertLevel: "No Alert",
-    categoryField: "Serotype",
-    categoryValue: "Enteritidis",
-    ratio: null},
-  {alertLevelOrder: 3,
-    alertLevel: "Investigate",
-    categoryField: "Serotype",
-    categoryValue: "Hvittingfoss",
-    ratio: 7.0} 
-  ]
-
 export default function ThresholdAlerts(props: any) {
   const {
     setFilterList,
@@ -37,10 +24,22 @@ export default function ThresholdAlerts(props: any) {
     }
   }, [loading, dispatch, projectId, groupId]);
 
+  // Descending severity, then alphabetical by category, then by descending recent count 
+  const sortAlerts = (a: ThresholdAlertDTO, b: ThresholdAlertDTO) => {
+    if( a.alertLevelOrder != b.alertLevelOrder ) 
+      return b.alertLevelOrder - a.alertLevelOrder;
+    if( b.categoryField != a.categoryField )
+      return a.categoryField.localeCompare(b.categoryField);
+    if( a.recentCount != b.recentCount )
+      return b.recentCount - a.recentCount;
+    // For now no sort on ratio
+    return 0;
+  }
+
   return (
     <Box>
       <Typography variant="h5" paddingBottom={1} color="primary">
-        Threshold exceedances
+        Threshold exceedances (6wk/5yr)
       </Typography>
       { loading === LoadingState.ERROR && (
         <Alert severity="error">
@@ -53,8 +52,7 @@ export default function ThresholdAlerts(props: any) {
           {
             // Sort by order, descending
             data.data.slice()
-              .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => 
-                b.alertLevelOrder - a.alertLevelOrder)
+              .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => sortAlerts(a,b))
               .map((alertRow: ThresholdAlertDTO) => (
                 <ThresholdAlert { ...{alertRow, setFilterList,setTabValue} } />
             ))
