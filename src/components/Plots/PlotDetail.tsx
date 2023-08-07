@@ -7,8 +7,9 @@ import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
 import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
+import HeatMap from './PlotTypes/HeatMap';
 
-const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Custom];
+const plotComponents = [ClusterTimeline, EpiCurve, BarChart, HeatMap, Custom];
 
 var plotTypes = {};
 plotComponents.forEach(component => {
