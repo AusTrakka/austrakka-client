@@ -28,6 +28,9 @@ interface SamplesProps {
   groupContext: number | undefined,
 }
 // SAMPLE TABLE
+// Transitionary sampel table component that contains repeat code from both
+//    - ProjectOverview.tsx and,
+//    - Samples.tsx
 // Takes groupContext as input and:
 // 1. Gets display fields for that group to a) builds columns and b) order columns
 // 2. Gets sample list (paginated, filtered + sorted) for display in table
@@ -49,6 +52,7 @@ function SampleTable(props: SamplesProps) {
   const [samplesCount, setSamplesCount] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState({
     samplesHeaderError: false,
+    samplesTotalError: false,
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
@@ -65,7 +69,12 @@ function SampleTable(props: SamplesProps) {
       if (filterFieldsResponse.status === 'Success') {
         setDisplayFields(filterFieldsResponse.data);
       } else {
-        // TODO: Set error message here - endpoint error message
+        setIsSamplesError((prevState) => ({
+          ...prevState,
+          samplesHeaderError: true,
+          samplesErrorMessage: filterFieldsResponse.message,
+        }));
+        setIsSamplesLoading(false);
       }
     }
     async function getTotalSamplesOverall() {
@@ -74,66 +83,83 @@ function SampleTable(props: SamplesProps) {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
       } else {
-        // TODO: Set error message here - endpoint error message
+        setIsSamplesError((prevState) => ({
+          ...prevState,
+          samplesTotalError: true,
+          samplesErrorMessage: totalSamplesResponse.message,
+        }));
+        setIsSamplesLoading(false);
       }
     }
     if (groupContext !== undefined) {
+      setIsSamplesLoading(true);
       getFields();
       getTotalSamplesOverall();
     }
   }, [groupContext]);
 
-  useEffect(() => {
+  useEffect(
+    () => {
     // BUILD COLUMNS
-    const formatTableHeaders = () => {
-      const columnHeaderArray = displayFields;
-      const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-      columnHeaderArray.forEach((element: MetaDataColumn) => {
-        if (element.primitiveType === 'boolean') {
-          columnBuilder.push({
-            accessorKey: element.columnName,
-            header: `${element.columnName}`,
-            Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-          });
-        } else if (element.primitiveType === 'date') {
-          columnBuilder.push({
-            accessorKey: element.columnName,
-            header: `${element.columnName}`,
-            Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell) : isoDateLocalDate(cell)),
-          });
-        } else {
-          columnBuilder.push({
-            accessorKey: element.columnName,
-            header: `${element.columnName}`,
-          });
+      const formatTableHeaders = () => {
+        const columnHeaderArray = displayFields;
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+        columnHeaderArray.forEach((element: MetaDataColumn) => {
+          if (element.primitiveType === 'boolean') {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
+            });
+          } else if (element.primitiveType === 'date') {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell) : isoDateLocalDate(cell)),
+            });
+          } else {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+            });
+          }
+        });
+        setSampleTableColumns(columnBuilder);
+        setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
+      };
+      // ORDER COLUMNS
+      const getColumnOrder = () => {
+        function compareFields(field1: { columnOrder: number; }, field2: { columnOrder: number; }) {
+          if (field1.columnOrder < field2.columnOrder) {
+            return -1; // sort field1 before field2
+          }
+          if (field1.columnOrder > field2.columnOrder) {
+            return 1; // sort field1 after field2
+          }
+          return 0; // keep original order of field1 and field2
         }
-      });
-      setSampleTableColumns(columnBuilder);
-      setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
-    };
-    // ORDER COLUMNS
-    const getColumnOrder = () => {
-      function compareFields(field1: { columnOrder: number; }, field2: { columnOrder: number; }) {
-        if (field1.columnOrder < field2.columnOrder) {
-          return -1; // sort field1 before field2
-        }
-        if (field1.columnOrder > field2.columnOrder) {
-          return 1; // sort field1 after field2
-        }
-        return 0; // keep original order of field1 and field2
+        const orderedArray: string[] = [];
+        // Order fields in an array from fieldList
+        const copy = [...displayFields]; // Creating copy of original array so it's not overridden
+        const sortedDisplayFields = copy.sort(compareFields);
+        sortedDisplayFields.forEach((field) => {
+          orderedArray.push(field.columnName);
+        });
+        setColumnOrderArray(orderedArray);
+      };
+      if (!isSamplesError.samplesHeaderError && !isSamplesError.samplesTotalError) {
+        formatTableHeaders();
+        getColumnOrder();
       }
-      const orderedArray: string[] = [];
-      // Order fields in an array from fieldList
-      const copy = [...displayFields]; // Creating copy of original array so it's not overridden
-      const sortedDisplayFields = copy.sort(compareFields);
-      sortedDisplayFields.forEach((field) => {
-        orderedArray.push(field.columnName);
-      });
-      setColumnOrderArray(orderedArray);
-    };
-    formatTableHeaders();
-    getColumnOrder();
-  }, [displayFields, setIsSamplesError, setSampleTableColumns]);
+    },
+    [
+      displayFields,
+      isSamplesError.samplesHeaderError,
+      isSamplesError.samplesTotalError,
+      setIsSamplesError,
+      setSampleTableColumns,
+    ],
+  );
 
   // GET SAMPLES - paginated
   useEffect(
@@ -177,6 +203,7 @@ function SampleTable(props: SamplesProps) {
         getSamplesList();
       } else {
         setSampleList([]);
+        setIsSamplesLoading(false);
       }
     },
     [groupContext, samplesPagination.pageIndex, samplesPagination.pageSize,
