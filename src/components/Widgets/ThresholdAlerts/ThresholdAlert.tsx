@@ -14,8 +14,11 @@ interface ThresholdAlertProps {
 
 const alertColours:{ [key: string]: string } = {
   'No Alert': 'white',
+  // @ts-ignore
   'Monitor': alpha(theme.palette.info.light, 0.3),
+  // @ts-ignore
   'Review': alpha(theme.palette.warning.light, 0.3),
+  // @ts-ignore
   'Investigate': alpha(theme.palette.error.light, 0.3),
 };
 
