@@ -7,10 +7,8 @@ function UploadSequences() {
 
   return (
     <Box>
-      <Typography className="pageTitle">
-        Upload Sequences
-      </Typography>
-      Coming soon!
+      <Typography variant="h2" paddingBottom={1} color="primary">Upload Sequences</Typography>
+      This page is coming soon!
     </Box>
   );
 }

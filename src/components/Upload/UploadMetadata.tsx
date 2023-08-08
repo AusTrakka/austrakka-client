@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
-import { Box, FormControl, Grid, InputLabel, Select, Typography, Button } from '@mui/material';
-import RuleOutlinedIcon from '@mui/icons-material/RuleOutlined';
-import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
+import React, { useEffect, useState, ChangeEvent } from 'react';
+import { Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox, FormGroup, MenuItem, Alert } from '@mui/material';
+import { UploadFile } from '@mui/icons-material';
+import { ResponseObject, getUserProformas } from '../../utilities/resourceUtils';
+import { Proforma } from '../../types/dtos';
 
 function UploadInstructions() {
   return (
     <>
-      <Typography variant="h3">
+      <Typography variant="h4" color="primary">
         Instructions
       </Typography>
       <Typography>Please use the supplied pro forma to submit metadata for samples.</Typography>
@@ -46,64 +47,128 @@ function UploadInstructions() {
           it will not be shared with anyone except the owner group.
         </li>
       </ul>
-      <br />
-      <RuleOutlinedIcon />
-      <Typography variant="h6">Validate mode</Typography>
-      Select Validate only if you would like to perform a &ldquo;dry run&rdquo; upload.
-      This will show validation warnings and errors for the supplied file,
-      but will not upload any data.
-      <br />
-      <br />
-      <AddCircleOutlineOutlinedIcon />
-      <Typography variant="h6">Append mode</Typography>
-      Select Append metadata to upload data in &ldquo;append mode&rdquo;.
-      In this mode, metadata will be added to existing sample records,
-      but new samples cannot be included in the upload.
-      In this mode, the field Owner_group is no longer required and will be ignored.
     </>
   );
 }
 
 function UploadMetadata() {
-  // Get: List of proformas
   // Post: Upload
   // Post: Append
   // Post: Validate
+  // Post: Blank delete
+  const [proformas, setProformas] = useState<Proforma[]>([]);
+  const [selectedProforma, setSelectedProforma] = useState<Proforma>();
+  const [options, setOptions] = useState({
+    validate: false,
+    blank: false,
+    append: false,
+  });
+  const [invalidFile] = useState(true);
 
   useEffect(() => {
+    const getProformas = async () => {
+      const proformaResponse: ResponseObject = await getUserProformas();
+      if (proformaResponse.status === 'Success') {
+        setProformas(proformaResponse.data);
+      } else {
+        // TODO: Error handling
+        console.log('Error');
+      }
+    };
+
+    getProformas();
   }, []);
 
+  const handleSelectProforma = (proformaAbbrev: string) => {
+    // Find selected proforma object
+    const proformaObj = proformas.filter(proforma => proforma.abbreviation === proformaAbbrev);
+    setSelectedProforma(proformaObj[0]);
+  };
+
+  const handleOptionChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setOptions({
+      ...options,
+      [event.target.name]: event.target.checked,
+    });
+  };
   return (
-    <Box>
-      <Typography variant="h2" color="primary" sx={{ marginBottom: '10px' }}>
-        Upload Metadata
-      </Typography>
-      <Grid container>
-        <Grid item xs={8}>
+    <>
+      <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
+      <Grid container spacing={8}>
+        <Grid item xs={4}>
           <UploadInstructions />
         </Grid>
-        <Grid item xs={4}>
-          <Typography variant="h3">Upload Pro forma</Typography>
-          <Typography>Select the pro forma and file you would like to upload.</Typography>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
+        <Grid item xs={8}>
+          <Typography variant="h4" color="primary">Select and upload pro forma</Typography>
+          <FormControl size="small" sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }} variant="standard">
             <InputLabel id="proforma-simple-select-label">Pro forma</InputLabel>
             <Select
               labelId="proforma-simple-select-label"
               id="proforma-simple-select-label"
               label="Pro forma"
               name="proforma"
-            />
+              value={selectedProforma?.abbreviation || ''}
+              onChange={(e) => handleSelectProforma(e.target.value)}
+              autoWidth
+            >
+              { proformas.map((proforma: Proforma) => (
+                <MenuItem
+                  value={proforma.abbreviation}
+                  key={proforma.abbreviation}
+                >
+                  {`${proforma.abbreviation} : ${proforma.name}`}
+                </MenuItem>
+              )) }
+            </Select>
           </FormControl>
-          <Box sx={{ p: 2, border: '1px dashed grey' }}>
-            Drag and drop file here or
-            <Button variant="contained">Browse files</Button>
+          <Box sx={{ p: 4, backgroundColor: 'rgb(238, 242, 246)', marginTop: 2, marginBottom: 2, textAlign: 'center' }}>
+            <UploadFile fontSize="large" color="primary" />
+            <Typography variant="h5" color="primary">Drag and drop file here</Typography>
+            <Typography variant="subtitle1">or</Typography>
+            <Button variant="contained">Browse</Button>
           </Box>
-          <Button variant="contained">
-            Upload
-          </Button>
+          {/* TODO: Fix layout of checkboxes so they can include sub descriptions */}
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox checked={options.validate} onChange={handleOptionChange} name="validate" />
+            }
+              label="Validate only"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox checked={options.blank} onChange={handleOptionChange} name="blank" />
+            }
+              label="Blank cells will delete"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox checked={options.append} onChange={handleOptionChange} name="append" />
+            }
+              label="Append metadata or update existing samples"
+            />
+          </FormGroup>
+          <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
+            <Grid item xs>
+              { invalidFile && <Alert severity="error">Invalid file type. Valid file types are: .csv, .xls, .xlsx</Alert> }
+            </Grid>
+            <Grid item>
+              {/* TODO: Buttons have to be disabled if no file present, or invalid file type */}
+              { options.validate ? (
+                <Button variant="contained" disabled={invalidFile!}>
+                  Validate
+                </Button>
+              )
+                : (
+                  <Button variant="contained" disabled={invalidFile!}>
+                    Upload
+                  </Button>
+                )}
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
-    </Box>
+    </>
   );
 }
 export default UploadMetadata;

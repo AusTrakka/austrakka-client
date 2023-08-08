@@ -99,6 +99,7 @@ export const getTreeMetaData = (analysisId: number, jobInstanceId: number) => ca
 export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearch?${searchParams}`, 'GET', {});
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
+export const getUserProformas = () => callAPI('/api/Proformas', 'GET', {});
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/assigned-dashboard/${projectId}`, 'GET', {});
