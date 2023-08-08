@@ -1,10 +1,10 @@
 import { Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
-import SubmittingOrgs from '../../Widgets/SubmittingOrgs/SubmittingOrgs';
-import StCounts from '../../Widgets/StCounts/StCounts';
+import Organisations from '../../Widgets/Organisations/Organisations';
 // import QcStatus from '../../Widgets/QcStatus/QcStatus';
 import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
+import StCounts from '../../Widgets/StCounts/StCounts';
 
 // TODO: Set a max card height and handle scroll voerflow
 function VicDHDashboard(props: any) {
@@ -51,7 +51,7 @@ function VicDHDashboard(props: any) {
             <Grid item xl={12} xs={4}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
-                  <SubmittingOrgs
+                  <Organisations
                     projectId={projectId}
                     groupId={groupId}
                     setFilterList={setFilterList}

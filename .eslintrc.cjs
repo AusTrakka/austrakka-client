@@ -21,6 +21,7 @@ module.exports = {
     'implicit-arrow-linebreak': 0,  // allows linebreak after =>
     'object-curly-newline': ['error', {'consistent': true}],   // one-line {} or newlines, just be consistent
     'arrow-parens': 0,   // allow a => a+b. Alternatively could use ['error','as-needed']
+    'quote-props': ['error', 'consistent'],  // enforce quotes on all properties, or none
     'no-restricted-syntax': [  // dropping ForOfStatement; reiterating the other rules
       'error', 
       { 

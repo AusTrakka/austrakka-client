@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
@@ -14,10 +14,33 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import TreeState from '../../types/tree.interface';
+
+const defaultState: TreeState = {
+  blocks: [],
+  alignLabels: true,
+  showBlockHeaders: true,
+  blockHeaderFontSize: 13,
+  blockPadding: 3,
+  blockSize: 16,
+  showLeafLabels: true,
+  fontSize: 16,
+  nodeSize: 6,
+  type: TreeTypes.Rectangular,
+  showInternalLabels: false,
+  showBranchLengths: false,
+  labelBlocks: [],
+  keyValueLabelBlocks: false,
+};
+
+interface Style {
+  label: string;
+}
 
 function TreeDetail() {
-  const { analysisId, jobInstanceId } = useParams();
+  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
+  const navigate = useNavigate();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
@@ -25,24 +48,21 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [rootId, setRootId] = useState<string | null>(null);
-  // control hooks
-  const [state, setState] = useState({
-    blocks: [],
-    alignLabels: true,
-    showBlockHeaders: true,
-    blockHeaderFontSize: 13,
-    blockPadding: 3,
-    blockSize: 16,
-    showLeafLabels: false,
-    fontSize: 16,
-    nodeSize: 6,
-    type: TreeTypes.Rectangular,
-    showInternalLabels: false,
-    showBranchLengths: false,
-  });
+  const [styles, setStyles] = useState<Record<string, Style>>({});
+  const [state, setState] = useStateFromSearchParamsForObject(
+    defaultState,
+  );
+  const rootIdDefault: string = '0';
+  const searchParams = new URLSearchParams(window.location.search);
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
+    'rootId',
+    rootIdDefault,
+    searchParams,
+  );
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // control hooks
   useEffect(() => {
     const getMetadata = async () => {
       const metadataResponse: ResponseObject = await getTreeMetaData(
@@ -81,6 +101,56 @@ function TreeDetail() {
       getVersions();
     }
   }, [analysisId, tree]);
+
+  useEffect(() => {
+    if (phylocanvasMetadata) {
+      const newStyles: Record<string, Style> = {};
+      const delimiter = '|';
+      // find the length of the longest label for each block
+      const blockLengths: Record<string, number> = {};
+      blockLengths.id = 0;
+      for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        const nodeIdLength = nodeId.length;
+        if (nodeIdLength > blockLengths.id) {
+          blockLengths.id = nodeIdLength;
+        }
+        for (const [block, blockValue] of Object.entries(value)) {
+          const length = blockValue.label ? blockValue.label.length : 0;
+          // check if the block has been seen before
+          if (!(block in blockLengths)) {
+            blockLengths[block] = length;
+          } else if (length > blockLengths[block]) {
+            blockLengths[block] = blockValue.label.length;
+          }
+        }
+      }
+      for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        const label = state.labelBlocks.map(
+          (block) => {
+            let prefix = '';
+            const blockLength = blockLengths[block];
+            if (state.keyValueLabelBlocks) {
+              prefix = `${block}=`;
+            }
+            if (!value[block].label) {
+              return prefix + ' '.repeat(blockLength);
+            }
+            if (state.alignLabels) {
+              return prefix + value[block].label.padEnd(blockLength, ' ');
+            }
+            return prefix + value[block].label;
+          },
+        );
+        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
+        if (state.alignLabels && formattedBlocksString.length > 0) {
+          newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
+        } else {
+          newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
+        }
+      }
+      setStyles(newStyles);
+    }
+  }, [state.labelBlocks, state.keyValueLabelBlocks, phylocanvasMetadata, state.alignLabels]);
 
   useEffect(() => {
     // Get tree details, including tree type
@@ -122,6 +192,7 @@ function TreeDetail() {
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
           rootId={rootId}
+          styles={styles}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
         />
@@ -150,15 +221,17 @@ function TreeDetail() {
     });
   };
 
-  const handleJumpToSubtree = (subtreeRootId: string | null) => {
-    setRootId(subtreeRootId);
-  };
-
   const renderControls = () => {
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);
+
+    const handleJumpToSubtree = (id: string) => {
+      if (!tree) return;
+      navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${tree.jobInstanceId}`, { replace: true });
+      setRootId(id);
+    };
 
     if (tree) {
       return (
@@ -179,6 +252,7 @@ function TreeDetail() {
             <AccordionDetails>
               <TreeNavigation
                 state={state}
+                rootId={rootId}
                 currentVersion={tree.version}
                 versions={versions}
                 selectedIds={selectedIds}
@@ -196,6 +270,7 @@ function TreeDetail() {
             </AccordionSummary>
             <AccordionDetails>
               <NodeAndLabelControls
+                columns={visualisableColumns}
                 state={state}
                 onChange={handleStateChange}
               />
@@ -229,6 +304,7 @@ function TreeDetail() {
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
+          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderTree()}
       </Grid>

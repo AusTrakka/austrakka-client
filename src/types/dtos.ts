@@ -1,5 +1,4 @@
-// These are view models; should correspond to server-side DTOs
-
+// These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
   abbreviation: string,
@@ -64,6 +63,16 @@ export interface PlotListing {
   // also projectName, and isActive. projectAbbrev??
 }
 
+export interface Member {
+  roles: string[],
+  organization:{
+    id: number,
+    abbreviation: string,
+  },
+  displayName: string,
+  lastLoggedIn: string,
+}
+
 export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
@@ -94,6 +103,15 @@ export interface AnalysisResultMetadata {
   status: boolean;
   submissionId: number;
   versionId: number;
+}
+
+export interface ThresholdAlertDTO {
+  alertLevelOrder: number;
+  alertLevel: string;
+  categoryField: string;
+  categoryValue: string;
+  ratio: number | null;
+  recentCount: number;
 }
 
 export interface Group {

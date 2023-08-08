@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
@@ -16,10 +16,11 @@ interface TreeNavigationProps {
   currentVersion: string,
   versions: JobInstance[],
   selectedIds: string[],
+  rootId: string,
   onChange: (
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
   ) => void;
-  onJumpToSubtree: (id: string | null) => void;
+  onJumpToSubtree: (id: string) => void;
   phylocanvasRef: React.RefObject<TreeExportFuctions>,
 }
 
@@ -29,6 +30,7 @@ export default function TreeNavigation(
     currentVersion,
     versions,
     selectedIds,
+    rootId,
     onChange,
     onJumpToSubtree,
     phylocanvasRef,
@@ -37,10 +39,11 @@ export default function TreeNavigation(
   const navigate = useNavigate();
   const { projectAbbrev, analysisId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
-  const [history, setHistory] = React.useState<Array<PhylocanvasNode | null>>([null]);
-  const [historyIndex, setHistoryIndex] = React.useState<number>(0);
+  const [history, setHistory] = React.useState<Array<PhylocanvasNode>>([]);
+  // the root is implicitly the -1th element of the history
+  const [historyIndex, setHistoryIndex] = React.useState<number>(-1);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Don't do anything if phylocanvasRef or phylocanvasRef.current.nodes is not yet set
     const phyloNodes = phylocanvasRef?.current?.nodes;
     if (!phyloNodes) return;
@@ -49,15 +52,38 @@ export default function TreeNavigation(
     setNodes(phyloNodes.ids);
   }, [nodes, phylocanvasRef]);
 
+  useEffect(() => {
+    // sets the history when tree is loaded from URL
+    if (rootId === '0') return;
+    if (historyIndex !== -1) return;
+    if (history.length !== 0) return;
+    if (!nodes) return;
+    const newHistory = [nodes[rootId]];
+    setHistory(newHistory);
+    setHistoryIndex(0);
+  }, [history, nodes, historyIndex, rootId]);
+
+  const handleGoToRoot = () => {
+    if (nodes === null) return;
+    onJumpToSubtree('0');
+    const newHistory = history.slice(0, historyIndex + 1);
+    setHistory([...newHistory, nodes['0']]);
+    setHistoryIndex(newHistory.length);
+    phylocanvasRef.current?.fitInCanvas();
+  };
+
   const handleJumpToSubtree = () => {
     if (nodes) {
-      const selectedNodes: PhylocanvasNode[] = selectedIds.map((id) => nodes[id]);
+      const selectedNodes: PhylocanvasNode[] = selectedIds.map(
+        (id) => nodes[id],
+      ).filter((node) => node !== undefined);
       let mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
         while (mrca?.totalSubtreeLength === 0) {
           mrca = mrca.parent;
         }
-        onJumpToSubtree(mrca?.id || null);
+        if (mrca === null) return;
+        onJumpToSubtree(mrca?.id || '0');
         // append to history
         const newHistory = history.slice(0, historyIndex + 1);
         setHistory([...newHistory, mrca]);
@@ -66,34 +92,27 @@ export default function TreeNavigation(
       }
     }
   };
-  const handleGoToRoot = () => {
-    onJumpToSubtree(null);
-    const newHistory = history.slice(0, historyIndex + 1);
-    setHistory([...newHistory, null]);
-    setHistoryIndex(newHistory.length);
-    phylocanvasRef.current?.fitInCanvas();
-  };
+
   const handleBack = () => {
-    if (historyIndex > 0) {
-      const newHistoryIndex = historyIndex - 1;
-      setHistoryIndex(newHistoryIndex);
-      onJumpToSubtree(history[newHistoryIndex]?.id || null);
-      phylocanvasRef.current?.fitInCanvas();
-    }
+    const newHistoryIndex = historyIndex - 1;
+    setHistoryIndex(newHistoryIndex);
+    onJumpToSubtree(history[newHistoryIndex]?.id || '0');
+    phylocanvasRef.current?.fitInCanvas();
   };
   const handleForward = () => {
     if (historyIndex < history.length - 1) {
       const newHistoryIndex = historyIndex + 1;
       setHistoryIndex(newHistoryIndex);
-      onJumpToSubtree(history[newHistoryIndex]?.id || null);
+      onJumpToSubtree(history[newHistoryIndex]?.id || '0');
       phylocanvasRef.current?.fitInCanvas();
     }
   };
   const handleParent = () => {
     if (historyIndex >= 0) {
       const currentNode = history[historyIndex];
-      const parent = currentNode?.parent || null;
-      const id = parent?.id || null;
+      const parent = currentNode?.parent;
+      if (parent === null) return;
+      const id = parent?.id || '0';
       onJumpToSubtree(id);
       const newHistory = history.slice(0, historyIndex + 1);
       setHistory([...newHistory, parent]);
@@ -102,13 +121,14 @@ export default function TreeNavigation(
     }
   };
   const resetHistory = () => {
-    setHistory([null]);
-    setHistoryIndex(0);
+    setHistory([]);
+    setHistoryIndex(-1);
   };
-  const versionClickHandler = (version: any) => {
+  const versionClickHandler = (version: JobInstance) => {
+    if (version.version === currentVersion) return;
+    handleGoToRoot();
     navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
     setNodes(null);
-    handleGoToRoot();
     resetHistory();
   };
   return (
@@ -129,7 +149,7 @@ export default function TreeNavigation(
               <MenuItem
                 key={version.jobInstanceId}
                 value={version.version}
-                onClick={() => versionClickHandler(version)}
+                onClick={() => { versionClickHandler(version); }}
               >
                 {
                 isoDateLocalDate(version.versionName.replaceAll('-', '/'))
@@ -157,7 +177,7 @@ export default function TreeNavigation(
           }
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={!history[historyIndex]?.parent} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
+      <Button variant="outlined" disabled={rootId === '0'} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
         Go to Root
       </Button>
       <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
@@ -167,7 +187,7 @@ export default function TreeNavigation(
         <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
           Parent
         </Button>
-        <Button variant="outlined" disabled={historyIndex <= 0} onClick={handleBack}>
+        <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
           Back
         </Button>
         <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>

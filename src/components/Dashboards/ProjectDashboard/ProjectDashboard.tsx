@@ -1,5 +1,5 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
-import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
@@ -118,7 +118,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
         { loading === LoadingState.SUCCESS && (
           <>
             <Grid container item xs={12} justifyContent="space-between">
-              {projectDesc}
+              <Typography>{projectDesc}</Typography>
               { data.data.length !== 0 ? (
                 <DateSelector projectId={projectId} groupId={groupId} />
               ) : null }

@@ -43,11 +43,6 @@ export default function SampleSummary(props: any) {
     return latestUploadFilter;
   };
 
-  function FormatDate(dateUTC: string): string {
-    const date = new Date(dateUTC);
-    return formatDate(date);
-  }
-
   useEffect(() => {
     if (loading === 'idle') {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
@@ -96,7 +91,7 @@ export default function SampleSummary(props: any) {
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {FormatDate(data.data.latestUploadedDateUtc)}
+              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
             </Typography>
             <DrilldownButton
               title="View Samples"
