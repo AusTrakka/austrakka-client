@@ -12,7 +12,7 @@ interface PlotListProps {
 const plotTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function PlotList(props: PlotListProps) {
@@ -44,7 +44,7 @@ function PlotList(props: PlotListProps) {
         // Layout props
       muiTableProps={{
         sx: {
-          width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+          'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
         },
       }}
         // Row click handler
