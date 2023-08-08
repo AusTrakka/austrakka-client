@@ -55,7 +55,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     <Tab
       key={tab.index}
       label={tab.title}
-      sx={{ textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
+      sx={{ 'textTransform': 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
       disableRipple
     />
   ));
