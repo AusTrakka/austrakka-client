@@ -4,6 +4,7 @@ import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSumm
 import organisationsReducer from '../components/Widgets/Organisations/organisationsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
+import thresholdAlertsReducer from '../components/Widgets/ThresholdAlerts/thresholdAlertsSlice';
 import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
 import phessIdStatusReducer from '../components/Widgets/PhessIdStatus/phessIdStatusSlice';
 import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
@@ -18,6 +19,7 @@ const store = configureStore({
     qcStatusState: qcStatusReducer,
     phessIdStatusState: phessIdStatusReducer,
     stCountsState: stCountsReducer,
+    thresholdAlertsState: thresholdAlertsReducer,
     projectDashboardState: projectDashboardReducer,
     userDashboardState: userDashboardReducer,
     userOverviewState: userOverviewReducer,

@@ -16,7 +16,7 @@ const columns:MRT_ColumnDef<Project>[] = [
   { header: 'Abbreviation', accessorKey: 'abbreviation' },
   { header: 'Name', accessorKey: 'name' },
   { header: 'Description', accessorKey: 'description' },
-  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function ProjectsList() {
@@ -89,7 +89,7 @@ function ProjectsList() {
         })}
         muiTableProps={{
           sx: {
-            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
           },
         }}
         muiTableBodyRowProps={({ row }) => ({

@@ -15,7 +15,7 @@ const treeTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'abbreviation', header: 'Abbreviation' },
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell)}</> },
+  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function TreeList(props: TreesProps) {
@@ -43,7 +43,7 @@ function TreeList(props: TreesProps) {
         enableDensityToggle={false}
         muiTableProps={{
           sx: {
-            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
           },
         }}
         muiToolbarAlertBannerProps={

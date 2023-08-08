@@ -104,3 +104,12 @@ export interface AnalysisResultMetadata {
   submissionId: number;
   versionId: number;
 }
+
+export interface ThresholdAlertDTO {
+  alertLevelOrder: number;
+  alertLevel: string;
+  categoryField: string;
+  categoryValue: string;
+  ratio: number | null;
+  recentCount: number;
+}

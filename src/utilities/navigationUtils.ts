@@ -9,6 +9,9 @@ function parse<T>(value: string | null, defaultValue: T): T {
 
   if (Array.isArray(defaultValue)) {
     // Parse as array of strings
+    if (value === ',') {
+      return [] as T;
+    }
     return value.split(',') as T;
   }
   // Parse based on the type of the corresponding key in defaultState

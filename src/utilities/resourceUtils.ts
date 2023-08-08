@@ -28,8 +28,8 @@ async function callAPI(url:string, method:string, requestData:object) {
   const options: HTTPOptions = {
     method,
     headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token?.accessToken}`,
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token?.accessToken}`,
       'Access-Control-Expose-Headers': '*',
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
@@ -105,6 +105,7 @@ export const getGroupMembers = (groupId: number) => callAPI(`/api/Group/Members?
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/assigned-dashboard/${projectId}`, 'GET', {});
 export const getProjectDashboardOveriew = (groupId: number, searchParams?: string) => callAPI(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`, 'GET', {});
 export const getDashboardFields = (groupId: number, fields?: string, searchParams?: string) => callAPI(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&fields=${fields}&filters=${searchParams}`, 'GET', {});
+export const getThresholdAlerts = (groupId: number, alertField: string) => callAPI(`/api/DashboardSearch/project-dashboard/threshold-alerts?groupContext=${groupId}&alertField=${alertField}`, 'GET', {});
 
 // User dashboard endpoints
 export const getUserDashboardOveriew = (searchParams?: string) => callAPI(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, 'GET', {});
