@@ -115,7 +115,7 @@ function SampleTable(props: SamplesProps) {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell) : isoDateLocalDate(cell)),
+              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
             });
           } else {
             columnBuilder.push({
