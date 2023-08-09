@@ -109,7 +109,7 @@ function OrganisationOverview() {
               Please note you will only be able to view data for the organisation you are in,
               if you are a
               <b> viewer </b>
-              your organisation&lsquo;s
+              in your organisation&lsquo;s
               <b> Owner group</b>
               .
             </Typography>
