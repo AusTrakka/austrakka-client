@@ -8,12 +8,14 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
+import DownloadIcon from '@mui/icons-material/Download';
 import { TreeExportFuctions } from '../Tree';
 
 interface Option {
   exportFunction: CallableFunction
   label: string
   fileName: string
+  encode: boolean
 }
 
 const base64toBlob = (base64Image: string) => {
@@ -50,16 +52,19 @@ export default function ExportButton(
       exportFunction: () => phylocanvasRef.current?.exportSVG(),
       label: 'Export SVG',
       fileName: `${analysisName}.svg`,
+      encode: false,
     },
     {
       exportFunction: () => phylocanvasRef.current?.exportPNG(),
       label: 'Export PNG',
       fileName: `${analysisName}.png`,
+      encode: true,
     },
   ];
-  const download = (blob: Blob | string, filename: string) => {
-    let blobData: Blob;
-    if (typeof blob === 'string') {
+
+  const download = (blob: Blob | string, filename: string, encode: boolean) => {
+    let blobData: Blob | string;
+    if (typeof blob === 'string' && encode) {
       blobData = base64toBlob(blob);
     } else {
       blobData = blob;
@@ -85,9 +90,20 @@ export default function ExportButton(
     link.parentNode?.removeChild(link);
   };
 
+  const handleTipExport = () => {
+    if (!phylocanvasRef.current) return;
+    let leafIDs = phylocanvasRef.current?.getSelectedLeafIDs();
+    if (leafIDs.length === 0) {
+      leafIDs = phylocanvasRef.current?.getVisibleLeafIDs();
+    }
+    if (!leafIDs) return;
+    const leafIDsString = leafIDs.join('\n');
+    download(leafIDsString, `${analysisName}.txt`, false);
+  };
+
   const handleClick = () => {
     const option = options[selectedIndex];
-    download(option.exportFunction(), option.fileName);
+    download(option.exportFunction(), option.fileName, option.encode);
   };
 
   const handleMenuItemClick = (
@@ -115,7 +131,7 @@ export default function ExportButton(
 
   return (
     <>
-      <ButtonGroup sx={{ marginY: 1 }} variant="contained" ref={anchorRef} aria-label="split button">
+      <ButtonGroup sx={{ marginY: 1, marginRight: 1 }} variant="contained" ref={anchorRef} aria-label="split button">
         <Button fullWidth onClick={handleClick}>
           {options[selectedIndex].label}
           {/* <DownloadIcon sx={{marginLeft: 1}} /> */}
@@ -168,6 +184,14 @@ export default function ExportButton(
           </Grow>
         )}
       </Popper>
+      <Button
+        variant="contained"
+        color="success"
+        onClick={handleTipExport}
+        endIcon={<DownloadIcon />}
+      >
+        Export Leaves
+      </Button>
     </>
   );
 }
