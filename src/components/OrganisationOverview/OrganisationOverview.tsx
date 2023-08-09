@@ -105,6 +105,13 @@ function OrganisationOverview() {
         <Grid container justifyContent="space-between">
           <Grid item>
             <Typography variant="h2" color="primary">Organisation Overview</Typography>
+            <Typography sx={{ paddingTop: 2, paddingBottom: 2 }} variant="subtitle2" color="primary">
+              View samples shared with your organisation.
+              Please note you will only be able to view samples for the organisation you are in,
+              if you are in the organisation&lsquo;s
+              <b> Owner group</b>
+              .
+            </Typography>
           </Grid>
           <Grid item alignItems="center">
             <OrgGroupSelector
