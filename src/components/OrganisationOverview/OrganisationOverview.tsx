@@ -1,10 +1,9 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Box, FormControl, Grid, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import { Error } from '@mui/icons-material';
-import { ResponseObject, getGroupList } from '../../utilities/resourceUtils';
+import { ResponseObject, getUserGroups } from '../../utilities/resourceUtils';
 import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
-import { Group } from '../../types/dtos';
 
 function OrgGroupSelector(props: any) {
   const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
@@ -38,10 +37,10 @@ function OrgGroupSelector(props: any) {
           >
             { groups.map((group: any) => (
               <MenuItem
-                value={group}
-                key={group.name}
+                value={group.group}
+                key={group.group.name}
               >
-                {group.name}
+                {group.group.name}
               </MenuItem>
             )) }
             { groups.length === 0 ? (
@@ -63,16 +62,9 @@ function OrgGroupSelector(props: any) {
 }
 
 function OrganisationOverview() {
-  const [selectedGroup, setSelectedGroup] = useState<Group>({
-    groupId: undefined,
+  const [selectedGroup, setSelectedGroup] = useState({
+    id: undefined,
     name: '',
-    lastUpdated: '',
-    lastUpdatedBy: '',
-    created: '',
-    createdBy: '',
-    organisation: {
-      abbreviation: '',
-    },
   });
   const [groups, setGroups] = useState([]);
   const [groupStatus, setGroupStatus] = useState(LoadingState.IDLE);
@@ -80,13 +72,20 @@ function OrganisationOverview() {
 
   async function getGroups() {
     setGroupStatus(LoadingState.LOADING);
-    const groupResponse: ResponseObject = await getGroupList();
+    const groupResponse: ResponseObject = await getUserGroups();
     if (groupResponse.status === 'Success') {
-      // Filter out only owner groups
-      const ownerGroups = groupResponse.data.filter((group: any) => group.name.includes('-Owner'));
-      setGroups(ownerGroups);
-      if (ownerGroups.length) {
-        setSelectedGroup(ownerGroups[0]);
+      // Filter out only owner groups that a user is a viewer in
+      const { organisation, userRoleGroup } = groupResponse.data;
+      const ownerGroups = userRoleGroup.filter((roleGroup: any) => roleGroup.group.name.includes(`${organisation.abbreviation}-Owner`));
+      const viewerGroups = ownerGroups.filter((roleGroup: any) => {
+        if (roleGroup.role.name === 'Viewer') {
+          return roleGroup;
+        }
+        return null;
+      });
+      setGroups(viewerGroups);
+      if (viewerGroups.length) {
+        setSelectedGroup(viewerGroups[0].group);
       }
       setGroupStatus(LoadingState.SUCCESS);
     } else {
@@ -102,13 +101,15 @@ function OrganisationOverview() {
   return (
     <Box>
       <Grid container direction="row">
+        <Typography variant="h2" color="primary">Organisation Data</Typography>
         <Grid container justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h2" color="primary">Organisation Overview</Typography>
+          <Grid item xs={8}>
             <Typography sx={{ paddingTop: 2, paddingBottom: 2 }} variant="subtitle2" color="primary">
               View samples shared with your organisation.
-              Please note you will only be able to view samples for the organisation you are in,
-              if you are in the organisation&lsquo;s
+              Please note you will only be able to view data for the organisation you are in,
+              if you are a
+              <b> viewer </b>
+              your organisation&lsquo;s
               <b> Owner group</b>
               .
             </Typography>
@@ -125,7 +126,7 @@ function OrganisationOverview() {
         </Grid>
       </Grid>
       <SampleTable
-        groupContext={selectedGroup.groupId}
+        groupContext={selectedGroup.id}
       />
     </Box>
   );
