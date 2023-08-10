@@ -38,6 +38,7 @@ interface SamplesProps {
 
 function SampleTable(props: SamplesProps) {
   const { groupContext } = props;
+  const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -45,6 +46,7 @@ function SampleTable(props: SamplesProps) {
     pageIndex: 0,
     pageSize: 50,
   });
+  const [columnOrderArrayInitial, setColumnOrderArrayInitial] = useState<string[]>([]);
   const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [sampleList, setSampleList] = useState<Sample[]>([]);
@@ -102,9 +104,19 @@ function SampleTable(props: SamplesProps) {
     () => {
     // BUILD COLUMNS
       const formatTableHeaders = () => {
-        const columnHeaderArray = displayFields;
+        function compareFields(field1: DisplayField, field2: DisplayField) {
+          if (field1.columnOrder < field2.columnOrder) {
+            return -1;
+          }
+          if (field1.columnOrder > field2.columnOrder) {
+            return 1;
+          }
+          return 0;
+        }
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-        columnHeaderArray.forEach((element: MetaDataColumn) => {
+        const copy = [...displayFields]; // Creating copy of original array so it's not overridden
+        const sortedDisplayFields = copy.sort(compareFields);
+        sortedDisplayFields.forEach((element: MetaDataColumn) => {
           if (element.primitiveType === 'boolean') {
             columnBuilder.push({
               accessorKey: element.columnName,
@@ -127,29 +139,8 @@ function SampleTable(props: SamplesProps) {
         setSampleTableColumns(columnBuilder);
         setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
       };
-      // ORDER COLUMNS
-      const getColumnOrder = () => {
-        function compareFields(field1: { columnOrder: number; }, field2: { columnOrder: number; }) {
-          if (field1.columnOrder < field2.columnOrder) {
-            return -1; // sort field1 before field2
-          }
-          if (field1.columnOrder > field2.columnOrder) {
-            return 1; // sort field1 after field2
-          }
-          return 0; // keep original order of field1 and field2
-        }
-        const orderedArray: string[] = [];
-        // Order fields in an array from fieldList
-        const copy = [...displayFields]; // Creating copy of original array so it's not overridden
-        const sortedDisplayFields = copy.sort(compareFields);
-        sortedDisplayFields.forEach((field) => {
-          orderedArray.push(field.columnName);
-        });
-        setColumnOrderArray(orderedArray);
-      };
       if (!isSamplesError.samplesHeaderError && !isSamplesError.samplesTotalError) {
         formatTableHeaders();
-        getColumnOrder();
       }
     },
     [
@@ -328,6 +319,7 @@ function SampleTable(props: SamplesProps) {
         samplesCount={samplesCount}
       />
       <MaterialReactTable
+        tableInstanceRef={tableInstanceRef}
         columns={sampleTableColumns}
         data={sampleList}
         enableColumnFilters={false}
@@ -343,14 +335,6 @@ function SampleTable(props: SamplesProps) {
             }
             : undefined
         }
-        // muiTableBodyProps={{
-        //   sx: {
-        //     //stripe the rows, make odd rows a darker color
-        //     '& tr:nth-of-type(odd)': {
-        //       backgroundColor: '#f5f5f5',
-        //     },
-        //   },
-        // }}
         muiLinearProgressProps={({ isTopToolbar }) => ({
           color: 'secondary',
           sx: { display: isTopToolbar ? 'block' : 'none' },
@@ -365,24 +349,19 @@ function SampleTable(props: SamplesProps) {
           sorting,
           isLoading: isSamplesLoading,
           showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
-          columnOrder: columnOrderArray,
+          density: 'compact',
         }}
         manualSorting
         onSortingChange={setSorting}
-        initialState={{ density: 'compact' }}
         rowCount={samplesCount}
-        // Layout props
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
-        // Column manipulation
         enableColumnResizing
         enableColumnDragging
         enableColumnOrdering
-        // Improving performance
         enableDensityToggle={false}
         enableFullScreenToggle={false}
-        // memoMode="cells"
         enableRowVirtualization
-        enableColumnVirtualization
+        // enableColumnVirtualization
         renderToolbarInternalActions={({ table }) => (
           <Box>
             {ExportButton}
