@@ -356,8 +356,8 @@ function SampleTable(props: SamplesProps) {
         rowCount={samplesCount}
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
         enableColumnResizing
-        enableColumnDragging
-        enableColumnOrdering
+        // enableColumnDragging
+        // enableColumnOrdering
         enableDensityToggle={false}
         enableFullScreenToggle={false}
         enableRowVirtualization
