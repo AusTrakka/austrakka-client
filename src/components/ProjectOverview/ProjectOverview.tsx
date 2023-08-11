@@ -9,7 +9,6 @@ import {
   getTrees, getGroupMembers,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
-import { DisplayFields } from '../../types/fields.interface';
 import { Filter } from '../Common/QueryBuilder';
 // import Summary from './Summary';
 import Samples from './Samples';
@@ -17,7 +16,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member, DisplayField } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -59,7 +58,7 @@ function ProjectOverview() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
+  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
@@ -223,6 +222,7 @@ function ProjectOverview() {
             (column) => column.header === df.columnName,
           ),
         );
+        // TODO: Remove below as this happens within QueryBUilder now
         // Alphabetically order the fields
         res.sort(
           (a: any, b: any) => a.columnName.localeCompare(b.columnName),
