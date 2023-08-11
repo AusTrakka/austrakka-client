@@ -12,8 +12,10 @@ export type TreeExportFuctions = {
   exportSVG(): Blob;
   exportPNG(): Blob;
   exportJSON(): string;
+  getSelectedLeafIDs(): string[];
+  getVisibleLeafIDs(): string[];
   fitInCanvas(): void;
-  nodes: { ids: { [key: string]: PhylocanvasNode } };
+  nodes: { ids: { [key: string]: PhylocanvasNode }, leaves: PhylocanvasNode[]; };
 };
 
 const Tree = React.forwardRef(
@@ -34,6 +36,14 @@ const Tree = React.forwardRef(
       },
       exportJSON() {
         return tree.current?.exportJSON();
+      },
+      getSelectedLeafIDs() {
+        return tree.current?.props.selectedIds || [];
+      },
+      getVisibleLeafIDs() {
+        return tree.current?.getGraphAfterLayout().leaves.map(
+          (leaf: PhylocanvasNode) => leaf.id,
+        ) || [];
       },
       fitInCanvas() {
         return tree.current?.fitInCanvas();

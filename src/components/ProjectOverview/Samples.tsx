@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { ProjectSample } from '../../types/sample.interface';
-import { DisplayFields } from '../../types/fields.interface';
+import { DisplayField } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 
@@ -42,7 +42,7 @@ interface SamplesProps {
   setQueryString: Dispatch<SetStateAction<string>>,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
-  displayFields: DisplayFields[],
+  displayFields: DisplayField[],
   getExportData: Function,
   exportData: ProjectSample[],
   setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
