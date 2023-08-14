@@ -1,7 +1,4 @@
-trigger:
-  branches:
-    include:
-      - Development
+trigger: none
 
 pr: none
 
@@ -12,6 +9,6 @@ steps:
   - template: templates/build.yml
   - template: templates/create-swa-config.yml
     parameters:
-      appName: "stapp-autr-dev-ase-01"
-      resourceGroup: "rg-autr-dev-ase-01"
+      appName: $(appName)
+      resourceGroup: $(resourceGroup)
   - template: templates/deploy.yml
