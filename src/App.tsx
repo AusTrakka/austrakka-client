@@ -22,6 +22,8 @@ import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
+import UploadMetadata from './components/Upload/UploadMetadata';
+import UploadSequences from './components/Upload/UploadSequences';
 
 interface AppProps {
   msalInstance: IPublicClientApplication;
@@ -46,6 +48,8 @@ function App({ msalInstance }: AppProps) {
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="org" element={<OrganisationOverview />} />
                   <Route path="upload" element={<Upload />} />
+                  <Route path="upload/metadata" element={<UploadMetadata />} />
+                  <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
