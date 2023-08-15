@@ -17,5 +17,6 @@ jobs:
           echo "VITE_AT_CLIENT_ID=client_id" >> .env
           echo "VITE_AT_TENANT_ID=tenant_id" >> .env
           echo "VITE_API_SCOPE=api_scope" >> .env
+          echo "VITE_REACT_API_URL=https://localhost:5001" >> .env
       - run: npm ci
       - run: npm run build

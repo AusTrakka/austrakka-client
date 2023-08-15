@@ -11,11 +11,7 @@ To automatically fix certain linting errors, use `npx eslint . --fix`
 
 ## Environment Variables
 
-Defaults are set in `.env`. These can be overriden by the calling shell.
-I have omitted storing `VITE_AT_CLIENT_ID`, `VITE_AT_TENANT_ID` and `VITE_API_SCOPE` in the defaults for a few reasons:
-1. We shouldn't be making these public for no reason
-2. For anyone else looking at the project, these would not be relevant.
-3. We should get used to setting these values now; the new infra will have different values for each environment, including individual user development environments
+These can also be set in a `.env` file in the root directory.
 
 | Name                  | Description                          |
 |-----------------------|--------------------------------------|

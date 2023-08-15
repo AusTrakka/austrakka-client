@@ -76,16 +76,22 @@ function OrganisationOverview() {
     if (groupResponse.status === 'Success') {
       // Filter out only owner groups that a user is a viewer in
       const { organisation, userRoleGroup } = groupResponse.data;
-      const ownerGroups = userRoleGroup.filter((roleGroup: any) => roleGroup.group.name.includes(`${organisation.abbreviation}-Owner`));
-      const viewerGroups = ownerGroups.filter((roleGroup: any) => {
-        if (roleGroup.role.name === 'Viewer') {
-          return roleGroup;
-        }
-        return null;
-      });
-      setGroups(viewerGroups);
-      if (viewerGroups.length) {
-        setSelectedGroup(viewerGroups[0].group);
+      // This is strictly Owner and Everyone groups
+      // Could instead check group organisation, if we want to include ad-hoc org groups
+      const orgViewerGroups = userRoleGroup.filter((roleGroup: any) =>
+        (roleGroup.group.name === `${organisation.abbreviation}-Owner`
+            || roleGroup.group.name === `${organisation.abbreviation}-Everyone`)
+          && (roleGroup.role.name === 'Viewer'))
+        .sort((a: any, b: any) => {
+          // Owner group first
+          if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
+          if (a.group.name.endsWith('-Owner')) return -1;
+          if (b.group.name.endsWith('-Owner')) return 1;
+          return 0;
+        });
+      setGroups(orgViewerGroups);
+      if (orgViewerGroups.length) {
+        setSelectedGroup(orgViewerGroups[0].group);
       }
       setGroupStatus(LoadingState.SUCCESS);
     } else {
@@ -105,8 +111,10 @@ function OrganisationOverview() {
         <Grid container justifyContent="space-between">
           <Grid item xs={8}>
             <Typography sx={{ paddingTop: 2, paddingBottom: 2 }} variant="subtitle2" color="primary">
-              View samples shared with your organisation.
-              Please note you will only be able to view data for the organisation you are in,
+              View samples owned by your organisation.
+              Please note you will only be able to view
+              <em> all </em>
+              data for the organisation you are in,
               if you are a
               <b> viewer </b>
               in your organisation&lsquo;s
