@@ -7,8 +7,8 @@
       "appBuildCommand": "npm run build",
       "run": "npm run dev",
       "appDevserverUrl": "http://localhost:5173",
-      "appName": "stapp-autr-dev-ase-01",
-      "resourceGroup": "rg-autr-dev-ase-01"
+      "appName": "",
+      "resourceGroup": ""
     }
   }
 }
