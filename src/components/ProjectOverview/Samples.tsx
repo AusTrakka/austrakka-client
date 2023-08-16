@@ -113,26 +113,28 @@ function Samples(props: SamplesProps) {
         filename={generateFilename() || 'austrakka_export.csv'}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
-        <IconButton
-          onClick={() => {
-            getExportData();
-          }}
-          disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
-        >
-          {exportCSVStatus === LoadingState.LOADING
-            ? (
-              <CircularProgress
-                color="secondary"
-                size={40}
-                sx={{
-                  position: 'absolute',
-                  zIndex: 1,
-                }}
-              />
-            )
-            : null}
-          <FileDownload />
-        </IconButton>
+        <span>
+          <IconButton
+            onClick={() => {
+              getExportData();
+            }}
+            disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
+          >
+            {exportCSVStatus === LoadingState.LOADING
+              ? (
+                <CircularProgress
+                  color="secondary"
+                  size={40}
+                  sx={{
+                    position: 'absolute',
+                    zIndex: 1,
+                  }}
+                />
+              )
+              : null}
+            <FileDownload />
+          </IconButton>
+        </span>
       </Tooltip>
     </>
   );
@@ -235,21 +237,23 @@ function Samples(props: SamplesProps) {
           <Box>
             {ExportButton}
             <Tooltip title="Show/Hide filters" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  setIsFiltersOpen(!isFiltersOpen);
-                }}
-                disabled={sampleList.length < 1 && filterList.length < 1}
-              >
-                <Badge
-                  badgeContent={filterList.length}
-                  color="primary"
-                  showZero
-                  invisible={sampleList.length < 1 && filterList.length < 1}
+              <span>
+                <IconButton
+                  onClick={() => {
+                    setIsFiltersOpen(!isFiltersOpen);
+                  }}
+                  disabled={sampleList.length < 1 && filterList.length < 1}
                 >
-                  <FilterList />
-                </Badge>
-              </IconButton>
+                  <Badge
+                    badgeContent={filterList.length}
+                    color="primary"
+                    showZero
+                    invisible={sampleList.length < 1 && filterList.length < 1}
+                  >
+                    <FilterList />
+                  </Badge>
+                </IconButton>
+              </span>
             </Tooltip>
             <MRT_ShowHideColumnsButton table={table} />
           </Box>

@@ -124,28 +124,33 @@ function ProjectOverview() {
       if (tableHeadersResponse.status === 'Success') {
         const columnHeaderArray = tableHeadersResponse.data;
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-        columnHeaderArray.forEach((element: MetaDataColumn) => {
-          if (element.primitiveType === 'boolean') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-            });
-          } else if (element.primitiveType === 'date') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
-            });
-          } else {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-            });
-          }
-        });
-        setSampleTableColumns(columnBuilder);
-        setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
+        // we need to catch that in the occation where there are no headers.
+        if (columnHeaderArray.length === 0) {
+          setIsSamplesLoading(false);
+        } else {
+          columnHeaderArray.forEach((element: MetaDataColumn) => {
+            if (element.primitiveType === 'boolean') {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
+              });
+            } else if (element.primitiveType === 'date') {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+              });
+            } else {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+              });
+            }
+          });
+          setSampleTableColumns(columnBuilder);
+          setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
+        }
       } else {
         setIsSamplesLoading(false);
         setIsSamplesError((prevState) => ({
@@ -277,6 +282,7 @@ function ProjectOverview() {
   useEffect(
     () => {
     // Only get samples when columns are already populated
+    // {HOWEVER IF THERE ARE no headers then the samples should stop loading}
     // effects should trigger getProject -> getHeaders -> this function
       async function getSamplesList() {
         let sortString = '';
