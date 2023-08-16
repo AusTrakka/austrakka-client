@@ -12,5 +12,6 @@ steps:
   - template: templates/build.yml
   - template: templates/create-swa-config.yml
     parameters:
-      environment: 'prod'
+      appName: "stapp-autr-prod-ase-01"
+      resourceGroup: "rg-autr-prod-ase-01"
   - template: templates/deploy.yml
