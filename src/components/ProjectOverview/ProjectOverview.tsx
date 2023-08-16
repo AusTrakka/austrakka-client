@@ -301,7 +301,6 @@ function ProjectOverview() {
           sorts: sortString,
         });
         const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
-        console.log(samplesResponse.status)
         if (samplesResponse.status === 'Success') {
           setProjectSamples(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
