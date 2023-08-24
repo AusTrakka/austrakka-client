@@ -31,7 +31,7 @@ function Upload() {
       <Grid container direction="row" justifyContent="flex-start" spacing={2} alignItems="stretch">
         {uploadPages.map((page) => (
           <Grid item>
-            <Card sx={{ width: 200, height: 180 }}>
+            <Card sx={{ width: 200, height: 150 }}>
               <CardActionArea
                 sx={{ height: '100%', borderBottom: 4, borderColor: 'secondary.main' }}
                 component={Link}
@@ -53,9 +53,7 @@ function Upload() {
                         {page.description}
                       </Typography>
                     </Grid>
-
                   </Grid>
-
                 </CardContent>
               </CardActionArea>
             </Card>
