@@ -8,7 +8,7 @@ interface HTTPOptions {
 export interface ResponseObject {
   status: string,
   data?: any,
-  message?: string,
+  message: string,
   messages?: string[],
   headers?: Headers,
   error?: any,
