@@ -8,7 +8,7 @@ const uploadPages = [
     title: 'Upload Metadata',
     link: '/metadata',
     icon: <TableChart color="primary" />,
-    description: 'Submit metadata for samples',
+    description: 'Submit metadata for samples.',
     disabled: false,
   },
   {
@@ -27,25 +27,35 @@ function Upload() {
 
   return (
     <Box>
-      <Typography variant="h2" color="primary" paddingBottom={1}>Upload</Typography>
+      <Typography variant="h2" color="primary" paddingBottom={2}>Upload</Typography>
       <Grid container direction="row" justifyContent="flex-start" spacing={2} alignItems="stretch">
         {uploadPages.map((page) => (
           <Grid item>
-            <Card sx={{ maxWidth: 300, height: '100%' }}>
+            <Card sx={{ width: 200, height: 180 }}>
               <CardActionArea
-                sx={{ textDecoration: 'none', height: '100%' }}
+                sx={{ height: '100%', borderBottom: 4, borderColor: 'secondary.main' }}
                 component={Link}
                 to={location.pathname + page.link}
                 disabled={page.disabled}
               >
                 <CardContent>
-                  {page.icon}
-                  <Typography variant="h5" component="div" color="primary">
-                    {page.title}
-                  </Typography>
-                  <Typography variant="body2" component="div">
-                    {page.description}
-                  </Typography>
+                  <Grid container direction="column">
+                    <Grid item>
+                      {page.icon}
+                    </Grid>
+                    <Grid item>
+                      <Typography variant="h5" component="div" color="primary" sx={{ paddingTop: 1 }}>
+                        {page.title}
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      <Typography variant="body2" component="div">
+                        {page.description}
+                      </Typography>
+                    </Grid>
+
+                  </Grid>
+
                 </CardContent>
               </CardActionArea>
             </Card>
