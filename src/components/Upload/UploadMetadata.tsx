@@ -1,10 +1,9 @@
 import React, { useEffect, useState, ChangeEvent } from 'react';
 import { Box, FormControl, Grid, InputLabel, Select, Typography, Button,
-  FormControlLabel, Checkbox, FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress } from '@mui/material';
+  FormControlLabel, Checkbox, FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert, Backdrop, CircularProgress } from '@mui/material';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
-import { ResponseObject, getUserProformas } from '../../utilities/resourceUtils';
+import { ResponseObject, getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
-import isoDateLocalDate from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
 
@@ -28,11 +27,15 @@ const uploadOptions = [
   {
     name: 'append',
     label: 'Append metadata or update existing samples',
-    description: 'Add or update metadata for existing samples. If this is selected, you cannot include new samples in the upload, but may use pro formas that do not include Owner_group.',
+    description: 'Add or update metadata for existing samples. If this is selected, you cannot include new samples in the upload, but may use proformas that do not include Owner_group.',
   },
 ];
 
-const validFormats = ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+const validFormats = {
+  '.csv': 'text/csv',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.xls': 'application/vnd.ms-excel',
+};
 
 function UploadInstructions({ setDrawerOpen }: any) {
   return (
@@ -47,30 +50,32 @@ function UploadInstructions({ setDrawerOpen }: any) {
         Upload Instructions
       </Typography>
       <br />
-      <Typography>Please use the supplied pro forma to submit metadata for samples.</Typography>
+      <Typography>Please use the supplied proforma to submit metadata for samples.</Typography>
       <br />
       Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
       Files should have extensions
       <code>.csv </code>
+      ,
+      <code>.xlsx </code>
       or
-      <code>.xlsx</code>
-      . If not using the pro forma directly,
-      ensure that column names in your CSV or Excel file match those in the pro forma.
+      <code>.xls </code>
+      . If not using the proforma directly,
+      ensure that column names in your CSV or Excel file match those in the proforma.
       <br />
       <br />
-      Excel pro formas include
+      Excel proformas include
       <b> three </b>
       worksheets:
       <ul>
-        <li>The metadata pro forma itself</li>
+        <li>The metadata proforma itself</li>
         <li>A data dictionary, describing the usage of metadata fields</li>
         <li>A type dictionary, specifying allowed values for fields, where applicable</li>
       </ul>
       The first row of data is considered to be the header.
-      When using an Excel pro forma the first tab will be used as the sample metadata table.
+      When using an Excel proforma the first tab will be used as the sample metadata table.
       <br />
       <br />
-      Special columns, required in certain pro formas, are:
+      Special columns, required in certain proformas, are:
       <ul>
         <li>
           <b>Seq_ID</b>
@@ -98,6 +103,10 @@ function UploadInstructions({ setDrawerOpen }: any) {
 function UploadMetadata() {
   const [proformas, setProformas] = useState<Proforma[]>([]);
   const [proformaStatus, setProformaStatus] = useState(LoadingState.IDLE);
+  const [submission, setSubmission] = useState({
+    status: LoadingState.IDLE,
+    messages: [] as string[] | undefined,
+  });
   const [proformaStatusMessage, setProformaStatusMessage] = useState('');
   const [selectedProforma, setSelectedProforma] = useState<Proforma>();
   const [options, setOptions] = useState({
@@ -105,7 +114,7 @@ function UploadMetadata() {
     'blank': false,
     'append': false,
   } as Options);
-  const [file, setFile] = useState();
+  const [file, setFile] = useState<File>();
   const [invalidFile, setInvalidFile] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const toggleDrawer =
@@ -129,7 +138,7 @@ function UploadMetadata() {
         setProformas(proformaResponse.data);
         setProformaStatus(LoadingState.SUCCESS);
       } else {
-        setProformaStatusMessage(proformaResponse.message);
+        setProformaStatusMessage(proformaResponse.message!);
         setProformaStatus(LoadingState.ERROR);
       }
     };
@@ -151,20 +160,62 @@ function UploadMetadata() {
       [event.target.name]: event.target.checked,
     });
   };
+
+  // Handle upload submission
+  const handleSubmit = async () => {
+    setSubmission({
+      ...submission,
+      status: LoadingState.LOADING,
+    });
+    const optionString = `?appendMode=${options.append}&deleteOnBlank=${options.blank}`;
+    const formData = new FormData();
+    formData.append('file', file!);
+    formData.append('proforma-abbrev', selectedProforma!.abbreviation);
+
+    const submissionResponse : ResponseObject = options.validate ?
+      await validateSubmissions(formData, optionString)
+      : await uploadSubmissions(formData, optionString);
+
+    if (submissionResponse.status === 'Success') {
+      setSubmission({
+        ...submission,
+        status: LoadingState.SUCCESS,
+        messages: submissionResponse.messages,
+      });
+    } else {
+      setSubmission({
+        ...submission,
+        status: LoadingState.ERROR,
+        messages: submissionResponse.messages,
+      });
+    }
+  };
+  useEffect(() => {
+    // Every time file or option change, reset loading state of submission to idle
+    setSubmission({
+      ...submission,
+      status: LoadingState.IDLE,
+      messages: [],
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, options]);
+
   return (
     <>
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
         <Grid item lg={9} md={12}>
           <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
           <Typography variant="subtitle2" color="primary">
-            Please use the supplied pro forma to submit metadata for samples.
+            Please use the supplied proforma to submit metadata for samples.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
             Files should have extensions
-            <code>.csv </code>
+            <code> .csv</code>
+            ,
+            <code> .xlsx </code>
             or
-            <code>.xlsx</code>
-            . If not using the pro forma directly,
-            ensure that column names in your CSV or Excel file match those in the pro forma.
+            <code> .xls</code>
+            . If not using the proforma directly,
+            ensure that column names in your CSV or Excel file match those in the proforma.
           </Typography>
         </Grid>
         <Grid item>
@@ -177,7 +228,7 @@ function UploadMetadata() {
       </Grid>
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
         <Grid item lg={3} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">Select pro forma </Typography>
+          <Typography variant="h4" color="primary">Select proforma </Typography>
           <Tooltip title={proformaStatusMessage} arrow>
             <FormControl
               error={proformaStatus === LoadingState.ERROR}
@@ -185,11 +236,11 @@ function UploadMetadata() {
               sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
               variant="standard"
             >
-              <InputLabel id="proforma-simple-select-label">Pro forma</InputLabel>
+              <InputLabel id="proforma-simple-select-label">Proforma</InputLabel>
               <Select
                 labelId="proforma-simple-select-label"
                 id="proforma-simple-select-label"
-                label="Pro forma"
+                label="Proforma"
                 name="proforma"
                 value={selectedProforma?.abbreviation || ''}
                 onChange={(e) => handleSelectProforma(e.target.value)}
@@ -224,16 +275,6 @@ function UploadMetadata() {
                 primary="Proforma abbreviation"
                 secondary={selectedProforma?.abbreviation}
                 key="abbrev"
-              />
-              <ListItemText
-                primary="Uploaded"
-                secondary={isoDateLocalDate(selectedProforma?.created)}
-                key="created"
-              />
-              <ListItemText
-                primary="Uploaded by"
-                secondary={selectedProforma?.createdBy}
-                key="createdBy"
               />
             </List>
           ) : null}
@@ -273,20 +314,70 @@ function UploadMetadata() {
             ) }
           </FormGroup>
         </Grid>
-      </Grid>
-      <Grid item container direction="row-reverse">
-        {/* TODO: Disable if no proforma selected or file present, or invalid file type */}
-        { options.validate ? (
-          <Button variant="contained" disabled={!selectedProforma || !file || invalidFile} endIcon={<Rule />}>
-            Validate metadata
-          </Button>
-        )
-          : (
-            <Button variant="contained" disabled={!selectedProforma || !file || invalidFile} endIcon={<FileUpload />}>
-              Upload metadata
+        <Grid item container direction="row-reverse">
+          { options.validate ? (
+            <Button
+              variant="contained"
+              disabled={!selectedProforma || !file || invalidFile}
+              endIcon={<Rule />}
+              onClick={() => handleSubmit()}
+            >
+              Validate metadata
             </Button>
-          )}
+          )
+            : (
+              <Button
+                variant="contained"
+                disabled={!selectedProforma || !file || invalidFile}
+                endIcon={<FileUpload />}
+                onClick={() => handleSubmit()}
+              >
+                Upload metadata
+              </Button>
+            )}
+        </Grid>
       </Grid>
+      {(
+        submission.status === LoadingState.SUCCESS ||
+        submission.status === LoadingState.ERROR
+      ) ? (
+        <Grid container spacing={1} direction="column">
+          <Grid item>
+            {options.validate ?
+              <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
+          </Grid>
+          {submission.messages!.map(
+            (message: any) => (
+              <Grid item>
+                <Alert severity={message.ResponseType.toLowerCase()}>
+                  <strong>{message.ResponseType}</strong>
+                  {' '}
+                  -
+                  {' '}
+                  {message.ResponseMessage}
+                </Alert>
+              </Grid>
+            ),
+          )}
+          {(
+            submission.status === LoadingState.SUCCESS &&
+            options.validate === true
+          ) ? (
+            <Grid item>
+              <Alert severity="warning">
+                <strong>Warning</strong>
+                {' '}
+                -
+                {' '}
+                This was a validation only.
+                Please uncheck the &quot;Validate only&quot; option
+                and upload to load data into AusTrakka.
+              </Alert>
+            </Grid>
+            ) : null }
+        </Grid>
+        )
+        : null}
       <Drawer
         anchor="right"
         open={drawerOpen}
@@ -294,6 +385,19 @@ function UploadMetadata() {
       >
         <UploadInstructions setDrawerOpen={setDrawerOpen} />
       </Drawer>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={submission.status === LoadingState.LOADING}
+      >
+        <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">
+          <Grid item>
+            <Typography>{options.validate ? 'Validating metadata... ' : 'Uploading metadata... '}</Typography>
+          </Grid>
+          <Grid item>
+            <CircularProgress color="inherit" />
+          </Grid>
+        </Grid>
+      </Backdrop>
     </>
   );
 }

@@ -8,7 +8,7 @@ interface FileDragDropProps {
   setFile: any,
   invalidFile: boolean,
   setInvalidFile: any,
-  validFormats: string[],
+  validFormats: object,
 }
 
 function FileDragDrop(props: FileDragDropProps) {
@@ -18,7 +18,7 @@ function FileDragDrop(props: FileDragDropProps) {
 
   const handleFile = (uploadedFile: File) => {
     setFile(uploadedFile);
-    if (!validFormats.includes(uploadedFile?.type)) {
+    if (!Object.values(validFormats).includes(uploadedFile?.type)) {
       setInvalidFile(true);
     } else {
       setInvalidFile(false);
@@ -66,7 +66,6 @@ function FileDragDrop(props: FileDragDropProps) {
         marginBottom: 2,
         height: '100%',
         border: dragActive ? 4 : 0,
-        // borderColor: dragActive ? 'secondary.light' : 'rgb(238, 242, 246)',
         borderColor: 'rgb(238, 242, 246)',
         borderStyle: dragActive ? 'dashed' : 'solid',
         transition: theme.transitions?.create!(
@@ -84,10 +83,9 @@ function FileDragDrop(props: FileDragDropProps) {
         <Grid item>
           <Typography variant="subtitle1">{ file ? file && file.name : 'or' }</Typography>
         </Grid>
-        { invalidFile && <Grid item><Alert sx={{ marginTop: 2 }} variant="outlined" severity="error">Invalid file type. Valid file types are: .csv, .xls, .xlsx</Alert></Grid> }
         <Grid item>
           {file ? (
-            <Button variant="outlined" component="label" sx={{ m: 2 }} onClick={() => setFile(null)}>
+            <Button variant="outlined" component="label" sx={{ m: 2 }} onClick={() => { setFile(null); setInvalidFile(false); }}>
               Remove
             </Button>
           )
@@ -101,13 +99,30 @@ function FileDragDrop(props: FileDragDropProps) {
                   onClick={onBrowseClick}
                   multiple={false}
                   onChange={handleBrowseChange}
-                  accept={validFormats.toString()}
-                  disabled={file}
+                  accept={Object.values(validFormats).toString()}
                   hidden
                 />
               </Button>
             )}
         </Grid>
+        <Grid item sx={{ marginTop: 2 }}>
+          { invalidFile ? (
+            <Alert variant="outlined" severity="error">
+              Invalid file type. Valid file types are:
+              {' '}
+              {Object.keys(validFormats).join(', ')}
+            </Alert>
+          )
+            : null }
+        </Grid>
+        { !file ? (
+          <Typography variant="subtitle2">
+            Valid file types are:
+            {' '}
+            {Object.keys(validFormats).join(', ')}
+          </Typography>
+        )
+          : null }
       </Grid>
     </Box>
   );
