@@ -85,25 +85,25 @@ function FileDragDrop(props: FileDragDropProps) {
         </Grid>
         <Grid item>
           {file ? (
-            <Button variant="outlined" component="label" sx={{ m: 2 }} onClick={() => { setFile(null); setInvalidFile(false); }}>
+            <Button variant="outlined" component="label" sx={{ marginTop: 2 }} onClick={() => { setFile(null); setInvalidFile(false); }}>
               Remove
             </Button>
-          )
-            : (
-              <Button variant="outlined" component="label">
-                Browse
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  id="input-file-upload"
-                  onClick={onBrowseClick}
-                  multiple={false}
-                  onChange={handleBrowseChange}
-                  accept={Object.values(validFormats).toString()}
-                  hidden
-                />
-              </Button>
-            )}
+          ) : null}
+          { !file ? (
+            <Button variant="outlined" component="label">
+              Browse
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="input-file-upload"
+                onClick={onBrowseClick}
+                multiple={false}
+                onChange={handleBrowseChange}
+                accept={Object.values(validFormats).toString()}
+                hidden
+              />
+            </Button>
+          ) : null}
         </Grid>
         <Grid item sx={{ marginTop: 2 }}>
           { invalidFile ? (
