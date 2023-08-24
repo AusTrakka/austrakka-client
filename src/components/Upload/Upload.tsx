@@ -16,7 +16,7 @@ const uploadPages = [
     link: '/sequences',
     icon: <TextSnippet color="primary" />,
     description: 'Coming soon!',
-    disabled: false,
+    disabled: true,
   },
 ];
 
