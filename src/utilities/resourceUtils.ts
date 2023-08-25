@@ -102,6 +102,7 @@ export const getSamples = (searchParams?: string) => callAPI(`/api/MetadataSearc
 export const getTotalSamples = (groupId: number) => callAPI(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, 'GET', {});
 export const getDisplayFields = (groupId: number) => callAPI(`/api/Group/display-fields?groupContext=${groupId}`, 'GET', {});
 export const getGroupMembers = (groupId: number) => callAPI(`/api/Group/Members?groupContext=${groupId}`, 'GET', {});
+export const getGroupProFormas = (groupId: number) => callAPI(`/api/ProFormas/VersionInformation?groupContext=${groupId}`, 'GET', {});
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number) => callAPI(`/api/Projects/assigned-dashboard/${projectId}`, 'GET', {});

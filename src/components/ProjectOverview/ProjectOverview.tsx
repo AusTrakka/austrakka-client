@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
-  getTrees, getGroupMembers,
+  getTrees, getGroupMembers, getGroupProFormas,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
@@ -16,10 +16,11 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member, DisplayField } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member, DisplayField, ProFormaVersion } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import ProFormas from './ProFormas';
 
 const SAMPLE_ID_FIELD = 'Seq_ID';
 
@@ -72,10 +73,18 @@ function ProjectOverview() {
   const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
 
-  const [projectMembers, setProjectMemebers] = useState<Member[]>([]);
+  // Members component states
+  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
+
+  // ProFormas component states
+  const [projectProFormas, setProjectProFormas] = useState<ProFormaVersion[]>([]);
+  const [isProFormasLoading, setIsProFormasLoading] = useState(true);
+  const [isProFormaListError, setIsProFormaListError] = useState(false);
+  const [proFormaListErrorMessage, setProFormaListErrorMessage] = useState('');
+  const [proFormaAbbrevs, setProFormaAbbrevs] = useState<string[]>([]);
 
   useEffect(() => {
     async function getProject() {
@@ -192,14 +201,32 @@ function ProjectOverview() {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id);
       if (memberListResponse.status === 'Success') {
-        setProjectMemebers(memberListResponse.data as Member[]);
+        setProjectMembers(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsMembersLoading(false);
       } else {
         setIsMembersLoading(false);
-        setProjectMemebers([]);
+        setProjectMembers([]);
         setMemberListError(true);
         setMemberListErrorMessage(memberListResponse.message);
+      }
+    }
+
+    async function getProFormaList() {
+      const proformaListResponse : ResponseObject =
+        await getGroupProFormas(projectDetails!.projectMembers.id);
+      if (proformaListResponse.status === 'Success') {
+        const data = proformaListResponse.data as ProFormaVersion[];
+        setProjectProFormas(data);
+        setIsProFormasLoading(false);
+        setIsProFormaListError(false);
+        const uniqueAbbrevs = [...new Set(data.map(item => item.abbreviation))];
+        setProFormaAbbrevs(uniqueAbbrevs);
+      } else {
+        setIsProFormasLoading(false);
+        setProjectProFormas([]);
+        setIsProFormaListError(true);
+        setProFormaListErrorMessage(proformaListResponse.message);
       }
     }
 
@@ -209,6 +236,7 @@ function ProjectOverview() {
       getTreeList();
       getPlotList();
       getMemberList();
+      getProFormaList();
     }
   }, [projectDetails]);
 
@@ -364,6 +392,10 @@ function ProjectOverview() {
       index: 4,
       title: 'Members',
     },
+    {
+      index: 5,
+      title: 'Proformas',
+    },
   ];
 
   return (
@@ -437,13 +469,23 @@ function ProjectOverview() {
               plotList={projectPlots}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={4} tabLoader={isPlotsLoading}>
+          <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
             <MemberList
               isMembersLoading={isMembersLoading}
               memberList={projectMembers}
               memberListError={memberListError}
               memberListErrorMessage={memberListErrorMessage}
               projectAbbrev={projectAbbrev!}
+            />
+          </TabPanel>
+          <TabPanel value={tabValue} index={5} tabLoader={isProFormasLoading}>
+            <ProFormas
+              isProFormasLoading={isProFormasLoading}
+              proformaList={projectProFormas}
+              proformaListError={isProFormaListError}
+              proformaListErrorMessage={proFormaListErrorMessage}
+              projectAbbrev={projectAbbrev!}
+              proformaAbbrevs={proFormaAbbrevs}
             />
           </TabPanel>
         </>
