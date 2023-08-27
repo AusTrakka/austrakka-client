@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { DisplayField, Project, Sample } from '../../types/dtos';
 import { ResponseObject, getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
@@ -42,7 +43,7 @@ function SampleDetail() {
     const updateSampleData = async () => {
       const searchParams = new URLSearchParams({
         groupContext: `${project!.projectMembers.id}`,
-        filters: `Seq_ID==${seqId}`,
+        filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
       const response = await getSamples(searchParams.toString());
       if (response.status === 'Success' && response.data.length > 0) {
@@ -88,7 +89,7 @@ function SampleDetail() {
                 {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
-                  .map(field => renderRow(field.columnName, data[field.columnName] as string))}
+                  .map(field => renderRow(field.columnName, (data as any)[field.columnName]))}
               </TableBody>
             </Table>
           </TableContainer>

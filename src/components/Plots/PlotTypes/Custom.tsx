@@ -10,8 +10,7 @@ import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
-
-const SAMPLE_ID_FIELD = 'Seq_ID';
+import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
