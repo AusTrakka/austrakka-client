@@ -30,7 +30,7 @@ function Upload() {
       <Typography variant="h2" color="primary" paddingBottom={2}>Upload</Typography>
       <Grid container direction="row" justifyContent="flex-start" spacing={2} alignItems="stretch">
         {uploadPages.map((page) => (
-          <Grid item>
+          <Grid item key={page.title}>
             <Card sx={{ width: 200, height: 150 }}>
               <CardActionArea
                 sx={{ height: '100%', borderBottom: 4, borderColor: 'secondary.main' }}
