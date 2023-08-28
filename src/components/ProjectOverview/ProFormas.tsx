@@ -160,7 +160,7 @@ function SimpleDialog(props: SimpleDialogProps) {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ color: '#OA3546', fontWeight: 'bold', paddingLeft: '40px'}}>ProForma Information</DialogTitle>
+      <DialogTitle sx={{ color: '#OA3546', fontWeight: 'bold', paddingLeft: '40px' }}>ProForma Information</DialogTitle>
       <DialogContent sx={{ padding: '40px' }}>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
