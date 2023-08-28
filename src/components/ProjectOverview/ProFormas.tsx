@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Card, CardContent, Typography, Grid, CardMedia, Box, Paper, Accordion, styled, AccordionSummary, AccordionDetails, Icon, IconButton, Stack, CardActionArea, Dialog, DialogTitle, Table, TableContainer, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { Card, CardContent, Typography, Grid, CardMedia, Box, Paper, Accordion, styled, AccordionSummary, AccordionDetails, Icon, IconButton, Stack, CardActionArea, Dialog, DialogTitle, Table, TableContainer, TableBody, TableRow, TableCell, TableHead, DialogContent } from '@mui/material';
 import { ExpandMore, MoveToInbox } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
 import isoDateLocalDate from '../../utilities/helperUtils';
@@ -154,38 +154,57 @@ function SimpleDialog(props: SimpleDialogProps) {
   const { open, proformaDialog, setOpen, setProFormaDialog } = props;
 
   const handleClose = () => {
-    setOpen(false);
     setProFormaDialog([]); // Clear the dialog data when closing
+    setOpen(false);
   };
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>ProForma Information</DialogTitle>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Required</TableCell>
-              <TableCell align="right">Type</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {proformaDialog.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell component="th" scope="row">
-                  {row.metaDataColumnName}
+      <DialogTitle sx={{ color: '#OA3546', fontWeight: 'bold', paddingLeft: '40px'}}>ProForma Information</DialogTitle>
+      <DialogContent sx={{ padding: '40px' }}>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  component="th"
+                  scope="row"
+                  style={{ backgroundColor: '#90ca6d', fontWeight: 'bold' }}
+                >
+                  Name
                 </TableCell>
-                <TableCell align="right">{row.isRequired.toString()}</TableCell>
-                <TableCell align="right">{row.metaDataColumnPrimitiveType}</TableCell>
+                <TableCell
+                  align="right"
+                  style={{ backgroundColor: '#90ca6d', fontWeight: 'bold' }}
+                >
+                  Required
+                </TableCell>
+                <TableCell
+                  align="right"
+                  style={{ backgroundColor: '#90ca6d', fontWeight: 'bold' }}
+                >
+                  Type
+                </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {proformaDialog.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell component="th" scope="row">
+                    {row.metaDataColumnName}
+                  </TableCell>
+                  <TableCell align="right">{row.isRequired.toString()}</TableCell>
+                  <TableCell align="right">{row.metaDataColumnPrimitiveType}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </DialogContent>
     </Dialog>
   );
 }
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ProFormaList(props: ProFormasProps) {
   const { isProFormasLoading,
