@@ -82,9 +82,6 @@ function ProjectOverview() {
   // ProFormas component states
   const [projectProFormas, setProjectProFormas] = useState<ProFormaVersion[]>([]);
   const [isProFormasLoading, setIsProFormasLoading] = useState(true);
-  const [isProFormaListError, setIsProFormaListError] = useState(false);
-  const [proFormaListErrorMessage, setProFormaListErrorMessage] = useState('');
-  const [proFormaAbbrevs, setProFormaAbbrevs] = useState<string[]>([]);
 
   useEffect(() => {
     async function getProject() {
@@ -219,14 +216,9 @@ function ProjectOverview() {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProjectProFormas(data);
         setIsProFormasLoading(false);
-        setIsProFormaListError(false);
-        const uniqueAbbrevs = [...new Set(data.map(item => item.abbreviation))];
-        setProFormaAbbrevs(uniqueAbbrevs);
       } else {
         setIsProFormasLoading(false);
         setProjectProFormas([]);
-        setIsProFormaListError(true);
-        setProFormaListErrorMessage(proformaListResponse.message);
       }
     }
 
@@ -482,10 +474,6 @@ function ProjectOverview() {
             <ProFormas
               isProFormasLoading={isProFormasLoading}
               proformaList={projectProFormas}
-              proformaListError={isProFormaListError}
-              proformaListErrorMessage={proFormaListErrorMessage}
-              projectAbbrev={projectAbbrev!}
-              proformaAbbrevs={proFormaAbbrevs}
             />
           </TabPanel>
         </>

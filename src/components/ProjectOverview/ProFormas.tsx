@@ -1,18 +1,14 @@
 import React, { memo, useState } from 'react';
-import './ProFormas.css';
 import { Card, CardContent, Typography, Grid, CardMedia, Box, Paper, Accordion, styled, AccordionSummary, AccordionDetails, Icon, IconButton, Stack, CardActionArea, Dialog, DialogTitle, Table, TableContainer, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
 import { ExpandMore, MoveToInbox } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
+import { getProFormaDownload } from '../../utilities/resourceUtils';
 
 interface ProFormasProps {
   isProFormasLoading: boolean,
   proformaList: ProFormaVersion[],
-  projectAbbrev: string,
-  proformaAbbrevs: string[]
-  proformaListError: boolean,
-  proformaListErrorMessage: string,
 }
 
 interface SimpleDialogProps {
@@ -31,6 +27,29 @@ function generateCards(
     setOpen(true);
     setProFormaDialog(dinfo);
   };
+
+  const handleFileDownload = async (dAbbrev: string) => {
+    try {
+      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev);
+
+      // Create a URL for the Blob object
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a temporary link element to trigger the download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = suggestedFilename;
+      link.click();
+
+      // Clean up the URL and remove the link
+      URL.revokeObjectURL(blobUrl);
+      link.remove();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error:', error);
+    }
+  };
+
   return versions.map((version) => (
     <Card
       key={version.proformaVersionId}
@@ -61,6 +80,7 @@ function generateCards(
               {version.columnMappings
                 .slice(0, 3)
                 .map((item, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={i} className="column" style={{ maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', padding: '3px' }}>
                     <Typography noWrap>
                       {item.metaDataColumnName}
@@ -72,6 +92,7 @@ function generateCards(
               {version.columnMappings
                 .slice(3, 5)
                 .map((item, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={i} className="column" style={{ maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', padding: '3px' }}>
                     <Typography noWrap>
                       {item.metaDataColumnName}
@@ -110,7 +131,7 @@ function generateCards(
           </Stack>
           <Stack alignItems="flex-end" spacing={2} justifyContent="space-between">
             {version.isCurrent ? (
-              <IconButton aria-label="download" disabled={!version.isCurrent} style={{ padding: 0, pointerEvents: 'auto' }} href="https://downloadmoreram.com/" target="_blank">
+              <IconButton aria-label="download" disabled={!version.isCurrent} onClick={(e) => { e.stopPropagation(); handleFileDownload(version.abbreviation); }} sx={{ padding: 0, pointerEvents: 'auto' }}>
                 <MoveToInbox color="secondary" fontSize="large" />
               </IconButton>
             )
@@ -168,11 +189,7 @@ function SimpleDialog(props: SimpleDialogProps) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ProFormaList(props: ProFormasProps) {
   const { isProFormasLoading,
-    proformaList,
-    projectAbbrev,
-    proformaAbbrevs,
-    proformaListError,
-    proformaListErrorMessage } = props;
+    proformaList } = props;
 
   const [open, setOpen] = useState(false);
   const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
