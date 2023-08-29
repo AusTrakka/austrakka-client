@@ -105,6 +105,21 @@ export interface AnalysisResultMetadata {
   versionId: number;
 }
 
+export interface Proforma {
+  proformaId: number,
+  proFormaVersionId: number,
+  version: number,
+  name: string,
+  abbreviation: string,
+  description: string,
+  isActive: boolean,
+  isCurrent: boolean,
+  created: string,
+  lastUpdated: string,
+  createdBy: string,
+  lastUpdatedBy: string,
+}
+
 export interface ThresholdAlertDTO {
   alertLevelOrder: number;
   alertLevel: string;
