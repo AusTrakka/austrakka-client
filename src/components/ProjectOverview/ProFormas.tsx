@@ -116,6 +116,7 @@ function generateCards(
               variant="h5"
               component="div"
               style={{ color: version.isCurrent ? 'white' : 'black', alignContent: 'end', pointerEvents: 'auto' }}
+              onClick={(e) => e.stopPropagation()}
             >
               {version.originalFileName}
             </Typography>
@@ -189,7 +190,7 @@ function SimpleDialog(props: SimpleDialogProps) {
             </TableHead>
             <TableBody>
               {proformaDialog.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.metaDataColumnName}>
                   <TableCell component="th" scope="row">
                     {row.metaDataColumnName}
                   </TableCell>
