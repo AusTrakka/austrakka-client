@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
+import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
 import { Box, FormControl, Grid, InputLabel, Select, Typography, Button,
   FormControlLabel, Checkbox, FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert, Backdrop, CircularProgress } from '@mui/material';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
@@ -117,6 +117,8 @@ function UploadMetadata() {
   const [file, setFile] = useState<File>();
   const [invalidFile, setInvalidFile] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const scrollRef = useRef<null | HTMLDivElement>(null);
+
   const toggleDrawer =
     (open: boolean) =>
       (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -145,6 +147,13 @@ function UploadMetadata() {
 
     getProformas();
   }, []);
+
+  useEffect(() => {
+    // Scroll vaidation or upload response messages into view
+    if (submission.messages?.length !== 0) {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [submission.messages]);
 
   // Handle proforma selection
   const handleSelectProforma = (proformaAbbrev: string) => {
@@ -229,7 +238,7 @@ function UploadMetadata() {
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
         <Grid item lg={3} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select proforma </Typography>
-          <Tooltip title={proformaStatusMessage} arrow>
+          <Tooltip title={proformaStatusMessage} placement="left" arrow>
             <FormControl
               error={proformaStatus === LoadingState.ERROR}
               size="small"
@@ -244,7 +253,6 @@ function UploadMetadata() {
                 name="proforma"
                 value={selectedProforma?.abbreviation || ''}
                 onChange={(e) => handleSelectProforma(e.target.value)}
-                autoWidth
               >
                 { proformas.map((proforma: Proforma) => (
                   <MenuItem
@@ -254,6 +262,9 @@ function UploadMetadata() {
                     {`${proforma.abbreviation} : ${proforma.name}`}
                   </MenuItem>
                 )) }
+                { proformas.length === 0 ? (
+                  <MenuItem disabled>No proformas available</MenuItem>
+                ) : null}
               </Select>
               {proformaStatus === LoadingState.LOADING
                 ? (
@@ -337,47 +348,49 @@ function UploadMetadata() {
             )}
         </Grid>
       </Grid>
-      {(
-        submission.status === LoadingState.SUCCESS ||
-        submission.status === LoadingState.ERROR
-      ) ? (
-        <Grid container spacing={1} direction="column">
-          <Grid item>
-            {options.validate ?
-              <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
-          </Grid>
-          {submission.messages!.map(
-            (message: any) => (
+      <div ref={scrollRef}>
+        {(
+          submission.status === LoadingState.SUCCESS ||
+          submission.status === LoadingState.ERROR
+        ) ? (
+          <Grid container spacing={1} direction="column">
+            <Grid item>
+              {options.validate ?
+                <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
+            </Grid>
+            {submission.messages!.map(
+              (message: any) => (
+                <Grid item>
+                  <Alert severity={message.ResponseType.toLowerCase()}>
+                    <strong>{message.ResponseType}</strong>
+                    {' '}
+                    -
+                    {' '}
+                    {message.ResponseMessage}
+                  </Alert>
+                </Grid>
+              ),
+            )}
+            {(
+              submission.status === LoadingState.SUCCESS &&
+            options.validate === true
+            ) ? (
               <Grid item>
-                <Alert severity={message.ResponseType.toLowerCase()}>
-                  <strong>{message.ResponseType}</strong>
+                <Alert severity="warning">
+                  <strong>Warning</strong>
                   {' '}
                   -
                   {' '}
-                  {message.ResponseMessage}
+                  This was a validation only.
+                  Please uncheck the &quot;Validate only&quot; option
+                  and upload to load data into AusTrakka.
                 </Alert>
               </Grid>
-            ),
-          )}
-          {(
-            submission.status === LoadingState.SUCCESS &&
-            options.validate === true
-          ) ? (
-            <Grid item>
-              <Alert severity="warning">
-                <strong>Warning</strong>
-                {' '}
-                -
-                {' '}
-                This was a validation only.
-                Please uncheck the &quot;Validate only&quot; option
-                and upload to load data into AusTrakka.
-              </Alert>
-            </Grid>
-            ) : null }
-        </Grid>
-        )
-        : null}
+              ) : null }
+          </Grid>
+          )
+          : null}
+      </div>
       <Drawer
         anchor="right"
         open={drawerOpen}
