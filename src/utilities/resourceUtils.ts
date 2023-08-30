@@ -104,7 +104,49 @@ async function callPOSTForm(url:string, formData:FormData) {
   return apiResponse as ResponseObject;
 }
 
+async function downloadFile(url: string) {
+  const token = await getToken();
+
+  if (!token) {
+    throw new Error('Authentication error: Unable to retrieve access token.');
+  }
+
+  const options: HTTPOptions = {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token?.accessToken}`,
+      'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
+    },
+  };
+
+  let filename = 'no-file-name.xlsx'; // Default filename
+  const response = await fetch(base + url, options);
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok.');
+  }
+
+  const contentDisposition = response.headers.get('Content-Disposition');
+  if (contentDisposition) {
+    try {
+      const parts = contentDisposition.split(';');
+      const filenamePart = parts.find(part => part.trim().startsWith('filename='));
+      if (filenamePart) {
+        filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
+      }
+    } catch {
+      filename = 'no-file-name.xlsx';
+    }
+  }
+  const blob = await response.blob();
+  return { blob, suggestedFilename: filename };
+}
+
 // Definition of endpoints
+export const getProFormaDownload = async (abbrev: string) => {
+  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`);
+  return response;
+};
 
 export const getProjectList = () => callGET('/api/Projects?&includeall=false');
 export const getProjectDetails = (abbrev: string) => callGET(`/api/Projects/abbrev/${abbrev}`);
@@ -126,6 +168,7 @@ export const getSamples = (searchParams?: string) => callGET(`/api/MetadataSearc
 export const getTotalSamples = (groupId: number) => callGET(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`);
 export const getDisplayFields = (groupId: number) => callGET(`/api/Group/display-fields?groupContext=${groupId}`);
 export const getGroupMembers = (groupId: number) => callGET(`/api/Group/Members?groupContext=${groupId}`);
+export const getGroupProFormas = (groupId: number) => callGET(`/api/ProFormas/VersionInformation?groupContext=${groupId}`);
 export const getUserProformas = () => callGET('/api/Proformas');
 
 // Project dashboards endpoints
