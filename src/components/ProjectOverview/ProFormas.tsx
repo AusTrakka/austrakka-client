@@ -103,7 +103,7 @@ function ProFormaList(props: ProFormasListProps) {
         <Masonry columns={{ xs: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={4}>
           {Object.keys(groupedObjects).map((index) => (
             <Paper
-              key={groupedObjects[index][0].created.toString()}
+              key={groupedObjects[index][0].proFormaId}
               sx={{ minWidth: '400px',
                 maxWidth: '400px',
                 minHeight: '372px',
