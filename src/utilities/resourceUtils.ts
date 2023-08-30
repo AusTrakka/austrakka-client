@@ -102,8 +102,9 @@ async function callPOSTForm(url:string, formData:FormData) {
     })
     .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
   return apiResponse as ResponseObject;
+}
+
 async function downloadFile(url: string, method: string) {
-  const base = import.meta.env.VITE_REACT_API_URL;
   const token = await getToken();
 
   if (!token) {
@@ -167,6 +168,7 @@ export const getSamples = (searchParams?: string) => callGET(`/api/MetadataSearc
 export const getTotalSamples = (groupId: number) => callGET(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`);
 export const getDisplayFields = (groupId: number) => callGET(`/api/Group/display-fields?groupContext=${groupId}`);
 export const getGroupMembers = (groupId: number) => callGET(`/api/Group/Members?groupContext=${groupId}`);
+export const getGroupProFormas = (groupId: number) => callGET(`/api/ProFormas/VersionInformation?groupContext=${groupId}`);
 export const getUserProformas = () => callGET('/api/Proformas');
 
 // Project dashboards endpoints
