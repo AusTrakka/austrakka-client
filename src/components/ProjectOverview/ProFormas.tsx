@@ -166,4 +166,4 @@ function ProFormaList(props: ProFormasListProps) {
   );
 }
 
-export default memo(ProFormaList);
+export default ProFormaList;

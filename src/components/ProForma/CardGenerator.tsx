@@ -99,7 +99,7 @@ function GenerateCards(
                 .slice(0, 3)
                 .map((item, i) => (
                   <div
-                    key={version.columnMappings[i].metaDataColumnName}
+                    key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
                     style={{ maxWidth: '90%',
                       overflow: 'hidden',
@@ -117,7 +117,7 @@ function GenerateCards(
                 .slice(3, 5)
                 .map((item, i) => (
                   <div
-                    key={version.columnMappings[i].metaDataColumnName}
+                    key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
                     style={{ maxWidth: '90%',
                       overflow: 'hidden',
