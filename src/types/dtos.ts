@@ -73,6 +73,30 @@ export interface Member {
   lastLoggedIn: string,
 }
 
+export interface ProFormaVersion {
+  proFormaVersionId: number,
+  proFormaId: number,
+  abbreviation: string,
+  originalFileName: string,
+  fileName: string,
+  columnMappings: MetaDataColumnMapping[],
+  isCurrent: boolean,
+  assetId : number,
+  created: Date,
+  createdBy: string,
+}
+
+export interface MetaDataColumnMapping {
+  metaDataColumnMappingId: number,
+  metaDataColumnName: string,
+  metaDataColumnPrimitiveType: string,
+  metaDataColumnValidValues: string[],
+  isRequired: boolean,
+  isDispalyedByDefault: boolean,
+  isActive: boolean,
+  canVisualise: boolean,
+}
+
 export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
@@ -103,6 +127,21 @@ export interface AnalysisResultMetadata {
   status: boolean;
   submissionId: number;
   versionId: number;
+}
+
+export interface Proforma {
+  proformaId: number,
+  proFormaVersionId: number,
+  version: number,
+  name: string,
+  abbreviation: string,
+  description: string,
+  isActive: boolean,
+  isCurrent: boolean,
+  created: string,
+  lastUpdated: string,
+  createdBy: string,
+  lastUpdatedBy: string,
 }
 
 export interface ThresholdAlertDTO {
