@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { memo, useState } from 'react';
+import React, { useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
