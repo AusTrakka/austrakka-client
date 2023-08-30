@@ -58,7 +58,7 @@ function GenerateCards(
 
   return versions.map((version) => (
     <Card
-      key={version.proformaVersionId}
+      key={version.created.toString()}
       style={{
         backgroundColor: version.isCurrent ? '#0A3546' : 'white',
         width: '330px', // Set a fixed width

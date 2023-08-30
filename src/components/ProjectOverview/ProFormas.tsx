@@ -99,7 +99,7 @@ function ProFormaList(props: ProFormasListProps) {
         )}
       {isProFormasLoading}
       <br />
-      <Box sx={{ }}>
+      <Box>
         <Masonry columns={{ xs: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={4}>
           {Object.keys(groupedObjects).map((index) => (
             <Paper
