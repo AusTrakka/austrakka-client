@@ -74,8 +74,8 @@ export interface Member {
 }
 
 export interface ProFormaVersion {
-  proformaVersionId: number,
-  proformaId: number,
+  proFormaVersionId: number,
+  proFormaId: number,
   abbreviation: string,
   originalFileName: string,
   fileName: string,
@@ -87,7 +87,7 @@ export interface ProFormaVersion {
 }
 
 export interface MetaDataColumnMapping {
-  id: number,
+  metaDataColumnMappingId: number,
   metaDataColumnName: string,
   metaDataColumnPrimitiveType: string,
   metaDataColumnValidValues: string[],

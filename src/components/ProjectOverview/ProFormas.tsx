@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { memo, useState } from 'react';
+import React, { useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
@@ -99,11 +99,11 @@ function ProFormaList(props: ProFormasListProps) {
         )}
       {isProFormasLoading}
       <br />
-      <Box sx={{ }}>
+      <Box>
         <Masonry columns={{ xs: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={4}>
           {Object.keys(groupedObjects).map((index) => (
             <Paper
-              key={groupedObjects[index][0].proformaId}
+              key={groupedObjects[index][0].proFormaId}
               sx={{ minWidth: '400px',
                 maxWidth: '400px',
                 minHeight: '372px',
@@ -166,4 +166,4 @@ function ProFormaList(props: ProFormasListProps) {
   );
 }
 
-export default memo(ProFormaList);
+export default ProFormaList;

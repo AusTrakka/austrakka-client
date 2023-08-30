@@ -58,7 +58,7 @@ function GenerateCards(
 
   return versions.map((version) => (
     <Card
-      key={version.proformaVersionId}
+      key={version.proFormaVersionId}
       style={{
         backgroundColor: version.isCurrent ? '#0A3546' : 'white',
         width: '330px', // Set a fixed width
@@ -99,7 +99,7 @@ function GenerateCards(
                 .slice(0, 3)
                 .map((item, i) => (
                   <div
-                    key={version.columnMappings[i].id}
+                    key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
                     style={{ maxWidth: '90%',
                       overflow: 'hidden',
@@ -117,7 +117,7 @@ function GenerateCards(
                 .slice(3, 5)
                 .map((item, i) => (
                   <div
-                    key={version.columnMappings[i].id}
+                    key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
                     style={{ maxWidth: '90%',
                       overflow: 'hidden',
