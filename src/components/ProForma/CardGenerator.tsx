@@ -1,15 +1,15 @@
-import React, { Dispatch, SetStateAction } from 'react';
-import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon } from '@mui/material';
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress } from '@mui/material';
 import { MoveToInbox } from '@mui/icons-material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
-import { getProFormaDownload } from '../../utilities/resourceUtils';
 
 function GenerateCards(
   versions: ProFormaVersion[],
   setOpen: Dispatch<React.SetStateAction<boolean>>,
   setProFormaDialog: Dispatch<SetStateAction<MetaDataColumnMapping[]>>,
   setProFormaAbbrev: Dispatch<SetStateAction<string>>,
+  handleFileDownload: (dAbbrev: string) => Promise<void>,
 ) {
   const handleClickOpen = (dinfo: MetaDataColumnMapping[], abbrev: string) => {
     setOpen(true);
@@ -17,26 +17,43 @@ function GenerateCards(
     setProFormaAbbrev(abbrev);
   };
 
-  const handleFileDownload = async (dAbbrev: string) => {
+  const [loadingState, setLoadingState] = useState<boolean>(false);
+
+  const handleDownload = async (abbrev: string) => {
     try {
-      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev);
-
-      // Create a URL for the Blob object
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Create a temporary link element to trigger the download
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = suggestedFilename;
-      link.click();
-
-      // Clean up the URL and remove the link
-      URL.revokeObjectURL(blobUrl);
-      link.remove();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', error);
+      setLoadingState(true); // Set loading state
+      await handleFileDownload(abbrev);
+    } finally {
+      setTimeout(() => {
+        setLoadingState(false); // Reset loading state
+      }, 2000); // 2000 milliseconds = 2 seconds
     }
+  };
+
+  const renderIconButton = (version : ProFormaVersion) => {
+    if (!version.isCurrent) {
+      return <Icon />;
+    }
+
+    if (loadingState) {
+      return (
+        <CircularProgress size={35} color="secondary" />
+      );
+    }
+
+    return (
+      <IconButton
+        aria-label="download"
+        disabled={!version.isCurrent}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDownload(version.abbreviation);
+        }}
+        sx={{ padding: 0, pointerEvents: 'auto' }}
+      >
+        <MoveToInbox color="secondary" fontSize="large" />
+      </IconButton>
+    );
   };
 
   return versions.map((version) => (
@@ -147,18 +164,8 @@ function GenerateCards(
               {isoDateLocalDate(version.created.toString())}
             </Typography>
           </Stack>
-          <Stack alignItems="flex-end" spacing={2} justifyContent="space-between">
-            {version.isCurrent ? (
-              <IconButton
-                aria-label="download"
-                disabled={!version.isCurrent}
-                onClick={(e) => { e.stopPropagation(); handleFileDownload(version.abbreviation); }}
-                sx={{ padding: 0, pointerEvents: 'auto' }}
-              >
-                <MoveToInbox color="secondary" fontSize="large" />
-              </IconButton>
-            )
-              : <Icon />}
+          <Stack alignItems="flex-end" spacing={2} justifyContent="space-evenly">
+            {renderIconButton(version)}
             <Typography
               variant="caption"
               color="text.secondary"

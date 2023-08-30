@@ -5,8 +5,9 @@ import { Typography, Box, Paper, Accordion, styled,
 import { ExpandMore } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
-import SimpleDialog from '../ProForma/Dialog';
+import SimpleDialog from '../ProForma/TableDialog';
 import GenerateCards from '../ProForma/CardGenerator';
+import { getProFormaDownload } from '../../utilities/resourceUtils';
 
 // Local Proforma Props
 interface ProFormasListProps {
@@ -25,6 +26,28 @@ function ProFormaList(props: ProFormasListProps) {
   const [open, setOpen] = useState(false);
   const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
   const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
+
+  const handleFileDownload = async (dAbbrev: string) => {
+    try {
+      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev);
+
+      // Create a URL for the Blob object
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a temporary link element to trigger the download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = suggestedFilename;
+      link.click();
+
+      // Clean up the URL and remove the link
+      URL.revokeObjectURL(blobUrl);
+      link.remove();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error:', error);
+    }
+  };
 
   // eslint-disable-next-line max-len
   const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
@@ -105,6 +128,7 @@ function ProFormaList(props: ProFormasListProps) {
                       setOpen,
                       setProFormaDialog,
                       setProFormaAbbrev,
+                      handleFileDownload,
                     )}
                   </Box>
                 </AccordionSummary>
@@ -122,6 +146,7 @@ function ProFormaList(props: ProFormasListProps) {
                       setOpen,
                       setProFormaDialog,
                       setProFormaAbbrev,
+                      handleFileDownload,
                     )}
                   </Stack>
                 </AccordionDetails>

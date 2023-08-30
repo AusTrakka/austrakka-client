@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { Dialog, DialogTitle, DialogContent, Table, TableContainer, TableBody, TableRow, TableCell, TableHead, Paper } from '@mui/material';
 import { MetaDataColumnMapping } from '../../types/dtos';
 
-interface SimpleDialogProps {
+interface TableDialogProps {
   open: boolean;
   proformaDialog: MetaDataColumnMapping[];
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -10,13 +10,13 @@ interface SimpleDialogProps {
   proformaTitle: string;
 }
 
-function SimpleDialog({
+function TableDialog({
   open,
   proformaDialog,
   setOpen,
   setProFormaDialog,
   proformaTitle,
-}: SimpleDialogProps) {
+}: TableDialogProps) {
   const handleClose = () => {
     setProFormaDialog([]);
     setOpen(false);
@@ -73,4 +73,4 @@ function SimpleDialog({
   );
 }
 
-export default SimpleDialog;
+export default TableDialog;
