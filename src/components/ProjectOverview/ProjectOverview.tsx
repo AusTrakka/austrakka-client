@@ -85,6 +85,11 @@ function ProjectOverview() {
   const [proFormasError, setProFormaError] = useState(false);
   const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
 
+  // This object maps from a hard-coded metadata field name to a function to render the cell value. 
+  const sampleRenderFunctions : {[index: string]: Function} = {
+    'Shared_groups': (value: any) => value.toString().replace(/[\[\]\"\']/g, ''),
+  }
+
   useEffect(() => {
     async function getProject() {
       const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
@@ -137,7 +142,13 @@ function ProjectOverview() {
           setIsSamplesLoading(false);
         } else {
           columnHeaderArray.forEach((element: MetaDataColumn) => {
-            if (element.primitiveType === 'boolean') {
+            if (element.columnName in sampleRenderFunctions) {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+              });
+            } else if (element.primitiveType === 'boolean') {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,

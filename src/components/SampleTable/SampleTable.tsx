@@ -65,6 +65,12 @@ function SampleTable(props: SamplesProps) {
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
 
+  // This object maps from a hard-coded metadata field name to a function to render the cell value. 
+  // Duplicated here for now until Samples.tsx and SampleTable.tsx are merged
+  const sampleRenderFunctions : {[index: string]: Function} = {
+    'Shared_groups': (value: any) => value.toString().replace(/[\[\]\"\']/g, ''),
+  }
+
   useEffect(() => {
     async function getFields() {
       const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!);
@@ -117,7 +123,13 @@ function SampleTable(props: SamplesProps) {
         const copy = [...displayFields]; // Creating copy of original array so it's not overridden
         const sortedDisplayFields = copy.sort(compareFields);
         sortedDisplayFields.forEach((element: MetaDataColumn) => {
-          if (element.primitiveType === 'boolean') {
+          if (element.columnName in sampleRenderFunctions) {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+            });
+          } else if (element.primitiveType === 'boolean') {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
