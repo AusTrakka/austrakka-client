@@ -104,7 +104,7 @@ async function callPOSTForm(url:string, formData:FormData) {
   return apiResponse as ResponseObject;
 }
 
-async function downloadFile(url: string, method: string) {
+async function downloadFile(url: string) {
   const token = await getToken();
 
   if (!token) {
@@ -112,7 +112,7 @@ async function downloadFile(url: string, method: string) {
   }
 
   const options: HTTPOptions = {
-    method,
+    method: 'GET',
     headers: {
       'Authorization': `Bearer ${token?.accessToken}`,
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
@@ -144,7 +144,7 @@ async function downloadFile(url: string, method: string) {
 
 // Definition of endpoints
 export const getProFormaDownload = async (abbrev: string) => {
-  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, 'GET');
+  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`);
   return response;
 };
 
