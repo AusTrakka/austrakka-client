@@ -82,6 +82,8 @@ function ProjectOverview() {
   // ProFormas component states
   const [projectProFormas, setProjectProFormas] = useState<ProFormaVersion[]>([]);
   const [isProFormasLoading, setIsProFormasLoading] = useState(true);
+  const [proFormasError, setProFormaError] = useState(false);
+  const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
 
   useEffect(() => {
     async function getProject() {
@@ -219,6 +221,8 @@ function ProjectOverview() {
       } else {
         setIsProFormasLoading(false);
         setProjectProFormas([]);
+        setProFormaError(true);
+        setProFormasErrorMessage(proformaListResponse.message);
       }
     }
 
@@ -474,6 +478,8 @@ function ProjectOverview() {
             <ProFormas
               isProFormasLoading={isProFormasLoading}
               proformaList={projectProFormas}
+              proformaError={proFormasError}
+              proFormaErrorMessage={proFromasErrorMessage}
             />
           </TabPanel>
         </>

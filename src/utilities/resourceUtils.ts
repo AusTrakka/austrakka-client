@@ -80,7 +80,7 @@ async function callAPI(url:string, method:string, requestData:object) {
   return apiResponse as ResponseObject;
 }
 
-async function downloadFile(url: string, method: string, requestData: object) {
+async function downloadFile(url: string, method: string) {
   const base = import.meta.env.VITE_REACT_API_URL;
   const token = await getToken();
 
@@ -92,14 +92,9 @@ async function downloadFile(url: string, method: string, requestData: object) {
     method,
     headers: {
       'Authorization': `Bearer ${token?.accessToken}`,
-      'Access-Control-Expose-Headers': '*',
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
   };
-
-  if (method !== 'GET') {
-    options.body = JSON.stringify(requestData);
-  }
 
   let filename = 'no-file-name.xlsx'; // Default filename
   const response = await fetch(base + url, options);
@@ -108,24 +103,25 @@ async function downloadFile(url: string, method: string, requestData: object) {
     throw new Error('Network response was not ok.');
   }
 
-  // Extract filename from the Content-Disposition header
   const contentDisposition = response.headers.get('Content-Disposition');
   if (contentDisposition) {
-    const parts = contentDisposition.split(';');
-    const filenamePart = parts.find(part => part.trim().startsWith('filename='));
-    if (filenamePart) {
-      filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
+    try {
+      const parts = contentDisposition.split(';');
+      const filenamePart = parts.find(part => part.trim().startsWith('filename='));
+      if (filenamePart) {
+        filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
+      }
+    } catch {
+      filename = 'no-file-name.xlsx';
     }
   }
-
   const blob = await response.blob();
-
   return { blob, suggestedFilename: filename };
 }
 
 // Definition of endpoints
 export const getProFormaDownload = async (abbrev: string) => {
-  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, 'GET', {});
+  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, 'GET');
   return response;
 };
 
