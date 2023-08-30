@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
-  getTrees, getGroupMembers,
+  getTrees, getGroupMembers, getGroupProFormas,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
@@ -16,10 +16,11 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member, DisplayField } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member, DisplayField, ProFormaVersion } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import ProFormas from './ProFormas';
 
 const SAMPLE_ID_FIELD = 'Seq_ID';
 
@@ -72,10 +73,17 @@ function ProjectOverview() {
   const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
 
-  const [projectMembers, setProjectMemebers] = useState<Member[]>([]);
+  // Members component states
+  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
+
+  // ProFormas component states
+  const [projectProFormas, setProjectProFormas] = useState<ProFormaVersion[]>([]);
+  const [isProFormasLoading, setIsProFormasLoading] = useState(true);
+  const [proFormasError, setProFormaError] = useState(false);
+  const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
 
   useEffect(() => {
     async function getProject() {
@@ -124,28 +132,33 @@ function ProjectOverview() {
       if (tableHeadersResponse.status === 'Success') {
         const columnHeaderArray = tableHeadersResponse.data;
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-        columnHeaderArray.forEach((element: MetaDataColumn) => {
-          if (element.primitiveType === 'boolean') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-            });
-          } else if (element.primitiveType === 'date') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
-            });
-          } else {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-            });
-          }
-        });
-        setSampleTableColumns(columnBuilder);
-        setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
+        // we need to catch that in the occation where there are no headers.
+        if (columnHeaderArray.length === 0) {
+          setIsSamplesLoading(false);
+        } else {
+          columnHeaderArray.forEach((element: MetaDataColumn) => {
+            if (element.primitiveType === 'boolean') {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
+              });
+            } else if (element.primitiveType === 'date') {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+              });
+            } else {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+              });
+            }
+          });
+          setSampleTableColumns(columnBuilder);
+          setIsSamplesError((prevState) => ({ ...prevState, samplesHeaderError: false }));
+        }
       } else {
         setIsSamplesLoading(false);
         setIsSamplesError((prevState) => ({
@@ -187,14 +200,29 @@ function ProjectOverview() {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id);
       if (memberListResponse.status === 'Success') {
-        setProjectMemebers(memberListResponse.data as Member[]);
+        setProjectMembers(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsMembersLoading(false);
       } else {
         setIsMembersLoading(false);
-        setProjectMemebers([]);
+        setProjectMembers([]);
         setMemberListError(true);
         setMemberListErrorMessage(memberListResponse.message);
+      }
+    }
+
+    async function getProFormaList() {
+      const proformaListResponse : ResponseObject =
+        await getGroupProFormas(projectDetails!.projectMembers.id);
+      if (proformaListResponse.status === 'Success') {
+        const data = proformaListResponse.data as ProFormaVersion[];
+        setProjectProFormas(data);
+        setIsProFormasLoading(false);
+      } else {
+        setIsProFormasLoading(false);
+        setProjectProFormas([]);
+        setProFormaError(true);
+        setProFormasErrorMessage(proformaListResponse.message);
       }
     }
 
@@ -204,6 +232,7 @@ function ProjectOverview() {
       getTreeList();
       getPlotList();
       getMemberList();
+      getProFormaList();
     }
   }, [projectDetails]);
 
@@ -277,6 +306,7 @@ function ProjectOverview() {
   useEffect(
     () => {
     // Only get samples when columns are already populated
+    // {HOWEVER IF THERE ARE no headers then the samples should stop loading}
     // effects should trigger getProject -> getHeaders -> this function
       async function getSamplesList() {
         let sortString = '';
@@ -358,6 +388,10 @@ function ProjectOverview() {
       index: 4,
       title: 'Members',
     },
+    {
+      index: 5,
+      title: 'Proformas',
+    },
   ];
 
   return (
@@ -431,13 +465,21 @@ function ProjectOverview() {
               plotList={projectPlots}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={4} tabLoader={isPlotsLoading}>
+          <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
             <MemberList
               isMembersLoading={isMembersLoading}
               memberList={projectMembers}
               memberListError={memberListError}
               memberListErrorMessage={memberListErrorMessage}
               projectAbbrev={projectAbbrev!}
+            />
+          </TabPanel>
+          <TabPanel value={tabValue} index={5} tabLoader={isProFormasLoading}>
+            <ProFormas
+              isProFormasLoading={isProFormasLoading}
+              proformaList={projectProFormas}
+              proformaError={proFormasError}
+              proFormaErrorMessage={proFromasErrorMessage}
             />
           </TabPanel>
         </>
