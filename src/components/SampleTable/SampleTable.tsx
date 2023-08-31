@@ -70,6 +70,9 @@ function SampleTable(props: SamplesProps) {
   const sampleRenderFunctions : {[index: string]: Function} = {
     'Shared_groups': (value: any) => value.toString().replace(/[\[\]\"\']/g, ''),
   }
+  // Fields which should be rendered as datetimes, not just dates
+  // This hard-coding is interim until the server is able to provide this information
+  const datetimeFields = new Set(['Date_created', 'Date_updated']);
 
   useEffect(() => {
     async function getFields() {
@@ -139,7 +142,7 @@ function SampleTable(props: SamplesProps) {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+              Cell: ({ cell }: any) => (datetimeFields.has(element.columnName) ? isoDateLocalDate(cell.getValue()) : isoDateLocalDateNoTime(cell.getValue())),
             });
           } else {
             columnBuilder.push({
