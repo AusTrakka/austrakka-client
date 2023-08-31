@@ -85,14 +85,6 @@ function ProjectOverview() {
   const [proFormasError, setProFormaError] = useState(false);
   const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
 
-  // This object maps from a hard-coded metadata field name to a function to render the cell value. 
-  const sampleRenderFunctions : {[index: string]: Function} = {
-    'Shared_groups': (value: any) => value.toString().replace(/[\[\]\"\']/g, ''),
-  }
-  // Fields which should be rendered as datetimes, not just dates
-  // This hard-coding is interim until the server is able to provide this information
-  const datetimeFields = new Set(['Date_created', 'Date_updated']);
-
   useEffect(() => {
     async function getProject() {
       const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
@@ -113,6 +105,14 @@ function ProjectOverview() {
   }, [projectAbbrev]);
 
   useEffect(() => {
+    // Maps from a hard-coded metadata field name to a function to render the cell value
+    const sampleRenderFunctions : { [index: string]: Function } = {
+      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+    };
+    // Fields which should be rendered as datetimes, not just dates
+    // This hard-coding is interim until the server is able to provide this information
+    const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
@@ -161,7 +161,10 @@ function ProjectOverview() {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }: any) => (datetimeFields.has(element.columnName) ? isoDateLocalDate(cell.getValue()) : isoDateLocalDateNoTime(cell.getValue())),
+                Cell: ({ cell }: any) => (
+                  datetimeFields.has(element.columnName)
+                    ? isoDateLocalDate(cell.getValue())
+                    : isoDateLocalDateNoTime(cell.getValue())),
               });
             } else {
               columnBuilder.push({
