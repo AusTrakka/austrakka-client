@@ -18,9 +18,10 @@ msalInstance.addEventCallback((event: EventMessage) => {
 // Returns valid token or generates a new valid token
 export async function getToken() {
   const currentAccount = msalInstance.getActiveAccount();
+  const accounts = msalInstance.getAllAccounts();
   const request = {
     scopes: [import.meta.env.VITE_API_SCOPE],
-    account: currentAccount || undefined,
+    account: currentAccount || accounts[0],
   };
   return msalInstance.acquireTokenSilent(request).catch((error) => {
     // eslint-disable-next-line no-console
