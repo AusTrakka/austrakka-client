@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress, Button } from '@mui/material';
-import { MoveToInbox, OpenInFull } from '@mui/icons-material';
+import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress } from '@mui/material';
+import { MoveToInbox } from '@mui/icons-material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 
@@ -131,7 +131,7 @@ function GenerateCards(
                   </div>
                 ))}
             </Stack>
-            <Typography color="secondary" justifySelf='center'>
+            <Typography color="secondary" justifySelf="center">
               EXPAND
             </Typography>
           </Grid>
