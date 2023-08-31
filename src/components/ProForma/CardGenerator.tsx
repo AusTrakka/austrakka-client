@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress } from '@mui/material';
-import { MoveToInbox } from '@mui/icons-material';
+import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress, Button } from '@mui/material';
+import { MoveToInbox, OpenInFull } from '@mui/icons-material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 
@@ -72,7 +72,8 @@ function GenerateCards(
         onClick={() => handleClickOpen(version.columnMappings, version.abbreviation)}
         sx={{ pointerEvents: 'auto',
           borderBottom: 1,
-          borderColor: '#B3B3B3' }}
+          borderColor: '#B3B3B3',
+          cursor: 'zoom-in' }}
       >
         <CardMedia
           component="div"
@@ -114,7 +115,7 @@ function GenerateCards(
             </Stack>
             <Stack spacing="space-between">
               {version.columnMappings
-                .slice(3, 5)
+                .slice(3, 6)
                 .map((item, i) => (
                   <div
                     key={version.columnMappings[i].metaDataColumnMappingId}
@@ -129,10 +130,10 @@ function GenerateCards(
                     </Typography>
                   </div>
                 ))}
-              <div style={{ maxWidth: '90%', overflow: 'hidden', textOverflow: 'ellipsis', padding: '3px' }}>
-                <Typography color="#A81E2C">More...</Typography>
-              </div>
             </Stack>
+            <Typography color="secondary" justifySelf='center'>
+              EXPAND
+            </Typography>
           </Grid>
         </CardMedia>
       </CardActionArea>
