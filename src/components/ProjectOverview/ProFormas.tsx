@@ -85,6 +85,7 @@ function ProFormaList(props: ProFormasListProps) {
 
   return (
     <>
+      {isProFormasLoading}
       { proformaError
         ? <Alert severity="error">{proFormaErrorMessage}</Alert>
         : (
@@ -97,8 +98,9 @@ function ProFormaList(props: ProFormasListProps) {
             ProForma templates may be downloaded.
           </Typography>
         )}
-      {isProFormasLoading}
-      <br />
+      { proformaList.length === 0 && !proformaError
+        ? <Alert severity="warning">No attached templates for the ProFormas are available</Alert>
+        : <br /> }
       <Box>
         <Masonry columns={{ xs: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={4}>
           {Object.keys(groupedObjects).map((index) => (
