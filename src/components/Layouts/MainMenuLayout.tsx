@@ -63,6 +63,8 @@ function MainMenuLayout() {
     versions: 'Versions',
     upload: 'Upload',
     org: 'Organisation Data',
+    sequences: 'Sequences',
+    metadata: 'Metadata',
   };
   // These values in the breadcrumb cannot be navigated to
   const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions', 'records'];
