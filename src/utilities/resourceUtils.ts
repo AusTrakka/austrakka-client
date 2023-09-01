@@ -44,10 +44,6 @@ async function callGET(url:string) {
       statusOk: response.ok, // response.ok returns true if the status property is 200-299
     })))
     .then((resp) => {
-      if (url.includes('analysisResults')) {
-        // eslint-disable-next-line no-param-reassign
-        resp.data = { data: resp.data, messages: [] }; // mash data into expected shape
-      }
       if (resp.data.data !== null && resp.statusOk) {
         return {
           status: 'Success',
