@@ -23,7 +23,6 @@ import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helper
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
-
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
   const [tabValue, setTabValue] = useState(0);
