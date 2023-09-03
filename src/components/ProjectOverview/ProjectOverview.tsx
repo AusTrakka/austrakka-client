@@ -105,6 +105,14 @@ function ProjectOverview() {
   }, [projectAbbrev]);
 
   useEffect(() => {
+    // Maps from a hard-coded metadata field name to a function to render the cell value
+    const sampleRenderFunctions : { [index: string]: Function } = {
+      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+    };
+    // Fields which should be rendered as datetimes, not just dates
+    // This hard-coding is interim until the server is able to provide this information
+    const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
@@ -137,7 +145,13 @@ function ProjectOverview() {
           setIsSamplesLoading(false);
         } else {
           columnHeaderArray.forEach((element: MetaDataColumn) => {
-            if (element.primitiveType === 'boolean') {
+            if (element.columnName in sampleRenderFunctions) {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+              });
+            } else if (element.primitiveType === 'boolean') {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
@@ -147,7 +161,10 @@ function ProjectOverview() {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+                Cell: ({ cell }: any) => (
+                  datetimeFields.has(element.columnName)
+                    ? isoDateLocalDate(cell.getValue())
+                    : isoDateLocalDateNoTime(cell.getValue())),
               });
             } else {
               columnBuilder.push({

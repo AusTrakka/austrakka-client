@@ -102,7 +102,16 @@ function SampleTable(props: SamplesProps) {
 
   useEffect(
     () => {
-    // BUILD COLUMNS
+      // Maps from a hard-coded metadata field name to a function to render the cell value
+      // Duplicated here for now until Samples.tsx and SampleTable.tsx are merged
+      const sampleRenderFunctions : { [index: string]: Function } = {
+        'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+      };
+      // Fields which should be rendered as datetimes, not just dates
+      // This hard-coding is interim until the server is able to provide this information
+      const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
+      // BUILD COLUMNS
       const formatTableHeaders = () => {
         function compareFields(field1: DisplayField, field2: DisplayField) {
           if (field1.columnOrder < field2.columnOrder) {
@@ -117,7 +126,13 @@ function SampleTable(props: SamplesProps) {
         const copy = [...displayFields]; // Creating copy of original array so it's not overridden
         const sortedDisplayFields = copy.sort(compareFields);
         sortedDisplayFields.forEach((element: MetaDataColumn) => {
-          if (element.primitiveType === 'boolean') {
+          if (element.columnName in sampleRenderFunctions) {
+            columnBuilder.push({
+              accessorKey: element.columnName,
+              header: `${element.columnName}`,
+              Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+            });
+          } else if (element.primitiveType === 'boolean') {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
@@ -127,7 +142,10 @@ function SampleTable(props: SamplesProps) {
             columnBuilder.push({
               accessorKey: element.columnName,
               header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+              Cell: ({ cell }: any) => (
+                datetimeFields.has(element.columnName)
+                  ? isoDateLocalDate(cell.getValue())
+                  : isoDateLocalDateNoTime(cell.getValue())),
             });
           } else {
             columnBuilder.push({
