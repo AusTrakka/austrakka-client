@@ -21,8 +21,7 @@ import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import ProFormas from './ProFormas';
-
-const SAMPLE_ID_FIELD = 'Seq_ID';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -442,6 +441,7 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
+              projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               samplesCount={samplesCount}
               sampleList={projectSamples}

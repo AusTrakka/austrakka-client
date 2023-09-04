@@ -16,12 +16,15 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
+import { useNavigate } from 'react-router-dom';
 import { ProjectSample } from '../../types/sample.interface';
 import { DisplayField } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 interface SamplesProps {
+  projectAbbrev: string,
   sampleList: ProjectSample[],
   totalSamples: number,
   samplesCount: number,
@@ -52,6 +55,7 @@ interface SamplesProps {
 
 function Samples(props: SamplesProps) {
   const {
+    projectAbbrev,
     sampleList,
     totalSamples,
     samplesCount,
@@ -76,6 +80,7 @@ function Samples(props: SamplesProps) {
     setExportCSVStatus,
   } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
+  const navigate = useNavigate();
 
   const generateFilename = () => {
     const dateObject = new Date();
@@ -138,9 +143,18 @@ function Samples(props: SamplesProps) {
       </Tooltip>
     </>
   );
+
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    if (SAMPLE_ID_FIELD in selectedRow) {
+      navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
+    }
+  };
+
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
     <>
@@ -223,6 +237,12 @@ function Samples(props: SamplesProps) {
         rowCount={samplesCount}
         // Layout props
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         // Column manipulation
         enableColumnResizing
         enableColumnDragging
