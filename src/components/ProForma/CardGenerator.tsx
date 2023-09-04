@@ -172,7 +172,7 @@ function GenerateCards(
               color="text.secondary"
               style={{ color: version.isCurrent ? 'white' : 'black' }}
             >
-              {version.isCurrent ? 'Latest' : ''}
+              {version.isCurrent ? 'Latest' : 'Obsolete'}
             </Typography>
           </Stack>
         </Grid>

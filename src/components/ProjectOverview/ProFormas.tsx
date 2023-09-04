@@ -126,7 +126,7 @@ function ProFormaList(props: ProFormasListProps) {
                     </Typography>
                     {groupedObjects[index] && // Check if groupedObjects[index] is defined
                     GenerateCards(
-                      groupedObjects[index].filter(pv => pv.isCurrent),
+                      groupedObjects[index].slice(0, 1),
                       setOpen,
                       setProFormaDialog,
                       setProFormaAbbrev,
