@@ -56,7 +56,7 @@ function ProjectOverview() {
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
