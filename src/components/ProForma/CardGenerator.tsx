@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress } from '@mui/material';
-import { MoveToInbox } from '@mui/icons-material';
+import { Card, CardContent, Typography, CardMedia, Grid, Stack, CardActionArea, IconButton, Icon, CircularProgress, Tooltip } from '@mui/material';
+import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 
@@ -9,7 +9,8 @@ function GenerateCards(
   setOpen: Dispatch<React.SetStateAction<boolean>>,
   setProFormaDialog: Dispatch<SetStateAction<MetaDataColumnMapping[]>>,
   setProFormaAbbrev: Dispatch<SetStateAction<string>>,
-  handleFileDownload: (dAbbrev: string) => Promise<void>,
+  handleFileDownload: (dAbbrev: string, id : number | null) => Promise<void>,
+  main: boolean,
 ) {
   const handleClickOpen = (dinfo: MetaDataColumnMapping[], abbrev: string) => {
     setOpen(true);
@@ -19,10 +20,10 @@ function GenerateCards(
 
   const [loadingState, setLoadingState] = useState<boolean>(false);
 
-  const handleDownload = async (abbrev: string) => {
+  const handleDownload = async (abbrev: string, id:number | null = null) => {
     try {
       setLoadingState(true); // Set loading state
-      await handleFileDownload(abbrev);
+      await handleFileDownload(abbrev, id);
     } finally {
       setTimeout(() => {
         setLoadingState(false); // Reset loading state
@@ -31,7 +32,7 @@ function GenerateCards(
   };
 
   const renderIconButton = (version : ProFormaVersion) => {
-    if (!version.isCurrent) {
+    if (!main) {
       return <Icon />;
     }
 
@@ -44,10 +45,9 @@ function GenerateCards(
     return (
       <IconButton
         aria-label="download"
-        disabled={!version.isCurrent}
         onClick={(e) => {
           e.stopPropagation();
-          handleDownload(version.abbreviation);
+          handleDownload(version.abbreviation, !version.isCurrent ? version.version : undefined);
         }}
         sx={{ padding: 0, pointerEvents: 'auto' }}
       >
@@ -56,11 +56,26 @@ function GenerateCards(
     );
   };
 
+  const informationButton = (version: ProFormaVersion) => {
+    if (version.isCurrent === false && versions.length === 1 && main) {
+      return (
+        <span>
+          <Tooltip title="This is the latest template, but the definition in AusTrakka has changed since this was uploaded" sx={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <InfoOutlined
+              sx={{ fontSize: '15px', padding: 0, marginLeft: '5px', color: 'white', pointerEvents: 'auto' }}
+            />
+          </Tooltip>
+        </span>
+      );
+    }
+    return null;
+  };
+
   return versions.map((version) => (
     <Card
       key={version.proFormaVersionId}
       style={{
-        backgroundColor: version.isCurrent ? '#0A3546' : 'white',
+        backgroundColor: main ? '#0A3546' : 'white',
         width: '330px', // Set a fixed width
         height: '300px', // Set a fixed height
         display: 'flex', // Use flex to control layout
@@ -90,7 +105,7 @@ function GenerateCards(
           <Grid
             container
             justifyContent="space-between"
-            sx={{ padding: 3,
+            sx={{ padding: 2,
               alignContent: 'center',
               height: '120px',
               justifyContent: 'space-evenly' }}
@@ -102,7 +117,7 @@ function GenerateCards(
                   <div
                     key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
-                    style={{ maxWidth: '90%',
+                    style={{ maxWidth: '125px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       padding: '3px' }}
@@ -113,14 +128,14 @@ function GenerateCards(
                   </div>
                 ))}
             </Stack>
-            <Stack spacing="space-between">
+            <Stack>
               {version.columnMappings
                 .slice(3, 6)
                 .map((item, i) => (
                   <div
                     key={version.columnMappings[i].metaDataColumnMappingId}
                     className="column"
-                    style={{ maxWidth: '90%',
+                    style={{ maxWidth: '125px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       padding: '3px' }}
@@ -131,10 +146,11 @@ function GenerateCards(
                   </div>
                 ))}
             </Stack>
-            <Typography color="secondary" justifySelf="center">
-              EXPAND
-            </Typography>
+
           </Grid>
+          <Typography color="secondary" justifySelf="center">
+            EXPAND
+          </Typography>
         </CardMedia>
       </CardActionArea>
       <CardContent style={{ borderTop: 1, borderColor: 'black', pointerEvents: 'none' }}>
@@ -146,7 +162,7 @@ function GenerateCards(
               gutterBottom
               variant="h5"
               component="div"
-              style={{ color: version.isCurrent ? 'white' : 'black', alignContent: 'end', pointerEvents: 'auto' }}
+              style={{ color: main ? 'white' : 'black', alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
               {version.originalFileName}
@@ -154,7 +170,7 @@ function GenerateCards(
             <Typography
               variant="caption"
               color="text.secondary"
-              style={{ color: version.isCurrent ? 'white' : 'black',
+              style={{ color: main ? 'white' : 'black',
                 textAlign: 'left',
                 textOverflow: 'ellipsis',
                 overflow: 'hidden',
@@ -167,13 +183,23 @@ function GenerateCards(
           </Stack>
           <Stack alignItems="flex-end" spacing={2} justifyContent="space-evenly">
             {renderIconButton(version)}
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              style={{ color: version.isCurrent ? 'white' : 'black' }}
+            <div style={{
+              display: 'inline-flex',
+              verticalAlign: 'text-bottom',
+              boxSizing: 'inherit',
+              textAlign: 'center',
+              alignItems: 'center',
+            }}
             >
-              {version.isCurrent ? 'Latest' : 'Obsolete'}
-            </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                style={{ color: main ? 'white' : 'black' }}
+              >
+                {main ? 'Latest' : ''}
+              </Typography>
+              {informationButton(version)}
+            </div>
           </Stack>
         </Grid>
       </CardContent>

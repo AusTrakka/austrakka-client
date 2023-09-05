@@ -27,9 +27,9 @@ function ProFormaList(props: ProFormasListProps) {
   const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
   const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
 
-  const handleFileDownload = async (dAbbrev: string) => {
+  const handleFileDownload = async (dAbbrev: string, id : number | null) => {
     try {
-      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev);
+      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev, id);
 
       // Create a URL for the Blob object
       const blobUrl = URL.createObjectURL(blob);
@@ -131,6 +131,7 @@ function ProFormaList(props: ProFormasListProps) {
                       setProFormaDialog,
                       setProFormaAbbrev,
                       handleFileDownload,
+                      true,
                     )}
                   </Box>
                 </AccordionSummary>
@@ -149,6 +150,7 @@ function ProFormaList(props: ProFormasListProps) {
                       setProFormaDialog,
                       setProFormaAbbrev,
                       handleFileDownload,
+                      false,
                     )}
                   </Stack>
                 </AccordionDetails>
