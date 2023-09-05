@@ -66,7 +66,7 @@ export function generateDateFilterString(
   let filterString = '';
   if (Object.keys(dateObject).length !== 0) {
     const date = `${dateObject.value.$d.toISOString()}`;
-    filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date},`;
+    filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
   }
   return filterString;
 }
