@@ -3,8 +3,9 @@ import { useMsal } from '@azure/msal-react';
 import { MenuItem, ListItemText, ListItemIcon } from '@mui/material';
 import { Logout } from '@mui/icons-material/';
 
-export default function LogoutButton() {
+export default function LogoutButton(props: any) {
   const { instance } = useMsal();
+  const { showText } = props;
   const logoutRequest = {
     account: instance.getActiveAccount(),
     postLogoutRedirectUri: '/',
@@ -17,8 +18,12 @@ export default function LogoutButton() {
   };
   return (
     <MenuItem onClick={() => handleLogout('redirect')}>
-      <ListItemIcon><Logout /></ListItemIcon>
-      <ListItemText>Logout</ListItemText>
+      <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: showText ? 1 : 'auto', justifyContent: 'center' }}><Logout /></ListItemIcon>
+      {
+        showText ?
+          <ListItemText sx={{ color: 'primary.main' }}>Logout</ListItemText>
+          : null
+      }
     </MenuItem>
   );
 }

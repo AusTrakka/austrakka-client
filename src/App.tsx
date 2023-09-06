@@ -55,6 +55,7 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                   <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                 </Route>
+                <Route path="/login" element={<Login />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </MsalAuthenticationTemplate>
