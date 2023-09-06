@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Alert, Typography, Box, Grid } from '@mui/material';
 import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
+import { LoginRounded } from '@mui/icons-material';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import { loginRequest } from '../../config/authConfig';
 
@@ -23,6 +24,8 @@ function LoginButton() {
         variant="contained"
         onClick={() => handleLogin('redirect')}
         disabled={inProgress === InteractionStatus.Login}
+        endIcon={<LoginRounded />}
+        sx={{ marginTop: 6 }}
       >
         Log in
       </Button>
@@ -42,29 +45,37 @@ function Login() {
   }, []);
 
   return (
-    <Box sx={{ height: '100vh', backgroundColor: 'rgb(238, 242, 246)' }}>
-      <Box sx={{ backgroundColor: 'white', width: '400px', padding: 3, borderRadius: 1, boxShadow: 1 }}>
-        <Grid container spacing={2} direction="column" justifyContent="center" alignItems="center">
-          <Grid item>
-            <img src={AusTrakkaLogo} alt="at-logo" width="240px" />
+    <Grid
+      container
+      direction="row"
+      alignItems="center"
+      justifyContent="center"
+      sx={{ minHeight: '100vh', backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)' }}
+    >
+      <Grid item>
+        <Box sx={{ backgroundColor: 'white', padding: 6, borderRadius: 0, borderBottom: 4, borderColor: 'secondary.main' }}>
+          <Grid container spacing={3} direction="column" justifyContent="center" alignItems="stretch" textAlign="center">
+            <Grid item>
+              <img src={AusTrakkaLogo} alt="at-logo" width="280px" />
+            </Grid>
+            <Grid item>
+              <Typography variant="h2" color="primary">
+                Welcome to AusTrakka
+              </Typography>
+            </Grid>
+            <Grid item>
+              From genomics to public health decisions for Australia
+            </Grid>
+            <Grid item>
+              Combining Genomics & Epidemiological Data
+            </Grid>
+            <Grid item>
+              <LoginButton />
+            </Grid>
           </Grid>
-          <Grid item>
-            <Typography variant="h2" color="primary">
-              Welcome to AusTrakka
-            </Typography>
-          </Grid>
-          <Grid item>
-            From genomics to public health decisions for Australia
-          </Grid>
-          <Grid item>
-            Combining Genomics & Epidemiological Data
-          </Grid>
-          <Grid item>
-            <LoginButton />
-          </Grid>
-        </Grid>
-      </Box>
-    </Box>
+        </Box>
+      </Grid>
+    </Grid>
   );
 }
 export default Login;
