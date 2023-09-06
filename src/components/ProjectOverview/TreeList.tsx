@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import isoDateLocalDate from '../../utilities/helperUtils';
 
 interface TreesProps {
-  isTreesLoading: boolean,
   treeList: any,
   projectAbbrev: string,
   treeListError: boolean,
@@ -19,7 +18,7 @@ const treeTableColumns: MRT_ColumnDef[] = [
 ];
 
 function TreeList(props: TreesProps) {
-  const { isTreesLoading, treeList, treeListError, treeListErrorMessage, projectAbbrev } = props;
+  const { treeList, treeListError, treeListErrorMessage, projectAbbrev } = props;
   const navigate = useNavigate();
 
   const rowClickHandler = (row: any) => {
@@ -27,26 +26,24 @@ function TreeList(props: TreesProps) {
   };
 
   return (
-    <>
-      {isTreesLoading}
-      <MaterialReactTable
-        columns={treeTableColumns}
-        data={treeList}
-        state={{
-          showAlertBanner: treeListError,
-        }}
-        enableStickyHeader
-        initialState={{ density: 'compact' }}
-        enableColumnResizing
-        enableFullScreenToggle={false}
-        enableHiding={false}
-        enableDensityToggle={false}
-        muiTableProps={{
-          sx: {
-            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-          },
-        }}
-        muiToolbarAlertBannerProps={
+    <MaterialReactTable
+      columns={treeTableColumns}
+      data={treeList}
+      state={{
+        showAlertBanner: treeListError,
+      }}
+      enableStickyHeader
+      initialState={{ density: 'compact' }}
+      enableColumnResizing
+      enableFullScreenToggle={false}
+      enableHiding={false}
+      enableDensityToggle={false}
+      muiTableProps={{
+        sx: {
+          'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+        },
+      }}
+      muiToolbarAlertBannerProps={
           treeListError
             ? {
               color: 'error',
@@ -55,14 +52,13 @@ function TreeList(props: TreesProps) {
             : undefined
         }
             // Row click handler
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
-        })}
-      />
-    </>
+      muiTableBodyRowProps={({ row }) => ({
+        onClick: () => rowClickHandler(row),
+        sx: {
+          cursor: 'pointer',
+        },
+      })}
+    />
   );
 }
 export default memo(TreeList);

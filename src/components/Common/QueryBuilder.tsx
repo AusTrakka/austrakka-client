@@ -114,6 +114,18 @@ function QueryBuilder(props: QueryBuilderProps) {
     fieldList.sort(
       (a: any, b: any) => a.columnName.localeCompare(b.columnName),
     );
+    // Only want the below to occur when the field list changes
+    if (fieldList.some(e => e.columnName === 'Seq_ID')) {
+      setConditions(stringConditions);
+      setNewFilter({
+        ...newFilter,
+        field: 'Seq_ID',
+        fieldType: FieldTypes.STRING,
+        condition: '==*',
+        value: '',
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldList]);
 
   useEffect(() => {
