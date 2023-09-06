@@ -468,7 +468,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
             <TreeList
-              isTreesLoading={isTreesLoading}
               projectAbbrev={projectAbbrev!}
               treeList={projectTrees}
               treeListError={treeListError}
@@ -493,7 +492,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={5} tabLoader={isProFormasLoading}>
             <ProFormas
-              isProFormasLoading={isProFormasLoading}
               proformaList={projectProFormas}
               proformaError={proFormasError}
               proFormaErrorMessage={proFromasErrorMessage}
