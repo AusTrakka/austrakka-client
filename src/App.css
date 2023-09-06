@@ -43,7 +43,7 @@ html, body, span {
     /* transform: translate(150px); */
     transition: all 330ms ease-in-out;
     padding: 0px 35px 0px 35px;
-    margin-left: 220px;
+    margin-left: 195px;
     min-height: 100vh;
     /* width: calc(100vw - 240px);  */
     background-image: linear-gradient( #FFFFFF, #EFEFEF);

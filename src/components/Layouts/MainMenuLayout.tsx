@@ -126,6 +126,7 @@ function MainMenuLayout() {
           <List className={styles.pagelist}>
             {pages.map((page) => (
               <NavLink
+                key={page.title}
                 to={page.link}
                 end={page.link === '/'}
                 style={({ isActive }) => ({
