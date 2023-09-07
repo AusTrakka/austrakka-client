@@ -323,7 +323,7 @@ function QueryBuilder(props: QueryBuilderProps) {
 
   return (
     <Box sx={{
-      boxShadow: 1, borderRadius: 1, padding: 1, marginBottom: 2, display: 'flex',
+      boxShadow: 1, borderRadius: 1, padding: 1, marginBottom: 2, display: 'flex', backgroundColor: 'white',
     }}
     >
       <div>
