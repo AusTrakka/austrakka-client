@@ -21,8 +21,7 @@ import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import ProFormas from './ProFormas';
-
-const SAMPLE_ID_FIELD = 'Seq_ID';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -56,7 +55,7 @@ function ProjectOverview() {
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
@@ -105,6 +104,14 @@ function ProjectOverview() {
   }, [projectAbbrev]);
 
   useEffect(() => {
+    // Maps from a hard-coded metadata field name to a function to render the cell value
+    const sampleRenderFunctions : { [index: string]: Function } = {
+      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+    };
+    // Fields which should be rendered as datetimes, not just dates
+    // This hard-coding is interim until the server is able to provide this information
+    const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
@@ -137,7 +144,13 @@ function ProjectOverview() {
           setIsSamplesLoading(false);
         } else {
           columnHeaderArray.forEach((element: MetaDataColumn) => {
-            if (element.primitiveType === 'boolean') {
+            if (element.columnName in sampleRenderFunctions) {
+              columnBuilder.push({
+                accessorKey: element.columnName,
+                header: `${element.columnName}`,
+                Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+              });
+            } else if (element.primitiveType === 'boolean') {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
@@ -147,7 +160,10 @@ function ProjectOverview() {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }: any) => (element.columnName === 'Date_coll' ? isoDateLocalDateNoTime(cell.getValue()) : isoDateLocalDate(cell.getValue())),
+                Cell: ({ cell }: any) => (
+                  datetimeFields.has(element.columnName)
+                    ? isoDateLocalDate(cell.getValue())
+                    : isoDateLocalDateNoTime(cell.getValue())),
               });
             } else {
               columnBuilder.push({
@@ -425,6 +441,7 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
+              projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               samplesCount={samplesCount}
               sampleList={projectSamples}
@@ -451,7 +468,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
             <TreeList
-              isTreesLoading={isTreesLoading}
               projectAbbrev={projectAbbrev!}
               treeList={projectTrees}
               treeListError={treeListError}
@@ -476,7 +492,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={5} tabLoader={isProFormasLoading}>
             <ProFormas
-              isProFormasLoading={isProFormasLoading}
               proformaList={projectProFormas}
               proformaError={proFormasError}
               proFormaErrorMessage={proFromasErrorMessage}

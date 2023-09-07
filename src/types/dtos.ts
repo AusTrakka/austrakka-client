@@ -76,6 +76,7 @@ export interface Member {
 export interface ProFormaVersion {
   proFormaVersionId: number,
   proFormaId: number,
+  version: number,
   abbreviation: string,
   originalFileName: string,
   fileName: string,

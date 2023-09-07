@@ -20,6 +20,7 @@ import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
+import SampleDetail from './components/SampleDetail/SampleDetail';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
 import UploadMetadata from './components/Upload/UploadMetadata';
@@ -54,6 +55,7 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                   <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
+                  <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
                 <Route path="*" element={<Navigate to="/" />} />

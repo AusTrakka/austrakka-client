@@ -60,6 +60,7 @@ function MainMenuLayout() {
     projects: 'Projects',
     plots: 'Plots',
     trees: 'Trees',
+    records: 'Records',
     versions: 'Versions',
     upload: 'Upload',
     org: 'Organisation Data',
@@ -67,7 +68,7 @@ function MainMenuLayout() {
     metadata: 'Metadata',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions'];
+  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions', 'records'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 

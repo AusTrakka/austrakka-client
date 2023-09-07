@@ -143,8 +143,9 @@ async function downloadFile(url: string) {
 }
 
 // Definition of endpoints
-export const getProFormaDownload = async (abbrev: string) => {
-  const response = await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`);
+export const getProFormaDownload = async (abbrev: string, id: number | null) => {
+  const response = id != null ? await downloadFile(`/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`)
+    : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`);
   return response;
 };
 
