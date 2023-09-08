@@ -73,6 +73,31 @@ export interface Member {
   lastLoggedIn: string,
 }
 
+export interface ProFormaVersion {
+  proFormaVersionId: number,
+  proFormaId: number,
+  version: number,
+  abbreviation: string,
+  originalFileName: string,
+  fileName: string,
+  columnMappings: MetaDataColumnMapping[],
+  isCurrent: boolean,
+  assetId : number,
+  created: Date,
+  createdBy: string,
+}
+
+export interface MetaDataColumnMapping {
+  metaDataColumnMappingId: number,
+  metaDataColumnName: string,
+  metaDataColumnPrimitiveType: string,
+  metaDataColumnValidValues: string[],
+  isRequired: boolean,
+  isDispalyedByDefault: boolean,
+  isActive: boolean,
+  canVisualise: boolean,
+}
+
 export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
