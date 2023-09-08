@@ -51,6 +51,7 @@ function App() {
                 <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                 <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                 <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
+                <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
               </Route>
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
