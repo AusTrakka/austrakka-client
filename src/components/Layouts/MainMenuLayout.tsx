@@ -3,24 +3,26 @@ import {
   NavLink, useLocation, Link, Outlet,
 } from 'react-router-dom';
 import {
-  Inventory, Upload, AccountCircle, Help, MoreVert, Dashboard,
+  Inventory, Upload, Help,
+  Dashboard, AccountTree, Description, ChevronLeft, AccountCircle,
 } from '@mui/icons-material/';
 import {
-  AppBar, Box, Drawer, IconButton, List,
-  ListItem, Toolbar, Menu, MenuItem, Typography,
-  Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip,
+  Box, Drawer, IconButton, List,
+  MenuItem, Typography,
+  Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip, Grid,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_white.png';
+import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
+import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
 
 const settings = [
   {
-    title: 'Profile',
-    icon: <AccountCircle fontSize="small" />,
+    title: 'Documentation',
+    icon: <Description fontSize="small" />,
   },
   {
     title: 'Help',
@@ -40,6 +42,11 @@ const pages = [
     icon: <Inventory />,
   },
   {
+    title: 'Organisation',
+    link: '/org',
+    icon: <AccountTree />,
+  },
+  {
     title: 'Upload',
     link: '/upload',
     icon: <Upload />,
@@ -49,16 +56,19 @@ const pages = [
 function MainMenuLayout() {
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
-  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
     trees: 'Trees',
+    records: 'Records',
     versions: 'Versions',
     upload: 'Upload',
+    org: 'Organisation Data',
+    sequences: 'Sequences',
+    metadata: 'Metadata',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions'];
+  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions', 'records'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -82,14 +92,6 @@ function MainMenuLayout() {
     }
   };
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchor(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchor(null);
-  };
-
   const handleDrawer = () => {
     setDrawer(!drawer);
     handlePadding(!drawer);
@@ -98,119 +100,97 @@ function MainMenuLayout() {
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <AppBar className={styles.appbar}>
-          <Toolbar variant="dense">
-            <IconButton
-              onClick={() => handleDrawer()}
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu-toggle"
-            >
-              <MenuIcon />
-            </IconButton>
-            <div className={styles.logocontainer}>
-              <img src={AusTrakkaLogo} alt="logo" className={styles.logo} />
-            </div>
-            <Tooltip title={username}>
-              <Typography>{user}</Typography>
-            </Tooltip>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchor}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchor)}
-              onClose={handleMenuClose}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: 'visible',
-                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                  mt: 1.5,
-                  '& .MuiAvatar-root': {
-                    width: 32,
-                    height: 32,
-                    ml: -0.5,
-                    mr: 1,
+        <Drawer
+          open={drawer}
+          variant="permanent"
+          PaperProps={{
+            sx: {
+              backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)',
+              boxShadow: '0px 0px 8px #D8D8D8',
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              {drawer ? (<img src={AusTrakkaLogo} alt="logo" className={styles.logo} />) : <img src={AusTrakkaLogoSmall} alt="logo" className={styles.logo} />}
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <IconButton
+                onClick={() => handleDrawer()}
+                aria-label="menu-toggle"
+              >
+                {drawer ? <ChevronLeft /> : <MenuIcon /> }
+              </IconButton>
+            </Box>
+          </Box>
+          <Divider />
+          <List className={styles.pagelist}>
+            {pages.map((page) => (
+              <NavLink
+                key={page.title}
+                to={page.link}
+                end={page.link === '/'}
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? '#dddddd' : '',
+                  borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                  fontWeight: isActive ? 'bold' : '',
+                })}
+              >
+                <MenuItem
+                  key={page.title}
+                  sx={{ '&:hover': {
+                    backgroundColor: '#dddddd',
                   },
-                  '&:before': {
-                    content: '""',
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: 'background.paper',
-                    transform: 'translateY(-50%) rotate(45deg)',
-                    zIndex: 0,
-                  },
-                },
-              }}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting.title} onClick={handleMenuClose} disabled>
-                  <ListItemIcon>
-                    {setting.icon}
+                  'width': '100%' }}
+                >
+                  <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
+                    {page.icon}
                   </ListItemIcon>
+                  {drawer ? (
+                    <ListItemText>
+                      {page.title}
+                    </ListItemText>
+                  )
+                    :
+                    null}
+                </MenuItem>
+              </NavLink>
+            ))}
+          </List>
+          <Divider />
+          <Tooltip title={drawer ? username : `${user} - ${username}`} arrow placement="right">
+            <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
+              <Grid item>
+                <AccountCircle color="primary" />
+              </Grid>
+              {drawer ? (
+                <Grid item>
+                  <Typography color="primary.main">
+                    {user}
+                  </Typography>
+                </Grid>
+              )
+                : null}
+            </Grid>
+          </Tooltip>
+          <Divider />
+          <List>
+            {settings.map((setting) => (
+              <MenuItem key={setting.title} disabled>
+                <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
+                  {setting.icon}
+                </ListItemIcon>
+                { drawer ? (
                   <ListItemText>
                     {setting.title}
                   </ListItemText>
-                </MenuItem>
-              ))}
-              <Divider />
-              <LogoutButton />
-            </Menu>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          open={drawer}
-          variant="persistent"
-          className={styles.drawer}
-          classes={{
-            paper: styles.drawerpaper,
-            docked: styles.drawer,
-          }}
-        >
-          <Toolbar variant="dense" />
-          {' '}
-          {/* For spacing */}
-          <List className={styles.pagelist}>
-            {pages.map((page) => (
-              <ListItem key={page.title}>
-                <NavLink to={page.link}>
-                  {page.icon}
-                  {' '}
-&nbsp;
-                  {page.title}
-                </NavLink>
-              </ListItem>
+                )
+                  : null}
+              </MenuItem>
             ))}
+            <LogoutButton showText={drawer} />
           </List>
         </Drawer>
-        <Box sx={{ flexGrow: 1 }}>
-          <Toolbar variant="dense" />
-          {' '}
-          {/* For spacing */}
-        </Box>
       </Box>
       <div className={pageStyling}>
         <div className="pageHeader">

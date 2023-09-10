@@ -10,7 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {
   AddBox, IndeterminateCheckBox, AddCircle,
 } from '@mui/icons-material';
-import { DisplayFields } from '../../types/fields.interface';
+import { DisplayField } from '../../types/dtos';
 import FieldTypes from '../../constants/fieldTypes';
 
 export interface Filter {
@@ -25,7 +25,7 @@ interface QueryBuilderProps {
   isOpen: boolean,
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
   setQueryString: React.Dispatch<React.SetStateAction<string>>,
-  fieldList: DisplayFields[], // Get field list from columns rendered in the table
+  fieldList: DisplayField[], // Get field list from columns rendered in the table
   filterList: Filter[],
   setFilterList: React.Dispatch<React.SetStateAction<Filter[]>>,
   totalSamples: number;
@@ -109,6 +109,24 @@ function QueryBuilder(props: QueryBuilderProps) {
       setFilterList(copy);
     }
   }, [filterList, isOpen, setFilterList]);
+
+  useEffect(() => {
+    fieldList.sort(
+      (a: any, b: any) => a.columnName.localeCompare(b.columnName),
+    );
+    // Only want the below to occur when the field list changes
+    if (fieldList.some(e => e.columnName === 'Seq_ID')) {
+      setConditions(stringConditions);
+      setNewFilter({
+        ...newFilter,
+        field: 'Seq_ID',
+        fieldType: FieldTypes.STRING,
+        condition: '==*',
+        value: '',
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldList]);
 
   useEffect(() => {
     // Building query string

@@ -89,7 +89,7 @@ function ProjectsList() {
         })}
         muiTableProps={{
           sx: {
-            width: 'auto', tableLayout: 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
+            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
           },
         }}
         muiTableBodyRowProps={({ row }) => ({

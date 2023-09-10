@@ -126,9 +126,9 @@ export default function TreeNavigation(
   };
   const versionClickHandler = (version: JobInstance) => {
     if (version.version === currentVersion) return;
+    handleGoToRoot();
     navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
     setNodes(null);
-    handleGoToRoot();
     resetHistory();
   };
   return (

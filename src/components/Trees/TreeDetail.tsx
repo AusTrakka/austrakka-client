@@ -2,8 +2,7 @@ import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { JobInstance } from '../../types/dtos';
-import { DisplayFields } from '../../types/fields.interface';
+import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
@@ -39,12 +38,12 @@ interface Style {
 }
 
 function TreeDetail() {
+  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
   const navigate = useNavigate();
-  const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
-  const [displayFields, setDisplayFields] = useState<DisplayFields[]>([]);
+  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -61,39 +60,6 @@ function TreeDetail() {
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  // Update the URL when state changes
-  useEffect(() => {
-    // Create a new URLSearchParams instance
-    const currentSearchParams = new URLSearchParams(window.location.search);
-
-    Object.entries(state).forEach(([key, value]) => {
-      // If the key exists in the current searchParams, delete it
-      if (currentSearchParams.has(key)) {
-        currentSearchParams.delete(key);
-      }
-      // If the value differs from the default, append it to searchParams
-      if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
-        if (!(value instanceof Array && value.length === 0)) {
-          currentSearchParams.append(key, String(value));
-        }
-      }
-    });
-
-    // If the rootId exists in the current searchParams, delete it
-    if (currentSearchParams.has('rootId')) {
-      currentSearchParams.delete('rootId');
-    }
-    // If the rootId differs from the default, append it to searchParams
-    if (rootId !== rootIdDefault) {
-      currentSearchParams.append('rootId', String(rootId));
-    }
-
-    // Convert searchParams to a string
-    const queryString = currentSearchParams.toString();
-    // Update the URL without navigating
-    navigate({ search: `?${queryString}` }, { replace: true });
-  }, [state, navigate, rootId]);
 
   // control hooks
   useEffect(() => {
@@ -160,21 +126,22 @@ function TreeDetail() {
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
         const label = state.labelBlocks.map(
           (block) => {
-            if (!value[block].label) {
-              return ' '.repeat(blockLengths[block]);
-            }
             let prefix = '';
+            const blockLength = blockLengths[block];
             if (state.keyValueLabelBlocks) {
               prefix = `${block}=`;
             }
+            if (!value[block].label) {
+              return prefix + ' '.repeat(blockLength);
+            }
             if (state.alignLabels) {
-              return prefix + value[block].label.padEnd(blockLengths[block], ' ');
+              return prefix + value[block].label.padEnd(blockLength, ' ');
             }
             return prefix + value[block].label;
           },
         );
         const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
-        if (state.alignLabels) {
+        if (state.alignLabels && formattedBlocksString.length > 0) {
           newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
         } else {
           newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
@@ -259,6 +226,12 @@ function TreeDetail() {
     ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);
 
+    const handleJumpToSubtree = (id: string) => {
+      if (!tree) return;
+      navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${tree.jobInstanceId}`, { replace: true });
+      setRootId(id);
+    };
+
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
@@ -283,7 +256,7 @@ function TreeDetail() {
                 versions={versions}
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
-                onJumpToSubtree={(id: string) => setRootId(id)}
+                onJumpToSubtree={handleJumpToSubtree}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>

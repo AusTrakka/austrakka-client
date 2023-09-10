@@ -16,12 +16,15 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
+import { useNavigate } from 'react-router-dom';
 import { ProjectSample } from '../../types/sample.interface';
-import { DisplayFields } from '../../types/fields.interface';
+import { DisplayField } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 interface SamplesProps {
+  projectAbbrev: string,
   sampleList: ProjectSample[],
   totalSamples: number,
   samplesCount: number,
@@ -42,7 +45,7 @@ interface SamplesProps {
   setQueryString: Dispatch<SetStateAction<string>>,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
-  displayFields: DisplayFields[],
+  displayFields: DisplayField[],
   getExportData: Function,
   exportData: ProjectSample[],
   setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
@@ -52,6 +55,7 @@ interface SamplesProps {
 
 function Samples(props: SamplesProps) {
   const {
+    projectAbbrev,
     sampleList,
     totalSamples,
     samplesCount,
@@ -76,6 +80,7 @@ function Samples(props: SamplesProps) {
     setExportCSVStatus,
   } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
+  const navigate = useNavigate();
 
   const generateFilename = () => {
     const dateObject = new Date();
@@ -113,32 +118,43 @@ function Samples(props: SamplesProps) {
         filename={generateFilename() || 'austrakka_export.csv'}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
-        <IconButton
-          onClick={() => {
-            getExportData();
-          }}
-          disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
-        >
-          {exportCSVStatus === LoadingState.LOADING
-            ? (
-              <CircularProgress
-                color="secondary"
-                size={40}
-                sx={{
-                  position: 'absolute',
-                  zIndex: 1,
-                }}
-              />
-            )
-            : null}
-          <FileDownload />
-        </IconButton>
+        <span>
+          <IconButton
+            onClick={() => {
+              getExportData();
+            }}
+            disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
+          >
+            {exportCSVStatus === LoadingState.LOADING
+              ? (
+                <CircularProgress
+                  color="secondary"
+                  size={40}
+                  sx={{
+                    position: 'absolute',
+                    zIndex: 1,
+                  }}
+                />
+              )
+              : null}
+            <FileDownload />
+          </IconButton>
+        </span>
       </Tooltip>
     </>
   );
+
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    if (SAMPLE_ID_FIELD in selectedRow) {
+      navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
+    }
+  };
+
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
   return (
     <>
@@ -221,6 +237,12 @@ function Samples(props: SamplesProps) {
         rowCount={samplesCount}
         // Layout props
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         // Column manipulation
         enableColumnResizing
         enableColumnDragging
@@ -235,21 +257,23 @@ function Samples(props: SamplesProps) {
           <Box>
             {ExportButton}
             <Tooltip title="Show/Hide filters" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  setIsFiltersOpen(!isFiltersOpen);
-                }}
-                disabled={sampleList.length < 1 && filterList.length < 1}
-              >
-                <Badge
-                  badgeContent={filterList.length}
-                  color="primary"
-                  showZero
-                  invisible={sampleList.length < 1 && filterList.length < 1}
+              <span>
+                <IconButton
+                  onClick={() => {
+                    setIsFiltersOpen(!isFiltersOpen);
+                  }}
+                  disabled={sampleList.length < 1 && filterList.length < 1}
                 >
-                  <FilterList />
-                </Badge>
-              </IconButton>
+                  <Badge
+                    badgeContent={filterList.length}
+                    color="primary"
+                    showZero
+                    invisible={sampleList.length < 1 && filterList.length < 1}
+                  >
+                    <FilterList />
+                  </Badge>
+                </IconButton>
+              </span>
             </Tooltip>
             <MRT_ShowHideColumnsButton table={table} />
           </Box>

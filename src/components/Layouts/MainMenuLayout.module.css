@@ -4,8 +4,8 @@
 
 .logo {
     height: 45px;
-    margin: 5px;
-    padding-left: 30px;
+    margin: 8px;
+    /* padding: 5px; */
 }
 
 .drawer { 
@@ -13,26 +13,20 @@
     
 }
 .drawerpaper {
-    width: 150px;
-    padding: 0px;
-    padding-top: 1px;
+    width: 160px;
     justify-content: center;
 }
 .pagelist {
     height: 100vh;
-    background-color: var(--primary-blue);
-    
 }
 
-.pagelist li a {
-    padding-top: 15px;
-    margin-left: 10px;
+.pagelist li {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.pagelist a {
     text-decoration: none;
-    color: white;
+    color: var(--primary-blue);
     display: flex;
-}
-
-
-.pagelist li a:hover {
-    font-weight: bold;
 }

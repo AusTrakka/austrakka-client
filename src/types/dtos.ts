@@ -73,6 +73,31 @@ export interface Member {
   lastLoggedIn: string,
 }
 
+export interface ProFormaVersion {
+  proFormaVersionId: number,
+  proFormaId: number,
+  version: number,
+  abbreviation: string,
+  originalFileName: string,
+  fileName: string,
+  columnMappings: MetaDataColumnMapping[],
+  isCurrent: boolean,
+  assetId : number,
+  created: Date,
+  createdBy: string,
+}
+
+export interface MetaDataColumnMapping {
+  metaDataColumnMappingId: number,
+  metaDataColumnName: string,
+  metaDataColumnPrimitiveType: string,
+  metaDataColumnValidValues: string[],
+  isRequired: boolean,
+  isDispalyedByDefault: boolean,
+  isActive: boolean,
+  canVisualise: boolean,
+}
+
 export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
@@ -103,4 +128,56 @@ export interface AnalysisResultMetadata {
   status: boolean;
   submissionId: number;
   versionId: number;
+}
+
+export interface Proforma {
+  proformaId: number,
+  proFormaVersionId: number,
+  version: number,
+  name: string,
+  abbreviation: string,
+  description: string,
+  isActive: boolean,
+  isCurrent: boolean,
+  created: string,
+  lastUpdated: string,
+  createdBy: string,
+  lastUpdatedBy: string,
+}
+
+export interface ThresholdAlertDTO {
+  alertLevelOrder: number;
+  alertLevel: string;
+  categoryField: string;
+  categoryValue: string;
+  ratio: number | null;
+  recentCount: number;
+}
+
+export interface Group {
+  groupId: number | undefined,
+  name: string,
+  lastUpdated: string,
+  lastUpdatedBy: string,
+  created: string,
+  createdBy: string,
+  organisation: {
+    abbreviation: string
+  }
+}
+
+export interface DisplayField {
+  canVisualise: boolean,
+  columnName: string,
+  columnOrder: number,
+  isActive: boolean,
+  isDisplayedAsDefault: boolean,
+  metaDataColumnId: number,
+  metaDataColumnTypeId: number,
+  minWidth: number,
+  primitiveType: string,
+}
+
+export interface Sample {
+
 }
