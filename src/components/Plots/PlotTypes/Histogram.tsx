@@ -11,7 +11,7 @@ import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredXAxisFields = ['Coverage'];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -21,28 +21,23 @@ const defaultSpec: TopLevelSpec = {
   mark: { type: 'bar', tooltip: true },
   encoding: {
     x: {
-      field: '',  // must be replaced
-      type: 'nominal',
+      field: '', // must be replaced
+      bin: true,
     },
     y: {
-      field: '',  // must be replaced
-      type: 'nominal',
-    },
-    color: {
       aggregate: 'count',
     },
   },
 };
 
-function HeatMap(props: PlotTypeProps) {
+function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
+  const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
-  const [yAxisField, setYAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
-  const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
   useEffect(() => {
@@ -60,13 +55,18 @@ function HeatMap(props: PlotTypeProps) {
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
+        const localNumericFields = fields
+          .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
+          .map(field => field.columnName);
+        console.log(localNumericFields);
+        setNumericFields(localNumericFields);
         const localCatFields = fields
           .filter(field => field.canVisualise)
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
-        setXAxisField(getStartingField(preferredCatFields, localCatFields));
-        setYAxisField(getStartingField(preferredCatFields.filter(fld => !(fld==xAxisField)), localCatFields));
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localCatFields]);
+        setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
+        // Note we do not set a preferred starting colour field; starting value is None
+        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localNumericFields, ...localCatFields]);
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no date fields
         // eslint-disable-next-line no-console
@@ -89,13 +89,27 @@ function HeatMap(props: PlotTypeProps) {
   }, [xAxisField]);
 
   useEffect(() => {
-    const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setFieldInSpec(oldSpec, 'y', yAxisField);
+    // Does not use generic setFieldInSpec, for now, as we handle 'none'
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (colourField === 'none') {
+        // Remove colour from encoding
+        const { color, ...newEncoding } = (oldSpec as any).encoding;
+        newSpec.encoding = newEncoding;
+      } else {
+        // Set colour in encoding
+        newSpec.encoding = { ...(oldSpec as any).encoding };
+        newSpec.encoding.color = {
+          field: colourField,
+          scale: { scheme: 'spectral' },
+        };
+      }
+      return newSpec as TopLevelSpec;
+    };
 
-    if (yAxisField.length > 0) {
-      setSpec(addYAxisToSpec);
-    }
-  }, [yAxisField]);
+    setSpec(setColorInSpec);
+  }, [colourField]);
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
@@ -109,19 +123,20 @@ function HeatMap(props: PlotTypeProps) {
           onChange={(e) => setXAxisField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            numericFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
-        <InputLabel id="y-axis-select-label">Y-Axis</InputLabel>
+        <InputLabel id="colour-field-select-label">Colour</InputLabel>
         <Select
-          labelId="y-axis-select-label"
-          id="y-axis-select"
-          value={yAxisField}
-          label="Y-Axis"
-          onChange={(e) => setYAxisField(e.target.value)}
+          labelId="colour-field-select-label"
+          id="colour-field-select"
+          value={colourField}
+          label="Colour"
+          onChange={(e) => setColourField(e.target.value)}
         >
+          <MenuItem value="none">None</MenuItem>
           {
             categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
@@ -143,4 +158,4 @@ function HeatMap(props: PlotTypeProps) {
   );
 }
 
-export default HeatMap;
+export default Histogram;

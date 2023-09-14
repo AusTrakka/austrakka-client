@@ -8,10 +8,12 @@ import EpiCurve from './PlotTypes/EpiCurve';
 import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
 import HeatMap from './PlotTypes/HeatMap';
+import Histogram from './PlotTypes/Histogram';
+import PlotTypeProps from '../../types/plottypeprops.interface';
 
-const plotComponents = [ClusterTimeline, EpiCurve, BarChart, HeatMap, Custom];
+const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Histogram, HeatMap, Custom];
 
-var plotTypes = {};
+var plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {};
 plotComponents.forEach(component => {
   plotTypes[component.name] = component;
 });

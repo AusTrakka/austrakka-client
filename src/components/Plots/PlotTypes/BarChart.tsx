@@ -6,10 +6,8 @@ import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUti
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
+import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 
-// A generic bar chart, selectable
-
-const SAMPLE_ID_FIELD = 'Seq_ID';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
