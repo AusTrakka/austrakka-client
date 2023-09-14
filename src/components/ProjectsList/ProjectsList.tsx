@@ -66,7 +66,10 @@ function ProjectsList() {
         columns={columns}
         data={projectsList}
         enableStickyHeader
-        initialState={{ density: 'compact' }}
+        initialState={{
+          density: 'compact',
+          pagination: { pageSize: 15, pageIndex: 0 },
+        }}
         enableColumnResizing
         enableFullScreenToggle={false}
         enableHiding={false}
