@@ -26,6 +26,7 @@ import OrganisationOverview from './components/OrganisationOverview/Organisation
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
 import { msalInstance } from './utilities/authUtils';
+import ApiProvider from './app/ApiContext';
 
 function App() {
   const navigate = useNavigate();
@@ -33,37 +34,39 @@ function App() {
   msalInstance.setNavigationClient(navigationClient);
 
   return (
-    <ThemeProvider theme={theme}>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <AuthenticatedTemplate>
-          <MsalAuthenticationTemplate
-            interactionType={InteractionType.Redirect}
-          >
+    <ApiProvider>
+      <ThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
+          <AuthenticatedTemplate>
+            <MsalAuthenticationTemplate
+              interactionType={InteractionType.Redirect}
+            >
+              <Routes>
+                {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+                <Route element={<MainMenuLayout />}>
+                  <Route path="/" element={<UserDashboard />} />
+                  <Route path="org" element={<OrganisationOverview />} />
+                  <Route path="upload" element={<Upload />} />
+                  <Route path="upload/metadata" element={<UploadMetadata />} />
+                  <Route path="upload/sequences" element={<UploadSequences />} />
+                  <Route path="projects" element={<ProjectsList />} />
+                  <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
+                  <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
+                  <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </MsalAuthenticationTemplate>
+          </AuthenticatedTemplate>
+          <UnauthenticatedTemplate>
             <Routes>
-              {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
-              <Route element={<MainMenuLayout />}>
-                <Route path="/" element={<UserDashboard />} />
-                <Route path="org" element={<OrganisationOverview />} />
-                <Route path="upload" element={<Upload />} />
-                <Route path="upload/metadata" element={<UploadMetadata />} />
-                <Route path="upload/sequences" element={<UploadSequences />} />
-                <Route path="projects" element={<ProjectsList />} />
-                <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
-                <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
-                <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" />} />
+              <Route path="*" element={<Login />} />
             </Routes>
-          </MsalAuthenticationTemplate>
-        </AuthenticatedTemplate>
-        <UnauthenticatedTemplate>
-          <Routes>
-            <Route path="*" element={<Login />} />
-          </Routes>
-        </UnauthenticatedTemplate>
-      </LocalizationProvider>
-    </ThemeProvider>
+          </UnauthenticatedTemplate>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </ApiProvider>
   );
 }
 

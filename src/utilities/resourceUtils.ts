@@ -21,9 +21,8 @@ const noToken = {
   message: 'There has been an error, please try reloading the page or logging in again.',
 };
 
-async function callGET(url:string) {
-  const token = await getToken();
-
+// NEW: Token passed as prop via endpoint calls
+async function callGET(url:string, token? : string) {
   // Check if token is null/undefined before making API call
   if (!token) {
     return noToken as ResponseObject;
@@ -32,7 +31,7 @@ async function callGET(url:string) {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
-      'Authorization': `Bearer ${token?.accessToken}`,
+      'Authorization': `Bearer ${token}`,
       'Access-Control-Expose-Headers': '*',
       'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
@@ -149,7 +148,8 @@ export const getProFormaDownload = async (abbrev: string, id: number | null) => 
   return response;
 };
 
-export const getProjectList = () => callGET('/api/Projects?&includeall=false');
+// NEW: Token passed as prop via endpoint calls
+export const getProjectList = (token: string) => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string) => callGET(`/api/Projects/abbrev/${abbrev}`);
 export const getGroupList = () => callGET('/api/Group');
 export const getUserGroups = () => callGET('/api/Users/Me');

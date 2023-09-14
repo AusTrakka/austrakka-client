@@ -4,6 +4,8 @@ import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { Typography } from '@mui/material';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 type Project = {
   abbreviation: string,
@@ -26,24 +28,28 @@ function ProjectsList() {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
   const navigate = useNavigate();
-
-  async function getProject() {
-    const projectResponse: ResponseObject = await getProjectList();
-    if (projectResponse.status === 'Success') {
-      setProjectsList(projectResponse.data);
-      setIsLoading(false);
-      setIsError(false);
-    } else {
-      setIsError(true);
-      setIsLoading(false);
-      setProjectsList([]);
-      setErrorMessage(projectResponse.message);
-    }
-  }
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    getProject();
-  }, []);
+    async function getProject() {
+      const projectResponse: ResponseObject = await getProjectList(token);
+      if (projectResponse.status === 'Success') {
+        setProjectsList(projectResponse.data);
+        setIsLoading(false);
+        setIsError(false);
+      } else {
+        setIsError(true);
+        setIsLoading(false);
+        setProjectsList([]);
+        setErrorMessage(projectResponse.message);
+      }
+    }
+    // NEW: Only call endpoint if token has already been retrieved/attempted to be retrieved
+    // Otherwise the first endpoint call will always be unsuccessful
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+      getProject();
+    }
+  }, [token, tokenLoading]);
 
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
