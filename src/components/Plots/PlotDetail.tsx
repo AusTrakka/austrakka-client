@@ -60,7 +60,7 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    if (typeof plotTypes[plot!.plotType] === 'undefined') { return <></>; }
+    if (typeof plotTypes[plot!.plotType] === 'undefined') { return null; }
     return React.createElement(
       plotTypes[plot!.plotType],
       { plot, setPlotErrorMsg: setErrorMsg },
