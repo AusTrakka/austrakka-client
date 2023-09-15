@@ -13,7 +13,7 @@ import PlotTypeProps from '../../types/plottypeprops.interface';
 
 const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Histogram, HeatMap, Custom];
 
-var plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {};
+const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {};
 plotComponents.forEach(component => {
   plotTypes[component.name] = component;
 });
@@ -43,7 +43,7 @@ function PlotDetail() {
 
   useEffect(() => {
     if (plot) {
-      if (typeof plotTypes[plot!.plotType] == 'undefined') {
+      if (typeof plotTypes[plot!.plotType] === 'undefined') {
         setErrorMsg(`Plot type ${plot!.plotType} cannot be rendered`);
       }
     }
@@ -60,10 +60,10 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    if (typeof plotTypes[plot!.plotType] == 'undefined'){ return <></>; }
+    if (typeof plotTypes[plot!.plotType] === 'undefined') { return <></>; }
     return React.createElement(
       plotTypes[plot!.plotType],
-      { plot: plot, setPlotErrorMsg: setErrorMsg },
+      { plot, setPlotErrorMsg: setErrorMsg },
     );
   };
 

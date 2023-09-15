@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -58,7 +57,6 @@ function Histogram(props: PlotTypeProps) {
         const localNumericFields = fields
           .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
           .map(field => field.columnName);
-        console.log(localNumericFields);
         setNumericFields(localNumericFields);
         const localCatFields = fields
           .filter(field => field.canVisualise)

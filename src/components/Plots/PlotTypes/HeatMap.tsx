@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -21,11 +20,11 @@ const defaultSpec: TopLevelSpec = {
   mark: { type: 'bar', tooltip: true },
   encoding: {
     x: {
-      field: '',  // must be replaced
+      field: '', // must be replaced
       type: 'nominal',
     },
     y: {
-      field: '',  // must be replaced
+      field: '', // must be replaced
       type: 'nominal',
     },
     color: {
@@ -41,8 +40,6 @@ function HeatMap(props: PlotTypeProps) {
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [yAxisField, setYAxisField] = useState<string>('');
-  const [colourField, setColourField] = useState<string>('none');
-  const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
   useEffect(() => {
@@ -64,8 +61,12 @@ function HeatMap(props: PlotTypeProps) {
           .filter(field => field.canVisualise)
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
-        setXAxisField(getStartingField(preferredCatFields, localCatFields));
-        setYAxisField(getStartingField(preferredCatFields.filter(fld => !(fld==xAxisField)), localCatFields));
+        const x = getStartingField(preferredCatFields, localCatFields);
+        setXAxisField(x);
+        setYAxisField(getStartingField(
+          preferredCatFields.filter(fld => !(fld === x)),
+          localCatFields,
+        ));
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localCatFields]);
       } else {
         // TODO error handling if getDisplayFields fails, possibly also if no date fields
