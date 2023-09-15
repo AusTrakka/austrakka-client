@@ -3,7 +3,12 @@ import { useMsal } from '@azure/msal-react';
 import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
 import LoadingState from '../constants/loadingState';
 
-const ApiContext = createContext<any>({
+interface ApiContextInterface {
+  token: string | null,
+  tokenLoading: LoadingState,
+}
+
+const ApiContext = createContext<ApiContextInterface>({
   token: null,
   tokenLoading: LoadingState.IDLE,
 });
