@@ -105,7 +105,7 @@ function MainMenuLayout() {
           variant="permanent"
           PaperProps={{
             sx: {
-              backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)',
+              // backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)',
               boxShadow: '0px 0px 8px #D8D8D8',
             },
           }}

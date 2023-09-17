@@ -4,7 +4,7 @@ import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-bro
 import LoadingState from '../constants/loadingState';
 
 interface ApiContextInterface {
-  token: string | null,
+  token: any,
   tokenLoading: LoadingState,
 }
 
@@ -16,7 +16,7 @@ const ApiContext = createContext<ApiContextInterface>({
 // ApiProvider: Implements the ApiContext
 export default function ApiProvider({ children } : any) {
   const { instance, inProgress, accounts } = useMsal();
-  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<any>(null);
   const [authTokenLoading, setAuthTokenLoading] = useState<LoadingState>(LoadingState.IDLE);
 
   useEffect(() => {
