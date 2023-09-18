@@ -20,7 +20,7 @@ const spec: TopLevelSpec = {
   height: 250,
   mark: { type: 'bar', tooltip: true },
   encoding: {
-    x: { field: 'Date_created', type: 'temporal', title: 'Sample created date', timeUnit: 'yearmonthdate' },
+    x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', timeUnit: 'yearmonthdate' },
     y: { aggregate: 'count', title: 'Count of Samples' },
     color: {
       field: stFieldName,
