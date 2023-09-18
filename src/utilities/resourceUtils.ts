@@ -171,7 +171,10 @@ export const getUserProformas = () => callGET('/api/Proformas');
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number) => callGET(`/api/Projects/assigned-dashboard/${projectId}`);
 export const getProjectDashboardOveriew = (groupId: number, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`);
-export const getDashboardFields = (groupId: number, fields?: string, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&fields=${fields}&filters=${searchParams}`);
+export const getDashboardFields = (groupId: number, fields: string[], searchParams?: string) => {
+  const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
+  return callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&${fieldsQuery}&filters=${searchParams}`);
+};
 export const getThresholdAlerts = (groupId: number, alertField: string) => callGET(`/api/DashboardSearch/project-dashboard/threshold-alerts?groupContext=${groupId}&alertField=${alertField}`);
 
 // User dashboard endpoints

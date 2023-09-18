@@ -26,7 +26,7 @@ export const fetchQcStatus = createAsyncThunk(
     const { groupId } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
-    const response = await getDashboardFields(groupId, 'Qc_status', filterString);
+    const response = await getDashboardFields(groupId, ['Qc_status'], filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }
