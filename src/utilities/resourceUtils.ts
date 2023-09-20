@@ -147,6 +147,7 @@ export const getProFormaDownload = async (abbrev: string, id: number | null) => 
 
 export const getProjectList = () => callGET('/api/Projects?&includeall=false');
 export const getProjectDetails = (abbrev: string) => callGET(`/api/Projects/abbrev/${abbrev}`);
+export const getSampleGroups = (sampleName:string) => callGET(`/api/Sample/${sampleName}/Groups`);
 export const getGroupList = () => callGET('/api/Group');
 export const getUserGroups = () => callGET('/api/Users/Me');
 export const getGroupDisplayFields = (group: number) => callGET(`/api/group/display-fields?GroupContext=${group}&filterSubmissionProperties=true`);

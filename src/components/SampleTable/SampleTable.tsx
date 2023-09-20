@@ -18,17 +18,17 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
+import { useNavigate } from 'react-router-dom';
 import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { useNavigate } from 'react-router-dom';
 
 interface SamplesProps {
   groupContext: number | undefined,
-  groupAbbrev: string | undefined
+  groupName: string | undefined,
 }
 // SAMPLE TABLE
 // Transitionary sampel table component that contains repeat code from both
@@ -40,7 +40,7 @@ interface SamplesProps {
 // 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
-  const { groupContext, groupAbbrev } = props;
+  const { groupContext, groupName } = props;
   const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
@@ -253,7 +253,12 @@ function SampleTable(props: SamplesProps) {
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
     if (SAMPLE_ID_FIELD in selectedRow) {
-      navigate(`/records/${selectedRow[SAMPLE_ID_FIELD]}/${groupContext}/${groupAbbrev}`);
+      const sampleId = selectedRow[SAMPLE_ID_FIELD];
+      const url = `/records/${sampleId}${groupName ? `/${groupName}` : ''}`;
+      navigate(url);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
     }
   };
 
@@ -419,7 +424,7 @@ function SampleTable(props: SamplesProps) {
                 </IconButton>
               </span>
             </Tooltip>
-            <MRT_ShowHideColumnsButton table={table}  />
+            <MRT_ShowHideColumnsButton table={table} />
           </Box>
         )}
         renderBottomToolbar={({ table }) => (

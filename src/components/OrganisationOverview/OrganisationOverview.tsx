@@ -135,7 +135,7 @@ function OrganisationOverview() {
       </Grid>
       <SampleTable
         groupContext={selectedGroup.id}
-        groupAbbrev={selectedGroup.name}
+        groupName={selectedGroup.name}
       />
     </Box>
   );
