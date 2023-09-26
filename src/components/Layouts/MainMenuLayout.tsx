@@ -4,15 +4,14 @@ import {
 } from 'react-router-dom';
 import {
   Inventory, Upload, Help,
-  Dashboard, AccountTree, Description, ChevronLeft, AccountCircle,
+  Dashboard, AccountTree, Description, AccountCircle,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft,
 } from '@mui/icons-material/';
 import {
   Box, Drawer, IconButton, List,
   MenuItem, Typography,
   Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip, Grid,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-
 import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
@@ -105,8 +104,10 @@ function MainMenuLayout() {
           variant="permanent"
           PaperProps={{
             sx: {
-              // backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)',
+              backgroundImage: 'linear-gradient(#ffffff, #EEF2F6)',
               boxShadow: '0px 0px 8px #D8D8D8',
+              maxWidth: 190,
+              minWidth: 70,
             },
           }}
         >
@@ -119,7 +120,7 @@ function MainMenuLayout() {
                 onClick={() => handleDrawer()}
                 aria-label="menu-toggle"
               >
-                {drawer ? <ChevronLeft /> : <MenuIcon /> }
+                {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight /> }
               </IconButton>
             </Box>
           </Box>
@@ -136,24 +137,26 @@ function MainMenuLayout() {
                   fontWeight: isActive ? 'bold' : '',
                 })}
               >
-                <MenuItem
-                  key={page.title}
-                  sx={{ '&:hover': {
-                    backgroundColor: '#dddddd',
-                  },
-                  'width': '100%' }}
-                >
-                  <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
-                    {page.icon}
-                  </ListItemIcon>
-                  {drawer ? (
-                    <ListItemText>
-                      {page.title}
-                    </ListItemText>
-                  )
-                    :
-                    null}
-                </MenuItem>
+                <Tooltip title={drawer ? '' : page.title} arrow placement="right">
+                  <MenuItem
+                    key={page.title}
+                    sx={{ '&:hover': {
+                      backgroundColor: '#dddddd',
+                    },
+                    'width': '100%' }}
+                  >
+                    <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
+                      {page.icon}
+                    </ListItemIcon>
+                    {drawer ? (
+                      <ListItemText>
+                        {page.title}
+                      </ListItemText>
+                    )
+                      :
+                      null}
+                  </MenuItem>
+                </Tooltip>
               </NavLink>
             ))}
           </List>
@@ -164,8 +167,8 @@ function MainMenuLayout() {
                 <AccountCircle color="primary" />
               </Grid>
               {drawer ? (
-                <Grid item>
-                  <Typography color="primary.main">
+                <Grid item width="100%" textAlign="center">
+                  <Typography noWrap color="primary.main">
                     {user}
                   </Typography>
                 </Grid>
@@ -196,7 +199,7 @@ function MainMenuLayout() {
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link color="inherit" to="/">
+              <Link to="/">
                 Home
               </Link>
               {pathnames.map((value, index) => {

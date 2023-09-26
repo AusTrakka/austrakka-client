@@ -232,6 +232,7 @@ function TreeDetail() {
   };
 
   const renderControls = () => {
+    const allColumns = displayFields.map(field => field.columnName);
     const visualisableColumns = displayFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
@@ -280,7 +281,7 @@ function TreeDetail() {
             </AccordionSummary>
             <AccordionDetails>
               <NodeAndLabelControls
-                columns={visualisableColumns}
+                columns={allColumns}
                 state={state}
                 onChange={handleStateChange}
               />

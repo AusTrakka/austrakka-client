@@ -32,10 +32,10 @@ html, body, span {
 /* CSS that is applied across all pages */
 .page {
     margin-left: 70px;
-    transition: all 330ms ease-in-out;
+    /* transition: all 330ms ease-in-out; */
     padding: 0px 35px 0px 35px;
     /* width: 100vw; */
-    /* background-image: linear-gradient( #FFFFFF, #EFEFEF); */
+    background-image: linear-gradient( #FFFFFF, #EEF2F6);
     min-height: 100vh;
 }
 
@@ -43,10 +43,10 @@ html, body, span {
     /* transform: translate(150px); */
     transition: all 330ms ease-in-out;
     padding: 0px 35px 0px 35px;
-    margin-left: 195px;
+    margin-left: 190px;
     min-height: 100vh;
     /* width: calc(100vw - 240px);  */
-    /* background-image: linear-gradient( #FFFFFF, #ffffff); */
+    background-image: linear-gradient( #FFFFFF, #EEF2F6);
 }
 
 .pageHeader {

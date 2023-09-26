@@ -26,7 +26,7 @@ export const fetchOrganisations = createAsyncThunk(
     const { groupId, token } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
-    const response = await getDashboardFields(groupId, token, 'Owner_group', filterString);
+    const response = await getDashboardFields(groupId, token, ['Owner_group'], filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

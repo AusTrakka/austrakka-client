@@ -41,10 +41,6 @@ async function callGET(url:string, token : string) {
       statusOk: response.ok, // response.ok returns true if the status property is 200-299
     })))
     .then((resp) => {
-      if (url.includes('analysisResults')) {
-        // eslint-disable-next-line no-param-reassign
-        resp.data = { data: resp.data, messages: [] }; // mash data into expected shape
-      }
       if (resp.data.data !== null && resp.statusOk) {
         return {
           status: 'Success',
@@ -168,7 +164,10 @@ export const getUserProformas = (token: string) => callGET('/api/Proformas', tok
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);
 export const getProjectDashboardOveriew = (groupId: number, token: string, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`, token);
-export const getDashboardFields = (groupId: number, token: string, fields?: string, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&fields=${fields}&filters=${searchParams}`, token);
+export const getDashboardFields = (groupId: number, token: string, fields: string[], searchParams?: string) => {
+  const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
+  return callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&${fieldsQuery}&filters=${searchParams}`, token);
+};
 export const getThresholdAlerts = (groupId: number, alertField: string, token: string) => callGET(`/api/DashboardSearch/project-dashboard/threshold-alerts?groupContext=${groupId}&alertField=${alertField}`, token);
 
 // User dashboard endpoints
