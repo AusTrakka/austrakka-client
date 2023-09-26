@@ -23,6 +23,7 @@ import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
+import { useApi } from '../../app/ApiContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -64,10 +65,11 @@ function SampleTable(props: SamplesProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
     async function getFields() {
-      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!);
+      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!, token);
       if (filterFieldsResponse.status === 'Success') {
         setDisplayFields(filterFieldsResponse.data);
       } else {
@@ -80,7 +82,7 @@ function SampleTable(props: SamplesProps) {
       }
     }
     async function getTotalSamplesOverall() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!);
+      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!, token);
       if (totalSamplesResponse.status === 'Success') {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
@@ -93,12 +95,14 @@ function SampleTable(props: SamplesProps) {
         setIsSamplesLoading(false);
       }
     }
-    if (groupContext !== undefined) {
+    if (groupContext !== undefined &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       setIsSamplesLoading(true);
       getFields();
       getTotalSamplesOverall();
     }
-  }, [groupContext]);
+  }, [groupContext, token, tokenLoading]);
 
   useEffect(
     () => {

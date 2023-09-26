@@ -18,7 +18,6 @@ export default function ApiProvider({ children } : any) {
   const { instance, inProgress, accounts } = useMsal();
   const [authToken, setAuthToken] = useState<any>(null);
   const [authTokenLoading, setAuthTokenLoading] = useState<LoadingState>(LoadingState.IDLE);
-
   useEffect(() => {
     if (inProgress === InteractionStatus.None) {
       setAuthTokenLoading(LoadingState.LOADING);

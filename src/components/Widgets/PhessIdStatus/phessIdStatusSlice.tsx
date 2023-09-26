@@ -24,10 +24,10 @@ export const fetchPhessIdStatus = createAsyncThunk(
     dispatchProps:any,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const { groupId } = dispatchProps;
+    const { groupId, token } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
-    const response = await getDashboardFields(groupId, 'PHESS_ID', filterString);
+    const response = await getDashboardFields(groupId, token, 'PHESS_ID', filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

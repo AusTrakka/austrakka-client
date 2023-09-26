@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
 import { fetchPhessIdOverall } from './phessIdOverallSlice';
+import { useApi } from '../../../app/ApiContext';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
@@ -24,12 +25,15 @@ export default function PhessIdOverall() {
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    if (loading === 'idle') {
-      dispatch(fetchPhessIdOverall());
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING) {
+      dispatch(fetchPhessIdOverall(token));
     }
-  }, [loading, dispatch, timeFilter]);
+  }, [loading, dispatch, timeFilter, tokenLoading, token]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
