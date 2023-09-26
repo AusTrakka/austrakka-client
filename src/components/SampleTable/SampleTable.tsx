@@ -261,7 +261,7 @@ function SampleTable(props: SamplesProps) {
       groupContext: `${groupContext!}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {
