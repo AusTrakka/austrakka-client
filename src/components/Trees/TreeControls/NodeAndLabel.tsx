@@ -13,11 +13,13 @@ interface State {
   nodeSize: number,
   labelBlocks: string[],
   keyValueLabelBlocks: boolean,
+  nodeColumns: string,
 }
 
 export default function NodeAndLabelControls(
-  { columns, state, onChange }: {
+  { columns, visualColumns, state, onChange }: {
     columns: string[],
+    visualColumns: string[],
     state: State,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
@@ -26,7 +28,7 @@ export default function NodeAndLabelControls(
   const theme = useTheme();
   return (
     <Grid>
-      <FormControl fullWidth size="small">
+      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
         <InputLabel id="column-label">Columns</InputLabel>
         <Select
           labelId="column-label"
@@ -43,6 +45,28 @@ export default function NodeAndLabelControls(
               key={column}
               value={column}
               style={getStyles(column, state.labelBlocks, theme)}
+            >
+              {column}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth size="small">
+        <InputLabel id="column-label">Node Coloured</InputLabel>
+        <Select
+          labelId="column-label"
+          id="column"
+          multiple={false}
+          name="nodeColumns"
+          value={[state.nodeColumns]}
+          onChange={onChange}
+          input={<OutlinedInput label="Column Colour" />}
+          MenuProps={MenuProps}
+        >
+          {visualColumns.map((column) => (
+            <MenuItem
+              key={column}
+              value={column}
             >
               {column}
             </MenuItem>

@@ -18,6 +18,7 @@ import TreeState from '../../types/tree.interface';
 
 const defaultState: TreeState = {
   blocks: [],
+  nodeColumns: '',
   alignLabels: true,
   showBlockHeaders: true,
   blockHeaderFontSize: 13,
@@ -26,6 +27,7 @@ const defaultState: TreeState = {
   showLeafLabels: true,
   fontSize: 16,
   nodeSize: 6,
+  fillColour: 'rgba(0,0,0,1)',
   type: TreeTypes.Rectangular,
   showInternalLabels: false,
   showBranchLengths: false,
@@ -35,6 +37,7 @@ const defaultState: TreeState = {
 
 interface Style {
   label: string;
+  fillColour?: string;
 }
 
 function TreeDetail() {
@@ -146,10 +149,17 @@ function TreeDetail() {
         } else {
           newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
         }
+        if (state.nodeColumns !== '') {
+          newStyles[nodeId].fillColour = value[state.nodeColumns].colour;
+        }
       }
       setStyles(newStyles);
     }
-  }, [state.labelBlocks, state.keyValueLabelBlocks, phylocanvasMetadata, state.alignLabels]);
+  }, [state.labelBlocks,
+    state.keyValueLabelBlocks,
+    phylocanvasMetadata,
+    state.alignLabels,
+    state.nodeColumns]);
 
   useEffect(() => {
     // Get tree details, including tree type
@@ -271,6 +281,7 @@ function TreeDetail() {
             <AccordionDetails>
               <NodeAndLabelControls
                 columns={allColumns}
+                visualColumns={visualisableColumns}
                 state={state}
                 onChange={handleStateChange}
               />

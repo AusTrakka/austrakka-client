@@ -1,4 +1,4 @@
-import { PhylocanvasMetadata } from '../types/phylocanvas.interface';
+import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { AnalysisResultMetadata } from '../types/dtos';
 
 // Convert metadate into phylocanvas format
@@ -26,13 +26,19 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
   }
 
   const result: PhylocanvasMetadata = {};
+  const legends: PhylocanvasLegends = {};
   for (const data of dataArray) {
     result[data.sampleName] = {};
     for (const metadataValue of data.metadataValues) {
+      const uColour = getUniqueColor(metadataValue.value);
       result[data.sampleName][metadataValue.key] = {
-        colour: getUniqueColor(metadataValue.value),
+        colour: uColour,
         label: metadataValue.value,
       };
+      if (!legends[metadataValue.key]) {
+        legends[metadataValue.key] = {}; // Initialize if it doesn't exist
+      }
+      legends[metadataValue.key][uColour] = metadataValue.value;
     }
   }
   return result;

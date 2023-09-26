@@ -4,7 +4,12 @@ interface MetadataValue {
 }
 
 export interface PhylocanvasMetadata {
+  // seqId: -------> columnName: {colour: rbg, label: value}
   [key: string]: { [key: string]: MetadataValue };
+}
+
+export interface PhylocanvasLegends {
+  [key: string]: { [colour: string]: string }
 }
 
 export interface PhylocanvasNode {
@@ -28,6 +33,7 @@ export interface PhylocanvasProps {
   interactive: boolean;
   metadata: PhylocanvasMetadata;
   blocks: string[];
+  nodeColumns: string;
   alignLabels: boolean;
   showBlockHeaders: boolean;
   nodeSize: number;
@@ -41,7 +47,7 @@ export interface PhylocanvasProps {
   centre?: [number, number];
   collapsedIds?: any[]; // Replace any[] with the actual type if known
   edgeOverlapFactor?: number;
-  fillColour?: [number, number, number, number];
+  fillColour?: string;
   fontColour?: [number, number, number, number];
   fontFamily?: string;
   fontSize?: number;
