@@ -20,12 +20,6 @@ function SampleDetail() {
         const sampleResponse: ResponseObject = await getSampleGroups(seqId!);
         if (sampleResponse.status === 'Success') {
           setGroups(sampleResponse.data as Group[]);
-          // Check if selectedGroup is already set, otherwise set it
-          if (!selectedGroup && groupName !== undefined) {
-            setSelectedGroup(groups?.find(group => group.name === groupName));
-          } else if (!selectedGroup) {
-            setSelectedGroup(sampleResponse.data[0]);
-          }
         } else {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
@@ -37,7 +31,18 @@ function SampleDetail() {
     if (seqId || groupName) {
       updateProject();
     }
-  }, [seqId, groups, groupName, selectedGroup]);
+  }, [seqId, groupName, selectedGroup]);
+
+  useEffect(() => {
+    if (groups) {
+      // Check if selectedGroup is already set, otherwise set it
+      if (!selectedGroup && groupName !== undefined) {
+        setSelectedGroup(groups?.find(group => group.name === groupName));
+      } else if (!selectedGroup) {
+        setSelectedGroup(groups[0]);
+      }
+    }
+  }, [groupName, groups, selectedGroup]);
 
   useEffect(() => {
     const updateDisplayFields = async () => {
