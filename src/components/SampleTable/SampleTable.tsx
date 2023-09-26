@@ -195,7 +195,7 @@ function SampleTable(props: SamplesProps) {
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
         if (samplesResponse.status === 'Success') {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -212,7 +212,9 @@ function SampleTable(props: SamplesProps) {
           setSampleList([]);
         }
       }
-      if (sampleTableColumns.length > 0) {
+      if (sampleTableColumns.length > 0 &&
+        tokenLoading !== LoadingState.LOADING &&
+        tokenLoading !== LoadingState.IDLE) {
         getSamplesList();
       } else {
         setSampleList([]);
@@ -220,7 +222,7 @@ function SampleTable(props: SamplesProps) {
       }
     },
     [groupContext, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString, sorting],
+      sampleTableColumns, queryString, sorting, token, tokenLoading],
   );
 
   const generateFilename = () => {

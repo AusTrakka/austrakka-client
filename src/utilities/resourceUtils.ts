@@ -164,7 +164,12 @@ export const getUserProformas = (token: string) => callGET('/api/Proformas', tok
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);
 export const getProjectDashboardOveriew = (groupId: number, token: string, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`, token);
-export const getDashboardFields = (groupId: number, token: string, fields: string[], searchParams?: string) => {
+export const getDashboardFields = (
+  groupId: number,
+  token: string,
+  fields: string[],
+  searchParams?: string,
+) => {
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&${fieldsQuery}&filters=${searchParams}`, token);
 };
