@@ -1,9 +1,9 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, List, ListItem, ListItemIcon, ListItemText, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
-import { PhylocanvasMetadata } from '../../types/phylocanvas.interface';
+import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
@@ -46,6 +46,7 @@ function TreeDetail() {
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
+  const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
@@ -72,7 +73,9 @@ function TreeDetail() {
         Number(tree?.jobInstanceId),
       );
       if (metadataResponse.status === 'Success') {
-        setPhylocanvasMetadata(mapMetadataToPhylocanvas(metadataResponse.data));
+        const mappingData = mapMetadataToPhylocanvas(metadataResponse.data);
+        setPhylocanvasMetadata(mappingData.result);
+        setPhylocanvasLegends(mappingData.legends);
       } else {
         setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
       }
@@ -243,9 +246,51 @@ function TreeDetail() {
       setRootId(id);
     };
 
+    function generateLegend(selectedColumn : string) {
+      const legendValues = phylocanvasLegends[selectedColumn];
+
+      if (!legendValues) {
+        return null; // Handle the case where the selected column doesn't exist
+      }
+
+      return (
+        <List>
+          {Object.entries(legendValues).map(([color, label]) => (
+            <ListItem key={color}>
+              <ListItemIcon>
+                <div
+                  style={{
+                    backgroundColor: color,
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    marginRight: '10px',
+                  }}
+                />
+              </ListItemIcon>
+              <ListItemText primary={label} />
+            </ListItem>
+          ))}
+        </List>
+      );
+    }
+
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
+          <div>
+            {state.nodeColumns !== '' && (
+            <>
+              <Typography variant="h6">
+                Legend for
+                {' '}
+                {state.nodeColumns}
+                :
+              </Typography>
+              {generateLegend(state.nodeColumns)}
+            </>
+            )}
+          </div>
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
@@ -302,7 +347,9 @@ function TreeDetail() {
             </AccordionDetails>
           </Accordion>
           <ExportButton analysisName={tree.analysisName} phylocanvasRef={treeRef} />
+
         </Grid>
+
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment

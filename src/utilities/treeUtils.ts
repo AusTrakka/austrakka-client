@@ -41,5 +41,10 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
       legends[metadataValue.key][uColour] = metadataValue.value;
     }
   }
-  return result;
+  const metadataAndLegends = {
+    result,
+    legends,
+  };
+
+  return metadataAndLegends;
 }
