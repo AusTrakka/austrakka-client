@@ -52,7 +52,7 @@ export default function NodeAndLabelControls(
         </Select>
       </FormControl>
       <FormControl fullWidth size="small">
-        <InputLabel id="column-label">Node Coloured</InputLabel>
+        <InputLabel id="column-label">Node Colouring</InputLabel>
         <Select
           labelId="column-label"
           id="column"
@@ -63,6 +63,9 @@ export default function NodeAndLabelControls(
           input={<OutlinedInput label="Column Colour" />}
           MenuProps={MenuProps}
         >
+          <MenuItem value="">
+            <i>None</i>
+          </MenuItem>
           {visualColumns.map((column) => (
             <MenuItem
               key={column}
