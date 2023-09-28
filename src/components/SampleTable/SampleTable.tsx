@@ -254,7 +254,7 @@ function SampleTable(props: SamplesProps) {
     const selectedRow = row.original;
     if (SAMPLE_ID_FIELD in selectedRow) {
       const sampleId = selectedRow[SAMPLE_ID_FIELD];
-      const url = `/records/${sampleId}${groupName ? `/${groupName}` : ''}`;
+      const url = `/records/${sampleId}`;
       navigate(url);
     } else {
       // eslint-disable-next-line no-console

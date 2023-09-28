@@ -57,10 +57,7 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                   <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                   <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
-                  <Route path="records/:seqId">
-                    <Route path=":groupName" element={<OrgSampleDetail />} />
-                    <Route path="" element={<OrgSampleDetail />} />
-                  </Route>
+                  <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
                 <Route path="*" element={<Navigate to="/" />} />

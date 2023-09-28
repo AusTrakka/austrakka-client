@@ -1,18 +1,34 @@
-import { Alert, FormControl, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { DisplayField, Group, Sample } from '../../types/dtos';
 import { ResponseObject, getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 
 function SampleDetail() {
-  const { seqId, groupName } = useParams();
+  const { seqId } = useParams();
+  const [groupName, setGroupName] = useStateFromSearchParamsForPrimitive<string | null>(
+    'groupName',
+    null,
+    new URLSearchParams(window.location.search),
+  );
   const [groups, setGroups] = useState<Group[] | null>();
+  const [errorGroupName, setErrorGroupName] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group>();
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [data, setData] = useState<Sample | null>();
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [errToast, setErrToast] = useState<boolean>(false);
+
+  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      setErrToast(false);
+      return;
+    }
+    setErrToast(false);
+  };
 
   useEffect(() => {
     const updateProject = async () => {
@@ -36,12 +52,20 @@ function SampleDetail() {
   useEffect(() => {
     if (groups) {
       // Check if selectedGroup is already set, otherwise set it
-      if (!selectedGroup && groupName !== undefined) {
+      if (!selectedGroup && (groups.some(g => g.name === groupName))) {
         setSelectedGroup(groups?.find(group => group.name === groupName));
       } else if (!selectedGroup) {
+        if (groupName) {
+          setErrToast(true);
+          setErrorGroupName(groupName);
+        }
         setSelectedGroup(groups[0]);
       }
+      if (selectedGroup) {
+        setGroupName(selectedGroup.name);
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupName, groups, selectedGroup]);
 
   useEffect(() => {
@@ -103,6 +127,20 @@ function SampleDetail() {
 
   return (
     <>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={errToast}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="warning">
+          The group
+          {' '}
+          {errorGroupName}
+          {' '}
+          is not available or does not exist
+        </Alert>
+      </Snackbar>
       <Typography className="pageTitle">
         {`${seqId} (${selectedGroup?.name} view)`}
       </Typography>
@@ -127,6 +165,7 @@ function SampleDetail() {
 
                   if (selected) {
                     setSelectedGroup(selected);
+                    setGroupName(selected.name);
                   } else {
                     // eslint-disable-next-line no-console
                     console.error(`Group with name ${selectedGroupName} not found.`);
