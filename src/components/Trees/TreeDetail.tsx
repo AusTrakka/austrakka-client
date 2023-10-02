@@ -1,8 +1,7 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, Paper, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Label } from '@mui/icons-material';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
@@ -352,9 +351,9 @@ function TreeDetail() {
             {generateLegend(state.nodeColumn)}
           </>
           )}
-          {state.blocks.map((block, index) => (
+          {state.blocks.map((block) => (
             block !== '' && (
-            <div key={index}>
+            <div key={block}>
               <Typography variant="body2" fontWeight="bold">{block}</Typography>
               {generateLegend(block)}
             </div>
