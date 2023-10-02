@@ -1,7 +1,8 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, List, ListItem, ListItemIcon, ListItemText, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, Paper, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Label } from '@mui/icons-material';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
@@ -254,24 +255,21 @@ function TreeDetail() {
       }
 
       return (
-        <List>
+        <Grid container spacing={1} sx={{ marginBottom: '10px', padding: '10px' }}>
           {Object.entries(legendValues).map(([color, label]) => (
-            <ListItem key={color}>
-              <ListItemIcon>
-                <div
-                  style={{
-                    backgroundColor: color,
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    marginRight: '10px',
-                  }}
+            <Grid item key={color} xs={6} sm={4} md={3} lg={2}>
+              <Box display="flex" alignItems="center">
+                <Box
+                  width="20px"
+                  height="20px"
+                  bgcolor={color}
+                  marginRight="10px"
                 />
-              </ListItemIcon>
-              <ListItemText primary={label} />
-            </ListItem>
+                <Typography variant="body2">{label}</Typography>
+              </Box>
+            </Grid>
           ))}
-        </List>
+        </Grid>
       );
     }
 
@@ -287,10 +285,27 @@ function TreeDetail() {
                 {state.nodeColumns}
                 :
               </Typography>
-              {generateLegend(state.nodeColumns)}
+              <div>{generateLegend(state.nodeColumns)}</div>
             </>
             )}
           </div>
+          <div>
+            {state.blocks.map((block, index) => (
+              block !== '' && (
+              <div key={index}>
+                <Typography variant="h6">
+                  Legend for
+                  {' '}
+                  {block}
+                  {' '}
+                  block :
+                </Typography>
+                <div>{generateLegend(block)}</div>
+              </div>
+              )
+            ))}
+          </div>
+
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}

@@ -35,10 +35,12 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
         colour: uColour,
         label: metadataValue.value,
       };
-      if (!legends[metadataValue.key]) {
-        legends[metadataValue.key] = {}; // Initialize if it doesn't exist
+      if (metadataValue.value !== null) {
+        if (!legends[metadataValue.key]) {
+          legends[metadataValue.key] = {}; // Initialize if it doesn't exist
+        }
+        legends[metadataValue.key][uColour] = metadataValue.value;
       }
-      legends[metadataValue.key][uColour] = metadataValue.value;
     }
   }
   const metadataAndLegends = {
