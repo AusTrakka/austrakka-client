@@ -13,7 +13,7 @@ interface State {
   nodeSize: number,
   labelBlocks: string[],
   keyValueLabelBlocks: boolean,
-  nodeColumns: string,
+  nodeColumn: string,
 }
 
 export default function NodeAndLabelControls(
@@ -57,8 +57,8 @@ export default function NodeAndLabelControls(
           labelId="column-label"
           id="column"
           multiple={false}
-          name="nodeColumns"
-          value={[state.nodeColumns]}
+          name="nodeColumn"
+          value={[state.nodeColumn]}
           onChange={onChange}
           input={<OutlinedInput label="Column Colour" />}
           MenuProps={MenuProps}

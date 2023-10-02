@@ -33,7 +33,7 @@ export interface PhylocanvasProps {
   interactive: boolean;
   metadata: PhylocanvasMetadata;
   blocks: string[];
-  nodeColumns: string;
+  nodeColumn: string;
   alignLabels: boolean;
   showBlockHeaders: boolean;
   nodeSize: number;

@@ -19,7 +19,7 @@ import TreeState from '../../types/tree.interface';
 
 const defaultState: TreeState = {
   blocks: [],
-  nodeColumns: '',
+  nodeColumn: '',
   alignLabels: true,
   showBlockHeaders: true,
   blockHeaderFontSize: 13,
@@ -153,8 +153,8 @@ function TreeDetail() {
         } else {
           newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
         }
-        if (state.nodeColumns !== '') {
-          newStyles[nodeId].fillColour = value[state.nodeColumns].colour;
+        if (state.nodeColumn !== '') {
+          newStyles[nodeId].fillColour = value[state.nodeColumn].colour;
         }
       }
       setStyles(newStyles);
@@ -163,7 +163,7 @@ function TreeDetail() {
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
     state.alignLabels,
-    state.nodeColumns]);
+    state.nodeColumn]);
 
   useEffect(() => {
     // Get tree details, including tree type
@@ -247,65 +247,10 @@ function TreeDetail() {
       setRootId(id);
     };
 
-    function generateLegend(selectedColumn : string) {
-      const legendValues = phylocanvasLegends[selectedColumn];
-
-      if (!legendValues) {
-        return null; // Handle the case where the selected column doesn't exist
-      }
-
-      return (
-        <Grid container spacing={1} sx={{ marginBottom: '10px', padding: '10px' }}>
-          {Object.entries(legendValues).map(([color, label]) => (
-            <Grid item key={color} xs={6} sm={4} md={3} lg={2}>
-              <Box display="flex" alignItems="center">
-                <Box
-                  width="20px"
-                  height="20px"
-                  bgcolor={color}
-                  marginRight="10px"
-                />
-                <Typography variant="body2">{label}</Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      );
-    }
-
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
-          <div>
-            {state.nodeColumns !== '' && (
-            <>
-              <Typography variant="h6">
-                Legend for
-                {' '}
-                {state.nodeColumns}
-                :
-              </Typography>
-              <div>{generateLegend(state.nodeColumns)}</div>
-            </>
-            )}
-          </div>
-          <div>
-            {state.blocks.map((block, index) => (
-              block !== '' && (
-              <div key={index}>
-                <Typography variant="h6">
-                  Legend for
-                  {' '}
-                  {block}
-                  {' '}
-                  block :
-                </Typography>
-                <div>{generateLegend(block)}</div>
-              </div>
-              )
-            ))}
-          </div>
-
+          {/*  */}
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
@@ -371,6 +316,57 @@ function TreeDetail() {
     return <></>;
   };
 
+  const renderLegend = () => {
+    function generateLegend(selectedColumn : string) {
+      const legendValues = phylocanvasLegends[selectedColumn];
+
+      if (!legendValues) {
+        return null; // Handle the case where the selected column doesn't exist
+      }
+
+      return (
+        <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
+          {Object.entries(legendValues).map(([color, label]) => (
+            <Grid item key={color}>
+              <Box display="flex" alignItems="center">
+                <Box
+                  width="10px"
+                  height="10px"
+                  bgcolor={color}
+                  marginRight="10px"
+                />
+                <Typography variant="caption">{label}</Typography>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      );
+    }
+    if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
+      return (
+        <Box sx={{ marginTop: '20px' }}>
+          {/* Only render node colour entry if not already in the legend  */}
+          {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
+          <>
+            <Typography variant="body2" fontWeight="bold">{state.nodeColumn}</Typography>
+            {generateLegend(state.nodeColumn)}
+          </>
+          )}
+          {state.blocks.map((block, index) => (
+            block !== '' && (
+            <div key={index}>
+              <Typography variant="body2" fontWeight="bold">{block}</Typography>
+              {generateLegend(block)}
+            </div>
+            )
+          ))}
+        </Box>
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
   return (
     <Grid container wrap="nowrap" spacing={2}>
       {renderControls()}
@@ -380,6 +376,7 @@ function TreeDetail() {
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderTree()}
+        {renderLegend()}
       </Grid>
     </Grid>
 

@@ -1,7 +1,7 @@
 export default interface TreeState {
   // state for phylocanvas
   blocks: any[];
-  nodeColumns: string;
+  nodeColumn: string;
   alignLabels: boolean;
   showBlockHeaders: boolean;
   blockHeaderFontSize: number;
