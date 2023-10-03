@@ -1,14 +1,8 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Grow from '@mui/material/Grow';
-import Paper from '@mui/material/Paper';
-import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import DownloadIcon from '@mui/icons-material/Download';
+import { Menu } from '@mui/material';
 import { TreeExportFuctions } from '../Tree';
 
 interface Option {
@@ -39,29 +33,12 @@ const base64toBlob = (base64Image: string) => {
 interface Props {
   analysisName: string,
   phylocanvasRef: React.RefObject<TreeExportFuctions>,
+  legendRef: any,
 }
 
 export default function ExportButton(
-  { analysisName, phylocanvasRef }: Props,
+  { analysisName, phylocanvasRef, legendRef }: Props,
 ) {
-  const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const options: Option[] = [
-    {
-      exportFunction: () => phylocanvasRef.current?.exportSVG(),
-      label: 'Export SVG',
-      fileName: `${analysisName}.svg`,
-      encode: false,
-    },
-    {
-      exportFunction: () => phylocanvasRef.current?.exportPNG(),
-      label: 'Export PNG',
-      fileName: `${analysisName}.png`,
-      encode: true,
-    },
-  ];
-
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
     if (typeof blob === 'string' && encode) {
@@ -101,97 +78,66 @@ export default function ExportButton(
     download(leafIDsString, `${analysisName}.txt`, false);
   };
 
-  const handleClick = () => {
-    const option = options[selectedIndex];
-    download(option.exportFunction(), option.fileName, option.encode);
+  const handleLegendExport = () => {
+    console.log('Handle');
   };
 
-  const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    index: number,
-  ) => {
-    setSelectedIndex(index);
-    setOpen(false);
+  const options: Option[] = [
+    {
+      exportFunction: () => phylocanvasRef.current?.exportSVG(),
+      label: 'Export tree as SVG',
+      fileName: `${analysisName}.svg`,
+      encode: false,
+    },
+    {
+      exportFunction: () => phylocanvasRef.current?.exportPNG(),
+      label: 'Export tree as PNG',
+      fileName: `${analysisName}.png`,
+      encode: true,
+    },
+  ];
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
-
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event: Event) => {
-    if (
-      anchorRef.current &&
-      anchorRef.current.contains(event.target as HTMLElement)
-    ) {
-      return;
-    }
-
-    setOpen(false);
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   return (
     <>
-      <ButtonGroup sx={{ marginY: 1, marginRight: 1 }} variant="contained" ref={anchorRef} aria-label="split button">
-        <Button fullWidth onClick={handleClick}>
-          {options[selectedIndex].label}
-          {/* <DownloadIcon sx={{marginLeft: 1}} /> */}
-        </Button>
-        <Button
-          size="small"
-          aria-controls={open ? 'split-button-menu' : undefined}
-          aria-expanded={open ? 'true' : undefined}
-          aria-label="select merge strategy"
-          aria-haspopup="menu"
-          onClick={handleToggle}
-        >
-          <ArrowDropDownIcon />
-        </Button>
-      </ButtonGroup>
-      <Popper
-        sx={{
-          zIndex: 1,
-        }}
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal
-      >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...TransitionProps}
-            style={{
-              transformOrigin:
-                placement === 'bottom' ? 'center top' : 'center bottom',
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList id="split-button-menu" autoFocusItem>
-                  {options.map((option, index) => (
-                    <MenuItem
-                      key={option.label}
-                      selected={index === selectedIndex}
-                      onClick={(event) => handleMenuItemClick(event, index)}
-                    >
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
       <Button
+        onClick={handleClick}
+        startIcon={<DownloadIcon />}
         variant="contained"
-        color="success"
-        onClick={handleTipExport}
-        endIcon={<DownloadIcon />}
+        size="small"
+        sx={{ marginTop: 1 }}
       >
-        Export Leaves
+        Export
       </Button>
+      <Menu
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        onClick={handleClose}
+      >
+        {options.map((option) => (
+          <MenuItem
+            key={option.label}
+            onClick={() => download(option.exportFunction(), option.fileName, option.encode)}
+          >
+            {option.label}
+          </MenuItem>
+        ))}
+        <MenuItem onClick={() => handleTipExport()}>
+          Export leaves
+        </MenuItem>
+        <MenuItem onClick={() => handleLegendExport()}>
+          Export legend
+        </MenuItem>
+      </Menu>
     </>
   );
 }

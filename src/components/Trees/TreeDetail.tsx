@@ -45,6 +45,7 @@ function TreeDetail() {
   const navigate = useNavigate();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
+  const legRef = createRef();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
@@ -305,8 +306,11 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <ExportButton analysisName={tree.analysisName} phylocanvasRef={treeRef} />
-
+          <ExportButton
+            analysisName={tree.analysisName}
+            phylocanvasRef={treeRef}
+            legendRef={legRef}
+          />
         </Grid>
 
       );
@@ -343,7 +347,7 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Box sx={{ marginTop: '20px' }}>
+        <Box sx={{ marginTop: '20px' }} ref={legRef}>
           {/* Only render node colour entry if not already in the legend  */}
           {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
           <>
