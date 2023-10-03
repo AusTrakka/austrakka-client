@@ -318,27 +318,29 @@ function TreeDetail() {
   const renderLegend = () => {
     function generateLegend(selectedColumn : string) {
       const legendValues = phylocanvasLegends[selectedColumn];
-
       if (!legendValues) {
         return null; // Handle the case where the selected column doesn't exist
       }
 
       return (
-        <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
-          {Object.entries(legendValues).map(([color, label]) => (
-            <Grid item key={color}>
-              <Box display="flex" alignItems="center">
-                <Box
-                  width="10px"
-                  height="10px"
-                  bgcolor={color}
-                  marginRight="10px"
-                />
-                <Typography variant="caption">{label}</Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Typography variant="body2" fontWeight="bold">{selectedColumn}</Typography>
+          <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
+            {Object.entries(legendValues).map(([color, label]) => (
+              <Grid item key={color}>
+                <Box display="flex" alignItems="center">
+                  <Box
+                    width="10px"
+                    height="10px"
+                    bgcolor={color}
+                    marginRight="10px"
+                  />
+                  <Typography variant="caption">{label}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </>
       );
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
@@ -347,14 +349,12 @@ function TreeDetail() {
           {/* Only render node colour entry if not already in the legend  */}
           {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
           <>
-            <Typography variant="body2" fontWeight="bold">{state.nodeColumn}</Typography>
             {generateLegend(state.nodeColumn)}
           </>
           )}
           {state.blocks.map((block) => (
             block !== '' && (
             <div key={block}>
-              <Typography variant="body2" fontWeight="bold">{block}</Typography>
               {generateLegend(block)}
             </div>
             )
