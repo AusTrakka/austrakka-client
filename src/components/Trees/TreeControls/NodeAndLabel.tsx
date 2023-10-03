@@ -51,7 +51,7 @@ export default function NodeAndLabelControls(
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth size="small">
+      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
         <InputLabel id="column-label">Node Colouring</InputLabel>
         <Select
           labelId="column-label"
