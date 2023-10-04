@@ -45,7 +45,7 @@ function TreeDetail() {
   const navigate = useNavigate();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
-  const legRef = createRef();
+  const legRef = createRef<HTMLDivElement>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
