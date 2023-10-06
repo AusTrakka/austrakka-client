@@ -103,7 +103,7 @@ export default function ExportButton(
       }
 
       // Convert the canvas content to a PNG data URL
-      const dataURL = canvas.toDataURL('image/jpeg', 0.5);
+      const dataURL = canvas.toDataURL('image/png');
 
       return dataURL;
     } catch (error) {
@@ -119,7 +119,7 @@ export default function ExportButton(
     try {
       const pngURL = await convertHtmlToPngDataUrl(legendRef.current);
       if (pngURL !== null) {
-        download(pngURL, 'legend.jpg', true);
+        download(pngURL, 'legend.png', true);
       } else {
         console.error('legendRef.current is null or undefined.');
       } // Use 'legend.png' as the filename
@@ -180,7 +180,7 @@ export default function ExportButton(
         <MenuItem onClick={() => handleTipExport()}>
           Export leaves
         </MenuItem>
-        <MenuItem onClick={() => handleLegendExport()}>
+        <MenuItem onClick={() => handleLegendExport()} disabled={!legendRef.current}>
           Export legend
         </MenuItem>
       </Menu>
