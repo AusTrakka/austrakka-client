@@ -29,7 +29,7 @@ export default function NodeAndLabelControls(
   return (
     <Grid>
       <FormControl sx={{ marginY: 1 }} fullWidth size="small">
-        <InputLabel id="column-label">Columns</InputLabel>
+        <InputLabel id="column-label">Label columns</InputLabel>
         <Select
           labelId="column-label"
           id="column"
@@ -37,7 +37,7 @@ export default function NodeAndLabelControls(
           name="labelBlocks"
           value={state.labelBlocks}
           onChange={onChange}
-          input={<OutlinedInput label="Column" />}
+          input={<OutlinedInput label="Label columns" />}
           MenuProps={MenuProps}
         >
           {columns.map((column) => (

@@ -281,7 +281,7 @@ function TreeDetail() {
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
             >
-              <Typography>Nodes & labels</Typography>
+              <Typography>Nodes & Labels</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <NodeAndLabelControls
@@ -296,7 +296,7 @@ function TreeDetail() {
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
             >
-              <Typography>Metadata</Typography>
+              <Typography>Metadata blocks</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <MetadataControls
