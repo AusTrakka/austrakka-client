@@ -8,6 +8,7 @@ import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
+import PlotFilters from './PlotFilters';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -21,6 +22,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
   // Get data on load
   useEffect(() => {
@@ -28,6 +30,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const response = await getPlotData(dataGroupId!, fieldsToRetrieve) as ResponseObject;
       if (response.status === 'Success') {
         setData(response.data);
+        setFilteredData(response.data);
       } else {
         // eslint-disable-next-line no-console
         console.error(response.message);
@@ -49,7 +52,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       }
       const compiledSpec = compile(spec!).spec;
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
-      (compiledSpec.data![dataIndex] as InlineData).values = data;
+      (compiledSpec.data![dataIndex] as InlineData).values = filteredData;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -57,12 +60,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (spec && data && plotDiv?.current) {
+    if (spec && filteredData && plotDiv?.current) {
       createVegaView();
     }
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, data, plotDiv]);
+  }, [spec, filteredData, plotDiv]);
 
   return (
     <Grid container direction="row">
@@ -72,6 +75,13 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       <Grid item xs={1}>
         <ExportVegaPlot
           vegaView={vegaView}
+        />
+      </Grid>
+      <Grid item>
+        <PlotFilters
+          data={data}
+          filteredData={filteredData}
+          setFilteredData={setFilteredData}
         />
       </Grid>
     </Grid>
