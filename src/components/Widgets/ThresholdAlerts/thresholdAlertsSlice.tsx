@@ -20,8 +20,8 @@ export const fetchThresholdAlerts = createAsyncThunk(
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue },
   ):Promise<ResponseObject | unknown> => {
-    const { groupId } = dispatchProps;
-    const response = await getThresholdAlerts(groupId, 'Serotype');
+    const { groupId, token } = dispatchProps;
+    const response = await getThresholdAlerts(groupId, 'Serotype', token);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

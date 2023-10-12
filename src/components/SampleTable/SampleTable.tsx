@@ -25,6 +25,7 @@ import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { useApi } from '../../app/ApiContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -67,11 +68,12 @@ function SampleTable(props: SamplesProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
   useEffect(() => {
     async function getFields() {
-      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!);
+      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!, token);
       if (filterFieldsResponse.status === 'Success') {
         setDisplayFields(filterFieldsResponse.data);
       } else {
@@ -84,7 +86,7 @@ function SampleTable(props: SamplesProps) {
       }
     }
     async function getTotalSamplesOverall() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!);
+      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!, token);
       if (totalSamplesResponse.status === 'Success') {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
@@ -97,12 +99,14 @@ function SampleTable(props: SamplesProps) {
         setIsSamplesLoading(false);
       }
     }
-    if (groupContext !== undefined) {
+    if (groupContext !== undefined &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       setIsSamplesLoading(true);
       getFields();
       getTotalSamplesOverall();
     }
-  }, [groupContext]);
+  }, [groupContext, token, tokenLoading]);
 
   useEffect(
     () => {
@@ -195,7 +199,7 @@ function SampleTable(props: SamplesProps) {
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
         if (samplesResponse.status === 'Success') {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -212,7 +216,9 @@ function SampleTable(props: SamplesProps) {
           setSampleList([]);
         }
       }
-      if (sampleTableColumns.length > 0) {
+      if (sampleTableColumns.length > 0 &&
+        tokenLoading !== LoadingState.LOADING &&
+        tokenLoading !== LoadingState.IDLE) {
         getSamplesList();
       } else {
         setSampleList([]);
@@ -220,7 +226,7 @@ function SampleTable(props: SamplesProps) {
       }
     },
     [groupContext, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString, sorting],
+      sampleTableColumns, queryString, sorting, token, tokenLoading],
   );
 
   const generateFilename = () => {
@@ -271,7 +277,7 @@ function SampleTable(props: SamplesProps) {
       groupContext: `${groupContext!}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {
@@ -320,7 +326,7 @@ function SampleTable(props: SamplesProps) {
   return (
     <>
       <Backdrop
-        sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
+        sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />

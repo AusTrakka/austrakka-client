@@ -6,6 +6,7 @@ import { ResponseObject, getUserProformas, uploadSubmissions, validateSubmission
 import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
+import { useApi } from '../../app/ApiContext';
 
 interface Options {
   validate: boolean,
@@ -118,6 +119,7 @@ function UploadMetadata() {
   const [invalidFile, setInvalidFile] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
+  const { token, tokenLoading } = useApi();
 
   const toggleDrawer =
     (open: boolean) =>
@@ -135,7 +137,7 @@ function UploadMetadata() {
   useEffect(() => {
     setProformaStatus(LoadingState.LOADING);
     const getProformas = async () => {
-      const proformaResponse: ResponseObject = await getUserProformas();
+      const proformaResponse: ResponseObject = await getUserProformas(token);
       if (proformaResponse.status === 'Success') {
         setProformas(proformaResponse.data);
         setProformaStatus(LoadingState.SUCCESS);
@@ -144,9 +146,10 @@ function UploadMetadata() {
         setProformaStatus(LoadingState.ERROR);
       }
     };
-
-    getProformas();
-  }, []);
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getProformas();
+    }
+  }, [token, tokenLoading]);
 
   useEffect(() => {
     // Scroll vaidation or upload response messages into view
@@ -182,8 +185,8 @@ function UploadMetadata() {
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
     const submissionResponse : ResponseObject = options.validate ?
-      await validateSubmissions(formData, optionString)
-      : await uploadSubmissions(formData, optionString);
+      await validateSubmissions(formData, optionString, token)
+      : await uploadSubmissions(formData, optionString, token);
 
     if (submissionResponse.status === 'Success') {
       setSubmission({

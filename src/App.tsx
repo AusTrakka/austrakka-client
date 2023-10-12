@@ -4,9 +4,9 @@ import {
   Routes, Route, Navigate, useNavigate,
 } from 'react-router-dom';
 import {
-  AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate, MsalProvider,
+  AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate,
 } from '@azure/msal-react';
-import { IPublicClientApplication, InteractionType } from '@azure/msal-browser';
+import { InteractionType } from '@azure/msal-browser';
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -26,20 +26,18 @@ import OrganisationOverview from './components/OrganisationOverview/Organisation
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
+import { msalInstance } from './utilities/authUtils';
+import ApiProvider from './app/ApiContext';
 
-interface AppProps {
-  msalInstance: IPublicClientApplication;
-}
-
-function App({ msalInstance }: AppProps) {
+function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
   msalInstance.setNavigationClient(navigationClient);
 
   return (
-    <ThemeProvider theme={theme}>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <MsalProvider instance={msalInstance}>
+    <ApiProvider>
+      <ThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
           <AuthenticatedTemplate>
             <MsalAuthenticationTemplate
               interactionType={InteractionType.Redirect}
@@ -59,7 +57,6 @@ function App({ msalInstance }: AppProps) {
                   <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 </Route>
-                <Route path="/login" element={<Login />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </MsalAuthenticationTemplate>
@@ -69,9 +66,9 @@ function App({ msalInstance }: AppProps) {
               <Route path="*" element={<Login />} />
             </Routes>
           </UnauthenticatedTemplate>
-        </MsalProvider>
-      </LocalizationProvider>
-    </ThemeProvider>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </ApiProvider>
   );
 }
 

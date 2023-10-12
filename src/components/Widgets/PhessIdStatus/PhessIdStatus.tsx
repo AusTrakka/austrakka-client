@@ -4,6 +4,7 @@ import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
+import { useApi } from '../../../app/ApiContext';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
@@ -28,13 +29,17 @@ export default function PhessIdStatus(props: any) {
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId, timeFilter };
-    if (loading === 'idle') {
+    const dispatchProps = { groupId, token, projectId, timeFilter };
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING) {
       dispatch(fetchPhessIdStatus(dispatchProps));
     }
-  }, [loading, dispatch, timeFilter, projectId, groupId]);
+  }, [loading, dispatch, timeFilter, projectId,
+    groupId, token, tokenLoading]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;

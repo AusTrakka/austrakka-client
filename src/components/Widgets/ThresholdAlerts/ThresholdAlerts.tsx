@@ -5,6 +5,7 @@ import { fetchThresholdAlerts, selectThresholdAlerts } from './thresholdAlertsSl
 import LoadingState from '../../../constants/loadingState';
 import ThresholdAlert from './ThresholdAlert';
 import { ThresholdAlertDTO } from '../../../types/dtos';
+import { useApi } from '../../../app/ApiContext';
 
 export default function ThresholdAlerts(props: any) {
   const {
@@ -15,14 +16,18 @@ export default function ThresholdAlerts(props: any) {
   } = props;
 
   const { loading, data } = useAppSelector(selectThresholdAlerts);
+  const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId };
-    if (loading === 'idle') {
+    const dispatchProps = { groupId, token, projectId };
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING) {
       dispatch(fetchThresholdAlerts(dispatchProps));
     }
-  }, [loading, dispatch, projectId, groupId]);
+  }, [loading, dispatch, projectId,
+    groupId, token, tokenLoading]);
 
   // Descending severity, then alphabetical by category, then by descending recent count
   const sortAlerts = (a: ThresholdAlertDTO, b: ThresholdAlertDTO) => {
