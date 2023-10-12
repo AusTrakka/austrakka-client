@@ -16,6 +16,7 @@ function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
 
   // Set spec on load
   useEffect(() => {
@@ -33,6 +34,7 @@ function Custom(props: PlotTypeProps) {
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         // We can't know which fields the custom spec needs; retrieve all
+        setDisplayFields(fields);
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...fields.map(field => field.columnName)]);
       } else {
         // eslint-disable-next-line no-console
@@ -50,6 +52,7 @@ function Custom(props: PlotTypeProps) {
       spec={spec}
       dataGroupId={plot?.projectGroupId}
       fieldsToRetrieve={fieldsToRetrieve}
+      displayFields={displayFields}
       setPlotErrorMsg={setPlotErrorMsg}
     />
   );

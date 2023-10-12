@@ -52,6 +52,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [yAxisField, setYAxisField] = useState<string>('');
@@ -76,6 +77,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
+        setDisplayFields(fields);
         // Note this does not include numerical or date fields
         // For now this selection need only depend on canVisualise
         const localCatFields = fields
@@ -183,6 +185,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       <VegaDataPlot
         spec={spec}
         dataGroupId={plot?.projectGroupId}
+        displayFields={displayFields}
         fieldsToRetrieve={fieldsToRetrieve}
         setPlotErrorMsg={setPlotErrorMsg}
       />

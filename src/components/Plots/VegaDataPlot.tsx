@@ -4,23 +4,28 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
+import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
 import PlotFilters from './PlotFilters';
+import { MetaDataColumn } from '../../types/dtos';
+import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
   dataGroupId: number | undefined,
+  displayFields: MetaDataColumn[],
   fieldsToRetrieve: string[],
   setPlotErrorMsg: Function,
 }
 
 function VegaDataPlot(props: VegaDataPlotProps) {
-  const { spec, dataGroupId, fieldsToRetrieve, setPlotErrorMsg } = props;
+  const { spec, dataGroupId, displayFields, fieldsToRetrieve, setPlotErrorMsg } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
+  const [columns, setColumns] = useState<MRT_ColumnDef<{}>[]>([]);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
 
@@ -43,6 +48,17 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       updatePlotData();
     }
   }, [setPlotErrorMsg, fieldsToRetrieve, dataGroupId, setData]);
+
+  // Set table columns on load
+  useEffect(() => {
+    const copy = [...displayFields];
+    const sortedDisplayFields = copy.sort(compareFields);
+    const columnBuilder: MRT_ColumnDef<{}>[] = buildMRTColumnDefinitions(sortedDisplayFields);
+    // For now (while we aren't retrieving all columns), only show (displayFields ∩ fieldsToRetrive)
+    const intersection: MRT_ColumnDef<{}>[] = columnBuilder.filter((el) =>
+      fieldsToRetrieve.includes(el.accessorKey as string));
+    setColumns(intersection);
+  }, [displayFields, fieldsToRetrieve]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -82,6 +98,15 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           data={data}
           filteredData={filteredData}
           setFilteredData={setFilteredData}
+        />
+        <MaterialReactTable
+          enableDensityToggle={false}
+          enableColumnFilters={false}
+          enableFullScreenToggle={false}
+          enableStickyHeader
+          enableRowVirtualization
+          columns={columns}
+          data={filteredData}
         />
       </Grid>
     </Grid>
