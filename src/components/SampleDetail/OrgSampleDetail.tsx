@@ -5,6 +5,8 @@ import { DisplayField, Group, Sample } from '../../types/dtos';
 import { ResponseObject, getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 function SampleDetail() {
   const { seqId } = useParams();
@@ -21,6 +23,7 @@ function SampleDetail() {
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [errToast, setErrToast] = useState<boolean>(false);
+  const { token, tokenLoading } = useApi();
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -33,9 +36,23 @@ function SampleDetail() {
   useEffect(() => {
     const updateProject = async () => {
       try {
-        const sampleResponse: ResponseObject = await getSampleGroups(seqId!);
+        const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
         if (sampleResponse.status === 'Success') {
-          setGroups(sampleResponse.data as Group[]);
+          const groupsData = sampleResponse.data as Group[];
+
+          const sortedGroups = groupsData.sort((groupA, groupB) => {
+            if (groupA.name.endsWith('-Owner') && !groupB.name.endsWith('-Owner')) {
+              return -1;
+            } if (!groupA.name.endsWith('-Owner') && groupB.name.endsWith('-Owner')) {
+              return 1;
+            } if (groupA.name.includes('abbrev') && !groupB.name.includes('abbrev')) {
+              return -1;
+            } if (!groupA.name.includes('abbrev') && groupB.name.includes('abbrev')) {
+              return 1;
+            }
+            return 0;
+          });
+          setGroups(sortedGroups);
         } else {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
@@ -44,10 +61,11 @@ function SampleDetail() {
         console.error('Error updating project:', error);
       }
     };
-    if (seqId || groupName) {
+    if ((seqId || groupName) && tokenLoading !== LoadingState.LOADING &&
+    tokenLoading !== LoadingState.IDLE) {
       updateProject();
     }
-  }, [seqId, groupName, selectedGroup]);
+  }, [token, seqId, groupName, selectedGroup, tokenLoading]);
 
   useEffect(() => {
     if (groups) {
@@ -72,7 +90,7 @@ function SampleDetail() {
     const updateDisplayFields = async () => {
       try {
         if (selectedGroup) {
-          const response = await getDisplayFields(selectedGroup.groupId!);
+          const response = await getDisplayFields(selectedGroup.groupId!, token);
           if (response.status === 'Success') {
             setDisplayFields(response.data as DisplayField[]);
           } else {
@@ -86,10 +104,11 @@ function SampleDetail() {
     };
 
     // Make sure selectedGroup is not null before updating display fields
-    if (selectedGroup) {
+    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateDisplayFields();
     }
-  }, [selectedGroup]);
+  }, [token, tokenLoading, selectedGroup]);
 
   useEffect(() => {
     const updateSampleData = async () => {
@@ -97,17 +116,18 @@ function SampleDetail() {
         groupContext: `${selectedGroup?.groupId}`,
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(searchParams.toString());
+      const response = await getSamples(token, searchParams.toString());
       if (response.status === 'Success' && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
         setErrMsg(`Record ${seqId} could not be found within the context of ${selectedGroup!.name}`);
       }
     };
-    if (selectedGroup) {
+    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateSampleData();
     }
-  }, [selectedGroup, seqId]);
+  }, [token, tokenLoading, selectedGroup, seqId]);
 
   useEffect(() => {
     if (displayFields.length > 0) {
@@ -144,55 +164,53 @@ function SampleDetail() {
       <Typography className="pageTitle">
         {`${seqId} (${selectedGroup?.name} view)`}
       </Typography>
-      {errMsg ? <Alert severity="error">{errMsg}</Alert> : (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography>
-              {`Information available through ${selectedGroup?.name} for record ${seqId} is listed here.`}
-            </Typography>
-            <FormControl
-              variant="standard"
-              sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
-            >
-              <Select
-                labelId="org-select-label"
-                id="org-select"
-                defaultValue=""
-                value={selectedGroup ? selectedGroup.name : ''}
-                onChange={(e) => {
-                  const selectedGroupName = e.target.value;
-                  const selected = groups?.find(group => group.name === selectedGroupName);
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography>
+          {`Information available through ${selectedGroup?.name} for record ${seqId} is listed here.`}
+        </Typography>
+        <FormControl
+          variant="standard"
+          sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
+        >
+          <Select
+            labelId="org-select-label"
+            id="org-select"
+            defaultValue=""
+            value={selectedGroup ? selectedGroup.name : ''}
+            onChange={(e) => {
+              const selectedGroupName = e.target.value;
+              const selected = groups?.find(group => group.name === selectedGroupName);
 
-                  if (selected) {
-                    setSelectedGroup(selected);
-                    setGroupName(selected.name);
-                  } else {
-                    // eslint-disable-next-line no-console
-                    console.error(`Group with name ${selectedGroupName} not found.`);
-                  }
-                }}
-                label="Organisation group"
-                autoWidth
-              >
-                {groups?.map(group => (
-                  <MenuItem key={group.groupId} value={group.name}>
-                    {group.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>
-          <TableContainer component={Paper} sx={{ mt: 3 }}>
-            <Table>
-              <TableBody>
-                {data &&
+              if (selected) {
+                setSelectedGroup(selected);
+                setGroupName(selected.name);
+              } else {
+                // eslint-disable-next-line no-console
+                console.error(`Group with name ${selectedGroupName} not found.`);
+              }
+            }}
+            label="Organisation group"
+            autoWidth
+          >
+            {groups?.map(group => (
+              <MenuItem key={group.groupId} value={group.name}>
+                {group.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+      {errMsg ? <Alert severity="error">{errMsg}</Alert> : (
+        <TableContainer component={Paper} sx={{ mt: 3 }}>
+          <Table>
+            <TableBody>
+              {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
                   .map(field => renderRow(field.columnName, (data as any)[field.columnName]))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </>
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </>
   );
