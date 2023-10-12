@@ -81,7 +81,7 @@ export default function ExportButton(
     download(leafIDsString, `${analysisName}.txt`, false);
   };
 
-  const convertHtmlToPngDataUrl = async (element : HTMLDivElement) => {
+  const convertHtmlToPngDataUrl = async (element: HTMLDivElement) => {
     if (!element) {
       return null;
     }
@@ -90,22 +90,35 @@ export default function ExportButton(
       // Create a canvas element
       const canvas = document.createElement('canvas');
 
-      // Set canvas dimensions to match the element's size
-      canvas.width = element.offsetWidth;
-      canvas.height = element.offsetHeight;
-      // Log the dimensions of the canvas element.
-      // Log the image format that you are converting the canvas content to.
-      // Render the element onto the canvas
+      const { devicePixelRatio, scrollY } = window;
+
+      // Set canvas dimensions to match the element's size, accounting for zoom
+      const elementRect = element.getBoundingClientRect();
+      canvas.width = elementRect.width * devicePixelRatio;
+      canvas.height = elementRect.height * devicePixelRatio;
+
       try {
-        await html2canvas(element, { canvas });
+        window.scrollTo(0, 0);
+
+        // Capture the HTML source element with the scrollY option
+        const capturedCanvas = await html2canvas(element, {
+          scrollY: -scrollY,
+          canvas,
+        });
+
+        // Convert the captured canvas to a data URL
+        const imgDataUrl = capturedCanvas.toDataURL('image/png');
+
+        // Open the image in a new window
+        window.open(imgDataUrl);
       } catch (error) {
         console.error('Error converting HTML to PNG data URL:', error);
+      } finally {
+        // Restore the original scroll position
+        window.scrollTo(0, scrollY);
       }
 
-      // Convert the canvas content to a PNG data URL
-      const dataURL = canvas.toDataURL('image/png');
-
-      return dataURL;
+      return null; // Returning null since we opened the image in a new window
     } catch (error) {
       return null;
     }
