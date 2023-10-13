@@ -39,15 +39,19 @@ function SampleDetail() {
         const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
         if (sampleResponse.status === 'Success') {
           const groupsData = sampleResponse.data as Group[];
-
+          const ownerAbbrev = groupsData.find(g => g.name.endsWith('-Everyone'))?.organisation.abbreviation;
+          if (ownerAbbrev === undefined) {
+            // eslint-disable-next-line no-console
+            console.error('Owner group cannot be found');
+          }
           const sortedGroups = groupsData.sort((groupA, groupB) => {
             if (groupA.name.endsWith('-Owner') && !groupB.name.endsWith('-Owner')) {
               return -1;
             } if (!groupA.name.endsWith('-Owner') && groupB.name.endsWith('-Owner')) {
               return 1;
-            } if (groupA.name.includes('abbrev') && !groupB.name.includes('abbrev')) {
+            } if (groupA.name.includes(ownerAbbrev!) && !groupB.name.includes(ownerAbbrev!)) {
               return -1;
-            } if (!groupA.name.includes('abbrev') && groupB.name.includes('abbrev')) {
+            } if (!groupA.name.includes(ownerAbbrev!) && groupB.name.includes(ownerAbbrev!)) {
               return 1;
             }
             return 0;
