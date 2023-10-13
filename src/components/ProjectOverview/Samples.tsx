@@ -159,7 +159,7 @@ function Samples(props: SamplesProps) {
   return (
     <>
       <Backdrop
-        sx={{ color: '#fff', zIndex: 1101 }} // TODO: Find a better way to set index higher then top menu
+        sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />

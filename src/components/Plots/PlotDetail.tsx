@@ -6,6 +6,8 @@ import { ResponseObject, getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
 import Custom from './PlotTypes/Custom';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'Custom'];
 
@@ -16,11 +18,12 @@ function PlotDetail() {
   const [plot, setPlot] = useState<Plot | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
     // Get plot details, including plot type
     const getPlot = async () => {
-      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!);
+      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
       if (plotResponse.status === 'Success') {
         setPlot(plotResponse.data as Plot);
       } else {
@@ -28,9 +31,10 @@ function PlotDetail() {
       }
       setIsPlotLoading(false);
     };
-
-    getPlot();
-  }, [plotAbbrev]);
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getPlot();
+    }
+  }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
     if (plot) {

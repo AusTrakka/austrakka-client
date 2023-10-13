@@ -8,6 +8,7 @@ import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 import SimpleDialog from '../ProForma/TableDialog';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { getProFormaDownload } from '../../utilities/resourceUtils';
+import { useApi } from '../../app/ApiContext';
 
 // Local Proforma Props
 interface ProFormasListProps {
@@ -24,10 +25,11 @@ function ProFormaList(props: ProFormasListProps) {
   const [open, setOpen] = useState(false);
   const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
   const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
+  const { token } = useApi();
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
     try {
-      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev, version);
+      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev, version, token);
 
       // Create a URL for the Blob object
       const blobUrl = URL.createObjectURL(blob);

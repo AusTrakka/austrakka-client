@@ -7,6 +7,7 @@ import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
 import { formatDate } from '../../../utilities/helperUtils';
+import { useApi } from '../../../app/ApiContext';
 
 export default function SampleSummary(props: any) {
   const {
@@ -20,6 +21,7 @@ export default function SampleSummary(props: any) {
   const { data, loading } = useAppSelector((state) => state.sampleSummaryState);
   const sampleSummaryDispatch = useAppDispatch();
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
+  const { token, tokenLoading } = useApi();
 
   // Drilldown filters
   const allSamplesFilter: any [] = [];
@@ -44,12 +46,16 @@ export default function SampleSummary(props: any) {
   };
 
   useEffect(() => {
-    if (loading === 'idle') {
+    if (loading === 'idle' &&
+     tokenLoading !== LoadingState.IDLE &&
+     tokenLoading !== LoadingState.LOADING
+    ) {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
-      const dispatchProps = { groupId, projectId, timeFilter };
+      const dispatchProps = { groupId, token, projectId, timeFilter };
       sampleSummaryDispatch(fetchSummary(dispatchProps));
     }
-  }, [loading, sampleSummaryDispatch, timeFilter, projectId, groupId]);
+  }, [loading, sampleSummaryDispatch, timeFilter, projectId,
+    groupId, token, tokenLoading]);
 
   const handleDrilldownFilters = (drilldownName: string, drilldownFilters: any) => {
     // Append timeFilterObject for last_week and last_month filters

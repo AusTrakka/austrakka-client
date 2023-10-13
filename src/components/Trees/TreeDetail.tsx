@@ -15,6 +15,8 @@ import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import TreeState from '../../types/tree.interface';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -65,6 +67,7 @@ function TreeDetail() {
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { token, tokenLoading } = useApi();
 
   // control hooks
   useEffect(() => {
@@ -72,6 +75,7 @@ function TreeDetail() {
       const metadataResponse: ResponseObject = await getTreeMetaData(
         Number(analysisId),
         Number(tree?.jobInstanceId),
+        token,
       );
       if (metadataResponse.status === 'Success') {
         const mappingData = mapMetadataToPhylocanvas(metadataResponse.data);
@@ -84,6 +88,7 @@ function TreeDetail() {
     const getDisplayFields = async () => {
       const displayFieldsResponse: ResponseObject = await getGroupDisplayFields(
         Number(tree?.projectMembersGroupId),
+        token,
       );
       if (displayFieldsResponse.status === 'Success') {
         setDisplayFields(displayFieldsResponse.data);
@@ -94,6 +99,7 @@ function TreeDetail() {
     const getVersions = async () => {
       const versionsResponse: ResponseObject = await getTreeVersions(
         Number(analysisId),
+        token,
       );
       if (versionsResponse.status === 'Success') {
         setVersions(versionsResponse.data);
@@ -101,12 +107,14 @@ function TreeDetail() {
         setErrorMsg(`Versions for tree ${analysisId} could not be loaded`);
       }
     };
-    if (tree) {
+    if (tree &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       getMetadata();
       getDisplayFields();
       getVersions();
     }
-  }, [analysisId, tree]);
+  }, [analysisId, tree, token, tokenLoading]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
@@ -170,9 +178,9 @@ function TreeDetail() {
     const getTree = async () => {
       let treeResponse: ResponseObject;
       if (jobInstanceId === 'latest') {
-        treeResponse = await getLatestTreeData(Number(analysisId));
+        treeResponse = await getLatestTreeData(Number(analysisId), token);
       } else {
-        treeResponse = await getTreeData(Number(jobInstanceId));
+        treeResponse = await getTreeData(Number(jobInstanceId), token);
       }
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
@@ -181,8 +189,11 @@ function TreeDetail() {
       }
       setIsTreeLoading(false);
     };
-    getTree();
-  }, [analysisId, jobInstanceId]);
+    if (tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
+      getTree();
+    }
+  }, [analysisId, jobInstanceId, token, tokenLoading]);
 
   const renderTree = () => {
     if (isTreeLoading) {

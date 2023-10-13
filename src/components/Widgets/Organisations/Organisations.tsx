@@ -4,6 +4,7 @@ import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
 import LoadingState from '../../../constants/loadingState';
+import { useApi } from '../../../app/ApiContext';
 
 const submittingOrgFieldName = 'Owner_group';
 
@@ -31,13 +32,18 @@ export default function Organisations(props: any) {
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const organisationsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId, timeFilter };
-    if (loading === 'idle') {
+    const dispatchProps = { groupId, token, projectId, timeFilter };
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING
+    ) {
       organisationsDispatch(fetchOrganisations(dispatchProps));
     }
-  }, [loading, organisationsDispatch, timeFilter, projectId, groupId]);
+  }, [loading, organisationsDispatch, timeFilter,
+    projectId, groupId, token, tokenLoading]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;

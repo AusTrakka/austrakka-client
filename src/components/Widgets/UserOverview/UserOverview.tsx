@@ -5,17 +5,23 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchUserOverview } from './userOverviewSlice';
 import { formatDate } from '../../../utilities/helperUtils';
+import { useApi } from '../../../app/ApiContext';
 
 export default function UserOverview() {
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.userOverviewState);
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
+  const { token, tokenLoading } = useApi();
+
   const dispatch = useAppDispatch();
   useEffect(() => {
-    if (loading === 'idle') {
-      dispatch(fetchUserOverview());
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      dispatch(fetchUserOverview(token));
     }
-  }, [loading, dispatch, timeFilter]);
+  }, [loading, dispatch, timeFilter, token, tokenLoading]);
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
