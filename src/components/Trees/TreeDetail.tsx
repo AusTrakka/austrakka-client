@@ -71,50 +71,42 @@ function TreeDetail() {
 
   // control hooks
   useEffect(() => {
-    const getDisplayFields = async () => {
-      const displayFieldsResponse: ResponseObject = await getGroupDisplayFields(
-        Number(tree?.projectMembersGroupId),
-        token,
-      );
-      if (displayFieldsResponse.status === 'Success') {
-        setDisplayFields(displayFieldsResponse.data);
-      } else {
-        setErrorMsg(`DisplayFields for tree ${analysisId} could not be loaded`);
-      }
-    };
-    const getMetadata = async () => {
-      const metadataResponse: ResponseObject = await getTreeMetaData(
+    const fetchData = async () => {
+      const metadataResponse = await getTreeMetaData(
         Number(analysisId),
         Number(tree?.jobInstanceId),
         token,
       );
-      if (metadataResponse.status === 'Success') {
-        const mappingData = mapMetadataToPhylocanvas(metadataResponse.data, displayFields);
-        setPhylocanvasMetadata(mappingData.result);
-        setPhylocanvasLegends(mappingData.legends);
-      } else {
-        setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
-      }
-    };
-    const getVersions = async () => {
-      const versionsResponse: ResponseObject = await getTreeVersions(
-        Number(analysisId),
+
+      const displayFieldsResponse = await getGroupDisplayFields(
+        Number(tree?.projectMembersGroupId),
         token,
       );
-      if (versionsResponse.status === 'Success') {
+
+      const versionsResponse = await getTreeVersions(Number(analysisId), token);
+
+      if (
+        metadataResponse.status === 'Success' &&
+      displayFieldsResponse.status === 'Success' &&
+      versionsResponse.status === 'Success'
+      ) {
+        const mappingData = mapMetadataToPhylocanvas(
+          metadataResponse.data,
+          displayFieldsResponse.data,
+        );
+        setPhylocanvasMetadata(mappingData.result);
+        setPhylocanvasLegends(mappingData.sortedLegends);
+        setDisplayFields(displayFieldsResponse.data);
         setVersions(versionsResponse.data);
       } else {
-        setErrorMsg(`Versions for tree ${analysisId} could not be loaded`);
+        setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
     };
-    if (tree &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      getDisplayFields();
-      getMetadata();
-      getVersions();
+
+    if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      fetchData();
     }
-  }, [analysisId, tree, token, tokenLoading, displayFields]);
+  }, [analysisId, tree, token, tokenLoading]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {

@@ -28,6 +28,23 @@ export default function mapMetadataToPhylocanvas(
     return colours;
   }
 
+  function sortColoursInField(field: { [colour: string]: string }): { [colour: string]: string } {
+    const fieldKeys = Object.keys(field);
+
+    // Extract and sort the values
+    const fieldValues = fieldKeys.map((colour) => field[colour]);
+    fieldValues.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+    // Create a new object with the sorted values but keep the original keys
+    const sortedColours: { [colour: string]: string } = {};
+
+    fieldKeys.forEach((colour, index) => {
+      sortedColours[colour] = fieldValues[index];
+    });
+
+    return sortedColours;
+  }
+
   function generateDistinctColourPalette(baseColour : any, numberOfColours: number) {
     const colours = [];
     const goldenAngle = 137.508; // Golden angle in degrees
@@ -59,9 +76,8 @@ export default function mapMetadataToPhylocanvas(
         l: 50, // Adjust lightness as needed
       };
 
-      // Check if the value is an integer (numeric string)
-      const isNumericString = fieldInfo === 'number';
-
+      // Check if the value is an integer (numeric string)z
+      const isNumericString = fieldInfo === 'number' || fieldInfo === 'float';
       // Generate a harmonious colour palette for the current metadata column
       // or distinct palette if it is not an number
       metadataColumnPalettes[metadataColumn] = isNumericString
@@ -86,7 +102,7 @@ export default function mapMetadataToPhylocanvas(
 
   const result: PhylocanvasMetadata = {};
   const legends: PhylocanvasLegends = {};
-
+  const sortedLegends: PhylocanvasLegends = {};
   for (const data of dataArray) {
     result[data.sampleName] = {};
 
@@ -107,9 +123,13 @@ export default function mapMetadataToPhylocanvas(
     }
   }
 
+  for (const field of Object.keys(legends)) {
+    sortedLegends[field] = sortColoursInField(legends[field]);
+  }
+
   const metadataAndLegends = {
     result,
-    legends,
+    sortedLegends,
   };
   return metadataAndLegends;
 }
