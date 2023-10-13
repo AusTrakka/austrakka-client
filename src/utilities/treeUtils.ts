@@ -1,5 +1,4 @@
 /* eslint-disable no-plusplus */
-import { DisplaySettings } from '@mui/icons-material';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
 

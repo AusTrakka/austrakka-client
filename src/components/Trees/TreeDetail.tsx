@@ -114,7 +114,7 @@ function TreeDetail() {
       getMetadata();
       getVersions();
     }
-  }, [analysisId, tree, token, tokenLoading]);
+  }, [analysisId, tree, token, tokenLoading, displayFields]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
