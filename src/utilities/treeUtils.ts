@@ -1,8 +1,12 @@
 /* eslint-disable no-plusplus */
+import { DisplaySettings } from '@mui/icons-material';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { AnalysisResultMetadata } from '../types/dtos';
+import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
 
-export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetadata[]) {
+export default function mapMetadataToPhylocanvas(
+  dataArray: AnalysisResultMetadata[],
+  fieldInformation: DisplayField[],
+) {
   // A dictionary to store the colour palettes for each metadata column
   const metadataColumnPalettes: Record<string, string[]> = {};
 
@@ -38,7 +42,11 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
     return colours;
   }
 
-  function getUniqueColour(value: string, metadataColumn: string): string {
+  function getUniqueColour(
+    value: string,
+    metadataColumn: string,
+    fieldInfo: string | undefined,
+  ): string {
     if (!value) {
       return 'rgba(0,0,0,0)';
     }
@@ -53,10 +61,10 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
       };
 
       // Check if the value is an integer (numeric string)
-      const isNumericString = /^\d+$/.test(value);
+      const isNumericString = fieldInfo === 'number';
 
       // Generate a harmonious colour palette for the current metadata column
-      // or distinct pallate if it is not an number
+      // or distinct palette if it is not an number
       metadataColumnPalettes[metadataColumn] = isNumericString
         ? generateSequentialColourPalette(baseColour, dataArray.length)
         : generateDistinctColourPalette(baseColour, dataArray.flatMap((data) =>
@@ -65,7 +73,6 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
             .map((metadataValue) => metadataValue.value)).length);
     }
 
-    // Get the colour palette based on whether it's a numeric string or not
     const palette = metadataColumnPalettes[metadataColumn];
 
     // Find the index for the current value in the metadata column
@@ -73,7 +80,6 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
       data.metadataValues.some((metadataValue) =>
         metadataValue.key === metadataColumn && metadataValue.value === value));
 
-    // Use the colour from the palette based on the index
     const colour = palette[index % palette.length] || 'rgba(0,0,0,0)';
 
     return colour;
@@ -86,7 +92,8 @@ export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetada
     result[data.sampleName] = {};
 
     for (const metadataValue of data.metadataValues) {
-      const uColour = getUniqueColour(metadataValue.value, metadataValue.key);
+      const field = fieldInformation.find(di => di.columnName === metadataValue.key);
+      const uColour = getUniqueColour(metadataValue.value, metadataValue.key, field?.primitiveType);
       result[data.sampleName][metadataValue.key] = {
         colour: uColour,
         label: metadataValue.value,

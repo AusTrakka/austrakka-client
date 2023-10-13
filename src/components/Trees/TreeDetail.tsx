@@ -71,20 +71,6 @@ function TreeDetail() {
 
   // control hooks
   useEffect(() => {
-    const getMetadata = async () => {
-      const metadataResponse: ResponseObject = await getTreeMetaData(
-        Number(analysisId),
-        Number(tree?.jobInstanceId),
-        token,
-      );
-      if (metadataResponse.status === 'Success') {
-        const mappingData = mapMetadataToPhylocanvas(metadataResponse.data);
-        setPhylocanvasMetadata(mappingData.result);
-        setPhylocanvasLegends(mappingData.legends);
-      } else {
-        setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
-      }
-    };
     const getDisplayFields = async () => {
       const displayFieldsResponse: ResponseObject = await getGroupDisplayFields(
         Number(tree?.projectMembersGroupId),
@@ -94,6 +80,20 @@ function TreeDetail() {
         setDisplayFields(displayFieldsResponse.data);
       } else {
         setErrorMsg(`DisplayFields for tree ${analysisId} could not be loaded`);
+      }
+    };
+    const getMetadata = async () => {
+      const metadataResponse: ResponseObject = await getTreeMetaData(
+        Number(analysisId),
+        Number(tree?.jobInstanceId),
+        token,
+      );
+      if (metadataResponse.status === 'Success') {
+        const mappingData = mapMetadataToPhylocanvas(metadataResponse.data, displayFields);
+        setPhylocanvasMetadata(mappingData.result);
+        setPhylocanvasLegends(mappingData.legends);
+      } else {
+        setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
       }
     };
     const getVersions = async () => {
@@ -110,8 +110,8 @@ function TreeDetail() {
     if (tree &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
-      getMetadata();
       getDisplayFields();
+      getMetadata();
       getVersions();
     }
   }, [analysisId, tree, token, tokenLoading]);
