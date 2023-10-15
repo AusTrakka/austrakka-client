@@ -25,6 +25,7 @@ import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
+import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
 import { msalInstance } from './utilities/authUtils';
 import ApiProvider from './app/ApiContext';
 
@@ -54,6 +55,7 @@ function App() {
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                   <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                   <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
+                  <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

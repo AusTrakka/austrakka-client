@@ -138,6 +138,7 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
   return response;
 };
 
+export const getSampleGroups = (sampleName:string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
 export const getProjectList = (token: string) => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
