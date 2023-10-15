@@ -42,7 +42,7 @@ function SampleDetail() {
           const ownerAbbrev = groupsData.find(g => g.name.endsWith('-Everyone'))?.organisation.abbreviation;
           if (ownerAbbrev === undefined) {
             // eslint-disable-next-line no-console
-            console.error('Owner group cannot be found');
+            console.error('Organisation Everyone group cannot be found for the current user');
           }
           const sortedGroups = groupsData.sort((groupA, groupB) => {
             if (groupA.name.endsWith('-Owner') && !groupB.name.endsWith('-Owner')) {
