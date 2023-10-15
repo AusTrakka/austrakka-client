@@ -1,9 +1,9 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
-import { PhylocanvasMetadata } from '../../types/phylocanvas.interface';
+import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
@@ -20,6 +20,7 @@ import LoadingState from '../../constants/loadingState';
 
 const defaultState: TreeState = {
   blocks: [],
+  nodeColumn: '',
   alignLabels: true,
   showBlockHeaders: true,
   blockHeaderFontSize: 13,
@@ -28,6 +29,7 @@ const defaultState: TreeState = {
   showLeafLabels: true,
   fontSize: 16,
   nodeSize: 6,
+  fillColour: 'rgba(0,0,0,1)',
   type: TreeTypes.Rectangular,
   showInternalLabels: false,
   showBranchLengths: false,
@@ -37,6 +39,7 @@ const defaultState: TreeState = {
 
 interface Style {
   label: string;
+  fillColour?: string;
 }
 
 function TreeDetail() {
@@ -44,7 +47,9 @@ function TreeDetail() {
   const navigate = useNavigate();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
+  const legRef = createRef<HTMLDivElement>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
+  const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
@@ -66,46 +71,40 @@ function TreeDetail() {
 
   // control hooks
   useEffect(() => {
-    const getMetadata = async () => {
-      const metadataResponse: ResponseObject = await getTreeMetaData(
+    const fetchData = async () => {
+      const metadataResponse = await getTreeMetaData(
         Number(analysisId),
         Number(tree?.jobInstanceId),
         token,
       );
-      if (metadataResponse.status === 'Success') {
-        setPhylocanvasMetadata(mapMetadataToPhylocanvas(metadataResponse.data));
-      } else {
-        setErrorMsg(`Metadata for tree ${analysisId} could not be loaded`);
-      }
-    };
-    const getDisplayFields = async () => {
-      const displayFieldsResponse: ResponseObject = await getGroupDisplayFields(
+
+      const displayFieldsResponse = await getGroupDisplayFields(
         Number(tree?.projectMembersGroupId),
         token,
       );
-      if (displayFieldsResponse.status === 'Success') {
+
+      const versionsResponse = await getTreeVersions(Number(analysisId), token);
+
+      if (
+        metadataResponse.status === 'Success' &&
+      displayFieldsResponse.status === 'Success' &&
+      versionsResponse.status === 'Success'
+      ) {
+        const mappingData = mapMetadataToPhylocanvas(
+          metadataResponse.data,
+          displayFieldsResponse.data,
+        );
+        setPhylocanvasMetadata(mappingData.result);
+        setPhylocanvasLegends(mappingData.sortedLegends);
         setDisplayFields(displayFieldsResponse.data);
-      } else {
-        setErrorMsg(`DisplayFields for tree ${analysisId} could not be loaded`);
-      }
-    };
-    const getVersions = async () => {
-      const versionsResponse: ResponseObject = await getTreeVersions(
-        Number(analysisId),
-        token,
-      );
-      if (versionsResponse.status === 'Success') {
         setVersions(versionsResponse.data);
       } else {
-        setErrorMsg(`Versions for tree ${analysisId} could not be loaded`);
+        setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
     };
-    if (tree &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      getMetadata();
-      getDisplayFields();
-      getVersions();
+
+    if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      fetchData();
     }
   }, [analysisId, tree, token, tokenLoading]);
 
@@ -154,10 +153,17 @@ function TreeDetail() {
         } else {
           newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
         }
+        if (state.nodeColumn !== '') {
+          newStyles[nodeId].fillColour = value[state.nodeColumn].colour;
+        }
       }
       setStyles(newStyles);
     }
-  }, [state.labelBlocks, state.keyValueLabelBlocks, phylocanvasMetadata, state.alignLabels]);
+  }, [state.labelBlocks,
+    state.keyValueLabelBlocks,
+    phylocanvasMetadata,
+    state.alignLabels,
+    state.nodeColumn]);
 
   useEffect(() => {
     // Get tree details, including tree type
@@ -247,6 +253,7 @@ function TreeDetail() {
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
+          {/*  */}
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
@@ -277,11 +284,12 @@ function TreeDetail() {
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
             >
-              <Typography>Nodes & labels</Typography>
+              <Typography>Nodes & Labels</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <NodeAndLabelControls
                 columns={allColumns}
+                visualColumns={visualisableColumns}
                 state={state}
                 onChange={handleStateChange}
               />
@@ -291,7 +299,7 @@ function TreeDetail() {
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
             >
-              <Typography>Metadata</Typography>
+              <Typography>Metadata blocks</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <MetadataControls
@@ -301,8 +309,64 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <ExportButton analysisName={tree.analysisName} phylocanvasRef={treeRef} />
+          <ExportButton
+            analysisName={tree.analysisName}
+            phylocanvasRef={treeRef}
+            legendRef={legRef}
+          />
         </Grid>
+
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
+  const renderLegend = () => {
+    function generateLegend(selectedColumn : string) {
+      const legendValues = phylocanvasLegends[selectedColumn];
+      if (!legendValues) {
+        return null; // Handle the case where the selected column doesn't exist
+      }
+
+      return (
+        <>
+          <Typography variant="body2" fontWeight="bold">{selectedColumn}</Typography>
+          <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
+            {Object.entries(legendValues).map(([color, label]) => (
+              <Grid item key={color}>
+                <Box display="flex" alignItems="center">
+                  <Box
+                    width="10px"
+                    height="10px"
+                    bgcolor={color}
+                    marginRight="10px"
+                  />
+                  <Typography variant="caption">{label}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      );
+    }
+    if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
+      return (
+        <Box sx={{ marginTop: '20px' }} ref={legRef}>
+          {/* Only render node colour entry if not already in the legend  */}
+          {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
+          <>
+            {generateLegend(state.nodeColumn)}
+          </>
+          )}
+          {state.blocks.map((block) => (
+            block !== '' && (
+            <div key={block}>
+              {generateLegend(block)}
+            </div>
+            )
+          ))}
+        </Box>
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -318,6 +382,7 @@ function TreeDetail() {
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderTree()}
+        {renderLegend()}
       </Grid>
     </Grid>
 
