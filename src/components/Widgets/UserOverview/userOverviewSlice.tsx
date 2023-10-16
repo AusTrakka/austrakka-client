@@ -20,12 +20,12 @@ const initialState: UserOverviewState = {
 export const fetchUserOverview = createAsyncThunk(
   'counts/fetchUserOverview',
   async (
-    _: void,
+    token: any,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
-    const response = await getUserDashboardOveriew(filterString);
+    const response = await getUserDashboardOveriew(token, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

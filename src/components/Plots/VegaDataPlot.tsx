@@ -8,6 +8,8 @@ import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -21,11 +23,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [data, setData] = useState([]);
+  const { token, tokenLoading } = useApi();
 
   // Get data on load
   useEffect(() => {
     const updatePlotData = async () => {
-      const response = await getPlotData(dataGroupId!, fieldsToRetrieve) as ResponseObject;
+      const response = await getPlotData(dataGroupId!, fieldsToRetrieve, token) as ResponseObject;
       if (response.status === 'Success') {
         setData(response.data);
       } else {
@@ -36,10 +39,15 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now get all display fields, but could do ID + dates + categorical
-    if (dataGroupId && fieldsToRetrieve && fieldsToRetrieve.length > 0) {
+    if (dataGroupId &&
+      fieldsToRetrieve &&
+      fieldsToRetrieve.length > 0 &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING) {
       updatePlotData();
     }
-  }, [setPlotErrorMsg, fieldsToRetrieve, dataGroupId, setData]);
+  }, [setPlotErrorMsg, fieldsToRetrieve, dataGroupId, setData,
+    token, tokenLoading]);
 
   // Render plot by creating vega view
   useEffect(() => {

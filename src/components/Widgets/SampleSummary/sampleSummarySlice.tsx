@@ -23,10 +23,10 @@ export const fetchSummary = createAsyncThunk(
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const { groupId } = dispatchProps;
+    const { groupId, token } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
-    const response = await getProjectDashboardOveriew(groupId, filterString);
+    const response = await getProjectDashboardOveriew(groupId, token, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

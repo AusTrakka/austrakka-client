@@ -24,11 +24,11 @@ export const fetchStCounts = createAsyncThunk(
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const { groupId } = dispatchProps;
+    const { groupId, token } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const fields = ['ST', 'Date_coll'];
-    const response = await getDashboardFields(groupId, fields, filterString);
+    const response = await getDashboardFields(groupId, token, fields, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

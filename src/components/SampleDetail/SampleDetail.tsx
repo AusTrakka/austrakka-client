@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { DisplayField, Project, Sample } from '../../types/dtos';
 import { ResponseObject, getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
@@ -12,32 +14,38 @@ function SampleDetail() {
   const [data, setData] = useState<Sample | null>();
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
     const updateProject = async () => {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
+      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
       if (projectResponse.status === 'Success') {
         setProject(projectResponse.data as Project);
       } else {
         setErrMsg(`Project ${projectAbbrev} could not be accessed`);
       }
     };
-    updateProject();
-  }, [projectAbbrev]);
+    if (tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
+      updateProject();
+    }
+  }, [projectAbbrev, token, tokenLoading]);
 
   useEffect(() => {
     const updateDisplayFields = async () => {
-      const response = await getDisplayFields(project!.projectMembers.id);
+      const response = await getDisplayFields(project!.projectMembers.id, token);
       if (response.status === 'Success') {
         setDisplayFields(response.data as DisplayField[]);
       } else {
         setErrMsg(`Metadata fields for project ${project!.abbreviation} could not be loaded`);
       }
     };
-    if (project) {
+    if (project &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateDisplayFields();
     }
-  }, [project]);
+  }, [project, token, tokenLoading]);
 
   useEffect(() => {
     const updateSampleData = async () => {
@@ -45,17 +53,19 @@ function SampleDetail() {
         groupContext: `${project!.projectMembers.id}`,
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(searchParams.toString());
+      const response = await getSamples(token, searchParams.toString());
       if (response.status === 'Success' && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
         setErrMsg(`Record ${seqId} could not be found within the context of project ${project!.abbreviation}`);
       }
     };
-    if (project) {
+    if (project &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateSampleData();
     }
-  }, [project, seqId]);
+  }, [project, seqId, token, tokenLoading]);
 
   useEffect(() => {
     if (displayFields.length > 0) {
