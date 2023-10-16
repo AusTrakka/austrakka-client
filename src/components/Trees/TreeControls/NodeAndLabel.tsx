@@ -13,11 +13,13 @@ interface State {
   nodeSize: number,
   labelBlocks: string[],
   keyValueLabelBlocks: boolean,
+  nodeColumn: string,
 }
 
 export default function NodeAndLabelControls(
-  { columns, state, onChange }: {
+  { columns, visualColumns, state, onChange }: {
     columns: string[],
+    visualColumns: string[],
     state: State,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
@@ -26,8 +28,8 @@ export default function NodeAndLabelControls(
   const theme = useTheme();
   return (
     <Grid>
-      <FormControl fullWidth size="small">
-        <InputLabel id="column-label">Columns</InputLabel>
+      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
+        <InputLabel id="column-label">Label columns</InputLabel>
         <Select
           labelId="column-label"
           id="column"
@@ -35,7 +37,7 @@ export default function NodeAndLabelControls(
           name="labelBlocks"
           value={state.labelBlocks}
           onChange={onChange}
-          input={<OutlinedInput label="Column" />}
+          input={<OutlinedInput label="Label columns" />}
           MenuProps={MenuProps}
         >
           {columns.map((column) => (
@@ -43,6 +45,31 @@ export default function NodeAndLabelControls(
               key={column}
               value={column}
               style={getStyles(column, state.labelBlocks, theme)}
+            >
+              {column}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl sx={{ marginY: 1 }} fullWidth size="small">
+        <InputLabel id="column-label">Node Colouring</InputLabel>
+        <Select
+          labelId="column-label"
+          id="column"
+          multiple={false}
+          name="nodeColumn"
+          value={[state.nodeColumn]}
+          onChange={onChange}
+          input={<OutlinedInput label="Column Colour" />}
+          MenuProps={MenuProps}
+        >
+          <MenuItem value="">
+            <i>None</i>
+          </MenuItem>
+          {visualColumns.map((column) => (
+            <MenuItem
+              key={column}
+              value={column}
             >
               {column}
             </MenuItem>

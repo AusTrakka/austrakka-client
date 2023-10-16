@@ -22,12 +22,12 @@ const initialState: PhessIdOverallState = {
 export const fetchPhessIdOverall = createAsyncThunk(
   'counts/fetchPhessIdOverall',
   async (
-    _: void,
+    token: string,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
-    const response = await getUserDashboardPhessStatus(filterString);
+    const response = await getUserDashboardPhessStatus(token, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

@@ -10,6 +10,8 @@ import Custom from './PlotTypes/Custom';
 import HeatMap from './PlotTypes/HeatMap';
 import Histogram from './PlotTypes/Histogram';
 import PlotTypeProps from '../../types/plottypeprops.interface';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
 const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Histogram, HeatMap, Custom];
 
@@ -25,11 +27,12 @@ function PlotDetail() {
   const [plot, setPlot] = useState<Plot | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
     // Get plot details, including plot type
     const getPlot = async () => {
-      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!);
+      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
       if (plotResponse.status === 'Success') {
         setPlot(plotResponse.data as Plot);
       } else {
@@ -37,9 +40,10 @@ function PlotDetail() {
       }
       setIsPlotLoading(false);
     };
-
-    getPlot();
-  }, [plotAbbrev]);
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getPlot();
+    }
+  }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
     if (plot) {

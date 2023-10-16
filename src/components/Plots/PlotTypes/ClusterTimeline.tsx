@@ -7,6 +7,8 @@ import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -58,6 +60,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   const [colourField, setColourField] = useState<string>('');
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
+  const { token, tokenLoading } = useApi();
 
   // Set spec on load
   useEffect(() => {
@@ -73,7 +76,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
     const updateFields = async () => {
-      const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
+      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         // Note this does not include numerical or date fields
@@ -98,10 +101,12 @@ function ClusterTimeline(props: PlotTypeProps) {
       }
     };
 
-    if (plot) {
+    if (plot &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot]);
+  }, [plot, token, tokenLoading]);
 
   useEffect(() => {
     const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>

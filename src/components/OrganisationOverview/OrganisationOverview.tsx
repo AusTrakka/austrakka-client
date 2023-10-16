@@ -4,6 +4,7 @@ import { Error } from '@mui/icons-material';
 import { ResponseObject, getUserGroups } from '../../utilities/resourceUtils';
 import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
+import { useApi } from '../../app/ApiContext';
 
 function OrgGroupSelector(props: any) {
   const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
@@ -69,10 +70,11 @@ function OrganisationOverview() {
   const [groups, setGroups] = useState([]);
   const [groupStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
+  const { token, tokenLoading } = useApi();
 
   async function getGroups() {
     setGroupStatus(LoadingState.LOADING);
-    const groupResponse: ResponseObject = await getUserGroups();
+    const groupResponse: ResponseObject = await getUserGroups(token);
     if (groupResponse.status === 'Success') {
       // Filter out only owner groups that a user is a viewer in
       const { organisation, userRoleGroup } = groupResponse.data;
@@ -101,8 +103,13 @@ function OrganisationOverview() {
   }
 
   useEffect(() => {
-    getGroups();
-  }, []);
+    if (tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING
+    ) {
+      getGroups();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenLoading]);
 
   return (
     <Box>
@@ -135,6 +142,7 @@ function OrganisationOverview() {
       </Grid>
       <SampleTable
         groupContext={selectedGroup.id}
+        groupName={undefined}
       />
     </Box>
   );

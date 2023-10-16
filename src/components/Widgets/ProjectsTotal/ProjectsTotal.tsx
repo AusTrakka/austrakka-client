@@ -7,6 +7,7 @@ import LoadingState from '../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../Common/DrilldownButton';
 import isoDateLocalDate from '../../../utilities/helperUtils';
+import { useApi } from '../../../app/ApiContext';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
@@ -28,14 +29,17 @@ export default function ProjectsTotal() {
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.projectTotalState);
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
+  const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading === 'idle') {
-      dispatch(fetchProjectsTotal());
+    if (loading === 'idle' &&
+    tokenLoading !== LoadingState.IDLE &&
+    tokenLoading !== LoadingState.LOADING) {
+      dispatch(fetchProjectsTotal(token));
     }
-  }, [loading, dispatch, timeFilter]);
+  }, [loading, dispatch, timeFilter, token, tokenLoading]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
