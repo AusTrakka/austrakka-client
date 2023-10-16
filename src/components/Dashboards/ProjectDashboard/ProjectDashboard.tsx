@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
 import LoadingState from '../../../constants/loadingState';
 import { Filter } from '../../Common/QueryBuilder';
+import { useApi } from '../../../app/ApiContext';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -44,6 +45,7 @@ function DateSelector(props: any) {
   // Set new date filter state from redux store
   const dispatch = useAppDispatch();
   const { timeFilter, data } = useAppSelector((state) => state.projectDashboardState);
+  const { token } = useApi();
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
@@ -70,6 +72,7 @@ function DateSelector(props: any) {
     const dispatchProps = {
       projectId,
       groupId,
+      token,
       timeFilter: event.target.value as string,
     };
     DashboardTemplateActions[data.data].map(
@@ -97,6 +100,7 @@ function DateSelector(props: any) {
 
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectId, groupId, setFilterList, setTabValue } = props;
+  const { token, tokenLoading } = useApi();
   const {
     data,
     loading,
@@ -106,11 +110,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (projectId !== null && projectId !== projectIdInRedux) {
-      const thunkObj = { projectId, groupId };
+    if (projectId !== null &&
+        projectId !== projectIdInRedux &&
+        tokenLoading !== LoadingState.IDLE &&
+        tokenLoading !== LoadingState.LOADING) {
+      const thunkObj = { projectId, groupId, token };
       dispatch(fetchProjectDashboard(thunkObj));
     }
-  }, [dispatch, projectId, groupId, projectIdInRedux]);
+  }, [dispatch, projectId, groupId, projectIdInRedux, token, tokenLoading]);
 
   return (
     <Box>

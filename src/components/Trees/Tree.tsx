@@ -4,7 +4,7 @@ import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.inter
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
-  onSelectedIdsChange: CallableFunction
+  onSelectedIdsChange: CallableFunction;
 }
 
 export type TreeExportFuctions = {
@@ -56,7 +56,7 @@ const Tree = React.forwardRef(
         const gridRef = document.querySelector(resizeWidthTo!);
         const width = gridRef?.getBoundingClientRect().width!;
         if (width) {
-          setSize({ height: size.height, width: width - 40 });
+          setSize({ height: size.height, width: width - 10 });
         }
       }
       if (tree.current == null && treeDiv.current !== null) {

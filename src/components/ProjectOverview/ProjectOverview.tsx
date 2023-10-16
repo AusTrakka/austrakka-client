@@ -22,9 +22,11 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { useApi } from '../../app/ApiContext';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
+  const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
   // Project Overview component states
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
@@ -86,7 +88,7 @@ function ProjectOverview() {
 
   useEffect(() => {
     async function getProject() {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!);
+      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
       if (projectResponse.status === 'Success') {
         setProjectDetails(projectResponse.data as Project);
         setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
@@ -99,9 +101,10 @@ function ProjectOverview() {
         setIsOverviewLoading(false);
       }
     }
-
-    getProject();
-  }, [projectAbbrev]);
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+      getProject();
+    }
+  }, [projectAbbrev, token, tokenLoading]);
 
   useEffect(() => {
     // Maps from a hard-coded metadata field name to a function to render the cell value
@@ -115,6 +118,7 @@ function ProjectOverview() {
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
+        token,
       );
       if (totalSamplesResponse.status === 'Success') {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
@@ -135,6 +139,7 @@ function ProjectOverview() {
       setIsSamplesLoading(true);
       const tableHeadersResponse: ResponseObject = await getDisplayFields(
         projectDetails!.projectMembers.id,
+        token,
       );
       if (tableHeadersResponse.status === 'Success') {
         const columnHeaderArray = tableHeadersResponse.data;
@@ -187,7 +192,7 @@ function ProjectOverview() {
     }
 
     async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(projectDetails!.projectId);
+      const treeListResponse: ResponseObject = await getTrees(projectDetails!.projectId, token);
       if (treeListResponse.status === 'Success') {
         setProjectTrees(treeListResponse.data);
         setTreeListError(false);
@@ -201,7 +206,7 @@ function ProjectOverview() {
     }
 
     async function getPlotList() {
-      const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId);
+      const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === 'Success') {
         setProjectPlots(plotsResponse.data as PlotListing[]);
         setIsPlotsLoading(false);
@@ -214,7 +219,7 @@ function ProjectOverview() {
 
     async function getMemberList() {
       // eslint-disable-next-line max-len
-      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id);
+      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
       if (memberListResponse.status === 'Success') {
         setProjectMembers(memberListResponse.data as Member[]);
         setMemberListError(false);
@@ -229,7 +234,7 @@ function ProjectOverview() {
 
     async function getProFormaList() {
       const proformaListResponse : ResponseObject =
-        await getGroupProFormas(projectDetails!.projectMembers.id);
+        await getGroupProFormas(projectDetails!.projectMembers.id, token);
       if (proformaListResponse.status === 'Success') {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProjectProFormas(data);
@@ -250,7 +255,7 @@ function ProjectOverview() {
       getMemberList();
       getProFormaList();
     }
-  }, [projectDetails]);
+  }, [projectDetails, token]);
 
   useEffect(() => {
     async function getFilterFields() {
@@ -259,6 +264,7 @@ function ProjectOverview() {
         // TODO: getFilterFields() and getSampleTableHeaders() should be combined
         const displayFieldsResponse: ResponseObject = await getDisplayFields(
           projectDetails!.projectMembers.id,
+          token,
         );
         // Intermediate solution:
         // Filtering displayField response to capture only values that are in the table
@@ -277,7 +283,7 @@ function ProjectOverview() {
     }
 
     getFilterFields();
-  }, [projectDetails, sampleTableColumns]);
+  }, [projectDetails, sampleTableColumns, token]);
 
   useEffect(() => {
     const getColumnOrder = () => {
@@ -340,7 +346,7 @@ function ProjectOverview() {
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
         if (samplesResponse.status === 'Success') {
           setProjectSamples(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -365,7 +371,7 @@ function ProjectOverview() {
       }
     },
     [projectDetails, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString, sorting],
+      sampleTableColumns, queryString, sorting, token],
   );
 
   const getExportData = async () => {
@@ -376,7 +382,7 @@ function ProjectOverview() {
       groupContext: `${projectDetails!.projectMembers.id}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {

@@ -7,6 +7,8 @@ import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -50,6 +52,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateBinStep, setDateBinStep] = useState<number>(1);
   const [colourField, setColourField] = useState<string>('none');
   const [stackType, setStackType] = useState<string>('zero');
+  const { token, tokenLoading } = useApi();
 
   // Set spec on load
   useEffect(() => {
@@ -64,7 +67,7 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     const updateFields = async () => {
-      const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
+      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         const localCatFields = fields
@@ -85,10 +88,12 @@ function EpiCurve(props: PlotTypeProps) {
       }
     };
 
-    if (plot) {
+    if (plot &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot]);
+  }, [plot, token, tokenLoading]);
 
   useEffect(() => {
     const addDateFieldToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
