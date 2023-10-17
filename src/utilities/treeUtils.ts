@@ -118,17 +118,23 @@ export default function mapMetadataToPhylocanvas(
 
     for (const metadataValue of data.metadataValues) {
       const field = fieldInformation.find(di => di.columnName === metadataValue.key);
-      const uColour = getUniqueColour(metadataValue.value, metadataValue.key, field?.primitiveType);
-      result[data.sampleName][metadataValue.key] = {
-        colour: uColour,
-        label: metadataValue.value,
-      };
-      if (metadataValue.value !== null) {
-        if (!legends[metadataValue.key]) {
-          legends[metadataValue.key] = {}; // Initialize if it doesn't exist
-        }
+      if (field?.canVisualise) {
+        const uColour = getUniqueColour(
+          metadataValue.value,
+          metadataValue.key,
+          field?.primitiveType,
+        );
+        result[data.sampleName][metadataValue.key] = {
+          colour: uColour,
+          label: metadataValue.value,
+        };
+        if (metadataValue.value !== null) {
+          if (!legends[metadataValue.key]) {
+            legends[metadataValue.key] = {}; // Initialize if it doesn't exist
+          }
 
-        legends[metadataValue.key][uColour] = metadataValue.value;
+          legends[metadataValue.key][uColour] = metadataValue.value;
+        }
       }
     }
   }
