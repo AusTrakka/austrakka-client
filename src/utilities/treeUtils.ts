@@ -28,6 +28,15 @@ export default function mapMetadataToPhylocanvas(
     return colours;
   }
 
+  function hashCode(str : string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+    }
+    return Math.abs(hash);
+  }
+
   function sortColoursInField(field: { [colour: string]: string }): { [colour: string]: string } {
     const fieldKeys = Object.keys(field);
 
@@ -70,8 +79,9 @@ export default function mapMetadataToPhylocanvas(
     // Check if the palette for the current metadata column exists, or generate one
     if (!metadataColumnPalettes[metadataColumn]) {
       // Define the base colour for the current metadata column
+      const stringHash = hashCode(metadataColumn);
       const baseColour = {
-        h: Math.random() * 360, // Random hue value between 0 and 359
+        h: stringHash % 360, // Random hue value between 0 and 359
         s: 60, // Adjust saturation as needed
         l: 50, // Adjust lightness as needed
       };
