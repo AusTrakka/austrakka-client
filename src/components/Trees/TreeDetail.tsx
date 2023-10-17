@@ -138,7 +138,7 @@ function TreeDetail() {
             if (state.keyValueLabelBlocks) {
               prefix = `${block}=`;
             }
-            if (!value[block].label) {
+            if (!value[block]?.label) {
               return prefix + ' '.repeat(blockLength);
             }
             if (state.alignLabels) {
