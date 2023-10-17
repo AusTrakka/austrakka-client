@@ -1,11 +1,11 @@
-interface MetadataValue {
+interface MetadataColourValue {
   colour: string;
   label: string;
 }
 
 export interface PhylocanvasMetadata {
   // seqId: -------> columnName: {colour: rbg, label: value}
-  [key: string]: { [key: string]: MetadataValue };
+  [key: string]: { [key: string]: MetadataColourValue };
 }
 
 export interface PhylocanvasLegends {
