@@ -9,7 +9,7 @@ export interface PhylocanvasMetadata {
 }
 
 export interface PhylocanvasLegends {
-  [key: string]: { [colour: string]: string }
+  [key: string]: { [label: string]: string }
 }
 
 export interface PhylocanvasNode {
