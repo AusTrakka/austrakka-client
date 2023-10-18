@@ -59,7 +59,8 @@ function Histogram(props: PlotTypeProps) {
           .map(field => field.columnName);
         setNumericFields(localNumericFields);
         const localCatFields = fields
-          .filter(field => field.canVisualise)
+          .filter(field => field.canVisualise &&
+            (field.primitiveType === 'string' || field.primitiveType === null))
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
         setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));

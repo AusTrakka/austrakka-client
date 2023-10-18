@@ -66,7 +66,8 @@ function EpiCurve(props: PlotTypeProps) {
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         const localCatFields = fields
-          .filter(field => field.canVisualise)
+          .filter(field => field.canVisualise &&
+                          (field.primitiveType === 'string' || field.primitiveType === null))
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
         // Note we do not set a preferred starting colour field; starting value is None

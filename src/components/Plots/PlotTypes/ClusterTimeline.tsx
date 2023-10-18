@@ -82,7 +82,8 @@ function ClusterTimeline(props: PlotTypeProps) {
         // Note this does not include numerical or date fields
         // For now this selection need only depend on canVisualise
         const localCatFields = fields
-          .filter(field => field.canVisualise)
+          .filter(field => field.canVisualise &&
+            (field.primitiveType === 'string' || field.primitiveType === null))
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
         setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
