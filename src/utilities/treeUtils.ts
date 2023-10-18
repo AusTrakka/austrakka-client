@@ -1,10 +1,12 @@
 /* eslint-disable no-plusplus */
+import { createPalette, ColorMapInput } from 'hue-map';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: AnalysisResultMetadata[],
   fieldInformation: DisplayField[],
+  colorMap: ColorMapInput,
 ) {
   // A dictionary to store the colour palettes for each metadata column
   const metadataColumnPalettes: PhylocanvasLegends = {};
@@ -84,7 +86,7 @@ export default function mapMetadataToPhylocanvas(
 
       const colours = isNumericString ?
         generateSequentialColourPalette(baseColour, uniqueValues.length) :
-        generateDistinctColourPalette(baseColour, uniqueValues.length);
+        createPalette({ map: colorMap, steps: uniqueValues.length }).format('cssRGBA');
 
       metadataColumnPalettes[metadataColumn] = {};
       uniqueValues.forEach((val, index) => {

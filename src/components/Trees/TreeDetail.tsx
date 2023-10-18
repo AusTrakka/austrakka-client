@@ -1,6 +1,8 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
+import { maps } from 'hue-map';
+import { MapKey } from 'hue-map/dist/maps';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControl, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -55,6 +57,7 @@ function TreeDetail() {
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
+  const [colourMap, setColourMap] = useState<MapKey>('jet');
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
@@ -93,6 +96,7 @@ function TreeDetail() {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
           displayFieldsResponse.data,
+          colourMap,
         );
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
@@ -106,7 +110,7 @@ function TreeDetail() {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchData();
     }
-  }, [analysisId, tree, token, tokenLoading]);
+  }, [analysisId, tree, token, tokenLoading, colourMap]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
@@ -254,6 +258,32 @@ function TreeDetail() {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
           {/*  */}
+          <FormControl
+            variant="standard"
+            sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
+          >
+            <Typography variant="caption">Color Map</Typography>
+            <Select
+              labelId="tree-select-colourmap"
+              id="tree-colourmap"
+              defaultValue="jet"
+              value={colourMap}
+              onChange={(e) => {
+                const selectedValue = e.target.value as MapKey;
+                if (Object.keys(maps).includes(selectedValue)) {
+                  setColourMap(selectedValue);
+                }
+              }}
+              label="Colour Map"
+              autoWidth
+            >
+              {Object.keys(maps).map(c => (
+                <MenuItem value={c}>
+                  {c}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
