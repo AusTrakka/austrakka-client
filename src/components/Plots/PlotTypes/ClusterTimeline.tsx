@@ -86,19 +86,24 @@ function ClusterTimeline(props: PlotTypeProps) {
             (field.primitiveType === 'string' || field.primitiveType === null))
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
-        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-        setColourField(getStartingField(preferredColourFields, localCatFields));
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
         setDateFields(localDateFields);
+        // Mandatory fields: one categorical field
+        if (localCatFields.length === 0) {
+          setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
+          return;
+        }
+        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+        setColourField(getStartingField(preferredColourFields, localCatFields));
         setDateField(getStartingField(preferredDateFields, localDateFields));
         // For this plot retrieve categorical and date fields
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localCatFields, ...localDateFields]);
       } else {
-        // TODO error handling if getDisplayFields fails, possibly also if no categorical fields
         // eslint-disable-next-line no-console
         console.error(response.message);
+        setPlotErrorMsg('Unable to load project fields');
       }
     };
 
@@ -107,7 +112,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot, token, tokenLoading]);
+  }, [plot, token, tokenLoading, setPlotErrorMsg]);
 
   useEffect(() => {
     const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>

@@ -75,12 +75,17 @@ function EpiCurve(props: PlotTypeProps) {
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
         setDateFields(localDateFields);
+        // Mandatory fields: one date field
+        if (localDateFields.length === 0) {
+          setPlotErrorMsg('No date fields found in project, cannot render plot');
+          return;
+        }
         setDateField(getStartingField(preferredDateFields, localDateFields));
         setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localDateFields, ...localCatFields]);
       } else {
-        // TODO error handling if getDisplayFields fails, possibly also if no date fields
         // eslint-disable-next-line no-console
         console.error(response.message);
+        setPlotErrorMsg('Unable to load project fields');
       }
     };
 
@@ -89,7 +94,7 @@ function EpiCurve(props: PlotTypeProps) {
       tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot, token, tokenLoading]);
+  }, [plot, token, tokenLoading, setPlotErrorMsg]);
 
   useEffect(() => {
     const addDateFieldToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
