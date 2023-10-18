@@ -3,7 +3,7 @@ import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
-import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
@@ -34,11 +34,6 @@ const defaultSpec: TopLevelSpec = {
       stack: 'zero',
     },
   },
-};
-const legendSpec = {
-  orient: 'bottom',
-  columns: 6,
-  symbolLimit: 0, // no limit
 };
 
 function EpiCurve(props: PlotTypeProps) {
@@ -105,25 +100,8 @@ function EpiCurve(props: PlotTypeProps) {
   }, [dateField]);
 
   useEffect(() => {
-    // Does not use generic setFieldInSpec, for now, as we handle 'none'
-    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
-      if (oldSpec == null) return null;
-      const newSpec: any = { ...oldSpec };
-      if (colourField === 'none') {
-        // Remove colour from encoding
-        const { color, ...newEncoding } = (oldSpec as any).encoding;
-        newSpec.encoding = newEncoding;
-      } else {
-        // Set colour in encoding
-        newSpec.encoding = { ...(oldSpec as any).encoding };
-        newSpec.encoding.color = {
-          field: colourField,
-          scale: { scheme: 'spectral' },
-          legend: legendSpec,
-        };
-      }
-      return newSpec as TopLevelSpec;
-    };
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setColorInSpecToValue(oldSpec, colourField);
 
     setSpec(setColorInSpec);
   }, [colourField]);
