@@ -116,7 +116,7 @@ function Histogram(props: PlotTypeProps) {
       } else {
         // eslint-disable-next-line no-console
         console.error(`Unknown bin mode ${binMode}`);
-      };
+      }
       return newSpec as TopLevelSpec;
     };
 
@@ -177,7 +177,7 @@ function Histogram(props: PlotTypeProps) {
           size="small"
           inputProps={{ min: 1, step: 'any' }}
           value={stepSize}
-          onChange={(e) => setStepSize(parseFloat(e.target.value, 10))}
+          onChange={(e) => setStepSize(parseFloat(e.target.value))}
         />
       </FormControl>
     </Box>
