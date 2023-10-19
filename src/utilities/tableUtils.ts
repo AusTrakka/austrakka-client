@@ -57,3 +57,16 @@ export function buildMRTColumnDefinitions(fields: DisplayField[]) {
 
   return columnBuilder;
 }
+
+export function buildTabulatorColumnDefinitions(fields: DisplayField[]) {
+  const columnBuilder: { title: string; field: string; }[] = [];
+
+  fields.forEach((element: MetaDataColumn) => {
+    columnBuilder.push({
+      title: `${element.columnName}`,
+      field: element.columnName,
+    });
+  });
+
+  return columnBuilder;
+}
