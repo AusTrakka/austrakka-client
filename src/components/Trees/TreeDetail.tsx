@@ -95,7 +95,7 @@ function TreeDetail() {
           displayFieldsResponse.data,
         );
         setPhylocanvasMetadata(mappingData.result);
-        setPhylocanvasLegends(mappingData.sortedLegends);
+        setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
         setVersions(versionsResponse.data);
       } else {
@@ -138,7 +138,7 @@ function TreeDetail() {
             if (state.keyValueLabelBlocks) {
               prefix = `${block}=`;
             }
-            if (!value[block].label) {
+            if (!value[block]?.label) {
               return prefix + ' '.repeat(blockLength);
             }
             if (state.alignLabels) {
@@ -333,7 +333,7 @@ function TreeDetail() {
         <>
           <Typography variant="body2" fontWeight="bold">{selectedColumn}</Typography>
           <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
-            {Object.entries(legendValues).map(([color, label]) => (
+            {Object.entries(legendValues).map(([label, color]) => (
               <Grid item key={color}>
                 <Box display="flex" alignItems="center">
                   <Box
