@@ -123,6 +123,9 @@ function ClusterTimeline(props: PlotTypeProps) {
     }
   }, [yAxisField]);
 
+  // TODO maybe handle none and set better legend, as for other plots?
+  // We know there must be at least one cat field for the y axis, so this will work,
+  // but maybe the user would prefer none for colour field regardless
   useEffect(() => {
     const addColourToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setFieldInSpec(oldSpec, 'color', colourField);

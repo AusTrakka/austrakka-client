@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
-import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
@@ -39,6 +39,8 @@ function Histogram(props: PlotTypeProps) {
   const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
+  const [binMode, setBinMode] = useState<string>('auto');
+  const [stepSize, setStepSize] = useState<number>(1);
   const { token, tokenLoading } = useApi();
 
   // Set spec on load
@@ -97,27 +99,29 @@ function Histogram(props: PlotTypeProps) {
   }, [xAxisField]);
 
   useEffect(() => {
-    // Does not use generic setFieldInSpec, for now, as we handle 'none'
-    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
-      if (oldSpec == null) return null;
-      const newSpec: any = { ...oldSpec };
-      if (colourField === 'none') {
-        // Remove colour from encoding
-        const { color, ...newEncoding } = (oldSpec as any).encoding;
-        newSpec.encoding = newEncoding;
-      } else {
-        // Set colour in encoding
-        newSpec.encoding = { ...(oldSpec as any).encoding };
-        newSpec.encoding.color = {
-          field: colourField,
-          scale: { scheme: 'spectral' },
-        };
-      }
-      return newSpec as TopLevelSpec;
-    };
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setColorInSpecToValue(oldSpec, colourField);
 
     setSpec(setColorInSpec);
   }, [colourField]);
+
+  useEffect(() => {
+    const addBinningToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (binMode === 'auto') {
+        newSpec.encoding.x.bin = true;
+      } else if (binMode === 'fixed') {
+        newSpec.encoding.x.bin = { step: stepSize };
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Unknown bin mode ${binMode}`);
+      };
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(addBinningToSpec);
+  }, [binMode, stepSize]);
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
@@ -149,6 +153,32 @@ function Histogram(props: PlotTypeProps) {
             categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
           }
         </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
+        <InputLabel id="binning-auto-select-label">Binning</InputLabel>
+        <Select
+          labelId="binning-auto-select-label"
+          id="binning-auto-select"
+          value={binMode}
+          label="Binning"
+          onChange={(e) => setBinMode(e.target.value)}
+        >
+          <MenuItem value="auto">Auto</MenuItem>
+          <MenuItem value="fixed">Fixed</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          disabled={binMode !== 'fixed'}
+          sx={{ padding: 0 }}
+          type="number"
+          id="date-bin-size-select"
+          label="Bin Size"
+          size="small"
+          inputProps={{ min: 1, step: 'any' }}
+          value={stepSize}
+          onChange={(e) => setStepSize(parseFloat(e.target.value, 10))}
+        />
       </FormControl>
     </Box>
   );
