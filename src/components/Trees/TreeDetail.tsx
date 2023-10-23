@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -177,7 +177,7 @@ function TreeDetail() {
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
       } else {
-        setErrorMsg(`Tree ${analysisId} could not be loaded`);
+        setErrorMsg('No trees have been uploaded for this anylysis');
       }
       setIsTreeLoading(false);
     };
@@ -192,7 +192,12 @@ function TreeDetail() {
       return <Typography>Loading tree</Typography>;
     }
     if (errorMsg && errorMsg.length > 0) {
-      return <Alert severity="error">{errorMsg}</Alert>;
+      return (
+        <Alert severity="warning">
+          <AlertTitle>Warning</AlertTitle>
+          {errorMsg}
+        </Alert>
+      );
     }
 
     if (tree) {
