@@ -54,7 +54,7 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [error, setError] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
@@ -180,9 +180,9 @@ function TreeDetail() {
       } else {
         setErrorMsg(treeResponse.message);
         if (treeResponse.type === 'Not Found') {
-          setError(false);
+          setError('warning');
         } else {
-          setError(true);
+          setError('error');
         }
       }
       setIsTreeLoading(false);
@@ -198,7 +198,7 @@ function TreeDetail() {
       return <Typography>Loading tree</Typography>;
     }
     if (errorMsg && errorMsg.length > 0) {
-      return (error ? (
+      return (error === 'error' ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMsg}
