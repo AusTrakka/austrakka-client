@@ -13,12 +13,14 @@ import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 
-const plotComponents = [ClusterTimeline, EpiCurve, BarChart, Histogram, HeatMap, Custom];
-
-const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {};
-plotComponents.forEach(component => {
-  plotTypes[component.name] = component;
-});
+const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
+  'ClusterTimeline': ClusterTimeline,
+  'EpiCurve': EpiCurve,
+  'BarChart': BarChart,
+  'Histogram': Histogram,
+  'HeatMap': HeatMap,
+  'Custom': Custom,
+};
 
 function PlotDetail() {
   // Note that if the project abbrev is wrong in the URL, there will be no effect
