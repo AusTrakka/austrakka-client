@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -54,6 +54,7 @@ function TreeDetail() {
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
@@ -177,7 +178,12 @@ function TreeDetail() {
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
       } else {
-        setErrorMsg(`Tree ${analysisId} could not be loaded`);
+        setErrorMsg(treeResponse.message);
+        if (treeResponse.type === 'Not Found') {
+          setError('warning');
+        } else {
+          setError('error');
+        }
       }
       setIsTreeLoading(false);
     };
@@ -192,7 +198,18 @@ function TreeDetail() {
       return <Typography>Loading tree</Typography>;
     }
     if (errorMsg && errorMsg.length > 0) {
-      return <Alert severity="error">{errorMsg}</Alert>;
+      return (error === 'error' ? (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {errorMsg}
+        </Alert>
+      ) : (
+        <Alert severity="warning">
+          <AlertTitle>Warning</AlertTitle>
+          {errorMsg}
+        </Alert>
+      )
+      );
     }
 
     if (tree) {

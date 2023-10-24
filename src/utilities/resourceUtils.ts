@@ -10,6 +10,7 @@ export interface ResponseObject {
   messages?: string[],
   headers?: Headers,
   error?: any,
+  type: string;
 }
 // Constants
 const genericErrorMessage = 'There was an error, please report this to an AusTrakka admin.';
@@ -38,7 +39,8 @@ async function callGET(url:string, token : string) {
     .then((response) => response.json().then((data) => ({
       data,
       headers: response.headers,
-      statusOk: response.ok, // response.ok returns true if the status property is 200-299
+      statusOk: response.ok,
+      statusText: response.statusText, // response.ok returns true if the status property is 200-299
     })))
     .then((resp) => {
       if (resp.data.data !== null && resp.statusOk) {
@@ -51,6 +53,7 @@ async function callGET(url:string, token : string) {
       }
       return {
         status: 'Error',
+        type: resp.statusText,
         message: resp.data.messages[0]?.ResponseMessage || genericErrorMessage,
       };
     })
