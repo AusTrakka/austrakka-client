@@ -40,6 +40,7 @@ function Custom(props: PlotTypeProps) {
       } else {
         // eslint-disable-next-line no-console
         console.error(response.message);
+        setPlotErrorMsg('Unable to load project fields');
       }
     };
 
@@ -48,7 +49,7 @@ function Custom(props: PlotTypeProps) {
       tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot, token, tokenLoading]);
+  }, [plot, token, tokenLoading, setPlotErrorMsg]);
 
   return (
     <VegaDataPlot
