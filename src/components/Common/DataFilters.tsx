@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
@@ -9,6 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
 import { MetaDataColumn } from '../../types/dtos';
+import FilteringOperators from '../../constants/filteringOperators';
 
 // Custom filters
 // TODO: Move custom fucntion location
@@ -67,44 +67,44 @@ const initialFilterState = {
 // TODO: Move below
 // TODO: Create enum for below values
 const stringConditions = [
-  { key: '@=', value: '@=', name: 'Contains' },
-  { key: '!@=', value: '!@=', name: 'Doesn\'t Contain' },
-  { key: '=', value: '=', name: 'Equals' },
-  { key: '!=', value: '!=', name: 'Doesn\'t Equal' },
-  { key: 'starts', value: 'starts', name: 'Starts With' },
-  { key: 'ends', value: 'ends', name: 'Ends With' },
-  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { value: FilteringOperators.CONTAINS, name: 'Contains' },
+  { value: FilteringOperators.NOT_CONTAINS, name: 'Doesn\'t Contain' },
+  { value: FilteringOperators.EQUALS, name: 'Equals' },
+  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t Equal' },
+  { value: FilteringOperators.STARTS_WITH, name: 'Starts With' },
+  { value: FilteringOperators.ENDS_WITH, name: 'Ends With' },
+  { value: FilteringOperators.NULL, name: 'Is null or empty' },
+  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 const dateConditions = [
-  { key: '=', value: '=', name: 'On' },
-  { key: '<=', value: '<=', name: 'On and before' },
-  { key: '>=', value: '>=', name: 'On and after' },
-  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { value: FilteringOperators.EQUALS, name: 'On' },
+  { value: FilteringOperators.LESS_OR_EQUAL, name: 'On and before' },
+  { value: FilteringOperators.GREATER_OR_EQUAL, name: 'On and after' },
+  { value: FilteringOperators.NULL, name: 'Is null or empty' },
+  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 const numberConditions = [
-  { key: '=', value: '=', name: 'Equals' },
-  { key: '!=', value: '!=', name: 'Doesn\'t equal' },
-  { key: '<', value: '<', name: 'Less than' },
-  { key: '>', value: '>', name: 'Greater than' },
-  { key: '<=', value: '<=', name: 'Less than or equal to' },
-  { key: '>=', value: '>=', name: 'Greater than or equal to' },
-  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { value: FilteringOperators.EQUALS, name: 'Equals' },
+  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t equal' },
+  { value: FilteringOperators.LESS, name: 'Less than' },
+  { value: FilteringOperators.GREATER, name: 'Greater than' },
+  { value: FilteringOperators.LESS_OR_EQUAL, name: 'Less than or equal to' },
+  { value: FilteringOperators.GREATER_OR_EQUAL, name: 'Greater than or equal to' },
+  { value: FilteringOperators.NULL, name: 'Is null or empty' },
+  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 const booleanConditions = [
-  { key: '=', value: '=', name: 'Equals' },
-  { key: '!=', value: '!=', name: 'Doesn\'t Equal' },
-  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { value: FilteringOperators.EQUALS, name: 'Equals' },
+  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t Equal' },
+  { value: FilteringOperators.NULL, name: 'Is null or empty' },
+  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 
 const customFilterFunctions = [
-  { conditionValue: '==NULL', function: isNullOrEmptyFn },
-  { conditionValue: '!=NULL', function: isNotNullOrEmptyFn },
-  { conditionValue: '@=', function: containsFn },
-  { conditionValue: '!@=', function: doesNotContainFn },
+  { conditionValue: FilteringOperators.NULL, function: isNullOrEmptyFn },
+  { conditionValue: FilteringOperators.NOT_NULL, function: isNotNullOrEmptyFn },
+  { conditionValue: FilteringOperators.CONTAINS, function: containsFn },
+  { conditionValue: FilteringOperators.NOT_CONTAINS, function: doesNotContainFn },
 ];
 
 const shake = keyframes`
@@ -118,7 +118,7 @@ const shake = keyframes`
 const nullOrEmptyString = 'null-or-empty';
 
 function DataFilters(props: DataFiltersProps) {
-  const { data, fields, filteredData, setFilteredData } = props;
+  const { data, fields, setFilteredData } = props;
   const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
   const [sampleCount, setSampleCount] = useState();
   const [totalSamples, setTotalSamples] = useState();
@@ -155,19 +155,19 @@ function DataFilters(props: DataFiltersProps) {
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
         setSelectedFieldType(FieldTypes.DATE);
-        defaultCondition = '>=';
+        defaultCondition = FilteringOperators.GREATER_OR_EQUAL;
       } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
         setConditions(numberConditions);
         setSelectedFieldType(FieldTypes.NUMBER);
-        defaultCondition = '=';
+        defaultCondition = FilteringOperators.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
         setSelectedFieldType(FieldTypes.BOOLEAN);
-        defaultCondition = '=';
+        defaultCondition = FilteringOperators.EQUALS;
       } else {
         setConditions(stringConditions);
         setSelectedFieldType(FieldTypes.STRING);
-        defaultCondition = '=';
+        defaultCondition = FilteringOperators.EQUALS;
       }
       setNullOrEmptyFlag(false);
       setNewFilter({
@@ -260,32 +260,31 @@ function DataFilters(props: DataFiltersProps) {
             value: undefined,
           });
         } else if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
-          // TODO: Date filtering logic
           const date = filter.value;
           const dayStart = date.$d.toISOString();
           const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
-          if (filter.condition === '>=') {
+          if (filter.condition === FilteringOperators.GREATER_OR_EQUAL) {
             filters.push({
               field: filter.field,
               type: filter.condition,
               value: dayStart,
             });
-          } else if (filter.condition === '<=') {
+          } else if (filter.condition === FilteringOperators.LESS_OR_EQUAL) {
             filters.push({
               field: filter.field,
               type: filter.condition,
               value: dayEnd,
             });
-          } else if (filter.condition === '=') {
+          } else if (filter.condition === FilteringOperators.EQUALS) {
             filters.push(
               {
                 field: filter.field,
-                type: '<',
+                type: FilteringOperators.LESS,
                 value: dayEnd,
               },
               {
                 field: filter.field,
-                type: '>',
+                type: FilteringOperators.GREATER,
                 value: dayStart,
               },
             );
@@ -313,7 +312,7 @@ function DataFilters(props: DataFiltersProps) {
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
-      case 'date':
+      case FieldTypes.DATE:
         return (
           <DatePicker
             label="Value"
@@ -328,7 +327,7 @@ function DataFilters(props: DataFiltersProps) {
             disabled={nullOrEmptyFlag}
           />
         );
-      case 'boolean':
+      case FieldTypes.BOOLEAN:
         return (
           <>
             <InputLabel id="condition-simple-select-label">Value</InputLabel>
