@@ -28,15 +28,15 @@ export const sequential: ColorScheme = {
   blueGreen: d3.scaleSequential(d3.interpolateBuGn),
   bluePurple: d3.scaleSequential(d3.interpolateBuPu),
   greenBlue: d3.scaleSequential(d3.interpolateYlGnBu),
-  orangeRed: d3.scaleSequential(d3.interpolateYlOrRd),
-  purpleBlue: d3.scaleSequential(d3.interpolateYlGnBu),
-  purpleBlueGreen: d3.scaleSequential(d3.interpolateYlGnBu),
-  purpleRed: d3.scaleSequential(d3.interpolateYlOrRd),
+  orangeRed: d3.scaleSequential(d3.interpolateOrRd),
+  purpleBlue: d3.scaleSequential(d3.interpolatePuBu),
+  purpleBlueGreen: d3.scaleSequential(d3.interpolatePuBuGn),
+  purpleRed: d3.scaleSequential(d3.interpolatePuRd),
   redPurple: d3.scaleSequential(d3.interpolateRdPu),
   yellowGreen: d3.scaleSequential(d3.interpolateYlGn),
   yellowOrangeBrown: d3.scaleSequential(d3.interpolateYlOrBr),
   yellowOrangeRed: d3.scaleSequential(d3.interpolateYlOrRd),
-  pinkYellowGreen: d3.scaleSequential(d3.interpolateYlGn),
+  pinkYellowGreen: d3.scaleSequential(d3.interpolatePiYG),
 };
 
 // External Color Schemes
