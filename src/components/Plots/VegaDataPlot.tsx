@@ -8,7 +8,7 @@ import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters from '../Common/DataFilters';
+import DataFilters from '../DataFilters/DataFilters';
 import { MetaDataColumn } from '../../types/dtos';
 
 interface VegaDataPlotProps {

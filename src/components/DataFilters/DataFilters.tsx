@@ -10,46 +10,8 @@ import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/
 import FieldTypes from '../../constants/fieldTypes';
 import { MetaDataColumn } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
-
-// TODO: date filtering incosistent if typed vs selected
-
-// Custom filters
-// TODO: Move custom funciton location
-function isNullOrEmptyFn(records: any, filterParams: any) {
-  const { field } = filterParams;
-  if (records[field] === '' || records[field] === null) {
-    return true;
-  }
-  return false;
-}
-function isNotNullOrEmptyFn(records: any, filterParams: any) {
-  const { field } = filterParams;
-  if (records[field] !== '' && records[field] !== null) {
-    return true;
-  }
-  return false;
-}
-function containsFn(records: any, filterParams: any) {
-  const { field, value } = filterParams;
-  if (records[field].toLowerCase().includes(value.toLowerCase())) {
-    return true;
-  }
-  return false;
-}
-function doesNotContainFn(records: any, filterParams: any) {
-  const { field, value } = filterParams;
-  if (!records[field].toLowerCase().includes(value.toLowerCase())) {
-    return true;
-  }
-  return false;
-}
-
-const customFilterFunctions = [
-  { operator: FilteringOperators.NULL, function: isNullOrEmptyFn },
-  { operator: FilteringOperators.NOT_NULL, function: isNotNullOrEmptyFn },
-  { operator: FilteringOperators.CONTAINS, function: containsFn },
-  { operator: FilteringOperators.NOT_CONTAINS, function: doesNotContainFn },
-];
+import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
+import { customFilterFunctions } from './customFilterFns';
 
 interface DataFilter {
   shakeElement?: boolean,
@@ -72,41 +34,6 @@ const initialFilterState = {
   fieldType: '',
   shakeElement: false,
 };
-
-// TODO: Move below
-const stringConditions = [
-  { value: FilteringOperators.CONTAINS, name: 'Contains' },
-  { value: FilteringOperators.NOT_CONTAINS, name: 'Doesn\'t Contain' },
-  { value: FilteringOperators.EQUALS, name: 'Equals' },
-  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t Equal' },
-  { value: FilteringOperators.STARTS_WITH, name: 'Starts With' },
-  { value: FilteringOperators.ENDS_WITH, name: 'Ends With' },
-  { value: FilteringOperators.NULL, name: 'Is null or empty' },
-  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
-];
-const dateConditions = [
-  { value: FilteringOperators.EQUALS, name: 'On' },
-  { value: FilteringOperators.LESS_OR_EQUAL, name: 'On and before' },
-  { value: FilteringOperators.GREATER_OR_EQUAL, name: 'On and after' },
-  { value: FilteringOperators.NULL, name: 'Is null or empty' },
-  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
-];
-const numberConditions = [
-  { value: FilteringOperators.EQUALS, name: 'Equals' },
-  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t equal' },
-  { value: FilteringOperators.LESS, name: 'Less than' },
-  { value: FilteringOperators.GREATER, name: 'Greater than' },
-  { value: FilteringOperators.LESS_OR_EQUAL, name: 'Less than or equal to' },
-  { value: FilteringOperators.GREATER_OR_EQUAL, name: 'Greater than or equal to' },
-  { value: FilteringOperators.NULL, name: 'Is null or empty' },
-  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
-];
-const booleanConditions = [
-  { value: FilteringOperators.EQUALS, name: 'Equals' },
-  { value: FilteringOperators.NOT_EQUAL, name: 'Doesn\'t Equal' },
-  { value: FilteringOperators.NULL, name: 'Is null or empty' },
-  { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
-];
 
 const shake = keyframes`
   0% { transform: translateY(0) }
