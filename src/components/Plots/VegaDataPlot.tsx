@@ -95,7 +95,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         <DataFilters
           data={data}
           fields={filterFields}
-          filteredData={filteredData}
           setFilteredData={setFilteredData}
         />
       </Grid>

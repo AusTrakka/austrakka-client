@@ -51,7 +51,6 @@ interface DataFilter {
 
 interface DataFiltersProps {
   data: any
-  filteredData: any
   setFilteredData: any
   fields: any
 }
