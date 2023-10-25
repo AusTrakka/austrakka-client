@@ -11,11 +11,14 @@ import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUti
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
+  const { token, tokenLoading } = useApi();
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
 
   // Set spec on load
@@ -30,7 +33,7 @@ function Custom(props: PlotTypeProps) {
   useEffect(() => {
     const updateFields = async () => {
       // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
-      const response = await getDisplayFields(plot!.projectGroupId) as ResponseObject;
+      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
         // We can't know which fields the custom spec needs; retrieve all
@@ -39,13 +42,16 @@ function Custom(props: PlotTypeProps) {
       } else {
         // eslint-disable-next-line no-console
         console.error(response.message);
+        setPlotErrorMsg('Unable to load project fields');
       }
     };
 
-    if (plot) {
+    if (plot &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       updateFields();
     }
-  }, [plot]);
+  }, [plot, token, tokenLoading, setPlotErrorMsg]);
 
   return (
     <VegaDataPlot

@@ -33,3 +33,30 @@ export const setFieldInSpec
   newSpec['encoding'][field]['field'] = value;
   return newSpec as TopLevelSpec;
 };
+
+export const legendSpec = {
+  orient: 'bottom',
+  columns: 6,
+  symbolLimit: 0, // no limit
+};
+
+// Does not use generic setFieldInSpec, as we handle 'none'
+export const setColorInSpecToValue =
+    (oldSpec: TopLevelSpec | null, colourField: string): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (colourField === 'none') {
+        // Remove colour from encoding
+        const { color, ...newEncoding } = (oldSpec as any).encoding;
+        newSpec.encoding = newEncoding;
+      } else {
+        // Set colour in encoding
+        newSpec.encoding = { ...(oldSpec as any).encoding };
+        newSpec.encoding.color = {
+          field: colourField,
+          scale: { scheme: 'spectral' },
+          legend: legendSpec,
+        };
+      }
+      return newSpec as TopLevelSpec;
+    };

@@ -18,15 +18,19 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
+import { useNavigate } from 'react-router-dom';
 import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { useApi } from '../../app/ApiContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
+  groupName: string | undefined,
 }
 // SAMPLE TABLE
 // Transitionary sampel table component that contains repeat code from both
@@ -38,7 +42,7 @@ interface SamplesProps {
 // 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
-  const { groupContext } = props;
+  const { groupContext, groupName } = props;
   const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
@@ -65,10 +69,12 @@ function SampleTable(props: SamplesProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function getFields() {
-      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!);
+      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!, token);
       if (filterFieldsResponse.status === 'Success') {
         setDisplayFields(filterFieldsResponse.data);
       } else {
@@ -81,7 +87,7 @@ function SampleTable(props: SamplesProps) {
       }
     }
     async function getTotalSamplesOverall() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!);
+      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!, token);
       if (totalSamplesResponse.status === 'Success') {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
@@ -94,12 +100,14 @@ function SampleTable(props: SamplesProps) {
         setIsSamplesLoading(false);
       }
     }
-    if (groupContext !== undefined) {
+    if (groupContext !== undefined &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE) {
       setIsSamplesLoading(true);
       getFields();
       getTotalSamplesOverall();
     }
-  }, [groupContext]);
+  }, [groupContext, token, tokenLoading]);
 
   useEffect(
     () => {
@@ -145,7 +153,7 @@ function SampleTable(props: SamplesProps) {
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
         if (samplesResponse.status === 'Success') {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -162,7 +170,9 @@ function SampleTable(props: SamplesProps) {
           setSampleList([]);
         }
       }
-      if (sampleTableColumns.length > 0) {
+      if (sampleTableColumns.length > 0 &&
+        tokenLoading !== LoadingState.LOADING &&
+        tokenLoading !== LoadingState.IDLE) {
         getSamplesList();
       } else {
         setSampleList([]);
@@ -170,7 +180,7 @@ function SampleTable(props: SamplesProps) {
       }
     },
     [groupContext, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString, sorting],
+      sampleTableColumns, queryString, sorting, token, tokenLoading],
   );
 
   const generateFilename = () => {
@@ -200,6 +210,18 @@ function SampleTable(props: SamplesProps) {
     [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
   );
 
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original;
+    if (SAMPLE_ID_FIELD in selectedRow) {
+      const sampleId = selectedRow[SAMPLE_ID_FIELD];
+      const url = `/records/${sampleId}`;
+      navigate(url);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
+    }
+  };
+
   // GET SAMPLES - not paginated
   const getExportData = async () => {
     setExportCSVStatus(LoadingState.LOADING);
@@ -209,7 +231,7 @@ function SampleTable(props: SamplesProps) {
       groupContext: `${groupContext!}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(searchParams.toString());
+    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {
@@ -315,6 +337,12 @@ function SampleTable(props: SamplesProps) {
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000],
         }}
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         onPaginationChange={setSamplesPagination}
         state={{
           pagination: samplesPagination,

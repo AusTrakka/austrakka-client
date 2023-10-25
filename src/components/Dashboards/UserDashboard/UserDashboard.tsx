@@ -3,6 +3,7 @@ import React from 'react';
 import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
+import { useApi } from '../../../app/ApiContext';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/ProjectsTotal/ProjectsTotal';
@@ -11,6 +12,7 @@ import { updateTimeFilter, updateTimeFilterObject } from './userDashboardSlice';
 import { fetchUserOverview } from '../../Widgets/UserOverview/userOverviewSlice';
 import { fetchProjectsTotal } from '../../Widgets/ProjectsTotal/projectsTotalSlice';
 import { fetchPhessIdOverall } from '../../Widgets/PhessIdOverall/phessIdOverallSlice';
+import LoadingState from '../../../constants/loadingState';
 
 interface UserDashboardProps {
 }
@@ -18,6 +20,7 @@ interface UserDashboardProps {
 function DateSelector(props: any) {
   const dispatch = useAppDispatch();
   const { timeFilter } = useAppSelector((state) => state.userDashboardState);
+  const { token, tokenLoading } = useApi();
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
@@ -42,9 +45,12 @@ function DateSelector(props: any) {
     dispatch(updateTimeFilterObject(filterObject));
 
     // Dispatch widget async thunks
-    dispatch(fetchUserOverview());
-    dispatch(fetchProjectsTotal());
-    dispatch(fetchPhessIdOverall());
+    if (tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING) {
+      dispatch(fetchUserOverview(token));
+      dispatch(fetchProjectsTotal(token));
+      dispatch(fetchPhessIdOverall(token));
+    }
   };
 
   return (

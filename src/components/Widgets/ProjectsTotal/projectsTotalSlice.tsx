@@ -20,12 +20,12 @@ const initialState: ProjectsTotalState = {
 export const fetchProjectsTotal = createAsyncThunk(
   'counts/fetchProjectsTotal',
   async (
-    _: void,
+    token: string,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
-    const response = await getUserDashboardProjects(filterString);
+    const response = await getUserDashboardProjects(token, filterString);
     if (response.status === 'Success') {
       return fulfillWithValue(response);
     }

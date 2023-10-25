@@ -4,6 +4,7 @@ import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchQcStatus, selectAggregatedQcStatus } from './qcStatusSlice';
 import LoadingState from '../../../constants/loadingState';
+import { useApi } from '../../../app/ApiContext';
 
 const columns:MRT_ColumnDef<any>[] = [
   {
@@ -26,15 +27,20 @@ export default function QcStatus(props: any) {
   // Get initial state from store
   const { loading, data } = useAppSelector((state) => state.qcStatusState);
   const { timeFilter } = useAppSelector((state) => state.projectDashboardState);
+  const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedQcStatus);
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId, timeFilter };
-    if (loading === 'idle') {
+    const dispatchProps = { groupId, token, projectId, timeFilter };
+    if (loading === 'idle' &&
+        tokenLoading !== LoadingState.IDLE &&
+        tokenLoading !== LoadingState.LOADING
+    ) {
       dispatch(fetchQcStatus(dispatchProps));
     }
-  }, [loading, dispatch, timeFilter, projectId, groupId]);
+  }, [loading, dispatch, timeFilter, projectId,
+    groupId, token, tokenLoading]);
 
   return (
     <Box>

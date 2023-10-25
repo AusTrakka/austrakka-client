@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
+import { useApi } from '../../../app/ApiContext';
 
 const stFieldName = 'ST';
 
@@ -125,15 +126,19 @@ export default function StCounts(props: any) {
   const { data, loading } = useAppSelector(selectStCounts);
   const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
+  const { token, tokenLoading } = useApi();
 
   const stCountsDispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { groupId, projectId, timeFilter };
-    if (loading === 'idle') {
+    const dispatchProps = { groupId, token, projectId, timeFilter };
+    if (loading === 'idle' &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING
+    ) {
       stCountsDispatch(fetchStCounts(dispatchProps));
     }
-  }, [loading, stCountsDispatch, timeFilter, projectId, groupId]);
+  }, [loading, stCountsDispatch, timeFilter, projectId, groupId, token, tokenLoading]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;

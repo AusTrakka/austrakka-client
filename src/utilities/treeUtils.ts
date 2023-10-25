@@ -1,39 +1,123 @@
-import { PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { AnalysisResultMetadata } from '../types/dtos';
+/* eslint-disable no-plusplus */
+import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
+import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
 
-// Convert metadate into phylocanvas format
-export default function mapMetadataToPhylocanvas(dataArray: AnalysisResultMetadata[]) {
-  let colorIndex = 0;
-  const valueColorMap: Record<string, string> = {};
+export default function mapMetadataToPhylocanvas(
+  dataArray: AnalysisResultMetadata[],
+  fieldInformation: DisplayField[],
+) {
+  // A dictionary to store the colour palettes for each metadata column
+  const metadataColumnPalettes: PhylocanvasLegends = {};
 
-  function getUniqueColor(value: string): string {
-    if (!value) {
-      return 'rgba(0,0,0,0)';
+  function generateSequentialColourPalette(baseColour: any, numberOfColours: number) {
+    const colours = [];
+    const baseHue = baseColour.h;
+    const hueDifference = 360 / numberOfColours;
+
+    for (let i = 0; i < numberOfColours; i++) {
+      // Calculate the hue for each colour with larger gaps for distinctiveness
+      // (whatever you times hueDifference with is the gap)
+      const hue = (baseHue + i * (hueDifference * 2)) % 360;
+
+      // Create an HSL colour string with fixed saturation and lightness values
+      const colour = `hsl(${hue}, ${baseColour.s}%, ${baseColour.l}%)`;
+
+      colours.push(colour);
     }
-    // Check if value was already mapped to a color
-    if (valueColorMap[value]) {
-      return valueColorMap[value];
+
+    return colours;
+  }
+
+  function hashCode(str : string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      // eslint-disable-next-line no-bitwise
+      hash = (hash << 5) - hash + char;
+    }
+    return Math.abs(hash);
+  }
+
+  function generateDistinctColourPalette(baseColour : any, numberOfColours: number) {
+    const colours = [];
+    const goldenAngle = 137.508; // Golden angle in degrees
+
+    for (let i = 0; i < numberOfColours; i++) {
+      const hue = baseColour.h + ((i * goldenAngle) % 360); // Use the golden angle to increment hue
+      const colour = `hsl(${hue}, ${baseColour.s}%, ${baseColour.l}%)`;
+      colours.push(colour);
     }
 
-    // Generate a unique color (here we use HSL colors for simplicity)
-    const color = `hsl(${(colorIndex * 15) % 360}, 100%, 50%)`;
+    return colours;
+  }
 
-    // Increment the color index and store the color mapping
-    colorIndex += 1;
-    valueColorMap[value] = color;
+  function getUniqueColour(
+    value: string,
+    metadataColumn: string,
+    fieldInfo: string | undefined,
+  ): string {
+    // Check if the palette for the current metadata column exists, or generate one
+    if (!metadataColumnPalettes[metadataColumn]) {
+      // Define the base colour for the current metadata column
+      const stringHash = hashCode(metadataColumn);
+      const baseColour = {
+        h: stringHash % 360, // Random hue value between 0 and 359
+        s: 60, // Adjust saturation as needed
+        l: 50, // Adjust lightness as needed
+      };
 
-    return color;
+      // Check if the value is an integer (numeric string)z
+      const isNumericString = fieldInfo === 'number' || fieldInfo === 'float';
+
+      const values = dataArray.flatMap((data) =>
+        data.metadataValues
+          .filter((metadataValue) => metadataValue.key === metadataColumn)
+          .map((metadataValue) => metadataValue.value));
+
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      const uniqueValues = [...new Set(values)]
+        .sort(collator.compare);
+
+      const colours = isNumericString ?
+        generateSequentialColourPalette(baseColour, uniqueValues.length) :
+        generateDistinctColourPalette(baseColour, uniqueValues.length);
+
+      metadataColumnPalettes[metadataColumn] = {};
+      uniqueValues.forEach((val, index) => {
+        metadataColumnPalettes[metadataColumn][val] = colours[index];
+      });
+    }
+
+    const palette = metadataColumnPalettes[metadataColumn];
+
+    const colour = palette[value] || 'rgba(0,0,0,0)';
+
+    return colour;
   }
 
   const result: PhylocanvasMetadata = {};
   for (const data of dataArray) {
     result[data.sampleName] = {};
+
     for (const metadataValue of data.metadataValues) {
+      const field = fieldInformation.find(di => di.columnName === metadataValue.key);
+      const uColour = field?.canVisualise ?
+        getUniqueColour(
+          metadataValue.value,
+          metadataValue.key,
+          field?.primitiveType,
+        )
+        : 'rgba(0,0,0,0)'; // this black should never be used as the field is not visualisable
       result[data.sampleName][metadataValue.key] = {
-        colour: getUniqueColor(metadataValue.value),
-        label: metadataValue.value,
+        colour: uColour,
+        label: metadataValue.value ?? '',
       };
     }
   }
-  return result;
+
+  const metadataAndLegends = {
+    result,
+    legends: metadataColumnPalettes,
+  };
+  return metadataAndLegends;
 }

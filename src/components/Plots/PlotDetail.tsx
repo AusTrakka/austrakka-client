@@ -5,9 +5,22 @@ import { Plot } from '../../types/dtos';
 import { ResponseObject, getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
+import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
+import HeatMap from './PlotTypes/HeatMap';
+import Histogram from './PlotTypes/Histogram';
+import PlotTypeProps from '../../types/plottypeprops.interface';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
 
-const KNOWN_PLOT_TYPES = ['ClusterTimeline', 'EpiCurve', 'Custom'];
+const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
+  'ClusterTimeline': ClusterTimeline,
+  'EpiCurve': EpiCurve,
+  'BarChart': BarChart,
+  'Histogram': Histogram,
+  'HeatMap': HeatMap,
+  'Custom': Custom,
+};
 
 function PlotDetail() {
   // Note that if the project abbrev is wrong in the URL, there will be no effect
@@ -16,11 +29,12 @@ function PlotDetail() {
   const [plot, setPlot] = useState<Plot | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
   useEffect(() => {
     // Get plot details, including plot type
     const getPlot = async () => {
-      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!);
+      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
       if (plotResponse.status === 'Success') {
         setPlot(plotResponse.data as Plot);
       } else {
@@ -28,13 +42,14 @@ function PlotDetail() {
       }
       setIsPlotLoading(false);
     };
-
-    getPlot();
-  }, [plotAbbrev]);
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getPlot();
+    }
+  }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
     if (plot) {
-      if (!KNOWN_PLOT_TYPES.includes(plot!.plotType)) {
+      if (typeof plotTypes[plot!.plotType] === 'undefined') {
         setErrorMsg(`Plot type ${plot!.plotType} cannot be rendered`);
       }
     }
@@ -51,33 +66,11 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    // Could use React.createElement instead of a switch statement
-    switch (plot!.plotType) {
-      case 'ClusterTimeline':
-        return (
-          <ClusterTimeline
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      case 'EpiCurve':
-        return (
-          <EpiCurve
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      case 'Custom':
-        return (
-          <Custom
-            plot={plot}
-            setPlotErrorMsg={setErrorMsg}
-          />
-        );
-      default:
-        // eslint-disable-next-line react/jsx-no-useless-fragment
-        return <></>;
-    }
+    if (typeof plotTypes[plot!.plotType] === 'undefined') { return null; }
+    return React.createElement(
+      plotTypes[plot!.plotType],
+      { plot, setPlotErrorMsg: setErrorMsg },
+    );
   };
 
   return (
