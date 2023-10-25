@@ -5,13 +5,16 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ReactTabulator } from 'react-tabulator';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateValidationError } from '@mui/x-date-pickers';
 import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
 import { MetaDataColumn } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
 
+// TODO: date filtering incosistent if typed vs selected
+
 // Custom filters
-// TODO: Move custom fucntion location
+// TODO: Move custom funciton location
 function isNullOrEmptyFn(records: any, filterParams: any) {
   const { field } = filterParams;
   if (records[field] === '' || records[field] === null) {
@@ -40,6 +43,13 @@ function doesNotContainFn(records: any, filterParams: any) {
   }
   return false;
 }
+
+const customFilterFunctions = [
+  { operator: FilteringOperators.NULL, function: isNullOrEmptyFn },
+  { operator: FilteringOperators.NOT_NULL, function: isNotNullOrEmptyFn },
+  { operator: FilteringOperators.CONTAINS, function: containsFn },
+  { operator: FilteringOperators.NOT_CONTAINS, function: doesNotContainFn },
+];
 
 interface DataFilter {
   shakeElement?: boolean,
@@ -98,13 +108,6 @@ const booleanConditions = [
   { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 
-const customFilterFunctions = [
-  { conditionValue: FilteringOperators.NULL, function: isNullOrEmptyFn },
-  { conditionValue: FilteringOperators.NOT_NULL, function: isNotNullOrEmptyFn },
-  { conditionValue: FilteringOperators.CONTAINS, function: containsFn },
-  { conditionValue: FilteringOperators.NOT_CONTAINS, function: doesNotContainFn },
-];
-
 const shake = keyframes`
   0% { transform: translateY(0) }
   25% { transform: translateY(5px) }
@@ -130,6 +133,7 @@ function DataFilters(props: DataFiltersProps) {
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [tabulatorFilters, setTabulatorFilters] = useState([]);
+  const [dateError, setDateError] = useState<DateValidationError>(null);
 
   useEffect(() => {
     setSampleCount(data.length);
@@ -146,6 +150,7 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
+      setDateError(null);
       const targetFieldProps = fields.find((field: MetaDataColumn) =>
         field.columnName === event.target.value);
 
@@ -203,7 +208,7 @@ function DataFilters(props: DataFiltersProps) {
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const isEmpty = Object.values(newFilter).some((x) => x === null || x === '');
-    if (!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) {
+    if ((!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) && dateError === null) {
       let doesExist = false;
       for (let i = 0; i < filterList.length; i += 1) {
         const filter = filterList[i];
@@ -250,7 +255,7 @@ function DataFilters(props: DataFiltersProps) {
     if (filterList.length !== 0) {
       filterList.forEach((filter) => {
         // If filter condition requires a custom filter function
-        const custom = customFilterFunctions.filter(e => e.conditionValue === filter.condition);
+        const custom = customFilterFunctions.filter(e => e.operator === filter.condition);
         if (custom.length > 0) {
           filters.push({
             field: custom[0].function,
@@ -315,6 +320,7 @@ function DataFilters(props: DataFiltersProps) {
           <DatePicker
             label="Value"
             value={newFilter.value === '' ? null : newFilter.value}
+            onError={(newError) => setDateError(newError)}
             onChange={(newValue) => handleFilterDateChange(newValue)}
             format="YYYY-MM-DD"
             slotProps={{
@@ -323,6 +329,7 @@ function DataFilters(props: DataFiltersProps) {
               },
             }}
             disabled={nullOrEmptyFlag}
+            disableFuture
           />
         );
       case FieldTypes.BOOLEAN:
