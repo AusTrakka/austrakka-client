@@ -35,6 +35,7 @@ function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
@@ -59,6 +60,7 @@ function Histogram(props: PlotTypeProps) {
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
+        setDisplayFields(fields);
         const localNumericFields = fields
           .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
           .map(field => field.columnName);
@@ -190,6 +192,7 @@ function Histogram(props: PlotTypeProps) {
         spec={spec}
         dataGroupId={plot?.projectGroupId}
         fieldsToRetrieve={fieldsToRetrieve}
+        displayFields={displayFields}
         setPlotErrorMsg={setPlotErrorMsg}
       />
     </>
