@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React from 'react';
 import FormControl from '@mui/material/FormControl';
 import Typography from '@mui/material/Typography';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -73,11 +73,11 @@ export default function ColorSchemeSelector({ color, onColourChange }: SelectorP
     <FormControl variant="standard" sx={{ marginX: 1, marginY: 1, minWidth: 220 }}>
       <Typography variant="caption">Color Map</Typography>
       <Select
-        labelId="tree-select-colourmap"
-        id="tree-colourmap"
+        labelId="tree-select-colour-scheme"
+        id="tree-colour-scheme"
         value={color}
         onChange={(e) => handleSchemeChange(e)}
-        label="Colour Map"
+        label="Colour Scheme"
         autoWidth
       >
         {Object.keys(allColorSchemes).map((schemeName) => (
