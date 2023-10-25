@@ -10,32 +10,38 @@ import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/
 import FieldTypes from '../../constants/fieldTypes';
 import { MetaDataColumn } from '../../types/dtos';
 
-// equal (=)
-// not equal (!=)
-// like (like)
-// keywords (keywords)
-// starts with (starts)
-// ends with (ends)
-// less than (<)
-// less than or equal to (<=)
-// greater than (>)
-// greater than or equal to (>=)
-// in array (in)
-// regex (regex)
-
-// Custom filter functions needed:
-// - contains/doesn't contain
-// - is null or empty/is not null or empty
-
-// Example custom filter
-function customFilter(records: any, filterParams: any) {
-  if (records.Seq_ID === 'Sample21') {
+// Custom filters
+// TODO: Move custom fucntion location
+function isNullOrEmptyFn(records: any, filterParams: any) {
+  const { field } = filterParams;
+  if (records[field] === '' || records[field] === null) {
+    return true;
+  }
+  return false;
+}
+function isNotNullOrEmptyFn(records: any, filterParams: any) {
+  const { field } = filterParams;
+  if (records[field] !== '' && records[field] !== null) {
+    return true;
+  }
+  return false;
+}
+function containsFn(records: any, filterParams: any) {
+  const { field, value } = filterParams;
+  if (records[field].toLowerCase().includes(value.toLowerCase())) {
+    return true;
+  }
+  return false;
+}
+function doesNotContainFn(records: any, filterParams: any) {
+  const { field, value } = filterParams;
+  if (!records[field].toLowerCase().includes(value.toLowerCase())) {
     return true;
   }
   return false;
 }
 
-interface Filter {
+interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
@@ -57,22 +63,25 @@ const initialFilterState = {
   fieldType: '',
   shakeElement: false,
 };
+
+// TODO: Move below
+// TODO: Create enum for below values
 const stringConditions = [
-  // { key: '@=', value: '@=', name: 'Contains' },
-  // { key: '!@=', value: '!@=', name: 'Doesn\'t Contain' },
+  { key: '@=', value: '@=', name: 'Contains' },
+  { key: '!@=', value: '!@=', name: 'Doesn\'t Contain' },
   { key: '=', value: '=', name: 'Equals' },
   { key: '!=', value: '!=', name: 'Doesn\'t Equal' },
   { key: 'starts', value: 'starts', name: 'Starts With' },
   { key: 'ends', value: 'ends', name: 'Ends With' },
   { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  // { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
 ];
 const dateConditions = [
-  // { key: '=', value: '=', name: 'On' },
-  // { key: '<=', value: '<=', name: 'On and before' },
-  // { key: '>=', value: '>=', name: 'On and after' },
-  // { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  // { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { key: '=', value: '=', name: 'On' },
+  { key: '<=', value: '<=', name: 'On and before' },
+  { key: '>=', value: '>=', name: 'On and after' },
+  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
+  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
 ];
 const numberConditions = [
   { key: '=', value: '=', name: 'Equals' },
@@ -81,21 +90,21 @@ const numberConditions = [
   { key: '>', value: '>', name: 'Greater than' },
   { key: '<=', value: '<=', name: 'Less than or equal to' },
   { key: '>=', value: '>=', name: 'Greater than or equal to' },
-  // { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  // { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
+  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
 ];
 const booleanConditions = [
   { key: '=', value: '=', name: 'Equals' },
   { key: '!=', value: '!=', name: 'Doesn\'t Equal' },
-  // { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
-  // { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
+  { key: '==NULL', value: '==NULL', name: 'Is null or empty' },
+  { key: '!=NULL', value: '!=NULL', name: 'Is not null or empty' },
 ];
 
 const customFilterFunctions = [
-  { conditionValue: '==NULL', function: customFilter },
-  { conditionValue: '!=NULL', function: null },
-  { conditionValue: '@=', function: null },
-  { conditionValue: '!@=', function: null },
+  { conditionValue: '==NULL', function: isNullOrEmptyFn },
+  { conditionValue: '!=NULL', function: isNotNullOrEmptyFn },
+  { conditionValue: '@=', function: containsFn },
+  { conditionValue: '!@=', function: doesNotContainFn },
 ];
 
 const shake = keyframes`
@@ -121,7 +130,7 @@ function DataFilters(props: DataFiltersProps) {
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
-  const [filterList, setFilterList] = useState<Filter[]>([]);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [tabulatorFilters, setTabulatorFilters] = useState([]);
 
   useEffect(() => {
@@ -187,9 +196,6 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   const handleFilterDateChange = (newDate: any) => {
-    const dayStart = newDate.$d.toISOString();
-    const dayEnd = (new Date((newDate.$d.getTime() + 86399000))).toISOString();
-    // TODO: Date filtering logic
     setNewFilter({
       ...newFilter,
       value: newDate,
@@ -217,7 +223,7 @@ function DataFilters(props: DataFiltersProps) {
         setFilterErrorMessage('This filter has already been applied.');
         setNewFilter(initialFilterState);
       } else {
-        const filter: Filter = {
+        const filter: DataFilter = {
           field: newFilter.field,
           condition: newFilter.condition,
           value: nullOrEmptyFlag ? nullOrEmptyString : newFilter.value,
@@ -245,10 +251,45 @@ function DataFilters(props: DataFiltersProps) {
     const filters: any = [];
     if (filterList.length !== 0) {
       filterList.forEach((filter) => {
-        // If filter condition requires a custom fitler function
-        const isCustom = customFilterFunctions.filter(e => e.conditionValue === filter.condition);
-        if (isCustom.length > 0) {
-          // TODO: Apply relevant custom filter function here
+        // If filter condition requires a custom filter function
+        const custom = customFilterFunctions.filter(e => e.conditionValue === filter.condition);
+        if (custom.length > 0) {
+          filters.push({
+            field: custom[0].function,
+            type: { field: filter.field, value: filter.value },
+            value: undefined,
+          });
+        } else if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
+          // TODO: Date filtering logic
+          const date = filter.value;
+          const dayStart = date.$d.toISOString();
+          const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
+          if (filter.condition === '>=') {
+            filters.push({
+              field: filter.field,
+              type: filter.condition,
+              value: dayStart,
+            });
+          } else if (filter.condition === '<=') {
+            filters.push({
+              field: filter.field,
+              type: filter.condition,
+              value: dayEnd,
+            });
+          } else if (filter.condition === '=') {
+            filters.push(
+              {
+                field: filter.field,
+                type: '<',
+                value: dayEnd,
+              },
+              {
+                field: filter.field,
+                type: '>',
+                value: dayStart,
+              },
+            );
+          }
         } else {
           filters.push({
             field: filter.field,
@@ -261,12 +302,10 @@ function DataFilters(props: DataFiltersProps) {
     setTabulatorFilters(filters);
   }, [filterList]);
 
-  // 2. Update filtered data displayed on the plots
+  // 2. Update filtered data
   useEffect(() => {
     if (tableInstanceRef.current) {
-      console.log(tabulatorFilters);
       const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
-      console.log(filtered);
       setSampleCount(filtered.length);
       setFilteredData(filtered);
     }
@@ -443,6 +482,7 @@ function DataFilters(props: DataFiltersProps) {
                 </Button>
                 <br />
                 {filterList.map((filter) => (
+                  // TODO: Fix below into maybe a switch case for each conditoin type
                   <Chip
                     key={filter.field + filter.condition + filter.value}
                     label={(
