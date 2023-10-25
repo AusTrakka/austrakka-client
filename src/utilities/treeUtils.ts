@@ -45,10 +45,6 @@ export default function mapMetadataToPhylocanvas(
     metadataColumn: string,
     fieldInfo: string | undefined,
   ): string {
-    if (!value) {
-      return 'rgba(0,0,0,0)';
-    }
-
     // Check if the palette for the current metadata column exists, or generate one
     if (!metadataColumnPalettes[metadataColumn]) {
       // Define the base colour for the current metadata column
@@ -94,17 +90,17 @@ export default function mapMetadataToPhylocanvas(
 
     for (const metadataValue of data.metadataValues) {
       const field = fieldInformation.find(di => di.columnName === metadataValue.key);
-      if (field?.canVisualise) {
-        const uColour = getUniqueColour(
+      const uColour = field?.canVisualise ?
+        getUniqueColour(
           metadataValue.value,
           metadataValue.key,
           field?.primitiveType,
-        );
-        result[data.sampleName][metadataValue.key] = {
-          colour: uColour,
-          label: metadataValue.value,
-        };
-      }
+        )
+        : 'rgba(0,0,0,0)'; // this black should never be used as the field is not visualisable
+      result[data.sampleName][metadataValue.key] = {
+        colour: uColour,
+        label: metadataValue.value ?? '',
+      };
     }
   }
 

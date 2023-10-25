@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, Paper, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -140,7 +140,7 @@ function TreeDetail() {
             if (state.keyValueLabelBlocks) {
               prefix = `${block}=`;
             }
-            if (!value[block].label) {
+            if (!value[block]?.label) {
               return prefix + ' '.repeat(blockLength);
             }
             if (state.alignLabels) {
@@ -179,7 +179,7 @@ function TreeDetail() {
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
       } else {
-        setErrorMsg(`Tree ${analysisId} could not be loaded`);
+        setErrorMsg(treeResponse.message);
       }
       setIsTreeLoading(false);
     };
@@ -194,7 +194,12 @@ function TreeDetail() {
       return <Typography>Loading tree</Typography>;
     }
     if (errorMsg && errorMsg.length > 0) {
-      return <Alert severity="error">{errorMsg}</Alert>;
+      return (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {errorMsg}
+        </Alert>
+      );
     }
 
     if (tree) {
