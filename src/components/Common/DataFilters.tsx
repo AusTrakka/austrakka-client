@@ -65,7 +65,6 @@ const initialFilterState = {
 };
 
 // TODO: Move below
-// TODO: Create enum for below values
 const stringConditions = [
   { value: FilteringOperators.CONTAINS, name: 'Contains' },
   { value: FilteringOperators.NOT_CONTAINS, name: 'Doesn\'t Contain' },
@@ -481,7 +480,6 @@ function DataFilters(props: DataFiltersProps) {
                 </Button>
                 <br />
                 {filterList.map((filter) => (
-                  // TODO: Fix below into maybe a switch case for each conditoin type
                   <Chip
                     key={filter.field + filter.condition + filter.value}
                     label={(
@@ -490,27 +488,22 @@ function DataFilters(props: DataFiltersProps) {
                         {' '}
                         <b>
                           {
+                            // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
-                            && filter.value !== nullOrEmptyString
                               ? (dateConditions.find((c) => c.value === filter.condition))?.name
-                              : null
-                          }
-                          {
-                            filter.fieldType === FieldTypes.NUMBER
-                              ? (numberConditions.find((c) => c.value === filter.condition))?.name
-                              : (stringConditions.find((c) => c.value === filter.condition))?.name
+                              : filter.fieldType === FieldTypes.NUMBER
+                                ? (numberConditions.find((c) => c.value === filter.condition))?.name
+                                : (stringConditions.find((c) => c.value === filter.condition))?.name
                           }
                         </b>
                         {' '}
                         {
-                          filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString
-                            ? filter.value.format('YYYY-MM-DD')
-                            : null
-                        }
-                        {
-                          filter.fieldType !== FieldTypes.DATE && filter.value !== nullOrEmptyString
-                            ? `${filter.value}`
-                            : null
+                          // eslint-disable-next-line no-nested-ternary
+                          filter.value === nullOrEmptyString
+                            ? null
+                            : filter.fieldType === FieldTypes.DATE
+                              ? filter.value.format('YYYY-MM-DD')
+                              : `${filter.value}`
                         }
                       </>
                     )}
