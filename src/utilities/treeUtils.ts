@@ -1,12 +1,12 @@
 /* eslint-disable no-plusplus */
-import { createPalette, ColorMapInput } from 'hue-map';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
+import getColorScheme from './colourUtils';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: AnalysisResultMetadata[],
   fieldInformation: DisplayField[],
-  colorMap: ColorMapInput,
+  colorSchemeSelected: string,
 ) {
   // A dictionary to store the colour palettes for each metadata column
   const metadataColumnPalettes: PhylocanvasLegends = {};
@@ -38,19 +38,6 @@ export default function mapMetadataToPhylocanvas(
       hash = (hash << 5) - hash + char;
     }
     return Math.abs(hash);
-  }
-
-  function generateDistinctColourPalette(baseColour : any, numberOfColours: number) {
-    const colours = [];
-    const goldenAngle = 137.508; // Golden angle in degrees
-
-    for (let i = 0; i < numberOfColours; i++) {
-      const hue = baseColour.h + ((i * goldenAngle) % 360); // Use the golden angle to increment hue
-      const colour = `hsl(${hue}, ${baseColour.s}%, ${baseColour.l}%)`;
-      colours.push(colour);
-    }
-
-    return colours;
   }
 
   function getUniqueColour(
@@ -86,7 +73,7 @@ export default function mapMetadataToPhylocanvas(
 
       const colours = isNumericString ?
         generateSequentialColourPalette(baseColour, uniqueValues.length) :
-        createPalette({ map: colorMap, steps: uniqueValues.length }).format('cssRGBA');
+        getColorScheme(colorSchemeSelected, uniqueValues.length);
 
       metadataColumnPalettes[metadataColumn] = {};
       uniqueValues.forEach((val, index) => {

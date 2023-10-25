@@ -1,8 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { maps } from 'hue-map';
-import { MapKey } from 'hue-map/dist/maps';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControl, Grid, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Grid, Paper, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -19,6 +17,7 @@ import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearch
 import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import ColorSchemeSelector from './TreeControls/SchemeSelector';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -57,7 +56,7 @@ function TreeDetail() {
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
-  const [colourMap, setColourMap] = useState<MapKey>('jet');
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
@@ -85,7 +84,6 @@ function TreeDetail() {
         Number(tree?.projectMembersGroupId),
         token,
       );
-
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
 
       if (
@@ -96,7 +94,7 @@ function TreeDetail() {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
           displayFieldsResponse.data,
-          colourMap,
+          colourScheme,
         );
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
@@ -110,7 +108,7 @@ function TreeDetail() {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchData();
     }
-  }, [analysisId, tree, token, tokenLoading, colourMap]);
+  }, [analysisId, tree, token, tokenLoading, colourScheme]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
@@ -257,33 +255,6 @@ function TreeDetail() {
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
-          {/*  */}
-          <FormControl
-            variant="standard"
-            sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
-          >
-            <Typography variant="caption">Color Map</Typography>
-            <Select
-              labelId="tree-select-colourmap"
-              id="tree-colourmap"
-              defaultValue="jet"
-              value={colourMap}
-              onChange={(e) => {
-                const selectedValue = e.target.value as MapKey;
-                if (Object.keys(maps).includes(selectedValue)) {
-                  setColourMap(selectedValue);
-                }
-              }}
-              label="Colour Map"
-              autoWidth
-            >
-              {Object.keys(maps).map(c => (
-                <MenuItem value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
@@ -371,6 +342,8 @@ function TreeDetail() {
                     height="10px"
                     bgcolor={color}
                     marginRight="10px"
+                    border={1}
+                    borderColor="#dddddd"
                   />
                   <Typography variant="caption">{label}</Typography>
                 </Box>
@@ -382,21 +355,27 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Box sx={{ marginTop: '20px' }} ref={legRef}>
-          {/* Only render node colour entry if not already in the legend  */}
-          {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
-          <>
-            {generateLegend(state.nodeColumn)}
-          </>
-          )}
-          {state.blocks.map((block) => (
-            block !== '' && (
-            <div key={block}>
-              {generateLegend(block)}
-            </div>
-            )
-          ))}
-        </Box>
+        <Stack direction="row" justifyContent="space-between">
+          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef}>
+            {/* Only render node colour entry if not already in the legend  */}
+            {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
+            <>
+              {generateLegend(state.nodeColumn)}
+            </>
+            )}
+            {state.blocks.map((block) => (
+              block !== '' && (
+              <div key={block}>
+                {generateLegend(block)}
+              </div>
+              )
+            ))}
+          </Box>
+          {ColorSchemeSelector({
+            color: colourScheme,
+            onColourChange: (newColor) => setColourScheme(newColor),
+          })}
+        </Stack>
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment
