@@ -10,7 +10,7 @@ export default function getColorScheme(schemeName: string, steps: number) {
 
     // Generate an array of evenly spaced HSL strings
     const colors = d3.range(steps).map((i) => {
-      const t = i / (steps - 1); // Adjust the divisor to get the desired number of steps
+      const t = i / steps;
       const hslColor = d3.hsl(colorScale(t));
       return hslColor.toString();
     });
