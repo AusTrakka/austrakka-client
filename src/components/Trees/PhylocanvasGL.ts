@@ -16,6 +16,7 @@ export class Phylocanvas extends PhylocanvasGL {
       props,
       [plugins.scalebar],
     );
+    this.deck.props.useDevicePixels = 2; // resolution for rendering
     this.clickHandlers = [];
     this.view.style.backgroundImage = ''; // remove logo
 
