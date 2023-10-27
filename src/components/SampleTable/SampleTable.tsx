@@ -24,6 +24,7 @@ import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
+import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 
@@ -110,58 +111,11 @@ function SampleTable(props: SamplesProps) {
 
   useEffect(
     () => {
-      // Maps from a hard-coded metadata field name to a function to render the cell value
-      // Duplicated here for now until Samples.tsx and SampleTable.tsx are merged
-      const sampleRenderFunctions : { [index: string]: Function } = {
-        'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
-      };
-      // Fields which should be rendered as datetimes, not just dates
-      // This hard-coding is interim until the server is able to provide this information
-      const datetimeFields = new Set(['Date_created', 'Date_updated']);
-
       // BUILD COLUMNS
       const formatTableHeaders = () => {
-        function compareFields(field1: DisplayField, field2: DisplayField) {
-          if (field1.columnOrder < field2.columnOrder) {
-            return -1;
-          }
-          if (field1.columnOrder > field2.columnOrder) {
-            return 1;
-          }
-          return 0;
-        }
-        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
         const copy = [...displayFields]; // Creating copy of original array so it's not overridden
         const sortedDisplayFields = copy.sort(compareFields);
-        sortedDisplayFields.forEach((element: MetaDataColumn) => {
-          if (element.columnName in sampleRenderFunctions) {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
-            });
-          } else if (element.primitiveType === 'boolean') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-            });
-          } else if (element.primitiveType === 'date') {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-              Cell: ({ cell }: any) => (
-                datetimeFields.has(element.columnName)
-                  ? isoDateLocalDate(cell.getValue())
-                  : isoDateLocalDateNoTime(cell.getValue())),
-            });
-          } else {
-            columnBuilder.push({
-              accessorKey: element.columnName,
-              header: `${element.columnName}`,
-            });
-          }
-        });
+        const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
         setSampleTableColumns(columnBuilder);
         setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
       };

@@ -40,6 +40,7 @@ function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
@@ -65,6 +66,7 @@ function EpiCurve(props: PlotTypeProps) {
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
       if (response.status === 'Success') {
         const fields = response.data as MetaDataColumn[];
+        setDisplayFields(fields);
         const localCatFields = fields
           .filter(field => field.canVisualise &&
                           (field.primitiveType === 'string' || field.primitiveType === null))
@@ -228,6 +230,7 @@ function EpiCurve(props: PlotTypeProps) {
         spec={spec}
         dataGroupId={plot?.projectGroupId}
         fieldsToRetrieve={fieldsToRetrieve}
+        displayFields={displayFields}
         setPlotErrorMsg={setPlotErrorMsg}
       />
     </>
