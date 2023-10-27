@@ -10,20 +10,25 @@ import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import DataFilters from '../DataFilters/DataFilters';
+import { MetaDataColumn } from '../../types/dtos';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
   dataGroupId: number | undefined,
+  displayFields: MetaDataColumn[],
   fieldsToRetrieve: string[],
   setPlotErrorMsg: Function,
 }
 
 function VegaDataPlot(props: VegaDataPlotProps) {
-  const { spec, dataGroupId, fieldsToRetrieve, setPlotErrorMsg } = props;
+  const { spec, dataGroupId, displayFields, fieldsToRetrieve, setPlotErrorMsg } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [data, setData] = useState([]);
   const { token, tokenLoading } = useApi();
+  const [filteredData, setFilteredData] = useState([]);
+  const [filterFields, setFilterFields] = useState<MetaDataColumn[]>([]);
 
   // Get data on load
   useEffect(() => {
@@ -31,6 +36,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const response = await getPlotData(dataGroupId!, fieldsToRetrieve, token) as ResponseObject;
       if (response.status === 'Success') {
         setData(response.data);
+        setFilteredData(response.data);
       } else {
         // eslint-disable-next-line no-console
         console.error(response.message);
@@ -57,7 +63,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       }
       const compiledSpec = compile(spec!).spec;
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
-      (compiledSpec.data![dataIndex] as InlineData).values = data;
+      (compiledSpec.data![dataIndex] as InlineData).values = filteredData;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -65,21 +71,39 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (spec && data && plotDiv?.current) {
+    if (spec && filteredData && plotDiv?.current) {
       createVegaView();
     }
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, data, plotDiv]);
+  }, [spec, filteredData, plotDiv]);
+
+  // Current implementation:
+  // For now (while we aren't retrieving all columns), only show (displayFields ∩ fieldsToRetrive)
+  useEffect(() => {
+    const intersection: MetaDataColumn[] = displayFields.filter((el) =>
+      fieldsToRetrieve.includes(el.columnName as string));
+
+    setFilterFields(intersection);
+  }, [displayFields, fieldsToRetrieve]);
 
   return (
-    <Grid container direction="row">
-      <Grid item xs={11}>
-        <div id="#plot-container" ref={plotDiv} />
+    <Grid container direction="column">
+      <Grid container item direction="row">
+        <Grid item xs={11}>
+          <div id="#plot-container" ref={plotDiv} />
+        </Grid>
+        <Grid item xs={1}>
+          <ExportVegaPlot
+            vegaView={vegaView}
+          />
+        </Grid>
       </Grid>
-      <Grid item xs={1}>
-        <ExportVegaPlot
-          vegaView={vegaView}
+      <Grid item xs={12}>
+        <DataFilters
+          data={data}
+          fields={filterFields}
+          setFilteredData={setFilteredData}
         />
       </Grid>
     </Grid>
