@@ -7,7 +7,7 @@ import { useApi } from '../../app/ApiContext';
 import { Member, UserRoleGroup } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
-import MemberList from '../ProjectOverview/MemberList';
+import OrgSimpleMemberList from './OrgSimpleMemberList';
 
 function OrganisationOverview() {
   const [userGroups, setUserGroups] = useState<UserRoleGroup[]>([]);
@@ -133,12 +133,12 @@ function OrganisationOverview() {
             )}
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isMembersLoading}>
-            <MemberList
+            <OrgSimpleMemberList
               isMembersLoading={isMembersLoading}
               memberList={projectMembers}
               memberListError={memberListError}
               memberListErrorMessage={memberListErrorMessage}
-              projectAbbrev={orgEveryone?.group.name!}
+              // projectAbbrev={orgEveryone?.group.name!}
             />
           </TabPanel>
         </>
