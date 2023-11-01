@@ -370,7 +370,7 @@ function ProjectOverview() {
         getSamplesList();
       } else {
         setProjectSamples([]);
-      } 
+      }
     },
     [projectDetails, samplesPagination.pageIndex, samplesPagination.pageSize,
       sampleTableColumns, queryString, sorting, token],
