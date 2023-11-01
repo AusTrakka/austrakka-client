@@ -419,7 +419,8 @@ function ProjectOverview() {
   ], []);
 
   useEffect(() => {
-    const initialTabValue = projectOverviewTabs.findIndex((tab) => pathName.endsWith(tab.title));
+    const initialTabValue = projectOverviewTabs
+      .findIndex((tab) => pathName.endsWith(tab.title.toLowerCase()));
     if (initialTabValue !== -1) {
       setTabValue(initialTabValue);
     }

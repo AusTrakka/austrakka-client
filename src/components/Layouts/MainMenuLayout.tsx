@@ -65,9 +65,13 @@ function MainMenuLayout() {
     org: 'Organisation Data',
     sequences: 'Sequences',
     metadata: 'Metadata',
+    summary: 'Summary',
+    samples: 'Samples',
+    proformas: 'ProFormas',
+    members: 'Members',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['plots', 'trees', 'analyses', 'versions', 'records'];
+  const breadcrumbNoLink: string[] = ['versions', 'records'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 

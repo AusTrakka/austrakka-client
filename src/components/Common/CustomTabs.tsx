@@ -53,8 +53,20 @@ export default function CustomTabs(props: CustomTabsProps) {
   // Function to navigate to the selected tab
   const navigateToTab = (tabUrl: string) => {
     const currentPath = window.location.pathname;
-    const newPath = currentPath.replace(/\/[^/]+$/, tabUrl); // Replace the last part of the path
-    navigate(newPath);
+
+    // Split the path into segments
+    const pathSegments = currentPath.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Check if the last segment is the project abbreviation
+    if (pathSegments.length > 1 &&
+        !tabContent.some(tab => tab.title.toLowerCase() === lastSegment)) {
+      navigate(currentPath + tabUrl);
+    } else {
+      // Replace the last part of the path
+      const newPath = pathSegments.slice(0, -1).join('/') + tabUrl;
+      navigate(newPath);
+    }
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -63,7 +75,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     // Generate the URL for the selected tab and navigate to it
     const selectedTab = tabContent.find((tab) => tab.index === newValue);
     if (selectedTab) {
-      const tabUrl = `/${encodeURIComponent(selectedTab.title)}`;
+      const tabUrl = `/${encodeURIComponent(selectedTab.title.toLowerCase())}`;
       navigateToTab(tabUrl);
     }
   };
