@@ -54,7 +54,7 @@ function ProjectsList() {
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {
       const { abbreviation }: any = selectedProject;
-      navigate(`/projects/${abbreviation}`);
+      navigate(`/projects/${abbreviation}/Summary`);
     }
   }, [selectedProject, navigate]);
 

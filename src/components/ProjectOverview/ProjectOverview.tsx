@@ -1,8 +1,8 @@
 import React, {
-  useEffect, useState,
+  useEffect, useMemo, useState,
 } from 'react';
 import { MRT_PaginationState, MRT_ColumnDef, MRT_SortingState } from 'material-react-table';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
@@ -28,6 +28,8 @@ function ProjectOverview() {
   const { projectAbbrev } = useParams();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
+  const location = useLocation();
+  const pathName = location.pathname;
   // Project Overview component states
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
   const [isOverviewError, setIsOverviewError] = useState({
@@ -368,7 +370,7 @@ function ProjectOverview() {
         getSamplesList();
       } else {
         setProjectSamples([]);
-      }
+      } 
     },
     [projectDetails, samplesPagination.pageIndex, samplesPagination.pageSize,
       sampleTableColumns, queryString, sorting, token],
@@ -389,7 +391,7 @@ function ProjectOverview() {
       setExportCSVStatus(LoadingState.ERROR);
     }
   };
-  const projectOverviewTabs: TabContentProps[] = [
+  const projectOverviewTabs: TabContentProps[] = useMemo(() => [
     {
       index: 0,
       title: 'Summary',
@@ -414,7 +416,14 @@ function ProjectOverview() {
       index: 5,
       title: 'Proformas',
     },
-  ];
+  ], []);
+
+  useEffect(() => {
+    const initialTabValue = projectOverviewTabs.findIndex((tab) => pathName.endsWith(tab.title));
+    if (initialTabValue !== -1) {
+      setTabValue(initialTabValue);
+    }
+  }, [pathName, projectOverviewTabs]);
 
   return (
     isOverviewError.detailsError

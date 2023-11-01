@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 /// / Types
 export interface TabContentProps {
@@ -48,9 +49,25 @@ export function TabPanel(props: TabPanelProps) {
 
 export default function CustomTabs(props: CustomTabsProps) {
   const { tabContent, value, setValue } = props;
+  const navigate = useNavigate();
+  // Function to navigate to the selected tab
+  const navigateToTab = (tabUrl: string) => {
+    const currentPath = window.location.pathname;
+    const newPath = currentPath.replace(/\/[^/]+$/, tabUrl); // Replace the last part of the path
+    navigate(newPath);
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+
+    // Generate the URL for the selected tab and navigate to it
+    const selectedTab = tabContent.find((tab) => tab.index === newValue);
+    if (selectedTab) {
+      const tabUrl = `/${encodeURIComponent(selectedTab.title)}`;
+      navigateToTab(tabUrl);
+    }
   };
+
   const InnerTabs = tabContent.map((tab) => (
     <Tab
       key={tab.index}
