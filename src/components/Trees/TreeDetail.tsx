@@ -253,7 +253,6 @@ function TreeDetail() {
 
     const handleJumpToSubtree = (id: string) => {
       if (!tree) return;
-      navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${tree.jobInstanceId}`, { replace: true });
       setRootId(id);
     };
 
