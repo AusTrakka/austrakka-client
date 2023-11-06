@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
@@ -17,6 +17,7 @@ import isoDateLocalDate, { useStateFromSearchParamsForObject, useStateFromSearch
 import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import ColorSchemeSelector from './TreeControls/SchemeSelector';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -43,8 +44,7 @@ interface Style {
 }
 
 function TreeDetail() {
-  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
-  const navigate = useNavigate();
+  const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
@@ -55,6 +55,7 @@ function TreeDetail() {
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
@@ -82,7 +83,6 @@ function TreeDetail() {
         Number(tree?.projectMembersGroupId),
         token,
       );
-
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
 
       if (
@@ -93,6 +93,7 @@ function TreeDetail() {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
           displayFieldsResponse.data,
+          colourScheme,
         );
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
@@ -106,7 +107,7 @@ function TreeDetail() {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchData();
     }
-  }, [analysisId, tree, token, tokenLoading]);
+  }, [analysisId, tree, token, tokenLoading, colourScheme]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
@@ -251,14 +252,12 @@ function TreeDetail() {
 
     const handleJumpToSubtree = (id: string) => {
       if (!tree) return;
-      navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${tree.jobInstanceId}`, { replace: true });
       setRootId(id);
     };
 
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
-          {/*  */}
           <Grid item sx={{ marginBottom: 1 }}>
             <Search
               options={ids}
@@ -346,6 +345,8 @@ function TreeDetail() {
                     height="10px"
                     bgcolor={color}
                     marginRight="10px"
+                    border={1}
+                    borderColor="#dddddd"
                   />
                   <Typography variant="caption">{label}</Typography>
                 </Box>
@@ -357,21 +358,27 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Box sx={{ marginTop: '20px' }} ref={legRef}>
-          {/* Only render node colour entry if not already in the legend  */}
-          {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
-          <>
-            {generateLegend(state.nodeColumn)}
-          </>
-          )}
-          {state.blocks.map((block) => (
-            block !== '' && (
-            <div key={block}>
-              {generateLegend(block)}
-            </div>
-            )
-          ))}
-        </Box>
+        <Stack direction="row" justifyContent="space-between">
+          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef}>
+            {/* Only render node colour entry if not already in the legend  */}
+            {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
+            <>
+              {generateLegend(state.nodeColumn)}
+            </>
+            )}
+            {state.blocks.map((block) => (
+              block !== '' && (
+              <div key={block}>
+                {generateLegend(block)}
+              </div>
+              )
+            ))}
+          </Box>
+          {ColorSchemeSelector({
+            color: colourScheme,
+            onColourChange: (newColor) => setColourScheme(newColor),
+          })}
+        </Stack>
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment

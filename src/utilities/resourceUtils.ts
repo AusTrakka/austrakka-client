@@ -32,7 +32,6 @@ async function callGET(url:string, token : string) {
       'Accept': 'application/json',
       'Authorization': `Bearer ${token}`,
       'Access-Control-Expose-Headers': '*',
-      'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
   };
   const apiResponse = await fetch(base + url, options)
@@ -72,7 +71,6 @@ async function callPOSTForm(url:string, formData:FormData, token : string) {
       'Accept': 'application/json',
       'Authorization': `Bearer ${token}`,
       'Access-Control-Expose-Headers': '*',
-      'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
   };
   const apiResponse = await fetch(base + url, options)
@@ -107,7 +105,6 @@ async function downloadFile(url: string, token : string) {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Ocp-Apim-Subscription-Key': import.meta.env.VITE_SUBSCRIPTION_KEY,
     },
   };
 
