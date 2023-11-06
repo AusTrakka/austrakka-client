@@ -10,7 +10,6 @@ interface OrgMembersProps {
   memberListErrorMessage: string,
 }
 
-// WORK IN PROGRESS
 function UserCard({ user }: { user: Member }) {
   const cardStyle = {
     width: '250px',

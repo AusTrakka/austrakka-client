@@ -47,6 +47,7 @@ function App() {
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="org" element={<OrganisationOverview />} />
+                  <Route path="org/:tab" element={<OrganisationOverview />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />

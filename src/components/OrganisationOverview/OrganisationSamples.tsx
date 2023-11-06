@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip } from '@mui/material';
+import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import { Error } from '@mui/icons-material';
 import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
@@ -22,7 +22,6 @@ interface OrgGroupSelectorProps {
 
 function OrgGroupSelector(props: OrgGroupSelectorProps) {
   const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
-
   return (
     <>
       {groupStatus === LoadingState.ERROR
@@ -42,12 +41,10 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
         <Select
           labelId="org-select-label"
           id="org-select"
-          defaultValue=""
-          value={groups.length !== 0 ? selectedGroup.group.name : ''}
+          value={selectedGroup.group.id} // Use a unique identifier as the value
           onChange={(e) => {
-            const selectedGroupName = e.target.value;
-            const selectedGroupObject = groups.find(group =>
-              group.group.name === selectedGroupName);
+            const selectedGroupId = e.target.value;
+            const selectedGroupObject = groups.find(group => group.group.id === selectedGroupId);
 
             if (selectedGroupObject) {
               setSelectedGroup(selectedGroupObject);
@@ -56,12 +53,12 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
           label="Organisation group"
           autoWidth
         >
-          { groups.map((group) => (
+          {groups.map((urg: UserRoleGroup) => (
             <MenuItem
-              value={group.group.id}
-              key={group.group.name}
+              value={urg.group.id} // Use the group's ID as the value
+              key={urg.group.id}
             >
-              {group.group.name}
+              {urg.group.name}
             </MenuItem>
           )) }
           { groups.length === 0 ? (
@@ -95,6 +92,17 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
   // Now, you can safely access selectedGroup and its properties
   return (
     <Box>
+      <Typography sx={{ paddingBottom: 2 }} align="left" variant="subtitle2" color="primary">
+        View samples owned by your organisation.
+        Please note you will only be able to view
+        <em> all </em>
+        data for the organisation you are in,
+        if you are a
+        <b> viewer </b>
+        in your organisation&lsquo;s
+        <b> Owner group</b>
+        s.
+      </Typography>
       <OrgGroupSelector
         groups={groups}
         groupStatus={groupStatus}

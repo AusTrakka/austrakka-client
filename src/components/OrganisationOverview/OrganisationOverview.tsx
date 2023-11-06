@@ -1,6 +1,6 @@
 // first lets make the get organisation information
 import React, { memo, useEffect, useState } from 'react';
-import { Alert, Box, Grid, Stack, Typography } from '@mui/material';
+import { Alert, Box, Typography } from '@mui/material';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject, getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
@@ -17,6 +17,8 @@ function OrganisationOverview() {
   const [orgEveryone, setOrgEveryone] = useState<UserRoleGroup>();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
+  const [organisationName, setOrganisationName] = useState('');
+  const [orgAbbrev, setOrgAbbrev] = useState('');
 
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -28,9 +30,9 @@ function OrganisationOverview() {
       setGroupStatus(LoadingState.LOADING);
       const groupResponse: ResponseObject = await getUserGroups(token);
       if (groupResponse.status === 'Success') {
-        const { organisation, userRoleGroup }:
+        const { organisation, userRoleGroup, orgName }:
         { organisation: { abbreviation: string, id: number },
-          userRoleGroup: UserRoleGroup[] } = groupResponse.data;
+          userRoleGroup: UserRoleGroup[], orgName: string } = groupResponse.data;
           // This is strictly Owner and Everyone groups
           // Could instead check group organisation, if we want to include ad-hoc org groups
         const orgViewerGroups = userRoleGroup.filter((roleGroup: UserRoleGroup) =>
@@ -49,6 +51,8 @@ function OrganisationOverview() {
         setUserGroups(orgViewerGroups);
         setIsUserGroupsLoading(false);
         setGroupStatus(LoadingState.SUCCESS);
+        setOrganisationName(orgName);
+        setOrgAbbrev(organisation.abbreviation);
       } else {
         setGroupStatus(LoadingState.ERROR);
         setGroupStatusMessage(groupResponse.message);
@@ -104,22 +108,9 @@ function OrganisationOverview() {
       : (
         <>
           <Box>
-            <Grid container direction="column">
-              <Typography variant="h2" color="primary">Organisation Data</Typography>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography sx={{ paddingTop: 3 }} align="left" variant="subtitle2" color="primary">
-                  View samples owned by your organisation.
-                  Please note you will only be able to view
-                  <em> all </em>
-                  data for the organisation you are in,
-                  if you are a
-                  <b> viewer </b>
-                  in your organisation&lsquo;s
-                  <b> Owner group</b>
-                  s.
-                </Typography>
-              </Stack>
-            </Grid>
+            <Typography variant="h2" color="primary">
+              {`${organisationName} (${orgAbbrev})`}
+            </Typography>
           </Box>
           <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
           <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
@@ -138,7 +129,6 @@ function OrganisationOverview() {
               memberList={projectMembers}
               memberListError={memberListError}
               memberListErrorMessage={memberListErrorMessage}
-              // projectAbbrev={orgEveryone?.group.name!}
             />
           </TabPanel>
         </>
