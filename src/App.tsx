@@ -51,10 +51,11 @@ function App() {
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
-                  <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                   <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                   <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
+                  <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
+                  <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />

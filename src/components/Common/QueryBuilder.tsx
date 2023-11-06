@@ -6,6 +6,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateValidationError } from '@mui/x-date-pickers';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   AddBox, IndeterminateCheckBox, AddCircle,
@@ -99,6 +100,7 @@ function QueryBuilder(props: QueryBuilderProps) {
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the table filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
+  const [dateError, setDateError] = useState<DateValidationError>(null);
 
   useEffect(() => {
     if (filterList.filter(e => e.shakeElement === true).length > 0) {
@@ -205,7 +207,7 @@ function QueryBuilder(props: QueryBuilderProps) {
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const isEmpty = Object.values(newFilter).some((x) => x === null || x === '');
-    if (!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) {
+    if ((!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) && dateError === null) {
       let doesExist = false;
       for (let i = 0; i < filterList.length; i += 1) {
         const filter = filterList[i];
@@ -267,6 +269,7 @@ function QueryBuilder(props: QueryBuilderProps) {
           <DatePicker
             label="Value"
             value={newFilter.value === '' ? null : newFilter.value}
+            onError={(newError) => setDateError(newError)}
             onChange={(newValue) => handleFilterDateChange(newValue)}
             format="YYYY-MM-DD"
             slotProps={{
@@ -275,6 +278,7 @@ function QueryBuilder(props: QueryBuilderProps) {
               },
             }}
             disabled={nullOrEmptyFlag}
+            disableFuture
           />
         );
       case 'boolean':
