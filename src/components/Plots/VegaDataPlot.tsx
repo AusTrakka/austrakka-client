@@ -104,6 +104,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           data={data}
           fields={filterFields}
           setFilteredData={setFilteredData}
+          initialOpen
         />
       </Grid>
     </Grid>
