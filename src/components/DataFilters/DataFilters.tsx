@@ -25,6 +25,7 @@ interface DataFiltersProps {
   data: any
   setFilteredData: any
   fields: any
+  initialOpen: boolean
 }
 
 const initialFilterState = {
@@ -46,11 +47,11 @@ const shake = keyframes`
 const nullOrEmptyString = 'null-or-empty';
 
 function DataFilters(props: DataFiltersProps) {
-  const { data, fields, setFilteredData } = props;
+  const { data, fields, setFilteredData, initialOpen } = props;
   const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
   const [sampleCount, setSampleCount] = useState();
   const [totalSamples, setTotalSamples] = useState();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
