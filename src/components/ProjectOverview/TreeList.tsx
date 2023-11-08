@@ -14,7 +14,7 @@ const treeTableColumns: MRT_ColumnDef[] = [
   { accessorKey: 'abbreviation', header: 'Abbreviation' },
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
+  { accessorKey: 'latestTreeLastUpdated', header: 'Updated', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
 ];
 
 function TreeList(props: TreesProps) {
