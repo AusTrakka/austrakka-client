@@ -18,6 +18,7 @@ import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import TreeTable from './TreeTable';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -50,6 +51,7 @@ function TreeDetail() {
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
+  const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
@@ -96,6 +98,7 @@ function TreeDetail() {
           displayFieldsResponse.data,
           colourScheme,
         );
+        setTableMetadata(metadataResponse.data);
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
@@ -218,6 +221,21 @@ function TreeDetail() {
           styles={styles}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
+        />
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
+  const renderTable = () => {
+    if (tree) {
+      return (
+        <TreeTable
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+          displayFields={displayFields}
+          tableMetadata={tableMetadata}
         />
       );
     }
@@ -397,6 +415,7 @@ function TreeDetail() {
         </Typography>
         {renderTree()}
         {renderLegend()}
+        {renderTable()}
       </Grid>
     </Grid>
 
