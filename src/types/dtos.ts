@@ -181,6 +181,18 @@ export interface ThresholdAlertDTO {
   recentCount: number;
 }
 
+export interface UserRoleGroup {
+  user: any,
+  role: {
+    id: number,
+    name: string,
+  }
+  group: {
+    id: number,
+    name: string,
+  }
+}
+
 export interface Group {
   groupId: number | undefined,
   name: string,
