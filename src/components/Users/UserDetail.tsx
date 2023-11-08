@@ -12,16 +12,13 @@ function UserDetail() {
   const { token, tokenLoading } = useApi();
   const [user, setUser] = useState<UserDetails | null>();
   const [errMsg, setErrMsg] = useState<string | null>();
-  const [isUserLoading, setIsUserLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
-      setIsUserLoading(true);
       if (userResponse.status === 'Success') {
         const userDto = userResponse.data as UserDetails;
         setUser(userDto);
-        setIsUserLoading(false);
       } else {
         setErrMsg('User could not be accessed');
       }
