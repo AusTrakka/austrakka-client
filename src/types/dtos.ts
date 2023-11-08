@@ -64,6 +64,7 @@ export interface PlotListing {
 }
 
 export interface Member {
+  objectId: string,
   roles: string[],
   organization:{
     id: number,
@@ -71,6 +72,32 @@ export interface Member {
   },
   displayName: string,
   lastLoggedIn: string,
+}
+
+export interface User {
+  userId: number,
+  objectId: number,
+  isActive: boolean,
+  organisation: {
+    id: number,
+    abbreviation: string,
+  }
+  orgName: string,
+  isAustrakkaAdmin: boolean,
+  userRoleGroup: UserRoleGroup[],
+  displayName: string,
+  lastLoggedIn: Date,
+  createdBy: Date,
+  lastUpdatedBy: Date,
+  IsAustrakkaProcess: boolean
+}
+
+export interface UserDetails {
+  displayName: string,
+  orgName: string,
+  userRoleGroup: UserRoleGroup[],
+  created: Date,
+  lastUpdated: Date,
 }
 
 export interface ProFormaVersion {
