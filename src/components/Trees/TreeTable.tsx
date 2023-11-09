@@ -4,6 +4,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { DisplayField } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import DataFilters from '../DataFilters/DataFilters';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -24,6 +25,7 @@ export default function TreeTable(props: TreeTableProps) {
   const [columnError, setColumnError] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
   // Format display fields into column headers
   useEffect(
@@ -44,6 +46,7 @@ export default function TreeTable(props: TreeTableProps) {
   );
 
   useEffect(() => {
+    setFilteredData(tableMetadata);
     setDisplayRows(tableMetadata);
   }, [tableMetadata]);
 
@@ -51,10 +54,10 @@ export default function TreeTable(props: TreeTableProps) {
     const newState = !isHidden;
     if (newState === true) {
       // Filter rows based on ID field
-      const filtered = tableMetadata.filter((e: any) => selectedIds.includes(e.sampleName));
+      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.sampleName));
       setDisplayRows(filtered);
     } else {
-      setDisplayRows(tableMetadata);
+      setDisplayRows(filteredData);
     }
     setIsHidden(newState);
   };
@@ -68,41 +71,59 @@ export default function TreeTable(props: TreeTableProps) {
     setSelectedIds(Object.keys(rowSelection));
   }, [rowSelection, setSelectedIds]);
 
-  return (
-    <MaterialReactTable
-      tableInstanceRef={tableInstanceRef}
-      columns={sampleTableColumns}
-      data={displayRows}
-      enableRowSelection
-      getRowId={(row) => row.sampleName}
-      onRowSelectionChange={(row) => handleRowSelect(row)}
-      state={{ rowSelection }}
-      initialState={{ density: 'compact' }}
-      positionToolbarAlertBanner="none"
-      enableDensityToggle={false}
-      enableFullScreenToggle={false}
-      enableGlobalFilter={false}
-      enableColumnFilters={false}
-      renderTopToolbarCustomActions={() => (
-        <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }} alignItems="center">
-          <IconButton
-            onClick={() => {
-              rowVisibilityHandler();
-            }}
-          >
-            <Tooltip title={isHidden ? 'Show unselected rows' : 'Hide unselected rows'} arrow>
-              {isHidden ?
-                <Visibility />
-                :
-                <VisibilityOff />}
-            </Tooltip>
-          </IconButton>
-          <Typography variant="caption">
-            {`${Object.keys(rowSelection).length} row(s) selected`}
-          </Typography>
-        </Box>
-      )}
-    />
+  useEffect(() => {
+    // If table filter changes, show all rows again
+    setDisplayRows(filteredData);
+    setIsHidden(false);
+  }, [filteredData]);
 
+  return (
+    <>
+      <DataFilters
+        data={tableMetadata}
+        fields={displayFields}
+        setFilteredData={setFilteredData}
+        initialOpen
+      />
+      <MaterialReactTable
+        tableInstanceRef={tableInstanceRef}
+        columns={sampleTableColumns}
+        data={displayRows}
+        enableRowSelection
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: row.getToggleSelectedHandler(),
+          sx: { cursor: 'pointer' },
+        })}
+        getRowId={(row) => row.sampleName}
+        onRowSelectionChange={(row) => handleRowSelect(row)}
+        state={{ rowSelection }}
+        initialState={{ density: 'compact' }}
+        positionToolbarAlertBanner="none"
+        enableDensityToggle={false}
+        selectAllMode="all"
+        enableFullScreenToggle={false}
+        enableGlobalFilter={false}
+        enableColumnFilters={false}
+        renderTopToolbarCustomActions={() => (
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }} alignItems="center">
+            <IconButton
+              onClick={() => {
+                rowVisibilityHandler();
+              }}
+            >
+              <Tooltip title={isHidden ? 'Show unselected rows' : 'Hide unselected rows'} arrow>
+                {isHidden ?
+                  <Visibility />
+                  :
+                  <VisibilityOff />}
+              </Tooltip>
+            </IconButton>
+            <Typography variant="caption">
+              {`${Object.keys(rowSelection).length} row(s) selected`}
+            </Typography>
+          </Box>
+        )}
+      />
+    </>
   );
 }
