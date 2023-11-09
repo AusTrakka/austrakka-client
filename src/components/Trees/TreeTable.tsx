@@ -63,7 +63,10 @@ export default function TreeTable(props: TreeTableProps) {
 
   useEffect(() => {
     const ids = Object.keys(selectedRows);
-    setSelectedIds(ids);
+    const updatedIds = [...new Set([...selectedIds, ...ids])];
+    setSelectedIds(updatedIds);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRows, setSelectedIds]);
 
   useEffect(() => {
