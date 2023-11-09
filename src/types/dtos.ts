@@ -97,6 +97,7 @@ export interface UserDetails {
   orgName: string,
   lastLoggedIn: Date,
   userRoleGroup: UserRoleGroup[],
+  created: Date,
 }
 
 export interface ProFormaVersion {
