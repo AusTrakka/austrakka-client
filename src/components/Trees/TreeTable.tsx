@@ -1,5 +1,5 @@
 import MaterialReactTable, { MRT_ColumnDef, MRT_RowSelectionState, MRT_TableInstance } from 'material-react-table';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { DisplayField } from '../../types/dtos';
@@ -8,20 +8,22 @@ import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableU
 interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: any,
+  rowSelection: any,
+  setRowSelection: any,
   displayFields: DisplayField[],
   tableMetadata: any
 }
 // TODO: Pass down any relevant error states for samples/display fields
 
 export default function TreeTable(props: TreeTableProps) {
-  const { selectedIds, setSelectedIds, displayFields, tableMetadata } = props;
+  const {
+    selectedIds, setSelectedIds, rowSelection, setRowSelection, displayFields, tableMetadata,
+  } = props;
   const tableInstanceRef = useRef<MRT_TableInstance>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [columnError, setColumnError] = useState(false);
-  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState([]);
-  const [selectedRows, setSelectedRows] = useState({});
 
   // Format display fields into column headers
   useEffect(
@@ -58,24 +60,13 @@ export default function TreeTable(props: TreeTableProps) {
   };
 
   const handleRowSelect = (row: any) => {
-    setSelectedRows(row);
+    setRowSelection(row);
+    setSelectedIds(Object.keys(row));
   };
 
   useEffect(() => {
-    const ids = Object.keys(selectedRows);
-    const updatedIds = [...new Set([...selectedIds, ...ids])];
-    setSelectedIds(updatedIds);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRows, setSelectedIds]);
-
-  useEffect(() => {
-    const obj:any = {};
-    for (const key of selectedIds) {
-      obj[key] = true;
-    }
-    setRowSelection(obj);
-  }, [selectedIds]);
+    setSelectedIds(Object.keys(rowSelection));
+  }, [rowSelection, setSelectedIds]);
 
   return (
     <MaterialReactTable
