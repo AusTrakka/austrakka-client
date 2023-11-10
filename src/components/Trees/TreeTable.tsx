@@ -140,6 +140,7 @@ export default function TreeTable(props: TreeTableProps) {
         enableFullScreenToggle={false}
         enableGlobalFilter={false}
         enableColumnFilters={false}
+        enableRowVirtualization
         renderTopToolbarCustomActions={() => (
           <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }} alignItems="center">
             <IconButton
