@@ -179,5 +179,5 @@ export interface DisplayField {
 }
 
 export interface Sample {
-
+  [key: string] : any
 }

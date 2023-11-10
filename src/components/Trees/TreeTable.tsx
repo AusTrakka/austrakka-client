@@ -1,8 +1,8 @@
-import MaterialReactTable, { MRT_ColumnDef, MRT_RowSelectionState, MRT_TableInstance } from 'material-react-table';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-react-table';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { DisplayField } from '../../types/dtos';
+import { DisplayField, Sample } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import DataFilters from '../DataFilters/DataFilters';
 
@@ -20,6 +20,7 @@ export default function TreeTable(props: TreeTableProps) {
   const {
     selectedIds, setSelectedIds, rowSelection, setRowSelection, displayFields, tableMetadata,
   } = props;
+  const [formattedData, setFormattedData] = useState([]);
   const tableInstanceRef = useRef<MRT_TableInstance>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [columnError, setColumnError] = useState(false);
@@ -45,16 +46,41 @@ export default function TreeTable(props: TreeTableProps) {
     [columnError, displayFields],
   );
 
+  // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
-    setFilteredData(tableMetadata);
-    setDisplayRows(tableMetadata);
-  }, [tableMetadata]);
+    const tableValues: any = [];
+    const fields = displayFields.map(field => field.columnName);
+    // Find display field matches in top level object and in metadataValues kv pairs
+    tableMetadata.forEach((element: any) => {
+      const entry: any = {};
+      for (const [key, value] of Object.entries(element) as [key: string, value: any]) {
+        if (fields.includes(key)) {
+          entry[key] = value;
+        } else if (key === 'sampleName') {
+          entry.Seq_ID = value;
+        } else if (key === 'metadataValues') {
+          value.forEach((kv: any) => {
+            if (fields.includes(kv.key)) {
+              entry[kv.key] = kv.value;
+            }
+          });
+        }
+      }
+      tableValues.push(entry);
+    });
+    setFormattedData(tableValues);
+  }, [tableMetadata, displayFields]);
+
+  useEffect(() => {
+    setFilteredData(formattedData);
+    setDisplayRows(formattedData);
+  }, [formattedData]);
 
   const rowVisibilityHandler = () => {
     const newState = !isHidden;
     if (newState === true) {
       // Filter rows based on ID field
-      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.sampleName));
+      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.Seq_ID));
       setDisplayRows(filtered);
     } else {
       setDisplayRows(filteredData);
@@ -72,6 +98,9 @@ export default function TreeTable(props: TreeTableProps) {
   }, [rowSelection, setSelectedIds]);
 
   useEffect(() => {
+    // TODO: Should all rows be unselected if new filter is applied
+    // otherwise you can't unselect some rows and you get in a locked state
+
     // If table filter changes, show all rows again
     setDisplayRows(filteredData);
     setIsHidden(false);
@@ -80,7 +109,7 @@ export default function TreeTable(props: TreeTableProps) {
   return (
     <>
       <DataFilters
-        data={tableMetadata}
+        data={formattedData}
         fields={displayFields}
         setFilteredData={setFilteredData}
         initialOpen
@@ -94,7 +123,7 @@ export default function TreeTable(props: TreeTableProps) {
           onClick: row.getToggleSelectedHandler(),
           sx: { cursor: 'pointer' },
         })}
-        getRowId={(row) => row.sampleName}
+        getRowId={(originalRow: Sample) => originalRow.Seq_ID}
         onRowSelectionChange={(row) => handleRowSelect(row)}
         state={{ rowSelection }}
         initialState={{ density: 'compact' }}
