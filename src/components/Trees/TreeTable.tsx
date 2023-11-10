@@ -98,13 +98,11 @@ export default function TreeTable(props: TreeTableProps) {
   }, [rowSelection, setSelectedIds]);
 
   useEffect(() => {
-    // TODO: Should all rows be unselected if new filter is applied
-    // otherwise you can't unselect some rows and you get in a locked state
-
-    // If table filter changes, show all rows again
+    // If table filter changes, show all rows again and unselect all
     setDisplayRows(filteredData);
     setIsHidden(false);
-  }, [filteredData]);
+    setRowSelection([]);
+  }, [filteredData, setRowSelection]);
 
   return (
     <>
