@@ -31,7 +31,6 @@ export default function TreeTable(props: TreeTableProps) {
   // Format display fields into column headers
   useEffect(
     () => {
-      // BUILD COLUMNS
       const formatTableHeaders = () => {
         const copy = [...displayFields];
         const sortedDisplayFields = copy.sort(compareFields);
@@ -104,6 +103,16 @@ export default function TreeTable(props: TreeTableProps) {
     setRowSelection([]);
   }, [filteredData, setRowSelection]);
 
+  // Dynamically show extra rows as they are selected
+  useEffect(() => {
+    if (isHidden === true) {
+      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.Seq_ID));
+      setDisplayRows(filtered);
+    } else {
+      setDisplayRows(filteredData);
+    }
+  }, [filteredData, isHidden, selectedIds]);
+
   return (
     <>
       <DataFilters
@@ -123,7 +132,7 @@ export default function TreeTable(props: TreeTableProps) {
         })}
         getRowId={(originalRow: Sample) => originalRow.Seq_ID}
         onRowSelectionChange={(row) => handleRowSelect(row)}
-        state={{ rowSelection }}
+        state={{ rowSelection, columnPinning: { left: ['selection'] } }}
         initialState={{ density: 'compact' }}
         positionToolbarAlertBanner="none"
         enableDensityToggle={false}
