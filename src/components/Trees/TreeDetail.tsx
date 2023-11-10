@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
+import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields, getDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -54,6 +54,7 @@ function TreeDetail() {
   const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [tableDisplayFields, setTableDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -88,11 +89,15 @@ function TreeDetail() {
         token,
       );
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
-
+      const tableDisplayFieldsResponse = await getDisplayFields(
+        Number(tree?.projectMembersGroupId),
+        token,
+      );
       if (
         metadataResponse.status === 'Success' &&
       displayFieldsResponse.status === 'Success' &&
-      versionsResponse.status === 'Success'
+      versionsResponse.status === 'Success' &&
+      tableDisplayFieldsResponse.status === 'Success'
       ) {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
@@ -104,6 +109,7 @@ function TreeDetail() {
         setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
         setVersions(versionsResponse.data);
+        setTableDisplayFields(tableDisplayFieldsResponse.data);
       } else {
         setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
@@ -238,7 +244,7 @@ function TreeDetail() {
           setSelectedIds={setSelectedIds}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
-          displayFields={displayFields}
+          displayFields={tableDisplayFields}
           tableMetadata={tableMetadata}
         />
       );
