@@ -62,7 +62,7 @@ function MainMenuLayout() {
     records: 'Records',
     versions: 'Versions',
     upload: 'Upload',
-    org: 'Organisation Data',
+    org: 'Organisation',
     sequences: 'Sequences',
     metadata: 'Metadata',
     summary: 'Summary',
