@@ -7,7 +7,7 @@ import Masonry from '@mui/lab/Masonry';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 import SimpleDialog from '../ProForma/TableDialog';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
-import { getProFormaDownload } from '../../utilities/resourceUtils';
+import { handleProformaDownload } from '../ProForma/proformaUtils';
 import { useApi } from '../../app/ApiContext';
 
 // Local Proforma Props
@@ -28,25 +28,7 @@ function ProFormaList(props: ProFormasListProps) {
   const { token } = useApi();
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
-    try {
-      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev, version, token);
-
-      // Create a URL for the Blob object
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Create a temporary link element to trigger the download
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = suggestedFilename;
-      link.click();
-
-      // Clean up the URL and remove the link
-      URL.revokeObjectURL(blobUrl);
-      link.remove();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', error);
-    }
+    handleProformaDownload(dAbbrev, version, token);
   };
 
   const sortByCreated = (a: ProFormaVersion, b: ProFormaVersion) => {
