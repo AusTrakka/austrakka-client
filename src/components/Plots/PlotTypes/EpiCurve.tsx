@@ -3,8 +3,8 @@ import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
 import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
-import { 
-  getStartingField, setColorInSpecToValue, setRowInSpecToValue, setFieldInSpec 
+import {
+  getStartingField, setColorInSpecToValue, setRowInSpecToValue, setFieldInSpec,
 } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
@@ -49,7 +49,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
   const [dateBinStep, setDateBinStep] = useState<number>(1);
   const [colourField, setColourField] = useState<string>('none');
-  const [rowField, setRowField] = useState<string>('none');  // facets by row
+  const [rowField, setRowField] = useState<string>('none'); // facets by row
   const [stackType, setStackType] = useState<string>('zero');
   const { token, tokenLoading } = useApi();
 
