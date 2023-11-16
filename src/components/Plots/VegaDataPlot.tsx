@@ -64,6 +64,27 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const compiledSpec = compile(spec!).spec;
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
       (compiledSpec.data![dataIndex] as InlineData).values = filteredData;
+
+      // Handle faceted rows in plot using responsive width
+      if ((spec as any)?.encoding?.row) {
+        if (!compiledSpec.signals) { compiledSpec.signals = []; }
+        // -80 compensates for default Vega facet padding values
+        const newSignal = {
+          name: 'child_width',
+          init: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+          on: [{
+            events: 'window:resize',
+            update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+          }],
+        };
+        const signalIndex: number = compiledSpec.signals.findIndex(sig => sig.name === 'child_width');
+        if (signalIndex > -1) {
+          compiledSpec.signals[signalIndex] = newSignal;
+        } else {
+          compiledSpec.signals.push(newSignal);
+        }
+      }
+
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();

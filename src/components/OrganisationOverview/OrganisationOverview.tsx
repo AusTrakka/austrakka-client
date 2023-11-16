@@ -1,150 +1,138 @@
+// first lets make the get organisation information
 import React, { memo, useEffect, useState } from 'react';
-import { Box, FormControl, Grid, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
-import { Error } from '@mui/icons-material';
-import { ResponseObject, getUserGroups } from '../../utilities/resourceUtils';
-import SampleTable from '../SampleTable/SampleTable';
+import { Alert, Box, Typography } from '@mui/material';
 import LoadingState from '../../constants/loadingState';
+import { ResponseObject, getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-
-function OrgGroupSelector(props: any) {
-  const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
-
-  return (
-    <Grid container direction="row" justifyContent="center" alignItems="flex-end">
-      <Grid item sx={{ marginBottom: 1 }}>
-        {groupStatus === LoadingState.ERROR
-          ? (
-            <Tooltip title={groupStatusMessage}>
-              <Error color="error" />
-            </Tooltip>
-          )
-          : null }
-      </Grid>
-      <Grid item>
-        <FormControl
-          variant="standard"
-          sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
-          error={groupStatus === LoadingState.ERROR}
-        >
-          <InputLabel id="org-select-label">Organisation group</InputLabel>
-          <Select
-            labelId="org-select-label"
-            id="org-select"
-            defaultValue=""
-            value={groups.length !== 0 ? selectedGroup : ''}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            label="Organisation group"
-            autoWidth
-          >
-            { groups.map((group: any) => (
-              <MenuItem
-                value={group.group}
-                key={group.group.name}
-              >
-                {group.group.name}
-              </MenuItem>
-            )) }
-            { groups.length === 0 ? (
-              <MenuItem disabled>No owner groups available</MenuItem>
-            ) : null}
-          </Select>
-          {groupStatus === LoadingState.LOADING
-            ? (
-              <LinearProgress
-                color="secondary"
-              />
-            )
-            : null }
-        </FormControl>
-      </Grid>
-
-    </Grid>
-  );
-}
+import { Member, UserRoleGroup } from '../../types/dtos';
+import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
+import OrganisationSamples from './OrganisationSamples';
+import OrgSimpleMemberList from './OrgSimpleMemberList';
 
 function OrganisationOverview() {
-  const [selectedGroup, setSelectedGroup] = useState({
-    id: undefined,
-    name: '',
-  });
-  const [groups, setGroups] = useState([]);
-  const [groupStatus, setGroupStatus] = useState(LoadingState.IDLE);
+  const [userGroups, setUserGroups] = useState<UserRoleGroup[]>([]);
+  const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
+  const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
+  const [orgEveryone, setOrgEveryone] = useState<UserRoleGroup>();
   const { token, tokenLoading } = useApi();
+  const [tabValue, setTabValue] = useState(0);
+  const [organisationName, setOrganisationName] = useState('');
+  const [orgAbbrev, setOrgAbbrev] = useState('');
 
-  async function getGroups() {
-    setGroupStatus(LoadingState.LOADING);
-    const groupResponse: ResponseObject = await getUserGroups(token);
-    if (groupResponse.status === 'Success') {
-      // Filter out only owner groups that a user is a viewer in
-      const { organisation, userRoleGroup } = groupResponse.data;
-      // This is strictly Owner and Everyone groups
-      // Could instead check group organisation, if we want to include ad-hoc org groups
-      const orgViewerGroups = userRoleGroup.filter((roleGroup: any) =>
-        (roleGroup.group.name === `${organisation.abbreviation}-Owner`
-            || roleGroup.group.name === `${organisation.abbreviation}-Everyone`)
-          && (roleGroup.role.name === 'Viewer'))
-        .sort((a: any, b: any) => {
-          // Owner group first
-          if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
-          if (a.group.name.endsWith('-Owner')) return -1;
-          if (b.group.name.endsWith('-Owner')) return 1;
-          return 0;
-        });
-      setGroups(orgViewerGroups);
-      if (orgViewerGroups.length) {
-        setSelectedGroup(orgViewerGroups[0].group);
-      }
-      setGroupStatus(LoadingState.SUCCESS);
-    } else {
-      setGroupStatus(LoadingState.ERROR);
-      setGroupStatusMessage(groupResponse.message);
-    }
-  }
+  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
+  const [isMembersLoading, setIsMembersLoading] = useState(true);
+  const [memberListError, setMemberListError] = useState(false);
+  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
 
   useEffect(() => {
-    if (tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
+    async function getGroups() {
+      setGroupStatus(LoadingState.LOADING);
+      const groupResponse: ResponseObject = await getUserGroups(token);
+      if (groupResponse.status === 'Success') {
+        const { organisation, userRoleGroup, orgName }:
+        { organisation: { abbreviation: string, id: number },
+          userRoleGroup: UserRoleGroup[], orgName: string } = groupResponse.data;
+          // This is strictly Owner and Everyone groups
+          // Could instead check group organisation, if we want to include ad-hoc org groups
+        const orgViewerGroups = userRoleGroup.filter((roleGroup: UserRoleGroup) =>
+          (roleGroup.group.name === `${organisation.abbreviation}-Owner`
+                || roleGroup.group.name === `${organisation.abbreviation}-Everyone`)
+              && (roleGroup.role.name === 'Viewer'))
+          .sort((a: any, b: any) => {
+            // Owner group first
+            if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
+            if (a.group.name.endsWith('-Owner')) return -1;
+            if (b.group.name.endsWith('-Owner')) return 1;
+            return 0;
+          });
+        setOrgEveryone(orgViewerGroups.find((roleGroup: UserRoleGroup) =>
+          roleGroup.group.name === `${organisation.abbreviation}-Everyone`));
+        setUserGroups(orgViewerGroups);
+        setIsUserGroupsLoading(false);
+        setGroupStatus(LoadingState.SUCCESS);
+        setOrganisationName(orgName);
+        setOrgAbbrev(organisation.abbreviation);
+      } else {
+        setGroupStatus(LoadingState.ERROR);
+        setGroupStatusMessage(groupResponse.message);
+      }
+    }
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       getGroups();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenLoading]);
+  }, [token, tokenLoading]);
+
+  useEffect(() => {
+    async function getOrgMembersList() {
+      if (orgEveryone) {
+        const memberListResponse: ResponseObject =
+          await getGroupMembers(orgEveryone.group.id, token);
+        if (memberListResponse.status === 'Success') {
+          setProjectMembers(memberListResponse.data as Member[]);
+          setMemberListError(false);
+          setIsMembersLoading(false);
+        } else {
+          setIsMembersLoading(false);
+          setProjectMembers([]);
+          setMemberListError(true);
+          setMemberListErrorMessage(memberListResponse.message);
+        }
+      }
+    }
+
+    if (groupsStatus === LoadingState.SUCCESS ||
+      (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING)) {
+      getOrgMembersList();
+    }
+  }, [token, tokenLoading, groupsStatus, orgEveryone]);
+
+  const orgOverviewTabs: TabContentProps[] = [
+    {
+      index: 0,
+      title: 'Samples',
+    },
+    {
+      index: 1,
+      title: 'Members',
+    },
+  ];
 
   return (
-    <Box>
-      <Grid container direction="row">
-        <Typography variant="h2" color="primary">Organisation Data</Typography>
-        <Grid container justifyContent="space-between">
-          <Grid item xs={8}>
-            <Typography sx={{ paddingTop: 2, paddingBottom: 2 }} variant="subtitle2" color="primary">
-              View samples owned by your organisation.
-              Please note you will only be able to view
-              <em> all </em>
-              data for the organisation you are in,
-              if you are a
-              <b> viewer </b>
-              in your organisation&lsquo;s
-              <b> Owner group</b>
-              .
+    groupsStatus === LoadingState.ERROR
+      ? (
+        <Alert severity="error">
+          {groupStatusMessage}
+        </Alert>
+      )
+      : (
+        <>
+          <Box>
+            <Typography variant="h2" color="primary">
+              {`${organisationName} (${orgAbbrev})`}
             </Typography>
-          </Grid>
-          <Grid item alignItems="center">
-            <OrgGroupSelector
-              groups={groups}
-              groupStatus={groupStatus}
-              groupStatusMessage={groupStatusMessage}
-              selectedGroup={selectedGroup}
-              setSelectedGroup={setSelectedGroup}
+          </Box>
+          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
+          <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
+            {isUserGroupsLoading ? null : (
+              <OrganisationSamples
+                defaultGroup={userGroups![0]}
+                groups={userGroups!}
+                groupStatus={groupsStatus}
+                groupStatusMessage={groupStatusMessage}
+              />
+            )}
+          </TabPanel>
+          <TabPanel value={tabValue} index={1} tabLoader={isMembersLoading}>
+            <OrgSimpleMemberList
+              isMembersLoading={isMembersLoading}
+              memberList={projectMembers}
+              memberListError={memberListError}
+              memberListErrorMessage={memberListErrorMessage}
             />
-          </Grid>
-        </Grid>
-      </Grid>
-      <SampleTable
-        groupContext={selectedGroup.id}
-        groupName={undefined}
-      />
-    </Box>
+          </TabPanel>
+        </>
+      )
   );
 }
 export default memo(OrganisationOverview);
