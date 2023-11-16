@@ -60,3 +60,22 @@ export const setColorInSpecToValue =
       }
       return newSpec as TopLevelSpec;
     };
+
+// Facet row. Does not use generic setFieldInSpec, as we handle 'none'
+export const setRowInSpecToValue =
+    (oldSpec: TopLevelSpec | null, rowField: string): TopLevelSpec | null => {
+      if (oldSpec == null) return null;
+      const newSpec: any = { ...oldSpec };
+      if (rowField === 'none') {
+        // Remove row from encoding
+        const { row, ...newEncoding } = (oldSpec as any).encoding;
+        newSpec.encoding = newEncoding;
+      } else {
+        // Set row in encoding
+        newSpec.encoding = { ...(oldSpec as any).encoding };
+        newSpec.encoding.row = {
+          field: rowField,
+        };
+      }
+      return newSpec as TopLevelSpec;
+    };
