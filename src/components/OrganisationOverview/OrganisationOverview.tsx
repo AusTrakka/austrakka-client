@@ -1,6 +1,7 @@
 // first lets make the get organisation information
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject, getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
@@ -19,7 +20,8 @@ function OrganisationOverview() {
   const [tabValue, setTabValue] = useState(0);
   const [organisationName, setOrganisationName] = useState('');
   const [orgAbbrev, setOrgAbbrev] = useState('');
-
+  const location = useLocation();
+  const pathName = location.pathname;
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
@@ -87,7 +89,7 @@ function OrganisationOverview() {
     }
   }, [token, tokenLoading, groupsStatus, orgEveryone]);
 
-  const orgOverviewTabs: TabContentProps[] = [
+  const orgOverviewTabs: TabContentProps[] = useMemo(() => [
     {
       index: 0,
       title: 'Samples',
@@ -96,7 +98,15 @@ function OrganisationOverview() {
       index: 1,
       title: 'Members',
     },
-  ];
+  ], []);
+
+  useEffect(() => {
+    const initialTabValue = orgOverviewTabs
+      .findIndex((tab) => pathName.endsWith(tab.title.toLowerCase()));
+    if (initialTabValue !== -1) {
+      setTabValue(initialTabValue);
+    }
+  }, [pathName, orgOverviewTabs]);
 
   return (
     groupsStatus === LoadingState.ERROR

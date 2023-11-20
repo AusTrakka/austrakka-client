@@ -4,6 +4,7 @@ import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_Toggl
 import { Alert, AlertTitle, Box, Chip, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
+import { useNavigate } from 'react-router-dom';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member } from '../../types/dtos';
@@ -43,6 +44,7 @@ function MemberList(props: MembersProps) {
 
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const generateFilename = () => {
     const dateObject = new Date();
@@ -81,6 +83,20 @@ function MemberList(props: MembersProps) {
       // eslint-disable-next-line no-console
       console.error('Error exporting data:', error);
       setExportCSVStatus(LoadingState.ERROR);
+    }
+  };
+
+  const rowClickHandler = (row: any) => {
+    const selectedRow = row.original; // Assuming "original" contains the row data
+
+    // Check if the "Object Id" property exists in the selected row
+    if ('objectId' in selectedRow) {
+      const { objectId } = selectedRow; // Replace "objectId" with the actual property name
+      const url = `/users/${objectId}`;
+      navigate(url);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Object Id not found in selectedRow.');
     }
   };
 
@@ -168,6 +184,12 @@ function MemberList(props: MembersProps) {
             }
             : undefined
         }
+        muiTableBodyRowProps={({ row }) => ({
+          onClick: () => rowClickHandler(row),
+          sx: {
+            cursor: 'pointer',
+          },
+        })}
         renderToolbarInternalActions={({ table }) => (
           <Box>
             {ExportButton}
