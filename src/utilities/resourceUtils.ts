@@ -150,7 +150,7 @@ export const getPlotData = (groupId: number, fields: string[], token: string) =>
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callGET(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, token);
 };
-export const getTrees = (projectId: number, token: string) => callGET(`/api/Analyses/?filters=ProjectId==${projectId}`, token);
+export const getTrees = (projectAbbrev: string, token: string) => callGET(`/api/Analyses/project/${projectAbbrev}`, token);
 export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/api/JobInstance/${jobInstanceId}`, token);
 export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
 export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
@@ -183,3 +183,4 @@ export const getUserDashboardPhessStatus = (token: string, searchParams?: string
 
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
+export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);

@@ -69,6 +69,7 @@ function MainMenuLayout() {
     samples: 'Samples',
     proformas: 'ProFormas',
     members: 'Members',
+    users: 'Users',
   };
   // These values in the breadcrumb cannot be navigated to
   const breadcrumbNoLink: string[] = ['versions', 'records'];
