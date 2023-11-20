@@ -177,6 +177,11 @@ function TreeDetail() {
       }
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
+        if (jobInstanceId === 'latest') {
+          const currentPath = window.location.href;
+          const newPath = currentPath.replace('latest', treeResponse.data.jobInstanceId);
+          window.history.pushState(null, '', newPath);
+        }
       } else {
         setErrorMsg(treeResponse.message);
       }
