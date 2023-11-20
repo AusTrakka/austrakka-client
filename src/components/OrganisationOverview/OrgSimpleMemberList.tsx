@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CircularProgress, Grid, Tooltip, Typography } from '@mui/material';
 import { Error } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { Member } from '../../types/dtos';
 
 interface OrgMembersProps {
@@ -11,6 +12,7 @@ interface OrgMembersProps {
 }
 
 function UserCard({ user }: { user: Member }) {
+  const navigate = useNavigate();
   const cardStyle = {
     width: '250px',
     height: '100px',
@@ -24,8 +26,18 @@ function UserCard({ user }: { user: Member }) {
     borderBottom: '4px solid #90ca6d',
   };
 
+  function handleCardClick() {
+    // Check if the "Object Id" property exists in the selected row
+    const url = `/users/${user.objectId}`;
+    navigate(url);
+  }
+
   return (
-    <Card sx={cardStyle}>
+    <Card
+      sx={cardStyle}
+      onClick={() => handleCardClick()}
+      style={{ cursor: 'pointer' }}
+    >
       <CardContent sx={contentStyle}>
         <Typography variant="h5">{user.displayName}</Typography>
         <Typography variant="caption">{user.organization.abbreviation}</Typography>
