@@ -5,6 +5,7 @@ import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.inter
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
   onSelectedIdsChange: CallableFunction;
+  setRowSelection: any;
 }
 
 export type TreeExportFuctions = {
@@ -19,7 +20,7 @@ export type TreeExportFuctions = {
 };
 
 const Tree = React.forwardRef(
-  ({ resizeWidthTo, onSelectedIdsChange, ...otherProps }: TreeProps, ref) => {
+  ({ resizeWidthTo, onSelectedIdsChange, setRowSelection, ...otherProps }: TreeProps, ref) => {
     const treeDiv = useRef<HTMLDivElement>(null);
     const tree = useRef<Phylocanvas | null>(null);
     const [size, setSize] = useState<{ width: number; height: number }>(otherProps.size);
@@ -66,7 +67,13 @@ const Tree = React.forwardRef(
         tree.current = new Phylocanvas(treeDiv.current, { ...otherProps });
         tree.current.addClickHandler(() => {
           // save the selectedIds in the state
-          onSelectedIdsChange(tree.current?.props.selectedIds);
+          const selected = tree.current?.props.selectedIds;
+          onSelectedIdsChange(selected);
+          const obj:any = {};
+          for (const key of selected) {
+            obj[key] = true;
+          }
+          setRowSelection(obj);
         });
       }
       if (resizeWidthTo !== null) {
@@ -75,7 +82,7 @@ const Tree = React.forwardRef(
       return () => {
         window.removeEventListener('resize', handleResize);
       };
-    }, [onSelectedIdsChange, otherProps, resizeWidthTo, size]);
+    }, [onSelectedIdsChange, otherProps, resizeWidthTo, setRowSelection, size]);
 
     useEffect(() => {
       const updatedProps = { ...otherProps, size };
