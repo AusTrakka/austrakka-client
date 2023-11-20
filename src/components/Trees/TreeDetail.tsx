@@ -2,9 +2,10 @@ import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields } from '../../utilities/resourceUtils';
+import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields, getDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -18,6 +19,7 @@ import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import TreeTable from './TreeTable';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -49,8 +51,10 @@ function TreeDetail() {
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
+  const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [tableDisplayFields, setTableDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -68,6 +72,7 @@ function TreeDetail() {
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const { token, tokenLoading } = useApi();
 
   // control hooks
@@ -84,21 +89,27 @@ function TreeDetail() {
         token,
       );
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
-
+      const tableDisplayFieldsResponse = await getDisplayFields(
+        Number(tree?.projectMembersGroupId),
+        token,
+      );
       if (
         metadataResponse.status === 'Success' &&
       displayFieldsResponse.status === 'Success' &&
-      versionsResponse.status === 'Success'
+      versionsResponse.status === 'Success' &&
+      tableDisplayFieldsResponse.status === 'Success'
       ) {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
           displayFieldsResponse.data,
           colourScheme,
         );
+        setTableMetadata(metadataResponse.data);
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
         setVersions(versionsResponse.data);
+        setTableDisplayFields(tableDisplayFieldsResponse.data);
       } else {
         setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
@@ -177,6 +188,11 @@ function TreeDetail() {
       }
       if (treeResponse.status === 'Success') {
         setTree(treeResponse.data);
+        if (jobInstanceId === 'latest') {
+          const currentPath = window.location.href;
+          const newPath = currentPath.replace('latest', treeResponse.data.jobInstanceId);
+          window.history.pushState(null, '', newPath);
+        }
       } else {
         setErrorMsg(treeResponse.message);
       }
@@ -213,10 +229,28 @@ function TreeDetail() {
           metadata={phylocanvasMetadata}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
+          setRowSelection={setRowSelection}
           rootId={rootId}
           styles={styles}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
+        />
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
+  const renderTable = () => {
+    if (tree) {
+      return (
+        <TreeTable
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+          rowSelection={rowSelection}
+          setRowSelection={setRowSelection}
+          displayFields={tableDisplayFields}
+          tableMetadata={tableMetadata}
         />
       );
     }
@@ -229,6 +263,11 @@ function TreeDetail() {
     value: string[],
   ) => {
     setSelectedIds(value);
+    const obj:any = {};
+    for (const key of value) {
+      obj[key] = true;
+    }
+    setRowSelection(obj);
   };
 
   const handleStateChange = (
@@ -395,6 +434,7 @@ function TreeDetail() {
         </Typography>
         {renderTree()}
         {renderLegend()}
+        {renderTable()}
       </Grid>
     </Grid>
 

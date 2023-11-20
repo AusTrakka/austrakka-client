@@ -314,7 +314,7 @@ function SampleTable(props: SamplesProps) {
       />
       <MaterialReactTable
         tableInstanceRef={tableInstanceRef}
-        columns={sampleTableColumns}
+        columns={sampleTableColumns as any}
         data={sampleList}
         enableColumnFilters={false}
         enableStickyHeader
