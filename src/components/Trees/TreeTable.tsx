@@ -15,6 +15,8 @@ interface TreeTableProps {
   tableMetadata: any
 }
 // TODO: Pass down any relevant error states for samples/display fields
+// TODO: Fix column hiding/showing functionaility - state too slow to update
+// TODO: Export table (all rows and selected rows only) to csv
 
 export default function TreeTable(props: TreeTableProps) {
   const {
@@ -132,7 +134,8 @@ export default function TreeTable(props: TreeTableProps) {
         })}
         getRowId={(originalRow: Sample) => originalRow.Seq_ID}
         onRowSelectionChange={(row) => handleRowSelect(row)}
-        state={{ rowSelection, columnPinning: { left: ['selection'] } }}
+        state={{ rowSelection }}
+        enableHiding={false}
         initialState={{ density: 'compact' }}
         positionToolbarAlertBanner="none"
         enableDensityToggle={false}
