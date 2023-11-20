@@ -1,10 +1,12 @@
 import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-react-table';
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Backdrop, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { DisplayField, Sample } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import DataFilters from '../DataFilters/DataFilters';
+import ExportTableData from '../Common/ExportTableData';
+import LoadingState from '../../constants/loadingState';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -15,8 +17,7 @@ interface TreeTableProps {
   tableMetadata: any
 }
 // TODO: Pass down any relevant error states for samples/display fields
-// TODO: Fix column hiding/showing functionaility - state too slow to update
-// TODO: Export table (all rows and selected rows only) to csv
+// TODO: Fix column hiding/showing functionaility
 
 export default function TreeTable(props: TreeTableProps) {
   const {
@@ -29,6 +30,7 @@ export default function TreeTable(props: TreeTableProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
 
   // Format display fields into column headers
   useEffect(
@@ -117,6 +119,12 @@ export default function TreeTable(props: TreeTableProps) {
 
   return (
     <>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: 2000 }}
+        open={exportCSVStatus === LoadingState.LOADING}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <DataFilters
         data={formattedData}
         fields={displayFields}
@@ -162,6 +170,13 @@ export default function TreeTable(props: TreeTableProps) {
               {`${Object.keys(rowSelection).length} row(s) selected`}
             </Typography>
           </Box>
+        )}
+        renderToolbarInternalActions={() => (
+          <ExportTableData
+            dataToExport={displayRows}
+            exportCSVStatus={exportCSVStatus}
+            setExportCSVStatus={setExportCSVStatus}
+          />
         )}
       />
     </>
