@@ -72,7 +72,7 @@ function MainMenuLayout() {
     users: 'Users',
   };
   // These values in the breadcrumb cannot be navigated to
-  const breadcrumbNoLink: string[] = ['versions', 'records'];
+  const breadcrumbNoLink: string[] = ['versions', 'records', 'users'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
