@@ -27,7 +27,7 @@ const uploadOptions = [
   },
   {
     name: 'append',
-    label: 'Append metadata or update existing samples',
+    label: 'Update existing samples',
     description: 'Add or update metadata for existing samples. If this is selected, you cannot include new samples in the upload, but may use proformas that do not include Owner_group.',
   },
 ];
