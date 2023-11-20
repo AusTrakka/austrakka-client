@@ -194,7 +194,7 @@ function ProjectOverview() {
     }
 
     async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(projectDetails!.projectId, token);
+      const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
       if (treeListResponse.status === 'Success') {
         setProjectTrees(treeListResponse.data);
         setTreeListError(false);
