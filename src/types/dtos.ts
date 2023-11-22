@@ -43,7 +43,6 @@ export interface JobInstance {
   resultsDataId: number;
   treeId: number;
   newickTree: string;
-  isApproved: boolean;
   isActive: boolean;
   versionName: string;
   version: string;
