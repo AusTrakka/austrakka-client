@@ -1,3 +1,5 @@
+import {ResponseType} from "../constants/responseType";
+
 interface HTTPOptions {
   [key: string]: any
 }
@@ -14,11 +16,22 @@ export interface ResponseObject {
 }
 // Constants
 const genericErrorMessage = 'There was an error, please report this to an AusTrakka admin.';
+const expiredTokenErrorMessage = 'Your session has expired. Please refresh.';
 const base = import.meta.env.VITE_REACT_API_URL;
 const noToken = {
-  status: 'Error',
+  status: ResponseType.Error,
   message: 'There has been an error, please try reloading the page or logging in again.',
 };
+const WWW_AUTHENTICATE = 'www-authenticate';
+const INVALID_TOKEN = 'invalid_token';
+
+function GetHeaders(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
 
 // NEW: Token passed as prop via endpoint calls
 async function callGET(url:string, token : string) {
@@ -28,36 +41,36 @@ async function callGET(url:string, token : string) {
   }
   const options: HTTPOptions = {
     method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'Access-Control-Expose-Headers': '*',
-    },
+    headers: GetHeaders(token),
   };
-  const apiResponse = await fetch(base + url, options)
-    .then((response) => response.json().then((data) => ({
-      data,
-      headers: response.headers,
-      statusOk: response.ok,
-      statusText: response.statusText, // response.ok returns true if the status property is 200-299
-    })))
-    .then((resp) => {
-      if (resp.data.data !== null && resp.statusOk) {
-        return {
-          status: 'Success',
-          message: resp.data.messages[0]?.ResponseMessage,
-          data: resp.data.data,
-          headers: resp.headers,
-        };
-      }
+  
+  try {
+    const response = await fetch(base + url, options);
+    if (response.headers.get(WWW_AUTHENTICATE)?.includes(INVALID_TOKEN)) {
       return {
-        status: 'Error',
-        type: resp.statusText,
-        message: resp.data.messages[0]?.ResponseMessage || genericErrorMessage,
+        status: ResponseType.Error,
+        type: response.statusText,
+        message: expiredTokenErrorMessage,
       };
-    })
-    .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiResponse as ResponseObject;
+    }
+    const json = await response.json();
+    if (json !== null && response.ok) {
+      return {
+        status: ResponseType.Success,
+        message: json.messages[0]?.ResponseMessage,
+        data: json.data,
+        headers: response.headers,
+      };
+    }
+    return {
+      status: ResponseType.Error,
+      type: response.statusText,
+      message: json.messages[0]?.ResponseMessage || genericErrorMessage,
+    };
+  } catch (error : any) {
+    console.dir(error)
+    return ({ status: ResponseType.Error, message: genericErrorMessage, error })
+  }
 }
 
 async function callPOSTForm(url:string, formData:FormData, token : string) {
@@ -67,33 +80,34 @@ async function callPOSTForm(url:string, formData:FormData, token : string) {
   const options: HTTPOptions = {
     method: 'POST',
     body: formData,
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'Access-Control-Expose-Headers': '*',
-    },
+    headers: GetHeaders(token),
   };
-  const apiResponse = await fetch(base + url, options)
-    .then((response) => response.json().then((data) => ({
-      data,
-      headers: response.headers,
-      statusOk: response.ok, // response.ok returns true if the status property is 200-299
-    })))
-    .then((resp) => {
-      if (resp.statusOk) {
-        return {
-          status: 'Success',
-          messages: resp.data.messages,
-          data: resp.data.data,
-        };
-      }
+  
+  try {
+    const response = await fetch(base + url, options);
+    if (response.headers.get(WWW_AUTHENTICATE)?.includes(INVALID_TOKEN)) {
       return {
-        status: 'Error',
-        messages: resp.data.messages || [genericErrorMessage],
+        status: ResponseType.Error,
+        message: [expiredTokenErrorMessage],
       };
-    })
-    .catch((error) => ({ status: 'Error', message: genericErrorMessage, error }));
-  return apiResponse as ResponseObject;
+    }
+    const json = await response.json();
+    if (response.ok) {
+      return {
+        status: ResponseType.Success,
+        messages: json.messages,
+        data: json.data,
+      };
+    }
+    return {
+      status: ResponseType.Error,
+      messages: json.messages || [genericErrorMessage],
+    };
+  }
+  catch (error : any) {
+    console.dir(error)
+    return ({ status: ResponseType.Error, message: genericErrorMessage, error })
+  }
 }
 
 async function downloadFile(url: string, token : string) {
@@ -103,9 +117,7 @@ async function downloadFile(url: string, token : string) {
 
   const options: HTTPOptions = {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: GetHeaders(token),
   };
 
   let filename = 'no-file-name.xlsx'; // Default filename
