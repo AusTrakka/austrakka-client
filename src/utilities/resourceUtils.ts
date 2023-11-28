@@ -68,7 +68,6 @@ async function callGET(url:string, token : string) {
       message: json.messages[0]?.ResponseMessage || genericErrorMessage,
     };
   } catch (error : any) {
-    console.dir(error)
     return ({ status: ResponseType.Error, message: genericErrorMessage, error })
   }
 }
@@ -105,7 +104,6 @@ async function callPOSTForm(url:string, formData:FormData, token : string) {
     };
   }
   catch (error : any) {
-    console.dir(error)
     return ({ status: ResponseType.Error, message: genericErrorMessage, error })
   }
 }
