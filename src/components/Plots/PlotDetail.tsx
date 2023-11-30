@@ -13,6 +13,7 @@ import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
   'ClusterTimeline': ClusterTimeline,
@@ -36,7 +37,7 @@ function PlotDetail() {
     // Get plot details, including plot type
     const getPlot = async () => {
       const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
-      if (plotResponse.status === 'Success') {
+      if (plotResponse.status === ResponseType.Success) {
         setPlot(plotResponse.data as Plot);
       } else {
         setErrorMsg(`Plot ${plotAbbrev} could not be loaded`);

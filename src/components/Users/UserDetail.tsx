@@ -7,6 +7,7 @@ import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function UserDetail() {
   const { userObjectId } = useParams();
@@ -23,7 +24,7 @@ function UserDetail() {
   useEffect(() => {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
-      if (userResponse.status === 'Success') {
+      if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserDetails;
         setUser(userDto);
       } else {

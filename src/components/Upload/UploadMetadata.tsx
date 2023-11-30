@@ -10,6 +10,7 @@ import FileDragDrop from './FileDragDrop';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseMessage } from '../../types/apiResponse.interface';
+import { ResponseType } from '../../constants/responseType';
 
 interface Options {
   validate: boolean,
@@ -141,7 +142,7 @@ function UploadMetadata() {
     setProformaStatus(LoadingState.LOADING);
     const getProformas = async () => {
       const proformaResponse: ResponseObject = await getUserProformas(token);
-      if (proformaResponse.status === 'Success') {
+      if (proformaResponse.status === ResponseType.Success) {
         setProformas(proformaResponse.data);
         setProformaStatus(LoadingState.SUCCESS);
       } else {
@@ -191,7 +192,7 @@ function UploadMetadata() {
       await validateSubmissions(formData, optionString, token)
       : await uploadSubmissions(formData, optionString, token);
 
-    if (submissionResponse.status === 'Success') {
+    if (submissionResponse.status === ResponseType.Success) {
       setSubmission({
         ...submission,
         status: LoadingState.SUCCESS,

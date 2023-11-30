@@ -10,6 +10,7 @@ import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -59,7 +60,7 @@ function Histogram(props: PlotTypeProps) {
   useEffect(() => {
     const updateFields = async () => {
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         const fields = response.data as MetaDataColumn[];
         setDisplayFields(fields);
         const localNumericFields = fields

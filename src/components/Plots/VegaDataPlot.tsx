@@ -13,6 +13,7 @@ import LoadingState from '../../constants/loadingState';
 import DataFilters from '../DataFilters/DataFilters';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -35,7 +36,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     const updatePlotData = async () => {
       const response = await getPlotData(dataGroupId!, fieldsToRetrieve, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         setData(response.data);
         setFilteredData(response.data);
       } else {

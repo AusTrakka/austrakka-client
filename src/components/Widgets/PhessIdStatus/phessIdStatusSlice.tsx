@@ -8,6 +8,7 @@ import type { RootState } from '../../../app/store';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 // import { aggregateArrayObjects } from '../../../utilities/helperUtils';
+import { ResponseType } from '../../../constants/responseType';
 
 interface PhessIdStatusState {
   loading: string
@@ -29,7 +30,7 @@ export const fetchPhessIdStatus = createAsyncThunk(
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const response = await getDashboardFields(groupId, token, ['PHESS_ID'], filterString);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);

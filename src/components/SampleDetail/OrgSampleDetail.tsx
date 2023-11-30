@@ -8,6 +8,7 @@ import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtil
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function SampleDetail() {
   const { seqId } = useParams();
@@ -38,7 +39,7 @@ function SampleDetail() {
     const updateProject = async () => {
       try {
         const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
-        if (sampleResponse.status === 'Success') {
+        if (sampleResponse.status === ResponseType.Success) {
           const groupsData = sampleResponse.data as Group[];
           const ownerAbbrev = groupsData.find(g => g.name.endsWith('-Everyone'))?.organisation.abbreviation;
           if (ownerAbbrev === undefined) {
@@ -96,7 +97,7 @@ function SampleDetail() {
       try {
         if (selectedGroup) {
           const response = await getDisplayFields(selectedGroup.groupId!, token);
-          if (response.status === 'Success') {
+          if (response.status === ResponseType.Success) {
             setDisplayFields(response.data as DisplayField[]);
           } else {
             setErrMsg(`Metadata fields for ${selectedGroup.name} could not be loaded`);
@@ -122,7 +123,7 @@ function SampleDetail() {
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
       const response = await getSamples(token, searchParams.toString());
-      if (response.status === 'Success' && response.data.length > 0) {
+      if (response.status === ResponseType.Success && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
         setErrMsg(`Record ${seqId} could not be found within the context of ${selectedGroup!.name}`);

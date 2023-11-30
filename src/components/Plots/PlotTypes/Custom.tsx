@@ -14,6 +14,7 @@ import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
@@ -35,7 +36,7 @@ function Custom(props: PlotTypeProps) {
     const updateFields = async () => {
       // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         const fields = response.data as MetaDataColumn[];
         // We can't know which fields the custom spec needs; retrieve all
         setDisplayFields(fields);

@@ -21,6 +21,7 @@ import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeTable from './TreeTable';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -95,10 +96,10 @@ function TreeDetail() {
         token,
       );
       if (
-        metadataResponse.status === 'Success' &&
-      displayFieldsResponse.status === 'Success' &&
-      versionsResponse.status === 'Success' &&
-      tableDisplayFieldsResponse.status === 'Success'
+        metadataResponse.status === ResponseType.Success &&
+      displayFieldsResponse.status === ResponseType.Success &&
+      versionsResponse.status === ResponseType.Success &&
+      tableDisplayFieldsResponse.status === ResponseType.Success
       ) {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
@@ -187,7 +188,7 @@ function TreeDetail() {
       } else {
         treeResponse = await getTreeData(Number(jobInstanceId), token);
       }
-      if (treeResponse.status === 'Success') {
+      if (treeResponse.status === ResponseType.Success) {
         setTree(treeResponse.data);
         if (jobInstanceId === 'latest') {
           const currentPath = window.location.href;

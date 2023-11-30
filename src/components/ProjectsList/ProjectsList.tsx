@@ -7,6 +7,7 @@ import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 type Project = {
   abbreviation: string,
@@ -34,7 +35,7 @@ function ProjectsList() {
   useEffect(() => {
     async function getProject() {
       const projectResponse: ResponseObject = await getProjectList(token);
-      if (projectResponse.status === 'Success') {
+      if (projectResponse.status === ResponseType.Success) {
         setProjectsList(projectResponse.data);
         setIsLoading(false);
         setIsError(false);

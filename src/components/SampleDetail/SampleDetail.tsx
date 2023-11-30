@@ -7,6 +7,7 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
@@ -20,7 +21,7 @@ function SampleDetail() {
   useEffect(() => {
     const updateProject = async () => {
       const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
-      if (projectResponse.status === 'Success') {
+      if (projectResponse.status === ResponseType.Success) {
         setProject(projectResponse.data as Project);
       } else {
         setErrMsg(`Project ${projectAbbrev} could not be accessed`);
@@ -35,7 +36,7 @@ function SampleDetail() {
   useEffect(() => {
     const updateDisplayFields = async () => {
       const response = await getDisplayFields(project!.projectMembers.id, token);
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         setDisplayFields(response.data as DisplayField[]);
       } else {
         setErrMsg(`Metadata fields for project ${project!.abbreviation} could not be loaded`);
@@ -55,7 +56,7 @@ function SampleDetail() {
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
       const response = await getSamples(token, searchParams.toString());
-      if (response.status === 'Success' && response.data.length > 0) {
+      if (response.status === ResponseType.Success && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
         setErrMsg(`Record ${seqId} could not be found within the context of project ${project!.abbreviation}`);

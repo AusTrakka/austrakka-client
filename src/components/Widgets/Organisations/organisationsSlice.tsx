@@ -7,6 +7,7 @@ import LoadingState from '../../../constants/loadingState';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
 import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 interface OrganisationsState {
   loading: string
@@ -28,7 +29,7 @@ export const fetchOrganisations = createAsyncThunk(
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const response = await getDashboardFields(groupId, token, ['Owner_group'], filterString);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);

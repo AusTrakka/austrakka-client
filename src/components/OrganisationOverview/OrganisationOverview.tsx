@@ -10,6 +10,7 @@ import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
 import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function OrganisationOverview() {
   const [userGroups, setUserGroups] = useState<UserRoleGroup[]>([]);
@@ -32,7 +33,7 @@ function OrganisationOverview() {
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
       const groupResponse: ResponseObject = await getUserGroups(token);
-      if (groupResponse.status === 'Success') {
+      if (groupResponse.status === ResponseType.Success) {
         const { organisation, userRoleGroup, orgName }:
         { organisation: { abbreviation: string, id: number },
           userRoleGroup: UserRoleGroup[], orgName: string } = groupResponse.data;
@@ -71,7 +72,7 @@ function OrganisationOverview() {
       if (orgEveryone) {
         const memberListResponse: ResponseObject =
           await getGroupMembers(orgEveryone.group.id, token);
-        if (memberListResponse.status === 'Success') {
+        if (memberListResponse.status === ResponseType.Success) {
           setProjectMembers(memberListResponse.data as Member[]);
           setMemberListError(false);
           setIsMembersLoading(false);
