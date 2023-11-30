@@ -1,11 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject, getProjectDashboard } from '../../../utilities/resourceUtils';
+import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
 import DashboardTemplateActions from '../../../config/dashboardActions';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 interface ProjectDashboardState {
   loading: LoadingState

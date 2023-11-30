@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject, getThresholdAlerts } from '../../../utilities/resourceUtils';
+import { getThresholdAlerts } from '../../../utilities/resourceUtils';
 import { AppState } from '../../../types/app.interface';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 interface ThresholdAlertsState {
   loading: string

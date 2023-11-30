@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields, getDisplayFields } from '../../utilities/resourceUtils';
+import { getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields, getDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -20,6 +20,7 @@ import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeTable from './TreeTable';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 const defaultState: TreeState = {
   blocks: [],

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import { ResponseObject, getUser } from '../../utilities/resourceUtils';
+import { getUser } from '../../utilities/resourceUtils';
 import { UserDetails, UserRoleGroup } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate from '../../utilities/helperUtils';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function UserDetail() {
   const { userObjectId } = useParams();

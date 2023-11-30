@@ -2,10 +2,11 @@ import { Alert, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Ty
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { DisplayField, Project, Sample } from '../../types/dtos';
-import { ResponseObject, getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
+import { getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();

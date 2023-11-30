@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
-import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
+import { getDisplayFields } from '../../../utilities/resourceUtils';
 import {
   getStartingField, setColorInSpecToValue, setRowInSpecToValue, setFieldInSpec,
 } from '../../../utilities/plotUtils';
@@ -11,6 +11,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these

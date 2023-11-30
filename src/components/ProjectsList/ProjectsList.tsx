@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { Typography } from '@mui/material';
 import isoDateLocalDate from '../../utilities/helperUtils';
-import { getProjectList, ResponseObject } from '../../utilities/resourceUtils';
+import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 type Project = {
   abbreviation: string,

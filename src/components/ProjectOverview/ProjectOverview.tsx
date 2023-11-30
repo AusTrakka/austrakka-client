@@ -5,7 +5,7 @@ import { MRT_PaginationState, MRT_ColumnDef, MRT_SortingState } from 'material-r
 import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
-  getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
+  getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
   getTrees, getGroupMembers, getGroupProFormas,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
@@ -23,6 +23,7 @@ import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helper
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();

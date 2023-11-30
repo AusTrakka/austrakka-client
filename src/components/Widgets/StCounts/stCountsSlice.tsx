@@ -1,12 +1,13 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { StCounts } from './st.counts.interface';
-import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
+import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 // eslint-disable-next-line import/no-cycle
 import { AppState } from '../../../types/app.interface';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 interface StCountsState {
   loading: string

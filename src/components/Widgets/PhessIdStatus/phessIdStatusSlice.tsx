@@ -2,10 +2,11 @@
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { PhessIdStatus } from './phess.id.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
+import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
+import { ResponseObject } from '../../../types/responseObject.interface';
 // import { aggregateArrayObjects } from '../../../utilities/helperUtils';
 
 interface PhessIdStatusState {

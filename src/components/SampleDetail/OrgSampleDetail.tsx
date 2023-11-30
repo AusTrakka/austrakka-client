@@ -2,11 +2,12 @@ import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { DisplayField, Group, Sample } from '../../types/dtos';
-import { ResponseObject, getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
+import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function SampleDetail() {
   const { seqId } = useParams();

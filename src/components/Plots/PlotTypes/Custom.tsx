@@ -7,12 +7,13 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { MetaDataColumn } from '../../../types/dtos';
-import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
+import { getDisplayFields } from '../../../utilities/resourceUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;

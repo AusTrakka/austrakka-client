@@ -2,10 +2,11 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SampleSummary } from './sample.summary.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject, getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
+import { getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
+import { ResponseObject } from '../../../types/responseObject.interface';
 
 interface SampleSummaryState {
   loading: LoadingState

@@ -3,12 +3,13 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject, getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
+import { getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { Member, UserRoleGroup } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function OrganisationOverview() {
   const [userGroups, setUserGroups] = useState<UserRoleGroup[]>([]);
