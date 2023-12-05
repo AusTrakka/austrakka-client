@@ -5,7 +5,7 @@ import { MRT_PaginationState, MRT_ColumnDef, MRT_SortingState } from 'material-r
 import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
-  getSamples, getProjectDetails, getTotalSamples, ResponseObject, getDisplayFields, getPlots,
+  getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
   getTrees, getGroupMembers, getGroupProFormas,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
@@ -23,6 +23,8 @@ import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helper
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -91,7 +93,7 @@ function ProjectOverview() {
   useEffect(() => {
     async function getProject() {
       const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
-      if (projectResponse.status === 'Success') {
+      if (projectResponse.status === ResponseType.Success) {
         setProjectDetails(projectResponse.data as Project);
         setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
       } else {
@@ -122,7 +124,7 @@ function ProjectOverview() {
         projectDetails!.projectMembers.id,
         token,
       );
-      if (totalSamplesResponse.status === 'Success') {
+      if (totalSamplesResponse.status === ResponseType.Success) {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
         setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
@@ -143,7 +145,7 @@ function ProjectOverview() {
         projectDetails!.projectMembers.id,
         token,
       );
-      if (tableHeadersResponse.status === 'Success') {
+      if (tableHeadersResponse.status === ResponseType.Success) {
         const columnHeaderArray = tableHeadersResponse.data;
         const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
         // we need to catch that in the occation where there are no headers.
@@ -195,7 +197,7 @@ function ProjectOverview() {
 
     async function getTreeList() {
       const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
-      if (treeListResponse.status === 'Success') {
+      if (treeListResponse.status === ResponseType.Success) {
         setProjectTrees(treeListResponse.data);
         setTreeListError(false);
         setIsTreesLoading(false);
@@ -209,7 +211,7 @@ function ProjectOverview() {
 
     async function getPlotList() {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
-      if (plotsResponse.status === 'Success') {
+      if (plotsResponse.status === ResponseType.Success) {
         setProjectPlots(plotsResponse.data as PlotListing[]);
         setIsPlotsLoading(false);
       } else {
@@ -222,7 +224,7 @@ function ProjectOverview() {
     async function getMemberList() {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
-      if (memberListResponse.status === 'Success') {
+      if (memberListResponse.status === ResponseType.Success) {
         setProjectMembers(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsMembersLoading(false);
@@ -237,7 +239,7 @@ function ProjectOverview() {
     async function getProFormaList() {
       const proformaListResponse : ResponseObject =
         await getGroupProFormas(projectDetails!.projectMembers.id, token);
-      if (proformaListResponse.status === 'Success') {
+      if (proformaListResponse.status === ResponseType.Success) {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProjectProFormas(data);
         setIsProFormasLoading(false);
@@ -349,7 +351,7 @@ function ProjectOverview() {
           sorts: sortString,
         });
         const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
-        if (samplesResponse.status === 'Success') {
+        if (samplesResponse.status === ResponseType.Success) {
           setProjectSamples(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
@@ -385,7 +387,7 @@ function ProjectOverview() {
       filters: queryString,
     });
     const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
-    if (samplesResponse.status === 'Success') {
+    if (samplesResponse.status === ResponseType.Success) {
       setExportData(samplesResponse.data);
     } else {
       setExportCSVStatus(LoadingState.ERROR);

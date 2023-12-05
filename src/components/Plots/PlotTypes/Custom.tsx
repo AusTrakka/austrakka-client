@@ -7,12 +7,14 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { MetaDataColumn } from '../../../types/dtos';
-import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
+import { getDisplayFields } from '../../../utilities/resourceUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
@@ -34,7 +36,7 @@ function Custom(props: PlotTypeProps) {
     const updateFields = async () => {
       // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         const fields = response.data as MetaDataColumn[];
         // We can't know which fields the custom spec needs; retrieve all
         setDisplayFields(fields);
