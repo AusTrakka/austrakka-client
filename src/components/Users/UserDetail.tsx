@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import { ResponseObject, getUser } from '../../utilities/resourceUtils';
+import { getUser } from '../../utilities/resourceUtils';
 import { UserDetails, UserRoleGroup } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate from '../../utilities/helperUtils';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 function UserDetail() {
   const { userObjectId } = useParams();
@@ -22,7 +24,7 @@ function UserDetail() {
   useEffect(() => {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
-      if (userResponse.status === 'Success') {
+      if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserDetails;
         setUser(userDto);
       } else {
