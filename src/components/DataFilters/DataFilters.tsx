@@ -238,8 +238,10 @@ function DataFilters(props: DataFiltersProps) {
       const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
       setSampleCount(filtered.length);
       setFilteredData(filtered);
+    } else {
+      setFilteredData(data);
     }
-  }, [tabulatorFilters, setFilteredData]);
+  }, [tabulatorFilters, setFilteredData, setSampleCount, data]);
 
   const renderValueElement = () => {
     switch (selectedFieldType) {

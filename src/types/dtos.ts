@@ -204,6 +204,7 @@ export interface Group {
   }
 }
 
+// TODO this is a duplicate!
 export interface DisplayField {
   canVisualise: boolean,
   columnName: string,
@@ -216,6 +217,7 @@ export interface DisplayField {
   primitiveType: string,
 }
 
+// TODO we have ProjectSample; this is at best a duplicate; is it used?
 export interface Sample {
   [key: string] : any
 }

@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance, DisplayField } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getGroupDisplayFields, getDisplayFields } from '../../utilities/resourceUtils';
+import { ResponseObject, getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -84,7 +84,7 @@ function TreeDetail() {
         token,
       );
 
-      const displayFieldsResponse = await getGroupDisplayFields(
+      const displayFieldsResponse = await getDisplayFields(
         Number(tree?.projectMembersGroupId),
         token,
       );

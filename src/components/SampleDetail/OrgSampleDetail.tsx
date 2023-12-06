@@ -117,10 +117,9 @@ function SampleDetail() {
   useEffect(() => {
     const updateSampleData = async () => {
       const searchParams = new URLSearchParams({
-        groupContext: `${selectedGroup?.groupId}`,
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(token, searchParams.toString());
+      const response = await getSamples(token, selectedGroup?.groupId, searchParams);
       if (response.status === 'Success' && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {

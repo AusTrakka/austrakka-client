@@ -50,10 +50,9 @@ function SampleDetail() {
   useEffect(() => {
     const updateSampleData = async () => {
       const searchParams = new URLSearchParams({
-        groupContext: `${project!.projectMembers.id}`,
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(token, searchParams.toString());
+      const response = await getSamples(token, project!.projectMembers.id, searchParams);
       if (response.status === 'Success' && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {

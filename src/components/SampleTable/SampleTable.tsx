@@ -149,11 +149,11 @@ function SampleTable(props: SamplesProps) {
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
-          groupContext: `${groupContext}`,
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+        const samplesResponse: ResponseObject =
+          await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === 'Success') {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -231,7 +231,7 @@ function SampleTable(props: SamplesProps) {
       groupContext: `${groupContext!}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+    const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
     if (samplesResponse.status === 'Success') {
       setExportData(samplesResponse.data);
     } else {
