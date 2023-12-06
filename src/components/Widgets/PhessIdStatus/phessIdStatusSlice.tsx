@@ -2,11 +2,13 @@
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { PhessIdStatus } from './phess.id.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
+import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
+import { ResponseObject } from '../../../types/responseObject.interface';
 // import { aggregateArrayObjects } from '../../../utilities/helperUtils';
+import { ResponseType } from '../../../constants/responseType';
 
 interface PhessIdStatusState {
   loading: string
@@ -28,7 +30,7 @@ export const fetchPhessIdStatus = createAsyncThunk(
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const response = await getDashboardFields(groupId, token, ['PHESS_ID'], filterString);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);
