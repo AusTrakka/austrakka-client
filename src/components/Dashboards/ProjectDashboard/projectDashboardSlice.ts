@@ -1,11 +1,13 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject, getProjectDashboard } from '../../../utilities/resourceUtils';
+import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { AppState } from '../../../types/app.interface';
 import DashboardTemplateActions from '../../../config/dashboardActions';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 interface ProjectDashboardState {
   loading: LoadingState
@@ -33,7 +35,7 @@ export const fetchProjectDashboard = createAsyncThunk(
     const { projectId, groupId, token } = thunkObj;
     const response = await getProjectDashboard(projectId, token);
     const payload = { projectId, response };
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
       const dispatchProps = {
         projectId,

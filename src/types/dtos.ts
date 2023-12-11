@@ -193,7 +193,7 @@ export interface UserRoleGroup {
 }
 
 export interface Group {
-  groupId: number | undefined,
+  groupId: number,
   name: string,
   lastUpdated: string,
   lastUpdatedBy: string,

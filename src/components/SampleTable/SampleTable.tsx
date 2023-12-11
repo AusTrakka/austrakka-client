@@ -23,10 +23,12 @@ import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
-import { ResponseObject, getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
+import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -75,7 +77,7 @@ function SampleTable(props: SamplesProps) {
   useEffect(() => {
     async function getFields() {
       const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!, token);
-      if (filterFieldsResponse.status === 'Success') {
+      if (filterFieldsResponse.status === ResponseType.Success) {
         setDisplayFields(filterFieldsResponse.data);
       } else {
         setIsSamplesError((prevState) => ({
@@ -88,7 +90,7 @@ function SampleTable(props: SamplesProps) {
     }
     async function getTotalSamplesOverall() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!, token);
-      if (totalSamplesResponse.status === 'Success') {
+      if (totalSamplesResponse.status === ResponseType.Success) {
         const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
         setTotalSamples(+count);
       } else {
@@ -154,7 +156,7 @@ function SampleTable(props: SamplesProps) {
         });
         const samplesResponse: ResponseObject =
           await getSamples(token, groupContext!, searchParams);
-        if (samplesResponse.status === 'Success') {
+        if (samplesResponse.status === ResponseType.Success) {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
@@ -224,18 +226,19 @@ function SampleTable(props: SamplesProps) {
 
   // GET SAMPLES - not paginated
   const getExportData = async () => {
-    setExportCSVStatus(LoadingState.LOADING);
-    const searchParams = new URLSearchParams({
-      Page: '1',
-      PageSize: (totalSamples).toString(),
-      groupContext: `${groupContext!}`,
-      filters: queryString,
-    });
-    const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
-    if (samplesResponse.status === 'Success') {
-      setExportData(samplesResponse.data);
-    } else {
-      setExportCSVStatus(LoadingState.ERROR);
+    if (groupContext) {
+      setExportCSVStatus(LoadingState.LOADING);
+      const searchParams = new URLSearchParams({
+        Page: '1',
+        PageSize: (totalSamples).toString(),
+        filters: queryString,
+      });
+      const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
+      if (samplesResponse.status === ResponseType.Success) {
+        setExportData(samplesResponse.data);
+      } else {
+        setExportCSVStatus(LoadingState.ERROR);
+      }
     }
   };
 

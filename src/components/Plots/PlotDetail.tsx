@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { Plot } from '../../types/dtos';
-import { ResponseObject, getPlotDetails } from '../../utilities/resourceUtils';
+import { getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
 import BarChart from './PlotTypes/BarChart';
@@ -12,6 +12,8 @@ import Histogram from './PlotTypes/Histogram';
 import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { fetchGroupMetadata, selectGroupMetadataError } from '../../app/metadataSlice';
 
@@ -46,7 +48,7 @@ function PlotDetail() {
     // Get plot details, including plot type
     const getPlot = async () => {
       const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
-      if (plotResponse.status === 'Success') {
+      if (plotResponse.status === ResponseType.Success) {
         setPlot(plotResponse.data as Plot);
       } else {
         setErrorMsg(`Plot ${plotAbbrev} could not be loaded`);

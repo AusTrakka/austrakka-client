@@ -2,10 +2,12 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SampleSummary } from './sample.summary.interface';
 import { AppState } from '../../../types/app.interface';
-import { ResponseObject, getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
+import { getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 interface SampleSummaryState {
   loading: LoadingState
@@ -27,7 +29,7 @@ export const fetchSummary = createAsyncThunk(
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const response = await getProjectDashboardOveriew(groupId, token, filterString);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);
