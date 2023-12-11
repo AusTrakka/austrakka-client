@@ -1,7 +1,7 @@
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ReactTabulator } from 'react-tabulator';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -232,16 +232,25 @@ function DataFilters(props: DataFiltersProps) {
     setTabulatorFilters(filters);
   }, [filterList]);
 
-  // 2. Update filtered data
+  // Should only be called when tableInstanceRef.current is set
+  const updateFilteredData = useCallback(() => {
+    const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
+    setSampleCount(filtered.length);
+    setFilteredData(filtered);
+  }, [tabulatorFilters, setSampleCount, setFilteredData]);
+
+  // Update filtered data when filters change
   useEffect(() => {
     if (tableInstanceRef.current) {
-      const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
-      setSampleCount(filtered.length);
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(data);
+      updateFilteredData();
     }
-  }, [tabulatorFilters, setFilteredData, setSampleCount, data]);
+  }, [updateFilteredData]);
+
+  // Update filtered data when data changes or when tabulator is first ready
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDataUpdate = (_data: any) => {
+    updateFilteredData();
+  };
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
@@ -466,6 +475,7 @@ function DataFilters(props: DataFiltersProps) {
           columns={columns}
           // eslint-disable-next-line no-return-assign
           onRef={(r) => (tableInstanceRef.current = r.current)}
+          events = {{dataProcessed: handleDataUpdate}}
         />
       </Box>
     </Box>

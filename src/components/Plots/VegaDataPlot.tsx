@@ -13,7 +13,6 @@ import {
   selectGroupMetadata, GroupMetadataState,
 } from '../../app/metadataSlice';
 import { useAppSelector } from '../../app/store';
-import { ProjectSample } from '../../types/sample.interface';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -24,23 +23,9 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const { spec, dataGroupId } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
-  // this doesn't seem to help
-  const [inputData, setInputData] = useState<ProjectSample[]>([]);
   const [filteredData, setFilteredData] = useState([]);
   const groupMetadata : GroupMetadataState | null =
     useAppSelector(state => selectGroupMetadata(state, dataGroupId));
-
-  // this doesn't seem to help
-  // Get input data
-  useEffect(() => {
-    console.log("Observed metadata state change")
-    if (groupMetadata?.dataLoadingState
-      && groupMetadata.dataLoadingState === LoadingState.SUCCESS
-      && groupMetadata?.metadata) {
-      console.log(`Setting input metadata ${groupMetadata.dataLoadingState}, ${groupMetadata.metadata.length}`)
-      setInputData(groupMetadata.metadata);
-    }
-  }, [groupMetadata?.dataLoadingState, groupMetadata?.metadata]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -103,7 +88,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       </Grid>
       <Grid item xs={12}>
         <DataFilters
-          data={inputData}
+          data={groupMetadata?.metadata ?? []}
           fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
           setFilteredData={setFilteredData}
           initialOpen
