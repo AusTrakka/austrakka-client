@@ -183,7 +183,7 @@ export const metadataSlice = createSlice({
         state.data[groupId].metadata = data;
         state.data[groupId].dataLoadingState = LoadingState.SUCCESS;
         state.data[groupId].loadingState = LoadingState.SUCCESS;
-        for (const [field, _value] of Object.entries(data[0])) {
+        for (const [field] of Object.entries(data[0])) {
           state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
         }
       }

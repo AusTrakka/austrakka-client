@@ -475,7 +475,7 @@ function DataFilters(props: DataFiltersProps) {
           columns={columns}
           // eslint-disable-next-line no-return-assign
           onRef={(r) => (tableInstanceRef.current = r.current)}
-          events = {{dataProcessed: handleDataUpdate}}
+          events={{ dataProcessed: handleDataUpdate }}
         />
       </Box>
     </Box>

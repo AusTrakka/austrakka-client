@@ -356,7 +356,7 @@ function ProjectOverview() {
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = 
+        const samplesResponse: ResponseObject =
           await getSamples(token, projectDetails!.projectMembers.id, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
           setProjectSamples(samplesResponse.data);
@@ -392,7 +392,7 @@ function ProjectOverview() {
       PageSize: (totalSamples).toString(),
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = 
+    const samplesResponse: ResponseObject =
       await getSamples(token, projectDetails!.projectMembers.id, searchParams);
     if (samplesResponse.status === ResponseType.Success) {
       setExportData(samplesResponse.data);
