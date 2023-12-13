@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { listenerMiddleware } from './listenerMiddleware';
 import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSummarySlice';
 import organisationsReducer from '../components/Widgets/Organisations/organisationsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
@@ -28,9 +29,9 @@ const store = configureStore({
     phessIdOverallState: phessIdOverallReducer,
     metadataState: metadataReducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-    serializableCheck: false,
-  }),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ serializableCheck: false })
+      .prepend(listenerMiddleware.middleware),
 });
 
 export default store;

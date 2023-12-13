@@ -8,10 +8,10 @@ import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters from '../DataFilters/DataFilters';
-import LoadingState from '../../constants/loadingState';
 import {
   selectGroupMetadata, GroupMetadataState,
 } from '../../app/metadataSlice';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 
 interface VegaDataPlotProps {
@@ -66,13 +66,15 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     // For now we recreate view if data changes, not just if spec changes
     // TODO what if filtered data is filtered to empty? if([]) ok?
     if (spec &&
-      groupMetadata?.dataLoadingState && groupMetadata.dataLoadingState === LoadingState.SUCCESS &&
-      filteredData && plotDiv?.current) {
+        groupMetadata?.loadingState &&
+        groupMetadata.loadingState === MetadataLoadingState.DATA_LOADED &&
+        filteredData &&
+        plotDiv?.current) {
       createVegaView();
     }
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, filteredData, plotDiv, groupMetadata?.dataLoadingState]);
+  }, [spec, filteredData, plotDiv, groupMetadata?.loadingState]);
 
   return (
     <Grid container direction="column">

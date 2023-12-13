@@ -1,74 +1,52 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
+import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn, Project } from '../types/dtos';
 import { ProjectSample } from '../types/sample.interface';
 import { getDisplayFields, getSamples } from '../utilities/resourceUtils';
 import type { RootState } from './store';
+import { listenerMiddleware } from './listenerMiddleware';
 
 export interface GroupMetadataState {
   groupId: number | null
+  loadingState: MetadataLoadingState,
   fields: MetaDataColumn[] | null
   fieldUniqueValues: Record<string, string[]> | null
   metadata: ProjectSample[] | null
-  loadingState: LoadingState
-  fieldDetailsLoadingState: LoadingState
-  fieldDetailsLoadingRequestId: string | null
   columnLoadingStates: Record<string, LoadingState>
-  dataLoadingState: LoadingState
-  dataLoadingRequestId: string | null
   errorMessage: string | null
 }
 
 const groupMetadataInitialStateFactory = (groupId: number): GroupMetadataState => ({
   groupId,
+  loadingState: MetadataLoadingState.IDLE,
   fields: null,
   fieldUniqueValues: null,
   metadata: null,
-  loadingState: LoadingState.IDLE,
-  fieldDetailsLoadingState: LoadingState.IDLE,
-  fieldDetailsLoadingRequestId: null,
   columnLoadingStates: {},
-  dataLoadingState: LoadingState.IDLE,
-  dataLoadingRequestId: null,
   errorMessage: null,
 });
-
-interface MetadataState {
-  data: { [groupId: number]: GroupMetadataState }
+interface MetadataSliceState {
+  data: { [groupId: number]: GroupMetadataState },
+  token: string | null, // must be provided by calling component along with each fetch request
 }
 
-const initialState: MetadataState = {
+const initialState: MetadataSliceState = {
   data: {},
+  token: null,
 };
 
+// TODO replace with generalised thunk that takes requested fields as parameter
 const fetchGroupEntireDataset = createAsyncThunk(
   'metadata/fetchGroupEntireDataset',
   async (
-    params: any, // { groupId: number, token: string },
-    { rejectWithValue, fulfillWithValue, getState, requestId },
+    params: any, // { groupId: number },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
-    const { groupId, token } = params;
-    const state = getState() as RootState;
-    // Expected state: overall state loading, fields loaded, data not loaded
-    // For now since this is the only call, we expect data loading state to be IDLE
-    // When partial metadata loading is implemented, state may be loading or partially-loaded
-    // Not checking fields loading state as there may be a race condition without listeners?
-    const loadingState = state.metadataState.data[groupId]?.dataLoadingState;
-    const loadingRequestId = state.metadataState.data[groupId]?.dataLoadingRequestId;
-    // Do nothing if data already loading or loaded
-    if (loadingState &&
-        loadingState !== LoadingState.IDLE &&
-        !(loadingState === LoadingState.LOADING && requestId === loadingRequestId)) {
-      return fulfillWithValue(null);
-    }
-    // Error condition if overall loading state is not where we expect
-    const groupLoadingState = state.metadataState.data[groupId]?.loadingState;
-    if (!groupLoadingState || groupLoadingState !== LoadingState.LOADING) {
-      // eslint-disable-next-line no-console
-      console.log('Error: fetchGroupEntireDataset called when group load state not LOADING');
-    }
-    const response = await getSamples(token, groupId);
+    const { groupId } = params;
+    const { token } = (getState() as RootState).metadataState;
+    const response = await getSamples(token!, groupId);
     if (response.status === 'Success') {
       return fulfillWithValue(response.data as ProjectSample[]);
     }
@@ -76,123 +54,111 @@ const fetchGroupEntireDataset = createAsyncThunk(
   },
 );
 
-const fetchGroupMetadata = createAsyncThunk(
-  'metadata/fetchGroupMetadata',
+const fetchProjectFields = createAsyncThunk(
+  'metadata/fetchProjectFields',
   async (
-    params: any, // { groupId: number, token: string },
-    { rejectWithValue, fulfillWithValue, dispatch, getState, requestId },
+    params: any, // { groupId: number },
+    { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
-    const { groupId, token } = params;
-    const state = getState() as RootState;
-    const loadingState = state.metadataState.data[groupId]?.fieldDetailsLoadingState;
-    const loadingRequestId = state.metadataState.data[groupId]?.fieldDetailsLoadingRequestId;
-    // Take action if (i.e. return here if these conditions not fulfilled):
-    //   There is no loading state yet, or
-    //   There is a loading state but it is IDLE, or
-    //   The loading state is LOADING and the requestId is the same as the current requestId
-    if (loadingState &&
-        loadingState !== LoadingState.IDLE &&
-        !(loadingState === LoadingState.LOADING && requestId === loadingRequestId)) {
-      return fulfillWithValue(null);
-    }
-    const response = await getDisplayFields(groupId, token);
+    const { groupId } = params;
+    const { token } = (getState() as RootState).metadataState;
+    const response = await getDisplayFields(groupId, token!);
     if (response.status === 'Success') {
-      // dispatch data loading, for now only loading of whole dataset; later partial as well
-      // race condition? fetchGroupEntireDataset.pending may be before fetchGroupMetadata.fulfilled
-      dispatch(fetchGroupEntireDataset({ groupId, token }));
       return fulfillWithValue(response.data as MetaDataColumn[]);
     }
     return rejectWithValue(response.error);
   },
 );
 
+// These listeners launch thunks in response to state changes or actions
+// The state update triggered by the listener will be the thunk's pending action
+
+// Launch fetchProjectFields in response to metadata fetch request
+listenerMiddleware.startListening({
+  // Could alternatively use predicate with this action and extra check state
+  // MetadataLoadingState.FETCH_REQUESTED; this should always be the state after this action
+  type: 'metadata/fetchGroupMetadata',
+  effect: (action, listenerApi) => {
+    listenerApi.dispatch(
+      fetchProjectFields({ groupId: (action as any).payload.groupId }),
+    );
+  },
+});
+
+// Launch needed data view fetches in response to field details loaded
+listenerMiddleware.startListening({
+  // Could alternatively use predicate with this action and state MetadataLoadingState.FIELDS_LOADED
+  type: 'metadata/fetchProjectFields/fulfilled',
+  effect: (action, listenerApi) => {
+    listenerApi.dispatch(
+      fetchGroupEntireDataset({ groupId: (action as any).meta.arg.groupId }),
+    );
+  },
+});
+
 export const metadataSlice = createSlice({
-  name: 'metadataSlice',
+  name: 'metadata',
   initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(fetchGroupMetadata.pending, (state, action) => {
-      const { groupId } = action.meta.arg;
+  reducers: {
+    fetchGroupMetadata: (state, action: PayloadAction<any>) => {
+      const { groupId, token } = action.payload;
       if (!state.data[groupId]) {
         // Set initial state for this group
         state.data[groupId] = groupMetadataInitialStateFactory(groupId);
       }
-      if (!state.data[groupId].loadingState
-        || state.data[groupId].loadingState === LoadingState.IDLE) {
-        state.data[groupId].loadingState = LoadingState.LOADING;
-        state.data[groupId].fieldDetailsLoadingState = LoadingState.LOADING;
-        state.data[groupId].fieldDetailsLoadingRequestId = action.meta.requestId;
+      // Only initialise fetch if not loaded/loading. Allow on idle or error or partial-load error
+      if (state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
+          state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
+          state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+        state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
+        state.token = token;
       }
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchProjectFields.pending, (state, action) => {
+      const { groupId } = action.meta.arg;
+      state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
-    builder.addCase(fetchGroupMetadata.fulfilled, (state, action: PayloadAction<any>) => {
+    builder.addCase(fetchProjectFields.fulfilled, (state, action: PayloadAction<any>) => {
       const { groupId } = (action as any).meta.arg;
-      const data = action.payload;
-      // Ideally we want this ignore logic to be here in the reducer
-      // However to avoid duplicate API calls the thunk also needs to implement this logic
-      // Do logic here then check data==null as a sanity check of thunk correctness
-      const loadingState = state.data[groupId]?.fieldDetailsLoadingState;
-      const loadingRequestId = state.data[groupId]?.fieldDetailsLoadingRequestId;
-      const { requestId } = (action as any).meta;
-      const shouldIgnore = loadingState &&
-                        loadingState !== LoadingState.IDLE &&
-                        !(loadingState === LoadingState.LOADING && requestId === loadingRequestId);
-      if (shouldIgnore && data) {
-        // eslint-disable-next-line no-console
-        console.error('fetchGroupMetadata fulfilled with non-null data but state indicates it should not have executed');
-      }
-      if (!shouldIgnore) {
-        state.data[groupId].fields = data;
-        state.data[groupId].fieldDetailsLoadingState = LoadingState.SUCCESS;
-        // Set column loading states to IDLE for all fields
-        state.data[groupId].fields?.forEach((field) => {
-          state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
-        });
-      }
+      state.data[groupId].fields = action.payload;
+      // Set column loading states to IDLE for all fields
+      state.data[groupId].fields?.forEach((field) => {
+        state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+      });
+      state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
-    builder.addCase(fetchGroupMetadata.rejected, (state, action: PayloadAction<any>) => {
+    builder.addCase(fetchProjectFields.rejected, (state, action: PayloadAction<any>) => {
       const { groupId } = (action as any).meta.arg;
       state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
-      state.data[groupId].fieldDetailsLoadingState = LoadingState.ERROR;
-      state.data[groupId].loadingState = LoadingState.ERROR;
+      state.data[groupId].loadingState = MetadataLoadingState.ERROR;
     });
     builder.addCase(fetchGroupEntireDataset.pending, (state, action) => {
       const { groupId } = (action as any).meta.arg;
-      if (state.data[groupId] && state.data[groupId].dataLoadingState === LoadingState.IDLE) {
-        state.data[groupId].dataLoadingState = LoadingState.LOADING;
-        state.data[groupId].dataLoadingRequestId = action.meta.requestId;
-        // In case where we are loading partial data, will have to consider which fields we expect
-        state.data[groupId]?.fields?.forEach(field => {
-          state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.LOADING;
-        });
-      }
+      // In case where we are loading partial data, will have to consider which fields we expect
+      state.data[groupId]?.fields?.forEach(field => {
+        state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.LOADING;
+      });
+      state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
     });
     builder.addCase(fetchGroupEntireDataset.fulfilled, (state, action:PayloadAction<any>) => {
       const { groupId } = (action as any).meta.arg;
       const data = action.payload;
-      const loadingState = state.data[groupId]?.dataLoadingState;
-      const loadingRequestId = state.data[groupId]?.dataLoadingRequestId;
-      const { requestId } = (action as any).meta;
-      const shouldIgnore = loadingState &&
-                        loadingState !== LoadingState.IDLE &&
-                        !(loadingState === LoadingState.LOADING && requestId === loadingRequestId);
-      if (shouldIgnore && data) {
-        // eslint-disable-next-line no-console
-        console.error('fetchGroupEntireDataset fulfilled with non-null data but state indicates it should not have executed');
-      }
-      if (!shouldIgnore) {
-        state.data[groupId].metadata = data;
-        state.data[groupId].dataLoadingState = LoadingState.SUCCESS;
-        state.data[groupId].loadingState = LoadingState.SUCCESS;
-        for (const [field] of Object.entries(data[0])) {
-          state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
-        }
+      // Currently we just accept this as the only expected data view
+      // In case where we are loading partial data, will have to consider whether returned
+      // data supercedes existing data, and whether we have finished loading all fields
+      // TODO also consider if we can abort obsolete thunks and requests
+      state.data[groupId].metadata = data;
+      state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+      for (const [field] of Object.entries(data[0])) {
+        state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
       }
     });
     builder.addCase(fetchGroupEntireDataset.rejected, (state, action: PayloadAction<any>) => {
       const { groupId } = (action as any).meta.arg;
       state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
-      state.data[groupId].dataLoadingState = LoadingState.ERROR;
-      state.data[groupId].loadingState = LoadingState.ERROR;
+      state.data[groupId].loadingState = MetadataLoadingState.ERROR;
       // In case where we are loading partial data, will have to consider which fields we expect
       state.data[groupId]?.fields?.forEach(field => {
         state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.ERROR;
@@ -204,8 +170,8 @@ export const metadataSlice = createSlice({
 // reducer
 export default metadataSlice.reducer;
 
-// thunks
-export { fetchGroupMetadata };
+// actions only. Thunks are for internal state machine use
+export const { fetchGroupMetadata } = metadataSlice.actions;
 
 // selectors
 
@@ -218,10 +184,10 @@ export const selectGroupMetadata:
 
 // May want to also include per-field loading state in this selector
 export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return { fields: null, fieldDetailsLoadingState: null };
+  if (!groupId) return { fields: null, loadingState: null };
   return {
     fields: state.metadataState.data[groupId]?.fields,
-    fieldDetailsLoadingState: state.metadataState.data[groupId]?.fieldDetailsLoadingState,
+    loadingState: state.metadataState.data[groupId]?.loadingState,
   };
 };
 
