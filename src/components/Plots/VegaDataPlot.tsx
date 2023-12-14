@@ -67,14 +67,18 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     // TODO what if filtered data is filtered to empty? if([]) ok?
     if (spec &&
         groupMetadata?.loadingState &&
-        groupMetadata.loadingState === MetadataLoadingState.DATA_LOADED &&
+        (groupMetadata.loadingState === MetadataLoadingState.DATA_LOADED ||
+          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
         filteredData &&
         plotDiv?.current) {
+      // TODO it appears this may trigger too often?
       createVegaView();
     }
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
+  // loadingState is not a dependency as we only care about changes that co-occur with filteredData
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, filteredData, plotDiv, groupMetadata?.loadingState]);
+  }, [spec, filteredData, plotDiv]);
 
   return (
     <Grid container direction="column">
