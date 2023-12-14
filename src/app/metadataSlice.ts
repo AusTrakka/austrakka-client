@@ -4,15 +4,37 @@ import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn, Project } from '../types/dtos';
 import { ProjectSample } from '../types/sample.interface';
-import { getDisplayFields, getSamples } from '../utilities/resourceUtils';
+import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
+
+// These are hard-coded desired field sets, used as an interim measure
+// until we have project data views implemented server-side.
+// Since we don't know that the project will contain all specified fields, we will have to
+// request the intersection of the fields here and the actual project fields.
+// In addition to views listed here, an all-of-project dataset will be retrieved.
+const DATA_VIEWS = [
+  ['Seq_ID'],
+  ['Seq_ID', 'Date_coll', 'Owner_group', 'Jurisdiction'],
+];
+
+// This is an interim function based on hard-coded views
+const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
+  const fieldNames = fields.map(field => field.columnName);
+  const dataViews = DATA_VIEWS
+    .map(view => view.filter(field => fieldNames.includes(field)))
+    .filter(view => view.length > 0);
+  dataViews.push(fieldNames);
+  return dataViews;
+};
 
 export interface GroupMetadataState {
   groupId: number | null
   loadingState: MetadataLoadingState,
   fields: MetaDataColumn[] | null
   fieldUniqueValues: Record<string, string[]> | null
+  views: Record<number, string[]>
+  viewLoadingStates: Record<number, LoadingState>
   metadata: ProjectSample[] | null
   columnLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
@@ -23,6 +45,8 @@ const groupMetadataInitialStateFactory = (groupId: number): GroupMetadataState =
   loadingState: MetadataLoadingState.IDLE,
   fields: null,
   fieldUniqueValues: null,
+  views: {},
+  viewLoadingStates: {},
   metadata: null,
   columnLoadingStates: {},
   errorMessage: null,
@@ -37,23 +61,6 @@ const initialState: MetadataSliceState = {
   token: null,
 };
 
-// TODO replace with generalised thunk that takes requested fields as parameter
-const fetchGroupEntireDataset = createAsyncThunk(
-  'metadata/fetchGroupEntireDataset',
-  async (
-    params: any, // { groupId: number },
-    { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<Project | unknown > => {
-    const { groupId } = params;
-    const { token } = (getState() as RootState).metadataState;
-    const response = await getSamples(token!, groupId);
-    if (response.status === 'Success') {
-      return fulfillWithValue(response.data as ProjectSample[]);
-    }
-    return rejectWithValue(response.error);
-  },
-);
-
 const fetchProjectFields = createAsyncThunk(
   'metadata/fetchProjectFields',
   async (
@@ -65,6 +72,26 @@ const fetchProjectFields = createAsyncThunk(
     const response = await getDisplayFields(groupId, token!);
     if (response.status === 'Success') {
       return fulfillWithValue(response.data as MetaDataColumn[]);
+    }
+    return rejectWithValue(response.error);
+  },
+);
+
+const fetchDataView = createAsyncThunk(
+  'metadata/fetchDataView',
+  async (
+    params: any, // { groupId: number, fields: string[], viewIndex: number }
+    { rejectWithValue, fulfillWithValue, getState },
+  ):Promise<Project | unknown > => {
+    const { groupId, fields } = params;
+    const { token } = (getState() as RootState).metadataState;
+    // Async sleep to simulate server delay
+    // let randomDelay = Math.floor(Math.random() * 5000);
+    // if (viewIndex == 2) randomDelay = 10000;
+    // await new Promise(resolve => setTimeout(resolve, randomDelay));
+    const response = await getMetadata(groupId, fields, token!);
+    if (response.status === 'Success') {
+      return fulfillWithValue(response.data as ProjectSample[]);
     }
     return rejectWithValue(response.error);
   },
@@ -93,14 +120,20 @@ listenerMiddleware.startListening({
   },
 });
 
-// Launch needed data view fetches in response to field details loaded
+// Launch needed data view fetches when ready to do so
 listenerMiddleware.startListening({
-  // Could alternatively use predicate with this action and state MetadataLoadingState.FIELDS_LOADED
+  // Could alternatively use predicate on this action and state MetadataLoadingState.FIELDS_LOADED
+  // In theory the state check is redundant
   type: 'metadata/fetchProjectFields/fulfilled',
   effect: (action, listenerApi) => {
-    listenerApi.dispatch(
-      fetchGroupEntireDataset({ groupId: (action as any).meta.arg.groupId }),
-    );
+    const { groupId } = (action as any).meta.arg;
+    const { views } = (listenerApi.getState() as RootState).metadataState.data[groupId];
+    // This is dispatching view loads concurrently
+    for (const [index, view] of Object.entries(views!)) {
+      listenerApi.dispatch(
+        fetchDataView({ groupId, fields: view, viewIndex: index }),
+      );
+    }
   },
 });
 
@@ -134,7 +167,15 @@ export const metadataSlice = createSlice({
     });
     builder.addCase(fetchProjectFields.fulfilled, (state, action: PayloadAction<any>) => {
       const { groupId } = (action as any).meta.arg;
-      state.data[groupId].fields = action.payload;
+      const fields = action.payload;
+      state.data[groupId].fields = fields;
+      // Set views (field lists), and set view loading states to IDLE for all views
+      // This is an interim measure; later we will use a thunk to fetch project data views
+      const views = calculateDataViews(fields);
+      views.forEach((view, index) => {
+        state.data[groupId].views![index] = view;
+        state.data[groupId].viewLoadingStates![index] = LoadingState.IDLE;
+      });
       // Set column loading states to IDLE for all fields
       state.data[groupId].fields?.forEach((field) => {
         state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
@@ -146,35 +187,79 @@ export const metadataSlice = createSlice({
       state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
       state.data[groupId].loadingState = MetadataLoadingState.ERROR;
     });
-    builder.addCase(fetchGroupEntireDataset.pending, (state, action) => {
-      const { groupId } = (action as any).meta.arg;
-      // In case where we are loading partial data, will have to consider which fields we expect
-      state.data[groupId]?.fields?.forEach(field => {
-        state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.LOADING;
+    builder.addCase(fetchDataView.pending, (state, action) => {
+      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
+        groupId: number, fields: string[], viewIndex: number };
+      // If whole dataset already loaded, we do nothing here
+      // TODO should consider immediately aborting this thunk and request - allow LOADING for now
+      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.LOADING;
+      if (state.data[groupId].loadingState === MetadataLoadingState.DATA_LOADED) return;
+      // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
+      // TODO precursor state may change once we are loading data views via thunk
+      if (state.data[groupId].loadingState === MetadataLoadingState.FIELDS_LOADED) {
+        state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
+      }
+      fields.forEach(field => {
+        // Check per-column state in case already finished loading from another thunk
+        if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[groupId].columnLoadingStates[field] = LoadingState.LOADING;
+        }
       });
-      state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
     });
-    builder.addCase(fetchGroupEntireDataset.fulfilled, (state, action:PayloadAction<any>) => {
-      const { groupId } = (action as any).meta.arg;
+    builder.addCase(fetchDataView.fulfilled, (state, action:PayloadAction<any>) => {
+      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
+        groupId: number, fields: string[], viewIndex: number };
       const data = action.payload;
-      // Currently we just accept this as the only expected data view
-      // In case where we are loading partial data, will have to consider whether returned
-      // data supercedes existing data, and whether we have finished loading all fields
-      // TODO also consider if we can abort obsolete thunks and requests
-      state.data[groupId].metadata = data;
-      state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
-      for (const [field] of Object.entries(data[0])) {
-        state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
+      // TODO consider aborting obsolete thunks and requests here
+      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
+      if (state.data[groupId].loadingState === MetadataLoadingState.DATA_LOADED) return;
+      // If we have returned any fields that weren't previously loaded, set the data
+      if (fields.some(field =>
+        state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS)
+      ) {
+        state.data[groupId].metadata = data;
+        fields.forEach(field => {
+          state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
+        });
+      }
+      // If this is the full dataset, we are done, otherwise we are in a partial load state
+      if (fields.length === state.data[groupId].fields?.length) {
+        state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+      } else {
+        state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
       }
     });
-    builder.addCase(fetchGroupEntireDataset.rejected, (state, action: PayloadAction<any>) => {
-      const { groupId } = (action as any).meta.arg;
-      state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
-      state.data[groupId].loadingState = MetadataLoadingState.ERROR;
-      // In case where we are loading partial data, will have to consider which fields we expect
-      state.data[groupId]?.fields?.forEach(field => {
-        state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.ERROR;
+    builder.addCase(fetchDataView.rejected, (state, action: PayloadAction<any>) => {
+      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
+        groupId: number, fields: string[], viewIndex: number };
+      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.ERROR;
+      // Any column not already loaded by another thunk gets an error state
+      fields.forEach(field => {
+        if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[groupId].columnLoadingStates[field] = LoadingState.ERROR;
+        }
       });
+      // If all views are resolved, we set overall state based on column load states
+      // All error -> ERROR, all success -> DATA_LOADED, else PARTIAL_LOAD_ERROR
+      // If some views are still loading or idle, we do not change overall state
+      if (Object.values(state.data[groupId].viewLoadingStates!).every(
+        colState => colState === LoadingState.SUCCESS || colState === LoadingState.ERROR,
+      )) {
+        if (Object.values(state.data[groupId].columnLoadingStates).every(
+          colState => colState === LoadingState.SUCCESS,
+        )) {
+          // This shouldn't really occur, the successful thunk should have set the state
+          state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+        } else if (Object.values(state.data[groupId].columnLoadingStates).every(
+          colState => colState === LoadingState.ERROR,
+        )) {
+          state.data[groupId].loadingState = MetadataLoadingState.ERROR;
+          state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
+        } else {
+          state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
+          state.data[groupId].errorMessage = `Unable to complete loading project data: ${action.payload}`;
+        }
+      }
     });
   },
 });

@@ -14,7 +14,7 @@ export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getUserGroups = (token: string) => callGET('/api/Users/Me', token);
 export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
 export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
-export const getPlotData = (groupId: number, fields: string[], token: string) => {
+export const getMetadata = (groupId: number, fields: string[], token: string) => {
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callGET(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, token);
 };
