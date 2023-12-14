@@ -75,9 +75,17 @@ const fetchProjectFields = createAsyncThunk(
 
 // Launch fetchProjectFields in response to metadata fetch request
 listenerMiddleware.startListening({
-  // Could alternatively use predicate with this action and extra check state
-  // MetadataLoadingState.FETCH_REQUESTED; this should always be the state after this action
-  type: 'metadata/fetchGroupMetadata',
+  predicate: (action, currentState, previousState) => {
+    // Return early if wrong action; don't try to read groupId
+    if (action.type !== 'metadata/fetchGroupMetadata') return false;
+    // Check that the reducer logic is telling us to trigger a new load process
+    const previousLoadingState = (previousState as RootState).metadataState
+      .data[(action as any).payload.groupId]?.loadingState;
+    const loadingState = (currentState as RootState).metadataState
+      .data[(action as any).payload.groupId]?.loadingState;
+    return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
+           loadingState === MetadataLoadingState.FETCH_REQUESTED;
+  },
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
       fetchProjectFields({ groupId: (action as any).payload.groupId }),
@@ -106,10 +114,14 @@ export const metadataSlice = createSlice({
         // Set initial state for this group
         state.data[groupId] = groupMetadataInitialStateFactory(groupId);
       }
-      // Only initialise fetch if not loaded/loading. Allow on idle or error or partial-load error
+      // Only initialise fetch if in allowed state; do not reload loading data
       if (state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
           state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
           state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+        // If we were in an error state and are refreshing, clear data
+        if (state.data[groupId].loadingState !== MetadataLoadingState.IDLE) {
+          state.data[groupId] = groupMetadataInitialStateFactory(groupId);
+        }
         state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
         state.token = token;
       }
