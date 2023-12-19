@@ -180,12 +180,12 @@ function ProFormaDetail() {
         </Select>
 
         {renderDownloadCard()}
-        
-        <Typography sx={{mt: 3}}>
+
+        <Typography sx={{ mt: 3 }}>
           The following fields are accepted in uploads for this pro forma, and will be validated
-          against field types and values. "Strictly required" fields cannot be left blank in any
-          upload. Some fields which are not strictly required, and which may be temporarily left
-          blank, may still form part of the minimum expected metadata set for a project.
+          against field types and values. &quot;Strictly required&quot; fields cannot be left blank
+          in any upload. Some fields which are not strictly required, and which may be temporarily
+          left blank, may still form part of the minimum expected metadata set for a project.
         </Typography>
         <TableContainer component={Paper} sx={{ mt: 3, mb: 4 }}>
           <Table>
