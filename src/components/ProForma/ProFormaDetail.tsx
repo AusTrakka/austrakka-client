@@ -181,7 +181,7 @@ function ProFormaDetail() {
 
         {renderDownloadCard()}
 
-        <TableContainer component={Paper} sx={{ mt: 3 }}>
+        <TableContainer component={Paper} sx={{ mt: 3, mb: 4 }}>
           <Table>
             <TableHead>
               <TableRow>
