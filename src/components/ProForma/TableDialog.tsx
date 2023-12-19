@@ -27,7 +27,7 @@ function TableDialog({
       <DialogTitle sx={{ color: '#OA3546', fontWeight: 'bold', paddingLeft: '40px' }}>
         {proformaTitle}
         {' '}
-        ProForma Information
+        pro forma validation details
       </DialogTitle>
       <DialogContent sx={{ padding: '40px' }}>
         <TableContainer component={Paper}>

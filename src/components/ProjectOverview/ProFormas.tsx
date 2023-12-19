@@ -69,18 +69,18 @@ function ProFormaList(props: ProFormasListProps) {
     ? <Alert severity="error">{errMsg}</Alert>
     : (
       <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
-        This page holds ProFormas with attached
+        This page holds pro formas with attached
         templates. Only
         {' '}
         <b>current</b>
         {' '}
-        ProForma templates may be downloaded.
+        pro forma templates may be downloaded.
       </Typography>
     ));
 
   const renderEmptyState = (isEmpty: boolean, hasError: boolean) => (
     isEmpty && !hasError
-      ? <Alert severity="warning">No attached templates for the ProFormas are available</Alert>
+      ? <Alert severity="warning">No attached templates for project pro formas are available</Alert>
       : <br />);
 
   const renderContent = () => (
