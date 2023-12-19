@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { MetaDataColumn } from '../../../types/dtos';
-import { ResponseObject, getDisplayFields } from '../../../utilities/resourceUtils';
-import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getDisplayFields } from '../../../utilities/resourceUtils';
+import {
+  getStartingField, setColorInSpecToValue, setRowInSpecToValue, setFieldInSpec,
+} from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -47,6 +51,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
   const [dateBinStep, setDateBinStep] = useState<number>(1);
   const [colourField, setColourField] = useState<string>('none');
+  const [rowField, setRowField] = useState<string>('none'); // facets by row
   const [stackType, setStackType] = useState<string>('zero');
   const { token, tokenLoading } = useApi();
 
@@ -64,7 +69,7 @@ function EpiCurve(props: PlotTypeProps) {
   useEffect(() => {
     const updateFields = async () => {
       const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         const fields = response.data as MetaDataColumn[];
         setDisplayFields(fields);
         const localCatFields = fields
@@ -73,6 +78,7 @@ function EpiCurve(props: PlotTypeProps) {
           .map(field => field.columnName);
         setCategoricalFields(localCatFields);
         // Note we do not set a preferred starting colour field; starting value is None
+        // Similarly starting value for row facet is None
         const localDateFields = fields
           .filter(field => field.primitiveType === 'date')
           .map(field => field.columnName);
@@ -113,6 +119,13 @@ function EpiCurve(props: PlotTypeProps) {
 
     setSpec(setColorInSpec);
   }, [colourField]);
+
+  useEffect(() => {
+    const setRowInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setRowInSpecToValue(oldSpec, rowField);
+
+    setSpec(setRowInSpec);
+  }, [rowField]);
 
   useEffect(() => {
     const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -208,12 +221,27 @@ function EpiCurve(props: PlotTypeProps) {
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
-        <InputLabel id="colour-field-select-label">Chart type</InputLabel>
+        <InputLabel id="row-facet-select-label">Row facet</InputLabel>
         <Select
-          labelId="colour-field-select-label"
-          id="colour-field-select"
+          labelId="row-facet-select-label"
+          id="row-facet-select"
+          value={rowField}
+          label="Row facet"
+          onChange={(e) => setRowField(e.target.value)}
+        >
+          <MenuItem value="none">None</MenuItem>
+          {
+            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
+        <InputLabel id="stack-type-select-label">Chart type</InputLabel>
+        <Select
+          labelId="stack-type-select-label"
+          id="stack-type-select"
           value={stackType}
-          label="Colour"
+          label="Chart type"
           onChange={(e) => setStackType(e.target.value)}
         >
           <MenuItem value="zero">Stacked</MenuItem>

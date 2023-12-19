@@ -6,12 +6,14 @@ import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
-import { ResponseObject, getPlotData } from '../../utilities/resourceUtils';
+import { getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import DataFilters from '../DataFilters/DataFilters';
 import { MetaDataColumn } from '../../types/dtos';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseType } from '../../constants/responseType';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -34,7 +36,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     const updatePlotData = async () => {
       const response = await getPlotData(dataGroupId!, fieldsToRetrieve, token) as ResponseObject;
-      if (response.status === 'Success') {
+      if (response.status === ResponseType.Success) {
         setData(response.data);
         setFilteredData(response.data);
       } else {
@@ -64,6 +66,27 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const compiledSpec = compile(spec!).spec;
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
       (compiledSpec.data![dataIndex] as InlineData).values = filteredData;
+
+      // Handle faceted rows in plot using responsive width
+      if ((spec as any)?.encoding?.row) {
+        if (!compiledSpec.signals) { compiledSpec.signals = []; }
+        // -80 compensates for default Vega facet padding values
+        const newSignal = {
+          name: 'child_width',
+          init: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+          on: [{
+            events: 'window:resize',
+            update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+          }],
+        };
+        const signalIndex: number = compiledSpec.signals.findIndex(sig => sig.name === 'child_width');
+        if (signalIndex > -1) {
+          compiledSpec.signals[signalIndex] = newSignal;
+        } else {
+          compiledSpec.signals.push(newSignal);
+        }
+      }
+
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();

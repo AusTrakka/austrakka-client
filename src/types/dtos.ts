@@ -43,7 +43,6 @@ export interface JobInstance {
   resultsDataId: number;
   treeId: number;
   newickTree: string;
-  isApproved: boolean;
   isActive: boolean;
   versionName: string;
   version: string;
@@ -64,6 +63,7 @@ export interface PlotListing {
 }
 
 export interface Member {
+  objectId: string,
   roles: string[],
   organization:{
     id: number,
@@ -71,6 +71,32 @@ export interface Member {
   },
   displayName: string,
   lastLoggedIn: string,
+}
+
+export interface User {
+  userId: number,
+  objectId: number,
+  isActive: boolean,
+  organisation: {
+    id: number,
+    abbreviation: string,
+  }
+  orgName: string,
+  isAustrakkaAdmin: boolean,
+  userRoleGroup: UserRoleGroup[],
+  displayName: string,
+  lastLoggedIn: Date,
+  createdBy: Date,
+  lastUpdatedBy: Date,
+  IsAustrakkaProcess: boolean
+}
+
+export interface UserDetails {
+  displayName: string,
+  orgName: string,
+  lastLoggedIn: Date,
+  userRoleGroup: UserRoleGroup[],
+  created: Date,
 }
 
 export interface ProFormaVersion {
@@ -156,6 +182,18 @@ export interface ThresholdAlertDTO {
   recentCount: number;
 }
 
+export interface UserRoleGroup {
+  user: any,
+  role: {
+    id: number,
+    name: string,
+  }
+  group: {
+    id: number,
+    name: string,
+  }
+}
+
 export interface Group {
   groupId: number | undefined,
   name: string,
@@ -181,5 +219,5 @@ export interface DisplayField {
 }
 
 export interface Sample {
-
+  [key: string] : any
 }

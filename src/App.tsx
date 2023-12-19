@@ -29,6 +29,7 @@ import UploadSequences from './components/Upload/UploadSequences';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
 import { msalInstance } from './utilities/authUtils';
 import ApiProvider from './app/ApiContext';
+import UserDetail from './components/Users/UserDetail';
 
 function App() {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ function App() {
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="org" element={<OrganisationOverview />} />
+                  <Route path="org/:tab" element={<OrganisationOverview />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
@@ -59,6 +61,7 @@ function App() {
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
+                  <Route path="users/:userObjectId" element={<UserDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

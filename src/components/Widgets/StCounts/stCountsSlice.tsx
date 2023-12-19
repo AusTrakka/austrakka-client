@@ -1,12 +1,14 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { StCounts } from './st.counts.interface';
-import { ResponseObject, getDashboardFields } from '../../../utilities/resourceUtils';
+import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 // eslint-disable-next-line import/no-cycle
 import { AppState } from '../../../types/app.interface';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 interface StCountsState {
   loading: string
@@ -29,7 +31,7 @@ export const fetchStCounts = createAsyncThunk(
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
     const fields = ['ST', 'Date_coll'];
     const response = await getDashboardFields(groupId, token, fields, filterString);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);

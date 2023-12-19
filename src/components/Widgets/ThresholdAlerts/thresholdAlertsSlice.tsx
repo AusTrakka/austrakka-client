@@ -1,8 +1,10 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject, getThresholdAlerts } from '../../../utilities/resourceUtils';
+import { getThresholdAlerts } from '../../../utilities/resourceUtils';
 import { AppState } from '../../../types/app.interface';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 
 interface ThresholdAlertsState {
   loading: string
@@ -22,7 +24,7 @@ export const fetchThresholdAlerts = createAsyncThunk(
   ):Promise<ResponseObject | unknown> => {
     const { groupId, token } = dispatchProps;
     const response = await getThresholdAlerts(groupId, 'Serotype', token);
-    if (response.status === 'Success') {
+    if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }
     return rejectWithValue(response);

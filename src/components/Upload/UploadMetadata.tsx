@@ -1,12 +1,16 @@
 import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Box, FormControl, Grid, InputLabel, Select, Typography, Button,
-  FormControlLabel, Checkbox, FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert, Backdrop, CircularProgress, Link } from '@mui/material';
+import { Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
+  FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
+  Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
-import { ResponseObject, getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
+import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
 import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseMessage } from '../../types/apiResponse.interface';
+import { ResponseType } from '../../constants/responseType';
 
 interface Options {
   validate: boolean,
@@ -27,7 +31,7 @@ const uploadOptions = [
   },
   {
     name: 'append',
-    label: 'Append metadata or update existing samples',
+    label: 'Update existing samples',
     description: 'Add or update metadata for existing samples. If this is selected, you cannot include new samples in the upload, but may use proformas that do not include Owner_group.',
   },
 ];
@@ -106,7 +110,7 @@ function UploadMetadata() {
   const [proformaStatus, setProformaStatus] = useState(LoadingState.IDLE);
   const [submission, setSubmission] = useState({
     status: LoadingState.IDLE,
-    messages: [] as string[] | undefined,
+    messages: [] as ResponseMessage[] | undefined,
   });
   const [proformaStatusMessage, setProformaStatusMessage] = useState('');
   const [selectedProforma, setSelectedProforma] = useState<Proforma>();
@@ -138,7 +142,7 @@ function UploadMetadata() {
     setProformaStatus(LoadingState.LOADING);
     const getProformas = async () => {
       const proformaResponse: ResponseObject = await getUserProformas(token);
-      if (proformaResponse.status === 'Success') {
+      if (proformaResponse.status === ResponseType.Success) {
         setProformas(proformaResponse.data);
         setProformaStatus(LoadingState.SUCCESS);
       } else {
@@ -188,7 +192,7 @@ function UploadMetadata() {
       await validateSubmissions(formData, optionString, token)
       : await uploadSubmissions(formData, optionString, token);
 
-    if (submissionResponse.status === 'Success') {
+    if (submissionResponse.status === ResponseType.Success) {
       setSubmission({
         ...submission,
         status: LoadingState.SUCCESS,
@@ -282,8 +286,6 @@ function UploadMetadata() {
             <List>
               <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
                 View or download proforma
-                {' '}
-                {selectedProforma?.abbreviation}
               </Link>
               <ListItemText
                 primary="Proforma name"
@@ -367,9 +369,9 @@ function UploadMetadata() {
                 <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
             </Grid>
             {submission.messages!.map(
-              (message: any) => (
+              (message: ResponseMessage) => (
                 <Grid item>
-                  <Alert severity={message.ResponseType.toLowerCase()}>
+                  <Alert severity={message.ResponseType.toLowerCase() as AlertColor}>
                     <strong>{message.ResponseType}</strong>
                     {' '}
                     -

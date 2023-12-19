@@ -16,14 +16,17 @@ function isNotNullOrEmptyFn(records: any, filterParams: any) {
 }
 function containsFn(records: any, filterParams: any) {
   const { field, value } = filterParams;
-  if (records[field].toLowerCase().includes(value.toLowerCase())) {
+  if (records[field] && records[field].toLowerCase().includes(value.toLowerCase())) {
     return true;
   }
   return false;
 }
 function doesNotContainFn(records: any, filterParams: any) {
   const { field, value } = filterParams;
-  if (!records[field].toLowerCase().includes(value.toLowerCase())) {
+  if (records[field] && !records[field].toLowerCase().includes(value.toLowerCase())) {
+    return true;
+  }
+  if (!records[field]) { // To account for null fields which will never include searched value
     return true;
   }
   return false;
