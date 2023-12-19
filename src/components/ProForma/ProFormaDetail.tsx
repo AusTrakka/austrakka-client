@@ -18,15 +18,12 @@ import {
 } from '@mui/material';
 import { MoveToInbox } from '@mui/icons-material';
 import { ProFormaVersion, Proforma } from '../../types/dtos';
-import {
-  ResponseObject,
-  getProformaDetails,
-  getProformaVersions,
-} from '../../utilities/resourceUtils';
+import { getProformaDetails, getProformaVersions } from '../../utilities/resourceUtils';
 import { handleProformaDownload } from './proformaUtils';
 import LoadingState from '../../constants/loadingState';
 import { useApi } from '../../app/ApiContext';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 function ProFormaDetail() {
   const { proformaAbbrev } = useParams();
