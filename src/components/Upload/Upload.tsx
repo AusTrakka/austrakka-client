@@ -14,8 +14,8 @@ const uploadPages = [
   {
     title: 'Upload Sequences',
     link: '/sequences',
-    icon: <TextSnippet color="primary" />,
-    description: 'Coming soon!',
+    icon: <TextSnippet style={{ color: '#aaaaaa' }} />,
+    description: 'Submit sequence files',
     disabled: true,
   },
 ];
@@ -33,7 +33,9 @@ function Upload() {
           <Grid item key={page.title}>
             <Card sx={{ width: 200, height: 150 }}>
               <CardActionArea
-                sx={{ height: '100%', borderBottom: 4, borderColor: 'secondary.main' }}
+                sx={{ height: '100%',
+                  borderBottom: 4,
+                  borderColor: page.link === '/sequences' ? '#aaaaaa' : 'secondary.main' }}
                 component={Link}
                 to={location.pathname + page.link}
                 disabled={page.disabled}
@@ -44,12 +46,21 @@ function Upload() {
                       {page.icon}
                     </Grid>
                     <Grid item>
-                      <Typography variant="h5" component="div" color="primary" sx={{ paddingTop: 1 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        color={page.link === '/sequences' ? '#999999' : 'primary'}
+                        sx={{ paddingTop: 1 }}
+                      >
                         {page.title}
                       </Typography>
                     </Grid>
                     <Grid item>
-                      <Typography variant="body2" component="div">
+                      <Typography
+                        variant="body2"
+                        component="div"
+                        color={page.link === '/sequences' ? '#999999' : 'primary'}
+                      >
                         {page.description}
                       </Typography>
                     </Grid>
