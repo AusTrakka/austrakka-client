@@ -7,7 +7,7 @@ import Masonry from '@mui/lab/Masonry';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 import SimpleDialog from '../ProForma/TableDialog';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
-import { getProFormaDownload } from '../../utilities/resourceUtils';
+import { handleProformaDownload } from '../ProForma/proformaUtils';
 import { useApi } from '../../app/ApiContext';
 
 // Local Proforma Props
@@ -28,25 +28,7 @@ function ProFormaList(props: ProFormasListProps) {
   const { token } = useApi();
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
-    try {
-      const { blob, suggestedFilename } = await getProFormaDownload(dAbbrev, version, token);
-
-      // Create a URL for the Blob object
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Create a temporary link element to trigger the download
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = suggestedFilename;
-      link.click();
-
-      // Clean up the URL and remove the link
-      URL.revokeObjectURL(blobUrl);
-      link.remove();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', error);
-    }
+    handleProformaDownload(dAbbrev, version, token);
   };
 
   const sortByCreated = (a: ProFormaVersion, b: ProFormaVersion) => {
@@ -87,18 +69,18 @@ function ProFormaList(props: ProFormasListProps) {
     ? <Alert severity="error">{errMsg}</Alert>
     : (
       <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
-        This page holds ProFormas with attached
+        This page holds pro formas with attached
         templates. Only
         {' '}
         <b>current</b>
         {' '}
-        ProForma templates may be downloaded.
+        pro forma templates may be downloaded.
       </Typography>
     ));
 
   const renderEmptyState = (isEmpty: boolean, hasError: boolean) => (
     isEmpty && !hasError
-      ? <Alert severity="warning">No attached templates for the ProFormas are available</Alert>
+      ? <Alert severity="warning">No attached templates for project pro formas are available</Alert>
       : <br />);
 
   const renderContent = () => (

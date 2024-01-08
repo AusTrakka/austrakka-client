@@ -21,6 +21,7 @@ import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import SampleDetail from './components/SampleDetail/SampleDetail';
+import ProFormaDetail from './components/ProForma/ProFormaDetail';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
 import UploadMetadata from './components/Upload/UploadMetadata';
@@ -59,6 +60,7 @@ function App() {
                   <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
                   <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
+                  <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="users/:userObjectId" element={<UserDetail />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
