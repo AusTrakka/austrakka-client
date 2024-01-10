@@ -36,11 +36,9 @@ export function TabPanel(props: TabPanelProps) {
     >
       { tabLoader ? <LinearProgress color="secondary" /> : (
         <div>
-          {value === index && (
           <Box sx={{ marginTop: 2 }}>
             {children}
           </Box>
-          )}
         </div>
       )}
     </div>
