@@ -165,10 +165,12 @@ export interface Proforma {
   description: string,
   isActive: boolean,
   isCurrent: boolean,
+  hasAttached: boolean,
   created: string,
   lastUpdated: string,
   createdBy: string,
   lastUpdatedBy: string,
+  columnMappings: MetaDataColumnMapping[],
 }
 
 export interface ThresholdAlertDTO {
