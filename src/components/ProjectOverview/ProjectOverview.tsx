@@ -6,7 +6,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
-  getTrees, getGroupMembers, getGroupProFormas,
+  getTrees, getGroupMembers, getGroupProFormaVersions,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
@@ -244,7 +244,7 @@ function ProjectOverview() {
 
     async function getProFormaList() {
       const proformaListResponse : ResponseObject =
-        await getGroupProFormas(projectDetails!.projectMembers.id, token);
+        await getGroupProFormaVersions(projectDetails!.projectMembers.id, token);
       if (proformaListResponse.status === ResponseType.Success) {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProjectProFormas(data);
