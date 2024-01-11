@@ -8,6 +8,7 @@ interface TreesProps {
   projectAbbrev: string,
   treeListError: boolean,
   treeListErrorMessage: string,
+  isTreesLoading: boolean,
 }
 
 const treeTableColumns: MRT_ColumnDef[] = [
@@ -18,12 +19,14 @@ const treeTableColumns: MRT_ColumnDef[] = [
 ];
 
 function TreeList(props: TreesProps) {
-  const { treeList, treeListError, treeListErrorMessage, projectAbbrev } = props;
+  const { treeList, treeListError, treeListErrorMessage, isTreesLoading, projectAbbrev } = props;
   const navigate = useNavigate();
 
   const rowClickHandler = (row: any) => {
     navigate(`/projects/${projectAbbrev}/trees/${row.original.analysisId}/versions/latest`);
   };
+
+  if (isTreesLoading) return null;
 
   return (
     <MaterialReactTable

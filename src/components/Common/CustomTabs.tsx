@@ -34,13 +34,14 @@ export function TabPanel(props: TabPanelProps) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
     >
-      { tabLoader ? <LinearProgress color="secondary" /> : (
-        <div>
-          <Box sx={{ marginTop: 2 }}>
-            {children}
-          </Box>
-        </div>
-      )}
+      {
+        tabLoader && <LinearProgress color="secondary" />
+      }
+      <div>
+        <Box sx={{ marginTop: 2 }}>
+          {children}
+        </Box>
+      </div>
     </div>
   );
 }

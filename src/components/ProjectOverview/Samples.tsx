@@ -156,6 +156,9 @@ function Samples(props: SamplesProps) {
   };
 
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
+
+  if (isSamplesLoading) return null;
+
   return (
     <>
       <Backdrop

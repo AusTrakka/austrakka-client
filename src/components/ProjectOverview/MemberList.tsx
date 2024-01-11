@@ -140,6 +140,8 @@ function MemberList(props: MembersProps) {
     setExportCSVStatus(LoadingState.IDLE);
   };
 
+  if (isMembersLoading) return null;
+
   return (
     <>
       {isMembersLoading ? <CircularProgress /> : null}

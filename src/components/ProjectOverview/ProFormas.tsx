@@ -153,6 +153,8 @@ function ProFormaList(props: ProFormasListProps) {
     </Box>
   );
 
+  if (isProformasLoading) return null;
+
   return (
     <>
       { renderTitleOrError(proformaError, proFormaErrorMessage) }

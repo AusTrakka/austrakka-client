@@ -24,6 +24,8 @@ function PlotList(props: PlotListProps) {
     navigate(`/projects/${projectAbbrev}/plots/${row.original.abbreviation}`);
   };
 
+  if (isPlotsLoading) return null;
+
   return (
     <MaterialReactTable
       columns={plotTableColumns}
