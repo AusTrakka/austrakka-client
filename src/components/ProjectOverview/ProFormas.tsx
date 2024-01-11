@@ -15,17 +15,22 @@ interface ProFormasListProps {
   proformaList: ProFormaVersion[],
   proformaError: boolean,
   proFormaErrorMessage: string,
+  isProformasLoading: boolean,
 }
 
 function ProFormaList(props: ProFormasListProps) {
   const { proformaList,
     proFormaErrorMessage,
-    proformaError } = props;
+    proformaError,
+    isProformasLoading } = props;
 
   const [open, setOpen] = useState(false);
   const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
   const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
   const { token } = useApi();
+
+  // Used by GenerateCards
+  const [loadingState, setLoadingState] = useState<boolean>(false);
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
     handleProformaDownload(dAbbrev, version, token);
@@ -115,6 +120,8 @@ function ProFormaList(props: ProFormasListProps) {
                       setProFormaAbbrev,
                       handleFileDownload,
                       CardType.Summary,
+                      loadingState,
+                      setLoadingState,
                     )}
                 </Box>
               </AccordionSummary>
@@ -134,6 +141,8 @@ function ProFormaList(props: ProFormasListProps) {
                     setProFormaAbbrev,
                     handleFileDownload,
                     CardType.Details,
+                    loadingState,
+                    setLoadingState,
                   )}
                 </Stack>
               </AccordionDetails>

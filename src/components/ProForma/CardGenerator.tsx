@@ -16,14 +16,14 @@ function GenerateCards(
   setProFormaAbbrev: Dispatch<SetStateAction<string>>,
   handleFileDownload: (dAbbrev: string, version : number | null) => Promise<void>,
   cardType: CardType,
+  loadingState: boolean,
+  setLoadingState: Dispatch<SetStateAction<boolean>>,
 ) {
   const handleClickOpen = (dinfo: MetaDataColumnMapping[], abbrev: string) => {
     setOpen(true);
     setProFormaDialog(dinfo);
     setProFormaAbbrev(abbrev);
   };
-
-  const [loadingState, setLoadingState] = useState<boolean>(false);
 
   const handleDownload = async (abbrev: string, version:number | null = null) => {
     try {
