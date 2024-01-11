@@ -5,8 +5,7 @@ import { MRT_PaginationState, MRT_ColumnDef, MRT_SortingState } from 'material-r
 import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
-  getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
-  getTrees, getGroupMembers,
+  getSamples, getProjectDetails, getTotalSamples, getDisplayFields
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
@@ -16,7 +15,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member, DisplayField } from '../../types/dtos';
+import { MetaDataColumn, Project, DisplayField } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -48,6 +47,7 @@ function ProjectOverview() {
   });
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   // const [lastUpload] = useState('');
+  
   // Samples component states
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -72,21 +72,15 @@ function ProjectOverview() {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<ProjectSample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
+  
   // Trees component states
   const [isTreesLoading, setIsTreesLoading] = useState(true);
-  const [projectTrees, setProjectTrees] = useState<[]>([]);
-  const [treeListError, setTreeListError] = useState(false);
-  const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
 
   // Plots component states
-  const [projectPlots, setProjectPlots] = useState<PlotListing[]>([]);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
 
   // Members component states
-  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [memberListError, setMemberListError] = useState(false);
-  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
 
   // ProFormas component states
   const [isProformasLoading, setIsProformasLoading] = useState(true);
@@ -114,14 +108,6 @@ function ProjectOverview() {
   }, [projectAbbrev, token, tokenLoading]);
 
   useEffect(() => {
-    // Maps from a hard-coded metadata field name to a function to render the cell value
-    const sampleRenderFunctions : { [index: string]: Function } = {
-      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
-    };
-    // Fields which should be rendered as datetimes, not just dates
-    // This hard-coding is interim until the server is able to provide this information
-    const datetimeFields = new Set(['Date_created', 'Date_updated']);
-
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
@@ -143,6 +129,14 @@ function ProjectOverview() {
     }
 
     async function getSampleTableHeaders() {
+      // Maps from a hard-coded metadata field name to a function to render the cell value
+      const sampleRenderFunctions : { [index: string]: Function } = {
+        'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+      };
+      // Fields which should be rendered as datetimes, not just dates
+      // This hard-coding is interim until the server is able to provide this information
+      const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
       setIsSamplesLoading(true);
       const tableHeadersResponse: ResponseObject = await getDisplayFields(
         projectDetails!.projectMembers.id,
@@ -198,53 +192,9 @@ function ProjectOverview() {
       }
     }
 
-    async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
-      if (treeListResponse.status === ResponseType.Success) {
-        setProjectTrees(treeListResponse.data);
-        setTreeListError(false);
-        setIsTreesLoading(false);
-      } else {
-        setIsTreesLoading(false);
-        setProjectTrees([]);
-        setTreeListError(true);
-        setTreeListErrorMessage(treeListResponse.message);
-      }
-    }
-
-    async function getPlotList() {
-      const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
-      if (plotsResponse.status === ResponseType.Success) {
-        setProjectPlots(plotsResponse.data as PlotListing[]);
-        setIsPlotsLoading(false);
-      } else {
-        setIsPlotsLoading(false);
-        setProjectPlots([]);
-        // TODO set plots errors
-      }
-    }
-
-    async function getMemberList() {
-      // eslint-disable-next-line max-len
-      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
-      if (memberListResponse.status === ResponseType.Success) {
-        setProjectMembers(memberListResponse.data as Member[]);
-        setMemberListError(false);
-        setIsMembersLoading(false);
-      } else {
-        setIsMembersLoading(false);
-        setProjectMembers([]);
-        setMemberListError(true);
-        setMemberListErrorMessage(memberListResponse.message);
-      }
-    }
-
     if (projectDetails) {
       getProjectSummary();
       getSampleTableHeaders();
-      getTreeList();
-      getPlotList();
-      getMemberList();
       dispatch(fetchGroupMetadata({ groupId: projectDetails.projectMembers.id, token }));
     }
   }, [projectDetails, token, dispatch]);
@@ -430,13 +380,6 @@ function ProjectOverview() {
           </Typography>
           <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
-            {/* <Summary
-              totalSamples={totalSamples}
-              lastUpload={lastUpload}
-              projectDesc={projectDetails ? projectDetails.description : ''}
-            // isOverviewLoading={isOverviewLoading}
-              isOverviewError={isOverviewError}
-            /> */}
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
@@ -474,27 +417,23 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
             <TreeList
-              projectAbbrev={projectAbbrev!}
-              treeList={projectTrees}
-              treeListError={treeListError}
-              treeListErrorMessage={treeListErrorMessage}
+              projectDetails={projectDetails}
               isTreesLoading={isTreesLoading}
+              setIsTreesLoading={setIsTreesLoading}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
             <PlotList
+              projectDetails={projectDetails}
               isPlotsLoading={isPlotsLoading}
-              projectAbbrev={projectAbbrev!}
-              plotList={projectPlots}
+              setIsPlotsLoading={setIsPlotsLoading}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
             <MemberList
+              projectDetails={projectDetails}
               isMembersLoading={isMembersLoading}
-              memberList={projectMembers}
-              memberListError={memberListError}
-              memberListErrorMessage={memberListErrorMessage}
-              projectAbbrev={projectAbbrev!}
+              setIsMembersLoading={setIsMembersLoading}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={5} tabLoader={isProformasLoading}>

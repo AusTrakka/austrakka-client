@@ -7,14 +7,16 @@ import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
 import isoDateLocalDate from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
-import { Member } from '../../types/dtos';
+import { Member, Project } from '../../types/dtos';
+import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { getGroupMembers } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
 
 interface MembersProps {
+  projectDetails: Project | null
   isMembersLoading: boolean,
-  memberList: Member[],
-  memberListError: boolean,
-  memberListErrorMessage: string,
-  projectAbbrev: string,
+  setIsMembersLoading: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 function renderList(cell : any): JSX.Element[] {
@@ -36,22 +38,49 @@ const memberTableColumns: MRT_ColumnDef[] = [
 ];
 
 function MemberList(props: MembersProps) {
-  const { isMembersLoading,
-    memberList,
-    memberListError,
-    memberListErrorMessage,
-    projectAbbrev } = props;
+  const {
+    projectDetails,
+    isMembersLoading,
+    setIsMembersLoading,
+  } = props;
 
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
+  const [memberList, setMemberList] = useState<Member[]>([]);
+  const [memberListError, setMemberListError] = useState(false);
+  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   const navigate = useNavigate();
+  const { token } = useApi();
+
+  useEffect(() => {
+
+    async function getMemberList() {
+      // eslint-disable-next-line max-len
+      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
+      if (memberListResponse.status === ResponseType.Success) {
+        setMemberList(memberListResponse.data as Member[]);
+        setMemberListError(false);
+        setIsMembersLoading(false);
+      } else {
+        setIsMembersLoading(false);
+        setMemberList([]);
+        setMemberListError(true);
+        setMemberListErrorMessage(memberListResponse.message);
+      }
+    }
+
+    if (projectDetails) {
+      getMemberList();
+    }
+  }, [projectDetails, setIsMembersLoading, token]);
 
   const generateFilename = () => {
+    if (!projectDetails) return null;
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });
     const month = dateObject.toLocaleString('default', { month: '2-digit' });
     const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    return `austrakka_${projectAbbrev}_users_export_${year}${month}${day}`;
+    return `austrakka_${projectDetails!.abbreviation}_users_export_${year}${month}${day}`;
   };
 
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
