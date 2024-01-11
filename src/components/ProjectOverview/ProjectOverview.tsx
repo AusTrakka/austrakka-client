@@ -6,7 +6,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
-  getTrees, getGroupMembers, getGroupProFormaVersions,
+  getTrees, getGroupMembers,
 } from '../../utilities/resourceUtils';
 import { ProjectSample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
@@ -16,7 +16,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member, DisplayField, ProFormaVersion } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member, DisplayField } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -89,11 +89,8 @@ function ProjectOverview() {
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
 
   // ProFormas component states
-  const [projectProFormas, setProjectProFormas] = useState<ProFormaVersion[]>([]);
-  const [isProFormasLoading, setIsProFormasLoading] = useState(true);
-  const [proFormasError, setProFormaError] = useState(false);
-  const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
-
+  const [isProformasLoading, setIsProformasLoading] = useState(true);
+  
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -242,28 +239,12 @@ function ProjectOverview() {
       }
     }
 
-    async function getProFormaList() {
-      const proformaListResponse : ResponseObject =
-        await getGroupProFormaVersions(projectDetails!.projectMembers.id, token);
-      if (proformaListResponse.status === ResponseType.Success) {
-        const data = proformaListResponse.data as ProFormaVersion[];
-        setProjectProFormas(data);
-        setIsProFormasLoading(false);
-      } else {
-        setIsProFormasLoading(false);
-        setProjectProFormas([]);
-        setProFormaError(true);
-        setProFormasErrorMessage(proformaListResponse.message);
-      }
-    }
-
     if (projectDetails) {
       getProjectSummary();
       getSampleTableHeaders();
       getTreeList();
       getPlotList();
       getMemberList();
-      getProFormaList();
       dispatch(fetchGroupMetadata({ groupId: projectDetails.projectMembers.id, token }));
     }
   }, [projectDetails, token, dispatch]);
@@ -516,12 +497,11 @@ function ProjectOverview() {
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={5} tabLoader={isProFormasLoading}>
+          <TabPanel value={tabValue} index={5} tabLoader={isProformasLoading}>
             <ProFormas
-              proformaList={projectProFormas}
-              proformaError={proFormasError}
-              proFormaErrorMessage={proFromasErrorMessage}
-              isProformasLoading={isProFormasLoading}
+              projectDetails={projectDetails}
+              isProformasLoading={isProformasLoading}
+              setIsProformasLoading={setIsProformasLoading}
             />
           </TabPanel>
         </>
