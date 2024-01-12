@@ -21,6 +21,8 @@ const DATA_VIEWS = [
 // This is an interim function based on hard-coded views
 const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
   const fieldNames = fields.map(field => field.columnName);
+  // break fieldnames to test what happens when full view fails to load - partial load error state
+  // fieldNames.push('not_a_field');
   const dataViews = DATA_VIEWS
     .map(view => view.filter(field => fieldNames.includes(field)))
     .filter(view => view.length > 0);
@@ -85,10 +87,9 @@ const fetchDataView = createAsyncThunk(
   ):Promise<Project | unknown > => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).metadataState;
-    // Async sleep to simulate server delay
-    // let randomDelay = Math.floor(Math.random() * 5000);
-    // if (viewIndex == 2) randomDelay = 10000;
-    // await new Promise(resolve => setTimeout(resolve, randomDelay));
+    // Extra sleep on full view if we want to test what happens when in a partial data load state
+    // if (getState().metadataState.data[groupId].fields.length === fields.length)
+    //  await new Promise(resolve => setTimeout(resolve, 4000));
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue(response.data as ProjectSample[]);
@@ -291,4 +292,16 @@ export const selectGroupMetadataFields = (state: RootState, groupId: number | un
 export const selectGroupMetadataError = (state: RootState, groupId: number | undefined) => {
   if (!groupId) return null;
   return state.metadataState.data[groupId]?.errorMessage;
+};
+
+// Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
+// data. This includes idle and awaiting fields states.
+// Returns false if any (including partial) data loaded, or if error state
+export const selectAwaitingGroupMetadata = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) return true;
+  const loadingState = state.metadataState.data[groupId]?.loadingState;
+  return loadingState === MetadataLoadingState.IDLE ||
+         loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+         loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+         loadingState === MetadataLoadingState.AWAITING_DATA;
 };

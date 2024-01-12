@@ -1,13 +1,11 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, {
-  memo, useEffect, useRef, Dispatch, SetStateAction,
+  memo, useEffect, Dispatch, SetStateAction, useState,
 } from 'react';
 import MaterialReactTable, {
-  MRT_PaginationState,
   MRT_ColumnDef,
   MRT_ShowHideColumnsButton,
   MRT_TablePagination,
-  MRT_SortingState,
 } from 'material-react-table';
 import { FilterList, FileDownload, Close } from '@mui/icons-material';
 import {
@@ -15,138 +13,99 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
-import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { ProjectSample } from '../../types/sample.interface';
-import { DisplayField } from '../../types/dtos';
+import { MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import DataFilters from '../DataFilters/DataFilters';
+import { GroupMetadataState } from '../../app/metadataSlice';
+import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import ExportTableData from '../Common/ExportTableData';
 
 interface SamplesProps {
+  groupMetadata: GroupMetadataState | null,
   projectAbbrev: string,
-  sampleList: ProjectSample[],
   totalSamples: number,
-  samplesCount: number,
   isSamplesLoading: boolean,
-  sampleTableColumns: MRT_ColumnDef<{}>[],
-  isSamplesError: {
-    samplesHeaderError: boolean,
-    sampleMetadataError: boolean,
-    samplesErrorMessage: string,
-  },
-  samplesPagination: MRT_PaginationState,
-  columnOrderArray: string[],
-  setSamplesPagination: Dispatch<SetStateAction<MRT_PaginationState>>,
-  setSorting: Dispatch<SetStateAction<MRT_SortingState>>,
-  sorting: MRT_SortingState,
-  isFiltersOpen: boolean,
-  setIsFiltersOpen: Dispatch<SetStateAction<boolean>>,
-  setQueryString: Dispatch<SetStateAction<string>>,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
-  displayFields: DisplayField[],
-  getExportData: Function,
-  exportData: ProjectSample[],
-  setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
-  exportCSVStatus: LoadingState,
-  setExportCSVStatus: Dispatch<SetStateAction<LoadingState>>,
 }
 
 function Samples(props: SamplesProps) {
   const {
+    groupMetadata,
     projectAbbrev,
-    sampleList,
     totalSamples,
-    samplesCount,
     isSamplesLoading,
-    sampleTableColumns,
-    isSamplesError,
-    samplesPagination,
-    setSamplesPagination,
-    setSorting,
-    sorting,
-    isFiltersOpen,
-    setIsFiltersOpen,
-    setQueryString,
     filterList,
     setFilterList,
-    displayFields,
-    columnOrderArray,
-    getExportData,
-    exportData,
-    setExportData,
-    exportCSVStatus,
-    setExportCSVStatus,
   } = props;
-  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const navigate = useNavigate();
 
-  const generateFilename = () => {
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    const h = dateObject.getHours();
-    const m = dateObject.getMinutes();
-    const s = dateObject.getSeconds();
-    return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
-  };
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
 
-  useEffect(
-    () => {
-      if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
-        try {
-          csvLink?.current?.link.click();
-          setExportCSVStatus(LoadingState.IDLE);
-          setExportData([]);
-        } catch (error) {
-          setExportCSVStatus(LoadingState.ERROR);
-          setExportData([]);
-        }
+  // Set column headers from groupMetadata state
+  useEffect(() => {
+    if (!groupMetadata?.fields) return;
+
+    // Maps from a hard-coded metadata field name to a function to render the cell value
+    const sampleRenderFunctions : { [index: string]: Function } = {
+      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+    };
+    // Fields which should be rendered as datetimes, not just dates
+    // This hard-coding is interim until the server is able to provide this information
+    const datetimeFields = new Set(['Date_created', 'Date_updated']);
+
+    // Sort here rather than setting columnOrder
+    const compareFields = (field1: { columnOrder: number; }, field2: { columnOrder: number; }) =>
+      (field1.columnOrder - field2.columnOrder);
+    const sortedFields = [...groupMetadata!.fields!];
+    sortedFields.sort(compareFields);
+    const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+    sortedFields.forEach((element: MetaDataColumn) => {
+      if (element.columnName in sampleRenderFunctions) {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+        });
+      } else if (element.primitiveType === 'boolean') {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
+        });
+      } else if (element.primitiveType === 'date') {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }: any) => (
+            datetimeFields.has(element.columnName)
+              ? isoDateLocalDate(cell.getValue())
+              : isoDateLocalDateNoTime(cell.getValue())),
+        });
+      } else {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+        });
       }
-    },
-    [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
-  );
+    });
+    setSampleTableColumns(columnBuilder);
+  }, [groupMetadata]);
 
-  const ExportButton = (
-    <>
-      <CSVLink
-        data={exportData}
-        ref={csvLink}
-        style={{ display: 'none' }}
-        filename={generateFilename() || 'austrakka_export.csv'}
-      />
-      <Tooltip title="Export to CSV" placement="top" arrow>
-        <span>
-          <IconButton
-            onClick={() => {
-              getExportData();
-            }}
-            disabled={exportCSVStatus === LoadingState.LOADING || sampleList.length < 1}
-          >
-            {exportCSVStatus === LoadingState.LOADING
-              ? (
-                <CircularProgress
-                  color="secondary"
-                  size={40}
-                  sx={{
-                    position: 'absolute',
-                    zIndex: 1,
-                  }}
-                />
-              )
-              : null}
-            <FileDownload />
-          </IconButton>
-        </span>
-      </Tooltip>
-    </>
-  );
-
-  const handleDialogClose = () => {
-    setExportCSVStatus(LoadingState.IDLE);
-  };
+  // Open error dialog if loading state changes to error
+  useEffect(() => {
+    if (groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
+        groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      setErrorDialogOpen(true);
+    }
+  }, [groupMetadata?.loadingState]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
@@ -155,6 +114,18 @@ function Samples(props: SamplesProps) {
     }
   };
 
+  // Update CSV export status as data loads
+  // CSV export is not permitted until data is FULLY loaded
+  // If a load error occurs, we will pass no data to the ExportTableData component
+  // However we don't set an error here as we want to see a load error, not CSV download error
+  useEffect(() => {
+    setExportCSVStatus(
+      isSamplesLoading || groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
+        LoadingState.LOADING :
+        LoadingState.SUCCESS,
+    );
+  }, [isSamplesLoading, groupMetadata?.loadingState]);
+
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
 
   if (isSamplesLoading) return null;
@@ -162,62 +133,48 @@ function Samples(props: SamplesProps) {
   return (
     <>
       <Backdrop
+        // This Backdrop will not do anything in a tab, where the entire display is suppressed
         sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
-        open={exportCSVStatus === LoadingState.LOADING}
+        open={isSamplesLoading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
+      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
             aria-label="close"
-            onClick={handleDialogClose}
+            onClick={() => setErrorDialogOpen(false)}
             sx={{ position: 'absolute', right: 8, top: 8 }}
           >
             <Close />
           </IconButton>
           <AlertTitle sx={{ paddingBottom: 1 }}>
-            <strong>Your data could not be exported to CSV.</strong>
+            <strong>
+              {groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+                'Project metadata could not be fully loaded' :
+                'Project metadata could not be loaded'}
+            </strong>
           </AlertTitle>
-          There has been an error exporting your data to CSV.
+          {groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+            `An error occured loading project metadata. Some fields will be null, and 
+          CSV export will not be available. Refresh to reload.` :
+            'An error occured loading project metadata. Refresh to reload.'}
           <br />
-          Please try again later, or contact an AusTrakka admin.
+          Please contact an AusTrakka admin if this error persists.
         </Alert>
       </Dialog>
-      <QueryBuilder
-        isOpen={isFiltersOpen}
-        setIsOpen={setIsFiltersOpen}
-        setQueryString={setQueryString}
-        fieldList={displayFields}
-        filterList={filterList}
-        setFilterList={setFilterList}
-        totalSamples={totalSamples}
-        samplesCount={samplesCount}
+      <DataFilters
+        data={groupMetadata?.metadata ?? []}
+        fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
+        setFilteredData={setFilteredData}
+        initialOpen
       />
       <MaterialReactTable
         columns={sampleTableColumns}
-        data={sampleList}
+        data={filteredData}
         enableColumnFilters={false}
         enableStickyHeader
-        manualPagination
-        manualFiltering
         columnResizeMode="onChange"
-        muiToolbarAlertBannerProps={
-          isSamplesError
-            ? {
-              color: 'error',
-              children: isSamplesError.samplesErrorMessage,
-            }
-            : undefined
-        }
-        // muiTableBodyProps={{
-        //   sx: {
-        //     //stripe the rows, make odd rows a darker color
-        //     '& tr:nth-of-type(odd)': {
-        //       backgroundColor: '#f5f5f5',
-        //     },
-        //   },
-        // }}
         muiLinearProgressProps={({ isTopToolbar }) => ({
           color: 'secondary',
           sx: { display: isTopToolbar ? 'block' : 'none' },
@@ -226,25 +183,26 @@ function Samples(props: SamplesProps) {
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000],
         }}
-        onPaginationChange={setSamplesPagination}
-        state={{
-          pagination: samplesPagination,
-          sorting,
-          isLoading: isSamplesLoading,
-          showAlertBanner: isSamplesError.sampleMetadataError || isSamplesError.samplesHeaderError,
-          columnOrder: columnOrderArray,
+        initialState={{
+          density: 'compact',
         }}
-        manualSorting
-        onSortingChange={setSorting}
-        initialState={{ density: 'compact' }}
-        rowCount={samplesCount}
+        state={{
+          isLoading: isSamplesLoading,
+          showAlertBanner: groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
+                           groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR,
+        }}
+        muiToolbarAlertBannerProps={
+          {
+            color: 'error',
+            children: groupMetadata?.errorMessage,
+          }
+        }
+        rowCount={filteredData.length}
         // Layout props
         muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
         muiTableBodyRowProps={({ row }) => ({
           onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
+          sx: { cursor: 'pointer' },
         })}
         // Column manipulation
         enableColumnResizing
@@ -255,29 +213,40 @@ function Samples(props: SamplesProps) {
         enableFullScreenToggle={false}
         // memoMode="cells"
         enableRowVirtualization
-        enableColumnVirtualization
+        // enableColumnVirtualization  // bug where some columns do not render on load
         renderToolbarInternalActions={({ table }) => (
           <Box>
-            {ExportButton}
+            <ExportTableData
+              dataToExport={
+                groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+                  [] : filteredData
+              }
+              exportCSVStatus={exportCSVStatus}
+              setExportCSVStatus={setExportCSVStatus}
+            />
+            {/* TODO This depends on knowing datafilter's filters
             <Tooltip title="Show/Hide filters" placement="top" arrow>
               <span>
                 <IconButton
                   onClick={() => {
-                    setIsFiltersOpen(!isFiltersOpen);
+                    // TODO will need to alter DataFilters to enable this
+                    //setIsFiltersOpen(!isFiltersOpen);
                   }}
-                  disabled={sampleList.length < 1 && filterList.length < 1}
+                  // TODO do we really need to disable this if there are no samples?
+                  //disabled={sampleList.length < 1 && filterList.length < 1}
                 >
                   <Badge
                     badgeContent={filterList.length}
                     color="primary"
                     showZero
-                    invisible={sampleList.length < 1 && filterList.length < 1}
+                    //invisible={sampleList.length < 1 && filterList.length < 1}
                   >
                     <FilterList />
                   </Badge>
                 </IconButton>
               </span>
             </Tooltip>
+                */}
             <MRT_ShowHideColumnsButton table={table} />
           </Box>
         )}

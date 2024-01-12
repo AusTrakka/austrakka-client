@@ -63,6 +63,7 @@ export default function SampleSummary(props: any) {
       // AppendtimeFilterObject for drills down other than latest_upload
       if (drilldownName === 'all_samples' || drilldownName === 'has_sequence') {
         const appendedFilters = [...drilldownFilters, timeFilterObject];
+        // TODO to make these dashboard calls work have change DataFilters
         setFilterList(appendedFilters);
       } else {
         setFilterList(drilldownFilters);
