@@ -1,13 +1,13 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, {
-  memo, useEffect, Dispatch, SetStateAction, useState,
+  memo, useEffect, SetStateAction, useState,
 } from 'react';
 import MaterialReactTable, {
   MRT_ColumnDef,
   MRT_ShowHideColumnsButton,
   MRT_TablePagination,
 } from 'material-react-table';
-import { FilterList, FileDownload, Close } from '@mui/icons-material';
+import { FilterList, Close } from '@mui/icons-material';
 import {
   Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
@@ -15,10 +15,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { MetaDataColumn } from '../../types/dtos';
-import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import DataFilters from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { GroupMetadataState } from '../../app/metadataSlice';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -29,8 +28,7 @@ interface SamplesProps {
   projectAbbrev: string,
   totalSamples: number,
   isSamplesLoading: boolean,
-  setFilterList: Dispatch<SetStateAction<Filter[]>>,
-  filterList: Filter[],
+  inputFilters: SetStateAction<DataFilter[]>,
 }
 
 function Samples(props: SamplesProps) {
@@ -39,8 +37,7 @@ function Samples(props: SamplesProps) {
     projectAbbrev,
     totalSamples,
     isSamplesLoading,
-    filterList,
-    setFilterList,
+    inputFilters,
   } = props;
   const navigate = useNavigate();
 
@@ -48,6 +45,16 @@ function Samples(props: SamplesProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
+
+  // If inputFilters is changed by the parent, set the filters
+  // May later replace this input with navigation parameters and dynamic URL
+  useEffect(() => {
+    if (inputFilters) {
+      setFilterList(inputFilters);
+    }
+  }, [inputFilters]);
 
   // Set column headers from groupMetadata state
   useEffect(() => {
@@ -167,7 +174,10 @@ function Samples(props: SamplesProps) {
         data={groupMetadata?.metadata ?? []}
         fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
         setFilteredData={setFilteredData}
-        initialOpen
+        isOpen={isDataFiltersOpen}
+        setIsOpen={setIsDataFiltersOpen}
+        filterList={filterList}
+        setFilterList={setFilterList}
       />
       <MaterialReactTable
         columns={sampleTableColumns}
@@ -224,29 +234,21 @@ function Samples(props: SamplesProps) {
               exportCSVStatus={exportCSVStatus}
               setExportCSVStatus={setExportCSVStatus}
             />
-            {/* TODO This depends on knowing datafilter's filters
             <Tooltip title="Show/Hide filters" placement="top" arrow>
               <span>
                 <IconButton
-                  onClick={() => {
-                    // TODO will need to alter DataFilters to enable this
-                    //setIsFiltersOpen(!isFiltersOpen);
-                  }}
-                  // TODO do we really need to disable this if there are no samples?
-                  //disabled={sampleList.length < 1 && filterList.length < 1}
+                  onClick={() => setIsDataFiltersOpen((current) => !current)}
                 >
                   <Badge
                     badgeContent={filterList.length}
                     color="primary"
                     showZero
-                    //invisible={sampleList.length < 1 && filterList.length < 1}
                   >
                     <FilterList />
                   </Badge>
                 </IconButton>
               </span>
             </Tooltip>
-                */}
             <MRT_ShowHideColumnsButton table={table} />
           </Box>
         )}

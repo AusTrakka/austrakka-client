@@ -145,7 +145,7 @@ export default function StCounts(props: any) {
     const drilldownFilter = [{
       field: stFieldName,
       fieldType: 'string',
-      condition: '==*',
+      condition: '=',
       value: selectedRow.ST,
     }];
     // Append timeFilterObject for last_week and last_month filters

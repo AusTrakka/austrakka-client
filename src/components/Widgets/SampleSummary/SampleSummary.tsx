@@ -29,7 +29,7 @@ export default function SampleSummary(props: any) {
     {
       field: 'Has_sequences',
       fieldType: 'string',
-      condition: '==*',
+      condition: '=',
       value: 'false',
     },
   ];

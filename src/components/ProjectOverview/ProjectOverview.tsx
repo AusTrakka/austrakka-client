@@ -6,7 +6,6 @@ import { Alert, Typography } from '@mui/material';
 import {
   getProjectDetails, getTotalSamples,
 } from '../../utilities/resourceUtils';
-import { Filter } from '../Common/QueryBuilder';
 // import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
@@ -27,6 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { DataFilter } from '../DataFilters/DataFilters';
 
 function ProjectOverview() {
   const { projectAbbrev } = useParams();
@@ -53,7 +53,7 @@ function ProjectOverview() {
   const groupMetadata : GroupMetadataState | null =
     useAppSelector(state => selectGroupMetadata(state, projectDetails?.projectMembers.id));
   const [totalSamples, setTotalSamples] = useState(0);
-  const [filterList, setFilterList] = useState<Filter[]>([]); // currently does nothing
+  const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
@@ -167,7 +167,7 @@ function ProjectOverview() {
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
               groupId={projectDetails ? projectDetails!.projectMembers.id : null}
-              setFilterList={setFilterList}
+              setFilterList={setSampleFilters}
               setTabValue={setTabValue}
             />
           </TabPanel>
@@ -177,8 +177,7 @@ function ProjectOverview() {
               projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               isSamplesLoading={isSamplesLoading}
-              filterList={filterList}
-              setFilterList={setFilterList}
+              inputFilters={sampleFilters}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>

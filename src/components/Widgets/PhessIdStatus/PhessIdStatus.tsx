@@ -46,7 +46,7 @@ export default function PhessIdStatus(props: any) {
     const drilldownFilter = [{
       field: 'PHESS_ID',
       fieldType: 'string',
-      condition: selectedRow.status === 'Missing' ? '==*' : '!=*',
+      condition: selectedRow.status === 'Missing' ? '=NULL' : '!=NULL',
       value: 'null-or-empty',
     }];
     // Append timeFilterObject for last_week and last_month filters
