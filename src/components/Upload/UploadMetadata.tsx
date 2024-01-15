@@ -1,7 +1,7 @@
 import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
 import { Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
   FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
-  Backdrop, CircularProgress, AlertColor } from '@mui/material';
+  Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
 import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
@@ -284,6 +284,9 @@ function UploadMetadata() {
           </Tooltip>
           { selectedProforma ? (
             <List>
+              <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
+                View or download proforma
+              </Link>
               <ListItemText
                 primary="Proforma name"
                 secondary={selectedProforma?.name}
