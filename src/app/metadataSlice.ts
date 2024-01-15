@@ -127,7 +127,7 @@ listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Return early if wrong action; don't try to read groupId
     if (!isAnyOf(fetchProjectFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
-    const groupId = (action as any).meta.arg.groupId;
+    const { groupId } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
     const previousViewToFetch = (previousState as RootState).metadataState
       .data[groupId]?.viewToFetch;
@@ -137,7 +137,8 @@ listenerMiddleware.startListening({
   },
   effect: (action, listenerApi) => {
     const { groupId } = (action as any).meta.arg;
-    const { views, viewToFetch } = (listenerApi.getState() as RootState).metadataState.data[groupId];
+    const { views, viewToFetch } =
+      (listenerApi.getState() as RootState).metadataState.data[groupId];
     // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
