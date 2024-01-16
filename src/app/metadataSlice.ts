@@ -87,10 +87,6 @@ const fetchDataView = createAsyncThunk(
   ):Promise<Project | unknown > => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).metadataState;
-    // Async sleep to simulate server delay
-    // let randomDelay = Math.floor(Math.random() * 5000);
-    // if (viewIndex == 2) randomDelay = 10000;
-    // await new Promise(resolve => setTimeout(resolve, randomDelay));
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue(response.data as ProjectSample[]);
