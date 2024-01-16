@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn, Project } from '../types/dtos';
@@ -37,6 +37,7 @@ export interface GroupMetadataState {
   fieldUniqueValues: Record<string, string[]> | null
   views: Record<number, string[]>
   viewLoadingStates: Record<number, LoadingState>
+  viewToFetch: number
   metadata: ProjectSample[] | null
   columnLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
@@ -49,6 +50,7 @@ const groupMetadataInitialStateFactory = (groupId: number): GroupMetadataState =
   fieldUniqueValues: null,
   views: {},
   viewLoadingStates: {},
+  viewToFetch: 0,
   metadata: null,
   columnLoadingStates: {},
   errorMessage: null,
@@ -121,20 +123,29 @@ listenerMiddleware.startListening({
   },
 });
 
-// Launch needed data view fetches when ready to do so
+// Launch needed data view fetch after viewToFetch changes
 listenerMiddleware.startListening({
-  // Could alternatively use predicate on this action and state MetadataLoadingState.FIELDS_LOADED
-  // In theory the state check is redundant
-  type: 'metadata/fetchProjectFields/fulfilled',
+  predicate: (action, currentState, previousState) => {
+    // Return early if wrong action; don't try to read groupId
+    if (!isAnyOf(fetchProjectFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
+    const { groupId } = (action as any).meta.arg;
+    // Check that viewToFetch has incremented
+    const previousViewToFetch = (previousState as RootState).metadataState
+      .data[groupId]?.viewToFetch;
+    const viewToFetch = (currentState as RootState).metadataState
+      .data[groupId]?.viewToFetch;
+    return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
+  },
   effect: (action, listenerApi) => {
     const { groupId } = (action as any).meta.arg;
-    const { views } = (listenerApi.getState() as RootState).metadataState.data[groupId];
-    // This is dispatching view loads concurrently
-    for (const [index, view] of Object.entries(views!)) {
-      listenerApi.dispatch(
-        fetchDataView({ groupId, fields: view, viewIndex: index }),
-      );
-    }
+    const { views, viewToFetch } =
+      (listenerApi.getState() as RootState).metadataState.data[groupId];
+    // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
+    // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
+    if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
+    listenerApi.dispatch(
+      fetchDataView({ groupId, fields: views[viewToFetch], viewIndex: viewToFetch }),
+    );
   },
 });
 
@@ -191,17 +202,13 @@ export const metadataSlice = createSlice({
     builder.addCase(fetchDataView.pending, (state, action) => {
       const { groupId, fields, viewIndex } = (action as any).meta.arg as {
         groupId: number, fields: string[], viewIndex: number };
-      // If whole dataset already loaded, we do nothing here
-      // TODO should consider immediately aborting this thunk and request - allow LOADING for now
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.LOADING;
-      if (state.data[groupId].loadingState === MetadataLoadingState.DATA_LOADED) return;
       // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
-      // TODO precursor state may change once we are loading data views via thunk
-      if (state.data[groupId].loadingState === MetadataLoadingState.FIELDS_LOADED) {
+      if (viewIndex === 0) {
         state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
       }
       fields.forEach(field => {
-        // Check per-column state in case already finished loading from another thunk
+        // Check per-column state; columns new in this load get LOADING status
         if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
           state.data[groupId].columnLoadingStates[field] = LoadingState.LOADING;
         }
@@ -211,20 +218,17 @@ export const metadataSlice = createSlice({
       const { groupId, fields, viewIndex } = (action as any).meta.arg as {
         groupId: number, fields: string[], viewIndex: number };
       const data = action.payload;
-      // TODO consider aborting obsolete thunks and requests here
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
-      if (state.data[groupId].loadingState === MetadataLoadingState.DATA_LOADED) return;
-      // If we have returned any fields that weren't previously loaded, set the data
-      if (fields.some(field =>
-        state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS)
-      ) {
-        state.data[groupId].metadata = data;
-        fields.forEach(field => {
-          state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
-        });
-      }
+      // Each returned view is a superset of the previous; we always replace the data
+      state.data[groupId].metadata = data;
+      fields.forEach(field => {
+        state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
+      });
+      // Increment viewToFetch, which will trigger the next view load
+      state.data[groupId].viewToFetch = viewIndex + 1;
       // If this is the full dataset, we are done, otherwise we are in a partial load state
-      if (fields.length === state.data[groupId].fields?.length) {
+      if (viewIndex === Object.keys(state.data[groupId].views).length - 1) {
+        // NB here expect also that fields.length === state.data[groupId].fields?.length
         state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
       } else {
         state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
@@ -240,27 +244,17 @@ export const metadataSlice = createSlice({
           state.data[groupId].columnLoadingStates[field] = LoadingState.ERROR;
         }
       });
-      // If all views are resolved, we set overall state based on column load states
-      // All error -> ERROR, all success -> DATA_LOADED, else PARTIAL_LOAD_ERROR
-      // If some views are still loading or idle, we do not change overall state
-      if (Object.values(state.data[groupId].viewLoadingStates!).every(
-        colState => colState === LoadingState.SUCCESS || colState === LoadingState.ERROR,
-      )) {
-        if (Object.values(state.data[groupId].columnLoadingStates).every(
-          colState => colState === LoadingState.SUCCESS,
-        )) {
-          // This shouldn't really occur, the successful thunk should have set the state
-          state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
-        } else if (Object.values(state.data[groupId].columnLoadingStates).every(
-          colState => colState === LoadingState.ERROR,
-        )) {
-          state.data[groupId].loadingState = MetadataLoadingState.ERROR;
-          state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
-        } else {
-          state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
-          state.data[groupId].errorMessage = `Unable to complete loading project data: ${action.payload}`;
-        }
+      // If this is the first view, we are in an error state, otherwise a partial error state
+      if (viewIndex === 0) {
+        state.data[groupId].loadingState = MetadataLoadingState.ERROR;
+        state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
+      } else {
+        state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
+        state.data[groupId].errorMessage = `Unable to complete loading project data: ${action.payload}`;
       }
+      // Currently we don't try to fetch more views after an error
+      // If we want to, we should incremement viewToFetch if there are views left,
+      // and set PARTIAL_DATA_LOADED state instead of error states.
     });
   },
 });
