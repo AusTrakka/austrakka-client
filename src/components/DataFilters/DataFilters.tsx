@@ -26,9 +26,9 @@ interface DataFiltersProps {
   fields: any
   setFilteredData: any
   isOpen: boolean
-  setIsOpen: SetStateAction<boolean>
+  setIsOpen: React.Dispatch<SetStateAction<boolean>>
   filterList: DataFilter[]
-  setFilterList: SetStateAction<DataFilter[]>
+  setFilterList: React.Dispatch<SetStateAction<DataFilter[]>>
 }
 
 const initialFilterState = {
