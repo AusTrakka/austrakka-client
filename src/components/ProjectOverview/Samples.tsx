@@ -6,6 +6,7 @@ import MaterialReactTable, {
   MRT_ColumnDef,
   MRT_ShowHideColumnsButton,
   MRT_TablePagination,
+  MRT_ToggleGlobalFilterButton,
 } from 'material-react-table';
 import { FilterList, Close } from '@mui/icons-material';
 import {
@@ -226,14 +227,7 @@ function Samples(props: SamplesProps) {
         // enableColumnVirtualization  // bug where some columns do not render on load
         renderToolbarInternalActions={({ table }) => (
           <Box>
-            <ExportTableData
-              dataToExport={
-                groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-                  [] : filteredData
-              }
-              exportCSVStatus={exportCSVStatus}
-              setExportCSVStatus={setExportCSVStatus}
-            />
+            <MRT_ToggleGlobalFilterButton table={table} />
             <Tooltip title="Show/Hide filters" placement="top" arrow>
               <span>
                 <IconButton
@@ -250,6 +244,14 @@ function Samples(props: SamplesProps) {
               </span>
             </Tooltip>
             <MRT_ShowHideColumnsButton table={table} />
+            <ExportTableData
+              dataToExport={
+                groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+                  [] : filteredData
+              }
+              exportCSVStatus={exportCSVStatus}
+              setExportCSVStatus={setExportCSVStatus}
+            />
           </Box>
         )}
         renderBottomToolbar={({ table }) => (
