@@ -41,7 +41,7 @@ export interface GroupMetadataState {
   errorMessage: string | null
 }
 
-const groupMetadataInitialStateFactory = (groupId: number): GroupMetadataState => ({
+const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState => ({
   groupId,
   loadingState: MetadataLoadingState.IDLE,
   fields: null,
@@ -63,17 +63,43 @@ const initialState: MetadataSliceState = {
   token: null,
 };
 
+// Input parameters and return types (on success/fulfilled) for actions and thunks
+
+interface FetchGroupMetadataParams {
+  groupId: number,
+  token: string,
+}
+
+interface FetchProjectFieldsParams {
+  groupId: number,
+}
+
+interface FetchProjectFieldsResponse {
+  fields: MetaDataColumn[],
+}
+
+interface FetchDataViewParams {
+  groupId: number,
+  fields: string[],
+  viewIndex: number,
+}
+interface FetchDataViewsResponse {
+  data: ProjectSample[],
+}
+
 const fetchProjectFields = createAsyncThunk(
   'metadata/fetchProjectFields',
   async (
-    params: any, // { groupId: number },
+    params: FetchProjectFieldsParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
     const { groupId } = params;
     const { token } = (getState() as RootState).metadataState;
     const response = await getDisplayFields(groupId, token!);
     if (response.status === 'Success') {
-      return fulfillWithValue(response.data as MetaDataColumn[]);
+      return fulfillWithValue<FetchProjectFieldsResponse>({
+        fields: response.data as MetaDataColumn[],
+      });
     }
     return rejectWithValue(response.error);
   },
@@ -82,14 +108,16 @@ const fetchProjectFields = createAsyncThunk(
 const fetchDataView = createAsyncThunk(
   'metadata/fetchDataView',
   async (
-    params: any, // { groupId: number, fields: string[], viewIndex: number }
+    params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).metadataState;
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
-      return fulfillWithValue(response.data as ProjectSample[]);
+      return fulfillWithValue<FetchDataViewsResponse>({
+        data: response.data as ProjectSample[],
+      });
     }
     return rejectWithValue(response.error);
   },
@@ -148,11 +176,11 @@ export const metadataSlice = createSlice({
   name: 'metadata',
   initialState,
   reducers: {
-    fetchGroupMetadata: (state, action: PayloadAction<any>) => {
+    fetchGroupMetadata: (state, action: PayloadAction<FetchGroupMetadataParams>) => {
       const { groupId, token } = action.payload;
       if (!state.data[groupId]) {
         // Set initial state for this group
-        state.data[groupId] = groupMetadataInitialStateFactory(groupId);
+        state.data[groupId] = groupMetadataInitialStateCreator(groupId);
       }
       // Only initialise fetch if in allowed state; do not reload loading data
       if (state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
@@ -160,7 +188,7 @@ export const metadataSlice = createSlice({
           state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
         // If we were in an error state and are refreshing, clear data
         if (state.data[groupId].loadingState !== MetadataLoadingState.IDLE) {
-          state.data[groupId] = groupMetadataInitialStateFactory(groupId);
+          state.data[groupId] = groupMetadataInitialStateCreator(groupId);
         }
         state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
         state.token = token;
@@ -172,9 +200,9 @@ export const metadataSlice = createSlice({
       const { groupId } = action.meta.arg;
       state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
-    builder.addCase(fetchProjectFields.fulfilled, (state, action: PayloadAction<any>) => {
-      const { groupId } = (action as any).meta.arg;
-      const fields = action.payload;
+    builder.addCase(fetchProjectFields.fulfilled, (state, action) => {
+      const { groupId } = action.meta.arg;
+      const { fields } = action.payload as FetchProjectFieldsResponse;
       state.data[groupId].fields = fields;
       // Set views (field lists), and set view loading states to IDLE for all views
       // This is an interim measure; later we will use a thunk to fetch project data views
@@ -189,14 +217,13 @@ export const metadataSlice = createSlice({
       });
       state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
-    builder.addCase(fetchProjectFields.rejected, (state, action: PayloadAction<any>) => {
-      const { groupId } = (action as any).meta.arg;
+    builder.addCase(fetchProjectFields.rejected, (state, action) => {
+      const { groupId } = action.meta.arg;
       state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
       state.data[groupId].loadingState = MetadataLoadingState.ERROR;
     });
     builder.addCase(fetchDataView.pending, (state, action) => {
-      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
-        groupId: number, fields: string[], viewIndex: number };
+      const { groupId, fields, viewIndex } = action.meta.arg;
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.LOADING;
       // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
       if (viewIndex === 0) {
@@ -209,10 +236,9 @@ export const metadataSlice = createSlice({
         }
       });
     });
-    builder.addCase(fetchDataView.fulfilled, (state, action:PayloadAction<any>) => {
-      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
-        groupId: number, fields: string[], viewIndex: number };
-      const data = action.payload;
+    builder.addCase(fetchDataView.fulfilled, (state, action) => {
+      const { groupId, fields, viewIndex } = action.meta.arg;
+      const { data } = action.payload as FetchDataViewsResponse;
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       // Each returned view is a superset of the previous; we always replace the data
       state.data[groupId].metadata = data;
@@ -229,9 +255,8 @@ export const metadataSlice = createSlice({
         state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
       }
     });
-    builder.addCase(fetchDataView.rejected, (state, action: PayloadAction<any>) => {
-      const { groupId, fields, viewIndex } = (action as any).meta.arg as {
-        groupId: number, fields: string[], viewIndex: number };
+    builder.addCase(fetchDataView.rejected, (state, action) => {
+      const { groupId, fields, viewIndex } = action.meta.arg;
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.ERROR;
       // Any column not already loaded by another thunk gets an error state
       fields.forEach(field => {
