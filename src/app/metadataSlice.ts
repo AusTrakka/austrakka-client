@@ -244,9 +244,15 @@ export const metadataSlice = createSlice({
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
       const { groupId, fields, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewsResponse;
-      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       // Each returned view is a superset of the previous; we always replace the data
       state.data[groupId].metadata = data;
+      // Default sort data by Seq_ID, which should be consistent across views.
+      // Could be done server-side, in which case this sort operation is redundant but cheap
+      if (state.data[groupId].metadata![0]['Seq_ID']){
+        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+        state.data[groupId].metadata!.sort((a, b) => collator.compare(a['Seq_ID'], b['Seq_ID']));
+      }
+      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       fields.forEach(field => {
         state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
       });
