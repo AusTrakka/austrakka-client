@@ -96,16 +96,17 @@ function ProFormaDetail() {
           cursor: 'pointer',
         }}
       >
-        <CardContent onClick={() =>
-          handleDownload(
-            selectedVersion?.abbreviation ?? null,
-            !selectedVersion?.isCurrent ? selectedVersion?.version : undefined,
-          )}
+        <CardContent
+          onClick={() =>
+            handleDownload(
+              selectedVersion?.abbreviation ?? null,
+              !selectedVersion?.isCurrent ? selectedVersion?.version : undefined,
+            )}
         >
           { selectedVersion?.originalFileName ? (
             <Stack direction="row" spacing={1}>
               {loadingState ? <CircularProgress size={35} color="secondary" /> : <MoveToInbox color="secondary" fontSize="large" />}
-              <Stack direction="column">
+              <Stack direction="column" width="calc(100% - 40px)">
                 <Typography gutterBottom>
                   Download latest Excel pro forma template
                 </Typography>
@@ -120,12 +121,8 @@ function ProFormaDetail() {
                 </Typography>
                 <Typography
                   variant="caption"
-                  color="text.secondary"
-                  style={{ color: 'black',
-                    textAlign: 'left',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap' }}
+                  color="black"
+                  noWrap
                 >
                   {selectedVersion.createdBy}
                   <br />
@@ -187,7 +184,14 @@ function ProFormaDetail() {
           in any upload. Some fields which are not strictly required, and which may be temporarily
           left blank, may still form part of the minimum expected metadata set for a project.
         </Typography>
-        <TableContainer component={Paper} sx={{ mt: 3, mb: 4 }}>
+        <TableContainer
+          component={Paper}
+          sx={{ mt: 3,
+            mb: 4,
+            ml: 'auto',
+            mr: 'auto',
+            maxWidth: '60em' }}
+        >
           <Table>
             <TableHead>
               <TableRow>
