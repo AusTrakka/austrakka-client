@@ -49,24 +49,28 @@ export function TabPanel(props: TabPanelProps) {
 
 export default function CustomTabs(props: CustomTabsProps) {
   const { tabContent, value, setValue } = props;
-  const navigate = useNavigate();
-  // Function to navigate to the selected tab
-  const navigateToTab = (tabUrl: string) => {
+  // Function to update the URL to match the selected tab
+  const updateTabUrl = (tabUrl: string) => {
     const currentPath = window.location.pathname;
+    const currentSearch = window.location.search;
 
     // Split the path into segments
     const pathSegments = currentPath.split('/');
     const lastSegment = pathSegments[pathSegments.length - 1];
 
     // Check if the last segment is the project abbreviation
+    let newPath: string;
     if (pathSegments.length > 1 &&
         !tabContent.some(tab => tab.title.toLowerCase() === lastSegment)) {
-      navigate(currentPath + tabUrl);
+      newPath = currentPath + tabUrl + currentSearch;
     } else {
       // Replace the last part of the path
-      const newPath = pathSegments.slice(0, -1).join('/') + tabUrl;
-      navigate(newPath);
+      newPath = pathSegments.slice(0, -1).join('/') + tabUrl + currentSearch;
     }
+    // React Router V6 does not currently provide any way to update the URL without
+    // triggering navigation. In this case we are updating the URL to match the updated
+    // react state, so a re-render is unnecessary and needs to be avoided for performance.
+    window.history.pushState(window.history.state, '', newPath);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -76,7 +80,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     const selectedTab = tabContent.find((tab) => tab.index === newValue);
     if (selectedTab) {
       const tabUrl = `/${encodeURIComponent(selectedTab.title.toLowerCase())}`;
-      navigateToTab(tabUrl);
+      updateTabUrl(tabUrl);
     }
   };
 
