@@ -53,7 +53,6 @@ function MemberList(props: MembersProps) {
   const { token } = useApi();
 
   useEffect(() => {
-
     async function getMemberList() {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);

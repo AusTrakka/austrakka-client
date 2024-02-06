@@ -176,7 +176,9 @@ export default function StCounts(props: any) {
     // <Box sx={{ flexGrow: 1 }}>
     <Box>
       <Typography variant="h5" paddingBottom={1} color="primary">
-        {stFieldName} Counts
+        {stFieldName}
+        {' '}
+        Counts
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <Grid container direction="row" alignItems="center" spacing={2}>

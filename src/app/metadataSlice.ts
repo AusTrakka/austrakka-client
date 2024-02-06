@@ -7,6 +7,7 @@ import { ProjectSample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 
 // These are hard-coded desired field sets, used as an interim measure
 // until we have project data views implemented server-side.
@@ -14,8 +15,8 @@ import { listenerMiddleware } from './listenerMiddleware';
 // request the intersection of the fields here and the actual project fields.
 // In addition to views listed here, an all-of-project dataset will be retrieved.
 const DATA_VIEWS = [
-  ['Seq_ID'],
-  ['Seq_ID', 'Date_coll', 'Owner_group', 'Jurisdiction'],
+  [SAMPLE_ID_FIELD],
+  [SAMPLE_ID_FIELD, 'Date_coll', 'Owner_group', 'Jurisdiction'],
 ];
 
 // This is an interim function based on hard-coded views
@@ -248,9 +249,10 @@ export const metadataSlice = createSlice({
       state.data[groupId].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[groupId].metadata![0]['Seq_ID']){
+      if (state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-        state.data[groupId].metadata!.sort((a, b) => collator.compare(a['Seq_ID'], b['Seq_ID']));
+        state.data[groupId].metadata!.sort((a, b) =>
+          collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
       }
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       fields.forEach(field => {
