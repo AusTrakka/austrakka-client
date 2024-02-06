@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 
 /// / Types
 export interface TabContentProps {
