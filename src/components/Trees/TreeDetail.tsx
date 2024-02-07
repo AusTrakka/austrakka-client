@@ -76,7 +76,7 @@ function TreeDetail() {
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const { token, tokenLoading } = useApi();
 
-  // control hooks
+  // Get tree metadata
   useEffect(() => {
     const fetchData = async () => {
       const metadataResponse = await getTreeMetaData(
@@ -89,11 +89,9 @@ function TreeDetail() {
         Number(tree?.projectMembersGroupId),
         token,
       );
-      const versionsResponse = await getTreeVersions(Number(analysisId), token);
       if (
         metadataResponse.status === ResponseType.Success &&
-      displayFieldsResponse.status === ResponseType.Success &&
-      versionsResponse.status === ResponseType.Success
+      displayFieldsResponse.status === ResponseType.Success
       ) {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
@@ -104,7 +102,6 @@ function TreeDetail() {
         setPhylocanvasMetadata(mappingData.result);
         setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
-        setVersions(versionsResponse.data);
       } else {
         setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
@@ -113,7 +110,21 @@ function TreeDetail() {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchData();
     }
-  }, [analysisId, tree, token, tokenLoading, colourScheme]);
+  }, [analysisId, tree, token, tokenLoading, colourScheme]);  
+
+  // Get tree historical versions
+  useEffect(() => {
+    const fetchVersions = async () => {
+      const versionsResponse = await getTreeVersions(Number(analysisId), token);
+      if (versionsResponse.status === ResponseType.Success) {
+        setVersions(versionsResponse.data);
+      }
+    };
+
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      fetchVersions();
+    }
+  }, [analysisId, token, tokenLoading]);
 
   useEffect(() => {
     if (phylocanvasMetadata) {
