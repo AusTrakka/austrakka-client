@@ -2,7 +2,7 @@ import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-r
 import React, { useEffect, useRef, useState } from 'react';
 import { Backdrop, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { DisplayField, Sample } from '../../types/dtos';
+import { MetaDataColumn, Sample } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import DataFilters from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
@@ -13,7 +13,7 @@ interface TreeTableProps {
   setSelectedIds: any,
   rowSelection: any,
   setRowSelection: any,
-  displayFields: DisplayField[],
+  displayFields: MetaDataColumn[],
   tableMetadata: any
 }
 // TODO: Pass down any relevant error states for samples/display fields

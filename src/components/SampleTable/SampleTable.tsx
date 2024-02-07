@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
+import { Sample, MetaDataColumn, Group } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -70,7 +70,7 @@ function SampleTable(props: SamplesProps) {
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 

@@ -208,19 +208,6 @@ export interface Group {
   }
 }
 
-// TODO this is a duplicate!
-export interface DisplayField {
-  canVisualise: boolean,
-  columnName: string,
-  columnOrder: number,
-  isActive: boolean,
-  isDisplayedAsDefault: boolean,
-  metaDataColumnId: number,
-  metaDataColumnTypeId: number,
-  minWidth: number,
-  primitiveType: string,
-}
-
 // TODO we have ProjectSample; this is at best a duplicate; is it used?
 export interface Sample {
   [key: string] : any

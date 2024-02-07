@@ -1,7 +1,7 @@
 import { Alert, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { DisplayField, Project, Sample } from '../../types/dtos';
+import { MetaDataColumn, Project, Sample } from '../../types/dtos';
 import { getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
@@ -12,7 +12,7 @@ import { ResponseType } from '../../constants/responseType';
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
   const [project, setProject] = useState<Project | null>();
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [data, setData] = useState<Sample | null>();
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -37,7 +37,7 @@ function SampleDetail() {
     const updateDisplayFields = async () => {
       const response = await getDisplayFields(project!.projectMembers.id, token);
       if (response.status === ResponseType.Success) {
-        setDisplayFields(response.data as DisplayField[]);
+        setDisplayFields(response.data as MetaDataColumn[]);
       } else {
         setErrMsg(`Metadata fields for project ${project!.abbreviation} could not be loaded`);
       }

@@ -1,11 +1,11 @@
 /* eslint-disable no-plusplus */
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
+import { AnalysisResultMetadata, MetaDataColumn } from '../types/dtos';
 import getColorScheme from './colourUtils';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: AnalysisResultMetadata[],
-  fieldInformation: DisplayField[],
+  fieldInformation: MetaDataColumn[],
   colorSchemeSelected: string,
 ) {
   // A dictionary to store the colour palettes for each metadata column
@@ -43,7 +43,7 @@ export default function mapMetadataToPhylocanvas(
   function getUniqueColour(
     value: string,
     metadataColumn: string,
-    fieldInfo: string | undefined,
+    fieldInfo: string | null,
   ): string {
     // Check if the palette for the current metadata column exists, or generate one
     if (!metadataColumnPalettes[metadataColumn]) {
