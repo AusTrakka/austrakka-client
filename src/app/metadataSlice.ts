@@ -344,9 +344,12 @@ export const selectGroupMetadata:
 
 // May want to also include per-field loading state in this selector
 export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return { fields: null, loadingState: null };
+  if (!groupId) {
+    return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
+  }
   return {
     fields: state.metadataState.data[groupId]?.fields,
+    fieldUniqueValues: state.metadataState.data[groupId]?.fieldUniqueValues,
     loadingState: state.metadataState.data[groupId]?.loadingState,
   };
 };
