@@ -32,7 +32,7 @@ export interface GroupMetadataState {
   groupId: number | null
   loadingState: MetadataLoadingState,
   fields: MetaDataColumn[] | null
-  fieldUniqueValues: Record<string, string[]> | null
+  fieldUniqueValues: Record<string, string[] | null> | null
   views: Record<number, string[]>
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
@@ -211,9 +211,11 @@ export const metadataSlice = createSlice({
         state.data[groupId].views![index] = view;
         state.data[groupId].viewLoadingStates![index] = LoadingState.IDLE;
       });
-      // Set column loading states to IDLE for all fields
+      // Set column loading states to IDLE for all fields, and initialise unique values
+      state.data[groupId].fieldUniqueValues = {};
       state.data[groupId].fields?.forEach((field) => {
         state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+        state.data[groupId].fieldUniqueValues![field.columnName] = null;
       });
       state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
@@ -239,9 +241,54 @@ export const metadataSlice = createSlice({
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
       const { groupId, fields, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewsResponse;
-      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       // Each returned view is a superset of the previous; we always replace the data
       state.data[groupId].metadata = data;
+      // Calculate unique values
+      // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
+      // Would be better to do server-side, but this operation is quite fast.
+      // Note that if categorical fields are included in project sub-views, they will be
+      // recalculated per-view, to ensure consistency.
+      const fieldDetails: MetaDataColumn[] = fields.map(
+        field => {
+          const fieldDetail = state.data[groupId].fields!.find(f => f.columnName === field);
+          if (!fieldDetail) {
+            throw new Error(
+              'Unexpected error in fetchDataView.fullfilled: ' +
+              `field ${field} in data not found in expected fields`,
+            );
+          }
+          return fieldDetail;
+        },
+      );
+      // fields with defined valid values can just be looked up
+      const categoricalFields = fieldDetails.filter(field =>
+        field.canVisualise && field.metaDataColumnValidValues);
+      categoricalFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName] = field.metaDataColumnValidValues;
+      });
+      // visualisable string field unique values must be calculated
+      const visualisableFields = fieldDetails.filter(field => field.canVisualise && field.primitiveType === 'string');
+      const valueSets = {}; // : Record<string, Set<string>>;
+      visualisableFields.forEach(field => {
+        valueSets[field.columnName] = new Set();
+      });
+      data.forEach(sample => {
+        visualisableFields.forEach(field => {
+          const value = sample[field.columnName];
+          if (value) valueSets[field.columnName].add(value);
+        });
+      });
+      visualisableFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName] =
+          Array.from(valueSets[field.columnName]);
+      });
+      // Sort unique values using natural sort order
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      visualisableFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName]!.sort(collator.compare);
+      });
+      // Set SUCCESS states
+      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       fields.forEach(field => {
         state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
       });
