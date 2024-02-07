@@ -56,7 +56,6 @@ function TreeDetail() {
   const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
-  const [tableDisplayFields, setTableDisplayFields] = useState<MetaDataColumn[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -91,15 +90,10 @@ function TreeDetail() {
         token,
       );
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
-      const tableDisplayFieldsResponse = await getDisplayFields(
-        Number(tree?.projectMembersGroupId),
-        token,
-      );
       if (
         metadataResponse.status === ResponseType.Success &&
       displayFieldsResponse.status === ResponseType.Success &&
-      versionsResponse.status === ResponseType.Success &&
-      tableDisplayFieldsResponse.status === ResponseType.Success
+      versionsResponse.status === ResponseType.Success
       ) {
         const mappingData = mapMetadataToPhylocanvas(
           metadataResponse.data,
@@ -111,7 +105,6 @@ function TreeDetail() {
         setPhylocanvasLegends(mappingData.legends);
         setDisplayFields(displayFieldsResponse.data);
         setVersions(versionsResponse.data);
-        setTableDisplayFields(tableDisplayFieldsResponse.data);
       } else {
         setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
@@ -251,7 +244,7 @@ function TreeDetail() {
           setSelectedIds={setSelectedIds}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
-          displayFields={tableDisplayFields}
+          displayFields={displayFields}
           tableMetadata={tableMetadata}
         />
       );
