@@ -207,12 +207,13 @@ export const metadataSlice = createSlice({
       // Set views (field lists), and set view loading states to IDLE for all views
       // This is an interim measure; later we will use a thunk to fetch project data views
       const views = calculateDataViews(fields);
+      state.data[groupId].views = {};
       views.forEach((view, index) => {
         state.data[groupId].views![index] = view;
         state.data[groupId].viewLoadingStates![index] = LoadingState.IDLE;
       });
       // Set column loading states to IDLE for all fields
-      state.data[groupId].fields?.forEach((field) => {
+      state.data[groupId].fields!.forEach((field) => {
         state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
       });
       state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
