@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
-import { JobInstance, MetaDataColumn } from '../../types/dtos';
+import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getDisplayFields } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
@@ -22,6 +22,11 @@ import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeTable from './TreeTable';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import {
+  selectGroupMetadata, GroupMetadataState, fetchGroupMetadata,
+} from '../../app/metadataSlice';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -53,9 +58,7 @@ function TreeDetail() {
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
-  const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
-  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -71,46 +74,40 @@ function TreeDetail() {
     rootIdDefault,
     searchParams,
   );
+  const groupMetadata : GroupMetadataState | null =
+    useAppSelector(state => selectGroupMetadata(state, tree?.projectMembersGroupId));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const { token, tokenLoading } = useApi();
+  const dispatch = useAppDispatch();
 
-  // Get tree metadata
+  // TODO update error message based on groupMetadata error state
+  // TODO some kind of loading indicator based on groupMetadata state
+
+  // Request data if not loaded
   useEffect(() => {
-    const fetchData = async () => {
-      const metadataResponse = await getTreeMetaData(
-        Number(analysisId),
-        Number(tree?.jobInstanceId),
-        token,
-      );
-
-      const displayFieldsResponse = await getDisplayFields(
-        Number(tree?.projectMembersGroupId),
-        token,
-      );
-      if (
-        metadataResponse.status === ResponseType.Success &&
-      displayFieldsResponse.status === ResponseType.Success
-      ) {
-        const mappingData = mapMetadataToPhylocanvas(
-          metadataResponse.data,
-          displayFieldsResponse.data,
-          colourScheme,
-        );
-        setTableMetadata(metadataResponse.data);
-        setPhylocanvasMetadata(mappingData.result);
-        setPhylocanvasLegends(mappingData.legends);
-        setDisplayFields(displayFieldsResponse.data);
-      } else {
-        setErrorMsg(`Failed to load data for tree ${analysisId}`);
-      }
-    };
-
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      fetchData();
+      dispatch(fetchGroupMetadata({ groupId: tree.projectMembersGroupId, token }));
     }
-  }, [analysisId, tree, token, tokenLoading, colourScheme]);  
+  }, [tree, dispatch, token, tokenLoading]);
+
+  // Map group tabular metadata to format for phylocanvas, including colour mappings 
+  // TODO need a separate useEffect to first filter to relevant rows
+  useEffect(() => {
+    // TODO should base on groupMetadata loading state?
+    if (tree && groupMetadata?.metadata && groupMetadata?.fields && groupMetadata?.fieldUniqueValues)
+    {
+      const mappingData = mapMetadataToPhylocanvas(
+        groupMetadata.metadata,
+        groupMetadata.fields,
+        groupMetadata.fieldUniqueValues,
+        colourScheme,
+      );
+      setPhylocanvasMetadata(mappingData.result);
+      setPhylocanvasLegends(mappingData.legends);
+    }
+  }, [tree, groupMetadata, colourScheme]);
 
   // Get tree historical versions
   useEffect(() => {
@@ -126,6 +123,7 @@ function TreeDetail() {
     }
   }, [analysisId, token, tokenLoading]);
 
+  // Set tree properties from metadata and selected fields
   useEffect(() => {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
@@ -255,8 +253,8 @@ function TreeDetail() {
           setSelectedIds={setSelectedIds}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
-          displayFields={displayFields}
-          tableMetadata={tableMetadata}
+          displayFields={groupMetadata?.fields || []}
+          tableMetadata={groupMetadata?.metadata || []} // TODO need to filter to relevant rows
         />
       );
     }
@@ -289,8 +287,9 @@ function TreeDetail() {
   };
 
   const renderControls = () => {
-    const allColumns = displayFields.map(field => field.columnName);
-    const visualisableColumns = displayFields.filter(
+    const availableFields = groupMetadata?.fields || [];
+    const allColumns = availableFields.map(field => field.columnName);
+    const visualisableColumns = availableFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);

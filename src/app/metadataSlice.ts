@@ -269,14 +269,15 @@ export const metadataSlice = createSlice({
       });
       // visualisable string field unique values must be calculated
       const visualisableFields = fieldDetails.filter(field => field.canVisualise && field.primitiveType === 'string');
-      const valueSets = {}; // : Record<string, Set<string>>;
+      const valueSets : Record<string, Set<string>> = {};
       visualisableFields.forEach(field => {
         valueSets[field.columnName] = new Set();
       });
       data.forEach(sample => {
         visualisableFields.forEach(field => {
           const value = sample[field.columnName];
-          if (value) valueSets[field.columnName].add(value);
+          // we conflate the string 'null' with empty values, but there may not be a better option
+          valueSets[field.columnName].add(value === null ? 'null' : value);
         });
       });
       visualisableFields.forEach(field => {
