@@ -2,13 +2,13 @@
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { MetaDataColumn } from '../types/dtos';
 import getColorScheme from './colourUtils';
-import { ProjectSample } from '../types/sample.interface';
+import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 
 const NULL_COLOUR = 'rgb(200,200,200)';
 
 export default function mapMetadataToPhylocanvas(
-  dataArray: ProjectSample[],
+  dataArray: Sample[],
   fieldInformation: MetaDataColumn[],
   fieldUniqueValues: Record<string, string[] | null>,
   colorSchemeSelected: string,

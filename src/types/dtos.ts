@@ -207,8 +207,3 @@ export interface Group {
     abbreviation: string
   }
 }
-
-// TODO we have ProjectSample; this is at best a duplicate; is it used?
-export interface Sample {
-  [key: string] : any
-}

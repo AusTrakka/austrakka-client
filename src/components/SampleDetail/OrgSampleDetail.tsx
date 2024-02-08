@@ -1,7 +1,8 @@
 import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { MetaDataColumn, Group, Sample } from '../../types/dtos';
+import { MetaDataColumn, Group } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';

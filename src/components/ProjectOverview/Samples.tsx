@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { ProjectSample } from '../../types/sample.interface';
+import { Sample } from '../../types/sample.interface';
 import { MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
@@ -25,7 +25,7 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 interface SamplesProps {
   projectAbbrev: string,
-  sampleList: ProjectSample[],
+  sampleList: Sample[],
   totalSamples: number,
   samplesCount: number,
   isSamplesLoading: boolean,
@@ -47,8 +47,8 @@ interface SamplesProps {
   filterList: Filter[],
   displayFields: MetaDataColumn[],
   getExportData: Function,
-  exportData: ProjectSample[],
-  setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
+  exportData: Sample[],
+  setExportData: Dispatch<SetStateAction<Sample[]>>,
   exportCSVStatus: LoadingState,
   setExportCSVStatus: Dispatch<SetStateAction<LoadingState>>,
 }

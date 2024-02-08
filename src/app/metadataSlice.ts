@@ -3,7 +3,7 @@ import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn, Project } from '../types/dtos';
-import { ProjectSample } from '../types/sample.interface';
+import { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
@@ -36,7 +36,7 @@ export interface GroupMetadataState {
   views: Record<number, string[]>
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
-  metadata: ProjectSample[] | null
+  metadata: Sample[] | null
   columnLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
@@ -84,7 +84,7 @@ interface FetchDataViewParams {
   viewIndex: number,
 }
 interface FetchDataViewsResponse {
-  data: ProjectSample[],
+  data: Sample[],
 }
 
 const fetchProjectFields = createAsyncThunk(
@@ -116,7 +116,7 @@ const fetchDataView = createAsyncThunk(
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue<FetchDataViewsResponse>({
-        data: response.data as ProjectSample[],
+        data: response.data as Sample[],
       });
     }
     return rejectWithValue(response.error);

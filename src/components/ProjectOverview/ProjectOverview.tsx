@@ -8,7 +8,7 @@ import {
   getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
   getTrees, getGroupMembers, getGroupProFormaVersions,
 } from '../../utilities/resourceUtils';
-import { ProjectSample } from '../../types/sample.interface';
+import { Sample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
 // import Summary from './Summary';
 import Samples from './Samples';
@@ -57,7 +57,7 @@ function ProjectOverview() {
   });
   const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
-  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
+  const [projectSamples, setProjectSamples] = useState<Sample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
   const [samplesCount, setSamplesCount] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState({
@@ -70,7 +70,7 @@ function ProjectOverview() {
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [exportData, setExportData] = useState<ProjectSample[]>([]);
+  const [exportData, setExportData] = useState<Sample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
   const [isTreesLoading, setIsTreesLoading] = useState(true);
