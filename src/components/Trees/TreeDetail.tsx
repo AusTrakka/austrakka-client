@@ -461,6 +461,20 @@ function TreeDetail() {
     return <></>;
   };
 
+  const renderWarning = () => {
+    if (groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
+        groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      return (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          An error occured loading metadata; metadata may be missing or incomplete.
+        </Alert>
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
   return (
     <Grid container wrap="nowrap" spacing={2}>
       {renderControls()}
@@ -469,6 +483,7 @@ function TreeDetail() {
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
+        {renderWarning()}
         {renderTree()}
         {renderLegend()}
         {renderTable()}
