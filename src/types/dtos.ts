@@ -128,7 +128,8 @@ export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
   metaDataColumnTypeId: number
-  primitiveType: string
+  metaDataColumnValidValues: string[] | null
+  primitiveType: string | null
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
@@ -141,6 +142,7 @@ interface MetadataValue {
   value: string;
 }
 
+// This is a SubmissionDTO
 export interface AnalysisResultMetadata {
   created: string;
   createdBy: string | null; // Assuming createdBy can be string or null
