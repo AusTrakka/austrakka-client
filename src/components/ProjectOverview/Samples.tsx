@@ -128,7 +128,10 @@ function Samples(props: SamplesProps) {
   // However we don't set an error here as we want to see a load error, not CSV download error
   useEffect(() => {
     setExportCSVStatus(
-      isSamplesLoading || groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
+      isSamplesLoading ||
+      groupMetadata?.loadingState === MetadataLoadingState.IDLE ||
+      groupMetadata?.loadingState === MetadataLoadingState.AWAITING_DATA ||
+      groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
         LoadingState.LOADING :
         LoadingState.SUCCESS,
     );
