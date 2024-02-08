@@ -1,6 +1,7 @@
 import { MRT_ColumnDef } from 'material-react-table';
 import { MetaDataColumn } from '../types/dtos';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from './helperUtils';
+import { Sample } from '../types/sample.interface';
 
 // Maps from a hard-coded metadata field name to a function to render the cell value
 // Duplicated here for now until Samples.tsx and SampleTable.tsx are merged
@@ -23,7 +24,7 @@ export function compareFields(field1: MetaDataColumn, field2: MetaDataColumn) {
 }
 
 export function buildMRTColumnDefinitions(fields: MetaDataColumn[]) {
-  const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+  const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
 
   fields.forEach((element: MetaDataColumn) => {
     if (element.columnName in sampleRenderFunctions) {

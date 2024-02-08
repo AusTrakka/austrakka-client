@@ -92,9 +92,6 @@ function TreeDetail() {
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
-  // TODO update error message based on groupMetadata error state
-  // TODO some kind of loading indicator based on groupMetadata state
-
   // Request redux data if not loaded
   useEffect(() => {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
@@ -287,6 +284,7 @@ function TreeDetail() {
           setRowSelection={setRowSelection}
           displayFields={groupMetadata?.fields || []}
           tableMetadata={tableMetadata}
+          metadataLoadingState={groupMetadata?.loadingState || MetadataLoadingState.IDLE}
         />
       );
     }

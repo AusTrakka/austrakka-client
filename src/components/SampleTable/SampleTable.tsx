@@ -19,7 +19,8 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { Sample, MetaDataColumn, Group } from '../../types/dtos';
+import { MetaDataColumn } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -47,7 +48,7 @@ function SampleTable(props: SamplesProps) {
   const { groupContext, groupName } = props;
   const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,

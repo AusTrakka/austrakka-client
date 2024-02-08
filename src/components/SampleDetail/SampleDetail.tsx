@@ -1,7 +1,8 @@
 import { Alert, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { MetaDataColumn, Project, Sample } from '../../types/dtos';
+import { MetaDataColumn, Project } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getProjectDetails, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';

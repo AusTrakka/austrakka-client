@@ -29,7 +29,7 @@ interface SamplesProps {
   totalSamples: number,
   samplesCount: number,
   isSamplesLoading: boolean,
-  sampleTableColumns: MRT_ColumnDef<{}>[],
+  sampleTableColumns: MRT_ColumnDef<Sample>[],
   isSamplesError: {
     samplesHeaderError: boolean,
     sampleMetadataError: boolean,

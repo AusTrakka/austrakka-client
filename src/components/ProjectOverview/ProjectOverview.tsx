@@ -49,7 +49,7 @@ function ProjectOverview() {
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   // const [lastUpload] = useState('');
   // Samples component states
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -153,7 +153,7 @@ function ProjectOverview() {
       );
       if (tableHeadersResponse.status === ResponseType.Success) {
         const columnHeaderArray = tableHeadersResponse.data;
-        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
         // we need to catch that in the occation where there are no headers.
         if (columnHeaderArray.length === 0) {
           setIsSamplesLoading(false);
