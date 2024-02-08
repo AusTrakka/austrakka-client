@@ -6,56 +6,26 @@ import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
-import { getPlotData } from '../../utilities/resourceUtils';
 import ExportVegaPlot from './ExportVegaPlot';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
 import DataFilters from '../DataFilters/DataFilters';
-import { MetaDataColumn } from '../../types/dtos';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
+import {
+  selectGroupMetadata, GroupMetadataState,
+} from '../../app/metadataSlice';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { useAppSelector } from '../../app/store';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
   dataGroupId: number | undefined,
-  displayFields: MetaDataColumn[],
-  fieldsToRetrieve: string[],
-  setPlotErrorMsg: Function,
 }
 
 function VegaDataPlot(props: VegaDataPlotProps) {
-  const { spec, dataGroupId, displayFields, fieldsToRetrieve, setPlotErrorMsg } = props;
+  const { spec, dataGroupId } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
-  const [data, setData] = useState([]);
-  const { token, tokenLoading } = useApi();
   const [filteredData, setFilteredData] = useState([]);
-  const [filterFields, setFilterFields] = useState<MetaDataColumn[]>([]);
-
-  // Get data on load
-  useEffect(() => {
-    const updatePlotData = async () => {
-      const response = await getPlotData(dataGroupId!, fieldsToRetrieve, token) as ResponseObject;
-      if (response.status === ResponseType.Success) {
-        setData(response.data);
-        setFilteredData(response.data);
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(response.message);
-        setPlotErrorMsg('Unable to load plot data');
-      }
-    };
-
-    // For now get all display fields, but could do ID + dates + categorical
-    if (dataGroupId &&
-      fieldsToRetrieve &&
-      fieldsToRetrieve.length > 0 &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
-      updatePlotData();
-    }
-  }, [setPlotErrorMsg, fieldsToRetrieve, dataGroupId, setData,
-    token, tokenLoading]);
+  const groupMetadata : GroupMetadataState | null =
+    useAppSelector(state => selectGroupMetadata(state, dataGroupId));
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -94,21 +64,21 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (spec && filteredData && plotDiv?.current) {
+    // TODO what if filtered data is filtered to empty? if([]) ok?
+    if (spec &&
+        groupMetadata?.loadingState &&
+        (groupMetadata.loadingState === MetadataLoadingState.DATA_LOADED ||
+          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+        filteredData &&
+        plotDiv?.current) {
+      // TODO it appears this may trigger too often?
       createVegaView();
     }
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
+  // loadingState is not a dependency as we only care about changes that co-occur with filteredData
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec, filteredData, plotDiv]);
-
-  // Current implementation:
-  // For now (while we aren't retrieving all columns), only show (displayFields ∩ fieldsToRetrive)
-  useEffect(() => {
-    const intersection: MetaDataColumn[] = displayFields.filter((el) =>
-      fieldsToRetrieve.includes(el.columnName as string));
-
-    setFilterFields(intersection);
-  }, [displayFields, fieldsToRetrieve]);
 
   return (
     <Grid container direction="column">
@@ -124,8 +94,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       </Grid>
       <Grid item xs={12}>
         <DataFilters
-          data={data}
-          fields={filterFields}
+          data={groupMetadata?.metadata ?? []}
+          fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
           setFilteredData={setFilteredData}
           initialOpen
         />

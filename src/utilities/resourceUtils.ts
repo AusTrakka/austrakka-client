@@ -12,10 +12,9 @@ export const getProjectList = (token: string) => callGET('/api/Projects?&include
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getUserGroups = (token: string) => callGET('/api/Users/Me', token);
-export const getGroupDisplayFields = (group: number, token: string) => callGET(`/api/group/display-fields?GroupContext=${group}&filterSubmissionProperties=true`, token);
 export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
 export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
-export const getPlotData = (groupId: number, fields: string[], token: string) => {
+export const getMetadata = (groupId: number, fields: string[], token: string) => {
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callGET(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, token);
 };
@@ -24,7 +23,11 @@ export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/a
 export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
 export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
 export const getTreeMetaData = (analysisId: number, jobInstanceId: number, token: string) => callGET(`/api/analysisResults/${analysisId}/metadata/${jobInstanceId}`, token);
-export const getSamples = (token: string, searchParams?: string) => callGET(`/api/MetadataSearch?${searchParams}`, token);
+export const getSamples = (token: string, groupId: number, searchParams?: URLSearchParams) => {
+  if (!searchParams) return callGET(`/api/MetadataSearch?groupContext=${groupId}`, token);
+  searchParams.append('groupContext', String(groupId));
+  return callGET(`/api/MetadataSearch?${searchParams}`, token);
+};
 export const getTotalSamples = (groupId: number, token: string) => callGET(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, token);
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);

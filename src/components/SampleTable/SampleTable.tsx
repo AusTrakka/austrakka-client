@@ -151,11 +151,11 @@ function SampleTable(props: SamplesProps) {
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
-          groupContext: `${groupContext}`,
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+        const samplesResponse: ResponseObject =
+          await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -226,18 +226,19 @@ function SampleTable(props: SamplesProps) {
 
   // GET SAMPLES - not paginated
   const getExportData = async () => {
-    setExportCSVStatus(LoadingState.LOADING);
-    const searchParams = new URLSearchParams({
-      Page: '1',
-      PageSize: (totalSamples).toString(),
-      groupContext: `${groupContext!}`,
-      filters: queryString,
-    });
-    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
-    if (samplesResponse.status === ResponseType.Success) {
-      setExportData(samplesResponse.data);
-    } else {
-      setExportCSVStatus(LoadingState.ERROR);
+    if (groupContext) {
+      setExportCSVStatus(LoadingState.LOADING);
+      const searchParams = new URLSearchParams({
+        Page: '1',
+        PageSize: (totalSamples).toString(),
+        filters: queryString,
+      });
+      const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
+      if (samplesResponse.status === ResponseType.Success) {
+        setExportData(samplesResponse.data);
+      } else {
+        setExportCSVStatus(LoadingState.ERROR);
+      }
     }
   };
 

@@ -14,6 +14,8 @@ import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { fetchGroupMetadata, selectGroupMetadataError } from '../../app/metadataSlice';
 
 const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
   'ClusterTimeline': ClusterTimeline,
@@ -31,7 +33,16 @@ function PlotDetail() {
   const [plot, setPlot] = useState<Plot | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const dataErrorMsg = useAppSelector(state =>
+    selectGroupMetadataError(state, plot?.projectGroupId));
   const { token, tokenLoading } = useApi();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (dataErrorMsg) {
+      setErrorMsg(dataErrorMsg);
+    }
+  }, [dataErrorMsg]);
 
   useEffect(() => {
     // Get plot details, including plot type
@@ -48,6 +59,12 @@ function PlotDetail() {
       getPlot();
     }
   }, [plotAbbrev, token, tokenLoading]);
+
+  useEffect(() => {
+    if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      dispatch(fetchGroupMetadata({ groupId: plot.projectGroupId, token }));
+    }
+  }, [plot, dispatch, token, tokenLoading]);
 
   useEffect(() => {
     if (plot) {

@@ -23,6 +23,10 @@ import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helper
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
+import {
+  fetchGroupMetadata,
+} from '../../app/metadataSlice';
+import { useAppDispatch } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 
@@ -89,6 +93,8 @@ function ProjectOverview() {
   const [isProFormasLoading, setIsProFormasLoading] = useState(true);
   const [proFormasError, setProFormaError] = useState(false);
   const [proFromasErrorMessage, setProFormasErrorMessage] = useState('');
+
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     async function getProject() {
@@ -258,8 +264,9 @@ function ProjectOverview() {
       getPlotList();
       getMemberList();
       getProFormaList();
+      dispatch(fetchGroupMetadata({ groupId: projectDetails.projectMembers.id, token }));
     }
-  }, [projectDetails, token]);
+  }, [projectDetails, token, dispatch]);
 
   useEffect(() => {
     async function getFilterFields() {
@@ -346,11 +353,11 @@ function ProjectOverview() {
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
-          groupContext: `${projectDetails!.projectMembers.id}`,
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+        const samplesResponse: ResponseObject =
+          await getSamples(token, projectDetails!.projectMembers.id, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
           setProjectSamples(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -383,10 +390,10 @@ function ProjectOverview() {
     const searchParams = new URLSearchParams({
       Page: '1',
       PageSize: (totalSamples).toString(),
-      groupContext: `${projectDetails!.projectMembers.id}`,
       filters: queryString,
     });
-    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+    const samplesResponse: ResponseObject =
+      await getSamples(token, projectDetails!.projectMembers.id, searchParams);
     if (samplesResponse.status === ResponseType.Success) {
       setExportData(samplesResponse.data);
     } else {
