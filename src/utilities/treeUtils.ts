@@ -26,7 +26,7 @@ export default function mapMetadataToPhylocanvas(
         metadataColumnPalettes[fi.columnName][val] = colours[index];
       });
       if (fieldUniqueValues[fi.columnName]?.includes('null')) {
-        metadataColumnPalettes[fi.columnName]['null'] = NULL_COLOUR;
+        metadataColumnPalettes[fi.columnName].null = NULL_COLOUR;
       }
     });
 

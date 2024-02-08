@@ -22,7 +22,6 @@ export const getTrees = (projectAbbrev: string, token: string) => callGET(`/api/
 export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/api/JobInstance/${jobInstanceId}`, token);
 export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
 export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
-export const getTreeMetaData = (analysisId: number, jobInstanceId: number, token: string) => callGET(`/api/analysisResults/${analysisId}/metadata/${jobInstanceId}`, token);
 export const getSamples = (token: string, groupId: number, searchParams?: URLSearchParams) => {
   if (!searchParams) return callGET(`/api/MetadataSearch?groupContext=${groupId}`, token);
   searchParams.append('groupContext', String(groupId));

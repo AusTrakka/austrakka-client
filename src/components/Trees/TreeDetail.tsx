@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getDisplayFields } from '../../utilities/resourceUtils';
+import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -27,6 +27,7 @@ import {
 } from '../../app/metadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
+import { Sample } from '../../types/sample.interface';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -52,11 +53,20 @@ interface Style {
   fillColour?: string;
 }
 
+// This regex finds all node names in a newick tree
+// Note that:
+//  - it is less conservative than our Seq_ID regex, only checking newick constraints
+//  - the presence of ) in the first []+ means that internal node names will also be captured,
+//    if there are any
+const treenameRegex = /[(),]+([^;:[\s,()]+)/g;
+
 function TreeDetail() {
   const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
+  const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
+  const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [versions, setVersions] = useState<JobInstance[]>([]);
@@ -75,7 +85,7 @@ function TreeDetail() {
     searchParams,
   );
   const groupMetadata : GroupMetadataState | null =
-    useAppSelector(state => selectGroupMetadata(state, tree?.projectMembersGroupId));
+    useAppSelector(st => selectGroupMetadata(st, tree?.projectMembersGroupId));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
@@ -85,19 +95,41 @@ function TreeDetail() {
   // TODO update error message based on groupMetadata error state
   // TODO some kind of loading indicator based on groupMetadata state
 
-  // Request data if not loaded
+  // Request redux data if not loaded
   useEffect(() => {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       dispatch(fetchGroupMetadata({ groupId: tree.projectMembersGroupId, token }));
     }
   }, [tree, dispatch, token, tokenLoading]);
 
-  // Map group tabular metadata to format for phylocanvas, including colour mappings 
-  // TODO need a separate useEffect to first filter to relevant rows
   useEffect(() => {
-    // TODO should base on groupMetadata loading state?
-    if (tree && groupMetadata?.metadata && groupMetadata?.fields && groupMetadata?.fieldUniqueValues)
-    {
+    // Get list of Seq_IDs from newick
+    if (tree) {
+      const matches = Array.from(tree.newickTree.matchAll(treenameRegex), m => m[1]);
+      if (matches) {
+        setTreeSampleNames(matches ?? []);
+      }
+    }
+  }, [tree]);
+
+  useEffect(() => {
+    // Filter metadata by tree samples
+    if (groupMetadata?.metadata && treeSampleNames.length > 0) {
+      const treeSamplesSet = new Set(treeSampleNames);
+      const filteredMetadata = groupMetadata.metadata.filter(
+        (row) => treeSamplesSet.has(row.Seq_ID),
+      );
+      setTableMetadata(filteredMetadata);
+    }
+  }, [groupMetadata?.metadata, treeSampleNames]);
+
+  // Map group tabular metadata to format for phylocanvas, including colour mappings
+  useEffect(() => {
+    if (tree &&
+      groupMetadata?.metadata &&
+      groupMetadata?.fields &&
+      groupMetadata?.fieldUniqueValues
+    ) {
       const mappingData = mapMetadataToPhylocanvas(
         groupMetadata.metadata,
         groupMetadata.fields,
@@ -254,7 +286,7 @@ function TreeDetail() {
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
           displayFields={groupMetadata?.fields || []}
-          tableMetadata={groupMetadata?.metadata || []} // TODO need to filter to relevant rows
+          tableMetadata={tableMetadata}
         />
       );
     }
