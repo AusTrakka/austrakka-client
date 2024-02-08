@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
@@ -26,6 +26,15 @@ export function TabPanel(props: TabPanelProps) {
     children, tabLoader, value, index,
   } = props;
 
+  // Mount the panel when it is first selected, and do not unmount it when it is deselected
+  const [visited, setVisited] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (value === index) {
+      setVisited(true);
+    }
+  }, [value, index]);
+
   return (
     <div
       role="tabpanel"
@@ -36,12 +45,14 @@ export function TabPanel(props: TabPanelProps) {
       {
         tabLoader && <LinearProgress color="secondary" />
       }
-      <div>
-        <Box sx={{ marginTop: 2 }}>
-          {children}
-        </Box>
+      { visited && (
+        <div>
+          <Box sx={{ marginTop: 2 }}>
+            {children}
+          </Box>
+        </div>
+      )}
       </div>
-    </div>
   );
 }
 
