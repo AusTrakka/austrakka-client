@@ -17,19 +17,19 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { ProjectSample } from '../../types/sample.interface';
-import { DisplayField } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
+import { MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 interface SamplesProps {
   projectAbbrev: string,
-  sampleList: ProjectSample[],
+  sampleList: Sample[],
   totalSamples: number,
   samplesCount: number,
   isSamplesLoading: boolean,
-  sampleTableColumns: MRT_ColumnDef<{}>[],
+  sampleTableColumns: MRT_ColumnDef<Sample>[],
   isSamplesError: {
     samplesHeaderError: boolean,
     sampleMetadataError: boolean,
@@ -45,10 +45,10 @@ interface SamplesProps {
   setQueryString: Dispatch<SetStateAction<string>>,
   setFilterList: Dispatch<SetStateAction<Filter[]>>,
   filterList: Filter[],
-  displayFields: DisplayField[],
+  displayFields: MetaDataColumn[],
   getExportData: Function,
-  exportData: ProjectSample[],
-  setExportData: Dispatch<SetStateAction<ProjectSample[]>>,
+  exportData: Sample[],
+  setExportData: Dispatch<SetStateAction<Sample[]>>,
   exportCSVStatus: LoadingState,
   setExportCSVStatus: Dispatch<SetStateAction<LoadingState>>,
 }

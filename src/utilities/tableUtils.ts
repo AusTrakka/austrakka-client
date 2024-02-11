@@ -1,6 +1,7 @@
 import { MRT_ColumnDef } from 'material-react-table';
-import { DisplayField, MetaDataColumn } from '../types/dtos';
+import { MetaDataColumn } from '../types/dtos';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from './helperUtils';
+import { Sample } from '../types/sample.interface';
 
 // Maps from a hard-coded metadata field name to a function to render the cell value
 // Duplicated here for now until Samples.tsx and SampleTable.tsx are merged
@@ -12,7 +13,7 @@ export const sampleRenderFunctions : { [index: string]: Function } = {
 // This hard-coding is interim until the server is able to provide this information
 export const datetimeFields = new Set(['Date_created', 'Date_updated']);
 
-export function compareFields(field1: DisplayField, field2: DisplayField) {
+export function compareFields(field1: MetaDataColumn, field2: MetaDataColumn) {
   if (field1.columnOrder < field2.columnOrder) {
     return -1;
   }
@@ -22,8 +23,8 @@ export function compareFields(field1: DisplayField, field2: DisplayField) {
   return 0;
 }
 
-export function buildMRTColumnDefinitions(fields: DisplayField[]) {
-  const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+export function buildMRTColumnDefinitions(fields: MetaDataColumn[]) {
+  const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
 
   fields.forEach((element: MetaDataColumn) => {
     if (element.columnName in sampleRenderFunctions) {
@@ -58,7 +59,7 @@ export function buildMRTColumnDefinitions(fields: DisplayField[]) {
   return columnBuilder;
 }
 
-export function buildTabulatorColumnDefinitions(fields: DisplayField[]) {
+export function buildTabulatorColumnDefinitions(fields: MetaDataColumn[]) {
   const columnBuilder: { title: string; field: string; }[] = [];
 
   fields.forEach((element: MetaDataColumn) => {

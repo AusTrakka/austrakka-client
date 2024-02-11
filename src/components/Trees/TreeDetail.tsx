@@ -3,9 +3,9 @@ import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
-import { JobInstance, DisplayField } from '../../types/dtos';
+import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { getTreeData, getLatestTreeData, getTreeVersions, getTreeMetaData, getDisplayFields } from '../../utilities/resourceUtils';
+import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -22,6 +22,12 @@ import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeTable from './TreeTable';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import {
+  selectGroupMetadata, GroupMetadataState, fetchGroupMetadata,
+} from '../../app/metadataSlice';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { Sample } from '../../types/sample.interface';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -47,16 +53,22 @@ interface Style {
   fillColour?: string;
 }
 
+// This regex finds all node names in a newick tree
+// Note that:
+//  - it is less conservative than our Seq_ID regex, only checking newick constraints
+//  - the presence of ) in the first []+ means that internal node names will also be captured,
+//    if there are any
+const treenameRegex = /[(),]+([^;:[\s,()]+)/g;
+
 function TreeDetail() {
   const { analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
+  const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
+  const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
-  const [tableMetadata, setTableMetadata] = useState<any>([]);
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
-  const [tableDisplayFields, setTableDisplayFields] = useState<DisplayField[]>([]);
   const [versions, setVersions] = useState<JobInstance[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -72,56 +84,75 @@ function TreeDetail() {
     rootIdDefault,
     searchParams,
   );
+  const groupMetadata : GroupMetadataState | null =
+    useAppSelector(st => selectGroupMetadata(st, tree?.projectMembersGroupId));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const { token, tokenLoading } = useApi();
+  const dispatch = useAppDispatch();
 
-  // control hooks
+  // Request redux data if not loaded
   useEffect(() => {
-    const fetchData = async () => {
-      const metadataResponse = await getTreeMetaData(
-        Number(analysisId),
-        Number(tree?.jobInstanceId),
-        token,
-      );
+    if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      dispatch(fetchGroupMetadata({ groupId: tree.projectMembersGroupId, token }));
+    }
+  }, [tree, dispatch, token, tokenLoading]);
 
-      const displayFieldsResponse = await getDisplayFields(
-        Number(tree?.projectMembersGroupId),
-        token,
+  useEffect(() => {
+    // Get list of Seq_IDs from newick
+    if (tree) {
+      const matches = Array.from(tree.newickTree.matchAll(treenameRegex), m => m[1]);
+      if (matches) {
+        setTreeSampleNames(matches ?? []);
+      }
+    }
+  }, [tree]);
+
+  useEffect(() => {
+    // Filter metadata by tree samples
+    if (groupMetadata?.metadata && treeSampleNames.length > 0) {
+      const treeSamplesSet = new Set(treeSampleNames);
+      const filteredMetadata = groupMetadata.metadata.filter(
+        (row) => treeSamplesSet.has(row.Seq_ID),
       );
+      setTableMetadata(filteredMetadata);
+    }
+  }, [groupMetadata?.metadata, treeSampleNames]);
+
+  // Map group tabular metadata to format for phylocanvas, including colour mappings
+  useEffect(() => {
+    if (tree &&
+      groupMetadata?.metadata &&
+      groupMetadata?.fields &&
+      groupMetadata?.fieldUniqueValues
+    ) {
+      const mappingData = mapMetadataToPhylocanvas(
+        groupMetadata.metadata,
+        groupMetadata.fields,
+        groupMetadata.fieldUniqueValues,
+        colourScheme,
+      );
+      setPhylocanvasMetadata(mappingData.result);
+      setPhylocanvasLegends(mappingData.legends);
+    }
+  }, [tree, groupMetadata, colourScheme]);
+
+  // Get tree historical versions
+  useEffect(() => {
+    const fetchVersions = async () => {
       const versionsResponse = await getTreeVersions(Number(analysisId), token);
-      const tableDisplayFieldsResponse = await getDisplayFields(
-        Number(tree?.projectMembersGroupId),
-        token,
-      );
-      if (
-        metadataResponse.status === ResponseType.Success &&
-      displayFieldsResponse.status === ResponseType.Success &&
-      versionsResponse.status === ResponseType.Success &&
-      tableDisplayFieldsResponse.status === ResponseType.Success
-      ) {
-        const mappingData = mapMetadataToPhylocanvas(
-          metadataResponse.data,
-          displayFieldsResponse.data,
-          colourScheme,
-        );
-        setTableMetadata(metadataResponse.data);
-        setPhylocanvasMetadata(mappingData.result);
-        setPhylocanvasLegends(mappingData.legends);
-        setDisplayFields(displayFieldsResponse.data);
+      if (versionsResponse.status === ResponseType.Success) {
         setVersions(versionsResponse.data);
-        setTableDisplayFields(tableDisplayFieldsResponse.data);
-      } else {
-        setErrorMsg(`Failed to load data for tree ${analysisId}`);
       }
     };
 
-    if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      fetchData();
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      fetchVersions();
     }
-  }, [analysisId, tree, token, tokenLoading, colourScheme]);
+  }, [analysisId, token, tokenLoading]);
 
+  // Set tree properties from metadata and selected fields
   useEffect(() => {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
@@ -251,8 +282,9 @@ function TreeDetail() {
           setSelectedIds={setSelectedIds}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
-          displayFields={tableDisplayFields}
+          displayFields={groupMetadata?.fields || []}
           tableMetadata={tableMetadata}
+          metadataLoadingState={groupMetadata?.loadingState || MetadataLoadingState.IDLE}
         />
       );
     }
@@ -285,8 +317,9 @@ function TreeDetail() {
   };
 
   const renderControls = () => {
-    const allColumns = displayFields.map(field => field.columnName);
-    const visualisableColumns = displayFields.filter(
+    const availableFields = groupMetadata?.fields || [];
+    const allColumns = availableFields.map(field => field.columnName);
+    const visualisableColumns = availableFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);
@@ -426,6 +459,20 @@ function TreeDetail() {
     return <></>;
   };
 
+  const renderWarning = () => {
+    if (groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
+        groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      return (
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          An error occured loading metadata; metadata may be missing or incomplete.
+        </Alert>
+      );
+    }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    return <></>;
+  };
+
   return (
     <Grid container wrap="nowrap" spacing={2}>
       {renderControls()}
@@ -434,6 +481,7 @@ function TreeDetail() {
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
+        {renderWarning()}
         {renderTree()}
         {renderLegend()}
         {renderTable()}

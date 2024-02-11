@@ -8,7 +8,7 @@ import {
   getSamples, getProjectDetails, getTotalSamples, getDisplayFields, getPlots,
   getTrees, getGroupMembers, getGroupProFormaVersions,
 } from '../../utilities/resourceUtils';
-import { ProjectSample } from '../../types/sample.interface';
+import { Sample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
 // import Summary from './Summary';
 import Samples from './Samples';
@@ -16,7 +16,7 @@ import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { MetaDataColumn, PlotListing, Project, Member, DisplayField, ProFormaVersion } from '../../types/dtos';
+import { MetaDataColumn, PlotListing, Project, Member, ProFormaVersion } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
@@ -49,7 +49,7 @@ function ProjectOverview() {
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
   // const [lastUpload] = useState('');
   // Samples component states
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -57,7 +57,7 @@ function ProjectOverview() {
   });
   const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
-  const [projectSamples, setProjectSamples] = useState<ProjectSample[]>([]);
+  const [projectSamples, setProjectSamples] = useState<Sample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
   const [samplesCount, setSamplesCount] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState({
@@ -68,9 +68,9 @@ function ProjectOverview() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [exportData, setExportData] = useState<ProjectSample[]>([]);
+  const [exportData, setExportData] = useState<Sample[]>([]);
   // const [samplesErrorMessage, setSamplesErrorMessage] = useState('');
   // Trees component states
   const [isTreesLoading, setIsTreesLoading] = useState(true);
@@ -153,7 +153,7 @@ function ProjectOverview() {
       );
       if (tableHeadersResponse.status === ResponseType.Success) {
         const columnHeaderArray = tableHeadersResponse.data;
-        const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
+        const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
         // we need to catch that in the occation where there are no headers.
         if (columnHeaderArray.length === 0) {
           setIsSamplesLoading(false);

@@ -1,34 +1,42 @@
 import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-react-table';
 import React, { useEffect, useRef, useState } from 'react';
-import { Backdrop, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { DisplayField, Sample } from '../../types/dtos';
+import { MetaDataColumn } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import DataFilters from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { Sample } from '../../types/sample.interface';
 
 interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: any,
   rowSelection: any,
   setRowSelection: any,
-  displayFields: DisplayField[],
-  tableMetadata: any
+  displayFields: MetaDataColumn[],
+  tableMetadata: any,
+  metadataLoadingState: MetadataLoadingState,
 }
-// TODO: Pass down any relevant error states for samples/display fields
 // TODO: Fix column hiding/showing functionaility
 
 export default function TreeTable(props: TreeTableProps) {
   const {
-    selectedIds, setSelectedIds, rowSelection, setRowSelection, displayFields, tableMetadata,
+    selectedIds,
+    setSelectedIds,
+    rowSelection,
+    setRowSelection,
+    displayFields,
+    tableMetadata,
+    metadataLoadingState,
   } = props;
   const [formattedData, setFormattedData] = useState([]);
   const tableInstanceRef = useRef<MRT_TableInstance>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [columnError, setColumnError] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
-  const [displayRows, setDisplayRows] = useState([]);
+  const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
 
@@ -117,14 +125,22 @@ export default function TreeTable(props: TreeTableProps) {
     }
   }, [filteredData, isHidden, selectedIds]);
 
+  // Update CSV export status as data loads
+  // CSV export is not permitted until data is FULLY loaded
+  // If a load error occurs, we will pass no data to the ExportTableData component
+  // However we don't set an error here as we want to see a load error, not CSV download error
+  useEffect(() => {
+    setExportCSVStatus(
+      metadataLoadingState === MetadataLoadingState.IDLE ||
+      metadataLoadingState === MetadataLoadingState.AWAITING_DATA ||
+      metadataLoadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
+        LoadingState.LOADING :
+        LoadingState.SUCCESS,
+    );
+  }, [metadataLoadingState]);
+
   return (
     <>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: 2000 }}
-        open={exportCSVStatus === LoadingState.LOADING}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <DataFilters
         data={formattedData}
         fields={displayFields}
@@ -133,7 +149,7 @@ export default function TreeTable(props: TreeTableProps) {
       />
       <MaterialReactTable
         tableInstanceRef={tableInstanceRef}
-        columns={sampleTableColumns}
+        columns={sampleTableColumns as any} // unclear MRT_ColumnDef/MRT_TableInstance templates
         data={displayRows}
         enableRowSelection
         muiTableBodyRowProps={({ row }) => ({

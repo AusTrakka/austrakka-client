@@ -1,107 +1,52 @@
 /* eslint-disable no-plusplus */
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { AnalysisResultMetadata, DisplayField } from '../types/dtos';
+import { MetaDataColumn } from '../types/dtos';
 import getColorScheme from './colourUtils';
+import { Sample } from '../types/sample.interface';
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+
+const NULL_COLOUR = 'rgb(200,200,200)';
 
 export default function mapMetadataToPhylocanvas(
-  dataArray: AnalysisResultMetadata[],
-  fieldInformation: DisplayField[],
+  dataArray: Sample[],
+  fieldInformation: MetaDataColumn[],
+  fieldUniqueValues: Record<string, string[] | null>,
   colorSchemeSelected: string,
 ) {
-  // A dictionary to store the colour palettes for each metadata column
+  // Create categorical colour palettes based on unique values
+  // Note that to create numeric schemes we would need to know the max and min values
   const metadataColumnPalettes: PhylocanvasLegends = {};
-
-  function generateSequentialColourPalette(baseColour: any, numberOfColours: number) {
-    const colours = [];
-    const baseHue = baseColour.h;
-    const hueDifference = 360 / numberOfColours;
-
-    for (let i = 0; i < numberOfColours; i++) {
-      // Calculate the hue for each colour with larger gaps for distinctiveness
-      // (whatever you times hueDifference with is the gap)
-      const hue = (baseHue + i * (hueDifference * 2)) % 360;
-
-      // Create an HSL colour string with fixed saturation and lightness values
-      const colour = `hsl(${hue}, ${baseColour.s}%, ${baseColour.l}%)`;
-
-      colours.push(colour);
-    }
-
-    return colours;
-  }
-
-  function hashCode(str : string) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      // eslint-disable-next-line no-bitwise
-      hash = (hash << 5) - hash + char;
-    }
-    return Math.abs(hash);
-  }
-
-  function getUniqueColour(
-    value: string,
-    metadataColumn: string,
-    fieldInfo: string | undefined,
-  ): string {
-    // Check if the palette for the current metadata column exists, or generate one
-    if (!metadataColumnPalettes[metadataColumn]) {
-      // Define the base colour for the current metadata column
-      const stringHash = hashCode(metadataColumn);
-      const baseColour = {
-        h: stringHash % 360, // Random hue value between 0 and 359
-        s: 60, // Adjust saturation as needed
-        l: 50, // Adjust lightness as needed
-      };
-
-      // Check if the value is an integer (numeric string)z
-      const isNumericString = fieldInfo === 'number' || fieldInfo === 'float';
-
-      const values = dataArray.flatMap((data) =>
-        data.metadataValues
-          .filter((metadataValue) => metadataValue.key === metadataColumn)
-          .map((metadataValue) => metadataValue.value));
-
-      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-      const uniqueValues = [...new Set(values)]
-        .sort(collator.compare);
-
-      const colours = isNumericString ?
-        generateSequentialColourPalette(baseColour, uniqueValues.length) :
-        getColorScheme(colorSchemeSelected, uniqueValues.length);
-
-      metadataColumnPalettes[metadataColumn] = {};
-      uniqueValues.forEach((val, index) => {
-        metadataColumnPalettes[metadataColumn][val] = colours[index];
+  fieldInformation
+    .filter((fi) => fi.canVisualise)
+    .forEach((fi) => {
+      const values = fieldUniqueValues[fi.columnName]?.filter(val => val !== 'null') ?? [];
+      const colours = getColorScheme(colorSchemeSelected, values.length);
+      metadataColumnPalettes[fi.columnName] = {};
+      values.forEach((val, index) => {
+        metadataColumnPalettes[fi.columnName][val] = colours[index];
       });
-    }
-
-    const palette = metadataColumnPalettes[metadataColumn];
-
-    const colour = palette[value] || 'rgba(0,0,0,0)';
-
-    return colour;
-  }
+      if (fieldUniqueValues[fi.columnName]?.includes('null')) {
+        metadataColumnPalettes[fi.columnName].null = NULL_COLOUR;
+      }
+    });
 
   const result: PhylocanvasMetadata = {};
-  for (const data of dataArray) {
-    result[data.sampleName] = {};
+  for (const sample of dataArray) {
+    const sampleName = sample[SAMPLE_ID_FIELD];
+    result[sampleName] = {};
 
-    for (const metadataValue of data.metadataValues) {
-      const field = fieldInformation.find(di => di.columnName === metadataValue.key);
-      const uColour = field?.canVisualise ?
-        getUniqueColour(
-          metadataValue.value,
-          metadataValue.key,
-          field?.primitiveType,
-        )
-        : 'rgba(0,0,0,0)'; // this black should never be used as the field is not visualisable
-      result[data.sampleName][metadataValue.key] = {
-        colour: uColour,
-        label: metadataValue.value ?? '',
-      };
-    }
+    fieldInformation.forEach((fi) => {
+      if (fi.columnName !== SAMPLE_ID_FIELD) {
+        const value = sample[fi.columnName] ?? 'null';
+        const colour = fi.canVisualise ?
+          metadataColumnPalettes[fi.columnName][value]
+          : 'rgba(0,0,0,0)'; // this black is assigned but we expect not to be used, as the field is not visualisable
+        result[sampleName][fi.columnName] = {
+          colour,
+          label: sample[fi.columnName] ?? '',
+        };
+      }
+    });
   }
 
   const metadataAndLegends = {
