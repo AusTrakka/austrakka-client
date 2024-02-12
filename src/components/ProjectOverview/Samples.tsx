@@ -20,7 +20,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { GroupMetadataState } from '../../app/metadataSlice';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 
@@ -61,14 +61,6 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!groupMetadata?.fields) return;
 
-    // Maps from a hard-coded metadata field name to a function to render the cell value
-    const sampleRenderFunctions : { [index: string]: Function } = {
-      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
-    };
-    // Fields which should be rendered as datetimes, not just dates
-    // This hard-coding is interim until the server is able to provide this information
-    const datetimeFields = new Set(['Date_created', 'Date_updated']);
-
     // Sort here rather than setting columnOrder
     const compareFields = (field1: { columnOrder: number; }, field2: { columnOrder: number; }) =>
       (field1.columnOrder - field2.columnOrder);
@@ -76,26 +68,17 @@ function Samples(props: SamplesProps) {
     sortedFields.sort(compareFields);
     const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
     sortedFields.forEach((element: MetaDataColumn) => {
-      if (element.columnName in sampleRenderFunctions) {
+      if (element.columnName in fieldRenderFunctions) {
         columnBuilder.push({
           accessorKey: element.columnName,
           header: `${element.columnName}`,
-          Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
         });
-      } else if (element.primitiveType === 'boolean') {
+      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
         columnBuilder.push({
           accessorKey: element.columnName,
           header: `${element.columnName}`,
-          Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-        });
-      } else if (element.primitiveType === 'date') {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-          Cell: ({ cell }: any) => (
-            datetimeFields.has(element.columnName)
-              ? isoDateLocalDate(cell.getValue())
-              : isoDateLocalDateNoTime(cell.getValue())),
+          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
         });
       } else {
         columnBuilder.push({

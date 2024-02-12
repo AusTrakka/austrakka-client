@@ -5,7 +5,7 @@ import { Alert, AlertTitle, Box, Chip, CircularProgress, Dialog, IconButton, Too
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
