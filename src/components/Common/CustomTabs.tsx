@@ -79,6 +79,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     // React Router V6 does not currently provide any way to update the URL without
     // triggering navigation. In this case we are updating the URL to match the updated
     // react state, so a re-render is unnecessary and needs to be avoided for performance.
+    // react-router github discussion: https://github.com/remix-run/react-router/discussions/9851
     window.history.pushState(window.history.state, '', newPath);
   };
 
