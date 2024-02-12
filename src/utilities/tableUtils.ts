@@ -1,6 +1,6 @@
 import { MRT_ColumnDef } from 'material-react-table';
 import { MetaDataColumn } from '../types/dtos';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from './helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './helperUtils';
 import { Sample } from '../types/sample.interface';
 
 // Maps from a hard-coded metadata field name to a function to render the cell value

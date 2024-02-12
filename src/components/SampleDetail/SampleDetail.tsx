@@ -9,6 +9,7 @@ import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { renderValue } from '../../utilities/helperUtils';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
@@ -78,10 +79,11 @@ function SampleDetail() {
     }
   }, [displayFields]);
 
-  const renderRow = (field: string, value: string) => (
-    <TableRow key={field}>
-      <TableCell width={`${colWidth}em`}>{field}</TableCell>
-      <TableCell>{value}</TableCell>
+  // Will need to become MetaDataColumn on merge
+  const renderRow = (field: DisplayField, value: any) => (
+    <TableRow key={field.columnName}>
+      <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
+      <TableCell>{ renderValue(value, field.columnName, field.primitiveType) }</TableCell>
     </TableRow>
   );
 
@@ -101,7 +103,7 @@ function SampleDetail() {
                 {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
-                  .map(field => renderRow(field.columnName, (data as any)[field.columnName]))}
+                  .map(field => renderRow(field, (data as any)[field.columnName]))}
               </TableBody>
             </Table>
           </TableContainer>

@@ -19,7 +19,7 @@ import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { MetaDataColumn, PlotListing, Project, Member, ProFormaVersion } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
 import ProFormas from './ProFormas';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
@@ -117,14 +117,6 @@ function ProjectOverview() {
   }, [projectAbbrev, token, tokenLoading]);
 
   useEffect(() => {
-    // Maps from a hard-coded metadata field name to a function to render the cell value
-    const sampleRenderFunctions : { [index: string]: Function } = {
-      'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
-    };
-    // Fields which should be rendered as datetimes, not just dates
-    // This hard-coding is interim until the server is able to provide this information
-    const datetimeFields = new Set(['Date_created', 'Date_updated']);
-
     async function getProjectSummary() {
       const totalSamplesResponse: ResponseObject = await getTotalSamples(
         projectDetails!.projectMembers.id,
@@ -159,26 +151,17 @@ function ProjectOverview() {
           setIsSamplesLoading(false);
         } else {
           columnHeaderArray.forEach((element: MetaDataColumn) => {
-            if (element.columnName in sampleRenderFunctions) {
+            if (element.columnName in fieldRenderFunctions) {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }) => sampleRenderFunctions[element.columnName](cell.getValue()),
+                Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
               });
-            } else if (element.primitiveType === 'boolean') {
+            } else if (element.primitiveType in typeRenderFunctions) {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }) => (cell.getValue() ? 'true' : 'false'),
-              });
-            } else if (element.primitiveType === 'date') {
-              columnBuilder.push({
-                accessorKey: element.columnName,
-                header: `${element.columnName}`,
-                Cell: ({ cell }: any) => (
-                  datetimeFields.has(element.columnName)
-                    ? isoDateLocalDate(cell.getValue())
-                    : isoDateLocalDateNoTime(cell.getValue())),
+                Cell: ({ cell }) => typeRenderFunctions[element.primitiveType](cell.getValue()),
               });
             } else {
               columnBuilder.push({
