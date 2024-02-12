@@ -22,7 +22,7 @@ import { getProformaDetails, getProformaVersions } from '../../utilities/resourc
 import { handleProformaDownload } from './proformaUtils';
 import LoadingState from '../../constants/loadingState';
 import { useApi } from '../../app/ApiContext';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { ResponseObject } from '../../types/responseObject.interface';
 
 function ProFormaDetail() {
