@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { Typography } from '@mui/material';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';

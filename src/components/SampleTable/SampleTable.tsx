@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import isoDateLocalDate, { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';

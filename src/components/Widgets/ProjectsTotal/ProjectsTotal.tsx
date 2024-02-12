@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../Common/DrilldownButton';
-import isoDateLocalDate from '../../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
 
 const columns:MRT_ColumnDef<any>[] = [

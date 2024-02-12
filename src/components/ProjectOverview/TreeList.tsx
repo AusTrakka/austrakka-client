@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useNavigate } from 'react-router-dom';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../utilities/helperUtils';
 
 interface TreesProps {
   treeList: any,

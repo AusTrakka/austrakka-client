@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import getQueryParamOrDefault from './navigationUtils';
 
-export default function isoDateLocalDate(datetime: string) {
-  if (!datetime) return null;
+export function isoDateLocalDate(datetime: string) {
+  if (!datetime) return '';
   const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
 }
 
 export function isoDateLocalDateNoTime(datetime: string) {
-  if (!datetime) return null;
+  if (!datetime) return '';
   const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
@@ -29,6 +29,38 @@ export function useFirstRender() {
 
   return firstRender.current;
 }
+
+// These render functions be may passed in to tables per-column, or used via renderValue()
+
+// Maps from a hard-coded metadata field name to a function to render the data value
+// Note that some datetime fields are included here in order to render them as datetimes,
+// not just dates, which is the type default below. Ideally the server should tell us
+// whether a field is a date or a datetime.
+export const fieldRenderFunctions : { [index: string]: Function } = {
+  'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+  'Date_created': (value: string) => isoDateLocalDate(value),
+  'Date_updated': (value: string) => isoDateLocalDate(value),
+};
+
+// Maps from a primitive field type to a function to render the data value
+// Not every type may be here; missing types will have a default render in the caller
+export const typeRenderFunctions : { [index: string]: Function } = {
+  'boolean': (value: boolean): string => (value ? 'true' : 'false'),
+  'date': (value: string): string => isoDateLocalDateNoTime(value),
+};
+
+export const renderValue = (value: any, field: string, type: string) : string => {
+  if (field in fieldRenderFunctions) {
+    return fieldRenderFunctions[field](value);
+  }
+  if (type in typeRenderFunctions) {
+    return typeRenderFunctions[type](value);
+  }
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value);
+};
 
 // Function to aggregate counts of objects in an array, on a certain property
 export function aggregateArrayObjects(property: string, array: Array<any>) {

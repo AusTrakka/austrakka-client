@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Card, CardContent, Typography, CardMedia, Stack, CardActionArea, IconButton, Icon, CircularProgress, Tooltip, Grid } from '@mui/material';
 import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
-import isoDateLocalDate from '../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
 
 export enum CardType {
