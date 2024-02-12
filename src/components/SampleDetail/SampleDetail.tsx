@@ -79,11 +79,10 @@ function SampleDetail() {
     }
   }, [displayFields]);
 
-  // Will need to become MetaDataColumn on merge
-  const renderRow = (field: DisplayField, value: any) => (
+  const renderRow = (field: MetaDataColumn, value: any) => (
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
-      <TableCell>{ renderValue(value, field.columnName, field.primitiveType) }</TableCell>
+      <TableCell>{ renderValue(value, field.columnName, field.primitiveType ?? 'category') }</TableCell>
     </TableRow>
   );
 

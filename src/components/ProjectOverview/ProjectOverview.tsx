@@ -157,11 +157,11 @@ function ProjectOverview() {
                 header: `${element.columnName}`,
                 Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
               });
-            } else if (element.primitiveType in typeRenderFunctions) {
+            } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
               columnBuilder.push({
                 accessorKey: element.columnName,
                 header: `${element.columnName}`,
-                Cell: ({ cell }) => typeRenderFunctions[element.primitiveType](cell.getValue()),
+                Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
               });
             } else {
               columnBuilder.push({
