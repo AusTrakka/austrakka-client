@@ -101,7 +101,7 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
         <b> viewer </b>
         in your organisation&lsquo;s
         <b> Owner group</b>
-        s.
+        .
       </Typography>
       <OrgGroupSelector
         groups={groups}

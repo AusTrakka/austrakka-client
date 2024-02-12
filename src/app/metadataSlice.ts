@@ -3,7 +3,7 @@ import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn, Project } from '../types/dtos';
-import { ProjectSample } from '../types/sample.interface';
+import { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
@@ -35,11 +35,11 @@ export interface GroupMetadataState {
   groupId: number | null
   loadingState: MetadataLoadingState,
   fields: MetaDataColumn[] | null
-  fieldUniqueValues: Record<string, string[]> | null
+  fieldUniqueValues: Record<string, string[] | null> | null
   views: Record<number, string[]>
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
-  metadata: ProjectSample[] | null
+  metadata: Sample[] | null
   columnLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
@@ -87,7 +87,7 @@ interface FetchDataViewParams {
   viewIndex: number,
 }
 interface FetchDataViewsResponse {
-  data: ProjectSample[],
+  data: Sample[],
 }
 
 const fetchProjectFields = createAsyncThunk(
@@ -122,7 +122,7 @@ const fetchDataView = createAsyncThunk(
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue<FetchDataViewsResponse>({
-        data: response.data as ProjectSample[],
+        data: response.data as Sample[],
       });
     }
     return rejectWithValue(response.error);
@@ -213,13 +213,16 @@ export const metadataSlice = createSlice({
       // Set views (field lists), and set view loading states to IDLE for all views
       // This is an interim measure; later we will use a thunk to fetch project data views
       const views = calculateDataViews(fields);
+      state.data[groupId].views = {};
       views.forEach((view, index) => {
         state.data[groupId].views![index] = view;
         state.data[groupId].viewLoadingStates![index] = LoadingState.IDLE;
       });
-      // Set column loading states to IDLE for all fields
-      state.data[groupId].fields?.forEach((field) => {
+      // Set column loading states to IDLE for all fields, and initialise unique values
+      state.data[groupId].fieldUniqueValues = {};
+      state.data[groupId].fields!.forEach((field) => {
         state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+        state.data[groupId].fieldUniqueValues![field.columnName] = null;
       });
       state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
@@ -254,6 +257,52 @@ export const metadataSlice = createSlice({
         state.data[groupId].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
       }
+      // Calculate unique values
+      // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
+      // Would be better to do server-side, but this operation is quite fast.
+      // Note that if categorical fields are included in project sub-views, they will be
+      // recalculated per-view, to ensure consistency.
+      const fieldDetails: MetaDataColumn[] = fields.map(
+        field => {
+          const fieldDetail = state.data[groupId].fields!.find(f => f.columnName === field);
+          if (!fieldDetail) {
+            throw new Error(
+              'Unexpected error in fetchDataView.fullfilled: ' +
+              `field ${field} in data not found in expected fields`,
+            );
+          }
+          return fieldDetail;
+        },
+      );
+      // fields with defined valid values can just be looked up
+      const categoricalFields = fieldDetails.filter(field =>
+        field.canVisualise && field.metaDataColumnValidValues);
+      categoricalFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName] = field.metaDataColumnValidValues;
+      });
+      // visualisable string field unique values must be calculated
+      const visualisableFields = fieldDetails.filter(field => field.canVisualise && field.primitiveType === 'string');
+      const valueSets : Record<string, Set<string>> = {};
+      visualisableFields.forEach(field => {
+        valueSets[field.columnName] = new Set();
+      });
+      data.forEach(sample => {
+        visualisableFields.forEach(field => {
+          const value = sample[field.columnName];
+          // we conflate the string 'null' with empty values, but there may not be a better option
+          valueSets[field.columnName].add(value === null ? 'null' : value);
+        });
+      });
+      visualisableFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName] =
+          Array.from(valueSets[field.columnName]);
+      });
+      // Sort unique values using natural sort order
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      visualisableFields.forEach(field => {
+        state.data[groupId].fieldUniqueValues![field.columnName]!.sort(collator.compare);
+      });
+      // Set SUCCESS states
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       fields.forEach(field => {
         state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
@@ -309,9 +358,12 @@ export const selectGroupMetadata:
 
 // May want to also include per-field loading state in this selector
 export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return { fields: null, loadingState: null };
+  if (!groupId) {
+    return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
+  }
   return {
     fields: state.metadataState.data[groupId]?.fields,
+    fieldUniqueValues: state.metadataState.data[groupId]?.fieldUniqueValues,
     loadingState: state.metadataState.data[groupId]?.loadingState,
   };
 };
