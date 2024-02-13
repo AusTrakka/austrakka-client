@@ -32,7 +32,7 @@ function BarChart(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
@@ -54,8 +54,8 @@ function BarChart(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
+          (field.fieldDataType === 'string' || field.fieldDataType === null))
+        .map(field => field.fieldName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one categorical field
@@ -151,7 +151,7 @@ function BarChart(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        dataGroupId={plot?.projectGroupId}
+        projectAbbrev={plot?.projectAbbreviation}
       />
     </>
   );

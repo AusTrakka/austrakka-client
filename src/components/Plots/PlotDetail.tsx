@@ -34,7 +34,7 @@ function PlotDetail() {
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const dataErrorMsg = useAppSelector(state =>
-    selectProjectMetadataError(state, plot?.projectGroupId));
+    selectProjectMetadataError(state, plot?.projectAbbreviation));
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
@@ -62,7 +62,7 @@ function PlotDetail() {
 
   useEffect(() => {
     if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ groupId: plot.projectGroupId, token }));
+      dispatch(fetchProjectMetadata({ projectAbbrev: plot.projectAbbreviation, token }));
     }
   }, [plot, dispatch, token, tokenLoading]);
 

@@ -25,7 +25,7 @@ export interface Plot {
   spec: string,
   projectId: number,
   projectName: string
-  projectAbbrev: string
+  projectAbbreviation: string
   projectGroupId: number
   isActive: boolean
 }
@@ -121,6 +121,25 @@ export interface MetaDataColumn {
   isDisplayedAsDefault: boolean
   isActive: boolean
   minWidth: number
+}
+
+export interface ProjectField {
+  projectFieldId: number,
+  fieldName: string,
+  fieldDataType: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  metaDataColumnValidValues: string[] | null,
+}
+
+export interface ProjectView {
+  id: number,
+  fileName: string,
+  blobFilePath: string,
+  originalFileName: string,
+  isBase: boolean,
+  fields: string[],
 }
 
 export interface Proforma {

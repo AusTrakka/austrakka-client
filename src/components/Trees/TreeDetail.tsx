@@ -61,7 +61,7 @@ interface Style {
 const treenameRegex = /[(),]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
-  const { analysisId, jobInstanceId } = useParams();
+  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
@@ -84,8 +84,8 @@ function TreeDetail() {
     rootIdDefault,
     searchParams,
   );
-  const groupMetadata : ProjectMetadataState | null =
-    useAppSelector(st => selectProjectMetadata(st, tree?.projectMembersGroupId));
+  const projectMetadata : ProjectMetadataState | null =
+    useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
@@ -94,10 +94,12 @@ function TreeDetail() {
 
   // Request redux data if not loaded
   useEffect(() => {
-    if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ groupId: tree.projectMembersGroupId, token }));
+    if (projectAbbrev &&
+       tokenLoading !== LoadingState.LOADING &&
+       tokenLoading !== LoadingState.IDLE) {
+      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
-  }, [tree, dispatch, token, tokenLoading]);
+  }, [projectAbbrev, dispatch, token, tokenLoading]);
 
   useEffect(() => {
     // Get list of Seq_IDs from newick
@@ -111,32 +113,32 @@ function TreeDetail() {
 
   useEffect(() => {
     // Filter metadata by tree samples
-    if (groupMetadata?.metadata && treeSampleNames.length > 0) {
+    if (projectMetadata?.metadata && treeSampleNames.length > 0) {
       const treeSamplesSet = new Set(treeSampleNames);
-      const filteredMetadata = groupMetadata.metadata.filter(
+      const filteredMetadata = projectMetadata.metadata.filter(
         (row) => treeSamplesSet.has(row.Seq_ID),
       );
       setTableMetadata(filteredMetadata);
     }
-  }, [groupMetadata?.metadata, treeSampleNames]);
+  }, [projectMetadata?.metadata, treeSampleNames]);
 
   // Map group tabular metadata to format for phylocanvas, including colour mappings
   useEffect(() => {
     if (tree &&
-      groupMetadata?.metadata &&
-      groupMetadata?.fields &&
-      groupMetadata?.fieldUniqueValues
+      projectMetadata?.metadata &&
+      projectMetadata?.fields &&
+      projectMetadata?.fieldUniqueValues
     ) {
       const mappingData = mapMetadataToPhylocanvas(
-        groupMetadata.metadata,
-        groupMetadata.fields,
-        groupMetadata.fieldUniqueValues,
+        projectMetadata.metadata,
+        projectMetadata.fields,
+        projectMetadata.fieldUniqueValues,
         colourScheme,
       );
       setPhylocanvasMetadata(mappingData.result);
       setPhylocanvasLegends(mappingData.legends);
     }
-  }, [tree, groupMetadata, colourScheme]);
+  }, [tree, projectMetadata, colourScheme]);
 
   // Get tree historical versions
   useEffect(() => {
@@ -282,9 +284,9 @@ function TreeDetail() {
           setSelectedIds={setSelectedIds}
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
-          displayFields={groupMetadata?.fields || []}
+          displayFields={projectMetadata?.fields || []}
           tableMetadata={tableMetadata}
-          metadataLoadingState={groupMetadata?.loadingState || MetadataLoadingState.IDLE}
+          metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
         />
       );
     }
@@ -317,11 +319,11 @@ function TreeDetail() {
   };
 
   const renderControls = () => {
-    const availableFields = groupMetadata?.fields || [];
-    const allColumns = availableFields.map(field => field.columnName);
+    const availableFields = projectMetadata?.fields || [];
+    const allColumns = availableFields.map(field => field.fieldName);
     const visualisableColumns = availableFields.filter(
       (field) => field.canVisualise,
-    ).map(field => field.columnName);
+    ).map(field => field.fieldName);
     const ids = Object.keys(phylocanvasMetadata);
 
     const handleJumpToSubtree = (id: string) => {
@@ -460,8 +462,8 @@ function TreeDetail() {
   };
 
   const renderWarning = () => {
-    if (groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
-        groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (projectMetadata?.loadingState === MetadataLoadingState.ERROR ||
+        projectMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       return (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>

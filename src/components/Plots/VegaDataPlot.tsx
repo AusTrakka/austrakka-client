@@ -16,18 +16,19 @@ import { useAppSelector } from '../../app/store';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
-  dataGroupId: number | undefined,
+  projectAbbrev: string | undefined,
 }
 
 function VegaDataPlot(props: VegaDataPlotProps) {
-  const { spec, dataGroupId } = props;
+  const { spec, projectAbbrev } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  // TODO rename groupMetadata to projectMetadata or just metadata, ditto elsewhere
   const groupMetadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, dataGroupId));
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
   // Render plot by creating vega view
   useEffect(() => {

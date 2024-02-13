@@ -1,40 +1,21 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/brace-style */
 import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import { MetaDataColumn, Project } from '../types/dtos';
+import { Project, ProjectField, ProjectView } from '../types/dtos';
 import { Sample } from '../types/sample.interface';
-import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
+import { getProjectFields, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 
-// These are hard-coded desired field sets, used as an interim measure
-// until we have project data views implemented server-side.
-// Since we don't know that the project will contain all specified fields, we will have to
-// request the intersection of the fields here and the actual project fields.
-// In addition to views listed here, an all-of-project dataset will be retrieved.
-const DATA_VIEWS = [
-  [SAMPLE_ID_FIELD],
-  [SAMPLE_ID_FIELD, 'Date_coll', 'Owner_group', 'Jurisdiction'],
-];
-
-// This is an interim function based on hard-coded views
-const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
-  const fieldNames = fields.map(field => field.columnName);
-  const dataViews = DATA_VIEWS
-    .map(view => view.filter(field => fieldNames.includes(field)))
-    .filter(view => view.length > 0);
-  dataViews.push(fieldNames);
-  return dataViews;
-};
-
 export interface ProjectMetadataState {
-  groupId: number | null
+  projectAbbrev: string | null
   loadingState: MetadataLoadingState,
-  fields: MetaDataColumn[] | null
+  fields: ProjectField[] | null
   fieldUniqueValues: Record<string, string[] | null> | null
-  views: Record<number, string[]>
+  views: Record<number, ProjectView>
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
   metadata: Sample[] | null
@@ -42,8 +23,8 @@ export interface ProjectMetadataState {
   errorMessage: string | null
 }
 
-const projectMetadataInitialStateCreator = (groupId: number): ProjectMetadataState => ({
-  groupId,
+const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
+  projectAbbrev,
   loadingState: MetadataLoadingState.IDLE,
   fields: null,
   fieldUniqueValues: null,
@@ -56,7 +37,7 @@ const projectMetadataInitialStateCreator = (groupId: number): ProjectMetadataSta
 });
 
 interface ProjectMetadataSliceState {
-  data: { [groupId: number]: ProjectMetadataState },
+  data: { [projectAbbrev: string]: ProjectMetadataState },
   token: string | null, // must be provided by calling component along with each fetch request
 }
 
@@ -68,42 +49,50 @@ const initialState: ProjectMetadataSliceState = {
 // Input parameters and return types (on success/fulfilled) for actions and thunks
 
 interface FetchProjectMetadataParams {
-  groupId: number,
+  projectAbbrev: string,
   token: string,
 }
 
-interface FetchProjectFieldsParams {
-  groupId: number,
+interface FetchProjectInfoParams {
+  projectAbbrev: string,
 }
 
-interface FetchProjectFieldsResponse {
-  fields: MetaDataColumn[],
+interface FetchProjectInfoResponse {
+  fields: ProjectField[],
+  views: ProjectView[],
 }
 
 interface FetchDataViewParams {
-  groupId: number,
-  fields: string[],
-  viewIndex: number,
+  projectAbbrev: string,
+  viewIndex: number, // this is the lookup index, not the viewId
 }
-interface FetchDataViewsResponse {
+
+interface FetchDataViewResponse {
   data: Sample[],
 }
 
-const fetchProjectFields = createAsyncThunk(
+// Fetch project fields and views
+const fetchProjectInfo = createAsyncThunk(
   'projectMetadata/fetchProjectFields',
   async (
-    params: FetchProjectFieldsParams,
+    params: FetchProjectInfoParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
-    const { groupId } = params;
+    const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
-    const response = await getDisplayFields(groupId, token!);
-    if (response.status === 'Success') {
-      return fulfillWithValue<FetchProjectFieldsResponse>({
-        fields: response.data as MetaDataColumn[],
-      });
+    // TODO handle case where there are no fields / no views
+    const fieldsResponse = await getProjectFields(projectAbbrev, token!);
+    if (fieldsResponse.status !== 'Success') {
+      return rejectWithValue(fieldsResponse.error);
     }
-    return rejectWithValue(response.error);
+    const viewsResponse = await getProjectViews(projectAbbrev, token!);
+    if (viewsResponse.status !== 'Success') {
+      return rejectWithValue(viewsResponse.error);
+    }
+    return fulfillWithValue<FetchProjectInfoResponse>({
+      fields: fieldsResponse.data as ProjectField[],
+      views: viewsResponse.data as ProjectView[],
+    });
   },
 );
 
@@ -113,15 +102,18 @@ const fetchDataView = createAsyncThunk(
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
-    const { groupId, fields } = params;
-    const { token } = (getState() as RootState).projectMetadataState;
-    const response = await getMetadata(groupId, fields, token!);
-    if (response.status === 'Success') {
-      return fulfillWithValue<FetchDataViewsResponse>({
-        data: response.data as Sample[],
+    const { projectAbbrev, viewIndex } = params;
+    const state = getState() as RootState;
+    const { token } = state.projectMetadataState;
+    const view = state.projectMetadataState.data[projectAbbrev].views[viewIndex];
+
+    const response = await getProjectViewData(projectAbbrev, view.id, token!);
+    if (response.ok) {
+      return fulfillWithValue<FetchDataViewResponse>({
+        data: await response.json() as Sample[],
       });
     }
-    return rejectWithValue(response.error);
+    return rejectWithValue('An error occurred fetching project metadata');
   },
 );
 
@@ -131,19 +123,19 @@ const fetchDataView = createAsyncThunk(
 // Launch fetchProjectFields in response to metadata fetch request
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read groupId
+    // Return early if wrong action; don't try to read projectAbbrev
     if (action.type !== 'projectMetadata/fetchProjectMetadata') return false;
     // Check that the reducer logic is telling us to trigger a new load process
     const previousLoadingState = (previousState as RootState).projectMetadataState
-      .data[(action as any).payload.groupId]?.loadingState;
+      .data[(action as any).payload.projectAbbrev]?.loadingState;
     const loadingState = (currentState as RootState).projectMetadataState
-      .data[(action as any).payload.groupId]?.loadingState;
+      .data[(action as any).payload.projectAbbrev]?.loadingState;
     return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
            loadingState === MetadataLoadingState.FETCH_REQUESTED;
   },
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
-      fetchProjectFields({ groupId: (action as any).payload.groupId }),
+      fetchProjectInfo({ projectAbbrev: (action as any).payload.projectAbbrev }),
     );
   },
 });
@@ -151,25 +143,25 @@ listenerMiddleware.startListening({
 // Launch needed data view fetch after viewToFetch changes
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read groupId
-    if (!isAnyOf(fetchProjectFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
-    const { groupId } = (action as any).meta.arg;
+    // Return early if wrong action; don't try to read projectAbbrev
+    if (!isAnyOf(fetchProjectInfo.fulfilled, fetchDataView.fulfilled)(action)) return false;
+    const { projectAbbrev } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
     const previousViewToFetch = (previousState as RootState).projectMetadataState
-      .data[groupId]?.viewToFetch;
+      .data[projectAbbrev]?.viewToFetch;
     const viewToFetch = (currentState as RootState).projectMetadataState
-      .data[groupId]?.viewToFetch;
+      .data[projectAbbrev]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
   },
   effect: (action, listenerApi) => {
-    const { groupId } = (action as any).meta.arg;
+    const { projectAbbrev } = (action as any).meta.arg;
     const { views, viewToFetch } =
-      (listenerApi.getState() as RootState).projectMetadataState.data[groupId];
+      (listenerApi.getState() as RootState).projectMetadataState.data[projectAbbrev];
     // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
     listenerApi.dispatch(
-      fetchDataView({ groupId, fields: views[viewToFetch], viewIndex: viewToFetch }),
+      fetchDataView({ projectAbbrev, viewIndex: viewToFetch })
     );
   },
 });
@@ -179,78 +171,79 @@ export const projectMetadataSlice = createSlice({
   initialState,
   reducers: {
     fetchProjectMetadata: (state, action: PayloadAction<FetchProjectMetadataParams>) => {
-      const { groupId, token } = action.payload;
-      if (!state.data[groupId]) {
+      const { projectAbbrev, token } = action.payload;
+      if (!state.data[projectAbbrev]) {
         // Set initial state for this group
-        state.data[groupId] = projectMetadataInitialStateCreator(groupId);
+        state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
       }
       // Only initialise fetch if in allowed state; do not reload loading data
-      if (state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
-          state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
-          state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      if (state.data[projectAbbrev].loadingState === MetadataLoadingState.IDLE ||
+          state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR ||
+          state.data[projectAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
         // If we were in an error state and are refreshing, clear data
-        if (state.data[groupId].loadingState !== MetadataLoadingState.IDLE) {
-          state.data[groupId] = projectMetadataInitialStateCreator(groupId);
+        if (state.data[projectAbbrev].loadingState !== MetadataLoadingState.IDLE) {
+          state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
         }
-        state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.FETCH_REQUESTED;
         state.token = token;
       }
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchProjectFields.pending, (state, action) => {
-      const { groupId } = action.meta.arg;
-      state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
+    builder.addCase(fetchProjectInfo.pending, (state, action) => {
+      const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
-    builder.addCase(fetchProjectFields.fulfilled, (state, action) => {
-      const { groupId } = action.meta.arg;
-      const { fields } = action.payload as FetchProjectFieldsResponse;
-      state.data[groupId].fields = fields;
+    builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
+      const { projectAbbrev } = action.meta.arg;
+      const { fields, views } = action.payload as FetchProjectInfoResponse;
+      state.data[projectAbbrev].fields = fields;
       // Set views (field lists), and set view loading states to IDLE for all views
-      // This is an interim measure; later we will use a thunk to fetch project data views
-      const views = calculateDataViews(fields);
-      state.data[groupId].views = {};
+      views.sort((a, b) => a.fields.length - b.fields.length);
+      state.data[projectAbbrev].views = {};
       views.forEach((view, index) => {
-        state.data[groupId].views![index] = view;
-        state.data[groupId].viewLoadingStates![index] = LoadingState.IDLE;
+        state.data[projectAbbrev].views![index] = view;
+        state.data[projectAbbrev].viewLoadingStates![index] = LoadingState.IDLE;
       });
       // Set column loading states to IDLE for all fields, and initialise unique values
-      state.data[groupId].fieldUniqueValues = {};
-      state.data[groupId].fields!.forEach((field) => {
-        state.data[groupId].columnLoadingStates[field.columnName] = LoadingState.IDLE;
-        state.data[groupId].fieldUniqueValues![field.columnName] = null;
+      state.data[projectAbbrev].fieldUniqueValues = {};
+      state.data[projectAbbrev].fields!.forEach((field) => {
+        state.data[projectAbbrev].columnLoadingStates[field.fieldName] = LoadingState.IDLE;
+        state.data[projectAbbrev].fieldUniqueValues![field.fieldName] = null;
       });
-      state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
-    builder.addCase(fetchProjectFields.rejected, (state, action) => {
-      const { groupId } = action.meta.arg;
-      state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
-      state.data[groupId].loadingState = MetadataLoadingState.ERROR;
+    builder.addCase(fetchProjectInfo.rejected, (state, action) => {
+      const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev].errorMessage = `Unable to load project fields: ${action.payload}`;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
     });
     builder.addCase(fetchDataView.pending, (state, action) => {
-      const { groupId, fields, viewIndex } = action.meta.arg;
-      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.LOADING;
+      const { projectAbbrev, viewIndex } = action.meta.arg;
+      const { fields } = state.data[projectAbbrev].views[viewIndex];
+      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.LOADING;
       // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
       if (viewIndex === 0) {
-        state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
       }
       fields.forEach(field => {
         // Check per-column state; columns new in this load get LOADING status
-        if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[groupId].columnLoadingStates[field] = LoadingState.LOADING;
+        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.LOADING;
         }
       });
     });
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
-      const { groupId, fields, viewIndex } = action.meta.arg;
-      const { data } = action.payload as FetchDataViewsResponse;
+      const { projectAbbrev, viewIndex } = action.meta.arg;
+      const { data } = action.payload as FetchDataViewResponse;
+      const { fields } = state.data[projectAbbrev].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
-      state.data[groupId].metadata = data;
+      state.data[projectAbbrev].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
+      if (state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-        state.data[groupId].metadata!.sort((a, b) =>
+        state.data[projectAbbrev].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
       }
       // Calculate unique values
@@ -258,9 +251,9 @@ export const projectMetadataSlice = createSlice({
       // Would be better to do server-side, but this operation is quite fast.
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
-      const fieldDetails: MetaDataColumn[] = fields.map(
+      const fieldDetails: ProjectField[] = fields.map(
         field => {
-          const fieldDetail = state.data[groupId].fields!.find(f => f.columnName === field);
+          const fieldDetail = state.data[projectAbbrev].fields!.find(f => f.fieldName === field);
           if (!fieldDetail) {
             throw new Error(
               'Unexpected error in fetchDataView.fullfilled: ' +
@@ -274,61 +267,64 @@ export const projectMetadataSlice = createSlice({
       const categoricalFields = fieldDetails.filter(field =>
         field.canVisualise && field.metaDataColumnValidValues);
       categoricalFields.forEach(field => {
-        state.data[groupId].fieldUniqueValues![field.columnName] = field.metaDataColumnValidValues;
+        state.data[projectAbbrev].fieldUniqueValues![field.fieldName] =
+          field.metaDataColumnValidValues;
       });
       // visualisable string field unique values must be calculated
-      const visualisableFields = fieldDetails.filter(field => field.canVisualise && field.primitiveType === 'string');
+      const visualisableFields = fieldDetails.filter(field =>
+        field.canVisualise && field.fieldDataType === 'string');
       const valueSets : Record<string, Set<string>> = {};
       visualisableFields.forEach(field => {
-        valueSets[field.columnName] = new Set();
+        valueSets[field.fieldName] = new Set();
       });
       data.forEach(sample => {
         visualisableFields.forEach(field => {
-          const value = sample[field.columnName];
+          const value = sample[field.fieldName];
           // we conflate the string 'null' with empty values, but there may not be a better option
-          valueSets[field.columnName].add(value === null ? 'null' : value);
+          valueSets[field.fieldName].add(value === null ? 'null' : value);
         });
       });
       visualisableFields.forEach(field => {
-        state.data[groupId].fieldUniqueValues![field.columnName] =
-          Array.from(valueSets[field.columnName]);
+        state.data[projectAbbrev].fieldUniqueValues![field.fieldName] =
+          Array.from(valueSets[field.fieldName]);
       });
       // Sort unique values using natural sort order
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
       visualisableFields.forEach(field => {
-        state.data[groupId].fieldUniqueValues![field.columnName]!.sort(collator.compare);
+        state.data[projectAbbrev].fieldUniqueValues![field.fieldName]!.sort(collator.compare);
       });
       // Set SUCCESS states
-      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
+      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       fields.forEach(field => {
-        state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
+        state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.SUCCESS;
       });
       // Increment viewToFetch, which will trigger the next view load
-      state.data[groupId].viewToFetch = viewIndex + 1;
+      state.data[projectAbbrev].viewToFetch = viewIndex + 1;
       // If this is the full dataset, we are done, otherwise we are in a partial load state
-      if (viewIndex === Object.keys(state.data[groupId].views).length - 1) {
-        // NB here expect also that fields.length === state.data[groupId].fields?.length
-        state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+      if (viewIndex === Object.keys(state.data[projectAbbrev].views).length - 1) {
+        // NB here expect also that fields.length === state.data[projectAbbrev].fields?.length
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
       } else {
-        state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
       }
     });
     builder.addCase(fetchDataView.rejected, (state, action) => {
-      const { groupId, fields, viewIndex } = action.meta.arg;
-      state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.ERROR;
+      const { projectAbbrev, viewIndex } = action.meta.arg;
+      const { fields } = state.data[projectAbbrev].views[viewIndex];
+      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.ERROR;
       // Any column not already loaded by another thunk gets an error state
       fields.forEach(field => {
-        if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[groupId].columnLoadingStates[field] = LoadingState.ERROR;
+        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.ERROR;
         }
       });
       // If this is the first view, we are in an error state, otherwise a partial error state
       if (viewIndex === 0) {
-        state.data[groupId].loadingState = MetadataLoadingState.ERROR;
-        state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
+        state.data[projectAbbrev].errorMessage = `Unable to load project data: ${action.payload}`;
       } else {
-        state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
-        state.data[groupId].errorMessage = `Unable to complete loading project data: ${action.payload}`;
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
+        state.data[projectAbbrev].errorMessage = `Unable to complete loading project data: ${action.payload}`;
       }
       // Currently we don't try to fetch more views after an error
       // If we want to, we should incremement viewToFetch if there are views left,
@@ -346,37 +342,39 @@ export const { fetchProjectMetadata } = projectMetadataSlice.actions;
 // selectors
 
 export const selectProjectMetadata:
-(state: RootState, groupId: number | undefined) => ProjectMetadataState | null =
-  (state, groupId) => {
-    if (!groupId) return null; // should not be 0, which is fine
-    return state.projectMetadataState.data[groupId!] ?? null;
+(state: RootState, projectAbbrev: string | undefined) => ProjectMetadataState | null =
+  (state, projectAbbrev) => {
+    if (!projectAbbrev) return null; // should not be 0, which is fine
+    return state.projectMetadataState.data[projectAbbrev!] ?? null;
   };
 
 // May want to also include per-field loading state in this selector
-export const selectProjectMetadataFields = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) {
+export const selectProjectMetadataFields = (state: RootState, projectAbbrev: string | undefined) =>
+{
+  if (!projectAbbrev) {
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
   return {
-    fields: state.projectMetadataState.data[groupId]?.fields,
-    fieldUniqueValues: state.projectMetadataState.data[groupId]?.fieldUniqueValues,
-    loadingState: state.projectMetadataState.data[groupId]?.loadingState,
+    fields: state.projectMetadataState.data[projectAbbrev]?.fields,
+    fieldUniqueValues: state.projectMetadataState.data[projectAbbrev]?.fieldUniqueValues,
+    loadingState: state.projectMetadataState.data[projectAbbrev]?.loadingState,
   };
 };
 
-export const selectProjectMetadataError = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return null;
-  return state.projectMetadataState.data[groupId]?.errorMessage;
+export const selectProjectMetadataError = (state: RootState, projectAbbrev: string | undefined) => {
+  if (!projectAbbrev) return null;
+  return state.projectMetadataState.data[projectAbbrev]?.errorMessage;
 };
 
 // Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
 // data. This includes idle and awaiting fields states.
 // Returns false if any (including partial) data loaded, or if error state
-export const selectAwaitingProjectMetadata = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return true;
-  const loadingState = state.projectMetadataState.data[groupId]?.loadingState;
-  return loadingState === MetadataLoadingState.IDLE ||
-         loadingState === MetadataLoadingState.FETCH_REQUESTED ||
-         loadingState === MetadataLoadingState.AWAITING_FIELDS ||
-         loadingState === MetadataLoadingState.AWAITING_DATA;
-};
+export const selectAwaitingProjectMetadata =
+  (state: RootState, projectAbbrev: string | undefined) => {
+    if (!projectAbbrev) return true;
+    const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
+    return loadingState === MetadataLoadingState.IDLE ||
+          loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+          loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+          loadingState === MetadataLoadingState.AWAITING_DATA;
+  };

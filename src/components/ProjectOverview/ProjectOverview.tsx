@@ -51,13 +51,13 @@ function ProjectOverview() {
 
   // Samples component states
   const groupMetadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectDetails?.projectMembers.id));
+    useAppSelector(state => selectProjectMetadata(state, projectDetails?.abbreviation));
   const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.projectMembers.id));
+    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -110,7 +110,7 @@ function ProjectOverview() {
 
     if (projectDetails) {
       getProjectSummary();
-      dispatch(fetchProjectMetadata({ groupId: projectDetails.projectMembers.id, token }));
+      dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
     }
   }, [projectDetails, token, dispatch]);
 

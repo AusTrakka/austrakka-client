@@ -91,6 +91,17 @@ async function callApi(url: string, options: HTTPOptions): Promise<ResponseObjec
   }
 }
 
+// Call an endpoint that does not return an ApiResponse object
+export async function callSimpleGET(url: string, token: string): Promise<Response> {
+  if (!token) {
+    throw new Error('Authentication error: Unable to retrieve access token.');
+  }
+  return fetch(base + url, {
+    method: 'GET',
+    headers: getHeaders(token),
+  });
+}
+
 // NEW: Token passed as prop via endpoint calls
 export async function callGET(url: string, token: string): Promise<ResponseObject> {
   // Check if token is null/undefined before making API call

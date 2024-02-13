@@ -41,7 +41,7 @@ function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -67,14 +67,14 @@ function EpiCurve(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-                        (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
+                        (field.fieldDataType === 'string' || field.fieldDataType === null))
+        .map(field => field.fieldName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Similarly starting value for row facet is None
       const localDateFields = fields
-        .filter(field => field.primitiveType === 'date')
-        .map(field => field.columnName);
+        .filter(field => field.fieldDataType === 'date')
+        .map(field => field.fieldName);
       setDateFields(localDateFields);
       // Mandatory fields: one date field
       if (localDateFields.length === 0) {
@@ -237,7 +237,7 @@ function EpiCurve(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        dataGroupId={plot?.projectGroupId}
+        projectAbbrev={plot?.projectAbbreviation}
       />
     </>
   );
