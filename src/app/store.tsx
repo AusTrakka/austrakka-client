@@ -13,6 +13,7 @@ import userOverviewReducer from '../components/Widgets/UserOverview/userOverview
 import projectsTotalReducer from '../components/Widgets/ProjectsTotal/projectsTotalSlice';
 import phessIdOverallReducer from '../components/Widgets/PhessIdOverall/phessIdOverallSlice';
 import projectMetadataReducer from './projectMetadataSlice';
+import groupMetadataReducer from './groupMetadataSlice';
 
 const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ const store = configureStore({
     projectTotalState: projectsTotalReducer,
     phessIdOverallState: phessIdOverallReducer,
     projectMetadataState: projectMetadataReducer,
+    groupMetadataState: groupMetadataReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })
