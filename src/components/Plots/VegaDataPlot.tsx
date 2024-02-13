@@ -7,7 +7,7 @@ import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
   selectGroupMetadata, GroupMetadataState,
 } from '../../app/metadataSlice';
@@ -24,6 +24,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState([]);
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const groupMetadata : GroupMetadataState | null =
     useAppSelector(state => selectGroupMetadata(state, dataGroupId));
 
@@ -97,7 +99,10 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           data={groupMetadata?.metadata ?? []}
           fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
           setFilteredData={setFilteredData}
-          initialOpen
+          filterList={filterList}
+          setFilterList={setFilterList}
+          isOpen={isDataFiltersOpen}
+          setIsOpen={setIsDataFiltersOpen}
         />
       </Grid>
     </Grid>

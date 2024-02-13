@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
@@ -26,6 +26,15 @@ export function TabPanel(props: TabPanelProps) {
     children, tabLoader, value, index,
   } = props;
 
+  // Mount the panel when it is first selected, and do not unmount it when it is deselected
+  const [visited, setVisited] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (value === index) {
+      setVisited(true);
+    }
+  }, [value, index]);
+
   return (
     <div
       role="tabpanel"
@@ -33,13 +42,14 @@ export function TabPanel(props: TabPanelProps) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
     >
-      { tabLoader ? <LinearProgress color="secondary" /> : (
+      {
+        tabLoader && <LinearProgress color="secondary" />
+      }
+      { visited && (
         <div>
-          {value === index && (
           <Box sx={{ marginTop: 2 }}>
             {children}
           </Box>
-          )}
         </div>
       )}
     </div>
@@ -69,6 +79,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     // React Router V6 does not currently provide any way to update the URL without
     // triggering navigation. In this case we are updating the URL to match the updated
     // react state, so a re-render is unnecessary and needs to be avoided for performance.
+    // react-router github discussion: https://github.com/remix-run/react-router/discussions/9851
     window.history.pushState(window.history.state, '', newPath);
   };
 

@@ -26,10 +26,10 @@ export const fetchStCounts = createAsyncThunk(
     dispatchProps: any,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<ResponseObject | unknown> => {
-    const { groupId, token } = dispatchProps;
+    const { groupId, token, aggField } = dispatchProps;
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.projectDashboardState.timeFilterObject);
-    const fields = ['ST', 'Date_coll'];
+    const fields = [aggField, 'Date_coll'];
     const response = await getDashboardFields(groupId, token, fields, filterString);
     if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
@@ -61,9 +61,9 @@ export const selectStCounts = (state: AppState) => state.stCountsState;
 
 // selectAggregatedStCounts: Aggregates sample counts based on ST
 export const selectAggregatedStCounts = createSelector(
-  selectStCounts,
-  (stCounts) => {
-    const counts = aggregateArrayObjects('ST', stCounts.data.data);
+  [selectStCounts, (state, aggField) => aggField],
+  (stCounts, aggField) => {
+    const counts = aggregateArrayObjects(aggField, stCounts.data.data);
     return counts;
   },
 );

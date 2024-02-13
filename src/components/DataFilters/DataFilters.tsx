@@ -1,7 +1,7 @@
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, SetStateAction } from 'react';
 import { ReactTabulator } from 'react-tabulator';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -13,7 +13,7 @@ import FilteringOperators from '../../constants/filteringOperators';
 import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
 import { customFilterFunctions } from './customFilterFns';
 
-interface DataFilter {
+export interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
@@ -23,9 +23,12 @@ interface DataFilter {
 
 interface DataFiltersProps {
   data: any
-  setFilteredData: any
   fields: any
-  initialOpen: boolean
+  setFilteredData: any
+  isOpen: boolean
+  setIsOpen: React.Dispatch<SetStateAction<boolean>>
+  filterList: DataFilter[]
+  setFilterList: React.Dispatch<SetStateAction<DataFilter[]>>
 }
 
 const initialFilterState = {
@@ -47,11 +50,18 @@ const shake = keyframes`
 const nullOrEmptyString = 'null-or-empty';
 
 function DataFilters(props: DataFiltersProps) {
-  const { data, fields, setFilteredData, initialOpen } = props;
+  const {
+    data,
+    fields,
+    setFilteredData,
+    isOpen,
+    setIsOpen,
+    filterList,
+    setFilterList,
+  } = props;
   const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
   const [sampleCount, setSampleCount] = useState();
   const [totalSamples, setTotalSamples] = useState();
-  const [isOpen, setIsOpen] = useState(initialOpen);
   const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
@@ -59,7 +69,6 @@ function DataFilters(props: DataFiltersProps) {
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [tabulatorFilters, setTabulatorFilters] = useState([]);
   const [dateError, setDateError] = useState<DateValidationError>(null);
 

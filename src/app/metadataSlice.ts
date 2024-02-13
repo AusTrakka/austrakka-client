@@ -7,6 +7,7 @@ import { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 
 // These are hard-coded desired field sets, used as an interim measure
 // until we have project data views implemented server-side.
@@ -14,8 +15,8 @@ import { listenerMiddleware } from './listenerMiddleware';
 // request the intersection of the fields here and the actual project fields.
 // In addition to views listed here, an all-of-project dataset will be retrieved.
 const DATA_VIEWS = [
-  ['Seq_ID'],
-  ['Seq_ID', 'Date_coll', 'Owner_group', 'Jurisdiction'],
+  [SAMPLE_ID_FIELD],
+  [SAMPLE_ID_FIELD, 'Date_coll', 'Owner_group', 'Jurisdiction'],
 ];
 
 // This is an interim function based on hard-coded views
@@ -244,6 +245,13 @@ export const metadataSlice = createSlice({
       const { data } = action.payload as FetchDataViewsResponse;
       // Each returned view is a superset of the previous; we always replace the data
       state.data[groupId].metadata = data;
+      // Default sort data by Seq_ID, which should be consistent across views.
+      // Could be done server-side, in which case this sort operation is redundant but cheap
+      if (state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
+        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+        state.data[groupId].metadata!.sort((a, b) =>
+          collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
+      }
       // Calculate unique values
       // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
       // Would be better to do server-side, but this operation is quite fast.
@@ -358,4 +366,16 @@ export const selectGroupMetadataFields = (state: RootState, groupId: number | un
 export const selectGroupMetadataError = (state: RootState, groupId: number | undefined) => {
   if (!groupId) return null;
   return state.metadataState.data[groupId]?.errorMessage;
+};
+
+// Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
+// data. This includes idle and awaiting fields states.
+// Returns false if any (including partial) data loaded, or if error state
+export const selectAwaitingGroupMetadata = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) return true;
+  const loadingState = state.metadataState.data[groupId]?.loadingState;
+  return loadingState === MetadataLoadingState.IDLE ||
+         loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+         loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+         loadingState === MetadataLoadingState.AWAITING_DATA;
 };

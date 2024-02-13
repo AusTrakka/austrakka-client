@@ -50,7 +50,7 @@ export default function Organisations(props: any) {
     const drilldownFilter = [{
       field: submittingOrgFieldName,
       fieldType: 'string',
-      condition: '==*',
+      condition: '=',
       value: selectedRow.Owner_group,
     }];
     // Append timeFilterObject for last_week and last_month filters

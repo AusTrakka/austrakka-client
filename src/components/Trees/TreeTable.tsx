@@ -4,7 +4,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
-import DataFilters from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -39,6 +39,8 @@ export default function TreeTable(props: TreeTableProps) {
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
 
   // Format display fields into column headers
   useEffect(
@@ -145,7 +147,10 @@ export default function TreeTable(props: TreeTableProps) {
         data={formattedData}
         fields={displayFields}
         setFilteredData={setFilteredData}
-        initialOpen
+        filterList={filterList}
+        setFilterList={setFilterList}
+        isOpen={isDataFiltersOpen}
+        setIsOpen={setIsDataFiltersOpen}
       />
       <MaterialReactTable
         tableInstanceRef={tableInstanceRef}
