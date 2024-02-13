@@ -1,7 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { selectGroupMetadataFields } from '../../../app/metadataSlice';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
@@ -32,7 +32,7 @@ function BarChart(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectGroupMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectGroupId),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');

@@ -18,11 +18,11 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
-  fetchGroupMetadata,
-  selectGroupMetadata,
-  selectAwaitingGroupMetadata,
-  GroupMetadataState,
-} from '../../app/metadataSlice';
+  fetchProjectMetadata,
+  selectProjectMetadata,
+  selectAwaitingProjectMetadata,
+  ProjectMetadataState,
+} from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
@@ -50,14 +50,14 @@ function ProjectOverview() {
   // const [lastUpload] = useState('');
 
   // Samples component states
-  const groupMetadata : GroupMetadataState | null =
-    useAppSelector(state => selectGroupMetadata(state, projectDetails?.projectMembers.id));
+  const groupMetadata : ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectDetails?.projectMembers.id));
   const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingGroupMetadata(state, projectDetails?.projectMembers.id));
+    selectAwaitingProjectMetadata(state, projectDetails?.projectMembers.id));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -110,7 +110,7 @@ function ProjectOverview() {
 
     if (projectDetails) {
       getProjectSummary();
-      dispatch(fetchGroupMetadata({ groupId: projectDetails.projectMembers.id, token }));
+      dispatch(fetchProjectMetadata({ groupId: projectDetails.projectMembers.id, token }));
     }
   }, [projectDetails, token, dispatch]);
 

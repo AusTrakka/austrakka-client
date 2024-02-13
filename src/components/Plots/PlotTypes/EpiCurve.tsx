@@ -1,7 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { selectGroupMetadataFields } from '../../../app/metadataSlice';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import {
@@ -41,7 +41,7 @@ function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectGroupMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectGroupId),
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);

@@ -19,13 +19,13 @@ import { MetaDataColumn } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
-import { GroupMetadataState } from '../../app/metadataSlice';
+import { ProjectMetadataState } from '../../app/projectMetadataSlice';
 import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 
 interface SamplesProps {
-  groupMetadata: GroupMetadataState | null,
+  groupMetadata: ProjectMetadataState | null,
   projectAbbrev: string,
   totalSamples: number,
   isSamplesLoading: boolean,

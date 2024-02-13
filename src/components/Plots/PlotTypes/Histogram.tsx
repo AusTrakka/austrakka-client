@@ -5,7 +5,7 @@ import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../.
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
-import { selectGroupMetadataFields } from '../../../app/metadataSlice';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -32,7 +32,7 @@ function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectGroupMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectGroupId),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);

@@ -23,8 +23,8 @@ import TreeTable from './TreeTable';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import {
-  selectGroupMetadata, GroupMetadataState, fetchGroupMetadata,
-} from '../../app/metadataSlice';
+  selectProjectMetadata, ProjectMetadataState, fetchProjectMetadata,
+} from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
@@ -84,8 +84,8 @@ function TreeDetail() {
     rootIdDefault,
     searchParams,
   );
-  const groupMetadata : GroupMetadataState | null =
-    useAppSelector(st => selectGroupMetadata(st, tree?.projectMembersGroupId));
+  const groupMetadata : ProjectMetadataState | null =
+    useAppSelector(st => selectProjectMetadata(st, tree?.projectMembersGroupId));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
@@ -95,7 +95,7 @@ function TreeDetail() {
   // Request redux data if not loaded
   useEffect(() => {
     if (tree && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchGroupMetadata({ groupId: tree.projectMembersGroupId, token }));
+      dispatch(fetchProjectMetadata({ groupId: tree.projectMembersGroupId, token }));
     }
   }, [tree, dispatch, token, tokenLoading]);
 

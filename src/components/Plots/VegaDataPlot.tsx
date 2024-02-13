@@ -9,8 +9,8 @@ import { InlineData } from 'vega-lite/build/src/data';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
-  selectGroupMetadata, GroupMetadataState,
-} from '../../app/metadataSlice';
+  selectProjectMetadata, ProjectMetadataState,
+} from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 
@@ -26,8 +26,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const groupMetadata : GroupMetadataState | null =
-    useAppSelector(state => selectGroupMetadata(state, dataGroupId));
+  const groupMetadata : ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, dataGroupId));
 
   // Render plot by creating vega view
   useEffect(() => {
