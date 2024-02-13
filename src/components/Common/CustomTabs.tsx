@@ -52,7 +52,7 @@ export function TabPanel(props: TabPanelProps) {
           </Box>
         </div>
       )}
-      </div>
+    </div>
   );
 }
 
