@@ -108,9 +108,12 @@ const fetchDataView = createAsyncThunk(
 
     const response = await getProjectViewData(projectAbbrev, view.id, token!);
     if (response.ok) {
-      return fulfillWithValue<FetchDataViewResponse>({
-        data: await response.json() as Sample[],
-      });
+      try {
+        const data: Sample[] = await response.json();
+        return fulfillWithValue<FetchDataViewResponse>({ data });
+      } catch (e) {
+        return rejectWithValue('An error occurred parsing project metadata');
+      }
     }
     return rejectWithValue('An error occurred fetching project metadata');
   },
