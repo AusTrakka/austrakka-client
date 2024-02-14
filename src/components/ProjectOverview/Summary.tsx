@@ -9,7 +9,7 @@ interface SummaryProps {
   projectDesc: string,
   totalSamples: number,
   lastUpload: string,
-  // isOverviewLoading: boolean,
+  isOverviewLoading: boolean,
   isOverviewError: {
     detailsError: boolean,
     detailsErrorMessage: string,
@@ -22,8 +22,11 @@ interface SummaryProps {
 
 function Summary(props: SummaryProps) {
   const {
-    projectDesc, totalSamples, lastUpload, isOverviewError,
+    projectDesc, totalSamples, lastUpload, isOverviewError, isOverviewLoading,
   } = props;
+
+  if (isOverviewLoading) return null;
+
   return (
     <>
       <p className={styles.h1}>Project description</p>

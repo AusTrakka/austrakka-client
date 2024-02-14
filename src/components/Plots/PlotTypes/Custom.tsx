@@ -6,22 +6,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { MetaDataColumn } from '../../../types/dtos';
-import { getDisplayFields } from '../../../utilities/resourceUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
-import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-import { useApi } from '../../../app/ApiContext';
-import LoadingState from '../../../constants/loadingState';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import { ResponseType } from '../../../constants/responseType';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
-  const { token, tokenLoading } = useApi();
-  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
 
   // Set spec on load
   useEffect(() => {
@@ -32,36 +22,10 @@ function Custom(props: PlotTypeProps) {
     }
   }, [plot, setPlotErrorMsg]);
 
-  useEffect(() => {
-    const updateFields = async () => {
-      // TODO check: should display-fields be altered to work for admins, or use allowed-fields?
-      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === ResponseType.Success) {
-        const fields = response.data as MetaDataColumn[];
-        // We can't know which fields the custom spec needs; retrieve all
-        setDisplayFields(fields);
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...fields.map(field => field.columnName)]);
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(response.message);
-        setPlotErrorMsg('Unable to load project fields');
-      }
-    };
-
-    if (plot &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      updateFields();
-    }
-  }, [plot, token, tokenLoading, setPlotErrorMsg]);
-
   return (
     <VegaDataPlot
       spec={spec}
-      dataGroupId={plot?.projectGroupId}
-      fieldsToRetrieve={fieldsToRetrieve}
-      displayFields={displayFields}
-      setPlotErrorMsg={setPlotErrorMsg}
+      projectAbbrev={plot?.projectAbbreviation}
     />
   );
 }

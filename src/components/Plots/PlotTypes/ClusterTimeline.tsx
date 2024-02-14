@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import { MetaDataColumn } from '../../../types/dtos';
-import { getDisplayFields } from '../../../utilities/resourceUtils';
-import VegaDataPlot from '../VegaDataPlot';
+import React, { useEffect, useState } from 'react';
+import { TopLevelSpec } from 'vega-lite';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
+import { useAppSelector } from '../../../app/store';
+import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
-import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-import { useApi } from '../../../app/ApiContext';
-import LoadingState from '../../../constants/loadingState';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import { ResponseType } from '../../../constants/responseType';
+import VegaDataPlot from '../VegaDataPlot';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -55,15 +51,15 @@ const defaultSpec: TopLevelSpec = {
 function ClusterTimeline(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
-  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
+  const { fields } = useAppSelector(
+    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+  );
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [yAxisField, setYAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('');
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useState<string>('');
-  const { token, tokenLoading } = useApi();
 
   // Set spec on load
   useEffect(() => {
@@ -78,45 +74,28 @@ function ClusterTimeline(props: PlotTypeProps) {
 
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
-    const updateFields = async () => {
-      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === ResponseType.Success) {
-        const fields = response.data as MetaDataColumn[];
-        setDisplayFields(fields);
-        // Note this does not include numerical or date fields
-        // For now this selection need only depend on canVisualise
-        const localCatFields = fields
-          .filter(field => field.canVisualise &&
-            (field.primitiveType === 'string' || field.primitiveType === null))
-          .map(field => field.columnName);
-        setCategoricalFields(localCatFields);
-        const localDateFields = fields
-          .filter(field => field.primitiveType === 'date')
-          .map(field => field.columnName);
-        setDateFields(localDateFields);
-        // Mandatory fields: one categorical field
-        if (localCatFields.length === 0) {
-          setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
-          return;
-        }
-        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-        setColourField(getStartingField(preferredColourFields, localCatFields));
-        setDateField(getStartingField(preferredDateFields, localDateFields));
-        // For this plot retrieve categorical and date fields
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localCatFields, ...localDateFields]);
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(response.message);
-        setPlotErrorMsg('Unable to load project fields');
+    if (fields && fields.length > 0) {
+      // Note this does not include numerical or date fields
+      // For now this selection need only depend on canVisualise
+      const localCatFields = fields
+        .filter(field => field.canVisualise &&
+          (field.fieldDataType === 'string' || field.fieldDataType === null))
+        .map(field => field.fieldName);
+      setCategoricalFields(localCatFields);
+      const localDateFields = fields
+        .filter(field => field.fieldDataType === 'date')
+        .map(field => field.fieldName);
+      setDateFields(localDateFields);
+      // Mandatory fields: one categorical field
+      if (localCatFields.length === 0) {
+        setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
+        return;
       }
-    };
-
-    if (plot &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      updateFields();
+      setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+      setColourField(getStartingField(preferredColourFields, localCatFields));
+      setDateField(getStartingField(preferredDateFields, localDateFields));
     }
-  }, [plot, token, tokenLoading, setPlotErrorMsg]);
+  }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
     const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -200,10 +179,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        dataGroupId={plot?.projectGroupId}
-        displayFields={displayFields}
-        fieldsToRetrieve={fieldsToRetrieve}
-        setPlotErrorMsg={setPlotErrorMsg}
+        projectAbbrev={plot?.projectAbbreviation}
       />
     </>
   );

@@ -1,12 +1,17 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
+import { PlotListing, Project } from '../../types/dtos';
+import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { getPlots } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
 
 interface PlotListProps {
+  projectDetails: Project | null
   isPlotsLoading: boolean
-  plotList: object[]
-  projectAbbrev: string
+  setIsPlotsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const plotTableColumns: MRT_ColumnDef[] = [
@@ -16,13 +21,35 @@ const plotTableColumns: MRT_ColumnDef[] = [
 ];
 
 function PlotList(props: PlotListProps) {
-  const { isPlotsLoading, plotList, projectAbbrev } = props;
+  const { projectDetails, isPlotsLoading, setIsPlotsLoading } = props;
 
+  const [plotList, setPlotList] = useState<PlotListing[]>([]);
   const navigate = useNavigate();
+  const { token } = useApi();
+
+  useEffect(() => {
+    async function getPlotList() {
+      const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
+      if (plotsResponse.status === ResponseType.Success) {
+        setPlotList(plotsResponse.data as PlotListing[]);
+        setIsPlotsLoading(false);
+      } else {
+        setIsPlotsLoading(false);
+        setPlotList([]);
+        // TODO set plots errors
+      }
+    }
+
+    if (projectDetails) {
+      getPlotList();
+    }
+  }, [projectDetails, setIsPlotsLoading, token]);
 
   const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectAbbrev}/plots/${row.original.abbreviation}`);
+    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.original.abbreviation}`);
   };
+
+  if (isPlotsLoading) return null;
 
   return (
     <MaterialReactTable

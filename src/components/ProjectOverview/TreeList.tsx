@@ -1,13 +1,17 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useNavigate } from 'react-router-dom';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
+import { Project } from '../../types/dtos';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { getTrees } from '../../utilities/resourceUtils';
+import { useApi } from '../../app/ApiContext';
+import { ResponseType } from '../../constants/responseType';
 
 interface TreesProps {
-  treeList: any,
-  projectAbbrev: string,
-  treeListError: boolean,
-  treeListErrorMessage: string,
+  projectDetails: Project | null
+  isTreesLoading: boolean,
+  setIsTreesLoading: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 const treeTableColumns: MRT_ColumnDef[] = [
@@ -18,12 +22,39 @@ const treeTableColumns: MRT_ColumnDef[] = [
 ];
 
 function TreeList(props: TreesProps) {
-  const { treeList, treeListError, treeListErrorMessage, projectAbbrev } = props;
+  const { projectDetails, isTreesLoading, setIsTreesLoading } = props;
+
+  const [treeList, setTreeList] = useState<[]>([]);
+  const [treeListError, setTreeListError] = useState(false);
+  const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
+  const { token } = useApi();
+
+  useEffect(() => {
+    async function getTreeList() {
+      const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
+      if (treeListResponse.status === ResponseType.Success) {
+        setTreeList(treeListResponse.data);
+        setTreeListError(false);
+        setIsTreesLoading(false);
+      } else {
+        setIsTreesLoading(false);
+        setTreeList([]);
+        setTreeListError(true);
+        setTreeListErrorMessage(treeListResponse.message);
+      }
+    }
+
+    if (projectDetails) {
+      getTreeList();
+    }
+  }, [projectDetails, setIsTreesLoading, token]);
 
   const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectAbbrev}/trees/${row.original.analysisId}/versions/latest`);
+    navigate(`/projects/${projectDetails!.abbreviation}/trees/${row.original.analysisId}/versions/latest`);
   };
+
+  if (isTreesLoading) return null;
 
   return (
     <MaterialReactTable
