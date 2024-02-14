@@ -25,7 +25,7 @@ export interface Plot {
   spec: string,
   projectId: number,
   projectName: string
-  projectAbbrev: string
+  projectAbbreviation: string
   projectGroupId: number
   isActive: boolean
 }
@@ -99,20 +99,6 @@ export interface UserDetails {
   created: Date,
 }
 
-export interface ProFormaVersion {
-  proFormaVersionId: number,
-  proFormaId: number,
-  version: number,
-  abbreviation: string,
-  originalFileName: string,
-  fileName: string,
-  columnMappings: MetaDataColumnMapping[],
-  isCurrent: boolean,
-  assetId : number,
-  created: Date,
-  createdBy: string,
-}
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -128,7 +114,8 @@ export interface MetaDataColumn {
   metaDataColumnId: number
   columnName: string
   metaDataColumnTypeId: number
-  primitiveType: string
+  metaDataColumnValidValues: string[] | null
+  primitiveType: string | null
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
@@ -136,24 +123,23 @@ export interface MetaDataColumn {
   minWidth: number
 }
 
-interface MetadataValue {
-  key: string;
-  value: string;
+export interface ProjectField {
+  projectFieldId: number,
+  fieldName: string,
+  fieldDataType: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  metaDataColumnValidValues: string[] | null,
 }
 
-export interface AnalysisResultMetadata {
-  created: string;
-  createdBy: string | null; // Assuming createdBy can be string or null
-  isCurrent: boolean;
-  lastUpdated: string;
-  lastUpdatedBy: string | null; // Assuming lastUpdatedBy can be string or null
-  metadataValues: MetadataValue[];
-  ownerGroup: string;
-  sampleName: string;
-  sharedGroups: string[]; // Assuming this is an array of strings
-  status: boolean;
-  submissionId: number;
-  versionId: number;
+export interface ProjectView {
+  id: number,
+  fileName: string,
+  blobFilePath: string,
+  originalFileName: string,
+  isBase: boolean,
+  fields: string[],
 }
 
 export interface Proforma {
@@ -171,6 +157,20 @@ export interface Proforma {
   createdBy: string,
   lastUpdatedBy: string,
   columnMappings: MetaDataColumnMapping[],
+}
+
+export interface ProFormaVersion {
+  proFormaVersionId: number,
+  proFormaId: number,
+  version: number,
+  abbreviation: string,
+  originalFileName: string,
+  fileName: string,
+  columnMappings: MetaDataColumnMapping[],
+  isCurrent: boolean,
+  assetId : number,
+  created: Date,
+  createdBy: string,
 }
 
 export interface ThresholdAlertDTO {
@@ -195,7 +195,7 @@ export interface UserRoleGroup {
 }
 
 export interface Group {
-  groupId: number | undefined,
+  groupId: number,
   name: string,
   lastUpdated: string,
   lastUpdatedBy: string,
@@ -204,20 +204,4 @@ export interface Group {
   organisation: {
     abbreviation: string
   }
-}
-
-export interface DisplayField {
-  canVisualise: boolean,
-  columnName: string,
-  columnOrder: number,
-  isActive: boolean,
-  isDisplayedAsDefault: boolean,
-  metaDataColumnId: number,
-  metaDataColumnTypeId: number,
-  minWidth: number,
-  primitiveType: string,
-}
-
-export interface Sample {
-  [key: string] : any
 }

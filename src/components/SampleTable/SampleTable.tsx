@@ -19,12 +19,13 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
+import { MetaDataColumn } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
-import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -47,7 +48,7 @@ function SampleTable(props: SamplesProps) {
   const { groupContext, groupName } = props;
   const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -70,7 +71,7 @@ function SampleTable(props: SamplesProps) {
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
@@ -110,6 +111,34 @@ function SampleTable(props: SamplesProps) {
       getTotalSamplesOverall();
     }
   }, [groupContext, token, tokenLoading]);
+
+  // Temporarily need our own version of buildMRTColumnDefinitions, as we have different
+  // field object types for projects vs organisations
+  function buildMRTColumnDefinitions(fields: MetaDataColumn[]) {
+    const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
+
+    fields.forEach((element: MetaDataColumn) => {
+      if (element.columnName in fieldRenderFunctions) {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
+        });
+      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
+        });
+      } else {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+        });
+      }
+    });
+    return columnBuilder;
+  }
 
   useEffect(
     () => {
@@ -151,11 +180,11 @@ function SampleTable(props: SamplesProps) {
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
-          groupContext: `${groupContext}`,
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+        const samplesResponse: ResponseObject =
+          await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
           setSampleList(samplesResponse.data);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
@@ -226,18 +255,19 @@ function SampleTable(props: SamplesProps) {
 
   // GET SAMPLES - not paginated
   const getExportData = async () => {
-    setExportCSVStatus(LoadingState.LOADING);
-    const searchParams = new URLSearchParams({
-      Page: '1',
-      PageSize: (totalSamples).toString(),
-      groupContext: `${groupContext!}`,
-      filters: queryString,
-    });
-    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
-    if (samplesResponse.status === ResponseType.Success) {
-      setExportData(samplesResponse.data);
-    } else {
-      setExportCSVStatus(LoadingState.ERROR);
+    if (groupContext) {
+      setExportCSVStatus(LoadingState.LOADING);
+      const searchParams = new URLSearchParams({
+        Page: '1',
+        PageSize: (totalSamples).toString(),
+        filters: queryString,
+      });
+      const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
+      if (samplesResponse.status === ResponseType.Success) {
+        setExportData(samplesResponse.data);
+      } else {
+        setExportCSVStatus(LoadingState.ERROR);
+      }
     }
   };
 

@@ -29,7 +29,7 @@ export default function ThresholdAlert(props: ThresholdAlertProps) {
     const drilldownFilter = [{
       field: alertRow.categoryField,
       fieldType: 'string',
-      condition: '==*',
+      condition: '=',
       value: alertRow.categoryValue,
     }];
     setFilterList(drilldownFilter);

@@ -6,15 +6,15 @@ import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
+import { DataFilter } from '../../DataFilters/DataFilters';
 import LoadingState from '../../../constants/loadingState';
-import { Filter } from '../../Common/QueryBuilder';
 import { useApi } from '../../../app/ApiContext';
 
 interface ProjectDashboardProps {
   projectDesc: string,
   projectId: number | null,
   groupId: number | null,
-  setFilterList: Dispatch<SetStateAction<Filter[]>>,
+  setFilterList: Dispatch<SetStateAction<DataFilter[]>>,
   setTabValue: Dispatch<SetStateAction<number>>,
 }
 
