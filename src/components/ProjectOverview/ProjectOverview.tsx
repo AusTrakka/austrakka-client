@@ -50,7 +50,7 @@ function ProjectOverview() {
   // const [lastUpload] = useState('');
 
   // Samples component states
-  const groupMetadata : ProjectMetadataState | null =
+  const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectDetails?.abbreviation));
   const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
@@ -173,7 +173,7 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
-              groupMetadata={groupMetadata}
+              metadata={metadata}
               projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               isSamplesLoading={isSamplesLoading}

@@ -80,7 +80,6 @@ const fetchProjectInfo = createAsyncThunk(
   ):Promise<Project | unknown > => {
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
-    // TODO handle case where there are no fields / no views
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
     if (fieldsResponse.status !== 'Success') {
       return rejectWithValue(fieldsResponse.error);

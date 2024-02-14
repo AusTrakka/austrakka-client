@@ -25,7 +25,7 @@ import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 
 interface SamplesProps {
-  groupMetadata: ProjectMetadataState | null,
+  metadata: ProjectMetadataState | null,
   projectAbbrev: string,
   totalSamples: number,
   isSamplesLoading: boolean,
@@ -34,7 +34,7 @@ interface SamplesProps {
 
 function Samples(props: SamplesProps) {
   const {
-    groupMetadata,
+    metadata,
     projectAbbrev,
     totalSamples,
     isSamplesLoading,
@@ -57,14 +57,14 @@ function Samples(props: SamplesProps) {
     }
   }, [inputFilters]);
 
-  // Set column headers from groupMetadata state
+  // Set column headers from metadata state
   useEffect(() => {
-    if (!groupMetadata?.fields) return;
+    if (!metadata?.fields) return;
 
     // Sort here rather than setting columnOrder
     const compareFields = (field1: { columnOrder: number; }, field2: { columnOrder: number; }) =>
       (field1.columnOrder - field2.columnOrder);
-    const sortedFields = [...groupMetadata!.fields!];
+    const sortedFields = [...metadata!.fields!];
     sortedFields.sort(compareFields);
     // TODO check why we're not using buildMRTColumnDefinitions here
     const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
@@ -89,15 +89,15 @@ function Samples(props: SamplesProps) {
       }
     });
     setSampleTableColumns(columnBuilder);
-  }, [groupMetadata]);
+  }, [metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
-    if (groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
-        groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR ||
+        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       setErrorDialogOpen(true);
     }
-  }, [groupMetadata?.loadingState]);
+  }, [metadata?.loadingState]);
 
   const rowClickHandler = (row: any) => {
     const selectedRow = row.original;
@@ -113,13 +113,13 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     setExportCSVStatus(
       isSamplesLoading ||
-      groupMetadata?.loadingState === MetadataLoadingState.IDLE ||
-      groupMetadata?.loadingState === MetadataLoadingState.AWAITING_DATA ||
-      groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
+      metadata?.loadingState === MetadataLoadingState.IDLE ||
+      metadata?.loadingState === MetadataLoadingState.AWAITING_DATA ||
+      metadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
         LoadingState.LOADING :
         LoadingState.SUCCESS,
     );
-  }, [isSamplesLoading, groupMetadata?.loadingState]);
+  }, [isSamplesLoading, metadata?.loadingState]);
 
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
 
@@ -145,12 +145,12 @@ function Samples(props: SamplesProps) {
           </IconButton>
           <AlertTitle sx={{ paddingBottom: 1 }}>
             <strong>
-              {groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
                 'Project metadata could not be fully loaded' :
                 'Project metadata could not be loaded'}
             </strong>
           </AlertTitle>
-          {groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
             `An error occured loading project metadata. Some fields will be null, and 
           CSV export will not be available. Refresh to reload.` :
             'An error occured loading project metadata. Refresh to reload.'}
@@ -159,8 +159,8 @@ function Samples(props: SamplesProps) {
         </Alert>
       </Dialog>
       <DataFilters
-        data={groupMetadata?.metadata ?? []}
-        fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
+        data={metadata?.metadata ?? []}
+        fields={metadata?.fields ?? []} // want to pass in field loading states?
         setFilteredData={setFilteredData}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
@@ -186,13 +186,13 @@ function Samples(props: SamplesProps) {
         }}
         state={{
           isLoading: isSamplesLoading,
-          showAlertBanner: groupMetadata?.loadingState === MetadataLoadingState.ERROR ||
-                           groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR,
+          showAlertBanner: metadata?.loadingState === MetadataLoadingState.ERROR ||
+                           metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR,
         }}
         muiToolbarAlertBannerProps={
           {
             color: 'error',
-            children: groupMetadata?.errorMessage,
+            children: metadata?.errorMessage,
           }
         }
         rowCount={filteredData.length}
@@ -233,7 +233,7 @@ function Samples(props: SamplesProps) {
             <MRT_ShowHideColumnsButton table={table} />
             <ExportTableData
               dataToExport={
-                groupMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+                metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
                   [] : filteredData
               }
               exportCSVStatus={exportCSVStatus}
