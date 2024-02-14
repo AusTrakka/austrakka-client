@@ -198,9 +198,10 @@ export const projectMetadataSlice = createSlice({
       const { fields, views } = action.payload as FetchProjectInfoResponse;
       state.data[projectAbbrev].fields = fields;
       // Set views (field lists), and set view loading states to IDLE for all views
-      views.sort((a, b) => a.fields.length - b.fields.length);
+      const eligibleViews = views.filter(view => view.fields.length > 0);
+      eligibleViews.sort((a, b) => a.fields.length - b.fields.length);
       state.data[projectAbbrev].views = {};
-      views.forEach((view, index) => {
+      eligibleViews.forEach((view, index) => {
         state.data[projectAbbrev].views![index] = view;
         state.data[projectAbbrev].viewLoadingStates![index] = LoadingState.IDLE;
       });
