@@ -160,7 +160,7 @@ listenerMiddleware.startListening({
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
     listenerApi.dispatch(
-      fetchDataView({ projectAbbrev, viewIndex: viewToFetch })
+      fetchDataView({ projectAbbrev, viewIndex: viewToFetch }),
     );
   },
 });
@@ -241,7 +241,8 @@ export const projectMetadataSlice = createSlice({
       state.data[projectAbbrev].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
+      if (state.data[projectAbbrev].metadata!.length > 0 &&
+          state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         state.data[projectAbbrev].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
