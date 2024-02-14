@@ -25,7 +25,7 @@ function Custom(props: PlotTypeProps) {
   return (
     <VegaDataPlot
       spec={spec}
-      dataGroupId={plot?.projectGroupId}
+      projectAbbrev={plot?.projectAbbreviation}
     />
   );
 }

@@ -54,12 +54,13 @@ const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState =
   columnLoadingStates: {},
   errorMessage: null,
 });
-interface MetadataSliceState {
+
+interface GroupMetadataSliceState {
   data: { [groupId: number]: GroupMetadataState },
   token: string | null, // must be provided by calling component along with each fetch request
 }
 
-const initialState: MetadataSliceState = {
+const initialState: GroupMetadataSliceState = {
   data: {},
   token: null,
 };
@@ -71,11 +72,11 @@ interface FetchGroupMetadataParams {
   token: string,
 }
 
-interface FetchProjectFieldsParams {
+interface FetchGroupFieldsParams {
   groupId: number,
 }
 
-interface FetchProjectFieldsResponse {
+interface FetchGroupFieldsResponse {
   fields: MetaDataColumn[],
 }
 
@@ -88,17 +89,17 @@ interface FetchDataViewsResponse {
   data: Sample[],
 }
 
-const fetchProjectFields = createAsyncThunk(
-  'metadata/fetchProjectFields',
+const fetchGroupFields = createAsyncThunk(
+  'groupMetadata/fetchGroupFields',
   async (
-    params: FetchProjectFieldsParams,
+    params: FetchGroupFieldsParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
     const { groupId } = params;
-    const { token } = (getState() as RootState).metadataState;
+    const { token } = (getState() as RootState).groupMetadataState;
     const response = await getDisplayFields(groupId, token!);
     if (response.status === 'Success') {
-      return fulfillWithValue<FetchProjectFieldsResponse>({
+      return fulfillWithValue<FetchGroupFieldsResponse>({
         fields: response.data as MetaDataColumn[],
       });
     }
@@ -107,13 +108,13 @@ const fetchProjectFields = createAsyncThunk(
 );
 
 const fetchDataView = createAsyncThunk(
-  'metadata/fetchDataView',
+  'groupMetadata/fetchDataView',
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<Project | unknown > => {
     const { groupId, fields } = params;
-    const { token } = (getState() as RootState).metadataState;
+    const { token } = (getState() as RootState).groupMetadataState;
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue<FetchDataViewsResponse>({
@@ -131,18 +132,18 @@ const fetchDataView = createAsyncThunk(
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Return early if wrong action; don't try to read groupId
-    if (action.type !== 'metadata/fetchGroupMetadata') return false;
+    if (action.type !== 'groupMetadata/fetchGroupMetadata') return false;
     // Check that the reducer logic is telling us to trigger a new load process
-    const previousLoadingState = (previousState as RootState).metadataState
+    const previousLoadingState = (previousState as RootState).groupMetadataState
       .data[(action as any).payload.groupId]?.loadingState;
-    const loadingState = (currentState as RootState).metadataState
+    const loadingState = (currentState as RootState).groupMetadataState
       .data[(action as any).payload.groupId]?.loadingState;
     return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
            loadingState === MetadataLoadingState.FETCH_REQUESTED;
   },
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
-      fetchProjectFields({ groupId: (action as any).payload.groupId }),
+      fetchGroupFields({ groupId: (action as any).payload.groupId }),
     );
   },
 });
@@ -151,19 +152,19 @@ listenerMiddleware.startListening({
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Return early if wrong action; don't try to read groupId
-    if (!isAnyOf(fetchProjectFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
+    if (!isAnyOf(fetchGroupFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
     const { groupId } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
-    const previousViewToFetch = (previousState as RootState).metadataState
+    const previousViewToFetch = (previousState as RootState).groupMetadataState
       .data[groupId]?.viewToFetch;
-    const viewToFetch = (currentState as RootState).metadataState
+    const viewToFetch = (currentState as RootState).groupMetadataState
       .data[groupId]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
   },
   effect: (action, listenerApi) => {
     const { groupId } = (action as any).meta.arg;
     const { views, viewToFetch } =
-      (listenerApi.getState() as RootState).metadataState.data[groupId];
+      (listenerApi.getState() as RootState).groupMetadataState.data[groupId];
     // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
@@ -174,7 +175,7 @@ listenerMiddleware.startListening({
 });
 
 export const metadataSlice = createSlice({
-  name: 'metadata',
+  name: 'groupMetadata',
   initialState,
   reducers: {
     fetchGroupMetadata: (state, action: PayloadAction<FetchGroupMetadataParams>) => {
@@ -197,13 +198,13 @@ export const metadataSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchProjectFields.pending, (state, action) => {
+    builder.addCase(fetchGroupFields.pending, (state, action) => {
       const { groupId } = action.meta.arg;
       state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
-    builder.addCase(fetchProjectFields.fulfilled, (state, action) => {
+    builder.addCase(fetchGroupFields.fulfilled, (state, action) => {
       const { groupId } = action.meta.arg;
-      const { fields } = action.payload as FetchProjectFieldsResponse;
+      const { fields } = action.payload as FetchGroupFieldsResponse;
       state.data[groupId].fields = fields;
       // Set views (field lists), and set view loading states to IDLE for all views
       // This is an interim measure; later we will use a thunk to fetch project data views
@@ -221,7 +222,7 @@ export const metadataSlice = createSlice({
       });
       state.data[groupId].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
-    builder.addCase(fetchProjectFields.rejected, (state, action) => {
+    builder.addCase(fetchGroupFields.rejected, (state, action) => {
       const { groupId } = action.meta.arg;
       state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
       state.data[groupId].loadingState = MetadataLoadingState.ERROR;
@@ -348,7 +349,7 @@ export const selectGroupMetadata:
 (state: RootState, groupId: number | undefined) => GroupMetadataState | null =
   (state, groupId) => {
     if (!groupId) return null; // should not be 0, which is fine
-    return state.metadataState.data[groupId!] ?? null;
+    return state.groupMetadataState.data[groupId!] ?? null;
   };
 
 // May want to also include per-field loading state in this selector
@@ -357,15 +358,15 @@ export const selectGroupMetadataFields = (state: RootState, groupId: number | un
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
   return {
-    fields: state.metadataState.data[groupId]?.fields,
-    fieldUniqueValues: state.metadataState.data[groupId]?.fieldUniqueValues,
-    loadingState: state.metadataState.data[groupId]?.loadingState,
+    fields: state.groupMetadataState.data[groupId]?.fields,
+    fieldUniqueValues: state.groupMetadataState.data[groupId]?.fieldUniqueValues,
+    loadingState: state.groupMetadataState.data[groupId]?.loadingState,
   };
 };
 
 export const selectGroupMetadataError = (state: RootState, groupId: number | undefined) => {
   if (!groupId) return null;
-  return state.metadataState.data[groupId]?.errorMessage;
+  return state.groupMetadataState.data[groupId]?.errorMessage;
 };
 
 // Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
@@ -373,7 +374,7 @@ export const selectGroupMetadataError = (state: RootState, groupId: number | und
 // Returns false if any (including partial) data loaded, or if error state
 export const selectAwaitingGroupMetadata = (state: RootState, groupId: number | undefined) => {
   if (!groupId) return true;
-  const loadingState = state.metadataState.data[groupId]?.loadingState;
+  const loadingState = state.groupMetadataState.data[groupId]?.loadingState;
   return loadingState === MetadataLoadingState.IDLE ||
          loadingState === MetadataLoadingState.FETCH_REQUESTED ||
          loadingState === MetadataLoadingState.AWAITING_FIELDS ||

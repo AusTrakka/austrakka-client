@@ -15,7 +15,7 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { fetchGroupMetadata, selectGroupMetadataError } from '../../app/metadataSlice';
+import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
 
 const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
   'ClusterTimeline': ClusterTimeline,
@@ -34,7 +34,7 @@ function PlotDetail() {
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const dataErrorMsg = useAppSelector(state =>
-    selectGroupMetadataError(state, plot?.projectGroupId));
+    selectProjectMetadataError(state, plot?.projectAbbreviation));
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
@@ -62,7 +62,7 @@ function PlotDetail() {
 
   useEffect(() => {
     if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchGroupMetadata({ groupId: plot.projectGroupId, token }));
+      dispatch(fetchProjectMetadata({ projectAbbrev: plot.projectAbbreviation, token }));
     }
   }, [plot, dispatch, token, tokenLoading]);
 

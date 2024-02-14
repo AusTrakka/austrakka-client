@@ -1,4 +1,4 @@
-import { callGET, callPOSTForm, downloadFile } from './api';
+import { callGET, callPOSTForm, callSimpleGET, downloadFile } from './api';
 
 // Definition of endpoints
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
@@ -34,6 +34,11 @@ export const getGroupProFormaVersions = (groupId: number, token: string) => call
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
 export const getProformaVersions = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+
+// Project metadata
+export const getProjectFields = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
+export const getProjectViews = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
+export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view/${viewId}`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);

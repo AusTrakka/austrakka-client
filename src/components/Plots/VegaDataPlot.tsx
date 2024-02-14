@@ -9,25 +9,25 @@ import { InlineData } from 'vega-lite/build/src/data';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
-  selectGroupMetadata, GroupMetadataState,
-} from '../../app/metadataSlice';
+  selectProjectMetadata, ProjectMetadataState,
+} from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
-  dataGroupId: number | undefined,
+  projectAbbrev: string | undefined,
 }
 
 function VegaDataPlot(props: VegaDataPlotProps) {
-  const { spec, dataGroupId } = props;
+  const { spec, projectAbbrev } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const groupMetadata : GroupMetadataState | null =
-    useAppSelector(state => selectGroupMetadata(state, dataGroupId));
+  const metadata : ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -68,10 +68,10 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     // For now we recreate view if data changes, not just if spec changes
     // TODO what if filtered data is filtered to empty? if([]) ok?
     if (spec &&
-        groupMetadata?.loadingState &&
-        (groupMetadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-          groupMetadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+        metadata?.loadingState &&
+        (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
+          metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+          metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
         filteredData &&
         plotDiv?.current) {
       // TODO it appears this may trigger too often?
@@ -96,8 +96,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       </Grid>
       <Grid item xs={12}>
         <DataFilters
-          data={groupMetadata?.metadata ?? []}
-          fields={groupMetadata?.fields ?? []} // want to pass in field loading states?
+          data={metadata?.metadata ?? []}
+          fields={metadata?.fields ?? []} // want to pass in field loading states?
           setFilteredData={setFilteredData}
           filterList={filterList}
           setFilterList={setFilterList}

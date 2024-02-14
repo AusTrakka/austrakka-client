@@ -5,7 +5,7 @@ import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
-import { selectGroupMetadataFields } from '../../../app/metadataSlice';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -36,7 +36,7 @@ function HeatMap(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields } = useAppSelector(
-    state => selectGroupMetadataFields(state, plot?.projectGroupId),
+    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
@@ -57,8 +57,8 @@ function HeatMap(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
+          (field.fieldDataType === 'string' || field.fieldDataType === null))
+        .map(field => field.fieldName);
       setCategoricalFields(localCatFields);
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
@@ -130,7 +130,7 @@ function HeatMap(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        dataGroupId={plot?.projectGroupId}
+        projectAbbrev={plot?.projectAbbreviation}
       />
     </>
   );

@@ -23,9 +23,9 @@ import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
-import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -111,6 +111,34 @@ function SampleTable(props: SamplesProps) {
       getTotalSamplesOverall();
     }
   }, [groupContext, token, tokenLoading]);
+
+  // Temporarily need our own version of buildMRTColumnDefinitions, as we have different
+  // field object types for projects vs organisations
+  function buildMRTColumnDefinitions(fields: MetaDataColumn[]) {
+    const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
+
+    fields.forEach((element: MetaDataColumn) => {
+      if (element.columnName in fieldRenderFunctions) {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
+        });
+      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
+        });
+      } else {
+        columnBuilder.push({
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+        });
+      }
+    });
+    return columnBuilder;
+  }
 
   useEffect(
     () => {
