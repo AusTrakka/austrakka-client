@@ -58,6 +58,7 @@ function Datasets(props: DatasetProps) {
       setOpenSnackbar(true); // Open toast on success
       setOpenDialog(false); // Close the dialog
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error disabling dataset:', error);
       // Handle error appropriately
     } finally {

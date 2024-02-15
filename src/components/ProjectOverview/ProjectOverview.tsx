@@ -143,7 +143,7 @@ function ProjectOverview() {
     {
       index: 6,
       title: 'Datasets',
-    }
+    },
   ], []);
 
   useEffect(() => {
