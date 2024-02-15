@@ -1,4 +1,4 @@
-import { callGET, callPOSTForm, callSimpleGET, downloadFile } from './api';
+import { callGET, callPATCH, callPOSTForm, callSimpleGET, downloadFile } from './api';
 
 // Definition of endpoints
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
@@ -62,3 +62,7 @@ export const getUserDashboardPhessStatus = (token: string, searchParams?: string
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
+
+// Dataset
+export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
+export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) => callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);

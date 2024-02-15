@@ -205,3 +205,12 @@ export interface Group {
     abbreviation: string
   }
 }
+
+export interface DataSetEntry {
+  entryId: number;
+  dataSetId: number;
+  fileName: string;
+  analysisLabel: string;
+  uploadedDate: string;
+  fields: string[];
+}
