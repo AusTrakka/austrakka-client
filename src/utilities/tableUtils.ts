@@ -43,13 +43,13 @@ export function buildMRTColumnDefinitions(fields: ProjectField[]) {
   return columnBuilder;
 }
 
-export function buildTabulatorColumnDefinitions(fields: MetaDataColumn[]) {
+export function buildTabulatorColumnDefinitions(fields: ProjectField[]) {
   const columnBuilder: { title: string; field: string; }[] = [];
 
-  fields.forEach((element: MetaDataColumn) => {
+  fields.forEach((element: ProjectField) => {
     columnBuilder.push({
-      title: `${element.columnName}`,
-      field: element.columnName,
+      title: `${element.fieldName}`,
+      field: element.fieldName,
     });
   });
 

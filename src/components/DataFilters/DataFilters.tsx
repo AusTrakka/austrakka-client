@@ -8,10 +8,11 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
-import { MetaDataColumn } from '../../types/dtos';
+import { ProjectField } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
 import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
 import { customFilterFunctions } from './customFilterFns';
+import { Sample } from '../../types/sample.interface';
 
 export interface DataFilter {
   shakeElement?: boolean,
@@ -22,8 +23,8 @@ export interface DataFilter {
 }
 
 interface DataFiltersProps {
-  data: any
-  fields: any
+  data: Sample[]
+  fields: ProjectField[]
   setFilteredData: any
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
@@ -60,8 +61,8 @@ function DataFilters(props: DataFiltersProps) {
     setFilterList,
   } = props;
   const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
-  const [sampleCount, setSampleCount] = useState();
-  const [totalSamples, setTotalSamples] = useState();
+  const [sampleCount, setSampleCount] = useState<number>();
+  const [totalSamples, setTotalSamples] = useState<number>();
   const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
@@ -88,19 +89,19 @@ function DataFilters(props: DataFiltersProps) {
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       setDateError(null);
-      const targetFieldProps = fields.find((field: MetaDataColumn) =>
-        field.columnName === event.target.value);
+      const targetFieldProps = fields.find((field: ProjectField) =>
+        field.fieldName === event.target.value);
 
       let defaultCondition = '';
-      if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
+      if (targetFieldProps?.fieldDataType === FieldTypes.DATE) {
         setConditions(dateConditions);
         setSelectedFieldType(FieldTypes.DATE);
         defaultCondition = FilteringOperators.GREATER_OR_EQUAL;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
+      } else if (targetFieldProps?.fieldDataType === FieldTypes.NUMBER) {
         setConditions(numberConditions);
         setSelectedFieldType(FieldTypes.NUMBER);
         defaultCondition = FilteringOperators.EQUALS;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
+      } else if (targetFieldProps?.fieldDataType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
         setSelectedFieldType(FieldTypes.BOOLEAN);
         defaultCondition = FilteringOperators.EQUALS;
@@ -113,7 +114,7 @@ function DataFilters(props: DataFiltersProps) {
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
-        fieldType: targetFieldProps?.primitiveType || FieldTypes.STRING,
+        fieldType: targetFieldProps?.fieldDataType || FieldTypes.STRING,
         condition: defaultCondition,
         value: '',
       });
@@ -397,9 +398,9 @@ function DataFilters(props: DataFiltersProps) {
                     value={newFilter.field}
                     onChange={handleFilterChange}
                   >
-                    {fields.map((field : MetaDataColumn) => (
-                      <MenuItem key={field.columnName} value={field.columnName}>
-                        {field.columnName}
+                    {fields.map((field : ProjectField) => (
+                      <MenuItem key={field.fieldName} value={field.fieldName}>
+                        {field.fieldName}
                       </MenuItem>
                     ))}
                     ;
