@@ -67,14 +67,14 @@ function EpiCurve(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-                        (field.fieldDataType === 'string' || field.fieldDataType === null))
-        .map(field => field.fieldName);
+                        (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Similarly starting value for row facet is None
       const localDateFields = fields
-        .filter(field => field.fieldDataType === 'date')
-        .map(field => field.fieldName);
+        .filter(field => field.primitiveType === 'date')
+        .map(field => field.columnName);
       setDateFields(localDateFields);
       // Mandatory fields: one date field
       if (localDateFields.length === 0) {

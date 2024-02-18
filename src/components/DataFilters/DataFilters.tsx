@@ -8,7 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
-import { MetaDataColumn } from '../../types/dtos';
+import { Field } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
 import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
 import { customFilterFunctions } from './customFilterFns';
@@ -88,7 +88,7 @@ function DataFilters(props: DataFiltersProps) {
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       setDateError(null);
-      const targetFieldProps = fields.find((field: MetaDataColumn) =>
+      const targetFieldProps = fields.find((field: Field) =>
         field.columnName === event.target.value);
 
       let defaultCondition = '';
@@ -397,7 +397,7 @@ function DataFilters(props: DataFiltersProps) {
                     value={newFilter.field}
                     onChange={handleFilterChange}
                   >
-                    {fields.map((field : MetaDataColumn) => (
+                    {fields.map((field : Field) => (
                       <MenuItem key={field.columnName} value={field.columnName}>
                         {field.columnName}
                       </MenuItem>
