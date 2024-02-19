@@ -114,6 +114,18 @@ export async function callGET(url: string, token: string): Promise<ResponseObjec
   });
 }
 
+// NEW: Token passed as prop via endpoint calls
+export async function callPATCH(url: string, token: string): Promise<ResponseObject> {
+  // Check if token is null/undefined before making API call
+  if (!token) {
+    return noToken;
+  }
+  return callApi(url, {
+    method: 'PATCH',
+    headers: getHeaders(token),
+  });
+}
+
 export async function callPOSTForm(url: string, formData: FormData, token: string)
   : Promise<ResponseObject> {
   if (!token) {
