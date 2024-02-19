@@ -54,8 +54,8 @@ function BarChart(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.fieldDataType === 'string' || field.fieldDataType === null))
-        .map(field => field.fieldName);
+          (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one categorical field

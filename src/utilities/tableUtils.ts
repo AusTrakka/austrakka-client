@@ -1,41 +1,31 @@
 import { MRT_ColumnDef } from 'material-react-table';
-import { MetaDataColumn, ProjectField } from '../types/dtos';
+import { Field } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
 import { Sample } from '../types/sample.interface';
 
-export function compareFields(
-  field1: ProjectField | MetaDataColumn,
-  field2: ProjectField | MetaDataColumn,
-) {
-  if (field1.columnOrder < field2.columnOrder) {
-    return -1;
-  }
-  if (field1.columnOrder > field2.columnOrder) {
-    return 1;
-  }
-  return 0;
-}
+export const compareFields = (field1: Field, field2: Field) =>
+  field1.columnOrder - field2.columnOrder;
 
-export function buildMRTColumnDefinitions(fields: ProjectField[]) {
+export function buildMRTColumnDefinitions(fields: Field[]) {
   const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
 
-  fields.forEach((element: ProjectField) => {
-    if (element.fieldName in fieldRenderFunctions) {
+  fields.forEach((element: Field) => {
+    if (element.columnName in fieldRenderFunctions) {
       columnBuilder.push({
-        accessorKey: element.fieldName,
-        header: `${element.fieldName}`,
-        Cell: ({ cell }) => fieldRenderFunctions[element.fieldName](cell.getValue()),
+        accessorKey: element.columnName,
+        header: `${element.columnName}`,
+        Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
       });
-    } else if (element.fieldDataType && element.fieldDataType in typeRenderFunctions) {
+    } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
       columnBuilder.push({
-        accessorKey: element.fieldName,
-        header: `${element.fieldName}`,
-        Cell: ({ cell }) => typeRenderFunctions[element.fieldDataType!](cell.getValue()),
+        accessorKey: element.columnName,
+        header: `${element.columnName}`,
+        Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
       });
     } else {
       columnBuilder.push({
-        accessorKey: element.fieldName,
-        header: `${element.fieldName}`,
+        accessorKey: element.columnName,
+        header: `${element.columnName}`,
       });
     }
   });
@@ -43,10 +33,10 @@ export function buildMRTColumnDefinitions(fields: ProjectField[]) {
   return columnBuilder;
 }
 
-export function buildTabulatorColumnDefinitions(fields: MetaDataColumn[]) {
+export function buildTabulatorColumnDefinitions(fields: Field[]) {
   const columnBuilder: { title: string; field: string; }[] = [];
 
-  fields.forEach((element: MetaDataColumn) => {
+  fields.forEach((element: Field) => {
     columnBuilder.push({
       title: `${element.columnName}`,
       field: element.columnName,

@@ -11,6 +11,7 @@ import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
+import Datasets from '../ProjectDatasets/Datasets';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
@@ -139,6 +140,10 @@ function ProjectOverview() {
       index: 5,
       title: 'Proformas',
     },
+    {
+      index: 6,
+      title: 'Datasets',
+    },
   ], []);
 
   useEffect(() => {
@@ -207,6 +212,9 @@ function ProjectOverview() {
               isProformasLoading={isProformasLoading}
               setIsProformasLoading={setIsProformasLoading}
             />
+          </TabPanel>
+          <TabPanel value={tabValue} index={6} tabLoader={false}>
+            <Datasets projectDetails={projectDetails} />
           </TabPanel>
         </>
       )

@@ -37,9 +37,9 @@ export function useFirstRender() {
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
 export const fieldRenderFunctions : { [index: string]: Function } = {
-  'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
-  'Date_created': (value: string) => isoDateLocalDate(value),
-  'Date_updated': (value: string) => isoDateLocalDate(value),
+  '^Shared_groups.*$': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+  '^Date_created.*$': (value: string) => isoDateLocalDate(value),
+  '^Date_updated.*$': (value: string) => isoDateLocalDate(value),
 };
 
 // Maps from a primitive field type to a function to render the data value
