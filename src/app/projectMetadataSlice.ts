@@ -225,7 +225,13 @@ export const projectMetadataSlice = createSlice({
       fields.forEach(field => {
         viewFieldMap[field.fieldName] = calculateViewFieldNames(field.fieldName, fields);
       });
-      // Calculate view fields for the project as a whole
+      // Calculate view fields (ProjectViewFields) for the project as a whole
+      state.data[projectAbbrev].fields = fields.flatMap((projField: ProjectField) =>
+        viewFieldMap[projField.fieldName].map((columnName: string) => ({
+          ...projField,
+          projectFieldName: projField.fieldName,
+          columnName,
+        })));
       state.data[projectAbbrev].fields = [];
       fields.forEach((projField: ProjectField) => {
         viewFieldMap[projField.fieldName].forEach((columnName: string) => {
