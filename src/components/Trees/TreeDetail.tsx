@@ -320,10 +320,10 @@ function TreeDetail() {
 
   const renderControls = () => {
     const availableFields = projectMetadata?.fields || [];
-    const allColumns = availableFields.map(field => field.fieldName);
+    const allColumns = availableFields.map(field => field.columnName);
     const visualisableColumns = availableFields.filter(
       (field) => field.canVisualise,
-    ).map(field => field.fieldName);
+    ).map(field => field.columnName);
     const ids = Object.keys(phylocanvasMetadata);
 
     const handleJumpToSubtree = (id: string) => {

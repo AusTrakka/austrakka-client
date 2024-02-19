@@ -2,7 +2,7 @@ import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-r
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { ProjectField } from '../../types/dtos';
+import { Field } from '../../types/dtos';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
@@ -15,7 +15,7 @@ interface TreeTableProps {
   setSelectedIds: any,
   rowSelection: any,
   setRowSelection: any,
-  displayFields: ProjectField[],
+  displayFields: Field[],
   tableMetadata: any,
   metadataLoadingState: MetadataLoadingState,
 }
@@ -62,7 +62,7 @@ export default function TreeTable(props: TreeTableProps) {
   // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
     const tableValues: any = [];
-    const fields = displayFields.map(field => field.fieldName);
+    const fields = displayFields.map(field => field.columnName);
     // Find display field matches in top level object and in metadataValues kv pairs
     tableMetadata.forEach((element: any) => {
       const entry: any = {};

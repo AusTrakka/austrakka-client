@@ -57,8 +57,8 @@ function HeatMap(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.fieldDataType === 'string' || field.fieldDataType === null))
-        .map(field => field.fieldName);
+          (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
       setCategoricalFields(localCatFields);
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {

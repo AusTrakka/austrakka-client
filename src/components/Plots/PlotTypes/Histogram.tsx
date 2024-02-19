@@ -55,13 +55,13 @@ function Histogram(props: PlotTypeProps) {
   useEffect(() => {
     if (fields && fields.length > 0) {
       const localNumericFields = fields
-        .filter(field => field.fieldDataType === 'number' || field.fieldDataType === 'double')
-        .map(field => field.fieldName);
+        .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
+        .map(field => field.columnName);
       setNumericFields(localNumericFields);
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.fieldDataType === 'string' || field.fieldDataType === null))
-        .map(field => field.fieldName);
+          (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one numeric field
