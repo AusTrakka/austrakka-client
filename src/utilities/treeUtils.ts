@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { ProjectField } from '../types/dtos';
+import { Field } from '../types/dtos';
 import getColorScheme from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
@@ -9,24 +9,24 @@ const NULL_COLOUR = 'rgb(200,200,200)';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
-  fieldInformation: ProjectField[],
+  fieldInformation: Field[],
   fieldUniqueValues: Record<string, string[] | null>,
   colorSchemeSelected: string,
 ) {
   // Create categorical colour palettes based on unique values
   // Note that to create numeric schemes we would need to know the max and min values
-  const metadataColumnPalettes: PhylocanvasLegends = {};
+  const fieldPalettes: PhylocanvasLegends = {};
   fieldInformation
     .filter((fi) => fi.canVisualise)
     .forEach((fi) => {
-      const values = fieldUniqueValues[fi.fieldName]?.filter(val => val !== 'null') ?? [];
+      const values = fieldUniqueValues[fi.columnName]?.filter(val => val !== 'null') ?? [];
       const colours = getColorScheme(colorSchemeSelected, values.length);
-      metadataColumnPalettes[fi.fieldName] = {};
+      fieldPalettes[fi.columnName] = {};
       values.forEach((val, index) => {
-        metadataColumnPalettes[fi.fieldName][val] = colours[index];
+        fieldPalettes[fi.columnName][val] = colours[index];
       });
-      if (fieldUniqueValues[fi.fieldName]?.includes('null')) {
-        metadataColumnPalettes[fi.fieldName].null = NULL_COLOUR;
+      if (fieldUniqueValues[fi.columnName]?.includes('null')) {
+        fieldPalettes[fi.columnName].null = NULL_COLOUR;
       }
     });
 
@@ -36,14 +36,14 @@ export default function mapMetadataToPhylocanvas(
     result[sampleName] = {};
 
     fieldInformation.forEach((fi) => {
-      if (fi.fieldName !== SAMPLE_ID_FIELD) {
-        const value = sample[fi.fieldName] ?? 'null';
+      if (fi.columnName !== SAMPLE_ID_FIELD) {
+        const value = sample[fi.columnName] ?? 'null';
         const colour = fi.canVisualise ?
-          metadataColumnPalettes[fi.fieldName][value]
+          fieldPalettes[fi.columnName][value]
           : 'rgba(0,0,0,0)'; // this black is assigned but we expect not to be used, as the field is not visualisable
-        result[sampleName][fi.fieldName] = {
+        result[sampleName][fi.columnName] = {
           colour,
-          label: sample[fi.fieldName] ?? '',
+          label: sample[fi.columnName] ?? '',
         };
       }
     });
@@ -51,7 +51,7 @@ export default function mapMetadataToPhylocanvas(
 
   const metadataAndLegends = {
     result,
-    legends: metadataColumnPalettes,
+    legends: fieldPalettes,
   };
   return metadataAndLegends;
 }

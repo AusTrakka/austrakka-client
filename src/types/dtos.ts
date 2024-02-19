@@ -110,7 +110,17 @@ export interface MetaDataColumnMapping {
   canVisualise: boolean,
 }
 
-export interface MetaDataColumn {
+// this is a common interface representing metadata fields,
+// with information about types and display order
+export interface Field {
+  columnName: string,
+  primitiveType: string | null,
+  metaDataColumnTypeName: string,
+  canVisualise: boolean,
+  columnOrder: number,
+}
+
+export interface MetaDataColumn extends Field {
   metaDataColumnId: number
   columnName: string
   metaDataColumnTypeId: number
@@ -123,10 +133,30 @@ export interface MetaDataColumn {
   minWidth: number
 }
 
+// This represents the ProjectFieldDTO, with nested analysisLabels
+// It is appropriate for use in project management interfaces
+// It is not appropriate for representing the columns that will be found in a project view
 export interface ProjectField {
   projectFieldId: number,
   fieldName: string,
-  fieldDataType: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  metaDataColumnValidValues: string[] | null,
+  analysisLabels: string[],
+}
+
+// This is not a DTO, but a calculated field representing a column found in a project view
+// The projectFieldId and projectFieldName will not be unique
+// The columnName is formed from the projectFieldName and the analysisLabel
+export interface ProjectViewField extends Field {
+  columnName: string,
+  projectFieldId: number,
+  projectFieldName: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
@@ -140,6 +170,7 @@ export interface ProjectView {
   originalFileName: string,
   isBase: boolean,
   fields: string[],
+  viewFields: string[] // this is currently calculated client-side
 }
 
 export interface Proforma {

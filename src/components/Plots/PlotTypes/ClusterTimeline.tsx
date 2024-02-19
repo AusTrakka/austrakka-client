@@ -79,12 +79,12 @@ function ClusterTimeline(props: PlotTypeProps) {
       // For now this selection need only depend on canVisualise
       const localCatFields = fields
         .filter(field => field.canVisualise &&
-          (field.fieldDataType === 'string' || field.fieldDataType === null))
-        .map(field => field.fieldName);
+          (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
       setCategoricalFields(localCatFields);
       const localDateFields = fields
-        .filter(field => field.fieldDataType === 'date')
-        .map(field => field.fieldName);
+        .filter(field => field.primitiveType === 'date')
+        .map(field => field.columnName);
       setDateFields(localDateFields);
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {

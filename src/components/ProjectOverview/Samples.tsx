@@ -15,7 +15,7 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ProjectField } from '../../types/dtos';
+import { Field } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
@@ -68,23 +68,23 @@ function Samples(props: SamplesProps) {
     sortedFields.sort(compareFields);
     // TODO check why we're not using buildMRTColumnDefinitions here
     const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-    sortedFields.forEach((element: ProjectField) => {
-      if (element.fieldName in fieldRenderFunctions) {
+    sortedFields.forEach((element: Field) => {
+      if (element.columnName in fieldRenderFunctions) {
         columnBuilder.push({
-          accessorKey: element.fieldName,
-          header: `${element.fieldName}`,
-          Cell: ({ cell }) => fieldRenderFunctions[element.fieldName](cell.getValue()),
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
         });
-      } else if (element.fieldDataType && element.fieldDataType in typeRenderFunctions) {
+      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
         columnBuilder.push({
-          accessorKey: element.fieldName,
-          header: `${element.fieldName}`,
-          Cell: ({ cell }) => typeRenderFunctions[element.fieldDataType!](cell.getValue()),
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
+          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
         });
       } else {
         columnBuilder.push({
-          accessorKey: element.fieldName,
-          header: `${element.fieldName}`,
+          accessorKey: element.columnName,
+          header: `${element.columnName}`,
         });
       }
     });
