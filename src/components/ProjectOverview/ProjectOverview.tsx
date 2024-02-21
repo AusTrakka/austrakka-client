@@ -20,9 +20,7 @@ import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
   fetchProjectMetadata,
-  selectProjectMetadata,
   selectAwaitingProjectMetadata,
-  ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -51,8 +49,6 @@ function ProjectOverview() {
   // const [lastUpload] = useState('');
 
   // Samples component states
-  const metadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectDetails?.abbreviation));
   const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
@@ -178,7 +174,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
-              metadata={metadata}
               projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               isSamplesLoading={isSamplesLoading}

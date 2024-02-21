@@ -18,14 +18,14 @@ import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
-import { ProjectMetadataState } from '../../app/projectMetadataSlice';
+import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 import { Sample } from '../../types/sample.interface';
+import { useAppSelector } from '../../app/store';
 
 interface SamplesProps {
-  metadata: ProjectMetadataState | null,
   projectAbbrev: string,
   totalSamples: number,
   isSamplesLoading: boolean,
@@ -34,7 +34,6 @@ interface SamplesProps {
 
 function Samples(props: SamplesProps) {
   const {
-    metadata,
     projectAbbrev,
     totalSamples,
     isSamplesLoading,
@@ -48,6 +47,9 @@ function Samples(props: SamplesProps) {
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
+
+  const metadata : ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
   // If inputFilters is changed by the parent, set the filters
   // May later replace this input with navigation parameters and dynamic URL
