@@ -269,6 +269,8 @@ export const projectMetadataSlice = createSlice({
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
       const { fields, views } = action.payload as FetchProjectInfoResponse;
+      // Sort fields by columnOrder and set state
+      fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};

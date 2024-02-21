@@ -19,7 +19,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { buildMRTColumnDefinitions } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 import { Sample } from '../../types/sample.interface';
@@ -63,10 +63,8 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields) return;
 
-    // Sort here rather than setting columnOrder on MRT
-    const sortedFields = [...metadata!.fields!];
-    sortedFields.sort(compareFields);
-    const columnBuilder = buildMRTColumnDefinitions(sortedFields);
+    // Fields in slice are already sorted
+    const columnBuilder = buildMRTColumnDefinitions(metadata!.fields!);
     setSampleTableColumns(columnBuilder);
   }, [metadata]);
 
