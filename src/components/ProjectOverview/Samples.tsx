@@ -15,14 +15,14 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Field } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState } from '../../app/projectMetadataSlice';
-import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
+import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
+import { Sample } from '../../types/sample.interface';
 
 interface SamplesProps {
   metadata: ProjectMetadataState | null,
@@ -42,7 +42,7 @@ function Samples(props: SamplesProps) {
   } = props;
   const navigate = useNavigate();
 
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
@@ -61,35 +61,12 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields) return;
 
-    // Sort here rather than setting columnOrder
-    const compareFields = (field1: { columnOrder: number; }, field2: { columnOrder: number; }) =>
-      (field1.columnOrder - field2.columnOrder);
+    // Sort here rather than setting columnOrder on MRT
     const sortedFields = [...metadata!.fields!];
     sortedFields.sort(compareFields);
-    // TODO check why we're not using buildMRTColumnDefinitions here
-    const columnBuilder: React.SetStateAction<MRT_ColumnDef<{}>[]> = [];
-    sortedFields.forEach((element: Field) => {
-      if (element.columnName in fieldRenderFunctions) {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
-        });
-      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
-        });
-      } else {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-        });
-      }
-    });
+    const columnBuilder = buildMRTColumnDefinitions(sortedFields);
     setSampleTableColumns(columnBuilder);
-  }, [metadata]);
+    }, [metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
