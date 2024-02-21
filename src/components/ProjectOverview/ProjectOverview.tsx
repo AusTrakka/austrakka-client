@@ -105,7 +105,7 @@ function ProjectOverview() {
       // TODO: Make use of latest upload date from project views
     }
 
-    if (projectDetails) {
+    if (projectDetails && tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       getProjectSummary();
       dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
     }
