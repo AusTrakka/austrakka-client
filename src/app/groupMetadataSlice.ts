@@ -205,6 +205,8 @@ export const metadataSlice = createSlice({
     builder.addCase(fetchGroupFields.fulfilled, (state, action) => {
       const { groupId } = action.meta.arg;
       const { fields } = action.payload as FetchGroupFieldsResponse;
+      // Sort fields by columnOrder and set state
+      fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[groupId].fields = fields;
       // Set views (field lists), and set view loading states to IDLE for all views
       // This is an interim measure; later we will use a thunk to fetch project data views
