@@ -23,7 +23,7 @@ function SampleDetail() {
     selectAwaitingProjectMetadata(state, projectAbbrev));
   // If not awaiting metadata, at least one view and therefore Seq_ID should be loaded
   const sample = !awaitingMetadata &&
-    projectMetadata?.columnLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS ?
+    projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS ?
     projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId) :
     null;
 
@@ -49,8 +49,8 @@ function SampleDetail() {
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
       <TableCell>
-        {(projectMetadata?.columnLoadingStates[field.columnName] === LoadingState.IDLE ||
-          projectMetadata?.columnLoadingStates[field.columnName] === LoadingState.LOADING) ?
+        {(projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.IDLE ||
+          projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.LOADING) ?
             <Skeleton variant="text" animation="wave" width="20em" /> :
           renderValue(value, field.columnName, field.primitiveType ?? 'category')}
       </TableCell>

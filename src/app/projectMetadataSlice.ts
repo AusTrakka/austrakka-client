@@ -20,7 +20,7 @@ export interface ProjectMetadataState {
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
   metadata: Sample[] | null
-  columnLoadingStates: Record<string, LoadingState>
+  fieldLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
 
@@ -34,7 +34,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   viewLoadingStates: {},
   viewToFetch: 0,
   metadata: null,
-  columnLoadingStates: {},
+  fieldLoadingStates: {},
   errorMessage: null,
 });
 
@@ -310,7 +310,7 @@ export const projectMetadataSlice = createSlice({
       // Set column loading states to IDLE for all fields, and initialise unique values
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
-        state.data[projectAbbrev].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+        state.data[projectAbbrev].fieldLoadingStates[field.columnName] = LoadingState.IDLE;
         state.data[projectAbbrev].fieldUniqueValues![field.columnName] = null;
       });
       state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
@@ -332,8 +332,8 @@ export const projectMetadataSlice = createSlice({
       }
       fields.forEach(field => {
         // Check per-column state; columns new in this load get LOADING status
-        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.LOADING;
+        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.LOADING;
         }
       });
     });
@@ -364,7 +364,7 @@ export const projectMetadataSlice = createSlice({
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       viewFields.forEach(field => {
-        state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.SUCCESS;
+        state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.SUCCESS;
       });
       // Increment viewToFetch, which will trigger the next view load
       state.data[projectAbbrev].viewToFetch = viewIndex + 1;
@@ -383,8 +383,8 @@ export const projectMetadataSlice = createSlice({
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.ERROR;
       // Any column not already loaded by another thunk gets an error state
       fields.forEach(field => {
-        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.ERROR;
+        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.ERROR;
         }
       });
       // If this is the first view, we are in an error state, otherwise a partial error state
