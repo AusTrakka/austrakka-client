@@ -68,7 +68,7 @@ function Samples(props: SamplesProps) {
     sortedFields.sort(compareFields);
     const columnBuilder = buildMRTColumnDefinitions(sortedFields);
     setSampleTableColumns(columnBuilder);
-    }, [metadata]);
+  }, [metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
