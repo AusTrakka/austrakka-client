@@ -105,11 +105,14 @@ function ProjectOverview() {
       // TODO: Make use of latest upload date from project views
     }
 
-    if (projectDetails && tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+    if (projectDetails &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING
+    ) {
       getProjectSummary();
       dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
     }
-  }, [projectDetails, token, dispatch]);
+  }, [projectDetails, token, tokenLoading, dispatch]);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => [
     {
