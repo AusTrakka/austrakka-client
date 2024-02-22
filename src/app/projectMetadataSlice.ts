@@ -187,6 +187,56 @@ function calculateViewFieldNames(fieldName: string, fields: ProjectField[]): str
   return field.analysisLabels.map(label => `${fieldName}_${label}`);
 }
 
+// Given a list of field names, calculate or look up the unique values for the fields
+function calculateUniqueValues(
+  fieldNames: string[],
+  projectViewFields: ProjectViewField[],
+  data: Sample[],
+) : Record<string, string[]> {
+  const uniqueValues: Record<string, string[]> = {};
+  const fieldDetails: ProjectViewField[] = fieldNames.map(
+    field => {
+      const fieldDetail = projectViewFields.find(f => f.columnName === field);
+      if (!fieldDetail) {
+        throw new Error(
+          'Unexpected error in fetchDataView.fullfilled: ' +
+          `field ${field} in data not found in expected fields`,
+        );
+      }
+      return fieldDetail;
+    },
+  );
+  // fields with defined valid values can just be looked up
+  const categoricalFields = fieldDetails.filter(field =>
+    field.canVisualise && field.metaDataColumnValidValues);
+  categoricalFields.forEach(field => {
+    uniqueValues![field.columnName] = field.metaDataColumnValidValues!;
+  });
+  // visualisable string field unique values must be calculated
+  const visualisableFields = fieldDetails.filter(field =>
+    field.canVisualise && field.primitiveType === 'string');
+  const valueSets : Record<string, Set<string>> = {};
+  visualisableFields.forEach(field => {
+    valueSets[field.columnName] = new Set();
+  });
+  data.forEach(sample => {
+    visualisableFields.forEach(field => {
+      const value = sample[field.columnName];
+      // we conflate the string 'null' with empty values, but there may not be a better option
+      valueSets[field.columnName].add(value === null ? 'null' : value);
+    });
+  });
+  visualisableFields.forEach(field => {
+    uniqueValues[field.columnName] = Array.from(valueSets[field.columnName]);
+  });
+  // Sort unique values using natural sort order
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  visualisableFields.forEach(field => {
+    uniqueValues[field.columnName]!.sort(collator.compare);
+  });
+  return uniqueValues;
+}
+
 export const projectMetadataSlice = createSlice({
   name: 'projectMetadata',
   initialState,
@@ -219,6 +269,8 @@ export const projectMetadataSlice = createSlice({
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
       const { fields, views } = action.payload as FetchProjectInfoResponse;
+      // Sort fields by columnOrder and set state
+      fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
@@ -305,47 +357,9 @@ export const projectMetadataSlice = createSlice({
       // Would be better to do server-side, but this operation is quite fast.
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
-      const fieldDetails: ProjectViewField[] = viewFields.map(
-        field => {
-          const fieldDetail = state.data[projectAbbrev].fields!.find(f => f.columnName === field);
-          if (!fieldDetail) {
-            throw new Error(
-              'Unexpected error in fetchDataView.fullfilled: ' +
-              `field ${field} in data not found in expected fields`,
-            );
-          }
-          return fieldDetail;
-        },
-      );
-      // fields with defined valid values can just be looked up
-      const categoricalFields = fieldDetails.filter(field =>
-        field.canVisualise && field.metaDataColumnValidValues);
-      categoricalFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName] =
-          field.metaDataColumnValidValues;
-      });
-      // visualisable string field unique values must be calculated
-      const visualisableFields = fieldDetails.filter(field =>
-        field.canVisualise && field.primitiveType === 'string');
-      const valueSets : Record<string, Set<string>> = {};
-      visualisableFields.forEach(field => {
-        valueSets[field.columnName] = new Set();
-      });
-      data.forEach(sample => {
-        visualisableFields.forEach(field => {
-          const value = sample[field.columnName];
-          // we conflate the string 'null' with empty values, but there may not be a better option
-          valueSets[field.columnName].add(value === null ? 'null' : value);
-        });
-      });
-      visualisableFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName] =
-          Array.from(valueSets[field.columnName]);
-      });
-      // Sort unique values using natural sort order
-      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-      visualisableFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName]!.sort(collator.compare);
+      const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
+      viewFields.forEach((field) => {
+        state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;

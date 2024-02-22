@@ -25,7 +25,7 @@ import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
-import { compareFields } from '../../utilities/tableUtils';
+import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -112,40 +112,12 @@ function SampleTable(props: SamplesProps) {
     }
   }, [groupContext, token, tokenLoading]);
 
-  // Temporarily need our own version of buildMRTColumnDefinitions, as we have different
-  // field object types for projects vs organisations
-  function buildMRTColumnDefinitions(fields: MetaDataColumn[]) {
-    const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
-
-    fields.forEach((element: MetaDataColumn) => {
-      if (element.columnName in fieldRenderFunctions) {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-          Cell: ({ cell }) => fieldRenderFunctions[element.columnName](cell.getValue()),
-        });
-      } else if (element.primitiveType && element.primitiveType in typeRenderFunctions) {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-          Cell: ({ cell }) => typeRenderFunctions[element.primitiveType!](cell.getValue()),
-        });
-      } else {
-        columnBuilder.push({
-          accessorKey: element.columnName,
-          header: `${element.columnName}`,
-        });
-      }
-    });
-    return columnBuilder;
-  }
-
   useEffect(
     () => {
       // BUILD COLUMNS
       const formatTableHeaders = () => {
-        const copy = [...displayFields]; // Creating copy of original array so it's not overridden
-        const sortedDisplayFields = copy.sort(compareFields);
+        const sortedDisplayFields = [...displayFields];
+        sortedDisplayFields.sort(compareFields);
         const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
         setSampleTableColumns(columnBuilder);
         setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));

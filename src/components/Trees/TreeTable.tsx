@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { Field } from '../../types/dtos';
-import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { buildMRTColumnDefinitions } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
@@ -46,9 +46,7 @@ export default function TreeTable(props: TreeTableProps) {
   useEffect(
     () => {
       const formatTableHeaders = () => {
-        const copy = [...displayFields];
-        const sortedDisplayFields = copy.sort(compareFields);
-        const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
+        const columnBuilder = buildMRTColumnDefinitions(displayFields);
         setSampleTableColumns(columnBuilder);
         setColumnError(false);
       };
