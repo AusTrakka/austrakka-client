@@ -1,79 +1,82 @@
 interface Role {
   name: string;
-  privileges: Privilege[];
-}
-
-interface Privilege {
-  domain: Domain,
-  permissions: Record<string, boolean | Record<string, boolean>>;
+  permissions: Readonly<Record<Domain, Record<string, Record<PermissionLevel, boolean>>>>;
 }
 
 enum Domain {
-  Tabs = 'tabs',
-  Projects = 'projects',
-  User = 'users',
-  Components = 'components',
+  Tabs = 'Tabs',
+  Projects = 'Projects',
+  Users = 'Users',
+  Components = 'Components',
 }
 
-// this might be the wrong way to do this???
+enum PermissionLevel {
+  Read = 'read',
+  Write = 'write',
+  Update = 'update',
+  Delete = 'delete',
+}
 
-const Viewer: Role = {
-  name: 'Viewer',
-  privileges: [
-    {
-      domain: Domain.Components,
-      permissions: {
-        DatasetTable: {
-          read: true,
-          write: false,
-          update: false,
-          delete: false,
-        },
-        // Add more permissions here
-      },
+const permissions: Readonly<Record<Domain, Record<string, Record<PermissionLevel, boolean>>>> = {
+  Tabs: {
+    DatasetTab: {
+      [PermissionLevel.Read]: true,
+      [PermissionLevel.Write]: false,
+      [PermissionLevel.Update]: false,
+      [PermissionLevel.Delete]: false,
     },
-    {
-      domain: Domain.Tabs,
-      permissions: {
-        DatasetTab: {
-          read: true,
-          write: false,
-          update: false,
-          delete: false,
-        },
-        // Add more permissions here
-      },
+  },
+  Components: {
+    DatasetTable: {
+      [PermissionLevel.Read]: true,
+      [PermissionLevel.Write]: false,
+      [PermissionLevel.Update]: false,
+      [PermissionLevel.Delete]: false,
     },
-  ],
+    // Add more components and permissions
+  },
+  Users: {},
+  Projects: {},
 };
 
-const Analyst: Role = {
-  name: 'Analyst',
-  privileges: [
-    {
-      domain: Domain.Components,
-      permissions: {
+const roles: Readonly<Record<string, Role>> = {
+  Viewer: {
+    name: 'Viewer',
+    permissions: {
+      Tabs: permissions.Tabs,
+      Components: {
+        DatasetTable: permissions.Components.DatasetTable,
+      },
+      Users: {},
+      Projects: {},
+    },
+  },
+  Analyst: {
+    name: 'Analyst',
+    permissions: {
+      Tabs: permissions.Tabs,
+      Components: {
         DatasetTable: {
-          read: true,
-          write: true,
-          update: true,
-          delete: true,
+          ...permissions.Components.DatasetTable,
+          [PermissionLevel.Write]: true,
+          [PermissionLevel.Update]: true,
+          [PermissionLevel.Delete]: true,
         },
-        // Add more permissions here
       },
-      // Add more domains here
+      Users: {},
+      Projects: {},
     },
-    {
-      domain: Domain.Tabs,
-      permissions: {
-        DatasetTab: {
-          read: true,
-          write: false,
-          update: false,
-          delete: false,
-        },
-        // Add more permissions here
-      },
-    },
-  ],
+  },
 };
+
+// Example usage to check permissions
+export function hasPermission(
+  role: string,
+  domain: Domain,
+  resource: string,
+  permission: PermissionLevel,
+): boolean {
+  // Check if the role exists and has permissions defined for the given domain and resource
+  const rolePermissions = roles[role]?.permissions?.[domain]?.[resource];
+  return rolePermissions?.[permission] ?? false;
+}
