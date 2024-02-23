@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Box } from '@mui/material';
+import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Box, Tooltip } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_ToggleFiltersButton } from 'material-react-table';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
@@ -9,6 +9,10 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
+import { useAppSelector } from '../../app/store';
+import LoadingState from '../../constants/loadingState';
+import { selectUserState } from '../../app/userSlice';
+import { PermissionLevel, hasPermission } from '../PermAccess/accessTable';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -18,6 +22,7 @@ const datasetTableColumns: MRT_ColumnDef<DataSetEntry>[] = [
   { accessorKey: 'dataSetId', header: 'Data Set ID' },
   { accessorKey: 'fileName', header: 'File Name' },
   { accessorKey: 'analysisLabel', header: 'Analysis Label' },
+  { accessorKey: 'createdBy', header: 'Created By' },
   { accessorKey: 'uploadedDate', header: 'Uploaded Date', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
   { accessorKey: 'fields', header: 'Fields', Cell: ({ cell }: any) => <>{cell.getValue().join(', ')}</> },
 ];
@@ -30,6 +35,10 @@ function Datasets(props: DatasetProps) {
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
   const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
   const [datasetError, setDatasetError] = useState(false);
+  const {
+    data,
+    loading,
+  } = useAppSelector(selectUserState);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +73,22 @@ function Datasets(props: DatasetProps) {
     } finally {
       setDataSetIdToDelete(null); // Clear the dataset ID after the operation
     }
+  };
+
+  const canDelete = (
+    roles: Record<string, string[]>,
+    _loading: LoadingState,
+    _projectDetails: Project | null,
+  ) => {
+    if (_loading === LoadingState.SUCCESS && _projectDetails !== null) {
+      const rolesList = roles[`${_projectDetails.abbreviation}-Group`];
+      return hasPermission(
+        rolesList,
+        'project/tabs/datasettab/datasettable',
+        PermissionLevel.CanClick,
+      );
+    }
+    return false;
   };
 
   const handleDeleteRow = (row: number) => {
@@ -113,12 +138,27 @@ function Datasets(props: DatasetProps) {
         )}
         enableRowActions
         renderRowActions={({ row }) => (
-          <IconButton
-            onClick={() => handleDeleteRow(row.getValue('dataSetId'))}
-            sx={{ color: 'gray' }}
-          >
-            <DeleteOutlineIcon sx={{ '&:hover': { color: '#A81E2C' } }} />
-          </IconButton>
+          <div>
+            {canDelete(data, loading, projectDetails) ? (
+              <IconButton
+                onClick={() => handleDeleteRow(row.getValue('dataSetId'))}
+                sx={{ color: 'gray' }}
+                disabled={!canDelete(data, loading, projectDetails)}
+              >
+                <DeleteOutlineIcon sx={{ '&:hover': { color: '#A81E2C' } }} />
+              </IconButton>
+            ) : (
+              <Tooltip
+                title="You don't have the role to perform this action"
+              >
+                <span>
+                  <IconButton sx={{ color: 'gray' }} disabled>
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+          </div>
         )}
       />
       <Snackbar

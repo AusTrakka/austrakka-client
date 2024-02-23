@@ -12,7 +12,7 @@ export interface Project {
     id: number,
     name: string
   }[],
-  created: Date
+  created: Date,
   // could add auditable fields - created, createdBy
 }
 
@@ -146,6 +146,7 @@ export interface ProjectField {
   canVisualise: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
+  createdBy: string,
 }
 
 // This is not a DTO, but a calculated field representing a column found in a project view
@@ -242,6 +243,7 @@ export interface DataSetEntry {
   dataSetId: number;
   fileName: string;
   analysisLabel: string;
+  createdBy: string;
   uploadedDate: string;
   fields: string[];
 }
