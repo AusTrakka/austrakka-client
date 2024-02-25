@@ -19,7 +19,7 @@ interface DatasetProps {
 }
 
 const datasetTableColumns: MRT_ColumnDef<DataSetEntry>[] = [
-  { accessorKey: 'dataSetId', header: 'Data Set ID' },
+  { accessorKey: 'dataSetId', header: 'Dataset ID' },
   { accessorKey: 'fileName', header: 'File Name' },
   { accessorKey: 'analysisLabel', header: 'Analysis Label' },
   { accessorKey: 'createdBy', header: 'Created By' },
