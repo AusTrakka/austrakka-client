@@ -12,7 +12,7 @@ import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission } from '../PermAccess/accessTable';
+import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 
 interface DatasetProps {
   projectDetails: Project | null;

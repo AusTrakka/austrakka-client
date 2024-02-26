@@ -20,7 +20,6 @@ import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
-import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
@@ -33,6 +32,7 @@ import { useAppDispatch } from './app/store';
 import { fetchUserRoles } from './app/userSlice';
 import { useApi } from './app/ApiContext';
 import LoadingState from './constants/loadingState';
+import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 
 function App() {
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ function App() {
                 <Route path="projects" element={<ProjectsList />} />
                 <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                 <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
-                <Route path="projects/:projectAbbrev/records/:seqId" element={<SampleDetail />} />
+                <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
                 <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
                 <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                 <Route path="records/:seqId" element={<OrgSampleDetail />} />
