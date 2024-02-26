@@ -6,7 +6,7 @@ import { ReactTabulator } from 'react-tabulator';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
-import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { buildTabulatorColumnDefinitions } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
 import { Field } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
@@ -79,9 +79,7 @@ function DataFilters(props: DataFiltersProps) {
 
   // Set table columns on load
   useEffect(() => {
-    const copy = [...fields];
-    const sortedDisplayFields = copy.sort(compareFields);
-    const columnBuilder = buildTabulatorColumnDefinitions(sortedDisplayFields);
+    const columnBuilder = buildTabulatorColumnDefinitions(fields);
     setColumns(columnBuilder);
   }, [fields]);
 

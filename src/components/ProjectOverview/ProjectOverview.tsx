@@ -20,9 +20,7 @@ import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
   fetchProjectMetadata,
-  selectProjectMetadata,
   selectAwaitingProjectMetadata,
-  ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -51,8 +49,6 @@ function ProjectOverview() {
   // const [lastUpload] = useState('');
 
   // Samples component states
-  const metadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectDetails?.abbreviation));
   const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
@@ -109,11 +105,14 @@ function ProjectOverview() {
       // TODO: Make use of latest upload date from project views
     }
 
-    if (projectDetails) {
+    if (projectDetails &&
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING
+    ) {
       getProjectSummary();
       dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
     }
-  }, [projectDetails, token, dispatch]);
+  }, [projectDetails, token, tokenLoading, dispatch]);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => [
     {
@@ -178,7 +177,6 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
-              metadata={metadata}
               projectAbbrev={projectAbbrev!}
               totalSamples={totalSamples}
               isSamplesLoading={isSamplesLoading}
