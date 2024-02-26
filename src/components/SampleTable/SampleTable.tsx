@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
+/* eslint-disable no-param-reassign */
 import React, {
   memo, useEffect, useRef, Dispatch, SetStateAction, useState,
 } from 'react';
@@ -158,7 +158,15 @@ function SampleTable(props: SamplesProps) {
         const samplesResponse: ResponseObject =
           await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
-          setSampleList(samplesResponse.data);
+          // changing null values in Has_sequences to false this is a temporary fix. As
+          // most data will be retrieved by redux and this will be handled there.
+          const sampleDataAltered = samplesResponse.data.map((sample: Sample) => {
+            if (sample.Has_sequences === null) {
+              sample.Has_sequences = false;
+            }
+            return sample;
+          });
+          setSampleList(sampleDataAltered);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
           const count: string = samplesResponse.headers?.get('X-Total-Count')!;

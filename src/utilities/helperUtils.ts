@@ -45,7 +45,7 @@ export const fieldRenderFunctions : { [index: string]: Function } = {
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 export const typeRenderFunctions : { [index: string]: Function } = {
-  'boolean': (value: boolean): string => (value ? 'true' : 'false'),
+  'boolean': (value: boolean): string => (String(value)),
   'date': (value: string): string => isoDateLocalDateNoTime(value),
 };
 
