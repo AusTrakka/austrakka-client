@@ -88,8 +88,9 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  if (pathnames.length > 1 &&
-      noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))) {
+  if (pathnames.length <= 3 &&
+      noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
+      && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
     pathnames.pop();
   }
 
