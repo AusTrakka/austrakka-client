@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import getQueryParamOrDefault from './navigationUtils';
+import { Sample } from '../types/sample.interface';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
@@ -45,7 +46,7 @@ export const fieldRenderFunctions : { [index: string]: Function } = {
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 export const typeRenderFunctions : { [index: string]: Function } = {
-  'boolean': (value: boolean): string => (String(value)),
+  'boolean': (value: boolean): string => (value ? 'true' : 'false'),
   'date': (value: string): string => isoDateLocalDateNoTime(value),
 };
 
@@ -101,6 +102,18 @@ export function generateDateFilterString(
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
   }
   return filterString;
+}
+
+export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
+  data.map((sample) => {
+    if (sample.Has_sequences === null) {
+      // eslint-disable-next-line no-param-reassign
+      sample.Has_sequences = false;
+    }
+    return sample;
+  });
+
+  return data;
 }
 
 export function useStateFromSearchParamsForPrimitive

@@ -23,7 +23,7 @@ import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, typeRenderFunctions } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, replaceHasSequencesNullsWithFalse, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -160,12 +160,7 @@ function SampleTable(props: SamplesProps) {
         if (samplesResponse.status === ResponseType.Success) {
           // changing null values in Has_sequences to false this is a temporary fix. As
           // most data will be retrieved by redux and this will be handled there.
-          const sampleDataAltered = samplesResponse.data.map((sample: Sample) => {
-            if (sample.Has_sequences === null) {
-              sample.Has_sequences = false;
-            }
-            return sample;
-          });
+          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
           setSampleList(sampleDataAltered);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
