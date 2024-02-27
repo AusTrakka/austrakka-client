@@ -31,7 +31,6 @@ function Datasets(props: DatasetProps) {
   const { projectDetails } = props;
   const { token } = useApi();
   const [rows, setRows] = useState<DataSetEntry[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false); // State for toast
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
   const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
