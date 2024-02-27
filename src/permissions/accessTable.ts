@@ -23,7 +23,11 @@ export function hasPermission(
   roles: string[],
   domain: string,
   permission: PermissionLevel,
+  admin:boolean,
 ): boolean {
+  if (admin) {
+    return true;
+  }
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return roles.some(role => allowedRoles.includes(role));
 }
