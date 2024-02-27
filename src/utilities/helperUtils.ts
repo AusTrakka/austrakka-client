@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import getQueryParamOrDefault from './navigationUtils';
+import { Sample } from '../types/sample.interface';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
@@ -101,6 +102,18 @@ export function generateDateFilterString(
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
   }
   return filterString;
+}
+
+export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
+  data.map((sample) => {
+    if (sample.Has_sequences === null) {
+      // eslint-disable-next-line no-param-reassign
+      sample.Has_sequences = false;
+    }
+    return sample;
+  });
+
+  return data;
 }
 
 export function useStateFromSearchParamsForPrimitive

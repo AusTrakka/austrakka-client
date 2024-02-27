@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
+/* eslint-disable no-param-reassign */
 import React, {
   memo, useEffect, useRef, Dispatch, SetStateAction, useState,
 } from 'react';
@@ -23,7 +23,7 @@ import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, typeRenderFunctions } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, replaceHasSequencesNullsWithFalse, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -158,7 +158,10 @@ function SampleTable(props: SamplesProps) {
         const samplesResponse: ResponseObject =
           await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
-          setSampleList(samplesResponse.data);
+          // changing null values in Has_sequences to false this is a temporary fix. As
+          // most data will be retrieved by redux and this will be handled there.
+          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
+          setSampleList(sampleDataAltered);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
           const count: string = samplesResponse.headers?.get('X-Total-Count')!;

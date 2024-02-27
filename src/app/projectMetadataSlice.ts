@@ -9,6 +9,7 @@ import { getProjectFields, getProjectViewData, getProjectViews } from '../utilit
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { replaceHasSequencesNullsWithFalse } from '../utilities/helperUtils';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
@@ -343,7 +344,9 @@ export const projectMetadataSlice = createSlice({
       const { data } = action.payload as FetchDataViewResponse;
       const { viewFields } = state.data[projectAbbrev].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
-      state.data[projectAbbrev].metadata = data;
+      // I will go through all the data and if the field is has_sequence
+      // I will change all null values to false
+      state.data[projectAbbrev].metadata = replaceHasSequencesNullsWithFalse(data);
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (state.data[projectAbbrev].metadata!.length > 0 &&
