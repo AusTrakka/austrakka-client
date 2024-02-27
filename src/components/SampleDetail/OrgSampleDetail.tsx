@@ -1,11 +1,11 @@
 import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { MetaDataColumn, Group } from '../../types/dtos';
+import { MetaDataColumn, Group, Field } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import { renderValue, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -144,10 +144,10 @@ function SampleDetail() {
     }
   }, [displayFields]);
 
-  const renderRow = (field: string, value: string) => (
-    <TableRow key={field}>
-      <TableCell width={`${colWidth}em`}>{field}</TableCell>
-      <TableCell>{value}</TableCell>
+  const renderRow = (field: Field, value: string) => (
+    <TableRow key={field.columnName}>
+      <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
+      <TableCell>{renderValue(value, field.columnName, field.primitiveType ?? 'category')}</TableCell>
     </TableRow>
   );
 
@@ -213,7 +213,7 @@ function SampleDetail() {
               {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
-                  .map(field => renderRow(field.columnName, (data as any)[field.columnName]))}
+                  .map(field => renderRow(field, (data as any)[field.columnName]))}
             </TableBody>
           </Table>
         </TableContainer>
