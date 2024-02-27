@@ -9,8 +9,14 @@ import { AppState } from '../types/app.interface';
 
 export interface UserSliceState {
   data: Record<string, string[]>,
+  admin: boolean,
   errorMessage: string,
   loading: LoadingState,
+}
+
+interface FetchUserRolesResponse {
+  userRoleGroup: UserRoleGroup[],
+  isAusTrakkaAdmin: boolean,
 }
 
 const fetchUserRoles = createAsyncThunk(
@@ -21,8 +27,9 @@ const fetchUserRoles = createAsyncThunk(
   ): Promise<UserRoleGroup[] | unknown> => {
     const groupResponse: ResponseObject = await getUserGroups(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { userRoleGroup } = groupResponse.data;
-      return thunkAPI.fulfillWithValue(userRoleGroup);
+      const { userRoleGroup, isAusTrakkaAdmin } = groupResponse.data;
+      return thunkAPI
+        .fulfillWithValue({ userRoleGroup, isAusTrakkaAdmin } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -43,9 +50,9 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserRoles.fulfilled, (state, action) => {
         state.loading = LoadingState.SUCCESS;
-        const holder = action.payload as UserRoleGroup[];
+        const holder = action.payload as FetchUserRolesResponse;
         const data: Record<string, string[]> = {};
-        holder.forEach((roleGroup) => {
+        holder.userRoleGroup.forEach((roleGroup) => {
           if (data[roleGroup.group.name]) {
             data[roleGroup.group.name].push(roleGroup.role.name);
           } else {
@@ -53,6 +60,7 @@ const userSlice = createSlice({
           }
         });
         state.data = data;
+        state.admin = holder.isAusTrakkaAdmin;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;

@@ -31,6 +31,7 @@ function Datasets(props: DatasetProps) {
   const { projectDetails } = props;
   const { token } = useApi();
   const [rows, setRows] = useState<DataSetEntry[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false); // State for toast
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
   const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
@@ -38,6 +39,7 @@ function Datasets(props: DatasetProps) {
   const {
     data,
     loading,
+    admin,
   } = useAppSelector(selectUserState);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ function Datasets(props: DatasetProps) {
 
   const handleConfirmDisable = async () => {
     try {
+      setOpenDialog(false); // Close the dialog
       const response: ResponseObject =
         await disableDataset(projectDetails!.abbreviation, dataSetIdToDelete!, token);
       if (response.status !== ResponseType.Success) {
@@ -65,7 +68,6 @@ function Datasets(props: DatasetProps) {
       const updatedData = rows.filter((entry) => entry.dataSetId !== dataSetIdToDelete);
       setRows(updatedData);
       setOpenSnackbar(true); // Open toast on success
-      setOpenDialog(false); // Close the dialog
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error disabling dataset:', error);
@@ -75,13 +77,12 @@ function Datasets(props: DatasetProps) {
     }
   };
 
-  const canDelete = (
-    roles: Record<string, string[]>,
-    _loading: LoadingState,
-    _projectDetails: Project | null,
-  ) => {
-    if (_loading === LoadingState.SUCCESS && _projectDetails !== null) {
-      const rolesList = roles[`${_projectDetails.abbreviation}-Group`];
+  const canDelete = () => {
+    if (admin) {
+      return true;
+    }
+    if (loading === LoadingState.SUCCESS && projectDetails !== null) {
+      const rolesList = data[`${projectDetails.abbreviation}-Group`];
       return hasPermission(
         rolesList,
         'project/tabs/datasettab/datasettable',
@@ -139,11 +140,11 @@ function Datasets(props: DatasetProps) {
         enableRowActions
         renderRowActions={({ row }) => (
           <div>
-            {canDelete(data, loading, projectDetails) ? (
+            {canDelete() ? (
               <IconButton
                 onClick={() => handleDeleteRow(row.getValue('dataSetId'))}
                 sx={{ color: 'gray' }}
-                disabled={!canDelete(data, loading, projectDetails)}
+                disabled={!canDelete()}
               >
                 <DeleteOutlineIcon sx={{ '&:hover': { color: '#A81E2C' } }} />
               </IconButton>
