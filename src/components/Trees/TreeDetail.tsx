@@ -105,6 +105,9 @@ function TreeDetail() {
     // Get list of Seq_IDs from newick
     if (tree) {
       const matches = Array.from(tree.newickTree.matchAll(treenameRegex), m => m[1]);
+      // natural sort with collator
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      matches.sort(collator.compare);
       if (matches) {
         setTreeSampleNames(matches ?? []);
       }
@@ -330,7 +333,7 @@ function TreeDetail() {
     const visualisableColumns = availableFields.filter(
       (field) => field.canVisualise,
     ).map(field => field.columnName);
-    const ids = Object.keys(phylocanvasMetadata);
+    const ids = treeSampleNames ?? [];
 
     const handleJumpToSubtree = (id: string) => {
       if (!tree) return;
