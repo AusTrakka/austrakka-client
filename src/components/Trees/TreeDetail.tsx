@@ -125,12 +125,12 @@ function TreeDetail() {
   // Map group tabular metadata to format for phylocanvas, including colour mappings
   useEffect(() => {
     if (tree &&
-      projectMetadata?.metadata &&
+      tableMetadata && tableMetadata.length > 0 &&
       projectMetadata?.fields &&
       projectMetadata?.fieldUniqueValues
     ) {
       const mappingData = mapMetadataToPhylocanvas(
-        projectMetadata.metadata,
+        tableMetadata,
         projectMetadata.fields,
         projectMetadata.fieldUniqueValues,
         colourScheme,
@@ -138,7 +138,13 @@ function TreeDetail() {
       setPhylocanvasMetadata(mappingData.result);
       setPhylocanvasLegends(mappingData.legends);
     }
-  }, [tree, projectMetadata, colourScheme]);
+  }, [
+    tree,
+    projectMetadata?.fields,
+    projectMetadata?.fieldUniqueValues,
+    colourScheme,
+    tableMetadata,
+  ]);
 
   // Get tree historical versions
   useEffect(() => {
