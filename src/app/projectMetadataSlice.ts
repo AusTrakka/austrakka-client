@@ -9,6 +9,7 @@ import { getProjectFields, getProjectViewData, getProjectViews } from '../utilit
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { replaceHasSequencesNullsWithFalse } from '../utilities/helperUtils';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
@@ -20,7 +21,7 @@ export interface ProjectMetadataState {
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
   metadata: Sample[] | null
-  columnLoadingStates: Record<string, LoadingState>
+  fieldLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
 
@@ -34,7 +35,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   viewLoadingStates: {},
   viewToFetch: 0,
   metadata: null,
-  columnLoadingStates: {},
+  fieldLoadingStates: {},
   errorMessage: null,
 });
 
@@ -187,6 +188,56 @@ function calculateViewFieldNames(fieldName: string, fields: ProjectField[]): str
   return field.analysisLabels.map(label => `${fieldName}_${label}`);
 }
 
+// Given a list of field names, calculate or look up the unique values for the fields
+function calculateUniqueValues(
+  fieldNames: string[],
+  projectViewFields: ProjectViewField[],
+  data: Sample[],
+) : Record<string, string[]> {
+  const uniqueValues: Record<string, string[]> = {};
+  const fieldDetails: ProjectViewField[] = fieldNames.map(
+    field => {
+      const fieldDetail = projectViewFields.find(f => f.columnName === field);
+      if (!fieldDetail) {
+        throw new Error(
+          'Unexpected error in fetchDataView.fullfilled: ' +
+          `field ${field} in data not found in expected fields`,
+        );
+      }
+      return fieldDetail;
+    },
+  );
+  // fields with defined valid values can just be looked up
+  const categoricalFields = fieldDetails.filter(field =>
+    field.canVisualise && field.metaDataColumnValidValues);
+  categoricalFields.forEach(field => {
+    uniqueValues![field.columnName] = field.metaDataColumnValidValues!;
+  });
+  // visualisable string field unique values must be calculated
+  const visualisableFields = fieldDetails.filter(field =>
+    field.canVisualise && field.primitiveType === 'string');
+  const valueSets : Record<string, Set<string>> = {};
+  visualisableFields.forEach(field => {
+    valueSets[field.columnName] = new Set();
+  });
+  data.forEach(sample => {
+    visualisableFields.forEach(field => {
+      const value = sample[field.columnName];
+      // we conflate the string 'null' with empty values, but there may not be a better option
+      valueSets[field.columnName].add(value === null ? 'null' : value);
+    });
+  });
+  visualisableFields.forEach(field => {
+    uniqueValues[field.columnName] = Array.from(valueSets[field.columnName]);
+  });
+  // Sort unique values using natural sort order
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  visualisableFields.forEach(field => {
+    uniqueValues[field.columnName]!.sort(collator.compare);
+  });
+  return uniqueValues;
+}
+
 export const projectMetadataSlice = createSlice({
   name: 'projectMetadata',
   initialState,
@@ -219,6 +270,8 @@ export const projectMetadataSlice = createSlice({
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
       const { fields, views } = action.payload as FetchProjectInfoResponse;
+      // Sort fields by columnOrder and set state
+      fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
@@ -258,7 +311,7 @@ export const projectMetadataSlice = createSlice({
       // Set column loading states to IDLE for all fields, and initialise unique values
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
-        state.data[projectAbbrev].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+        state.data[projectAbbrev].fieldLoadingStates[field.columnName] = LoadingState.IDLE;
         state.data[projectAbbrev].fieldUniqueValues![field.columnName] = null;
       });
       state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
@@ -280,8 +333,8 @@ export const projectMetadataSlice = createSlice({
       }
       fields.forEach(field => {
         // Check per-column state; columns new in this load get LOADING status
-        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.LOADING;
+        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.LOADING;
         }
       });
     });
@@ -291,7 +344,9 @@ export const projectMetadataSlice = createSlice({
       const { data } = action.payload as FetchDataViewResponse;
       const { viewFields } = state.data[projectAbbrev].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
-      state.data[projectAbbrev].metadata = data;
+      // I will go through all the data and if the field is has_sequence
+      // I will change all null values to false
+      state.data[projectAbbrev].metadata = replaceHasSequencesNullsWithFalse(data);
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (state.data[projectAbbrev].metadata!.length > 0 &&
@@ -305,52 +360,14 @@ export const projectMetadataSlice = createSlice({
       // Would be better to do server-side, but this operation is quite fast.
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
-      const fieldDetails: ProjectViewField[] = viewFields.map(
-        field => {
-          const fieldDetail = state.data[projectAbbrev].fields!.find(f => f.columnName === field);
-          if (!fieldDetail) {
-            throw new Error(
-              'Unexpected error in fetchDataView.fullfilled: ' +
-              `field ${field} in data not found in expected fields`,
-            );
-          }
-          return fieldDetail;
-        },
-      );
-      // fields with defined valid values can just be looked up
-      const categoricalFields = fieldDetails.filter(field =>
-        field.canVisualise && field.metaDataColumnValidValues);
-      categoricalFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName] =
-          field.metaDataColumnValidValues;
-      });
-      // visualisable string field unique values must be calculated
-      const visualisableFields = fieldDetails.filter(field =>
-        field.canVisualise && field.primitiveType === 'string');
-      const valueSets : Record<string, Set<string>> = {};
-      visualisableFields.forEach(field => {
-        valueSets[field.columnName] = new Set();
-      });
-      data.forEach(sample => {
-        visualisableFields.forEach(field => {
-          const value = sample[field.columnName];
-          // we conflate the string 'null' with empty values, but there may not be a better option
-          valueSets[field.columnName].add(value === null ? 'null' : value);
-        });
-      });
-      visualisableFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName] =
-          Array.from(valueSets[field.columnName]);
-      });
-      // Sort unique values using natural sort order
-      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-      visualisableFields.forEach(field => {
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName]!.sort(collator.compare);
+      const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
+      viewFields.forEach((field) => {
+        state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       viewFields.forEach(field => {
-        state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.SUCCESS;
+        state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.SUCCESS;
       });
       // Increment viewToFetch, which will trigger the next view load
       state.data[projectAbbrev].viewToFetch = viewIndex + 1;
@@ -369,8 +386,8 @@ export const projectMetadataSlice = createSlice({
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.ERROR;
       // Any column not already loaded by another thunk gets an error state
       fields.forEach(field => {
-        if (state.data[projectAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].columnLoadingStates[field] = LoadingState.ERROR;
+        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
+          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.ERROR;
         }
       });
       // If this is the first view, we are in an error state, otherwise a partial error state
