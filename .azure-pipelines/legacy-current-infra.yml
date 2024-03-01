@@ -13,5 +13,5 @@ steps:
   - template: templates/create-swa-config.yml
     parameters:
       appName: "stapp-autr-legacy-ase-01"
-      resourceGroup: "rg-autr-legacy-ase-01"
+      resourceGroup: "rg-autr-prod-ase-01"
   - template: templates/deploy.yml
