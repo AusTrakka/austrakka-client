@@ -1,0 +1,17 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - template: templates/build.yml
+  - template: templates/create-swa-config.yml
+    parameters:
+      appName: "stapp-autr-legacy-ase-01"
+      resourceGroup: "rg-autr-legacy-ase-01"
+  - template: templates/deploy.yml
