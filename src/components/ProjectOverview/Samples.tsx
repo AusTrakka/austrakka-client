@@ -1,14 +1,11 @@
 /* eslint-disable react/jsx-pascal-case */
+import 'primereact/resources/themes/md-light-indigo/theme.css';
 import React, {
   memo, useEffect, SetStateAction, useState,
 } from 'react';
-import MaterialReactTable, {
-  MRT_ColumnDef,
-  MRT_ShowHideColumnsButton,
-  MRT_TablePagination,
-  MRT_ToggleGlobalFilterButton,
-} from 'material-react-table';
 import { FilterList, Close } from '@mui/icons-material';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import {
   Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
@@ -19,7 +16,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildMRTColumnDefinitions } from '../../utilities/tableUtils';
+import { buildMRTColumnDefinitions, buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 import { Sample } from '../../types/sample.interface';
@@ -41,30 +38,18 @@ function Samples(props: SamplesProps) {
   } = props;
   const navigate = useNavigate();
 
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  const [filteredData, setFilteredData] = useState([]);
-  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
 
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
-  // If inputFilters is changed by the parent, set the filters
-  // May later replace this input with navigation parameters and dynamic URL
-  useEffect(() => {
-    if (inputFilters) {
-      setFilterList(inputFilters);
-    }
-  }, [inputFilters]);
-
+  console.log('metadata', metadata);
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
-
-    // Fields in slice are already sorted
-    const columnBuilder = buildMRTColumnDefinitions(metadata!.fields!);
+    const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
     setSampleTableColumns(columnBuilder);
   }, [metadata]);
 
@@ -135,7 +120,7 @@ function Samples(props: SamplesProps) {
           Please contact an AusTrakka admin if this error persists.
         </Alert>
       </Dialog>
-      <DataFilters
+      {/* <DataFilters
         data={metadata?.metadata ?? []}
         fields={metadata?.fields ?? []} // want to pass in field loading states?
         setFilteredData={setFilteredData}
@@ -143,90 +128,26 @@ function Samples(props: SamplesProps) {
         setIsOpen={setIsDataFiltersOpen}
         filterList={filterList}
         setFilterList={setFilterList}
-      />
-      <MaterialReactTable
-        columns={sampleTableColumns}
-        data={filteredData}
-        enableColumnFilters={false}
-        enableStickyHeader
-        columnResizeMode="onChange"
-        muiLinearProgressProps={({ isTopToolbar }) => ({
-          color: 'secondary',
-          sx: { display: isTopToolbar ? 'block' : 'none' },
-        })}
-        muiTableContainerProps={{ sx: { maxHeight: '75vh' } }}
-        muiTablePaginationProps={{
-          rowsPerPageOptions: [10, 25, 50, 100, 500, 1000],
-        }}
-        initialState={{
-          density: 'compact',
-        }}
-        state={{
-          isLoading: isSamplesLoading,
-          showAlertBanner: metadata?.loadingState === MetadataLoadingState.ERROR ||
-                           metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR,
-        }}
-        muiToolbarAlertBannerProps={
-          {
-            color: 'error',
-            children: metadata?.errorMessage,
-          }
-        }
-        rowCount={filteredData.length}
-        // Layout props
-        muiTableProps={{ sx: { width: 'auto', tableLayout: 'auto' } }}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: { cursor: 'pointer' },
-        })}
-        // Column manipulation
-        enableColumnResizing
-        enableColumnDragging
-        enableColumnOrdering
-        // Improving performance
-        enableDensityToggle={false}
-        enableFullScreenToggle={false}
-        // memoMode="cells"
-        enableRowVirtualization
-        // enableColumnVirtualization  // bug where some columns do not render on load
-        renderToolbarInternalActions={({ table }) => (
-          <Box>
-            <MRT_ToggleGlobalFilterButton table={table} />
-            <Tooltip title="Show/Hide filters" placement="top" arrow>
-              <span>
-                <IconButton
-                  onClick={() => setIsDataFiltersOpen((current) => !current)}
-                >
-                  <Badge
-                    badgeContent={filterList.length}
-                    color="primary"
-                    showZero
-                  >
-                    <FilterList />
-                  </Badge>
-                </IconButton>
-              </span>
-            </Tooltip>
-            <MRT_ShowHideColumnsButton table={table} />
-            <ExportTableData
-              dataToExport={
-                metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-                  [] : filteredData
-              }
-              exportCSVStatus={exportCSVStatus}
-              setExportCSVStatus={setExportCSVStatus}
-            />
-          </Box>
-        )}
-        renderBottomToolbar={({ table }) => (
-          <Box sx={{ justifyContent: 'flex-end' }}>
-            <MRT_TablePagination table={table} />
-            <Typography variant="caption" display="block" align="right" padding={1}>
-              {totalSamplesDisplay}
-            </Typography>
-          </Box>
-        )}
-      />
+      /> */}
+      <DataTable
+        value={metadata?.metadata ?? []}
+        scrollable
+        paginator
+        rows={15}
+        resizableColumns
+        showGridlines
+        columnResizeMode="expand"
+        rowsPerPageOptions={[15, 50, 100, 500]}
+      >
+        {sampleTableColumns.map((col) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            body={col.body}
+          />
+        ))}
+      </DataTable>
     </>
   );
 }
