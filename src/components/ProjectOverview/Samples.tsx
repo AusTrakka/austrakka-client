@@ -1,15 +1,16 @@
 /* eslint-disable react/jsx-pascal-case */
-import 'primereact/resources/themes/md-light-indigo/theme.css';
+import 'primereact/resources/themes/mdc-light-indigo/theme.css';
 import React, {
   memo, useEffect, SetStateAction, useState,
 } from 'react';
-import { FilterList, Close } from '@mui/icons-material';
-import { DataTable } from 'primereact/datatable';
+import { FilterList, Close, Padding } from '@mui/icons-material';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import {
   Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle, Badge,
+  Backdrop, Alert, AlertTitle, Badge, Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
@@ -39,6 +40,7 @@ function Samples(props: SamplesProps) {
   const navigate = useNavigate();
 
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
@@ -51,6 +53,7 @@ function Samples(props: SamplesProps) {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
     setSampleTableColumns(columnBuilder);
+    setVisibleColumns(columnBuilder);
   }, [metadata]);
 
   // Open error dialog if loading state changes to error
@@ -61,8 +64,8 @@ function Samples(props: SamplesProps) {
     }
   }, [metadata?.loadingState]);
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original;
+  const rowClickHandler = (event: DataTableRowClickEvent) => {
+    const selectedRow = event.data as Sample;
     if (SAMPLE_ID_FIELD in selectedRow) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
@@ -83,7 +86,42 @@ function Samples(props: SamplesProps) {
     );
   }, [isSamplesLoading, metadata?.loadingState]);
 
+  const onColumnToggle = (event: MultiSelectChangeEvent) => {
+    const selectedColumnsToHide = event.value; // Store columns to hide
+
+    const remainderColumns = sampleTableColumns.filter((col) =>
+    // Keep columns that are NOT selected for hiding
+      !selectedColumnsToHide.some((sCol: Sample) => sCol.field === col.field));
+
+    setVisibleColumns(remainderColumns);
+  };
+
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
+
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <MultiSelect
+        value={sampleTableColumns.filter((col) =>
+          !visibleColumns.some((vCol) => vCol.field === col.field))}
+        options={sampleTableColumns}
+        optionLabel="header"
+        onChange={onColumnToggle}
+        display="chip"
+        placeholder="Hide Columns"
+        className="w-full sm:w-20rem"
+        filter
+        showSelectAll={false}
+      />
+      <ExportTableData
+        dataToExport={
+                  metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
+                    [] : metadata?.metadata ?? []
+                }
+        exportCSVStatus={exportCSVStatus}
+        setExportCSVStatus={setExportCSVStatus}
+      />
+    </div>
+  );
 
   if (isSamplesLoading) return null;
 
@@ -129,25 +167,40 @@ function Samples(props: SamplesProps) {
         filterList={filterList}
         setFilterList={setFilterList}
       /> */}
-      <DataTable
-        value={metadata?.metadata ?? []}
-        scrollable
-        paginator
-        rows={15}
-        resizableColumns
-        showGridlines
-        columnResizeMode="expand"
-        rowsPerPageOptions={[15, 50, 100, 500]}
-      >
-        {sampleTableColumns.map((col) => (
-          <Column
-            key={col.field}
-            field={col.field}
-            header={col.header}
-            body={col.body}
-          />
-        ))}
-      </DataTable>
+
+      {
+      /* TODO: Make a function for the table so that a different sort is used per column type */
+      }
+      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+        <div style={{ padding: '' }}>
+          <DataTable
+            value={metadata?.metadata ?? []}
+            removableSort
+            scrollable
+            paginator
+            rows={10}
+            resizableColumns
+            columnResizeMode="expand"
+            rowsPerPageOptions={[10, 50, 100, 500]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+            currentPageReportTemplate="{first} to {last} of {totalRecords}"
+            paginatorLeft
+            header={header}
+            onRowClick={rowClickHandler}
+            selectionMode="single"
+          >
+            {visibleColumns.map((col) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                sortable
+              />
+            ))}
+          </DataTable>
+        </div>
+      </Paper>
     </>
   );
 }
