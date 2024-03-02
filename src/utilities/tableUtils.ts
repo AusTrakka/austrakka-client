@@ -1,4 +1,6 @@
 import { MRT_ColumnDef } from 'material-react-table';
+import { DataTableFilterMeta } from 'primereact/datatable';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Field } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
 import { Sample } from '../types/sample.interface';
@@ -50,7 +52,7 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
       columnBuilder.push({
         field: field.columnName,
         header: field.columnName,
-        body: (rowData: any) => 
+        body: (rowData: any) =>
           typeRenderFunctions[field.primitiveType!](rowData[field.columnName]),
       });
     } else {
@@ -61,6 +63,21 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
     }
   });
   return columnBuilder;
+}
+
+export function buildPrimeReactDefualtColumnFilters(fields: Field[]) {
+  const filterBuilder: DataTableFilterMeta = {};
+  for (const field of fields) {
+    filterBuilder[field.columnName] = {
+      operator: FilterOperator.AND, // Adjust as needed
+      constraints: field.primitiveType === 'date'
+        ? [{ value: null, matchMode: FilterMatchMode.DATE_IS }]
+        : [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    };
+  }
+  filterBuilder['global'] = { value: null, matchMode: FilterMatchMode.CONTAINS };
+
+  return filterBuilder;
 }
 
 export function buildTabulatorColumnDefinitions(fields: Field[]) {

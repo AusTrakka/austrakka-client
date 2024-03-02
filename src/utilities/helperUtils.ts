@@ -46,7 +46,6 @@ export const renderValueWithEmptyNull = (value: any): string => {
 // whether a field is a date or a datetime.
 export const fieldRenderFunctions : { [index: string]: Function } = {
   'Shared_groups': (value: any) => {
-    console.log('what the hell is the value: ', value);
     if (value === null || value === undefined) return '';
     return value.toString().replace(/[[\]"']/g, '');
   },

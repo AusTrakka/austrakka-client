@@ -4,20 +4,21 @@ import React, {
   memo, useEffect, SetStateAction, useState,
 } from 'react';
 import { FilterList, Close, Padding } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
+import FilterAltOffOutlinedIcon from '@mui/icons-material/FilterAltOffOutlined';
 import {
   Box, IconButton, Tooltip, Typography,
   CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle, Badge, Paper,
+  Backdrop, Alert, AlertTitle, Badge, Paper, Button, TextField,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildMRTColumnDefinitions, buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import { buildMRTColumnDefinitions, buildPrimeReactColumnDefinitions, buildPrimeReactDefualtColumnFilters } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import ExportTableData from '../Common/ExportTableData';
 import { Sample } from '../../types/sample.interface';
@@ -43,17 +44,24 @@ function Samples(props: SamplesProps) {
   const [visibleColumns, setVisibleColumns] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [defaultFilterOptions, setDefaultFilterOptions] = useState<DataTableFilterMeta>({});
+  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(defaultFilterOptions);
+  const [globalFilter, setGlobalFilter] = useState<string>('');
 
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
-  console.log('metadata', metadata);
+  // We are gonna set the default filter options that we are going to have
+
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
+    const filterBuilder = buildPrimeReactDefualtColumnFilters(metadata!.fields!);
     setSampleTableColumns(columnBuilder);
     setVisibleColumns(columnBuilder);
+    setDefaultFilterOptions(filterBuilder);
+    setCurrentFilters(filterBuilder);
   }, [metadata]);
 
   // Open error dialog if loading state changes to error
@@ -69,6 +77,22 @@ function Samples(props: SamplesProps) {
     if (SAMPLE_ID_FIELD in selectedRow) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
+  };
+
+  const clearFilter = () => {
+    setCurrentFilters(defaultFilterOptions);
+    setGlobalFilter('');
+  };
+
+  const onGlobalFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    const filters = { ...currentFilters };
+
+    // @ts-ignore
+    filters.global.value = value;
+
+    setCurrentFilters(filters);
+    setGlobalFilter(value);
   };
 
   // Update CSV export status as data loads
@@ -100,18 +124,27 @@ function Samples(props: SamplesProps) {
 
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <MultiSelect
-        value={sampleTableColumns.filter((col) =>
-          !visibleColumns.some((vCol) => vCol.field === col.field))}
-        options={sampleTableColumns}
-        optionLabel="header"
-        onChange={onColumnToggle}
-        display="chip"
-        placeholder="Hide Columns"
-        className="w-full sm:w-20rem"
-        filter
-        showSelectAll={false}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', gap: '10px' }}>
+        <MultiSelect
+          value={sampleTableColumns.filter((col) =>
+            !visibleColumns.some((vCol) => vCol.field === col.field))}
+          options={sampleTableColumns}
+          optionLabel="header"
+          onChange={onColumnToggle}
+          display="chip"
+          placeholder="Hide Columns"
+          className="w-full sm:w-20rem"
+          filter
+          showSelectAll={false}
+        />
+        <TextField id="global-filter" label="Sample Search" value={globalFilter} variant="standard" onChangeCapture={onGlobalFilterChange} />
+        <IconButton
+          aria-label="clear-filters"
+          onClick={clearFilter}
+        >
+          <FilterAltOffOutlinedIcon />
+        </IconButton>
+      </div>
       <ExportTableData
         dataToExport={
                   metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
@@ -183,11 +216,13 @@ function Samples(props: SamplesProps) {
             columnResizeMode="expand"
             rowsPerPageOptions={[10, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-            currentPageReportTemplate="{first} to {last} of {totalRecords}"
+            currentPageReportTemplate={`${totalSamplesDisplay} {first} to {last} of {totalRecords}`}
             paginatorLeft
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
+            globalFilterFields={[SAMPLE_ID_FIELD]}
+            filters={currentFilters}
           >
             {visibleColumns.map((col) => (
               <Column
