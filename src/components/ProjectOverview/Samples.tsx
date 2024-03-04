@@ -44,24 +44,25 @@ function Samples(props: SamplesProps) {
   const [visibleColumns, setVisibleColumns] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  const [defaultFilterOptions, setDefaultFilterOptions] = useState<DataTableFilterMeta>({});
-  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(defaultFilterOptions);
-  const [globalFilter, setGlobalFilter] = useState<string>('');
+  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
 
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
 
-  // We are gonna set the default filter options that we are going to have
+  useEffect(() => {
+    if (inputFilters) {
+      setFilterList(inputFilters);
+    }
+  }, [inputFilters]);
 
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
-    const filterBuilder = buildPrimeReactDefualtColumnFilters(metadata!.fields!);
     setSampleTableColumns(columnBuilder);
     setVisibleColumns(columnBuilder);
-    setDefaultFilterOptions(filterBuilder);
-    setCurrentFilters(filterBuilder);
   }, [metadata]);
 
   // Open error dialog if loading state changes to error
@@ -77,22 +78,6 @@ function Samples(props: SamplesProps) {
     if (SAMPLE_ID_FIELD in selectedRow) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
-  };
-
-  const clearFilter = () => {
-    setCurrentFilters(defaultFilterOptions);
-    setGlobalFilter('');
-  };
-
-  const onGlobalFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    const filters = { ...currentFilters };
-
-    // @ts-ignore
-    filters.global.value = value;
-
-    setCurrentFilters(filters);
-    setGlobalFilter(value);
   };
 
   // Update CSV export status as data loads
@@ -124,27 +109,18 @@ function Samples(props: SamplesProps) {
 
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', gap: '10px' }}>
-        <MultiSelect
-          value={sampleTableColumns.filter((col) =>
-            !visibleColumns.some((vCol) => vCol.field === col.field))}
-          options={sampleTableColumns}
-          optionLabel="header"
-          onChange={onColumnToggle}
-          display="chip"
-          placeholder="Hide Columns"
-          className="w-full sm:w-20rem"
-          filter
-          showSelectAll={false}
-        />
-        <TextField id="global-filter" label="Sample Search" value={globalFilter} variant="standard" onChangeCapture={onGlobalFilterChange} />
-        <IconButton
-          aria-label="clear-filters"
-          onClick={clearFilter}
-        >
-          <FilterAltOffOutlinedIcon />
-        </IconButton>
-      </div>
+      <MultiSelect
+        value={sampleTableColumns.filter((col) =>
+          !visibleColumns.some((vCol) => vCol.field === col.field))}
+        options={sampleTableColumns}
+        optionLabel="header"
+        onChange={onColumnToggle}
+        display="chip"
+        placeholder="Hide Columns"
+        className="w-full sm:w-20rem"
+        filter
+        showSelectAll={false}
+      />
       <ExportTableData
         dataToExport={
                   metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
@@ -191,16 +167,16 @@ function Samples(props: SamplesProps) {
           Please contact an AusTrakka admin if this error persists.
         </Alert>
       </Dialog>
-      {/* <DataFilters
+      <DataFilters
         data={metadata?.metadata ?? []}
-        fields={metadata?.fields ?? []} // want to pass in field loading states?
-        setFilteredData={setFilteredData}
+        visibleFields={visibleColumns}
+        allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
         filterList={filterList}
         setFilterList={setFilterList}
-      /> */}
-
+      />
       {
       /* TODO: Make a function for the table so that a different sort is used per column type */
       }
@@ -221,7 +197,6 @@ function Samples(props: SamplesProps) {
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
-            globalFilterFields={[SAMPLE_ID_FIELD]}
             filters={currentFilters}
           >
             {visibleColumns.map((col) => (

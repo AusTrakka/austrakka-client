@@ -1,30 +1,30 @@
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, useRef, useCallback, SetStateAction } from 'react';
-import { ReactTabulator } from 'react-tabulator';
+import React, { useEffect, useState, SetStateAction } from 'react';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
-import { buildTabulatorColumnDefinitions } from '../../utilities/tableUtils';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
+import { stringConditions, dateConditions, numberConditions, dateConditionsPR, stringCondtitionPR, numberConditionsPR, booleanConditionsPR } from './fieldTypeOperators';
+import { Sample } from '../../types/sample.interface';
 import { Field } from '../../types/dtos';
-import FilteringOperators from '../../constants/filteringOperators';
-import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
-import { customFilterFunctions } from './customFilterFns';
 
 export interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
-  condition: string,
+  condition: FilterMatchMode | string,
   value: any
 }
 
 interface DataFiltersProps {
-  data: any
-  fields: any
-  setFilteredData: any
+  data: any // need to pass through
+  visibleFields: Sample[] // need to passs through
+  allFields: Field[] // need to pass through
+  setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
   filterList: DataFilter[]
@@ -52,60 +52,61 @@ const nullOrEmptyString = 'null-or-empty';
 function DataFilters(props: DataFiltersProps) {
   const {
     data,
-    fields,
-    setFilteredData,
+    visibleFields,
+    allFields,
+    setPrimeReactFilters,
     isOpen,
     setIsOpen,
     filterList,
     setFilterList,
   } = props;
-  const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
   const [sampleCount, setSampleCount] = useState();
   const [totalSamples, setTotalSamples] = useState();
-  const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
   const [newFilter, setNewFilter] = useState(initialFilterState);
-  const [conditions, setConditions] = useState(stringConditions);
+  const [conditions, setConditions] = useState(stringCondtitionPR);
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
-  const [tabulatorFilters, setTabulatorFilters] = useState([]);
   const [dateError, setDateError] = useState<DateValidationError>(null);
+  const [fields, setFields] = useState<Field[]>([]);
 
   useEffect(() => {
     setSampleCount(data.length);
     setTotalSamples(data.length);
   }, [data]);
 
-  // Set table columns on load
   useEffect(() => {
-    const columnBuilder = buildTabulatorColumnDefinitions(fields);
-    setColumns(columnBuilder);
-  }, [fields]);
+    if (allFields.length > 0) {
+      const vFields = allFields
+        .filter((field) => visibleFields
+          .find((visibleField) => visibleField.field === field.columnName));
+      setFields(vFields);
+    }
+  }, [allFields, visibleFields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       setDateError(null);
       const targetFieldProps = fields.find((field: Field) =>
         field.columnName === event.target.value);
-
       let defaultCondition = '';
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
-        setConditions(dateConditions);
+        setConditions(dateConditionsPR);
         setSelectedFieldType(FieldTypes.DATE);
-        defaultCondition = FilteringOperators.GREATER_OR_EQUAL;
+        defaultCondition = FilterMatchMode.GREATER_THAN_OR_EQUAL_TO;
       } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
-        setConditions(numberConditions);
+        setConditions(numberConditionsPR);
         setSelectedFieldType(FieldTypes.NUMBER);
-        defaultCondition = FilteringOperators.EQUALS;
+        defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
-        setConditions(booleanConditions);
+        setConditions(booleanConditionsPR);
         setSelectedFieldType(FieldTypes.BOOLEAN);
-        defaultCondition = FilteringOperators.EQUALS;
+        defaultCondition = FilterMatchMode.EQUALS;
       } else {
-        setConditions(stringConditions);
+        setConditions(stringCondtitionPR);
         setSelectedFieldType(FieldTypes.STRING);
-        defaultCondition = FilteringOperators.EQUALS;
+        defaultCondition = FilterMatchMode.EQUALS;
       }
       setNullOrEmptyFlag(false);
       setNewFilter({
@@ -116,20 +117,10 @@ function DataFilters(props: DataFiltersProps) {
         value: '',
       });
     } else {
-      const flag = (event.target.name === 'condition' && event.target.value.includes('NULL'));
-      setNullOrEmptyFlag(flag);
-      if (flag) {
-        setNewFilter({
-          ...newFilter,
-          [event.target.name]: event.target.value as string,
-          value: (event.target.name === 'condition' && event.target.value.includes('NULL')) ? nullOrEmptyString : '',
-        });
-      } else {
-        setNewFilter({
-          ...newFilter,
-          [event.target.name]: event.target.value as string,
-        });
-      }
+      setNewFilter({
+        ...newFilter,
+        [event.target.name]: event.target.value as string,
+      });
     }
   };
 
@@ -185,79 +176,146 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   // 1. Build filters in tabulator format
+  // useEffect(() => {
+  //   const filters: any = [];
+  //   if (filterList.length !== 0) {
+  //     filterList.forEach((filter) => {
+  //       // If filter condition requires a custom filter function
+  //       const custom = customFilterFunctions.filter(e => e.operator === filter.condition);
+  //       if (custom.length > 0) {
+  //         filters.push({
+  //           field: custom[0].function,
+  //           type: { field: filter.field, value: filter.value },
+  //           value: undefined,
+  //         });
+  //       } else if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
+  //         const date = filter.value;
+  //         const dayStart = date.$d.toISOString();
+  //         const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
+  //         if (filter.condition === FilteringOperators.GREATER_OR_EQUAL) {
+  //           filters.push({
+  //             field: filter.field,
+  //             type: filter.condition,
+  //             value: dayStart,
+  //           });
+  //         } else if (filter.condition === FilteringOperators.LESS_OR_EQUAL) {
+  //           filters.push({
+  //             field: filter.field,
+  //             type: filter.condition,
+  //             value: dayEnd,
+  //           });
+  //         } else if (filter.condition === FilteringOperators.EQUALS) {
+  //           filters.push(
+  //             {
+  //               field: filter.field,
+  //               type: FilteringOperators.LESS,
+  //               value: dayEnd,
+  //             },
+  //             {
+  //               field: filter.field,
+  //               type: FilteringOperators.GREATER,
+  //               value: dayStart,
+  //             },
+  //           );
+  //         }
+  //       } else {
+  //         filters.push({
+  //           field: filter.field,
+  //           type: filter.condition,
+  //           value: filter.value,
+  //         });
+  //       }
+  //     });
+  //   }
+  //   setTabulatorFilters(filters);
+  // }, [filterList]);
+
+  // Build filters in the prime react format
   useEffect(() => {
-    const filters: any = [];
+    const filtersBuilder: DataTableFilterMeta = {};
     if (filterList.length !== 0) {
       filterList.forEach((filter) => {
-        // If filter condition requires a custom filter function
-        const custom = customFilterFunctions.filter(e => e.operator === filter.condition);
-        if (custom.length > 0) {
-          filters.push({
-            field: custom[0].function,
-            type: { field: filter.field, value: filter.value },
-            value: undefined,
-          });
-        } else if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
+        if (filter.fieldType === FieldTypes.DATE) {
           const date = filter.value;
-          const dayStart = date.$d.toISOString();
-          const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
-          if (filter.condition === FilteringOperators.GREATER_OR_EQUAL) {
-            filters.push({
-              field: filter.field,
-              type: filter.condition,
-              value: dayStart,
-            });
-          } else if (filter.condition === FilteringOperators.LESS_OR_EQUAL) {
-            filters.push({
-              field: filter.field,
-              type: filter.condition,
-              value: dayEnd,
-            });
-          } else if (filter.condition === FilteringOperators.EQUALS) {
-            filters.push(
-              {
-                field: filter.field,
-                type: FilteringOperators.LESS,
-                value: dayEnd,
-              },
-              {
-                field: filter.field,
-                type: FilteringOperators.GREATER,
-                value: dayStart,
-              },
+          const dayStart = date.$d.toLocaleString('sv').replace(' ', 'T');
+          const dayEnd = (new Date((date.$d.getTime() + 86399000))).toLocaleString('sv').replace(' ', 'T');
+          if (filter.condition === FilterMatchMode.DATE_IS && (filter.field === 'Date_created' || filter.field === 'Date_updated')) {
+            if (filtersBuilder[filter.field]) {
+              // Append new constraints to the existing filters
+              (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
+                { value: dayEnd, matchMode: FilterMatchMode.DATE_BEFORE },
+                { value: dayStart, matchMode: FilterMatchMode.DATE_AFTER },
+              );
+            } else {
+              // Create new filters for this column
+              filtersBuilder[filter.field] = {
+                operator: FilterOperator.AND,
+                constraints: [
+                  { value: dayEnd, matchMode: FilterMatchMode.DATE_BEFORE },
+                  { value: dayStart, matchMode: FilterMatchMode.DATE_AFTER },
+                ],
+              };
+            }
+          } else if (filtersBuilder[filter.field]) {
+            (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
+              { value: filter.value, matchMode: filter.condition as FilterMatchMode },
             );
+          } else {
+            filtersBuilder[filter.field] = {
+              operator: FilterOperator.AND,
+              constraints: [
+                {
+                  value: filter.value,
+                  matchMode: filter.condition as FilterMatchMode,
+                },
+              ],
+            };
           }
+        } else if (filtersBuilder[filter.field]) {
+          // Append new constraints to the existing filters
+          (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
+            { value: filter.value, matchMode: filter.condition as FilterMatchMode },
+          );
         } else {
-          filters.push({
-            field: filter.field,
-            type: filter.condition,
-            value: filter.value,
-          });
+          filtersBuilder[filter.field] = {
+            operator: FilterOperator.AND,
+            constraints: [
+              {
+                value: filter.value,
+                matchMode: filter.condition as FilterMatchMode,
+              },
+            ],
+          };
         }
       });
     }
-    setTabulatorFilters(filters);
-  }, [filterList]);
+    setPrimeReactFilters(filtersBuilder);
+  }, [filterList, setPrimeReactFilters]);
+
+  // { value: FilterMatchMode.DATE_IS, name: 'On' },
+  // { value: FilterMatchMode.DATE_BEFORE, name: 'On and before' },
+  // { value: FilterMatchMode.DATE_AFTER, name: 'On and after' },
+  // { value: FilterMatchMode.DATE_IS_NOT, name: 'Is not' },
 
   // Should only be called when tableInstanceRef.current is set
-  const updateFilteredData = useCallback(() => {
-    const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
-    setSampleCount(filtered.length);
-    setFilteredData(filtered);
-  }, [tabulatorFilters, setSampleCount, setFilteredData]);
+  // const updateFilteredData = useCallback(() => {
+  //   const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
+  //   setSampleCount(filtered.length);
+  //   setFilteredData(filtered);
+  // }, [tabulatorFilters, setSampleCount, setFilteredData]);
 
   // Update filtered data when filters change
-  useEffect(() => {
-    if (tableInstanceRef.current) {
-      updateFilteredData();
-    }
-  }, [updateFilteredData]);
+  // useEffect(() => {
+  //   if (tableInstanceRef.current) {
+  //     updateFilteredData();
+  //   }
+  // }, [updateFilteredData]);
 
   // Update filtered data when data changes or when tabulator is first ready
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDataUpdate = (_data: any) => {
-    updateFilteredData();
-  };
+  // const handleDataUpdate = (_data: any) => {
+  //   updateFilteredData();
+  // };
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
@@ -384,7 +442,7 @@ function DataFilters(props: DataFiltersProps) {
                   All filter conditions must match a record for it to appear in the results.
                 </Alert>
               </Snackbar>
-              <form onSubmit={(event) => handleFilterAdd(event)}>
+              <form onSubmit={(event) => handleFilterAdd(event)} style={{ display: 'flex', alignItems: 'center' }}>
                 <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
                   <InputLabel id="field-simple-select-label">Field</InputLabel>
                   <Select
@@ -426,7 +484,7 @@ function DataFilters(props: DataFiltersProps) {
                     {renderValueElement()}
                   </FormControl>
                 )}
-                <IconButton type="submit"><AddCircle color="secondary" sx={{ p: 1 }} /></IconButton>
+                <IconButton type="submit"><AddCircle color="secondary" /></IconButton>
                 <Button size="small" variant="contained" onClick={clearFilters} disabled={filterList.length <= 0}>
                   Reset
                 </Button>
@@ -473,17 +531,6 @@ function DataFilters(props: DataFiltersProps) {
             </Box>
           ) : null }
         </Grid>
-      </Box>
-
-      {/* Hidden tabulator instance to filter data programmatically */}
-      <Box sx={{ display: 'none' }}>
-        <ReactTabulator
-          data={data}
-          columns={columns}
-          // eslint-disable-next-line no-return-assign
-          onRef={(r) => (tableInstanceRef.current = r.current)}
-          events={{ dataProcessed: handleDataUpdate }}
-        />
       </Box>
     </Box>
   );
