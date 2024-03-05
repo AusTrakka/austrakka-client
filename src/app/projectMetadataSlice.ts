@@ -449,5 +449,6 @@ export const selectAwaitingProjectMetadata =
     return loadingState === MetadataLoadingState.IDLE ||
           loadingState === MetadataLoadingState.FETCH_REQUESTED ||
           loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+          loadingState === MetadataLoadingState.FIELDS_LOADED ||
           loadingState === MetadataLoadingState.AWAITING_DATA;
   };
