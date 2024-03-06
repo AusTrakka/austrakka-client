@@ -14,7 +14,7 @@ const placeholder = <Skeleton variant="text" animation="wave" width="6em" />;
 
 export function buildMRTColumnDefinitions(
   fields: Field[],
-  fieldLoadingStates: Record<string, LoadingState> | null,
+  fieldLoadingStates?: Record<string, LoadingState> | null,
 ) {
   const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
 
