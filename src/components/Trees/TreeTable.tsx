@@ -16,6 +16,7 @@ interface TreeTableProps {
   rowSelection: any,
   setRowSelection: any,
   displayFields: Field[],
+  fieldLoadingStates: Record<string, LoadingState> | null,
   tableMetadata: any,
   metadataLoadingState: MetadataLoadingState,
 }
@@ -28,6 +29,7 @@ export default function TreeTable(props: TreeTableProps) {
     rowSelection,
     setRowSelection,
     displayFields,
+    fieldLoadingStates,
     tableMetadata,
     metadataLoadingState,
   } = props;
@@ -38,24 +40,21 @@ export default function TreeTable(props: TreeTableProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [csvExportDisabled, setCsvExportDisabled] = useState<boolean>(true);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
 
   // Format display fields into column headers
-  useEffect(
-    () => {
-      const formatTableHeaders = () => {
-        const columnBuilder = buildMRTColumnDefinitions(displayFields);
-        setSampleTableColumns(columnBuilder);
-        setColumnError(false);
-      };
-      if (!columnError) {
-        formatTableHeaders();
-      }
-    },
-    [columnError, displayFields],
-  );
+  useEffect(() => {
+    const formatTableHeaders = () => {
+      const columnBuilder = buildMRTColumnDefinitions(displayFields, fieldLoadingStates);
+      setSampleTableColumns(columnBuilder);
+      setColumnError(false);
+    };
+    if (!columnError) {
+      formatTableHeaders();
+    }
+  }, [columnError, displayFields, fieldLoadingStates]);
 
   // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
@@ -125,18 +124,9 @@ export default function TreeTable(props: TreeTableProps) {
     }
   }, [filteredData, isHidden, selectedIds]);
 
-  // Update CSV export status as data loads
-  // CSV export is not permitted until data is FULLY loaded
-  // If a load error occurs, we will pass no data to the ExportTableData component
-  // However we don't set an error here as we want to see a load error, not CSV download error
+  // Disable CSV export unless metadata is fully loaded
   useEffect(() => {
-    setExportCSVStatus(
-      metadataLoadingState === MetadataLoadingState.IDLE ||
-      metadataLoadingState === MetadataLoadingState.AWAITING_DATA ||
-      metadataLoadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
-        LoadingState.LOADING :
-        LoadingState.SUCCESS,
-    );
+    setCsvExportDisabled(metadataLoadingState !== MetadataLoadingState.DATA_LOADED);
   }, [metadataLoadingState]);
 
   return (
@@ -193,8 +183,7 @@ export default function TreeTable(props: TreeTableProps) {
         renderToolbarInternalActions={() => (
           <ExportTableData
             dataToExport={displayRows}
-            exportCSVStatus={exportCSVStatus}
-            setExportCSVStatus={setExportCSVStatus}
+            disabled={csvExportDisabled}
           />
         )}
       />

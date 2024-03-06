@@ -1,6 +1,6 @@
 import { Close, FileDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
-import React, { memo, useRef } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
 
@@ -10,12 +10,12 @@ const MemoisedCSVLink = memo(CSVLink);
 
 interface ExportTableDataProps {
   dataToExport: any
-  exportCSVStatus: any
-  setExportCSVStatus: any
+  disabled: boolean
 }
 
 function ExportTableData(props: ExportTableDataProps) {
-  const { dataToExport, exportCSVStatus, setExportCSVStatus } = props;
+  const { dataToExport, disabled } = props;
+  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
   const exportData = () => {
@@ -73,7 +73,12 @@ function ExportTableData(props: ExportTableDataProps) {
             onClick={() => {
               exportData();
             }}
-            disabled={exportCSVStatus === LoadingState.LOADING || dataToExport.length < 1}
+            disabled={
+              disabled ||
+              exportCSVStatus === LoadingState.LOADING ||
+              dataToExport.length < 1
+            }
+            color={disabled ? 'secondary' : 'default'}
           >
             {exportCSVStatus === LoadingState.LOADING
               ? (
