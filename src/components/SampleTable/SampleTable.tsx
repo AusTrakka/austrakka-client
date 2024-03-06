@@ -118,7 +118,7 @@ function SampleTable(props: SamplesProps) {
       const formatTableHeaders = () => {
         const sortedDisplayFields = [...displayFields];
         sortedDisplayFields.sort(compareFields);
-        const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
+        const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields, null);
         setSampleTableColumns(columnBuilder);
         setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
       };
