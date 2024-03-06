@@ -15,7 +15,6 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -42,7 +41,7 @@ function Samples(props: SamplesProps) {
   const navigate = useNavigate();
 
   const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [csvExportDisabled, setCsvExportDisabled] = useState<boolean>(true);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
@@ -64,9 +63,13 @@ function Samples(props: SamplesProps) {
     if (!metadata?.fields) return;
 
     // Fields in slice are already sorted
-    const columnBuilder = buildMRTColumnDefinitions(metadata!.fields!);
+    const columnBuilder = buildMRTColumnDefinitions(
+      metadata!.fields!,
+      metadata!.fieldLoadingStates!,
+    );
     setSampleTableColumns(columnBuilder);
-  }, [metadata]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.fields, metadata?.fieldLoadingStates]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
@@ -83,20 +86,10 @@ function Samples(props: SamplesProps) {
     }
   };
 
-  // Update CSV export status as data loads
-  // CSV export is not permitted until data is FULLY loaded
-  // If a load error occurs, we will pass no data to the ExportTableData component
-  // However we don't set an error here as we want to see a load error, not CSV download error
+  // Disable CSV export unless metadata is fully loaded
   useEffect(() => {
-    setExportCSVStatus(
-      isSamplesLoading ||
-      metadata?.loadingState === MetadataLoadingState.IDLE ||
-      metadata?.loadingState === MetadataLoadingState.AWAITING_DATA ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
-        LoadingState.LOADING :
-        LoadingState.SUCCESS,
-    );
-  }, [isSamplesLoading, metadata?.loadingState]);
+    setCsvExportDisabled(metadata?.loadingState !== MetadataLoadingState.DATA_LOADED);
+  }, [metadata?.loadingState]);
 
   const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
 
@@ -158,6 +151,7 @@ function Samples(props: SamplesProps) {
         muiTablePaginationProps={{
           rowsPerPageOptions: [10, 25, 50, 100, 500, 1000],
         }}
+        localization={{ noRecordsToDisplay: '' }}
         initialState={{
           density: 'compact',
         }}
@@ -213,8 +207,7 @@ function Samples(props: SamplesProps) {
                 metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
                   [] : filteredData
               }
-              exportCSVStatus={exportCSVStatus}
-              setExportCSVStatus={setExportCSVStatus}
+              disabled={csvExportDisabled}
             />
           </Box>
         )}
