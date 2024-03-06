@@ -73,7 +73,11 @@ function ExportTableData(props: ExportTableDataProps) {
             onClick={() => {
               exportData();
             }}
-            disabled={disabled || exportCSVStatus === LoadingState.LOADING || dataToExport.length < 1}
+            disabled={
+              disabled ||
+              exportCSVStatus === LoadingState.LOADING ||
+              dataToExport.length < 1
+            }
             color={disabled ? 'secondary' : 'default'}
           >
             {exportCSVStatus === LoadingState.LOADING

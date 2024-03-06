@@ -15,7 +15,6 @@ import {
   Backdrop, Alert, AlertTitle, Badge,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -66,8 +65,10 @@ function Samples(props: SamplesProps) {
     // Fields in slice are already sorted
     const columnBuilder = buildMRTColumnDefinitions(
       metadata!.fields!,
-      metadata!.fieldLoadingStates!,);
+      metadata!.fieldLoadingStates!,
+    );
     setSampleTableColumns(columnBuilder);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
 
   // Open error dialog if loading state changes to error

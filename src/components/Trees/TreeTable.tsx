@@ -46,15 +46,15 @@ export default function TreeTable(props: TreeTableProps) {
 
   // Format display fields into column headers
   useEffect(() => {
-      const formatTableHeaders = () => {
-        const columnBuilder = buildMRTColumnDefinitions(displayFields, fieldLoadingStates);
-        setSampleTableColumns(columnBuilder);
-        setColumnError(false);
-      };
-      if (!columnError) {
-        formatTableHeaders();
-      }
-  },[columnError, displayFields, fieldLoadingStates]);
+    const formatTableHeaders = () => {
+      const columnBuilder = buildMRTColumnDefinitions(displayFields, fieldLoadingStates);
+      setSampleTableColumns(columnBuilder);
+      setColumnError(false);
+    };
+    if (!columnError) {
+      formatTableHeaders();
+    }
+  }, [columnError, displayFields, fieldLoadingStates]);
 
   // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
