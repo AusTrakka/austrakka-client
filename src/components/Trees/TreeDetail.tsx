@@ -294,6 +294,7 @@ function TreeDetail() {
           rowSelection={rowSelection}
           setRowSelection={setRowSelection}
           displayFields={projectMetadata?.fields || []}
+          fieldLoadingStates={projectMetadata?.fieldLoadingStates || null}
           tableMetadata={tableMetadata}
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
         />
