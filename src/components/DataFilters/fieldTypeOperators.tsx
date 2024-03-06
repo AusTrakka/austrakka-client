@@ -12,7 +12,7 @@ export const stringConditions = [
   { value: FilteringOperators.NOT_NULL, name: 'Is not null or empty' },
 ];
 
-export const stringCondtitionPR = [
+export const stringConditionsPR = [
   { value: FilterMatchMode.CONTAINS, name: 'Contains' },
   { value: FilterMatchMode.NOT_CONTAINS, name: 'Doesn\'t Contain' },
   { value: FilterMatchMode.EQUALS, name: 'Equals' },

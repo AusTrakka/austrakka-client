@@ -39,7 +39,8 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
   const columnBuilder: {
     field: string,
     header: string,
-    body?: (rowData: any) => React.ReactNode }[] = [];
+    dataType?: string,
+    body?: (rowData: any) => React.ReactNode, }[] = [];
 
   fields.forEach((field: Field) => {
     if (field.columnName in fieldRenderFunctions) {

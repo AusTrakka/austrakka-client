@@ -188,14 +188,11 @@ function calculateViewFieldNames(fieldName: string, fields: ProjectField[]): str
   return field.analysisLabels.map(label => `${fieldName}_${label}`);
 }
 
-// Given a list of field names, calculate or look up the unique values for the fields
-function calculateUniqueValues(
+function getFieldDetails(
   fieldNames: string[],
   projectViewFields: ProjectViewField[],
-  data: Sample[],
-) : Record<string, string[]> {
-  const uniqueValues: Record<string, string[]> = {};
-  const fieldDetails: ProjectViewField[] = fieldNames.map(
+): ProjectViewField[] {
+  return fieldNames.map(
     field => {
       const fieldDetail = projectViewFields.find(f => f.columnName === field);
       if (!fieldDetail) {
@@ -207,6 +204,31 @@ function calculateUniqueValues(
       return fieldDetail;
     },
   );
+}
+
+// Given sample data and field details, replace date strings with Date objects
+function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNames: string[]): Sample[] {
+  const fieldDetails = getFieldDetails(fieldNames, fields);
+  const dateFields = fieldDetails.filter(field => field.primitiveType === 'date');
+  dateFields.forEach(field => {
+    data.forEach(sample => {
+      const dateString = sample[field.columnName];
+      if (dateString) {
+        sample[field.columnName] = new Date(dateString);
+      }
+    });
+  });
+  return data;
+}
+
+// Given a list of field names, calculate or look up the unique values for the fields
+function calculateUniqueValues(
+  fieldNames: string[],
+  projectViewFields: ProjectViewField[],
+  data: Sample[],
+) : Record<string, string[]> {
+  const uniqueValues: Record<string, string[]> = {};
+  const fieldDetails = getFieldDetails(fieldNames, projectViewFields);
   // fields with defined valid values can just be looked up
   const categoricalFields = fieldDetails.filter(field =>
     field.canVisualise && field.metaDataColumnValidValues);
@@ -346,7 +368,10 @@ export const projectMetadataSlice = createSlice({
       // Each returned view is a superset of the previous; we always replace the data
       // I will go through all the data and if the field is has_sequence
       // I will change all null values to false
-      state.data[projectAbbrev].metadata = replaceHasSequencesNullsWithFalse(data);
+      replaceHasSequencesNullsWithFalse(data);
+      replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
+
+      state.data[projectAbbrev].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (state.data[projectAbbrev].metadata!.length > 0 &&
