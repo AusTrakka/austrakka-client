@@ -21,8 +21,8 @@ export interface DataFilter {
 }
 
 interface DataFiltersProps {
-  dataLength: any // need to pass through
-  filteredDataLength: any // need to pass through
+  dataLength: number // need to pass through
+  filteredDataLength: number // need to pass through
   visibleFields: Sample[] // need to passs through
   allFields: Field[] // need to pass through
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>

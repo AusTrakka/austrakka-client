@@ -1,10 +1,11 @@
-import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-react-table';
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { VisibilityOff, Visibility } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { Paper, Skeleton } from '@mui/material';
+import { DataTable, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
+import { Column } from 'primereact/column';
 import { Field } from '../../types/dtos';
-import { buildMRTColumnDefinitions } from '../../utilities/tableUtils';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -13,40 +14,54 @@ import { Sample } from '../../types/sample.interface';
 interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: any,
-  rowSelection: any,
-  setRowSelection: any,
   displayFields: Field[],
   tableMetadata: any,
   metadataLoadingState: MetadataLoadingState,
+  fieldLoadingState: Record<string, LoadingState>,
 }
-// TODO: Fix column hiding/showing functionaility
+
+interface BodyComponentProps {
+  col: Sample,
+  readyFields: Record<string, LoadingState>,
+}
+
+function BodyComponent(props: BodyComponentProps) {
+  const { col, readyFields } = props;
+  return readyFields[col.field] !== LoadingState.SUCCESS ? (
+    <Skeleton /> // Replace with your skeleton component
+  ) : (
+    col.body// Wrap your existing body content
+  );
+}
 
 export default function TreeTable(props: TreeTableProps) {
   const {
     selectedIds,
     setSelectedIds,
-    rowSelection,
-    setRowSelection,
     displayFields,
     tableMetadata,
     metadataLoadingState,
+    fieldLoadingState,
   } = props;
-  const [formattedData, setFormattedData] = useState([]);
-  const tableInstanceRef = useRef<MRT_TableInstance>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
+  const [formattedData, setFormattedData] = useState<Sample[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [columnError, setColumnError] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
+  const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [selectAll, setSelectAll] = useState(false);
+  const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Format display fields into column headers
   useEffect(
     () => {
       const formatTableHeaders = () => {
-        const columnBuilder = buildMRTColumnDefinitions(displayFields);
+        const columnBuilder = buildPrimeReactColumnDefinitions(displayFields);
         setSampleTableColumns(columnBuilder);
         setColumnError(false);
       };
@@ -61,6 +76,12 @@ export default function TreeTable(props: TreeTableProps) {
   useEffect(() => {
     const tableValues: any = [];
     const fields = displayFields.map(field => field.columnName);
+    if (metadataLoadingState === MetadataLoadingState.IDLE ||
+      metadataLoadingState === MetadataLoadingState.AWAITING_FIELDS ||
+      metadataLoadingState === MetadataLoadingState.AWAITING_DATA) {
+      setLoading(true);
+      return;
+    }
     // Find display field matches in top level object and in metadataValues kv pairs
     tableMetadata.forEach((element: any) => {
       const entry: any = {};
@@ -79,10 +100,13 @@ export default function TreeTable(props: TreeTableProps) {
       }
       tableValues.push(entry);
     });
+    setLoading(false);
+    setAllIds(tableValues.map((sample: any) => sample.Seq_ID));
     setFormattedData(tableValues);
-  }, [tableMetadata, displayFields]);
+  }, [tableMetadata, displayFields, metadataLoadingState]);
 
   useEffect(() => {
+    setLoading(false);
     setFilteredData(formattedData);
     setDisplayRows(formattedData);
   }, [formattedData]);
@@ -99,21 +123,19 @@ export default function TreeTable(props: TreeTableProps) {
     setIsHidden(newState);
   };
 
-  const handleRowSelect = (row: any) => {
-    setRowSelection(row);
-    setSelectedIds(Object.keys(row));
-  };
-
   useEffect(() => {
-    setSelectedIds(Object.keys(rowSelection));
-  }, [rowSelection, setSelectedIds]);
+    if (selectAll) {
+      setSelectedIds(allIds);
+    } else {
+      setSelectedIds(selectedSamples.map((sample: any) => sample.Seq_ID));
+    }
+  }, [allIds, selectAll, selectedSamples, setSelectedIds]);
 
   useEffect(() => {
     // If table filter changes, show all rows again and unselect all
     setDisplayRows(filteredData);
     setIsHidden(false);
-    setRowSelection([]);
-  }, [filteredData, setRowSelection]);
+  }, [filteredData]);
 
   // Dynamically show extra rows as they are selected
   useEffect(() => {
@@ -139,9 +161,54 @@ export default function TreeTable(props: TreeTableProps) {
     );
   }, [metadataLoadingState]);
 
+  const onColumnToggle = (event: MultiSelectChangeEvent) => {
+    const selectedColumns = event.value as Sample[];
+    const newColumns = sampleTableColumns.map((col) => {
+      const newCol = { ...col };
+      newCol.hidden = selectedColumns.some((selectedCol) => selectedCol.field === col.field);
+      return newCol;
+    });
+    setSampleTableColumns(newColumns);
+  };
+
+  const onSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
+    const { checked } = e;
+
+    if (checked) {
+      setSelectAll(true);
+      setSelectedSamples(displayRows);
+    } else {
+      setSelectAll(false);
+      setSelectedSamples([]);
+    }
+  };
+
+  const header = (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <MultiSelect
+          value={sampleTableColumns.filter((col: Sample) => col.hidden === true)}
+          options={sampleTableColumns}
+          optionLabel="header"
+          onChange={onColumnToggle}
+          display="chip"
+          placeholder="Hide Columns"
+          className="w-full sm:w-20rem"
+          filter
+          showSelectAll
+        />
+        <ExportTableData
+          dataToExport={displayRows}
+          exportCSVStatus={exportCSVStatus}
+          setExportCSVStatus={setExportCSVStatus}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <DataFilters
+      {/* <DataFilters
         data={formattedData}
         fields={displayFields}
         setFilteredData={setFilteredData}
@@ -149,55 +216,51 @@ export default function TreeTable(props: TreeTableProps) {
         setFilterList={setFilterList}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-      />
-      <MaterialReactTable
-        tableInstanceRef={tableInstanceRef}
-        columns={sampleTableColumns as any} // unclear MRT_ColumnDef/MRT_TableInstance templates
-        data={displayRows}
-        enableRowSelection
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: row.getToggleSelectedHandler(),
-          sx: { cursor: 'pointer' },
-        })}
-        getRowId={(originalRow: Sample) => originalRow.Seq_ID}
-        onRowSelectionChange={(row) => handleRowSelect(row)}
-        state={{ rowSelection }}
-        enableHiding={false}
-        initialState={{ density: 'compact' }}
-        positionToolbarAlertBanner="none"
-        enableDensityToggle={false}
-        selectAllMode="all"
-        enableFullScreenToggle={false}
-        enableGlobalFilter={false}
-        enableColumnFilters={false}
-        enableRowVirtualization
-        renderTopToolbarCustomActions={() => (
-          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }} alignItems="center">
-            <IconButton
-              onClick={() => {
-                rowVisibilityHandler();
-              }}
-            >
-              <Tooltip title={isHidden ? 'Show unselected rows' : 'Hide unselected rows'} arrow>
-                {isHidden ?
-                  <Visibility />
-                  :
-                  <VisibilityOff />}
-              </Tooltip>
-            </IconButton>
-            <Typography variant="caption">
-              {`${Object.keys(rowSelection).length} row(s) selected`}
-            </Typography>
-          </Box>
-        )}
-        renderToolbarInternalActions={() => (
-          <ExportTableData
-            dataToExport={displayRows}
-            exportCSVStatus={exportCSVStatus}
-            setExportCSVStatus={setExportCSVStatus}
-          />
-        )}
-      />
+      /> */}
+      <Paper>
+        <div>
+          <DataTable
+            value={displayRows ?? []}
+            dataKey="Seq_ID"
+            size="small"
+            removableSort
+            showGridlines
+            scrollable
+            scrollHeight="calc(100vh - 300px)"
+            paginator
+            rows={25}
+            resizableColumns
+            columnResizeMode="expand"
+            rowsPerPageOptions={[25, 50, 100, 500]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            paginatorPosition="bottom"
+            paginatorLeft
+            loading={loading}
+            header={header}
+            reorderableColumns
+            selectionMode="multiple"
+            selection={selectedSamples}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
+            onSelectionChange={(e: any) => setSelectedSamples(e.value as Sample[])}
+          >
+            <Column selectionMode="multiple" style={{ width: '3em' }} />
+            {sampleTableColumns.map((col: Sample) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={BodyComponent({ col, readyFields: fieldLoadingState })}
+                hidden={col.hidden}
+                sortable
+                resizeable
+                style={{ minWidth: '150px' }}
+              />
+            ))}
+          </DataTable>
+        </div>
+      </Paper>
     </>
   );
 }

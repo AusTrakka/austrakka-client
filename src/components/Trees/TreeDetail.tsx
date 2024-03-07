@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
+import { DateField } from '@mui/x-date-pickers';
 import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
@@ -14,7 +15,7 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import { isoDateLocalDate, useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime, useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -177,12 +178,19 @@ function TreeDetail() {
           blockLengths.id = nodeIdLength;
         }
         for (const [block, blockValue] of Object.entries(value)) {
-          const length = blockValue.label ? blockValue.label.length : 0;
+          let length = 0;
+          if (blockValue.label) {
+            if (typeof blockValue.label === 'string') {
+              length = blockValue.label.length;
+            } else if (blockValue.label instanceof Date) {
+              length = isoDateLocalDateNoTime(blockValue.label.toISOString()).length;
+            }
+          }
           // check if the block has been seen before
           if (!(block in blockLengths)) {
             blockLengths[block] = length;
           } else if (length > blockLengths[block]) {
-            blockLengths[block] = blockValue.label.length;
+            blockLengths[block] = length;
           }
         }
       }
@@ -198,7 +206,16 @@ function TreeDetail() {
               return prefix + ' '.repeat(blockLength);
             }
             if (state.alignLabels) {
-              return prefix + value[block].label.padEnd(blockLength, ' ');
+              let labelString;
+              // Check if label is a Date object
+              if (value[block].label instanceof Date) {
+                // Convert the Date object to a string using toLocaleDateString
+                labelString = isoDateLocalDateNoTime(value[block].label as string);
+              } else {
+                // Assume label is already a string
+                labelString = value[block].label.toString();
+              }
+              return prefix + labelString.padEnd(blockLength, ' ');
             }
             return prefix + value[block].label;
           },
@@ -291,11 +308,10 @@ function TreeDetail() {
         <TreeTable
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
-          rowSelection={rowSelection}
-          setRowSelection={setRowSelection}
           displayFields={projectMetadata?.fields || []}
           tableMetadata={tableMetadata}
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
+          fieldLoadingState={projectMetadata?.fieldLoadingStates || {}}
         />
       );
     }

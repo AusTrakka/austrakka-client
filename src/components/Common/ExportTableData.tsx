@@ -75,18 +75,6 @@ function ExportTableData(props: ExportTableDataProps) {
             }}
             disabled={exportCSVStatus === LoadingState.LOADING || dataToExport.length < 1}
           >
-            {exportCSVStatus === LoadingState.LOADING
-              ? (
-                <CircularProgress
-                  color="secondary"
-                  size={40}
-                  sx={{
-                    position: 'absolute',
-                    zIndex: 1,
-                  }}
-                />
-              )
-              : null}
             <FileDownload />
           </IconButton>
         </span>
