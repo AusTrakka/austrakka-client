@@ -130,7 +130,6 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   const handleFilterDateChange = (newDate: any) => {
-    console.log('DATE', newDate);
     setNewFilter({
       ...newFilter,
       value: newDate,
@@ -190,13 +189,11 @@ function DataFilters(props: DataFiltersProps) {
       filterList.forEach((filter) => {
         if (filter.fieldType === FieldTypes.DATE) {
           const newDate = new Date(filter.value.$d);
-          console.log('DATE OBJECT', newDate);
           if (filtersBuilder[filter.field]) {
             (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
               { value: newDate, matchMode: filter.condition as FilterMatchMode },
             );
           } else {
-            console.log(filter.value);
             filtersBuilder[filter.field] = {
               operator: FilterOperator.AND,
               constraints: [
@@ -225,7 +222,6 @@ function DataFilters(props: DataFiltersProps) {
         }
       });
     }
-    console.log('FILTERS', filtersBuilder);
     setPrimeReactFilters(filtersBuilder);
   }, [filterList, setPrimeReactFilters]);
 

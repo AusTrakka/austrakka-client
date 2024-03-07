@@ -40,6 +40,7 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
     field: string,
     header: string,
     dataType?: string,
+    hidden?: boolean,
     body?: (rowData: any) => React.ReactNode, }[] = [];
 
   fields.forEach((field: Field) => {
@@ -64,21 +65,6 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
     }
   });
   return columnBuilder;
-}
-
-export function buildPrimeReactDefualtColumnFilters(fields: Field[]) {
-  const filterBuilder: DataTableFilterMeta = {};
-  for (const field of fields) {
-    filterBuilder[field.columnName] = {
-      operator: FilterOperator.AND, // Adjust as needed
-      constraints: field.primitiveType === 'date'
-        ? [{ value: null, matchMode: FilterMatchMode.DATE_IS }]
-        : [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    };
-  }
-  filterBuilder['global'] = { value: null, matchMode: FilterMatchMode.CONTAINS };
-
-  return filterBuilder;
 }
 
 export function buildTabulatorColumnDefinitions(fields: Field[]) {

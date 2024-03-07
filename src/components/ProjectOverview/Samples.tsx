@@ -1,21 +1,19 @@
 /* eslint-disable react/jsx-pascal-case */
-import 'primereact/resources/themes/md-light-indigo/theme.css';
+import 'primereact/resources/themes/saga-green/theme.css';
 import React, {
-  memo, useEffect, SetStateAction, useState, useRef,
+  memo, useEffect, SetStateAction, useState,
 } from 'react';
 import { Close } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent, DataTableFilterMeta, DataTableStateEvent } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import {
   IconButton,
-  CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle, Paper, LinearProgress,
+  Dialog,
+  Alert, AlertTitle, Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
-import { PaginatorJumpToPageInputOptions } from 'primereact/paginator';
-import { InputText } from 'primereact/inputtext';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
@@ -55,10 +53,7 @@ function Samples(props: SamplesProps) {
     inputFilters,
   } = props;
   const navigate = useNavigate();
-  const dt = useRef<DataTable<Sample[]>>(null);
-
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
-  const [visibleColumns, setVisibleColumns] = useState<Sample[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
@@ -76,12 +71,9 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
-    console.log('columnBuilder', columnBuilder);
     setReadyFields(metadata!.fieldLoadingStates);
     setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
-    setVisibleColumns(columnBuilder);
-    console.log(metadata?.metadata);
   }, [metadata]);
 
   // Open error dialog if loading state changes to error
@@ -115,28 +107,22 @@ function Samples(props: SamplesProps) {
   }, [isSamplesLoading, metadata?.loadingState]);
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumnsToHide = event.value; // Store columns to hide
-
-    const remainderColumns = sampleTableColumns.filter((col) =>
-    // Keep columns that are NOT selected for hiding
-      !selectedColumnsToHide.some((sCol: Sample) => sCol.field === col.field));
-
-    setVisibleColumns(remainderColumns);
-  };
-
-  const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
-
-  const onPageChange = (event: DataTableStateEvent) => {
-    console.log('onPageChange', event);
-    setFilteredDataLength(event.totalRecords);
+    setLoadingState(true);
+    const selectedColumns = event.value as Sample[];
+    const newColumns = sampleTableColumns.map((col) => {
+      const newCol = { ...col };
+      newCol.hidden = selectedColumns.some((selectedCol) => selectedCol.field === col.field);
+      return newCol;
+    });
+    setSampleTableColumns(newColumns);
+    setLoadingState(false);
   };
 
   const header = (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <MultiSelect
-          value={sampleTableColumns.filter((col) =>
-            !visibleColumns.some((vCol) => vCol.field === col.field))}
+          value={sampleTableColumns.filter((col: Sample) => col.hidden === true)}
           options={sampleTableColumns}
           optionLabel="header"
           onChange={onColumnToggle}
@@ -162,13 +148,6 @@ function Samples(props: SamplesProps) {
 
   return (
     <>
-      <Backdrop
-        // This Backdrop will not do anything in a tab, where the entire display is suppressed
-        sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
-        open={isSamplesLoading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -196,7 +175,7 @@ function Samples(props: SamplesProps) {
       <DataFilters
         dataLength={metadata?.metadata?.length ?? 0}
         filteredDataLength={filteredDataLength}
-        visibleFields={visibleColumns}
+        visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
@@ -212,18 +191,18 @@ function Samples(props: SamplesProps) {
         <div>
           <DataTable
             value={metadata?.metadata ?? []}
-            onPage={onPageChange}
             onValueChange={(e) => { setFilteredDataLength(e.length); setLoadingState(false); }}
             size="small"
             removableSort
+            showGridlines
             scrollable
-            scrollHeight="calc(100vh - 400px)"
+            scrollHeight="calc(100vh - 500px)"
             paginator
             loading={loadingState}
-            rows={10}
+            rows={25}
             resizableColumns
             columnResizeMode="expand"
-            rowsPerPageOptions={[10, 50, 100, 500]}
+            rowsPerPageOptions={[25, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
@@ -234,14 +213,16 @@ function Samples(props: SamplesProps) {
             filters={currentFilters}
             reorderableColumns
           >
-            {visibleColumns.map((col) => (
+            {sampleTableColumns.map((col) => (
               <Column
                 key={col.field}
                 field={col.field}
                 header={col.header}
                 body={BodyComponent({ col, readyFields })}
+                hidden={col.hidden}
                 sortable
                 resizeable
+                style={{ minWidth: '150px' }}
               />
             ))}
           </DataTable>
