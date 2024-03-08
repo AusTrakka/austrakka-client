@@ -40,7 +40,6 @@ export default function TreeTable(props: TreeTableProps) {
     selectedIds,
     setSelectedIds,
     displayFields,
-    fieldLoadingStates,
     tableMetadata,
     metadataLoadingState,
     fieldLoadingState,
@@ -51,7 +50,6 @@ export default function TreeTable(props: TreeTableProps) {
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [selectAll, setSelectAll] = useState(false);
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
@@ -138,9 +136,6 @@ export default function TreeTable(props: TreeTableProps) {
   // CSV export is not permitted until data is FULLY loaded
   // If a load error occurs, we will pass no data to the ExportTableData component
   // However we don't set an error here as we want to see a load error, not CSV download error
-  useEffect(() => {
-    setCsvExportDisabled(metadataLoadingState !== MetadataLoadingState.DATA_LOADED);
-  }, [metadataLoadingState]);
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
     const selectedColumns = event.value as Sample[];
@@ -203,8 +198,7 @@ export default function TreeTable(props: TreeTableProps) {
         </div>
         <ExportTableData
           dataToExport={displayRows}
-          exportCSVStatus={exportCSVStatus}
-          setExportCSVStatus={setExportCSVStatus}
+          disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
     </div>

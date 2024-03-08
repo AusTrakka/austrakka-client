@@ -1,5 +1,5 @@
 import { Close, FileDownload } from '@mui/icons-material';
-import { Alert, AlertTitle, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
+import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { memo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';

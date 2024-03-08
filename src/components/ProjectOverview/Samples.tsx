@@ -52,8 +52,7 @@ function Samples(props: SamplesProps) {
   } = props;
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
@@ -90,11 +89,6 @@ function Samples(props: SamplesProps) {
     }
   };
 
-  // Disable CSV export unless metadata is fully loaded
-  useEffect(() => {
-    setCsvExportDisabled(metadata?.loadingState !== MetadataLoadingState.DATA_LOADED);
-  }, [metadata?.loadingState]);
-
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
     setLoadingState(true);
     const selectedColumns = event.value as Sample[];
@@ -126,8 +120,7 @@ function Samples(props: SamplesProps) {
                   metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
                     [] : metadata?.metadata ?? []
                 }
-          exportCSVStatus={exportCSVStatus}
-          setExportCSVStatus={setExportCSVStatus}
+          disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
     </div>
