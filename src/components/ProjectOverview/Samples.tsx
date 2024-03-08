@@ -53,7 +53,7 @@ function Samples(props: SamplesProps) {
     inputFilters,
   } = props;
   const navigate = useNavigate();
-  const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
@@ -109,7 +109,7 @@ function Samples(props: SamplesProps) {
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
     setLoadingState(true);
     const selectedColumns = event.value as Sample[];
-    const newColumns = sampleTableColumns.map((col) => {
+    const newColumns = sampleTableColumns.map((col: any) => {
       const newCol = { ...col };
       newCol.hidden = selectedColumns.some((selectedCol) => selectedCol.field === col.field);
       return newCol;
@@ -213,7 +213,7 @@ function Samples(props: SamplesProps) {
             filters={currentFilters}
             reorderableColumns
           >
-            {sampleTableColumns.map((col) => (
+            {sampleTableColumns.map((col: any) => (
               <Column
                 key={col.field}
                 field={col.field}

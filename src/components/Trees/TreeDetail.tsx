@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { MRT_RowSelectionState } from 'material-react-table';
-import { DateField } from '@mui/x-date-pickers';
 import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
@@ -89,7 +88,6 @@ function TreeDetail() {
     useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
@@ -290,7 +288,6 @@ function TreeDetail() {
           metadata={phylocanvasMetadata}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
-          setRowSelection={setRowSelection}
           rootId={rootId}
           styles={styles}
           // eslint-disable-next-line react/jsx-props-no-spreading
@@ -324,11 +321,6 @@ function TreeDetail() {
     value: string[],
   ) => {
     setSelectedIds(value);
-    const obj:any = {};
-    for (const key of value) {
-      obj[key] = true;
-    }
-    setRowSelection(obj);
   };
 
   const handleStateChange = (

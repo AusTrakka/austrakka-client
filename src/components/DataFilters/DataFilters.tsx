@@ -10,7 +10,7 @@ import { DataTable, DataTableFilterMeta, DataTableOperatorFilterMetaData } from 
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditionsPR, stringConditionsPR, numberConditionsPR, booleanConditionsPR } from './fieldTypeOperators';
 import { Sample } from '../../types/sample.interface';
-import { Field } from '../../types/dtos';
+import { Field, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
   shakeElement?: boolean,
@@ -23,8 +23,8 @@ export interface DataFilter {
 interface DataFiltersProps {
   dataLength: number // need to pass through
   filteredDataLength: number // need to pass through
-  visibleFields: Sample[] // need to passs through
-  allFields: Field[] // need to pass through
+  visibleFields: any[] // need to passs through
+  allFields: ProjectViewField[] // need to pass through
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>

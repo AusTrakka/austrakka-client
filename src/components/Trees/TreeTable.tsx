@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Skeleton } from '@mui/material';
-import { DataTable, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column } from 'primereact/column';
-import { Field } from '../../types/dtos';
+import { Field, ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
-import { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -14,8 +14,8 @@ import { Sample } from '../../types/sample.interface';
 interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: any,
-  displayFields: Field[],
-  tableMetadata: any,
+  displayFields: ProjectViewField[],
+  tableMetadata: Sample[],
   metadataLoadingState: MetadataLoadingState,
   fieldLoadingState: Record<string, LoadingState>,
 }
@@ -55,7 +55,9 @@ export default function TreeTable(props: TreeTableProps) {
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
   const [loading, setLoading] = useState<boolean>(true);
+  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
 
   // Format display fields into column headers
   useEffect(
@@ -108,13 +110,13 @@ export default function TreeTable(props: TreeTableProps) {
   useEffect(() => {
     setLoading(false);
     setFilteredData(formattedData);
+    setFilteredDataLength(formattedData.length);
     setDisplayRows(formattedData);
   }, [formattedData]);
 
   const rowVisibilityHandler = () => {
     const newState = !isHidden;
     if (newState === true) {
-      // Filter rows based on ID field
       const filtered = filteredData.filter((e: any) => selectedIds.includes(e.Seq_ID));
       setDisplayRows(filtered);
     } else {
@@ -124,7 +126,7 @@ export default function TreeTable(props: TreeTableProps) {
   };
 
   useEffect(() => {
-    if (selectAll) {
+    if (selectAll && currentFilter.isEmpty) {
       setSelectedIds(allIds);
     } else {
       setSelectedIds(selectedSamples.map((sample: any) => sample.Seq_ID));
@@ -173,10 +175,9 @@ export default function TreeTable(props: TreeTableProps) {
 
   const onSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
     const { checked } = e;
-
     if (checked) {
       setSelectAll(true);
-      setSelectedSamples(displayRows);
+      setSelectedSamples(filteredData);
     } else {
       setSelectAll(false);
       setSelectedSamples([]);
@@ -208,30 +209,39 @@ export default function TreeTable(props: TreeTableProps) {
 
   return (
     <>
-      {/* <DataFilters
-        data={formattedData}
-        fields={displayFields}
-        setFilteredData={setFilteredData}
+      <DataFilters
+        dataLength={tableMetadata.length ?? 0}
+        filteredDataLength={filteredDataLength}
+        visibleFields={sampleTableColumns}
+        allFields={displayFields}
+        setPrimeReactFilters={setCurrentFilter}
         filterList={filterList}
         setFilterList={setFilterList}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-      /> */}
+        setLoadingState={setLoading}
+      />
       <Paper>
         <div>
           <DataTable
             value={displayRows ?? []}
+            onValueChange={(e) => {
+              setFilteredDataLength(e.length);
+              setLoading(false);
+              setFilteredData(e);
+            }}
             dataKey="Seq_ID"
             size="small"
             removableSort
             showGridlines
+            filters={currentFilter}
             scrollable
             scrollHeight="calc(100vh - 300px)"
             paginator
-            rows={25}
+            rows={10}
             resizableColumns
             columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500]}
+            rowsPerPageOptions={[10, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
