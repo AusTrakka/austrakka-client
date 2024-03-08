@@ -72,7 +72,8 @@ function Samples(props: SamplesProps) {
     setReadyFields(metadata!.fieldLoadingStates);
     setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
-  }, [metadata]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.fields, metadata?.fieldLoadingStates]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
@@ -89,20 +90,10 @@ function Samples(props: SamplesProps) {
     }
   };
 
-  // Update CSV export status as data loads
-  // CSV export is not permitted until data is FULLY loaded
-  // If a load error occurs, we will pass no data to the ExportTableData component
-  // However we don't set an error here as we want to see a load error, not CSV download error
+  // Disable CSV export unless metadata is fully loaded
   useEffect(() => {
-    setExportCSVStatus(
-      isSamplesLoading ||
-      metadata?.loadingState === MetadataLoadingState.IDLE ||
-      metadata?.loadingState === MetadataLoadingState.AWAITING_DATA ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
-        LoadingState.LOADING :
-        LoadingState.SUCCESS,
-    );
-  }, [isSamplesLoading, metadata?.loadingState]);
+    setCsvExportDisabled(metadata?.loadingState !== MetadataLoadingState.DATA_LOADED);
+  }, [metadata?.loadingState]);
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
     setLoadingState(true);

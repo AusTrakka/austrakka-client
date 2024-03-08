@@ -40,6 +40,7 @@ export default function TreeTable(props: TreeTableProps) {
     selectedIds,
     setSelectedIds,
     displayFields,
+    fieldLoadingStates,
     tableMetadata,
     metadataLoadingState,
     fieldLoadingState,
@@ -138,13 +139,7 @@ export default function TreeTable(props: TreeTableProps) {
   // If a load error occurs, we will pass no data to the ExportTableData component
   // However we don't set an error here as we want to see a load error, not CSV download error
   useEffect(() => {
-    setExportCSVStatus(
-      metadataLoadingState === MetadataLoadingState.IDLE ||
-      metadataLoadingState === MetadataLoadingState.AWAITING_DATA ||
-      metadataLoadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ?
-        LoadingState.LOADING :
-        LoadingState.SUCCESS,
-    );
+    setCsvExportDisabled(metadataLoadingState !== MetadataLoadingState.DATA_LOADED);
   }, [metadataLoadingState]);
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {

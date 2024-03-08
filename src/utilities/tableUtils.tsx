@@ -1,16 +1,35 @@
+/* eslint-disable no-param-reassign */
+import React from 'react';
 import { MRT_ColumnDef } from 'material-react-table';
+import { Skeleton } from '@mui/material';
 import { Field } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
 import { Sample } from '../types/sample.interface';
+import LoadingState from '../constants/loadingState';
 
 export const compareFields = (field1: Field, field2: Field) =>
   field1.columnOrder - field2.columnOrder;
 
-export function buildMRTColumnDefinitions(fields: Field[]) {
+const placeholder = <Skeleton variant="text" animation="wave" width="6em" />;
+
+export function buildMRTColumnDefinitions(
+  fields: Field[],
+  fieldLoadingStates?: Record<string, LoadingState> | null,
+) {
   const columnBuilder: React.SetStateAction<MRT_ColumnDef<Sample>[]> = [];
 
   fields.forEach((element: Field) => {
-    if (element.columnName in fieldRenderFunctions) {
+    // if we were passed fieldLoadingStates, and state is idle/loading, render placeholder
+    if (fieldLoadingStates && (
+      fieldLoadingStates[element.columnName] === LoadingState.IDLE ||
+      fieldLoadingStates[element.columnName] === LoadingState.LOADING)
+    ) {
+      columnBuilder.push({
+        accessorKey: element.columnName,
+        header: `${element.columnName}`,
+        Cell: () => placeholder,
+      });
+    } else if (element.columnName in fieldRenderFunctions) {
       columnBuilder.push({
         accessorKey: element.columnName,
         header: `${element.columnName}`,

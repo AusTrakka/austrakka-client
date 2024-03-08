@@ -305,6 +305,7 @@ function TreeDetail() {
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           displayFields={projectMetadata?.fields || []}
+          fieldLoadingStates={projectMetadata?.fieldLoadingStates || null}
           tableMetadata={tableMetadata}
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
           fieldLoadingState={projectMetadata?.fieldLoadingStates || {}}
