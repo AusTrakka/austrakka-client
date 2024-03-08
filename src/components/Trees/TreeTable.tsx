@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Skeleton } from '@mui/material';
+import { Button, Paper, Skeleton, Tooltip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column } from 'primereact/column';
-import { Field, ProjectViewField } from '../../types/dtos';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
@@ -46,7 +47,6 @@ export default function TreeTable(props: TreeTableProps) {
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [columnError, setColumnError] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -58,6 +58,7 @@ export default function TreeTable(props: TreeTableProps) {
   const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
+  const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
 
   // Format display fields into column headers
   useEffect(
@@ -114,41 +115,24 @@ export default function TreeTable(props: TreeTableProps) {
     setDisplayRows(formattedData);
   }, [formattedData]);
 
-  const rowVisibilityHandler = () => {
-    const newState = !isHidden;
-    if (newState === true) {
-      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.Seq_ID));
-      setDisplayRows(filtered);
-    } else {
-      setDisplayRows(filteredData);
-    }
-    setIsHidden(newState);
-  };
-
   useEffect(() => {
-    if (selectAll && currentFilter.isEmpty) {
+    if (selectAll && !currentFilter) {
       setSelectedIds(allIds);
     } else {
       setSelectedIds(selectedSamples.map((sample: any) => sample.Seq_ID));
     }
-  }, [allIds, selectAll, selectedSamples, setSelectedIds]);
+  }, [allIds, currentFilter, selectAll, selectedSamples, setSelectedIds]);
 
   useEffect(() => {
-    // If table filter changes, show all rows again and unselect all
-    setDisplayRows(filteredData);
-    setIsHidden(false);
-  }, [filteredData]);
+    setSelectedIds(selectedIds);
+    setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
+  }, [formattedData, selectedIds, setSelectedIds]);
 
-  // Dynamically show extra rows as they are selected
   useEffect(() => {
-    if (isHidden === true) {
-      const filtered = filteredData.filter((e: any) => selectedIds.includes(e.Seq_ID));
-      setDisplayRows(filtered);
-    } else {
-      setDisplayRows(filteredData);
+    if (showSelectedRowsOnly) {
+      setDisplayRows(selectedSamples);
     }
-  }, [filteredData, isHidden, selectedIds]);
-
+  }, [selectedSamples, showSelectedRowsOnly]);
   // Update CSV export status as data loads
   // CSV export is not permitted until data is FULLY loaded
   // If a load error occurs, we will pass no data to the ExportTableData component
@@ -173,6 +157,15 @@ export default function TreeTable(props: TreeTableProps) {
     setSampleTableColumns(newColumns);
   };
 
+  const toggleShowSelectedRowsOnly = () => {
+    setShowSelectedRowsOnly((prev) => !prev);
+    if (showSelectedRowsOnly) {
+      setDisplayRows(filteredData);
+    } else {
+      setDisplayRows(selectedSamples);
+    }
+  };
+
   const onSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
     const { checked } = e;
     if (checked) {
@@ -187,17 +180,32 @@ export default function TreeTable(props: TreeTableProps) {
   const header = (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MultiSelect
-          value={sampleTableColumns.filter((col: Sample) => col.hidden === true)}
-          options={sampleTableColumns}
-          optionLabel="header"
-          onChange={onColumnToggle}
-          display="chip"
-          placeholder="Hide Columns"
-          className="w-full sm:w-20rem"
-          filter
-          showSelectAll
-        />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <MultiSelect
+            value={sampleTableColumns.filter((col: Sample) => col.hidden === true)}
+            options={sampleTableColumns}
+            optionLabel="header"
+            onChange={onColumnToggle}
+            display="chip"
+            placeholder="Hide Columns"
+            className="w-full sm:w-20rem"
+            filter
+            showSelectAll
+          />
+          <Tooltip title="Hide unselected">
+            <Button
+              variant="outlined"
+              disabled={selectedSamples.length === 0}
+              color={showSelectedRowsOnly ? 'primary' : 'inherit'}
+              onClick={toggleShowSelectedRowsOnly}
+              startIcon={showSelectedRowsOnly ? <Visibility /> : <VisibilityOff />}
+              size="small"
+              style={{ marginLeft: '0.5rem', width: '175px' }} // Add smaller margin
+            >
+              {showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+            </Button>
+          </Tooltip>
+        </div>
         <ExportTableData
           dataToExport={displayRows}
           exportCSVStatus={exportCSVStatus}

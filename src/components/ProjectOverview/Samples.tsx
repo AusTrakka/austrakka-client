@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
 import 'primereact/resources/themes/saga-green/theme.css';
 import React, {
-  memo, useEffect, SetStateAction, useState,
+  memo, useEffect, useState,
 } from 'react';
 import { Close } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
@@ -26,9 +26,8 @@ import { useAppSelector } from '../../app/store';
 
 interface SamplesProps {
   projectAbbrev: string,
-  totalSamples: number,
   isSamplesLoading: boolean,
-  inputFilters: SetStateAction<DataFilter[]> | null,
+  inputFilters: DataFilter[] | null,
 }
 
 interface BodyComponentProps {
@@ -48,7 +47,6 @@ function BodyComponent(props: BodyComponentProps) {
 function Samples(props: SamplesProps) {
   const {
     projectAbbrev,
-    totalSamples,
     isSamplesLoading,
     inputFilters,
   } = props;
@@ -58,7 +56,7 @@ function Samples(props: SamplesProps) {
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =

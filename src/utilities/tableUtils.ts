@@ -1,6 +1,4 @@
 import { MRT_ColumnDef } from 'material-react-table';
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Field } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
 import { Sample } from '../types/sample.interface';

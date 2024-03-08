@@ -2,7 +2,6 @@ import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { MRT_RowSelectionState } from 'material-react-table';
 import { JobInstance } from '../../types/dtos';
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';

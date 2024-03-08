@@ -6,10 +6,9 @@ import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/ico
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { DataTable, DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditionsPR, stringConditionsPR, numberConditionsPR, booleanConditionsPR } from './fieldTypeOperators';
-import { Sample } from '../../types/sample.interface';
 import { Field, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
@@ -178,7 +177,7 @@ function DataFilters(props: DataFiltersProps) {
     setFilterList([]);
   };
 
-  const handleFilterDelete = (filter: object) => {
+  const handleFilterDelete = (filter: DataFilter) => {
     setFilterList((oldList) => oldList.filter((filterEntry) => filterEntry !== filter));
   };
 
