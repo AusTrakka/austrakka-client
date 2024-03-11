@@ -6,6 +6,7 @@ import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
@@ -96,13 +97,24 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       </Grid>
       <Grid item xs={12}>
         <DataFilters
-          data={metadata?.metadata ?? []}
-          fields={metadata?.fields ?? []} // want to pass in field loading states?
-          setFilteredData={setFilteredData}
-          filterList={filterList}
-          setFilterList={setFilterList}
-          isOpen={isDataFiltersOpen}
-          setIsOpen={setIsDataFiltersOpen}
+          dataLength={0}
+          filteredDataLength={0}
+          visibleFields={[]}
+          allFields={[]}
+          setPrimeReactFilters={function (value: React.SetStateAction<DataTableFilterMeta>): void {
+            throw new Error('Function not implemented.');
+          }}
+          isOpen={false}
+          setIsOpen={function (value: React.SetStateAction<boolean>): void {
+            throw new Error('Function not implemented.');
+          }}
+          filterList={[]}
+          setFilterList={function (value: React.SetStateAction<DataFilter[]>): void {
+            throw new Error('Function not implemented.');
+          }}
+          setLoadingState={function (value: React.SetStateAction<boolean>): void {
+            throw new Error('Function not implemented.');
+          }}
         />
       </Grid>
     </Grid>

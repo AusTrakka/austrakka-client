@@ -4,7 +4,7 @@ import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.inter
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
-  onSelectedIdsChange: CallableFunction;
+  onSelectedIdsChange: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export type TreeExportFuctions = {

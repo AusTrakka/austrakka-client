@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Paper, Skeleton, Tooltip } from '@mui/material';
+import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column } from 'primereact/column';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
@@ -14,7 +14,7 @@ import { Sample } from '../../types/sample.interface';
 
 interface TreeTableProps {
   selectedIds: string[],
-  setSelectedIds: any,
+  setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
   displayFields: ProjectViewField[],
   tableMetadata: Sample[],
   metadataLoadingState: MetadataLoadingState,
@@ -60,82 +60,59 @@ export default function TreeTable(props: TreeTableProps) {
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
 
   // Format display fields into column headers
-  useEffect(
-    () => {
-      const formatTableHeaders = () => {
-        const columnBuilder = buildPrimeReactColumnDefinitions(displayFields);
-        setSampleTableColumns(columnBuilder);
-        setColumnError(false);
-      };
-      if (!columnError) {
-        formatTableHeaders();
-      }
-    },
-    [columnError, displayFields],
-  );
-
-  // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
-    const tableValues: any = [];
-    const fields = displayFields.map(field => field.columnName);
+    const formatTableHeaders = () => {
+      const columnBuilder = buildPrimeReactColumnDefinitions(displayFields);
+      setSampleTableColumns(columnBuilder);
+      setColumnError(false);
+    };
+
+    if (!columnError) {
+      formatTableHeaders();
+    }
+  }, [columnError, displayFields]);
+
+  useEffect(() => {
+    const processTableValues = () => {
+      setLoading(false);
+      setAllIds(tableMetadata.map((sample: any) => sample.Seq_ID));
+      setFormattedData(tableMetadata);
+      setFilteredData(tableMetadata);
+      setFilteredDataLength(tableMetadata.length);
+      setDisplayRows(tableMetadata);
+    };
+
     if (metadataLoadingState === MetadataLoadingState.IDLE ||
       metadataLoadingState === MetadataLoadingState.AWAITING_FIELDS ||
       metadataLoadingState === MetadataLoadingState.AWAITING_DATA) {
       setLoading(true);
       return;
     }
-    // Find display field matches in top level object and in metadataValues kv pairs
-    tableMetadata.forEach((element: any) => {
-      const entry: any = {};
-      for (const [key, value] of Object.entries(element) as [key: string, value: any]) {
-        if (fields.includes(key)) {
-          entry[key] = value;
-        } else if (key === 'sampleName') {
-          entry.Seq_ID = value;
-        } else if (key === 'metadataValues') {
-          value.forEach((kv: any) => {
-            if (fields.includes(kv.key)) {
-              entry[kv.key] = kv.value;
-            }
-          });
-        }
-      }
-      tableValues.push(entry);
-    });
-    setLoading(false);
-    setAllIds(tableValues.map((sample: any) => sample.Seq_ID));
-    setFormattedData(tableValues);
-  }, [tableMetadata, displayFields, metadataLoadingState]);
 
-  useEffect(() => {
-    setLoading(false);
-    setFilteredData(formattedData);
-    setFilteredDataLength(formattedData.length);
-    setDisplayRows(formattedData);
-  }, [formattedData]);
-
-  useEffect(() => {
-    if (selectAll && !currentFilter) {
-      setSelectedIds(allIds);
-    } else {
-      setSelectedIds(selectedSamples.map((sample: any) => sample.Seq_ID));
+    if (Object.keys(currentFilter).length === 0) {
+      processTableValues();
     }
-  }, [allIds, currentFilter, selectAll, selectedSamples, setSelectedIds]);
+  }, [tableMetadata, displayFields, metadataLoadingState, currentFilter]);
 
   useEffect(() => {
-    setSelectedIds(selectedIds);
+    if (selectAll && Object.keys(currentFilter).length === 0) {
+      setSelectedIds(allIds);
+    } else if (selectAll && Object.keys(currentFilter).length > 0) {
+      setSelectedIds(filteredData.map((sample: any) => sample.Seq_ID));
+    }
+  }, [allIds, currentFilter, filteredData, selectAll, setSelectedIds]);
+
+  useEffect(() => {
     setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
-  }, [formattedData, selectedIds, setSelectedIds]);
+  }, [formattedData, selectedIds]);
 
   useEffect(() => {
     if (showSelectedRowsOnly) {
       setDisplayRows(selectedSamples);
+    } else {
+      setDisplayRows(filteredData);
     }
-  }, [selectedSamples, showSelectedRowsOnly]);
-  // Update CSV export status as data loads
-  // CSV export is not permitted until data is FULLY loaded
-  // If a load error occurs, we will pass no data to the ExportTableData component
-  // However we don't set an error here as we want to see a load error, not CSV download error
+  }, [selectedSamples, filteredData, showSelectedRowsOnly]);
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
     const selectedColumns = event.value as Sample[];
@@ -160,10 +137,11 @@ export default function TreeTable(props: TreeTableProps) {
     const { checked } = e;
     if (checked) {
       setSelectAll(true);
-      setSelectedSamples(filteredData);
+      setSelectedSamples(formattedData); // Use memoized version
     } else {
       setSelectAll(false);
       setSelectedSamples([]);
+      setSelectedIds([]);
     }
   };
 
@@ -182,18 +160,16 @@ export default function TreeTable(props: TreeTableProps) {
             filter
             showSelectAll
           />
-          <Tooltip title="Hide unselected">
-            <Button
-              variant="outlined"
-              disabled={selectedSamples.length === 0}
-              color={showSelectedRowsOnly ? 'primary' : 'inherit'}
+          <Tooltip title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}>
+            <IconButton
               onClick={toggleShowSelectedRowsOnly}
-              startIcon={showSelectedRowsOnly ? <Visibility /> : <VisibilityOff />}
+              color="primary"
+              disabled={selectedSamples.length === 0}
               size="small"
-              style={{ marginLeft: '0.5rem', width: '175px' }} // Add smaller margin
+              style={{ marginLeft: '0.5rem' }}
             >
-              {showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
-            </Button>
+              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+            </IconButton>
           </Tooltip>
         </div>
         <ExportTableData
@@ -250,7 +226,10 @@ export default function TreeTable(props: TreeTableProps) {
             selection={selectedSamples}
             selectAll={selectAll}
             onSelectAllChange={onSelectAllChange}
-            onSelectionChange={(e: any) => setSelectedSamples(e.value as Sample[])}
+            onSelectionChange={(e: any) => {
+              setSelectedSamples(e.value as Sample[]);
+              setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
+            }}
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
             {sampleTableColumns.map((col: Sample) => (
