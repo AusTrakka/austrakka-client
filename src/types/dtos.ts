@@ -244,6 +244,6 @@ export interface DataSetEntry {
   fileName: string;
   analysisLabel: string;
   createdBy: string;
-  uploadedDate: string;
+  uploadedDate: Date;
   fields: string[];
 }

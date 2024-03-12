@@ -12,6 +12,9 @@ export const compareFields = (field1: Field, field2: Field) =>
 
 const placeholder = <Skeleton variant="text" animation="wave" width="6em" />;
 
+/**
+ * @deprecated The method should not be used
+ */
 export function buildMRTColumnDefinitions(
   fields: Field[],
   fieldLoadingStates?: Record<string, LoadingState> | null,

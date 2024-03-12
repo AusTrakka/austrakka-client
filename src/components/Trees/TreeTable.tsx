@@ -194,7 +194,7 @@ export default function TreeTable(props: TreeTableProps) {
         setIsOpen={setIsDataFiltersOpen}
         setLoadingState={setLoading}
       />
-      <Paper>
+      <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <div>
           <DataTable
             value={displayRows ?? []}

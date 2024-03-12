@@ -4,10 +4,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Grid } from '@mui/material';
+import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { json, map } from 'd3';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
@@ -69,10 +68,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         }
       }
 
+      setLoading(true);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
       setVegaView(view);
+      setLoading(false);
     };
 
     // For now we recreate view if data changes, not just if spec changes
@@ -99,6 +100,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
        Object.keys(currentFilter).length === 0) {
       setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
+      setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
@@ -117,6 +119,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           </Grid>
         </Grid>
         <Grid item xs={12}>
+          {loading &&
+          <LinearProgress color="success" variant="indeterminate" />}
           <DataFilters
             dataLength={metadata?.metadata?.length ?? 0}
             filteredDataLength={filteredData.length ?? 0}
