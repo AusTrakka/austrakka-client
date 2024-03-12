@@ -159,7 +159,9 @@ function EpiCurve(props: PlotTypeProps) {
           id="date-bin-unit-select"
           label="Bin Unit"
           value={dateBinUnit}
-          onChange={(e) => { setDateBinUnit(e.target.value); }}
+          onChange={(e) => {
+            setDateBinUnit(e.target.value);
+          }}
         >
           {
             [

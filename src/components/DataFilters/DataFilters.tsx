@@ -22,7 +22,7 @@ export interface DataFilter {
 interface DataFiltersProps {
   dataLength: number // need to pass through
   filteredDataLength: number // need to pass through
-  visibleFields: any[] // need to passs through
+  visibleFields: any[] | null // need to passs through
   allFields: ProjectViewField[] // need to pass through
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
@@ -81,11 +81,15 @@ function DataFilters(props: DataFiltersProps) {
 
   useEffect(() => {
     if (allFields.length > 0) {
-      const vFields = allFields
-        .filter((field) => visibleFields
-          .find((visibleField) => visibleField.field === field.columnName));
-      setNewFilter(initialFilterState);
-      setFields(vFields);
+      if (visibleFields === null) {
+        setFields(allFields);
+      } else {
+        const vFields = allFields
+          .filter((field) => visibleFields
+            .find((visibleField) => visibleField.field === field.columnName));
+        setNewFilter(initialFilterState);
+        setFields(vFields);
+      }
     }
   }, [allFields, visibleFields]);
 
