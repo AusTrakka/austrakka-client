@@ -70,7 +70,7 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
-  lastLoggedIn: string,
+  lastLoggedIn: Date,
 }
 
 export interface User {
