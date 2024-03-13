@@ -54,6 +54,7 @@ function Samples(props: SamplesProps) {
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>({});
+  const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
@@ -73,6 +74,12 @@ function Samples(props: SamplesProps) {
     setSampleTableColumns(columnBuilder);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
@@ -118,7 +125,7 @@ function Samples(props: SamplesProps) {
         <ExportTableData
           dataToExport={
                   metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-                    [] : metadata?.metadata ?? []
+                    [] : filteredData ?? []
                 }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
@@ -173,7 +180,11 @@ function Samples(props: SamplesProps) {
         <div>
           <DataTable
             value={metadata?.metadata ?? []}
-            onValueChange={(e) => { setFilteredDataLength(e.length); setLoadingState(false); }}
+            onValueChange={(e) => {
+              setFilteredDataLength(e.length);
+              setLoadingState(false);
+              setFilteredData(e);
+            }}
             size="small"
             removableSort
             showGridlines
@@ -188,7 +199,7 @@ function Samples(props: SamplesProps) {
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
-            paginatorLeft
+            paginatorRight
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"

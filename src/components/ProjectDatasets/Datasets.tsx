@@ -1,6 +1,4 @@
 /* eslint-disable react/jsx-pascal-case */
-import 'primereact/resources/themes/saga-green/theme.css';
-
 import React, { useState, useEffect } from 'react';
 import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Tooltip, Paper } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';

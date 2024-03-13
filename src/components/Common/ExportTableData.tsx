@@ -29,7 +29,6 @@ function ExportTableData(props: ExportTableDataProps) {
       }
     }
   };
-
   const generateFilename = () => {
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });
@@ -62,7 +61,20 @@ function ExportTableData(props: ExportTableDataProps) {
         </Alert>
       </Dialog>
       <MemoisedCSVLink
-        data={dataToExport}
+        data={dataToExport.map((row: any) => {
+          const formattedRow: any = {};
+
+          for (const [key, value] of Object.entries(row)) {
+            // eslint-disable-next-line no-nested-ternary
+            formattedRow[key] = Array.isArray(value)
+              ? `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`
+              : typeof value === 'string'
+                ? value.replace(/"/g, '""')
+                : value;
+          }
+
+          return formattedRow;
+        })}
         ref={csvLink}
         style={{ display: 'none' }}
         filename={generateFilename() || 'austrakka_export.csv'}
