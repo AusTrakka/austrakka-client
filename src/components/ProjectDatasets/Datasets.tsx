@@ -162,7 +162,7 @@ function Datasets(props: DatasetProps) {
           </div>
         )}
       />
-      <Typography color='primary' sx={{ mt: 2, textAlign: 'right' }}>
+      <Typography color="primary" sx={{ mt: 2, textAlign: 'right' }}>
         {`Project merge mode: ${mergeAlgorithm}`}
       </Typography>
       <Snackbar

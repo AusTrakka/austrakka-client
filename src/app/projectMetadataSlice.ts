@@ -190,7 +190,7 @@ listenerMiddleware.startListening({
 function calculateViewFieldNames(
   fieldName: string,
   fields: ProjectField[],
-  mergeAlgorithm: string
+  mergeAlgorithm: string,
 ): string[] {
   const field = fields.find(f => f.fieldName === fieldName);
   if (!field) {
