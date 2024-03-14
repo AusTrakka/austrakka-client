@@ -178,11 +178,13 @@ function Samples(props: SamplesProps) {
             keepMounted
             elevation={1}
             open={open}
+            anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
             sx={{ height: '50vh' }}
             onClose={handleClose}
             MenuListProps={{
               style: {
                 padding: 0,
+                minWidth: '230px',
               },
             }}
           >
@@ -192,7 +194,9 @@ function Samples(props: SamplesProps) {
                 backgroundColor: 'white',
                 top: 0,
                 padding: '5px',
-                zIndex: 2 }}
+                zIndex: 2,
+                display: 'flex',
+                justifyContent: 'space-evenly' }}
             >
               <MenuItem disableGutters disableRipple dense sx={{ 'pointerEvents': 'none', '&:hover': { backgroundColor: 'white' } }}>
                 <Stack direction="row" spacing={2}>

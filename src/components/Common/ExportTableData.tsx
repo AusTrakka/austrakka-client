@@ -17,17 +17,61 @@ function ExportTableData(props: ExportTableDataProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
+  const formatDataAsCSV = (data: any[], headers: string[]) => {
+    // Format data array as CSV string
+    const csvRows = [];
+
+    // Add headers
+    csvRows.push(headers.join(','));
+
+    // Add data rows
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        return value !== undefined ? `"${value}"` : '';
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  };
+
   const exportData = () => {
     setExportCSVStatus(LoadingState.LOADING);
     if (dataToExport.length > 0) {
       try {
-        csvLink?.current?.link.click();
+        // Processing data here
+        const formattedData = dataToExport.map((row: any) => {
+          const formattedRow: any = {};
+          for (const [key, value] of Object.entries(row)) {
+            // eslint-disable-next-line no-nested-ternary
+            formattedRow[key] = Array.isArray(value)
+              ? `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`
+              : typeof value === 'string'
+                ? value.replace(/"/g, '""')
+                : value;
+          }
+          return formattedRow;
+        });
+
+        // Set headers
+        const headers = Object.keys(formattedData[0]);
+
+        // Set data for CSVLink
+        csvLink.current?.link.setAttribute(
+          'href',
+          `data:text/csv;charset=utf-8,${encodeURIComponent(formatDataAsCSV(formattedData, headers))}`,
+        );
+
+        // Trigger click to download
+        csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
   };
+
   const generateFilename = () => {
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { NamedExoticComponent, memo, useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
@@ -34,6 +34,26 @@ function BodyComponent(props: BodyComponentProps) {
     col.body// Wrap your existing body content
   );
 }
+
+interface ExportTableDataProps {
+  dataToExport: any[];
+  disabled: boolean;
+}
+
+const shouldComponentUpdate = (
+  prevProps: Readonly<ExportTableDataProps>,
+  nextProps: Readonly<ExportTableDataProps>,
+): boolean => {
+  // Perform your custom equality check logic here
+  const dataToExportEqual = prevProps.dataToExport === nextProps.dataToExport;
+  const disabledEqual = prevProps.disabled === nextProps.disabled;
+  return dataToExportEqual && disabledEqual;
+};
+
+const MemoizedExportTableData: NamedExoticComponent<ExportTableDataProps> = memo(
+  ExportTableData,
+  shouldComponentUpdate,
+);
 
 export default function TreeTable(props: TreeTableProps) {
   const {
@@ -172,8 +192,8 @@ export default function TreeTable(props: TreeTableProps) {
             </IconButton>
           </Tooltip>
         </div>
-        <ExportTableData
-          dataToExport={displayRows}
+        <MemoizedExportTableData
+          dataToExport={filteredData}
           disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>

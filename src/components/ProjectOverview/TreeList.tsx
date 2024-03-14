@@ -1,8 +1,10 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Alert, Paper } from '@mui/material';
+import { Alert, Box, IconButton, Paper, TextField, Tooltip } from '@mui/material';
+import { FilterMatchMode } from 'primereact/api';
+import { ManageSearch } from '@mui/icons-material';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { Project } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -24,11 +26,15 @@ function TreeList(props: TreesProps) {
     { field: 'description', header: 'Description' },
     { field: 'latestTreeLastUpdated', header: 'Updated', body: (rowData: any) => isoDateLocalDate(rowData.latestTreeLastUpdated) },
   ]);
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
   const [treeList, setTreeList] = useState<[]>([]);
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
   const { token } = useApi();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function getTreeList() {
@@ -54,9 +60,45 @@ function TreeList(props: TreesProps) {
     }
   }, [projectDetails, setIsTreesLoading, token]);
 
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
+  };
+
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/projects/${projectDetails!.abbreviation}/trees/${row.data.analysisId}/versions/latest`);
   };
+
+  const header = (
+    <Box style={{ display: 'flex', alignItems: 'center' }}>
+      <Tooltip title="Keyword Search" placement="top">
+        <IconButton size="small" onClick={() => inputRef.current?.focus()}>
+          <ManageSearch />
+        </IconButton>
+      </Tooltip>
+      <TextField
+        inputRef={inputRef}
+        sx={{
+          'marginBottom': 1,
+          'width': 0,
+          '&:focus-within': {
+            width: 200,
+          },
+          'transition': 'width 0.5s',
+        }}
+        id="global-filter"
+        label="Search"
+        type="search"
+        variant="standard"
+        color="success"
+        size="small"
+        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+        onChange={onGlobalFilterChange}
+      />
+    </Box>
+  );
 
   if (isTreesLoading) return null;
 
@@ -74,6 +116,9 @@ function TreeList(props: TreesProps) {
           showGridlines
           resizableColumns
           scrollable
+          filters={globalFilter}
+          header={header}
+          globalFilterFields={columns.map((col) => col.field)}
           size="small"
           scrollHeight="calc(100vh - 500px)"
           removableSort
