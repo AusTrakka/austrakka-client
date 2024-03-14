@@ -1,15 +1,14 @@
 import { Close, FileDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
-import React, { memo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
-const MemoisedCSVLink = memo(CSVLink);
 
 interface ExportTableDataProps {
-  dataToExport: any
+  dataToExport: any[]
   disabled: boolean
 }
 
@@ -60,7 +59,7 @@ function ExportTableData(props: ExportTableDataProps) {
           Please try again later, or contact an AusTrakka admin.
         </Alert>
       </Dialog>
-      <MemoisedCSVLink
+      <CSVLink
         data={dataToExport.map((row: any) => {
           const formattedRow: any = {};
 
