@@ -1,4 +1,4 @@
-import { Close, FileDownload } from '@mui/icons-material';
+import { Close, SimCardDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -36,6 +36,14 @@ function ExportTableData(props: ExportTableDataProps) {
     return csvRows.join('\n');
   };
 
+  const generateFilename = () => {
+    const dateObject = new Date();
+    const year = dateObject.toLocaleString('default', { year: 'numeric' });
+    const month = dateObject.toLocaleString('default', { month: '2-digit' });
+    const day = dateObject.toLocaleString('default', { day: '2-digit' });
+    return `austrakka_export_${year}${month}${day}`;
+  };
+
   const exportData = () => {
     setExportCSVStatus(LoadingState.LOADING);
     if (dataToExport.length > 0) {
@@ -58,10 +66,12 @@ function ExportTableData(props: ExportTableDataProps) {
         const headers = Object.keys(formattedData[0]);
 
         // Set data for CSVLink
-        csvLink.current?.link.setAttribute(
-          'href',
-          `data:text/csv;charset=utf-8,${encodeURIComponent(formatDataAsCSV(formattedData, headers))}`,
-        );
+        const csvData = formatDataAsCSV(formattedData, headers);
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        csvLink.current?.link.setAttribute('href', url);
+        csvLink.current?.link.setAttribute('download', generateFilename() || 'austrakka_export.csv');
 
         // Trigger click to download
         csvLink.current?.link.click();
@@ -70,14 +80,6 @@ function ExportTableData(props: ExportTableDataProps) {
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
-  };
-
-  const generateFilename = () => {
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    return `austrakka_export_${year}${month}${day}`;
   };
 
   const handleDialogClose = () => {
@@ -104,22 +106,8 @@ function ExportTableData(props: ExportTableDataProps) {
         </Alert>
       </Dialog>
       <CSVLink
-        data={dataToExport.map((row: any) => {
-          const formattedRow: any = {};
-
-          for (const [key, value] of Object.entries(row)) {
-            // eslint-disable-next-line no-nested-ternary
-            formattedRow[key] = Array.isArray(value)
-              ? `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`
-              : typeof value === 'string'
-                ? value.replace(/"/g, '""')
-                : value;
-          }
-
-          return formattedRow;
-        })}
+        data={[]}
         ref={csvLink}
-        style={{ display: 'none' }}
         filename={generateFilename() || 'austrakka_export.csv'}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
@@ -135,7 +123,7 @@ function ExportTableData(props: ExportTableDataProps) {
             }
             color={disabled ? 'secondary' : 'default'}
           >
-            <FileDownload />
+            <SimCardDownload />
           </IconButton>
         </span>
       </Tooltip>

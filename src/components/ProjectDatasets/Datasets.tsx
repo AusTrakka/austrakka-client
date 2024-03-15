@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Tooltip, Paper } from '@mui/material';
+import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Box } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
+import { FilterMatchMode } from 'primereact/api';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -15,6 +15,8 @@ import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import ColumnVisibilityMenu from '../TableHeader/ColumnVisibilityMenu';
+import SearchInput from '../TableHeader/SearchInput';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -28,6 +30,9 @@ function Datasets(props: DatasetProps) {
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
   const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
   const [datasetError, setDatasetError] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
   const [columns, setColumns] = useState([
     { field: 'dataSetId', header: 'Dataset ID' },
     { field: 'fileName', header: 'File Name' },
@@ -44,28 +49,15 @@ function Datasets(props: DatasetProps) {
 
   const renderDeleteButton = (
     rowData: any,
-    canDelete: () => boolean,
     handleDeleteRow: (id: number) => void,
   ) => (
-    canDelete() ? (
-      <IconButton
-        onClick={() => handleDeleteRow(rowData.dataSetId)}
-        sx={{ color: 'gray' }}
-        disabled={!canDelete()}
-      >
-        <DeleteOutlineIcon sx={{ '&:hover': { color: '#A81E2C' } }} />
-      </IconButton>
-    ) : (
-      <Tooltip
-        title="You don't have the role to perform this action"
-      >
-        <span>
-          <IconButton sx={{ color: 'gray' }} disabled>
-            <DeleteOutlineIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
-    )
+    <IconButton
+      onClick={() => handleDeleteRow(rowData.dataSetId)}
+      sx={{ color: 'gray' }}
+      size="small"
+    >
+      <DeleteOutlineIcon sx={{ '&:hover': { color: '#A81E2C' } }} />
+    </IconButton>
   );
 
   useEffect(() => {
@@ -134,32 +126,33 @@ function Datasets(props: DatasetProps) {
     setOpenDialog(false);
   };
 
-  const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumns = event.value as any[];
-    const newColumns = columns.map((col: any) => {
-      const newCol = { ...col };
-      newCol.hidden = selectedColumns.some((selectedCol) => selectedCol.field === col.field);
-      return newCol;
-    });
-    setColumns(newColumns);
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
   };
 
   const header = (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MultiSelect
-          value={columns.filter((col: any) => col.hidden === true)}
-          options={columns}
-          optionLabel="header"
-          onChange={onColumnToggle}
-          display="chip"
-          placeholder="Hide Columns"
-          className="w-full sm:w-20rem"
-          filter
-          showSelectAll
-        />
-      </div>
-    </div>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <SearchInput
+        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+        onChange={onGlobalFilterChange}
+      />
+      <ColumnVisibilityMenu
+        columns={columns}
+        onColumnVisibilityChange={(selectedCols) => {
+          const newColumns = columns.map((col: any) => {
+            const newCol = { ...col };
+            newCol.hidden = selectedCols.some(
+              (selectedCol: any) => selectedCol.field === col.field,
+            );
+            return newCol;
+          });
+          setColumns(newColumns);
+        }}
+      />
+    </Box>
   );
 
   return (
@@ -183,12 +176,14 @@ function Datasets(props: DatasetProps) {
               scrollHeight="calc(100vh - 500px)"
               header={header}
             >
-              <Column
-                header="Delete"
-                body={(rowData: any) => renderDeleteButton(rowData, canDelete, handleDeleteRow)}
-                style={{ width: '3rem' }}
-                align="center"
-              />
+              {canDelete() ? (
+                <Column
+                  header="Delete"
+                  body={(rowData: any) => renderDeleteButton(rowData, handleDeleteRow)}
+                  style={{ width: '3rem' }}
+                  align="center"
+                />
+              ) : null}
               {columns.map((col: any) => (
                 <Column
                   key={col.field}

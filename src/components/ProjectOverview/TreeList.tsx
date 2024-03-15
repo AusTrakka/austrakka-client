@@ -1,16 +1,16 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Alert, Box, IconButton, Paper, TextField, Tooltip } from '@mui/material';
+import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { ManageSearch } from '@mui/icons-material';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { Project } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getTrees } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
+import SearchInput from '../TableHeader/SearchInput';
 
 interface TreesProps {
   projectDetails: Project | null
@@ -34,7 +34,6 @@ function TreeList(props: TreesProps) {
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
   const { token } = useApi();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function getTreeList() {
@@ -72,32 +71,10 @@ function TreeList(props: TreesProps) {
   };
 
   const header = (
-    <Box style={{ display: 'flex', alignItems: 'center' }}>
-      <Tooltip title="Keyword Search" placement="top">
-        <IconButton size="small" onClick={() => inputRef.current?.focus()}>
-          <ManageSearch />
-        </IconButton>
-      </Tooltip>
-      <TextField
-        inputRef={inputRef}
-        sx={{
-          'marginBottom': 1,
-          'width': 0,
-          '&:focus-within': {
-            width: 200,
-          },
-          'transition': 'width 0.5s',
-        }}
-        id="global-filter"
-        label="Search"
-        type="search"
-        variant="standard"
-        color="success"
-        size="small"
-        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
-        onChange={onGlobalFilterChange}
-      />
-    </Box>
+    <SearchInput
+      value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+      onChange={onGlobalFilterChange}
+    />
   );
 
   if (isTreesLoading) return null;
@@ -122,6 +99,8 @@ function TreeList(props: TreesProps) {
           size="small"
           scrollHeight="calc(100vh - 500px)"
           removableSort
+          reorderableColumns
+          columnResizeMode="expand"
         >
           {columns.map((col) => (
             <Column
