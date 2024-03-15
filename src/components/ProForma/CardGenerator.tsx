@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { Card, CardContent, Typography, CardMedia, Stack, CardActionArea, IconButton, Icon, CircularProgress, Tooltip, Grid } from '@mui/material';
 import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -16,14 +16,14 @@ function GenerateCards(
   setProFormaAbbrev: Dispatch<SetStateAction<string>>,
   handleFileDownload: (dAbbrev: string, version : number | null) => Promise<void>,
   cardType: CardType,
+  loadingState: boolean,
+  setLoadingState: Dispatch<SetStateAction<boolean>>,
 ) {
   const handleClickOpen = (dinfo: MetaDataColumnMapping[], abbrev: string) => {
     setOpen(true);
     setProFormaDialog(dinfo);
     setProFormaAbbrev(abbrev);
   };
-
-  const [loadingState, setLoadingState] = useState<boolean>(false);
 
   const handleDownload = async (abbrev: string, version:number | null = null) => {
     try {

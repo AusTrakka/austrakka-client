@@ -9,6 +9,7 @@ import { MsalProvider } from '@azure/msal-react';
 import App from './App';
 import { msalInstance } from './utilities/authUtils';
 import store from './app/store';
+import ApiProvider from './app/ApiContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       {/* StyledEngineProvider: Allows MUI's styles to be overridden */}
       <StyledEngineProvider injectFirst>
         <MsalProvider instance={msalInstance}>
-          <App />
+          <ApiProvider>
+            <App />
+          </ApiProvider>
         </MsalProvider>
       </StyledEngineProvider>
     </BrowserRouter>

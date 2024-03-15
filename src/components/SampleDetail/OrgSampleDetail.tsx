@@ -1,10 +1,11 @@
 import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { DisplayField, Group, Sample } from '../../types/dtos';
+import { MetaDataColumn, Group, Field } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import { renderValue, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -20,7 +21,7 @@ function SampleDetail() {
   const [groups, setGroups] = useState<Group[] | null>();
   const [errorGroupName, setErrorGroupName] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group>();
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [data, setData] = useState<Sample | null>();
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -98,7 +99,7 @@ function SampleDetail() {
         if (selectedGroup) {
           const response = await getDisplayFields(selectedGroup.groupId!, token);
           if (response.status === ResponseType.Success) {
-            setDisplayFields(response.data as DisplayField[]);
+            setDisplayFields(response.data as MetaDataColumn[]);
           } else {
             setErrMsg(`Metadata fields for ${selectedGroup.name} could not be loaded`);
           }
@@ -119,10 +120,9 @@ function SampleDetail() {
   useEffect(() => {
     const updateSampleData = async () => {
       const searchParams = new URLSearchParams({
-        groupContext: `${selectedGroup?.groupId}`,
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(token, searchParams.toString());
+      const response = await getSamples(token, selectedGroup!.groupId, searchParams);
       if (response.status === ResponseType.Success && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
@@ -144,10 +144,10 @@ function SampleDetail() {
     }
   }, [displayFields]);
 
-  const renderRow = (field: string, value: string) => (
-    <TableRow key={field}>
-      <TableCell width={`${colWidth}em`}>{field}</TableCell>
-      <TableCell>{value}</TableCell>
+  const renderRow = (field: Field, value: string) => (
+    <TableRow key={field.columnName}>
+      <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
+      <TableCell>{renderValue(value, field.columnName, field.primitiveType ?? 'category')}</TableCell>
     </TableRow>
   );
 
@@ -213,7 +213,7 @@ function SampleDetail() {
               {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
-                  .map(field => renderRow(field.columnName, (data as any)[field.columnName]))}
+                  .map(field => renderRow(field, (data as any)[field.columnName]))}
             </TableBody>
           </Table>
         </TableContainer>

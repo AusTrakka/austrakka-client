@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import { MetaDataColumn } from '../../../types/dtos';
-import { getDisplayFields } from '../../../utilities/resourceUtils';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
-import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-import { useApi } from '../../../app/ApiContext';
-import LoadingState from '../../../constants/loadingState';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import { ResponseType } from '../../../constants/responseType';
+import { useAppSelector } from '../../../app/store';
+import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -36,15 +31,15 @@ const defaultSpec: TopLevelSpec = {
 function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const [fieldsToRetrieve, setFieldsToRetrieve] = useState<string[]>([]);
-  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
+  const { fields } = useAppSelector(
+    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+  );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
   const [binMode, setBinMode] = useState<string>('auto');
   const [stepSize, setStepSize] = useState<number>(1);
-  const { token, tokenLoading } = useApi();
 
   // Set spec on load
   useEffect(() => {
@@ -58,40 +53,24 @@ function Histogram(props: PlotTypeProps) {
   }, [plot]);
 
   useEffect(() => {
-    const updateFields = async () => {
-      const response = await getDisplayFields(plot!.projectGroupId, token) as ResponseObject;
-      if (response.status === ResponseType.Success) {
-        const fields = response.data as MetaDataColumn[];
-        setDisplayFields(fields);
-        const localNumericFields = fields
-          .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
-          .map(field => field.columnName);
-        setNumericFields(localNumericFields);
-        const localCatFields = fields
-          .filter(field => field.canVisualise &&
-            (field.primitiveType === 'string' || field.primitiveType === null))
-          .map(field => field.columnName);
-        setCategoricalFields(localCatFields);
-        // Note we do not set a preferred starting colour field; starting value is None
-        // Mandatory fields: one numeric field
-        if (localNumericFields.length === 0) {
-          setPlotErrorMsg('No numeric fields found in project, cannot render plot');
-        }
-        setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
-        setFieldsToRetrieve([SAMPLE_ID_FIELD, ...localNumericFields, ...localCatFields]);
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(response.message);
-        setPlotErrorMsg('Unable to load project fields');
+    if (fields && fields.length > 0) {
+      const localNumericFields = fields
+        .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
+        .map(field => field.columnName);
+      setNumericFields(localNumericFields);
+      const localCatFields = fields
+        .filter(field => field.canVisualise &&
+          (field.primitiveType === 'string' || field.primitiveType === null))
+        .map(field => field.columnName);
+      setCategoricalFields(localCatFields);
+      // Note we do not set a preferred starting colour field; starting value is None
+      // Mandatory fields: one numeric field
+      if (localNumericFields.length === 0) {
+        setPlotErrorMsg('No numeric fields found in project, cannot render plot');
       }
-    };
-
-    if (plot &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      updateFields();
+      setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
     }
-  }, [plot, token, tokenLoading, setPlotErrorMsg]);
+  }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
     const addXAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -192,10 +171,7 @@ function Histogram(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        dataGroupId={plot?.projectGroupId}
-        fieldsToRetrieve={fieldsToRetrieve}
-        displayFields={displayFields}
-        setPlotErrorMsg={setPlotErrorMsg}
+        projectAbbrev={plot?.projectAbbreviation}
       />
     </>
   );

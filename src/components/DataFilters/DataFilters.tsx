@@ -1,19 +1,19 @@
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, SetStateAction } from 'react';
 import { ReactTabulator } from 'react-tabulator';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
-import { buildTabulatorColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { buildTabulatorColumnDefinitions } from '../../utilities/tableUtils';
 import FieldTypes from '../../constants/fieldTypes';
-import { MetaDataColumn } from '../../types/dtos';
+import { Field } from '../../types/dtos';
 import FilteringOperators from '../../constants/filteringOperators';
 import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
 import { customFilterFunctions } from './customFilterFns';
 
-interface DataFilter {
+export interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
@@ -23,9 +23,12 @@ interface DataFilter {
 
 interface DataFiltersProps {
   data: any
-  setFilteredData: any
   fields: any
-  initialOpen: boolean
+  setFilteredData: any
+  isOpen: boolean
+  setIsOpen: React.Dispatch<SetStateAction<boolean>>
+  filterList: DataFilter[]
+  setFilterList: React.Dispatch<SetStateAction<DataFilter[]>>
 }
 
 const initialFilterState = {
@@ -47,11 +50,18 @@ const shake = keyframes`
 const nullOrEmptyString = 'null-or-empty';
 
 function DataFilters(props: DataFiltersProps) {
-  const { data, fields, setFilteredData, initialOpen } = props;
+  const {
+    data,
+    fields,
+    setFilteredData,
+    isOpen,
+    setIsOpen,
+    filterList,
+    setFilterList,
+  } = props;
   const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
   const [sampleCount, setSampleCount] = useState();
   const [totalSamples, setTotalSamples] = useState();
-  const [isOpen, setIsOpen] = useState(initialOpen);
   const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
@@ -59,7 +69,6 @@ function DataFilters(props: DataFiltersProps) {
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [tabulatorFilters, setTabulatorFilters] = useState([]);
   const [dateError, setDateError] = useState<DateValidationError>(null);
 
@@ -70,16 +79,14 @@ function DataFilters(props: DataFiltersProps) {
 
   // Set table columns on load
   useEffect(() => {
-    const copy = [...fields];
-    const sortedDisplayFields = copy.sort(compareFields);
-    const columnBuilder = buildTabulatorColumnDefinitions(sortedDisplayFields);
+    const columnBuilder = buildTabulatorColumnDefinitions(fields);
     setColumns(columnBuilder);
   }, [fields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       setDateError(null);
-      const targetFieldProps = fields.find((field: MetaDataColumn) =>
+      const targetFieldProps = fields.find((field: Field) =>
         field.columnName === event.target.value);
 
       let defaultCondition = '';
@@ -232,14 +239,25 @@ function DataFilters(props: DataFiltersProps) {
     setTabulatorFilters(filters);
   }, [filterList]);
 
-  // 2. Update filtered data
+  // Should only be called when tableInstanceRef.current is set
+  const updateFilteredData = useCallback(() => {
+    const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
+    setSampleCount(filtered.length);
+    setFilteredData(filtered);
+  }, [tabulatorFilters, setSampleCount, setFilteredData]);
+
+  // Update filtered data when filters change
   useEffect(() => {
     if (tableInstanceRef.current) {
-      const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
-      setSampleCount(filtered.length);
-      setFilteredData(filtered);
+      updateFilteredData();
     }
-  }, [tabulatorFilters, setFilteredData]);
+  }, [updateFilteredData]);
+
+  // Update filtered data when data changes or when tabulator is first ready
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDataUpdate = (_data: any) => {
+    updateFilteredData();
+  };
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
@@ -377,7 +395,7 @@ function DataFilters(props: DataFiltersProps) {
                     value={newFilter.field}
                     onChange={handleFilterChange}
                   >
-                    {fields.map((field : MetaDataColumn) => (
+                    {fields.map((field : Field) => (
                       <MenuItem key={field.columnName} value={field.columnName}>
                         {field.columnName}
                       </MenuItem>
@@ -464,6 +482,7 @@ function DataFilters(props: DataFiltersProps) {
           columns={columns}
           // eslint-disable-next-line no-return-assign
           onRef={(r) => (tableInstanceRef.current = r.current)}
+          events={{ dataProcessed: handleDataUpdate }}
         />
       </Box>
     </Box>

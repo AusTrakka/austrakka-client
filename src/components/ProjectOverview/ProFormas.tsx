@@ -1,31 +1,62 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
-import { ProFormaVersion, MetaDataColumnMapping } from '../../types/dtos';
+import { ProFormaVersion, MetaDataColumnMapping, Project } from '../../types/dtos';
 import SimpleDialog from '../ProForma/TableDialog';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { handleProformaDownload } from '../ProForma/proformaUtils';
 import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
 
 // Local Proforma Props
 interface ProFormasListProps {
-  proformaList: ProFormaVersion[],
-  proformaError: boolean,
-  proFormaErrorMessage: string,
+  projectDetails: Project | null;
+  isProformasLoading: boolean,
+  setIsProformasLoading: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 function ProFormaList(props: ProFormasListProps) {
-  const { proformaList,
-    proFormaErrorMessage,
-    proformaError } = props;
+  const { projectDetails,
+    isProformasLoading,
+    setIsProformasLoading } = props;
+
+  const [proformaList, setProformaList] = useState<ProFormaVersion[]>([]);
+  const [proformaError, setProformaError] = useState(false);
+  const [proformaErrorMessage, setProformaErrorMessage] = useState('');
 
   const [open, setOpen] = useState(false);
-  const [profromaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
+  const [proformaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
   const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
   const { token } = useApi();
+
+  // Used by GenerateCards
+  const [loadingState, setLoadingState] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function getProFormaList() {
+      const proformaListResponse : ResponseObject =
+        await getGroupProFormaVersions(projectDetails!.projectMembers.id, token);
+      if (proformaListResponse.status === ResponseType.Success) {
+        const data = proformaListResponse.data as ProFormaVersion[];
+        setProformaList(data);
+        setIsProformasLoading(false);
+      } else {
+        setIsProformasLoading(false);
+        setProformaList([]);
+        setProformaError(true);
+        setProformaErrorMessage(proformaListResponse.message);
+      }
+    }
+
+    if (projectDetails) {
+      getProFormaList();
+    }
+  }, [projectDetails, token, setIsProformasLoading]);
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
     handleProformaDownload(dAbbrev, version, token);
@@ -115,6 +146,8 @@ function ProFormaList(props: ProFormasListProps) {
                       setProFormaAbbrev,
                       handleFileDownload,
                       CardType.Summary,
+                      loadingState,
+                      setLoadingState,
                     )}
                 </Box>
               </AccordionSummary>
@@ -134,6 +167,8 @@ function ProFormaList(props: ProFormasListProps) {
                     setProFormaAbbrev,
                     handleFileDownload,
                     CardType.Details,
+                    loadingState,
+                    setLoadingState,
                   )}
                 </Stack>
               </AccordionDetails>
@@ -144,13 +179,15 @@ function ProFormaList(props: ProFormasListProps) {
     </Box>
   );
 
+  if (isProformasLoading) return null;
+
   return (
     <>
-      { renderTitleOrError(proformaError, proFormaErrorMessage) }
+      { renderTitleOrError(proformaError, proformaErrorMessage) }
       { renderEmptyState(proformaList.length === 0, proformaError)}
       { renderContent() }
       <SimpleDialog
-        proformaDialog={profromaDialog}
+        proformaDialog={proformaDialog}
         open={open}
         setOpen={setOpen}
         setProFormaDialog={setProFormaDialog}

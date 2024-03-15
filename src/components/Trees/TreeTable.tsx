@@ -1,53 +1,60 @@
 import MaterialReactTable, { MRT_ColumnDef, MRT_TableInstance } from 'material-react-table';
 import React, { useEffect, useRef, useState } from 'react';
-import { Backdrop, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
-import { DisplayField, Sample } from '../../types/dtos';
-import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
-import DataFilters from '../DataFilters/DataFilters';
+import { Field } from '../../types/dtos';
+import { buildMRTColumnDefinitions } from '../../utilities/tableUtils';
+import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { Sample } from '../../types/sample.interface';
 
 interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: any,
   rowSelection: any,
   setRowSelection: any,
-  displayFields: DisplayField[],
-  tableMetadata: any
+  displayFields: Field[],
+  fieldLoadingStates: Record<string, LoadingState> | null,
+  tableMetadata: any,
+  metadataLoadingState: MetadataLoadingState,
 }
-// TODO: Pass down any relevant error states for samples/display fields
 // TODO: Fix column hiding/showing functionaility
 
 export default function TreeTable(props: TreeTableProps) {
   const {
-    selectedIds, setSelectedIds, rowSelection, setRowSelection, displayFields, tableMetadata,
+    selectedIds,
+    setSelectedIds,
+    rowSelection,
+    setRowSelection,
+    displayFields,
+    fieldLoadingStates,
+    tableMetadata,
+    metadataLoadingState,
   } = props;
   const [formattedData, setFormattedData] = useState([]);
   const tableInstanceRef = useRef<MRT_TableInstance>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [columnError, setColumnError] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
-  const [displayRows, setDisplayRows] = useState([]);
+  const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [csvExportDisabled, setCsvExportDisabled] = useState<boolean>(true);
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
 
   // Format display fields into column headers
-  useEffect(
-    () => {
-      const formatTableHeaders = () => {
-        const copy = [...displayFields];
-        const sortedDisplayFields = copy.sort(compareFields);
-        const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
-        setSampleTableColumns(columnBuilder);
-        setColumnError(false);
-      };
-      if (!columnError) {
-        formatTableHeaders();
-      }
-    },
-    [columnError, displayFields],
-  );
+  useEffect(() => {
+    const formatTableHeaders = () => {
+      const columnBuilder = buildMRTColumnDefinitions(displayFields, fieldLoadingStates);
+      setSampleTableColumns(columnBuilder);
+      setColumnError(false);
+    };
+    if (!columnError) {
+      formatTableHeaders();
+    }
+  }, [columnError, displayFields, fieldLoadingStates]);
 
   // Format tableMetadata in the correct way for the table to ingest
   useEffect(() => {
@@ -117,23 +124,25 @@ export default function TreeTable(props: TreeTableProps) {
     }
   }, [filteredData, isHidden, selectedIds]);
 
+  // Disable CSV export unless metadata is fully loaded
+  useEffect(() => {
+    setCsvExportDisabled(metadataLoadingState !== MetadataLoadingState.DATA_LOADED);
+  }, [metadataLoadingState]);
+
   return (
     <>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: 2000 }}
-        open={exportCSVStatus === LoadingState.LOADING}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <DataFilters
         data={formattedData}
         fields={displayFields}
         setFilteredData={setFilteredData}
-        initialOpen
+        filterList={filterList}
+        setFilterList={setFilterList}
+        isOpen={isDataFiltersOpen}
+        setIsOpen={setIsDataFiltersOpen}
       />
       <MaterialReactTable
         tableInstanceRef={tableInstanceRef}
-        columns={sampleTableColumns}
+        columns={sampleTableColumns as any} // unclear MRT_ColumnDef/MRT_TableInstance templates
         data={displayRows}
         enableRowSelection
         muiTableBodyRowProps={({ row }) => ({
@@ -174,8 +183,7 @@ export default function TreeTable(props: TreeTableProps) {
         renderToolbarInternalActions={() => (
           <ExportTableData
             dataToExport={displayRows}
-            exportCSVStatus={exportCSVStatus}
-            setExportCSVStatus={setExportCSVStatus}
+            disabled={csvExportDisabled}
           />
         )}
       />

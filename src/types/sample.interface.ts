@@ -1,3 +1,3 @@
-export interface ProjectSample {
-
+export interface Sample {
+  [key: string]: any;
 }

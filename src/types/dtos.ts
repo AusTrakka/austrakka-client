@@ -12,7 +12,7 @@ export interface Project {
     id: number,
     name: string
   }[],
-  created: Date
+  created: Date,
   // could add auditable fields - created, createdBy
 }
 
@@ -25,7 +25,7 @@ export interface Plot {
   spec: string,
   projectId: number,
   projectName: string
-  projectAbbrev: string
+  projectAbbreviation: string
   projectGroupId: number
   isActive: boolean
 }
@@ -99,20 +99,6 @@ export interface UserDetails {
   created: Date,
 }
 
-export interface ProFormaVersion {
-  proFormaVersionId: number,
-  proFormaId: number,
-  version: number,
-  abbreviation: string,
-  originalFileName: string,
-  fileName: string,
-  columnMappings: MetaDataColumnMapping[],
-  isCurrent: boolean,
-  assetId : number,
-  created: Date,
-  createdBy: string,
-}
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -124,11 +110,22 @@ export interface MetaDataColumnMapping {
   canVisualise: boolean,
 }
 
-export interface MetaDataColumn {
+// this is a common interface representing metadata fields,
+// with information about types and display order
+export interface Field {
+  columnName: string,
+  primitiveType: string | null,
+  metaDataColumnTypeName: string,
+  canVisualise: boolean,
+  columnOrder: number,
+}
+
+export interface MetaDataColumn extends Field {
   metaDataColumnId: number
   columnName: string
   metaDataColumnTypeId: number
-  primitiveType: string
+  metaDataColumnValidValues: string[] | null
+  primitiveType: string | null
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
@@ -136,24 +133,45 @@ export interface MetaDataColumn {
   minWidth: number
 }
 
-interface MetadataValue {
-  key: string;
-  value: string;
+// This represents the ProjectFieldDTO, with nested analysisLabels
+// It is appropriate for use in project management interfaces
+// It is not appropriate for representing the columns that will be found in a project view
+export interface ProjectField {
+  projectFieldId: number,
+  fieldName: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  metaDataColumnValidValues: string[] | null,
+  analysisLabels: string[],
+  createdBy: string,
 }
 
-export interface AnalysisResultMetadata {
-  created: string;
-  createdBy: string | null; // Assuming createdBy can be string or null
-  isCurrent: boolean;
-  lastUpdated: string;
-  lastUpdatedBy: string | null; // Assuming lastUpdatedBy can be string or null
-  metadataValues: MetadataValue[];
-  ownerGroup: string;
-  sampleName: string;
-  sharedGroups: string[]; // Assuming this is an array of strings
-  status: boolean;
-  submissionId: number;
-  versionId: number;
+// This is not a DTO, but a calculated field representing a column found in a project view
+// The projectFieldId and projectFieldName will not be unique
+// The columnName is formed from the projectFieldName and the analysisLabel
+export interface ProjectViewField extends Field {
+  columnName: string,
+  projectFieldId: number,
+  projectFieldName: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  metaDataColumnValidValues: string[] | null,
+}
+
+export interface ProjectView {
+  id: number,
+  fileName: string,
+  blobFilePath: string,
+  originalFileName: string,
+  isBase: boolean,
+  fields: string[],
+  viewFields: string[] // this is currently calculated client-side
 }
 
 export interface Proforma {
@@ -171,6 +189,20 @@ export interface Proforma {
   createdBy: string,
   lastUpdatedBy: string,
   columnMappings: MetaDataColumnMapping[],
+}
+
+export interface ProFormaVersion {
+  proFormaVersionId: number,
+  proFormaId: number,
+  version: number,
+  abbreviation: string,
+  originalFileName: string,
+  fileName: string,
+  columnMappings: MetaDataColumnMapping[],
+  isCurrent: boolean,
+  assetId : number,
+  created: Date,
+  createdBy: string,
 }
 
 export interface ThresholdAlertDTO {
@@ -195,7 +227,7 @@ export interface UserRoleGroup {
 }
 
 export interface Group {
-  groupId: number | undefined,
+  groupId: number,
   name: string,
   lastUpdated: string,
   lastUpdatedBy: string,
@@ -206,18 +238,12 @@ export interface Group {
   }
 }
 
-export interface DisplayField {
-  canVisualise: boolean,
-  columnName: string,
-  columnOrder: number,
-  isActive: boolean,
-  isDisplayedAsDefault: boolean,
-  metaDataColumnId: number,
-  metaDataColumnTypeId: number,
-  minWidth: number,
-  primitiveType: string,
-}
-
-export interface Sample {
-  [key: string] : any
+export interface DataSetEntry {
+  entryId: number;
+  dataSetId: number;
+  fileName: string;
+  analysisLabel: string;
+  createdBy: string;
+  uploadedDate: string;
+  fields: string[];
 }

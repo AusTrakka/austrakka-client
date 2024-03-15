@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
+/* eslint-disable no-param-reassign */
 import React, {
   memo, useEffect, useRef, Dispatch, SetStateAction, useState,
 } from 'react';
@@ -19,10 +19,11 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { Sample, DisplayField, Group, MetaDataColumn } from '../../types/dtos';
+import { MetaDataColumn } from '../../types/dtos';
+import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, isoDateLocalDate, isoDateLocalDateNoTime, replaceHasSequencesNullsWithFalse, typeRenderFunctions } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
 import { buildMRTColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -47,7 +48,7 @@ function SampleTable(props: SamplesProps) {
   const { groupContext, groupName } = props;
   const tableInstanceRef = useRef(null);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
-  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<MRT_ColumnDef<Sample>[]>([]);
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -70,7 +71,7 @@ function SampleTable(props: SamplesProps) {
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>([]);
+  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
@@ -115,8 +116,8 @@ function SampleTable(props: SamplesProps) {
     () => {
       // BUILD COLUMNS
       const formatTableHeaders = () => {
-        const copy = [...displayFields]; // Creating copy of original array so it's not overridden
-        const sortedDisplayFields = copy.sort(compareFields);
+        const sortedDisplayFields = [...displayFields];
+        sortedDisplayFields.sort(compareFields);
         const columnBuilder = buildMRTColumnDefinitions(sortedDisplayFields);
         setSampleTableColumns(columnBuilder);
         setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
@@ -151,13 +152,16 @@ function SampleTable(props: SamplesProps) {
         const searchParams = new URLSearchParams({
           Page: (samplesPagination.pageIndex + 1).toString(),
           PageSize: (samplesPagination.pageSize).toString(),
-          groupContext: `${groupContext}`,
           filters: queryString,
           sorts: sortString,
         });
-        const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
+        const samplesResponse: ResponseObject =
+          await getSamples(token, groupContext!, searchParams);
         if (samplesResponse.status === ResponseType.Success) {
-          setSampleList(samplesResponse.data);
+          // changing null values in Has_sequences to false this is a temporary fix. As
+          // most data will be retrieved by redux and this will be handled there.
+          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
+          setSampleList(sampleDataAltered);
           setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
           setIsSamplesLoading(false);
           const count: string = samplesResponse.headers?.get('X-Total-Count')!;
@@ -226,18 +230,19 @@ function SampleTable(props: SamplesProps) {
 
   // GET SAMPLES - not paginated
   const getExportData = async () => {
-    setExportCSVStatus(LoadingState.LOADING);
-    const searchParams = new URLSearchParams({
-      Page: '1',
-      PageSize: (totalSamples).toString(),
-      groupContext: `${groupContext!}`,
-      filters: queryString,
-    });
-    const samplesResponse: ResponseObject = await getSamples(token, searchParams.toString());
-    if (samplesResponse.status === ResponseType.Success) {
-      setExportData(samplesResponse.data);
-    } else {
-      setExportCSVStatus(LoadingState.ERROR);
+    if (groupContext) {
+      setExportCSVStatus(LoadingState.LOADING);
+      const searchParams = new URLSearchParams({
+        Page: '1',
+        PageSize: (totalSamples).toString(),
+        filters: queryString,
+      });
+      const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
+      if (samplesResponse.status === ResponseType.Success) {
+        setExportData(samplesResponse.data);
+      } else {
+        setExportCSVStatus(LoadingState.ERROR);
+      }
     }
   };
 

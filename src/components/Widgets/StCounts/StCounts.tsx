@@ -25,7 +25,7 @@ const spec: TopLevelSpec = {
     y: { aggregate: 'count', title: 'Count of Samples' },
     color: {
       field: stFieldName,
-      title: 'ST Value',
+      title: `${stFieldName} Value`,
       scale: { scheme: 'spectral' },
     },
   },
@@ -124,14 +124,14 @@ export default function StCounts(props: any) {
   // Get initial state from store
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, loading } = useAppSelector(selectStCounts);
-  const aggregatedCounts = useAppSelector(selectAggregatedStCounts);
+  const aggregatedCounts = useAppSelector(state => selectAggregatedStCounts(state, stFieldName));
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const { token, tokenLoading } = useApi();
 
   const stCountsDispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { groupId, token, projectId, timeFilter };
+    const dispatchProps = { groupId, token, projectId, timeFilter, aggField: stFieldName };
     if (loading === 'idle' &&
       tokenLoading !== LoadingState.IDLE &&
       tokenLoading !== LoadingState.LOADING
@@ -145,8 +145,8 @@ export default function StCounts(props: any) {
     const drilldownFilter = [{
       field: stFieldName,
       fieldType: 'string',
-      condition: '==*',
-      value: selectedRow.ST,
+      condition: '=',
+      value: selectedRow[stFieldName],
     }];
     // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {
@@ -162,7 +162,7 @@ export default function StCounts(props: any) {
     () => [
       {
         accessorKey: stFieldName,
-        header: 'ST Value',
+        header: `${stFieldName} Value`,
       },
       {
         accessorKey: 'sampleCount',
@@ -176,7 +176,9 @@ export default function StCounts(props: any) {
     // <Box sx={{ flexGrow: 1 }}>
     <Box>
       <Typography variant="h5" paddingBottom={1} color="primary">
-        ST Counts
+        {stFieldName}
+        {' '}
+        Counts
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <Grid container direction="row" alignItems="center" spacing={2}>
