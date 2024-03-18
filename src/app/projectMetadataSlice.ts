@@ -188,19 +188,14 @@ listenerMiddleware.startListening({
 //      if override mode is set, a bare field name will be included in fields, but not actual views
 //      this will cause a bug when filtering the resulting empty field for null/not null
 function calculateViewFieldNames(
-  fieldName: string,
-  fields: ProjectField[],
+  field: ProjectField,
   mergeAlgorithm: string,
 ): string[] {
-  const field = fields.find(f => f.fieldName === fieldName);
-  if (!field) {
-    throw new Error(`Field ${fieldName} not found in project fields`);
-  }
   if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL && field.fieldSource === FieldSource.DATASET) {
-    return field.analysisLabels.map(label => `${fieldName}_${label}`);
+    return field.analysisLabels.map(label => `${field.fieldName}_${label}`);
   }
   // override mode, or fieldSource is sample, or fieldSource is both (Seq_ID)
-  return [fieldName];
+  return [field.fieldName];
 }
 
 // Given a list of field names, calculate or look up the unique values for the fields
@@ -293,8 +288,7 @@ export const projectMetadataSlice = createSlice({
       const viewFieldMap: Record<string, string[]> = {};
       fields.forEach(field => {
         viewFieldMap[field.fieldName] = calculateViewFieldNames(
-          field.fieldName,
-          fields,
+          field,
           state.data[projectAbbrev].mergeAlgorithm!,
         );
       });
