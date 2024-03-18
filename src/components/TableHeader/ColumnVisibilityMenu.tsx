@@ -135,7 +135,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
             onClick={() => handleColumnSelect(column)}
           >
             <Checkbox
-              checked={selectedColumns.some(
+              checked={!selectedColumns.some(
                 (p: any) => p.header === column.header,
               )}
             />

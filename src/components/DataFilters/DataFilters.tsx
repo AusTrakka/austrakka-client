@@ -173,6 +173,7 @@ function DataFilters(props: DataFiltersProps) {
         setNullOrEmptyFlag(false);
       }
     }
+    setLoadingState(false);
   };
 
   const clearFilters = () => {
@@ -396,7 +397,11 @@ function DataFilters(props: DataFiltersProps) {
                       {renderValueElement()}
                     </FormControl>
                   )}
-                  <IconButton type="submit"><AddCircle color="secondary" /></IconButton>
+                  <IconButton type="submit" disabled={Object.values(newFilter).some((x) => x === null || x === '')}>
+                    <AddCircle color={Object.values(newFilter).some((x) => x === null || x === '') ?
+                      'disabled' : 'secondary'}
+                    />
+                  </IconButton>
                   <Button size="small" variant="contained" onClick={clearFilters} disabled={filterList.length <= 0}>
                     Reset
                   </Button>

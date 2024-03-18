@@ -1,18 +1,20 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-pascal-case */
-import 'primereact/resources/themes/saga-green/theme.css';
+import 'primereact/resources/themes/fluent-light/theme.css';
 import React, {
   NamedExoticComponent,
   memo,
   useEffect, useState,
 } from 'react';
-import { Close } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, Close, Sort, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
   Dialog,
-  Alert, AlertTitle, Paper,
+  Alert, AlertTitle, Paper, Tooltip,
 } from '@mui/material';
+import './Samples.css';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
 import { FilterMatchMode } from 'primereact/api';
@@ -26,6 +28,7 @@ import { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import ColumnVisibilityMenu from '../TableHeader/ColumnVisibilityMenu';
+import useMaxHeaderHeight from '../TableHeader/UseMaxHeight';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -84,11 +87,14 @@ function Samples(props: SamplesProps) {
   const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
+  const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
 
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const { maxHeight, getHeaderRef } =
+    useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
   // Set column headers from metadata state
   useEffect(() => {
@@ -121,6 +127,24 @@ function Samples(props: SamplesProps) {
     }
   };
 
+  const sortIcon = (options : any) => {
+    const icon = (
+      <div className="custom-icon-container">
+        {options.sorted ?
+          (
+            options.sortOrder < 0 ? (
+              <ArrowDropDown fontSize="small" color="success" />
+            ) : (
+              <ArrowDropUp fontSize="small" color="success" />
+            )
+          ) : (
+            <Sort fontSize="small" color="action" />
+          )}
+      </div>
+    );
+    return icon;
+  };
+
   const header = (
     <div>
       <div style={{ display: 'flex', alignItems: 's', justifyContent: 'flex-end' }}>
@@ -137,6 +161,14 @@ function Samples(props: SamplesProps) {
             setSampleTableColumns(newColumns);
           }}
         />
+        <Tooltip title="Toggle Vertical Headers" placement="top">
+          <IconButton
+            onClick={() => setVerticalHeaders(!verticalHeaders)}
+            aria-label="toggle vertical headers"
+          >
+            {verticalHeaders ? (<TextRotateVertical />) : (<TextRotateUp />)}
+          </IconButton>
+        </Tooltip>
         <MemoizedExportTableData
           dataToExport={
           metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
@@ -149,7 +181,6 @@ function Samples(props: SamplesProps) {
   );
 
   if (isSamplesLoading) return null;
-
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
@@ -208,7 +239,6 @@ function Samples(props: SamplesProps) {
             paginator
             loading={loadingState}
             rows={25}
-            resizableColumns
             columnResizeMode="expand"
             rowsPerPageOptions={[25, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
@@ -220,17 +250,26 @@ function Samples(props: SamplesProps) {
             selectionMode="single"
             filters={currentFilters}
             reorderableColumns
+            resizableColumns
+            sortIcon={sortIcon}
           >
-            {sampleTableColumns.map((col: any) => (
+            {sampleTableColumns.map((col: any, index: any) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={col.header}
+                header={(
+                  !verticalHeaders ? <div>{col.header}</div> : (
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                      {col.header}
+                    </div>
+                  )
+                )}
                 body={BodyComponent({ col, readyFields })}
                 hidden={col.hidden}
                 sortable
                 resizeable
-                style={{ minWidth: '150px' }}
+                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
+                headerClassName="custom-title"
               />
             ))}
           </DataTable>

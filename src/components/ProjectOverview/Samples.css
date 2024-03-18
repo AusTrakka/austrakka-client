@@ -1,0 +1,24 @@
+.custom-header {
+    padding-left: 10px;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+  }
+
+  .custom-title .p-column-title {
+    display: flex;
+    align-items: center;
+  }
+  .custom-title .p-column-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+    flex-direction: row; /* Add this line */
+  }
+
+  .custom-icon-container {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+  }
+

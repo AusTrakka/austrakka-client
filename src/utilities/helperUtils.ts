@@ -47,8 +47,17 @@ export const renderValueWithEmptyNull = (value: any): string => {
 export const fieldRenderFunctions : { [index: string]: Function } = {
   'Shared_groups': (value: any) => {
     if (value === null || value === undefined) return '';
-    return value.toString().replace(/[[\]"']/g, '');
+
+    // 1. Remove unwanted characters (optional)
+    const sanitizedValue = value.toString().replace(/[[\]"']/g, '');
+
+    // 2. Replace commas with comma and space
+    const formattedValue = sanitizedValue.replace(/,/g, ', ');
+
+    // Return the formatted value
+    return formattedValue;
   },
+
   'Date_created': (value: string) => isoDateLocalDate(value),
   'Date_updated': (value: string) => isoDateLocalDate(value),
 };
