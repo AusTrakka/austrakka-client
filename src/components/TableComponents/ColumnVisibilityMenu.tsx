@@ -9,6 +9,7 @@ import {
   Stack,
   Tooltip,
   Paper,
+  Box,
 } from '@mui/material';
 import { ViewColumn } from '@mui/icons-material';
 
@@ -49,11 +50,11 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   };
 
   return (
-    <div>
+    <Box style={{ display: 'flex', alignItems: 'center' }}>
       <Tooltip title="Show/Hide Columns" placement="top" arrow>
         <IconButton
+          size="small"
           aria-label="more"
-          id="long-button"
           aria-controls={open ? 'long-menu' : undefined}
           aria-expanded={open ? 'true' : undefined}
           aria-haspopup="true"
@@ -143,7 +144,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
           </MenuItem>
         ))}
       </Menu>
-    </div>
+    </Box>
   );
 }
 

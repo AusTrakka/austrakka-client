@@ -10,7 +10,8 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { getTrees } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
-import SearchInput from '../TableHeader/SearchInput';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface TreesProps {
   projectDetails: Project | null
@@ -20,12 +21,12 @@ interface TreesProps {
 
 function TreeList(props: TreesProps) {
   const { projectDetails, isTreesLoading, setIsTreesLoading } = props;
-  const [columns] = useState([
+  const columns = [
     { field: 'abbreviation', header: 'Abbreviation' },
     { field: 'name', header: 'Name' },
     { field: 'description', header: 'Description' },
     { field: 'latestTreeLastUpdated', header: 'Updated', body: (rowData: any) => isoDateLocalDate(rowData.latestTreeLastUpdated) },
-  ]);
+  ];
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
@@ -71,10 +72,12 @@ function TreeList(props: TreesProps) {
   };
 
   const header = (
-    <SearchInput
-      value={(globalFilter.global as DataTableFilterMetaData).value || ''}
-      onChange={onGlobalFilterChange}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <SearchInput
+        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+        onChange={onGlobalFilterChange}
+      />
+    </div>
   );
 
   if (isTreesLoading) return null;
@@ -101,6 +104,7 @@ function TreeList(props: TreesProps) {
           removableSort
           reorderableColumns
           columnResizeMode="expand"
+          sortIcon={sortIcon}
         >
           {columns.map((col) => (
             <Column
@@ -110,7 +114,7 @@ function TreeList(props: TreesProps) {
               body={col.body}
               sortable
               resizeable
-              style={{ minWidth: '150px' }}
+              headerClassName="custom-title"
             />
           ))}
         </DataTable>

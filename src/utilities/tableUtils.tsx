@@ -14,6 +14,8 @@ const placeholder = <Skeleton variant="text" animation="wave" width="6em" />;
 
 /**
  * @deprecated The method should not be used
+ *
+ * should be removed when this is fully removed
  */
 export function buildMRTColumnDefinitions(
   fields: Field[],

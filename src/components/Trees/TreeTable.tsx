@@ -1,9 +1,9 @@
+/* eslint-disable no-nested-ternary */
 import React, { NamedExoticComponent, memo, useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
-import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column } from 'primereact/column';
-import { Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
@@ -11,6 +11,9 @@ import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { Sample } from '../../types/sample.interface';
+import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -78,6 +81,10 @@ export default function TreeTable(props: TreeTableProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
+  const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
+
+  const { maxHeight, getHeaderRef } =
+    useMaxHeaderHeight(metadataLoadingState ?? MetadataLoadingState.IDLE);
 
   // Format display fields into column headers
   useEffect(() => {
@@ -134,16 +141,6 @@ export default function TreeTable(props: TreeTableProps) {
     }
   }, [selectedSamples, filteredData, showSelectedRowsOnly]);
 
-  const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumns = event.value as Sample[];
-    const newColumns = sampleTableColumns.map((col) => {
-      const newCol = { ...col };
-      newCol.hidden = selectedColumns.some((selectedCol) => selectedCol.field === col.field);
-      return newCol;
-    });
-    setSampleTableColumns(newColumns);
-  };
-
   const toggleShowSelectedRowsOnly = () => {
     setShowSelectedRowsOnly((prev) => !prev);
     if (showSelectedRowsOnly) {
@@ -166,40 +163,49 @@ export default function TreeTable(props: TreeTableProps) {
   };
 
   const header = (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <MultiSelect
-            value={sampleTableColumns.filter((col: Sample) => col.hidden === true)}
-            options={sampleTableColumns}
-            optionLabel="header"
-            onChange={onColumnToggle}
-            display="chip"
-            placeholder="Hide Columns"
-            className="w-full sm:w-20rem"
-            filter
-            showSelectAll
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Tooltip title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'} placement="top">
+          <IconButton
+            onClick={toggleShowSelectedRowsOnly}
+            color={showSelectedRowsOnly ? 'success' : 'default'}
+            disabled={selectedSamples.length === 0}
+            size="small"
+            style={{ marginLeft: '0.5rem' }}
+          >
+            {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+          </IconButton>
+        </Tooltip>
+        <div style={{ display: 'flex', justifyContent: 'flex end' }}>
+          <ColumnVisibilityMenu
+            columns={sampleTableColumns}
+            onColumnVisibilityChange={(selectedCols) => {
+              const newColumns = sampleTableColumns.map((col: any) => {
+                const newCol = { ...col };
+                newCol.hidden = selectedCols.some(
+                  (selectedCol: any) => selectedCol.field === col.field,
+                );
+                return newCol;
+              });
+              setSampleTableColumns(newColumns);
+            }}
           />
-          <Tooltip title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}>
+          <Tooltip title="Toggle Vertical Headers" placement="top">
             <IconButton
-              onClick={toggleShowSelectedRowsOnly}
-              color="primary"
-              disabled={selectedSamples.length === 0}
-              size="small"
-              style={{ marginLeft: '0.5rem' }}
+              onClick={() => setVerticalHeaders(!verticalHeaders)}
+              aria-label="toggle vertical headers"
             >
-              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+              {verticalHeaders ? (<TextRotateVertical />) : (<TextRotateUp />)}
             </IconButton>
           </Tooltip>
+          <MemoizedExportTableData
+            dataToExport={filteredData}
+            disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
+          />
         </div>
-        <MemoizedExportTableData
-          dataToExport={filteredData}
-          disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
-        />
       </div>
     </div>
   );
-
   return (
     <>
       <DataFilters
@@ -223,7 +229,6 @@ export default function TreeTable(props: TreeTableProps) {
               setLoading(false);
               setFilteredData(e);
             }}
-            dataKey="Seq_ID"
             size="small"
             removableSort
             showGridlines
@@ -238,7 +243,7 @@ export default function TreeTable(props: TreeTableProps) {
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
-            paginatorLeft
+            paginatorRight
             loading={loading}
             header={header}
             reorderableColumns
@@ -250,18 +255,26 @@ export default function TreeTable(props: TreeTableProps) {
               setSelectedSamples(e.value as Sample[]);
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
+            sortIcon={sortIcon}
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
-            {sampleTableColumns.map((col: Sample) => (
+            {sampleTableColumns.map((col: Sample, index: any) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={col.header}
+                header={(
+                  !verticalHeaders ? <div>{col.header}</div> : (
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                      {col.header}
+                    </div>
+                  )
+                )}
                 body={BodyComponent({ col, readyFields: fieldLoadingState })}
                 hidden={col.hidden}
                 sortable
                 resizeable
-                style={{ minWidth: '150px' }}
+                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
+                headerClassName="custom-title"
               />
             ))}
           </DataTable>

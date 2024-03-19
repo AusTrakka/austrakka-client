@@ -4,9 +4,9 @@ import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, T
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
+import { FilterMatchMode } from 'primereact/api';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member, Project } from '../../types/dtos';
@@ -14,6 +14,8 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupMembers } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface MembersProps {
   projectDetails: Project | null
@@ -25,11 +27,11 @@ function renderList(cell : any): JSX.Element[] {
   const roles = cell;
   if (Array.isArray(roles)) {
     return roles.map((r) => (
-      <Chip key={r} label={r} color="primary" variant="outlined" style={{ margin: '3px' }} />
+      <Chip key={r} label={r} variant="filled" color="secondary" size="small" style={{ margin: '3px' }} />
     ));
   }
 
-  return [<Chip key={roles} label={roles} />];
+  return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
 
 function MemberList(props: MembersProps) {
@@ -42,12 +44,15 @@ function MemberList(props: MembersProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
-  const [columns, setColumns] = useState([
+  const columns = [
     { field: 'displayName', header: 'Name' },
     { field: 'organization', header: 'Organisations', body: (rowData: any) => rowData.organization?.abbreviation },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
     { field: 'lastLoggedIn', header: 'Last Logged In', body: (rowData: any) => isoDateLocalDate(rowData.lastLoggedIn) },
-  ]);
+  ];
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -132,16 +137,6 @@ function MemberList(props: MembersProps) {
     }
   };
 
-  const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumns = event.value;
-    const newColumns = columns.map((col: any) => {
-      const newCol = { ...col };
-      newCol.hidden = selectedColumns.some((selectedCol: any) => selectedCol.field === col.field);
-      return newCol;
-    });
-    setColumns(newColumns);
-  };
-
   const ExportButton = (
     <>
       <CSVLink
@@ -182,21 +177,21 @@ function MemberList(props: MembersProps) {
     setExportCSVStatus(LoadingState.IDLE);
   };
 
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
+  };
+
   if (isMembersLoading) return null;
 
   const header = (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <MultiSelect
-          value={columns.filter((col: any) => col.hidden === true)}
-          options={columns}
-          optionLabel="header"
-          onChange={onColumnToggle}
-          display="chip"
-          placeholder="Hide Columns"
-          className="w-full sm:w-20rem"
-          filter
-          showSelectAll
+        <SearchInput
+          value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+          onChange={onGlobalFilterChange}
         />
         {ExportButton}
       </div>
@@ -241,7 +236,10 @@ function MemberList(props: MembersProps) {
               selectionMode="single"
               onRowClick={rowClickHandler}
               header={header}
+              filters={globalFilter}
+              globalFilterFields={columns.map((col) => col.field)}
               columnResizeMode="expand"
+              sortIcon={sortIcon}
             >
               {columns.map((col: any) => (
                 <Column
@@ -253,6 +251,7 @@ function MemberList(props: MembersProps) {
                   sortable
                   resizeable
                   style={{ minWidth: '150px' }}
+                  headerClassName="custom-title"
                 />
               ))}
             </DataTable>

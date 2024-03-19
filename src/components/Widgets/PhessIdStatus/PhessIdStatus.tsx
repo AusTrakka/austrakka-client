@@ -1,20 +1,15 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
 
-const columns:MRT_ColumnDef<any>[] = [
-  {
-    header: 'Status',
-    accessorKey: 'status',
-  },
-  {
-    header: 'Sample Count',
-    accessorKey: 'sampleCount',
-  },
+const columns = [
+  { field: 'status', header: 'Status' },
+  { field: 'sampleCount', header: 'Sample Count' },
 ];
 
 export default function PhessIdStatus(props: any) {
@@ -41,8 +36,8 @@ export default function PhessIdStatus(props: any) {
   }, [loading, dispatch, timeFilter, projectId,
     groupId, token, tokenLoading]);
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original;
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedRow = row.data;
     const drilldownFilter = [{
       field: 'PHESS_ID',
       fieldType: 'string',
@@ -65,34 +60,20 @@ export default function PhessIdStatus(props: any) {
         PHESS ID Status
       </Typography>
       { loading === LoadingState.SUCCESS && (
-      <MaterialReactTable
-        columns={columns}
-        data={aggregatedCounts}
-        defaultColumn={{
-          size: 0,
-          minSize: 30,
-        }}
-        initialState={{ density: 'compact' }}
-            // Stripping down features
-        enableColumnActions={false}
-        enableColumnFilters={false}
-        enablePagination={false}
-        enableSorting={false}
-        enableBottomToolbar={false}
-        enableTopToolbar={false}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
-        })}
-        muiTablePaperProps={{
-          sx: {
-            boxShadow: 'none',
-          },
-        }}
-        enableStickyHeader
-      />
+      <DataTable
+        value={aggregatedCounts}
+        size="small"
+        onRowClick={rowClickHandler}
+        selectionMode="single"
+      >
+        {columns.map((col: any) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+          />
+        ))}
+      </DataTable>
       )}
       { loading === LoadingState.ERROR && (
         <Alert severity="error">

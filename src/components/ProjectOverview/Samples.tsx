@@ -1,12 +1,12 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-pascal-case */
-import 'primereact/resources/themes/fluent-light/theme.css';
+
 import React, {
   NamedExoticComponent,
   memo,
   useEffect, useState,
 } from 'react';
-import { ArrowDropDown, ArrowDropUp, Close, Sort, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Close, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
@@ -27,8 +27,9 @@ import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
-import ColumnVisibilityMenu from '../TableHeader/ColumnVisibilityMenu';
-import useMaxHeaderHeight from '../TableHeader/UseMaxHeight';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -88,6 +89,7 @@ function Samples(props: SamplesProps) {
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
+
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
 
@@ -127,27 +129,9 @@ function Samples(props: SamplesProps) {
     }
   };
 
-  const sortIcon = (options : any) => {
-    const icon = (
-      <div className="custom-icon-container">
-        {options.sorted ?
-          (
-            options.sortOrder < 0 ? (
-              <ArrowDropDown fontSize="small" color="success" />
-            ) : (
-              <ArrowDropUp fontSize="small" color="success" />
-            )
-          ) : (
-            <Sort fontSize="small" color="action" />
-          )}
-      </div>
-    );
-    return icon;
-  };
-
   const header = (
-    <div>
-      <div style={{ display: 'flex', alignItems: 's', justifyContent: 'flex-end' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <ColumnVisibilityMenu
           columns={sampleTableColumns}
           onColumnVisibilityChange={(selectedCols) => {
@@ -166,14 +150,15 @@ function Samples(props: SamplesProps) {
             onClick={() => setVerticalHeaders(!verticalHeaders)}
             aria-label="toggle vertical headers"
           >
-            {verticalHeaders ? (<TextRotateVertical />) : (<TextRotateUp />)}
+            {verticalHeaders ? <TextRotateVertical /> : <TextRotateUp />}
           </IconButton>
         </Tooltip>
         <MemoizedExportTableData
           dataToExport={
-          metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-            [] : filteredData ?? []
-        }
+        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+          ? []
+          : filteredData ?? []
+      }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>

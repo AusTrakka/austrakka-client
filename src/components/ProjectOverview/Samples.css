@@ -13,7 +13,7 @@
     justify-content: space-between;
     align-items: center;
     white-space: nowrap;
-    flex-direction: row; /* Add this line */
+    flex-direction: row; /* Add this line */;
   }
 
   .custom-icon-container {

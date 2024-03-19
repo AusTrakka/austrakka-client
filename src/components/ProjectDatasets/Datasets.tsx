@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Box } from '@mui/material';
+import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -15,8 +15,9 @@ import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
-import ColumnVisibilityMenu from '../TableHeader/ColumnVisibilityMenu';
-import SearchInput from '../TableHeader/SearchInput';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -134,25 +135,27 @@ function Datasets(props: DatasetProps) {
   };
 
   const header = (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <SearchInput
-        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
-        onChange={onGlobalFilterChange}
-      />
-      <ColumnVisibilityMenu
-        columns={columns}
-        onColumnVisibilityChange={(selectedCols) => {
-          const newColumns = columns.map((col: any) => {
-            const newCol = { ...col };
-            newCol.hidden = selectedCols.some(
-              (selectedCol: any) => selectedCol.field === col.field,
-            );
-            return newCol;
-          });
-          setColumns(newColumns);
-        }}
-      />
-    </Box>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <SearchInput
+          value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+          onChange={onGlobalFilterChange}
+        />
+        <ColumnVisibilityMenu
+          columns={columns}
+          onColumnVisibilityChange={(selectedCols) => {
+            const newColumns = columns.map((col: any) => {
+              const newCol = { ...col };
+              newCol.hidden = selectedCols.some(
+                (selectedCol: any) => selectedCol.field === col.field,
+              );
+              return newCol;
+            });
+            setColumns(newColumns);
+          }}
+        />
+      </div>
+    </div>
   );
 
   return (
@@ -175,6 +178,7 @@ function Datasets(props: DatasetProps) {
               scrollable
               scrollHeight="calc(100vh - 500px)"
               header={header}
+              sortIcon={sortIcon}
             >
               {canDelete() ? (
                 <Column
@@ -194,6 +198,7 @@ function Datasets(props: DatasetProps) {
                   sortable
                   resizeable
                   style={{ minWidth: '150px' }}
+                  headerClassName="custom-title"
                 />
               ))}
             </DataTable>
