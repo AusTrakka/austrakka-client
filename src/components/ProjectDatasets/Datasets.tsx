@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Box, Tooltip } from '@mui/material';
+import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Box, Tooltip, Typography } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_ToggleFiltersButton } from 'material-react-table';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
@@ -13,6 +13,7 @@ import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { selectProjectMergeAlgorithm } from '../../app/projectMetadataSlice';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -40,6 +41,8 @@ function Datasets(props: DatasetProps) {
     loading,
     admin,
   } = useAppSelector(selectUserState);
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -159,6 +162,9 @@ function Datasets(props: DatasetProps) {
           </div>
         )}
       />
+      <Typography color="primary" sx={{ mt: 2, textAlign: 'right' }}>
+        {`Project merge mode: ${mergeAlgorithm}`}
+      </Typography>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={openSnackbar}
