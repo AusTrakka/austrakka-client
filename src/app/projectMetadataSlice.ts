@@ -5,14 +5,17 @@ import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { Project, ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
 import { Sample } from '../types/sample.interface';
-import { getProjectFields, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
+import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { replaceHasSequencesNullsWithFalse } from '../utilities/helperUtils';
+import { MergeAlgorithm } from '../constants/mergeAlgorithm';
+import { FieldSource } from '../constants/fieldSource';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
+  mergeAlgorithm: string | null
   loadingState: MetadataLoadingState,
   projectFields: ProjectField[] | null
   fields: ProjectViewField[] | null
@@ -27,6 +30,7 @@ export interface ProjectMetadataState {
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
+  mergeAlgorithm: null,
   loadingState: MetadataLoadingState.IDLE,
   projectFields: null,
   fields: null,
@@ -61,6 +65,7 @@ interface FetchProjectInfoParams {
 }
 
 interface FetchProjectInfoResponse {
+  mergeAlgorithm: string,
   fields: ProjectField[],
   views: ProjectView[],
 }
@@ -91,7 +96,12 @@ const fetchProjectInfo = createAsyncThunk(
     if (viewsResponse.status !== 'Success') {
       return rejectWithValue(viewsResponse.error);
     }
+    const projectSettingsResponse = await getProjectSettings(projectAbbrev, token!);
+    if (projectSettingsResponse.status !== 'Success') {
+      return rejectWithValue(projectSettingsResponse.error);
+    }
     return fulfillWithValue<FetchProjectInfoResponse>({
+      mergeAlgorithm: projectSettingsResponse.data.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
       views: viewsResponse.data as ProjectView[],
     });
@@ -173,19 +183,19 @@ listenerMiddleware.startListening({
 
 // reducer utility functions - single-use, but improve reducer readability
 
-// Given a list of field names, and an array of ProjectFields,
-// calculate the viewFields for that field
-function calculateViewFieldNames(fieldName: string, fields: ProjectField[]): string[] {
-  const field = fields.find(f => f.fieldName === fieldName);
-  if (!field) {
-    throw new Error(`Field ${fieldName} not found in project fields`);
+// Given a list of field names, calculate the viewFields for that field
+// TODO this algorithm is correct, but override mode will cause a bug until implemented server-side
+//      if override mode is set, a bare field name will be included in fields, but not actual views
+//      this will cause a bug when filtering the resulting empty field for null/not null
+function calculateViewFieldNames(
+  field: ProjectField,
+  mergeAlgorithm: string,
+): string[] {
+  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL && field.fieldSource === FieldSource.DATASET) {
+    return field.analysisLabels.map(label => `${field.fieldName}_${label}`);
   }
-  if (field.fieldName === SAMPLE_ID_FIELD || field.analysisLabels.length === 0) {
-    // We keep a single copy of the field even if there are no analyses
-    // This also covers all fields in override mode, as they have no analysisLabels
-    return [fieldName];
-  }
-  return field.analysisLabels.map(label => `${fieldName}_${label}`);
+  // override mode, or fieldSource is sample, or fieldSource is both (Seq_ID)
+  return [field.fieldName];
 }
 
 function getFieldDetails(
@@ -306,14 +316,18 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-      const { fields, views } = action.payload as FetchProjectInfoResponse;
+      const { mergeAlgorithm, fields, views } = action.payload as FetchProjectInfoResponse;
+      state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
       // Sort fields by columnOrder and set state
       fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
       fields.forEach(field => {
-        viewFieldMap[field.fieldName] = calculateViewFieldNames(field.fieldName, fields);
+        viewFieldMap[field.fieldName] = calculateViewFieldNames(
+          field,
+          state.data[projectAbbrev].mergeAlgorithm!,
+        );
       });
       // Calculate view fields (ProjectViewFields) for the project as a whole
       state.data[projectAbbrev].fields = fields.flatMap((projField: ProjectField) =>
@@ -491,4 +505,10 @@ export const selectAwaitingProjectMetadata =
           loadingState === MetadataLoadingState.AWAITING_FIELDS ||
           loadingState === MetadataLoadingState.FIELDS_LOADED ||
           loadingState === MetadataLoadingState.AWAITING_DATA;
+  };
+
+export const selectProjectMergeAlgorithm =
+  (state: RootState, projectAbbrev: string | undefined) => {
+    if (!projectAbbrev) return null;
+    return state.projectMetadataState.data[projectAbbrev]?.mergeAlgorithm;
   };

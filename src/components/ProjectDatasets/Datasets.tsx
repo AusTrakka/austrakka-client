@@ -47,6 +47,8 @@ function Datasets(props: DatasetProps) {
     loading,
     admin,
   } = useAppSelector(selectUserState);
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
   const renderDeleteButton = (
     rowData: any,

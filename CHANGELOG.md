@@ -3,7 +3,7 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unreleased
+## 2024-03-15
 
 ### Added
 
@@ -19,11 +19,16 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ### Changed
 
 - As a part of the project analysis metadata release, project data is now retrieved as a whole and queried client-side, and cached as the user navigates between pages. As a part of this change:
-  - Users may see longer load times on the initial load of large projects, although this should be mitigated by iterative loading of fields. 
+  - Users may see longer load times on the initial load of large projects. 
   - Users should see faster page loads on all successive page views for a project, including any tree or plot pages.
   - It is now possible to sort columns in natural sort order (ST1, ST5, ST11 rather than ST1, ST11, ST5).
   - Quick search is now available on sample metadata tables.
-  - Tree colouring of nodes or metadata blocks now uses a neutral (grey) value for null metadata values rather than a value from the selected colour palette. 
+- Tree colouring of nodes or metadata blocks now uses a neutral (grey) value for null metadata values. This improvement has not yet been made for plots.
+- Allowed values are now returned when listing available metadata fields. As a result, the `austrakka field list` CLI command will now display allowed values for categorical (i.e. controlled) fields.
+
+### Fixed
+
+- Additional checks have been added to guard against simultaneous upload of sequences to the same Seq_ID, which could previously, in rare cases, lead to more than one active version of a sequence or sequence file pair for the same Seq_ID.
 
 
 ## 2024-02-14
