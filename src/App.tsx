@@ -29,24 +29,20 @@ import UploadSequences from './components/Upload/UploadSequences';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
 import { msalInstance } from './utilities/authUtils';
 import UserDetail from './components/Users/UserDetail';
-import { useAppDispatch } from './app/store';
-import { fetchUserRoles } from './app/userSlice';
-import { useApi } from './app/ApiContext';
-import LoadingState from './constants/loadingState';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
+import Users from './components/Admin/Users';
+import { selectUserState } from './app/userSlice';
+import { useAppSelector } from './app/store';
+import LoadingState from './constants/loadingState';
 
 function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
   msalInstance.setNavigationClient(navigationClient);
-  const dispatch = useAppDispatch();
-  const { token, tokenLoading } = useApi();
-
-  useEffect(() => {
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchUserRoles(token));
-    }
-  }, [token, tokenLoading, dispatch]);
+  const {
+    loading,
+    admin,
+  } = useAppSelector(selectUserState);
 
   return (
     <ThemeProvider theme={theme}>
@@ -62,6 +58,10 @@ function App() {
                 <Route path="org" element={<OrganisationOverview />} />
                 <Route path="org/:tab" element={<OrganisationOverview />} />
                 <Route path="upload" element={<Upload />} />
+                {/* More routes that have perms attached can be stored
+                   and then mapped if the conditional passes */}
+                {(loading === LoadingState.SUCCESS && admin) &&
+                <Route path="users" element={<Users />} /> }
                 <Route path="upload/metadata" element={<UploadMetadata />} />
                 <Route path="upload/sequences" element={<UploadSequences />} />
                 <Route path="projects" element={<ProjectsList />} />
