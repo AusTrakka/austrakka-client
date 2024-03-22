@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
+import { isoDateLocalDate } from '../../utilities/helperUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -51,14 +52,19 @@ function ExportTableData(props: ExportTableDataProps) {
         // Processing data here
         const formattedData = dataToExport.map((row: any) => {
           const formattedRow: any = {};
+
           for (const [key, value] of Object.entries(row)) {
-            // eslint-disable-next-line no-nested-ternary
-            formattedRow[key] = Array.isArray(value)
-              ? `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`
-              : typeof value === 'string'
-                ? value.replace(/"/g, '""')
-                : value;
+            if (Array.isArray(value)) {
+              formattedRow[key] = `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`;
+            } else if (typeof value === 'string') {
+              formattedRow[key] = value.replace(/"/g, '""');
+            } else if (value instanceof Date) {
+              formattedRow[key] = isoDateLocalDate(value.toString());
+            } else {
+              formattedRow[key] = value;
+            }
           }
+
           return formattedRow;
         });
 
@@ -77,6 +83,7 @@ function ExportTableData(props: ExportTableDataProps) {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
+        console.error('Error exporting data:', error);
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
