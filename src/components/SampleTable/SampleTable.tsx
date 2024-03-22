@@ -2,14 +2,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-param-reassign */
 import React, {
-  memo, useEffect, useRef, Dispatch, SetStateAction, useState, NamedExoticComponent,
+  memo, useEffect, useRef, useState,
 } from 'react';
 
-import { FilterList, FileDownload, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import {
-  Box, IconButton, Tooltip, Typography,
+  IconButton,
   CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle, Badge, Paper,
+  Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
@@ -43,25 +43,6 @@ interface SamplesProps {
 // 1. Gets display fields for that group to a) builds columns and b) order columns
 // 2. Gets sample list (paginated, filtered + sorted) for display in table
 // 3. Gets sample list (unpaginated, filtered + sorted) for csv export
-
-interface ExportTableDataProps {
-  dataToExport: any[];
-  disabled: boolean;
-}
-
-const shouldComponentUpdate = (
-  prevProps: Readonly<ExportTableDataProps>,
-  nextProps: Readonly<ExportTableDataProps>,
-): boolean => {
-  // Perform your custom equality check logic here
-  const dataToExportEqual = prevProps.dataToExport === nextProps.dataToExport;
-  return dataToExportEqual;
-};
-
-const MemoizedExportTableData: NamedExoticComponent<ExportTableDataProps> = memo(
-  ExportTableData,
-  shouldComponentUpdate,
-);
 
 function SampleTable(props: SamplesProps) {
   const { groupContext, groupName } = props;
@@ -285,7 +266,7 @@ function SampleTable(props: SamplesProps) {
             setSampleTableColumns(newColumns);
           }}
         />
-        <MemoizedExportTableData
+        <ExportTableData
           dataToExport={sampleList}
           disabled={false}
         />
