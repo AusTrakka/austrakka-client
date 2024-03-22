@@ -46,7 +46,7 @@ function MemberList(props: MembersProps) {
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
     { field: 'displayName', header: 'Name' },
-    { field: 'organization', header: 'Organisations', body: (rowData: any) => rowData.organization?.abbreviation },
+    { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
     { field: 'lastLoggedIn', header: 'Last Logged In', body: (rowData: any) => isoDateLocalDate(rowData.lastLoggedIn) },
   ];
@@ -143,7 +143,7 @@ function MemberList(props: MembersProps) {
         data={transformedData}
         headers={[
           { label: 'Name', key: 'displayName' },
-          { label: 'Organization', key: 'organization' },
+          { label: 'Organizations', key: 'organization' },
           { label: 'Roles', key: 'roles' },
           { label: 'Last Logged In', key: 'lastLoggedIn' },
         ]}
