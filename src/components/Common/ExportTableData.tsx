@@ -83,7 +83,6 @@ function ExportTableData(props: ExportTableDataProps) {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
-        console.error('Error exporting data:', error);
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
