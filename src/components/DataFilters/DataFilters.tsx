@@ -103,7 +103,10 @@ function DataFilters(props: DataFiltersProps) {
         setConditions(dateConditionsPR);
         setSelectedFieldType(FieldTypes.DATE);
         defaultCondition = FilterMatchMode.DATE_IS;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
+      } else if (
+        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
+        targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+      ) {
         setConditions(numberConditionsPR);
         setSelectedFieldType(FieldTypes.NUMBER);
         defaultCondition = FilterMatchMode.EQUALS;
