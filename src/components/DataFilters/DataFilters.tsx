@@ -108,7 +108,7 @@ function DataFilters(props: DataFiltersProps) {
         targetFieldProps?.primitiveType === FieldTypes.DOUBLE
       ) {
         setConditions(numberConditionsPR);
-        setSelectedFieldType(FieldTypes.NUMBER);
+        setSelectedFieldType(targetFieldProps!.primitiveType);
         defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditionsPR);
@@ -281,13 +281,19 @@ function DataFilters(props: DataFiltersProps) {
             label="Value"
             variant="outlined"
             name="value"
-            type={newFilter.fieldType === FieldTypes.NUMBER ? FieldTypes.NUMBER : undefined}
+            type={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              'number' :
+              undefined}
             value={newFilter.value}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               handleFilterChange(event);
             }}
             size="small"
-            inputProps={{ maxLength: 25 }}
+            inputProps={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              { step: 'any' } :
+              { maxLength: 25 }}
             disabled={nullOrEmptyFlag}
           />
         );
