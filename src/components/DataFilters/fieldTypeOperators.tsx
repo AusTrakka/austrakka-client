@@ -1,5 +1,10 @@
 import { FilterMatchMode } from 'primereact/api';
 
+export enum CustomFilterOperators {
+  NULL_OR_EMPTY = 'null_or_empty',
+  NOT_NULL_OR_EMPTY = 'not_null_or_empty'
+}
+
 export const stringConditions = [
   { value: FilterMatchMode.CONTAINS, name: 'Contains' },
   { value: FilterMatchMode.NOT_CONTAINS, name: 'Doesn\'t Contain' },
@@ -7,6 +12,8 @@ export const stringConditions = [
   { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t Equal' },
   { value: FilterMatchMode.STARTS_WITH, name: 'Starts With' },
   { value: FilterMatchMode.ENDS_WITH, name: 'Ends With' },
+  { value: CustomFilterOperators.NULL_OR_EMPTY, name: 'Is null or empty' },
+  { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
 ];
 
 export const dateConditions = [

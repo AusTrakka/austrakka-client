@@ -8,14 +8,14 @@ import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
-import { dateConditions, stringConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
+import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
 import { Field, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
-  condition: FilterMatchMode | string,
+  condition: FilterMatchMode | CustomFilterOperators | string,
   value: any
 }
 
@@ -125,6 +125,8 @@ function DataFilters(props: DataFiltersProps) {
         value: '',
       });
     } else {
+      const flag = (event.target.name === 'condition' && event.target.value.includes('null'));
+      setNullOrEmptyFlag(flag);
       setNewFilter({
         ...newFilter,
         [event.target.name]: event.target.value as string,
@@ -164,7 +166,7 @@ function DataFilters(props: DataFiltersProps) {
         const filter: DataFilter = {
           field: newFilter.field,
           condition: newFilter.condition,
-          value: nullOrEmptyFlag ? nullOrEmptyString : newFilter.value,
+          value: newFilter.value,
           fieldType: newFilter.fieldType,
           shakeElement: newFilter.shakeElement,
         };
@@ -190,7 +192,18 @@ function DataFilters(props: DataFiltersProps) {
   useEffect(() => {
     const filtersBuilder: DataTableFilterMeta = {};
     if (filterList.length !== 0) {
-      filterList.forEach((filter) => {
+      filterList.forEach((_filter) => {
+        console.log(_filter);
+        let filter = { ..._filter };
+        if (filter.condition === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+          filter.condition = FilterMatchMode.NOT_EQUALS;
+          filter.value = '';
+        }
+        if (filter.condition === CustomFilterOperators.NULL_OR_EMPTY) {
+          filter.condition = FilterMatchMode.EQUALS;
+          filter.value = '';
+        }
+        console.log(filter);
         if (filter.fieldType === FieldTypes.DATE) {
           const newDate = new Date(filter.value.$d);
           if (filtersBuilder[filter.field]) {
@@ -226,6 +239,7 @@ function DataFilters(props: DataFiltersProps) {
         }
       });
     }
+    console.log(filtersBuilder);
     setPrimeReactFilters(filtersBuilder);
   }, [filterList, setPrimeReactFilters]);
 
@@ -397,12 +411,21 @@ function DataFilters(props: DataFiltersProps) {
                       {renderValueElement()}
                     </FormControl>
                   )}
-                  <IconButton type="submit" disabled={Object.values(newFilter).some((x) => x === null || x === '')}>
-                    <AddCircle color={Object.values(newFilter).some((x) => x === null || x === '') ?
+                  <IconButton
+                    type="submit"
+                    disabled={!nullOrEmptyFlag && (Object.values(newFilter).some((x) => x === null || x === ''))}
+                  >
+                    <AddCircle color={!nullOrEmptyFlag &&
+                    Object.values(newFilter).some((x) => x === null || x === '') ?
                       'disabled' : 'secondary'}
                     />
                   </IconButton>
-                  <Button size="small" variant="contained" onClick={clearFilters} disabled={filterList.length <= 0}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={clearFilters}
+                    disabled={filterList.length <= 0}
+                  >
                     Reset
                   </Button>
                   <br />
