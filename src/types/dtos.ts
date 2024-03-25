@@ -70,7 +70,7 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
-  lastLoggedIn: string,
+  lastLoggedIn: Date,
 }
 
 export interface User {
@@ -244,6 +244,6 @@ export interface DataSetEntry {
   fileName: string;
   analysisLabel: string;
   createdBy: string;
-  uploadedDate: string;
+  uploadedDate: Date;
   fields: string[];
 }

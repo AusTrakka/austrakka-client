@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { useNavigate } from 'react-router-dom';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
@@ -9,20 +10,10 @@ import DrilldownButton from '../../Common/DrilldownButton';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
 
-const columns:MRT_ColumnDef<any>[] = [
-  {
-    header: 'Project Name',
-    accessorKey: 'projectName',
-  },
-  {
-    header: 'Samples uploaded',
-    accessorKey: 'total',
-  },
-  {
-    header: 'Latest sample created',
-    accessorKey: 'latestDateCreated',
-    Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</>,
-  },
+const columns = [
+  { field: 'projectName', header: 'Project Name' },
+  { field: 'total', header: 'Samples uploaded' },
+  { field: 'latestDateCreated', header: 'Latest sample created', body: (rowData: any) => isoDateLocalDate(rowData.latestDateCreated) },
 ];
 
 export default function ProjectsTotal() {
@@ -57,34 +48,21 @@ export default function ProjectsTotal() {
       </Typography>
       { loading === LoadingState.SUCCESS && (
       <>
-        <MaterialReactTable
-          columns={columns}
-          data={data.data}
-          defaultColumn={{
-            size: 0,
-            minSize: 30,
-          }}
-          initialState={{ density: 'compact' }}
-          // Stripping down features
-          enableColumnActions={false}
-          enableColumnFilters={false}
-          enablePagination={false}
-          enableBottomToolbar={false}
-          enableTopToolbar={false}
-          muiTableBodyRowProps={({ row }) => ({
-            onClick: () => rowClickHandler(row),
-            sx: {
-              cursor: 'pointer',
-            },
-          })}
-          muiTablePaperProps={{
-            sx: {
-              boxShadow: 'none',
-            },
-          }}
-          muiTableContainerProps={{ sx: { maxHeight: '400px' } }}
-          enableStickyHeader
-        />
+        <DataTable
+          value={data.data}
+          size="small"
+          onRowClick={rowClickHandler}
+          selectionMode="single"
+        >
+          {columns.map((col: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              body={col.body}
+            />
+          ))}
+        </DataTable>
         <br />
         <DrilldownButton
           title="View all projects"

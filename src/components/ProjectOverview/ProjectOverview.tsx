@@ -49,7 +49,6 @@ function ProjectOverview() {
   // const [lastUpload] = useState('');
 
   // Samples component states
-  const [totalSamples, setTotalSamples] = useState(0);
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
@@ -91,8 +90,6 @@ function ProjectOverview() {
         token,
       );
       if (totalSamplesResponse.status === ResponseType.Success) {
-        const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
-        setTotalSamples(+count);
         setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
       } else {
         setIsOverviewError((prevState) => ({
@@ -178,7 +175,6 @@ function ProjectOverview() {
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
               projectAbbrev={projectAbbrev!}
-              totalSamples={totalSamples}
               isSamplesLoading={isSamplesLoading}
               inputFilters={sampleFilters}
             />

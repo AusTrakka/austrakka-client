@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -140,8 +141,8 @@ export default function StCounts(props: any) {
     }
   }, [loading, stCountsDispatch, timeFilter, projectId, groupId, token, tokenLoading]);
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original;
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedRow = row.data;
     const drilldownFilter = [{
       field: stFieldName,
       fieldType: 'string',
@@ -158,19 +159,10 @@ export default function StCounts(props: any) {
     setTabValue(1); // Navigate to "Samples" tab
   };
 
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
-      {
-        accessorKey: stFieldName,
-        header: `${stFieldName} Value`,
-      },
-      {
-        accessorKey: 'sampleCount',
-        header: 'Sample count',
-      },
-    ],
-    [],
-  );
+  const columns = useMemo<any[]>(() => [
+    { field: stFieldName, header: `${stFieldName} Value` },
+    { field: 'sampleCount', header: 'Sample count' },
+  ], []);
 
   return (
     // <Box sx={{ flexGrow: 1 }}>
@@ -183,34 +175,20 @@ export default function StCounts(props: any) {
       { loading === LoadingState.SUCCESS && (
       <Grid container direction="row" alignItems="center" spacing={2}>
         <Grid item xl={3} xs={4}>
-          <MaterialReactTable
-            columns={columns}
-            data={aggregatedCounts}
-            defaultColumn={{
-              size: 0,
-              minSize: 30,
-            }}
-            initialState={{ density: 'compact' }}
-                // Stripping down features
-            enableColumnActions={false}
-            enableColumnFilters={false}
-            enablePagination={false}
-            enableBottomToolbar={false}
-            enableTopToolbar={false}
-            muiTableBodyRowProps={({ row }) => ({
-              onClick: () => rowClickHandler(row),
-              sx: {
-                cursor: 'pointer',
-              },
-            })}
-            muiTablePaperProps={{
-              sx: {
-                boxShadow: 'none',
-              },
-            }}
-            muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
-            enableStickyHeader
-          />
+          <DataTable
+            value={aggregatedCounts}
+            size="small"
+            selectionMode="single"
+            onRowClick={rowClickHandler}
+          >
+            {columns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+              />
+            ))}
+          </DataTable>
         </Grid>
         <Grid item xl={9} xs={8}>
           <STChart

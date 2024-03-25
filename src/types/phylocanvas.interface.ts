@@ -1,6 +1,6 @@
 interface MetadataColourValue {
   colour: string;
-  label: string;
+  label: string | Date;
 }
 
 export interface PhylocanvasMetadata {

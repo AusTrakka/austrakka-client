@@ -1,10 +1,12 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { memo, useEffect, useRef, useState } from 'react';
-import MaterialReactTable, { MRT_ColumnDef, MRT_ShowHideColumnsButton, MRT_ToggleFiltersButton } from 'material-react-table';
-import { Alert, AlertTitle, Box, Chip, CircularProgress, Dialog, IconButton, Tooltip } from '@mui/material';
+import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { FilterMatchMode } from 'primereact/api';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member, Project } from '../../types/dtos';
@@ -12,6 +14,8 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupMembers } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface MembersProps {
   projectDetails: Project | null
@@ -20,22 +24,15 @@ interface MembersProps {
 }
 
 function renderList(cell : any): JSX.Element[] {
-  const roles = cell.getValue();
+  const roles = cell;
   if (Array.isArray(roles)) {
     return roles.map((r) => (
-      <Chip key={r} label={r} color="primary" variant="outlined" style={{ margin: '3px' }} />
+      <Chip key={r} label={r} variant="filled" color="secondary" size="small" style={{ margin: '3px' }} />
     ));
   }
 
-  return [<Chip key={roles} label={roles} />];
+  return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
-
-const memberTableColumns: MRT_ColumnDef[] = [
-  { accessorKey: 'displayName', header: 'Name' },
-  { accessorKey: 'organization.abbreviation', header: 'Organisations' },
-  { accessorKey: 'roles', header: 'Roles', Cell: ({ cell }: any) => <>{renderList(cell)}</> },
-  { accessorKey: 'lastLoggedIn', header: 'Last Logged In', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
-];
 
 function MemberList(props: MembersProps) {
   const {
@@ -47,6 +44,15 @@ function MemberList(props: MembersProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
+  const columns = [
+    { field: 'displayName', header: 'Name' },
+    { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
+    { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
+    { field: 'lastLoggedIn', header: 'Last Logged In', body: (rowData: any) => isoDateLocalDate(rowData.lastLoggedIn) },
+  ];
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -57,7 +63,11 @@ function MemberList(props: MembersProps) {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
       if (memberListResponse.status === ResponseType.Success) {
-        setMemberList(memberListResponse.data as Member[]);
+        const newDate = memberListResponse.data.map((member: any) => ({
+          ...member,
+          lastLoggedIn: isoDateLocalDate(member.lastLoggedIn),
+        }));
+        setMemberList(newDate as Member[]);
         setMemberListError(false);
         setIsMembersLoading(false);
       } else {
@@ -114,12 +124,11 @@ function MemberList(props: MembersProps) {
     }
   };
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original; // Assuming "original" contains the row data
-
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
-    if ('objectId' in selectedRow) {
-      const { objectId } = selectedRow; // Replace "objectId" with the actual property name
+    if ('objectId' in selectedRow.data) {
+      const { objectId } = selectedRow.data; // Replace "objectId" with the actual property name
       const url = `/users/${objectId}`;
       navigate(url);
     } else {
@@ -134,7 +143,7 @@ function MemberList(props: MembersProps) {
         data={transformedData}
         headers={[
           { label: 'Name', key: 'displayName' },
-          { label: 'Organization', key: 'organization' },
+          { label: 'Organizations', key: 'organization' },
           { label: 'Roles', key: 'roles' },
           { label: 'Last Logged In', key: 'lastLoggedIn' },
         ]}
@@ -168,66 +177,88 @@ function MemberList(props: MembersProps) {
     setExportCSVStatus(LoadingState.IDLE);
   };
 
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
+  };
+
   if (isMembersLoading) return null;
+
+  const header = (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <SearchInput
+          value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+          onChange={onGlobalFilterChange}
+        />
+        {ExportButton}
+      </div>
+    </div>
+  );
 
   return (
     <>
       {isMembersLoading ? <CircularProgress /> : null}
-      <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
-        <Alert severity="error" sx={{ padding: 3 }}>
-          <IconButton
-            aria-label="close"
-            onClick={handleDialogClose}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <Close />
-          </IconButton>
-          <AlertTitle sx={{ paddingBottom: 1 }}>
-            <strong>Your data could not be exported to CSV.</strong>
-          </AlertTitle>
-          There has been an error exporting your data to CSV.
-          <br />
-          Please try again later, or contact an AusTrakka admin.
+      {memberListError ? (
+        <Alert severity="error">
+          {memberListErrorMessage}
         </Alert>
-      </Dialog>
-      <MaterialReactTable
-        columns={memberTableColumns}
-        data={memberList}
-        state={{
-          showAlertBanner: memberListError,
-        }}
-        enableStickyHeader
-        initialState={{ density: 'compact' }}
-        enableColumnResizing
-        enableFullScreenToggle={false}
-        enableDensityToggle={false}
-        muiTableProps={{
-          sx: {
-            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-          },
-        }}
-        muiToolbarAlertBannerProps={
-          memberListError
-            ? {
-              color: 'error',
-              children: memberListErrorMessage,
-            }
-            : undefined
-        }
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
-        })}
-        renderToolbarInternalActions={({ table }) => (
-          <Box>
-            {ExportButton}
-            <MRT_ToggleFiltersButton table={table} />
-            <MRT_ShowHideColumnsButton table={table} />
-          </Box>
-        )}
-      />
+      ) : (
+        <>
+          <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
+            <Alert severity="error" sx={{ padding: 3 }}>
+              <IconButton
+                aria-label="close"
+                onClick={handleDialogClose}
+                sx={{ position: 'absolute', right: 8, top: 8 }}
+              >
+                <Close />
+              </IconButton>
+              <AlertTitle sx={{ paddingBottom: 1 }}>
+                <strong>Your data could not be exported to CSV.</strong>
+              </AlertTitle>
+              There has been an error exporting your data to CSV.
+              <br />
+              Please try again later, or contact an AusTrakka admin.
+            </Alert>
+          </Dialog>
+          <Paper elevation={2} sx={{ marginBottom: 10 }}>
+            <DataTable
+              value={memberList}
+              removableSort
+              size="small"
+              scrollable
+              scrollHeight="calc(100vh - 300px)"
+              reorderableColumns
+              showGridlines
+              selectionMode="single"
+              onRowClick={rowClickHandler}
+              header={header}
+              filters={globalFilter}
+              globalFilterFields={columns.map((col) => col.field)}
+              columnResizeMode="expand"
+              sortIcon={sortIcon}
+            >
+              {columns.map((col: any) => (
+                <Column
+                  key={col.field}
+                  field={col.field}
+                  header={col.header}
+                  body={col.body}
+                  hidden={col.hidden ?? false}
+                  sortable
+                  resizeable
+                  style={{ minWidth: '150px' }}
+                  headerClassName="custom-title"
+                />
+              ))}
+            </DataTable>
+          </Paper>
+        </>
+      )}
+
     </>
   );
 }
