@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { Paper } from '@mui/material';
@@ -58,8 +58,8 @@ function PlotList(props: PlotListProps) {
     }
   }, [projectDetails, setIsPlotsLoading, token]);
 
-  const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.original.abbreviation}`);
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
   };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
