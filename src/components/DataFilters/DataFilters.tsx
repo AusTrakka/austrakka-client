@@ -422,7 +422,8 @@ function DataFilters(props: DataFiltersProps) {
                             // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
                               ? (dateConditionsPR.find((c) => c.value === filter.condition))?.name
-                              : filter.fieldType === FieldTypes.NUMBER
+                              : (filter.fieldType === FieldTypes.NUMBER ||
+                                 filter.fieldType === FieldTypes.DOUBLE)
                                 ? (numberConditionsPR
                                   .find((c) => c.value === filter.condition))?.name
                                 : (stringConditionsPR
