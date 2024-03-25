@@ -3,7 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
+import { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -59,7 +59,7 @@ function ExportTableData(props: ExportTableDataProps) {
             } else if (typeof value === 'string') {
               formattedRow[key] = value.replace(/"/g, '""');
             } else if (value instanceof Date) {
-              formattedRow[key] = isoDateLocalDate(value.toString());
+              formattedRow[key] = isoDateLocalDateNoTime(value.toString());
             } else {
               formattedRow[key] = value;
             }
