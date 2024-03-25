@@ -2,8 +2,6 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, {
-  NamedExoticComponent,
-  memo,
   useEffect, useState,
 } from 'react';
 import { Close, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
@@ -50,26 +48,6 @@ function BodyComponent(props: BodyComponentProps) {
     col.body// Wrap your existing body content
   );
 }
-
-interface ExportTableDataProps {
-  dataToExport: any[];
-  disabled: boolean;
-}
-
-const shouldComponentUpdate = (
-  prevProps: Readonly<ExportTableDataProps>,
-  nextProps: Readonly<ExportTableDataProps>,
-): boolean => {
-  // Perform your custom equality check logic here
-  const dataToExportEqual = prevProps.dataToExport === nextProps.dataToExport;
-  const disabledEqual = prevProps.disabled === nextProps.disabled;
-  return dataToExportEqual && disabledEqual;
-};
-
-const MemoizedExportTableData: NamedExoticComponent<ExportTableDataProps> = memo(
-  ExportTableData,
-  shouldComponentUpdate,
-);
 
 function Samples(props: SamplesProps) {
   const {
@@ -153,7 +131,7 @@ function Samples(props: SamplesProps) {
             {verticalHeaders ? <TextRotateVertical /> : <TextRotateUp />}
           </IconButton>
         </Tooltip>
-        <MemoizedExportTableData
+        <ExportTableData
           dataToExport={
         metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
           ? []

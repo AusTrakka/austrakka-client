@@ -8,7 +8,7 @@ import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
-import { dateConditionsPR, stringConditionsPR, numberConditionsPR, booleanConditionsPR } from './fieldTypeOperators';
+import { dateConditions, stringConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
 import { Field, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
@@ -66,7 +66,7 @@ function DataFilters(props: DataFiltersProps) {
   const [sampleCount, setSampleCount] = useState<number | undefined>();
   const [totalSamples, setTotalSamples] = useState<number | undefined>();
   const [newFilter, setNewFilter] = useState(initialFilterState);
-  const [conditions, setConditions] = useState(stringConditionsPR);
+  const [conditions, setConditions] = useState(stringConditions);
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
@@ -100,19 +100,19 @@ function DataFilters(props: DataFiltersProps) {
         field.columnName === event.target.value);
       let defaultCondition = '';
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
-        setConditions(dateConditionsPR);
+        setConditions(dateConditions);
         setSelectedFieldType(FieldTypes.DATE);
         defaultCondition = FilterMatchMode.DATE_IS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
-        setConditions(numberConditionsPR);
+        setConditions(numberConditions);
         setSelectedFieldType(FieldTypes.NUMBER);
         defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
-        setConditions(booleanConditionsPR);
+        setConditions(booleanConditions);
         setSelectedFieldType(FieldTypes.BOOLEAN);
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
-        setConditions(stringConditionsPR);
+        setConditions(stringConditions);
         setSelectedFieldType(FieldTypes.STRING);
         defaultCondition = FilterMatchMode.EQUALS;
       }
@@ -418,11 +418,11 @@ function DataFilters(props: DataFiltersProps) {
                           {
                             // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
-                              ? (dateConditionsPR.find((c) => c.value === filter.condition))?.name
+                              ? (dateConditions.find((c) => c.value === filter.condition))?.name
                               : filter.fieldType === FieldTypes.NUMBER
-                                ? (numberConditionsPR
+                                ? (numberConditions
                                   .find((c) => c.value === filter.condition))?.name
-                                : (stringConditionsPR
+                                : (stringConditions
                                   .find((c) => c.value === filter.condition))?.name
                           }
                         </b>

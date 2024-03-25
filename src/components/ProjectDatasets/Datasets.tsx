@@ -178,6 +178,8 @@ function Datasets(props: DatasetProps) {
               scrollable
               scrollHeight="calc(100vh - 500px)"
               header={header}
+              filters={globalFilter}
+              globalFilterFields={columns.map((col) => col.field)}
               sortIcon={sortIcon}
             >
               {canDelete() ? (
