@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
