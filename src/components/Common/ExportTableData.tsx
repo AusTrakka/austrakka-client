@@ -3,7 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDateNoTime } from '../../utilities/helperUtils';
+import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -52,16 +52,20 @@ function ExportTableData(props: ExportTableDataProps) {
         // Processing data here
         const formattedData = dataToExport.map((row: any) => {
           const formattedRow: any = {};
-
           for (const [key, value] of Object.entries(row)) {
-            if (Array.isArray(value)) {
-              formattedRow[key] = `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`;
-            } else if (typeof value === 'string') {
-              formattedRow[key] = value.replace(/"/g, '""');
-            } else if (value instanceof Date) {
-              formattedRow[key] = isoDateLocalDateNoTime(value.toString());
-            } else {
-              formattedRow[key] = value;
+            const type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
+            switch (true) {
+              case (key in fieldRenderFunctions):
+                formattedRow[key] = fieldRenderFunctions[key](value);
+                break;
+              case (type in typeRenderFunctions):
+                formattedRow[key] = typeRenderFunctions[type](value);
+                break;
+              case typeof value === 'string':
+                formattedRow[key] = (value as string).replace(/"/g, '""');
+                break;
+              default:
+                formattedRow[key] = value;
             }
           }
 
@@ -83,6 +87,8 @@ function ExportTableData(props: ExportTableDataProps) {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error exporting data to CSV:', error);
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
