@@ -225,7 +225,7 @@ function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNam
       const dateString = sample[field.columnName];
 
       if (dateString) {
-        // Check if the dateString is in ISO format
+        // Check if the dateString has a time attached. If it does, it's in ISO format
         const isISOFormat = dateString.includes('T');
 
         if (isISOFormat) {

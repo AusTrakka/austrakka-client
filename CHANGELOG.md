@@ -3,6 +3,13 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-03-20
+
+### Changed
+
+- The project merge algorithm ("override" or "show all") is now shown on the Datasets tab.
+- When a project is in "show all" mode, and no datasets have yet been uploaded for a particular metadata field, no columns will be displayed for that field. Previously, an empty column would display.
+
 ## 2024-03-15
 
 ### Added

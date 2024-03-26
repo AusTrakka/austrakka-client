@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import LoadingState from '../../constants/loadingState';
 import { Member, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -48,7 +47,6 @@ function MemberList(props: MembersProps) {
     { field: 'displayName', header: 'Name' },
     { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
-    { field: 'lastLoggedIn', header: 'Last Logged In', body: (rowData: any) => isoDateLocalDate(rowData.lastLoggedIn) },
   ];
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
@@ -63,11 +61,7 @@ function MemberList(props: MembersProps) {
       // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
       if (memberListResponse.status === ResponseType.Success) {
-        const newDate = memberListResponse.data.map((member: any) => ({
-          ...member,
-          lastLoggedIn: isoDateLocalDate(member.lastLoggedIn),
-        }));
-        setMemberList(newDate as Member[]);
+        setMemberList(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsMembersLoading(false);
       } else {
@@ -113,7 +107,6 @@ function MemberList(props: MembersProps) {
         // eslint-disable-next-line max-len
         organization: member.organization?.abbreviation, // Assuming organization is an object with a 'name' property
         displayName: member.displayName,
-        lastLoggedIn: member.lastLoggedIn,
       }));
       setTransformedData(td);
       setExportCSVStatus(LoadingState.SUCCESS);
@@ -145,7 +138,6 @@ function MemberList(props: MembersProps) {
           { label: 'Name', key: 'displayName' },
           { label: 'Organizations', key: 'organization' },
           { label: 'Roles', key: 'roles' },
-          { label: 'Last Logged In', key: 'lastLoggedIn' },
         ]}
         ref={csvLink}
         style={{ display: 'none' }}
