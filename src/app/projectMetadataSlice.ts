@@ -225,8 +225,7 @@ function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNam
       const dateString = sample[field.columnName];
 
       // Date filter function dont handle strings thus making null if it is empty
-      if (dateString !== '') {
-        // Check if the dateString is in ISO format
+      if (dateString && dateString !== '') {
         const isISOFormat = dateString.includes('T');
 
         if (isISOFormat) {
