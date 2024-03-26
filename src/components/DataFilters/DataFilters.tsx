@@ -103,9 +103,12 @@ function DataFilters(props: DataFiltersProps) {
         setConditions(dateConditions);
         setSelectedFieldType(FieldTypes.DATE);
         defaultCondition = FilterMatchMode.DATE_IS;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
+      } else if (
+        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
+        targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+      ) {
         setConditions(numberConditions);
-        setSelectedFieldType(FieldTypes.NUMBER);
+        setSelectedFieldType(targetFieldProps!.primitiveType);
         defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
@@ -292,13 +295,19 @@ function DataFilters(props: DataFiltersProps) {
             label="Value"
             variant="outlined"
             name="value"
-            type={newFilter.fieldType === FieldTypes.NUMBER ? FieldTypes.NUMBER : undefined}
+            type={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              'number' :
+              undefined}
             value={newFilter.value}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               handleFilterChange(event);
             }}
             size="small"
-            inputProps={{ maxLength: 25 }}
+            inputProps={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              { step: 'any' } :
+              { maxLength: 25 }}
             disabled={nullOrEmptyFlag}
           />
         );
@@ -442,7 +451,8 @@ function DataFilters(props: DataFiltersProps) {
                             // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
                               ? (dateConditions.find((c) => c.value === filter.condition))?.name
-                              : filter.fieldType === FieldTypes.NUMBER
+                              : (filter.fieldType === FieldTypes.NUMBER ||
+                                 filter.fieldType === FieldTypes.DOUBLE)
                                 ? (numberConditions
                                   .find((c) => c.value === filter.condition))?.name
                                 : (stringConditions

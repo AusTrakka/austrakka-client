@@ -3,5 +3,6 @@ enum FieldTypes {
   DATE = 'date',
   BOOLEAN = 'boolean',
   NUMBER = 'number',
+  DOUBLE = 'double',
 }
 export default FieldTypes;
