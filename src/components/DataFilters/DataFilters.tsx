@@ -5,7 +5,7 @@ import React, { useEffect, useState, SetStateAction } from 'react';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
@@ -17,6 +17,19 @@ export interface DataFilter {
   fieldType: string,
   condition: FilterMatchMode | CustomFilterOperators | string,
   value: any
+}
+
+function emptyFilter(value: any, filters: boolean | null) {
+  const includeEmpty = filters ?? null;
+  if (includeEmpty === null) {
+    return true;
+  }
+  if (includeEmpty === true) {
+    // If includeEmpty is true, return true for empty strings and false for non-empty strings
+    return value === '' || value === null;
+  }
+  // If includeEmpty is false, return true for non-empty strings and false for empty strings
+  return value !== '' && value !== null;
 }
 
 interface DataFiltersProps {
@@ -91,6 +104,10 @@ function DataFilters(props: DataFiltersProps) {
         setFields(vFields);
       }
     }
+    allFields.forEach(field => {
+      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
+        emptyFilter(value, filters));
+    });
   }, [allFields, visibleFields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {
@@ -194,55 +211,56 @@ function DataFilters(props: DataFiltersProps) {
   // Build filters in the prime react format
   useEffect(() => {
     const filtersBuilder: DataTableFilterMeta = {};
-    if (filterList.length !== 0) {
-      filterList.forEach((_filter) => {
-        console.log(_filter);
-        let filter = { ..._filter };
-        if (filter.condition === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
-          filter.condition = FilterMatchMode.NOT_EQUALS;
-          filter.value = '';
-        }
-        if (filter.condition === CustomFilterOperators.NULL_OR_EMPTY) {
-          filter.condition = FilterMatchMode.EQUALS;
-          filter.value = '';
-        }
-        console.log(filter);
-        if (filter.fieldType === FieldTypes.DATE) {
-          const newDate = new Date(filter.value.$d);
-          if (filtersBuilder[filter.field]) {
-            (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
-              { value: newDate, matchMode: filter.condition as FilterMatchMode },
-            );
-          } else {
-            filtersBuilder[filter.field] = {
-              operator: FilterOperator.AND,
-              constraints: [
-                {
-                  value: newDate,
-                  matchMode: filter.condition as FilterMatchMode,
-                },
-              ],
-            };
-          }
-        } else if (filtersBuilder[filter.field]) {
-          // Append new constraints to the existing filters
-          (filtersBuilder[filter.field] as DataTableOperatorFilterMetaData).constraints.push(
-            { value: filter.value, matchMode: filter.condition as FilterMatchMode },
-          );
-        } else {
-          filtersBuilder[filter.field] = {
-            operator: FilterOperator.AND,
-            constraints: [
-              {
-                value: filter.value,
-                matchMode: filter.condition as FilterMatchMode,
-              },
-            ],
-          };
-        }
-      });
+
+    if (filterList.length === 0) {
+      setPrimeReactFilters(filtersBuilder);
+      return;
     }
-    console.log(filtersBuilder);
+
+    filterList.forEach((filter) => {
+      const { field, fieldType, condition, value } = filter;
+      const isDateField = fieldType === FieldTypes.DATE;
+      const isNullOrEmptyCondition =
+        condition === CustomFilterOperators.NULL_OR_EMPTY;
+      const isNotNullOrEmptyCondition =
+        condition === CustomFilterOperators.NOT_NULL_OR_EMPTY;
+
+      let filterValue;
+      switch (true) {
+        case isNullOrEmptyCondition:
+          filterValue = true;
+          break;
+        case isNotNullOrEmptyCondition:
+          filterValue = false;
+          break;
+        case isDateField:
+          filterValue = new Date(value.$d);
+          break;
+        default:
+          filterValue = value;
+          break;
+      }
+
+      const filterMatchMode = isNullOrEmptyCondition || isNotNullOrEmptyCondition
+        ? FilterMatchMode.CUSTOM
+        : condition;
+
+      const filterConstraint = {
+        value: filterValue,
+        matchMode: filterMatchMode as FilterMatchMode,
+      };
+
+      if (filtersBuilder[field]) {
+        (filtersBuilder[field] as DataTableOperatorFilterMetaData).constraints.push(
+          filterConstraint,
+        );
+      } else {
+        filtersBuilder[field] = {
+          operator: FilterOperator.AND,
+          constraints: [filterConstraint],
+        };
+      }
+    });
     setPrimeReactFilters(filtersBuilder);
   }, [filterList, setPrimeReactFilters]);
 
@@ -462,7 +480,8 @@ function DataFilters(props: DataFiltersProps) {
                         {' '}
                         {
                           // eslint-disable-next-line no-nested-ternary
-                          filter.value === nullOrEmptyString
+                          (filter.condition === CustomFilterOperators.NULL_OR_EMPTY ||
+                            filter.condition === CustomFilterOperators.NOT_NULL_OR_EMPTY)
                             ? null
                             : filter.fieldType === FieldTypes.DATE
                               ? filter.value.format('YYYY-MM-DD')
