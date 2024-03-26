@@ -61,8 +61,6 @@ const shake = keyframes`
   100% { transform: translateY(0) }
 `;
 
-const nullOrEmptyString = 'null-or-empty';
-
 function DataFilters(props: DataFiltersProps) {
   const {
     dataLength,
