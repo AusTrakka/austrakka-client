@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
+import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helperUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -52,13 +53,22 @@ function ExportTableData(props: ExportTableDataProps) {
         const formattedData = dataToExport.map((row: any) => {
           const formattedRow: any = {};
           for (const [key, value] of Object.entries(row)) {
-            // eslint-disable-next-line no-nested-ternary
-            formattedRow[key] = Array.isArray(value)
-              ? `"${value.map(item => (typeof item === 'string' ? item.replace(/"/g, '""') : item)).join('", "')}"`
-              : typeof value === 'string'
-                ? value.replace(/"/g, '""')
-                : value;
+            const type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
+            switch (true) {
+              case (key in fieldRenderFunctions):
+                formattedRow[key] = fieldRenderFunctions[key](value);
+                break;
+              case (type in typeRenderFunctions):
+                formattedRow[key] = typeRenderFunctions[type](value);
+                break;
+              case typeof value === 'string':
+                formattedRow[key] = (value as string).replace(/"/g, '""');
+                break;
+              default:
+                formattedRow[key] = value;
+            }
           }
+
           return formattedRow;
         });
 
@@ -77,6 +87,8 @@ function ExportTableData(props: ExportTableDataProps) {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error exporting data to CSV:', error);
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
