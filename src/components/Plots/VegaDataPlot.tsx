@@ -4,8 +4,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Grid } from '@mui/material';
+import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
+import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
@@ -13,6 +14,7 @@ import {
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
+import { Sample } from '../../types/sample.interface';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | null,
@@ -23,11 +25,18 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const { spec, projectAbbrev } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
+  const [loading, setLoading] = useState<boolean>(true);
+  const [mutableFilteredData, setMutableFilteredData] = useState<string>();
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+
+  useEffect(() => {
+    setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
+  }, [filteredData]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -37,8 +46,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       }
       const compiledSpec = compile(spec!).spec;
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
-      (compiledSpec.data![dataIndex] as InlineData).values = filteredData;
-
+      // check if the filtered datastate is the same as before
+      (compiledSpec.data![dataIndex] as InlineData).values = mutableFilteredData ?? [];
       // Handle faceted rows in plot using responsive width
       if ((spec as any)?.encoding?.row) {
         if (!compiledSpec.signals) { compiledSpec.signals = []; }
@@ -59,10 +68,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         }
       }
 
+      setLoading(true);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
       setVegaView(view);
+      setLoading(false);
     };
 
     // For now we recreate view if data changes, not just if spec changes
@@ -72,7 +83,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
           metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
           metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-        filteredData &&
+        mutableFilteredData &&
         plotDiv?.current) {
       // TODO it appears this may trigger too often?
       createVegaView();
@@ -80,32 +91,62 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   // Review: old vegaView is just being cleaned up and should NOT be a dependency?
   // loadingState is not a dependency as we only care about changes that co-occur with filteredData
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spec, filteredData, plotDiv]);
+  }, [spec, mutableFilteredData, plotDiv]);
+
+  useEffect(() => {
+    if (metadata?.loadingState &&
+      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
+        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+       Object.keys(currentFilter).length === 0) {
+      setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
+      setLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.metadata]);
 
   return (
-    <Grid container direction="column">
-      <Grid container item direction="row">
-        <Grid item xs={11}>
-          <div id="#plot-container" ref={plotDiv} />
+    <>
+      <Grid container direction="column">
+        <Grid container item direction="row">
+          <Grid item xs={11}>
+            <div id="#plot-container" ref={plotDiv} />
+          </Grid>
+          <Grid item xs={1}>
+            <ExportVegaPlot
+              vegaView={vegaView}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={1}>
-          <ExportVegaPlot
-            vegaView={vegaView}
+        <Grid item xs={12}>
+          {loading &&
+          <LinearProgress color="success" variant="indeterminate" />}
+          <DataFilters
+            dataLength={metadata?.metadata?.length ?? 0}
+            filteredDataLength={filteredData.length ?? 0}
+            visibleFields={null}
+            allFields={metadata?.fields ?? []}
+            setPrimeReactFilters={setCurrentFilter}
+            isOpen={isDataFiltersOpen}
+            setIsOpen={setIsDataFiltersOpen}
+            filterList={filterList}
+            setFilterList={setFilterList}
+            setLoadingState={setLoading}
           />
         </Grid>
       </Grid>
-      <Grid item xs={12}>
-        <DataFilters
-          data={metadata?.metadata ?? []}
-          fields={metadata?.fields ?? []} // want to pass in field loading states?
-          setFilteredData={setFilteredData}
-          filterList={filterList}
-          setFilterList={setFilterList}
-          isOpen={isDataFiltersOpen}
-          setIsOpen={setIsDataFiltersOpen}
+      <div style={{ display: 'none' }}>
+        <DataTable
+          value={metadata?.metadata ?? []}
+          filters={currentFilter}
+          paginator
+          rows={1}
+          onValueChange={(e) => {
+            setFilteredData(e);
+          }}
         />
-      </Grid>
-    </Grid>
+      </div>
+    </>
   );
 }
 

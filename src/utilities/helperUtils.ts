@@ -45,7 +45,19 @@ export const renderValueWithEmptyNull = (value: any): string => {
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
 export const fieldRenderFunctions : { [index: string]: Function } = {
-  'Shared_groups': (value: any) => value.toString().replace(/[[\]"']/g, ''),
+  'Shared_groups': (value: any) => {
+    if (value === null || value === undefined) return '';
+
+    // 1. Remove unwanted characters (optional)
+    const sanitizedValue = value.toString().replace(/[[\]"']/g, '');
+
+    // 2. Replace commas with comma and space
+    const formattedValue = sanitizedValue.replace(/,/g, ', ');
+
+    // Return the formatted value
+    return formattedValue;
+  },
+
   'Date_created': (value: string) => isoDateLocalDate(value),
   'Date_updated': (value: string) => isoDateLocalDate(value),
 };

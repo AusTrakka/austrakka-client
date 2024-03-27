@@ -1,26 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
-import { Typography } from '@mui/material';
+import { Alert, Paper, Typography } from '@mui/material';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
+import { Column } from 'primereact/column';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import sortIcon from '../TableComponents/SortIcon';
+import SearchInput from '../TableComponents/SearchInput';
 
-type Project = {
-  abbreviation: string,
-  name: string,
-  description: string,
-  created: string
-};
-
-const columns:MRT_ColumnDef<Project>[] = [
-  { header: 'Abbreviation', accessorKey: 'abbreviation' },
-  { header: 'Name', accessorKey: 'name' },
-  { header: 'Description', accessorKey: 'description' },
-  { header: 'Created', accessorKey: 'created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
+const columns = [
+  { field: 'abbreviation', header: 'Abbreviation' },
+  { field: 'name', header: 'Name' },
+  { field: 'description', header: 'Description' },
+  { field: 'created', header: 'Created', body: (rowData: any) => isoDateLocalDate(rowData.created) },
 ];
 
 function ProjectsList() {
@@ -31,6 +28,9 @@ function ProjectsList() {
   const [selectedProject, setSelectedProject] = useState({});
   const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
 
   useEffect(() => {
     async function getProject() {
@@ -60,57 +60,79 @@ function ProjectsList() {
     }
   }, [selectedProject, navigate]);
 
-  const rowClickHandler = (row: any) => {
-    const selectedProjectRow = row.original;
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedProjectRow = row.data;
     setSelectedProject(selectedProjectRow);
   };
 
-  return (
-    <>
-      <Typography className="pageTitle">
-        Projects
-      </Typography>
-      <MaterialReactTable
-        columns={columns}
-        data={projectsList}
-        enableStickyHeader
-        initialState={{
-          density: 'compact',
-          pagination: { pageSize: 15, pageIndex: 0 },
-        }}
-        enableColumnResizing
-        enableFullScreenToggle={false}
-        enableHiding={false}
-        enableDensityToggle={false}
-        state={{
-          isLoading,
-          showAlertBanner: isError,
-        }}
-        muiToolbarAlertBannerProps={
-          isError
-            ? {
-              color: 'error',
-              children: errorMessage,
-            }
-            : undefined
-        }
-        muiLinearProgressProps={({ isTopToolbar }) => ({
-          color: 'secondary',
-          sx: { display: isTopToolbar ? 'block' : 'none' },
-        })}
-        muiTableProps={{
-          sx: {
-            'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-          },
-        }}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
-        })}
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
+  };
+
+  const header = (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <SearchInput
+        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+        onChange={onGlobalFilterChange}
       />
-    </>
+    </div>
+  );
+
+  return (
+    (isError) ? (
+      <Alert severity="error">
+        {errorMessage}
+      </Alert>
+    )
+      : (
+        <>
+          <Typography className="pageTitle">
+            Projects
+          </Typography>
+          <Paper elevation={2} sx={{ marginBottom: 10 }}>
+            <DataTable
+              value={projectsList}
+              columnResizeMode="expand"
+              resizableColumns
+              reorderableColumns
+              sortIcon={sortIcon}
+              filters={globalFilter}
+              globalFilterFields={columns.map((col) => col.field)}
+              size="small"
+              removableSort
+              scrollable
+              rows={25}
+              scrollHeight="calc(100vh - 500px)"
+              onRowClick={rowClickHandler}
+              selectionMode="single"
+              paginator
+              paginatorRight
+              showGridlines
+              header={header}
+              loading={isLoading}
+              rowsPerPageOptions={[25, 50, 100, 500]}
+              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+              currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            >
+              {columns.map((col: any) => (
+                <Column
+                  key={col.field}
+                  field={col.field}
+                  header={col.header}
+                  body={col.body}
+                  sortable
+                  resizeable
+                  headerClassName="custom-title"
+                  style={{ minWidth: '150px' }}
+                />
+              ))}
+            </DataTable>
+          </Paper>
+        </>
+      )
   );
 }
 export default ProjectsList;

@@ -1,34 +1,48 @@
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, useRef, useCallback, SetStateAction } from 'react';
-import { ReactTabulator } from 'react-tabulator';
+import React, { useEffect, useState, SetStateAction } from 'react';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
-import { buildTabulatorColumnDefinitions } from '../../utilities/tableUtils';
+import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
-import { Field } from '../../types/dtos';
-import FilteringOperators from '../../constants/filteringOperators';
-import { stringConditions, dateConditions, numberConditions, booleanConditions } from './fieldTypeOperators';
-import { customFilterFunctions } from './customFilterFns';
+import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
+import { Field, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
   shakeElement?: boolean,
   field: string,
   fieldType: string,
-  condition: string,
+  condition: FilterMatchMode | CustomFilterOperators | string,
   value: any
 }
 
+function emptyFilter(value: any, filters: boolean | null) {
+  const includeEmpty = filters ?? null;
+  if (includeEmpty === null) {
+    return true;
+  }
+  if (includeEmpty === true) {
+    // If includeEmpty is true, return true for empty strings and false for non-empty strings
+    return value === '' || value === null;
+  }
+  // If includeEmpty is false, return true for non-empty strings and false for empty strings
+  return value !== '' && value !== null;
+}
+
 interface DataFiltersProps {
-  data: any
-  fields: any
-  setFilteredData: any
+  dataLength: number // need to pass through
+  filteredDataLength: number // need to pass through
+  visibleFields: any[] | null // need to passs through
+  allFields: ProjectViewField[] // need to pass through
+  setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
   filterList: DataFilter[]
   setFilterList: React.Dispatch<SetStateAction<DataFilter[]>>
+  setLoadingState: React.Dispatch<SetStateAction<boolean>>
 }
 
 const initialFilterState = {
@@ -47,65 +61,78 @@ const shake = keyframes`
   100% { transform: translateY(0) }
 `;
 
-const nullOrEmptyString = 'null-or-empty';
-
 function DataFilters(props: DataFiltersProps) {
   const {
-    data,
-    fields,
-    setFilteredData,
+    dataLength,
+    filteredDataLength,
+    visibleFields,
+    allFields,
+    setPrimeReactFilters,
     isOpen,
     setIsOpen,
     filterList,
     setFilterList,
+    setLoadingState,
   } = props;
-  const tableInstanceRef = useRef<string | HTMLAnchorElement | any>(null);
-  const [sampleCount, setSampleCount] = useState();
-  const [totalSamples, setTotalSamples] = useState();
-  const [columns, setColumns] = useState<{ title: string; field: string; }[]>([]);
+  const [sampleCount, setSampleCount] = useState<number | undefined>();
+  const [totalSamples, setTotalSamples] = useState<number | undefined>();
   const [newFilter, setNewFilter] = useState(initialFilterState);
   const [conditions, setConditions] = useState(stringConditions);
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
   const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
-  const [tabulatorFilters, setTabulatorFilters] = useState([]);
   const [dateError, setDateError] = useState<DateValidationError>(null);
+  const [fields, setFields] = useState<Field[]>([]);
 
   useEffect(() => {
-    setSampleCount(data.length);
-    setTotalSamples(data.length);
-  }, [data]);
+    setSampleCount(filteredDataLength);
+    setTotalSamples(dataLength);
+  }, [dataLength, filteredDataLength]);
 
-  // Set table columns on load
   useEffect(() => {
-    const columnBuilder = buildTabulatorColumnDefinitions(fields);
-    setColumns(columnBuilder);
-  }, [fields]);
+    if (allFields.length > 0) {
+      if (visibleFields === null) {
+        setFields(allFields);
+      } else {
+        const vFields = allFields
+          .filter((field) => visibleFields
+            .find((visibleField) => visibleField.field === field.columnName));
+        setNewFilter(initialFilterState);
+        setFields(vFields);
+      }
+    }
+    allFields.forEach(field => {
+      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
+        emptyFilter(value, filters));
+    });
+  }, [allFields, visibleFields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     if (event.target.name === 'field') {
       setDateError(null);
       const targetFieldProps = fields.find((field: Field) =>
         field.columnName === event.target.value);
-
       let defaultCondition = '';
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
         setSelectedFieldType(FieldTypes.DATE);
-        defaultCondition = FilteringOperators.GREATER_OR_EQUAL;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.NUMBER) {
+        defaultCondition = FilterMatchMode.DATE_IS;
+      } else if (
+        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
+        targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+      ) {
         setConditions(numberConditions);
-        setSelectedFieldType(FieldTypes.NUMBER);
-        defaultCondition = FilteringOperators.EQUALS;
+        setSelectedFieldType(targetFieldProps!.primitiveType);
+        defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
         setSelectedFieldType(FieldTypes.BOOLEAN);
-        defaultCondition = FilteringOperators.EQUALS;
+        defaultCondition = FilterMatchMode.EQUALS;
       } else {
         setConditions(stringConditions);
         setSelectedFieldType(FieldTypes.STRING);
-        defaultCondition = FilteringOperators.EQUALS;
+        defaultCondition = FilterMatchMode.EQUALS;
       }
       setNullOrEmptyFlag(false);
       setNewFilter({
@@ -116,20 +143,12 @@ function DataFilters(props: DataFiltersProps) {
         value: '',
       });
     } else {
-      const flag = (event.target.name === 'condition' && event.target.value.includes('NULL'));
+      const flag = (event.target.name === 'condition' && event.target.value.includes('null'));
       setNullOrEmptyFlag(flag);
-      if (flag) {
-        setNewFilter({
-          ...newFilter,
-          [event.target.name]: event.target.value as string,
-          value: (event.target.name === 'condition' && event.target.value.includes('NULL')) ? nullOrEmptyString : '',
-        });
-      } else {
-        setNewFilter({
-          ...newFilter,
-          [event.target.name]: event.target.value as string,
-        });
-      }
+      setNewFilter({
+        ...newFilter,
+        [event.target.name]: event.target.value as string,
+      });
     }
   };
 
@@ -141,6 +160,7 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
+    setLoadingState(true);
     event.preventDefault();
     const isEmpty = Object.values(newFilter).some((x) => x === null || x === '');
     if ((!isEmpty || (newFilter.field !== '' && newFilter.condition !== '' && nullOrEmptyFlag)) && dateError === null) {
@@ -164,7 +184,7 @@ function DataFilters(props: DataFiltersProps) {
         const filter: DataFilter = {
           field: newFilter.field,
           condition: newFilter.condition,
-          value: nullOrEmptyFlag ? nullOrEmptyString : newFilter.value,
+          value: newFilter.value,
           fieldType: newFilter.fieldType,
           shakeElement: newFilter.shakeElement,
         };
@@ -173,91 +193,74 @@ function DataFilters(props: DataFiltersProps) {
         setNullOrEmptyFlag(false);
       }
     }
+    setLoadingState(false);
   };
 
   const clearFilters = () => {
+    setLoadingState(true);
     setFilterError(false);
     setFilterList([]);
   };
 
-  const handleFilterDelete = (filter: object) => {
+  const handleFilterDelete = (filter: DataFilter) => {
     setFilterList((oldList) => oldList.filter((filterEntry) => filterEntry !== filter));
   };
 
-  // 1. Build filters in tabulator format
+  // Build filters in the prime react format
   useEffect(() => {
-    const filters: any = [];
-    if (filterList.length !== 0) {
-      filterList.forEach((filter) => {
-        // If filter condition requires a custom filter function
-        const custom = customFilterFunctions.filter(e => e.operator === filter.condition);
-        if (custom.length > 0) {
-          filters.push({
-            field: custom[0].function,
-            type: { field: filter.field, value: filter.value },
-            value: undefined,
-          });
-        } else if (filter.fieldType === FieldTypes.DATE && filter.value !== nullOrEmptyString) {
-          const date = filter.value;
-          const dayStart = date.$d.toISOString();
-          const dayEnd = (new Date((date.$d.getTime() + 86399000))).toISOString();
-          if (filter.condition === FilteringOperators.GREATER_OR_EQUAL) {
-            filters.push({
-              field: filter.field,
-              type: filter.condition,
-              value: dayStart,
-            });
-          } else if (filter.condition === FilteringOperators.LESS_OR_EQUAL) {
-            filters.push({
-              field: filter.field,
-              type: filter.condition,
-              value: dayEnd,
-            });
-          } else if (filter.condition === FilteringOperators.EQUALS) {
-            filters.push(
-              {
-                field: filter.field,
-                type: FilteringOperators.LESS,
-                value: dayEnd,
-              },
-              {
-                field: filter.field,
-                type: FilteringOperators.GREATER,
-                value: dayStart,
-              },
-            );
-          }
-        } else {
-          filters.push({
-            field: filter.field,
-            type: filter.condition,
-            value: filter.value,
-          });
-        }
-      });
+    const filtersBuilder: DataTableFilterMeta = {};
+
+    if (filterList.length === 0) {
+      setPrimeReactFilters(filtersBuilder);
+      return;
     }
-    setTabulatorFilters(filters);
-  }, [filterList]);
 
-  // Should only be called when tableInstanceRef.current is set
-  const updateFilteredData = useCallback(() => {
-    const filtered = tableInstanceRef.current.searchData(tabulatorFilters);
-    setSampleCount(filtered.length);
-    setFilteredData(filtered);
-  }, [tabulatorFilters, setSampleCount, setFilteredData]);
+    filterList.forEach((filter) => {
+      const { field, fieldType, condition, value } = filter;
+      const isDateField = fieldType === FieldTypes.DATE;
+      const isNullOrEmptyCondition =
+        condition === CustomFilterOperators.NULL_OR_EMPTY;
+      const isNotNullOrEmptyCondition =
+        condition === CustomFilterOperators.NOT_NULL_OR_EMPTY;
 
-  // Update filtered data when filters change
-  useEffect(() => {
-    if (tableInstanceRef.current) {
-      updateFilteredData();
-    }
-  }, [updateFilteredData]);
+      let filterValue;
+      switch (true) {
+        case isNullOrEmptyCondition:
+          filterValue = true;
+          break;
+        case isNotNullOrEmptyCondition:
+          filterValue = false;
+          break;
+        case isDateField:
+          filterValue = new Date(value.$d);
+          break;
+        default:
+          filterValue = value;
+          break;
+      }
 
-  // Update filtered data when data changes or when tabulator is first ready
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDataUpdate = (_data: any) => {
-    updateFilteredData();
-  };
+      const filterMatchMode = isNullOrEmptyCondition || isNotNullOrEmptyCondition
+        ? FilterMatchMode.CUSTOM
+        : condition;
+
+      const filterConstraint = {
+        value: filterValue,
+        matchMode: filterMatchMode as FilterMatchMode,
+      };
+
+      if (filtersBuilder[field]) {
+        (filtersBuilder[field] as DataTableOperatorFilterMetaData).constraints.push(
+          filterConstraint,
+        );
+      } else {
+        filtersBuilder[field] = {
+          operator: FilterOperator.AND,
+          constraints: [filterConstraint],
+        };
+      }
+    });
+    setPrimeReactFilters(filtersBuilder);
+  }, [filterList, setPrimeReactFilters]);
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
@@ -308,13 +311,19 @@ function DataFilters(props: DataFiltersProps) {
             label="Value"
             variant="outlined"
             name="value"
-            type={newFilter.fieldType === FieldTypes.NUMBER ? FieldTypes.NUMBER : undefined}
+            type={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              'number' :
+              undefined}
             value={newFilter.value}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               handleFilterChange(event);
             }}
             size="small"
-            inputProps={{ maxLength: 25 }}
+            inputProps={(newFilter.fieldType === FieldTypes.NUMBER ||
+              newFilter.fieldType === FieldTypes.DOUBLE) ?
+              { step: 'any' } :
+              { maxLength: 25 }}
             disabled={nullOrEmptyFlag}
           />
         );
@@ -340,7 +349,7 @@ function DataFilters(props: DataFiltersProps) {
   );
 
   return (
-    <Box sx={{ paddingTop: 4 }}>
+    <Box sx={{ paddingTop: 1 }}>
       <Box sx={{
         boxShadow: 1, borderRadius: 1, padding: 1, marginBottom: 2, display: 'flex', backgroundColor: 'white',
       }}
@@ -385,52 +394,67 @@ function DataFilters(props: DataFiltersProps) {
                 </Alert>
               </Snackbar>
               <form onSubmit={(event) => handleFilterAdd(event)}>
-                <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="field-simple-select-label">Field</InputLabel>
-                  <Select
-                    labelId="field-simple-select-label"
-                    id="field-simple-select-label"
-                    label="Field"
-                    name="field"
-                    value={newFilter.field}
-                    onChange={handleFilterChange}
-                  >
-                    {fields.map((field : Field) => (
-                      <MenuItem key={field.columnName} value={field.columnName}>
-                        {field.columnName}
-                      </MenuItem>
-                    ))}
-                    ;
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                  <InputLabel id="condition-simple-select-label">Condition</InputLabel>
-                  <Select
-                    labelId="condition-simple-select-label"
-                    id="condition-simple-select"
-                    label="Condition"
-                    name="condition"
-                    value={newFilter.condition}
-                    onChange={handleFilterChange}
-                  >
-                    {conditions.map((condition) => (
-                      <MenuItem key={condition.name} value={condition.value}>
-                        {condition.name}
-                      </MenuItem>
-                    ))}
-                    ;
-                  </Select>
-                </FormControl>
-                { nullOrEmptyFlag ? null : (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                    {renderValueElement()}
+                    <InputLabel id="field-simple-select-label">Field</InputLabel>
+                    <Select
+                      labelId="field-simple-select-label"
+                      id="field-simple-select-label"
+                      label="Field"
+                      name="field"
+                      value={newFilter.field}
+                      onChange={handleFilterChange}
+                    >
+                      {fields.map((field : Field) => (
+                        <MenuItem key={field.columnName} value={field.columnName}>
+                          {field.columnName}
+                        </MenuItem>
+                      ))}
+                      ;
+                    </Select>
                   </FormControl>
-                )}
-                <IconButton type="submit"><AddCircle color="secondary" sx={{ p: 1 }} /></IconButton>
-                <Button size="small" variant="contained" onClick={clearFilters} disabled={filterList.length <= 0}>
-                  Reset
-                </Button>
-                <br />
+                  <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+                    <InputLabel id="condition-simple-select-label">Condition</InputLabel>
+                    <Select
+                      labelId="condition-simple-select-label"
+                      id="condition-simple-select"
+                      label="Condition"
+                      name="condition"
+                      value={newFilter.condition}
+                      onChange={handleFilterChange}
+                    >
+                      {conditions.map((condition) => (
+                        <MenuItem key={condition.name} value={condition.value}>
+                          {condition.name}
+                        </MenuItem>
+                      ))}
+                      ;
+                    </Select>
+                  </FormControl>
+                  { nullOrEmptyFlag ? null : (
+                    <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+                      {renderValueElement()}
+                    </FormControl>
+                  )}
+                  <IconButton
+                    type="submit"
+                    disabled={!nullOrEmptyFlag && (Object.values(newFilter).some((x) => x === null || x === ''))}
+                  >
+                    <AddCircle color={!nullOrEmptyFlag &&
+                    Object.values(newFilter).some((x) => x === null || x === '') ?
+                      'disabled' : 'secondary'}
+                    />
+                  </IconButton>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={clearFilters}
+                    disabled={filterList.length <= 0}
+                  >
+                    Reset
+                  </Button>
+                  <br />
+                </div>
                 {filterList.map((filter) => (
                   <Chip
                     key={filter.field + filter.condition + filter.value}
@@ -443,15 +467,19 @@ function DataFilters(props: DataFiltersProps) {
                             // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
                               ? (dateConditions.find((c) => c.value === filter.condition))?.name
-                              : filter.fieldType === FieldTypes.NUMBER
-                                ? (numberConditions.find((c) => c.value === filter.condition))?.name
-                                : (stringConditions.find((c) => c.value === filter.condition))?.name
+                              : (filter.fieldType === FieldTypes.NUMBER ||
+                                 filter.fieldType === FieldTypes.DOUBLE)
+                                ? (numberConditions
+                                  .find((c) => c.value === filter.condition))?.name
+                                : (stringConditions
+                                  .find((c) => c.value === filter.condition))?.name
                           }
                         </b>
                         {' '}
                         {
                           // eslint-disable-next-line no-nested-ternary
-                          filter.value === nullOrEmptyString
+                          (filter.condition === CustomFilterOperators.NULL_OR_EMPTY ||
+                            filter.condition === CustomFilterOperators.NOT_NULL_OR_EMPTY)
                             ? null
                             : filter.fieldType === FieldTypes.DATE
                               ? filter.value.format('YYYY-MM-DD')
@@ -473,17 +501,6 @@ function DataFilters(props: DataFiltersProps) {
             </Box>
           ) : null }
         </Grid>
-      </Box>
-
-      {/* Hidden tabulator instance to filter data programmatically */}
-      <Box sx={{ display: 'none' }}>
-        <ReactTabulator
-          data={data}
-          columns={columns}
-          // eslint-disable-next-line no-return-assign
-          onRef={(r) => (tableInstanceRef.current = r.current)}
-          events={{ dataProcessed: handleDataUpdate }}
-        />
       </Box>
     </Box>
   );

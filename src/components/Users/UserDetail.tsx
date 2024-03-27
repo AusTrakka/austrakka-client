@@ -18,7 +18,6 @@ function UserDetail() {
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
     'orgName': 'Organisation',
-    'lastLoggedIn': 'Last Logged In',
     'created': 'Created Date',
   };
   useEffect(() => {
