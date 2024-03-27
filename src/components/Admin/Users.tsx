@@ -1,11 +1,209 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Alert, Box, FormControlLabel, Paper, Switch, Tooltip, Typography } from '@mui/material';
+import { Column } from 'primereact/column';
+import { DataTableRowClickEvent, DataTable, DataTableFilterMetaData, DataTableFilterMeta } from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
+import { AdminPanelSettings, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
+import LoadingState from '../../constants/loadingState';
+import { ResponseType } from '../../constants/responseType';
+import { ResponseObject } from '../../types/responseObject.interface';
+import sortIcon from '../TableComponents/SortIcon';
+import { useApi } from '../../app/ApiContext';
+import { User } from '../../types/dtos';
+import { getAllUsers } from '../../utilities/resourceUtils';
+import SearchInput from '../TableComponents/SearchInput';
+import { selectUserState } from '../../app/userSlice';
+import { useAppSelector } from '../../app/store';
 
-function Users() {
-  return (// RETURN WORK IS PROGRESS BANNER
-    <div>
-      <h1>Work is in progress</h1>
+interface UserProps {
+  groupContext: string;
+  groupName: string;
+}
+
+const renderIcon = (rowData: any) => {
+  const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
+  if (!isAusTrakkaAdmin && !isAusTrakkaProcess) {
+    return isActive ? (
+      <Tooltip title="User" placement="top" arrow>
+        <Person color="primary" style={{ marginRight: '0.5rem' }} />
+      </Tooltip>
+    ) : (
+      <Tooltip title="Disabled-User" placement="top" arrow>
+        <PersonOff color="error" style={{ marginRight: '0.5rem' }} />
+      </Tooltip>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {isAusTrakkaAdmin && (
+        <Tooltip title="AusTrakka-Admin" placement="top" arrow>
+          <AdminPanelSettings color="secondary" style={{ marginRight: '0.5rem' }} />
+        </Tooltip>
+      )}
+      {isAusTrakkaProcess && (
+        <Tooltip title="AusTrakkaProcess" placement="top" arrow>
+          <PrecisionManufacturing color="info" style={{ marginRight: '0.5rem' }} />
+        </Tooltip>
+      )}
+    </div>
+  );
+};
+
+function renderDisplayName(rowData: any) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {renderIcon(rowData)}
+      {rowData.displayName}
     </div>
   );
 }
 
+function Users() {
+  const [includeAll, setIncludeAll] = useState<boolean>(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isUserLoadError, setIsUserLoadError] = useState<boolean>(false);
+  const [isUserLoadErrorMessage, setIsUserLoadErrorMessage] = useState<string>('');
+  const { token, tokenLoading } = useApi();
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+  });
+  const [dataLoading, setDataLoading] = useState<boolean>(true);
+  const {
+    loading,
+    admin,
+  } = useAppSelector(selectUserState);
+
+  // what fields are important at the momoent that work
+  // decided on Name,
+  // Email (which will need to poplated manually unfortunately),
+  // LastLoggedIn (Depricated),
+  // Active (could be icon related to active/admin/normal user etc).
+
+  // However due to some of the current limitations I will stick with:
+  // Name, Org for now and depening on the course of action in the future we can add more fields.
+
+  const columns = [
+    {
+      field: 'displayName',
+      header: 'Name',
+      body: (rowData: any) => renderDisplayName(rowData),
+    },
+    { field: 'organisation.abbreviation', header: 'Organisation' },
+  ];
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const getUsersResponse: ResponseObject = await getAllUsers(includeAll, token);
+      if (getUsersResponse.status === ResponseType.Success) {
+        setUsers(getUsersResponse.data as User[]);
+      } else {
+        setIsUserLoadError(true);
+        setIsUserLoadErrorMessage(getUsersResponse.message);
+      }
+      setDataLoading(false);
+    };
+
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      setDataLoading(true);
+      getUsers();
+    }
+  }, [includeAll, token, tokenLoading]);
+
+  // TODO: NEED TO DO THIS and get an actual implementation of the row clicker.
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    // need to implement add a todo or something please
+    // eslint-disable-next-line no-console
+    console.log(row);
+  };
+
+  const header = (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <SearchInput
+          value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const { value } = e.target;
+            const filters = { ...globalFilter };
+            (filters.global as DataTableFilterMetaData).value = value;
+            setGlobalFilter(filters);
+          }}
+        />
+        <FormControlLabel
+          control={(
+            <Switch
+              color="primary"
+              size="small"
+              checked={includeAll}
+              onChange={() => setIncludeAll((prev) => !prev)}
+            />
+          )}
+          label={<Typography variant="subtitle2">Show Disabled</Typography>}
+        />
+      </div>
+    </div>
+  );
+
+  // need a nernary that opens a alert if the user is not allow here based on loading and admin
+  return (
+    loading === LoadingState.SUCCESS && !admin ? (
+      <Alert severity="error">
+        Admin Only Page: Unauthorized
+      </Alert>
+    ) : (
+      <>
+        <Box>
+          <Typography className="pageTitle" color="primary">
+            Users
+          </Typography>
+        </Box>
+
+        {isUserLoadError ? (
+          <Alert severity="error">{isUserLoadErrorMessage}</Alert>
+        ) : (
+          <Paper elevation={2} sx={{ marginBottom: 10 }}>
+            <DataTable
+              value={users}
+              size="small"
+              columnResizeMode="expand"
+              resizableColumns
+              showGridlines
+              reorderableColumns
+              removableSort
+              header={header}
+              scrollable
+              scrollHeight="calc(100vh - 500px)"
+              sortIcon={sortIcon}
+              paginator
+              onRowClick={rowClickHandler}
+              selectionMode="single"
+              rows={25}
+              loading={dataLoading}
+              rowsPerPageOptions={[25, 50, 100, 150]}
+              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+              currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+              paginatorPosition="bottom"
+              paginatorRight
+              filters={globalFilter}
+              globalFilterFields={['displayName', 'organisation.abbreviation']}
+            >
+              {columns.map((col: any) => (
+                <Column
+                  key={col.field}
+                  field={col.field}
+                  header={col.header}
+                  body={col.body}
+                  sortable
+                  resizeable
+                  style={{ minWidth: '150px' }}
+                  headerClassName="custom-title"
+                />
+              ))}
+            </DataTable>
+          </Paper>
+        )}
+      </>
+    )
+  );
+}
 export default Users;

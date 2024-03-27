@@ -85,6 +85,7 @@ export interface User {
   userRoleGroup: UserRoleGroup[],
   displayName: string,
   createdBy: Date,
+  contactEmail: string,
   lastUpdatedBy: Date,
   IsAustrakkaProcess: boolean
 }

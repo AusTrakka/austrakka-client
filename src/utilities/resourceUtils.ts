@@ -63,6 +63,7 @@ export const getUserDashboardPhessStatus = (token: string, searchParams?: string
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
+export const getAllUsers = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 
 // Dataset
 export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);

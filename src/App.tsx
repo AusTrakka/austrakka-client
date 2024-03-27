@@ -39,10 +39,6 @@ function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
   msalInstance.setNavigationClient(navigationClient);
-  const {
-    loading,
-    admin,
-  } = useAppSelector(selectUserState);
 
   return (
     <ThemeProvider theme={theme}>
@@ -58,10 +54,7 @@ function App() {
                 <Route path="org" element={<OrganisationOverview />} />
                 <Route path="org/:tab" element={<OrganisationOverview />} />
                 <Route path="upload" element={<Upload />} />
-                {/* More routes that have perms attached can be stored
-                   and then mapped if the conditional passes */}
-                {(loading === LoadingState.SUCCESS && admin) &&
-                <Route path="users" element={<Users />} /> }
+                <Route path="users" element={<Users />} />
                 <Route path="upload/metadata" element={<UploadMetadata />} />
                 <Route path="upload/sequences" element={<UploadSequences />} />
                 <Route path="projects" element={<ProjectsList />} />
