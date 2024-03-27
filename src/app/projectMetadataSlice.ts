@@ -224,8 +224,8 @@ function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNam
     data.forEach(sample => {
       const dateString = sample[field.columnName];
 
-      if (dateString) {
-        // Check if the dateString has a time attached. If it does, it's in ISO format
+      // Date filter function dont handle strings thus making null if it is empty
+      if (dateString && dateString !== '') {
         const isISOFormat = dateString.includes('T');
 
         if (isISOFormat) {
@@ -239,6 +239,10 @@ function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNam
 
           sample[field.columnName] = new Date(year, month, day, 0, 0, 0);
         }
+      }
+      else
+      {
+        sample[field.columnName] = null;
       }
     });
   });
