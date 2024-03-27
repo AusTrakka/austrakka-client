@@ -1,20 +1,15 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchQcStatus, selectAggregatedQcStatus } from './qcStatusSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
 
-const columns:MRT_ColumnDef<any>[] = [
-  {
-    header: 'Status',
-    accessorKey: 'Qc_status',
-  },
-  {
-    header: 'Sample Count',
-    accessorKey: 'sampleCount',
-  },
+const columns = [
+  { field: 'Qc_status', header: 'Status' },
+  { field: 'sampleCount', header: 'Sample Count' },
 ];
 
 export default function QcStatus(props: any) {
@@ -48,28 +43,18 @@ export default function QcStatus(props: any) {
         QC Status
       </Typography>
       { loading === LoadingState.SUCCESS && (
-      <MaterialReactTable
-        columns={columns}
-        data={aggregatedCounts}
-        defaultColumn={{
-          size: 0,
-          minSize: 30,
-        }}
-        initialState={{ density: 'compact' }}
-        // Stripping down features
-        enableColumnActions={false}
-        enableColumnFilters={false}
-        enablePagination={false}
-        enableSorting={false}
-        enableBottomToolbar={false}
-        enableTopToolbar={false}
-        muiTableBodyRowProps={{ hover: false }}
-        muiTablePaperProps={{
-          sx: {
-            boxShadow: 'none',
-          },
-        }}
-      />
+      <DataTable
+        value={aggregatedCounts}
+        size="small"
+      >
+        {columns.map((col: any) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+          />
+        ))}
+      </DataTable>
       )}
       { loading === LoadingState.ERROR && (
         <Alert severity="error">

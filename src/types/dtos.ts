@@ -70,7 +70,6 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
-  lastLoggedIn: string,
 }
 
 export interface User {
@@ -85,7 +84,6 @@ export interface User {
   isAustrakkaAdmin: boolean,
   userRoleGroup: UserRoleGroup[],
   displayName: string,
-  lastLoggedIn: Date,
   createdBy: Date,
   lastUpdatedBy: Date,
   IsAustrakkaProcess: boolean
@@ -94,7 +92,6 @@ export interface User {
 export interface UserDetails {
   displayName: string,
   orgName: string,
-  lastLoggedIn: Date,
   userRoleGroup: UserRoleGroup[],
   created: Date,
 }
@@ -244,6 +241,6 @@ export interface DataSetEntry {
   fileName: string;
   analysisLabel: string;
   createdBy: string;
-  uploadedDate: string;
+  uploadedDate: Date;
   fields: string[];
 }

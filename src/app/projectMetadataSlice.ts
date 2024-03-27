@@ -198,14 +198,11 @@ function calculateViewFieldNames(
   return [field.fieldName];
 }
 
-// Given a list of field names, calculate or look up the unique values for the fields
-function calculateUniqueValues(
+function getFieldDetails(
   fieldNames: string[],
   projectViewFields: ProjectViewField[],
-  data: Sample[],
-) : Record<string, string[]> {
-  const uniqueValues: Record<string, string[]> = {};
-  const fieldDetails: ProjectViewField[] = fieldNames.map(
+): ProjectViewField[] {
+  return fieldNames.map(
     field => {
       const fieldDetail = projectViewFields.find(f => f.columnName === field);
       if (!fieldDetail) {
@@ -217,6 +214,50 @@ function calculateUniqueValues(
       return fieldDetail;
     },
   );
+}
+
+// Given sample data and field details, replace date strings with Date objects
+function replaceDateStrings(data: Sample[], fields: ProjectViewField[], fieldNames: string[]) {
+  const fieldDetails = getFieldDetails(fieldNames, fields);
+  const dateFields = fieldDetails.filter(field => field.primitiveType === 'date');
+  dateFields.forEach(field => {
+    data.forEach(sample => {
+      const dateString = sample[field.columnName];
+
+      // Date filter function dont handle strings thus making null if it is empty
+      if (dateString && dateString !== '') {
+        const isISOFormat = dateString.includes('T');
+
+        if (isISOFormat) {
+          // If it's in ISO format, create a new Date object directly from the dateString
+          sample[field.columnName] = new Date(dateString);
+        } else {
+          // If it's a regular date string, parse the components and create a new Date object
+          const year = parseInt(dateString.slice(0, 4), 10);
+          const month = parseInt(dateString.slice(5, 7), 10) - 1; // Months are zero-based
+          const day = parseInt(dateString.slice(8, 10), 10);
+
+          sample[field.columnName] = new Date(year, month, day, 0, 0, 0);
+        }
+      }
+      else
+      {
+        sample[field.columnName] = null;
+      }
+    });
+  });
+
+  return data;
+}
+
+// Given a list of field names, calculate or look up the unique values for the fields
+function calculateUniqueValues(
+  fieldNames: string[],
+  projectViewFields: ProjectViewField[],
+  data: Sample[],
+) : Record<string, string[]> {
+  const uniqueValues: Record<string, string[]> = {};
+  const fieldDetails = getFieldDetails(fieldNames, projectViewFields);
   // fields with defined valid values can just be looked up
   const categoricalFields = fieldDetails.filter(field =>
     field.canVisualise && field.metaDataColumnValidValues);
@@ -360,7 +401,10 @@ export const projectMetadataSlice = createSlice({
       // Each returned view is a superset of the previous; we always replace the data
       // I will go through all the data and if the field is has_sequence
       // I will change all null values to false
-      state.data[projectAbbrev].metadata = replaceHasSequencesNullsWithFalse(data);
+      replaceHasSequencesNullsWithFalse(data);
+      replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
+
+      state.data[projectAbbrev].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (state.data[projectAbbrev].metadata!.length > 0 &&

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import './App.css';
+import './assets/themes/custom-style.css';
 import {
   Routes, Route, Navigate, useNavigate,
 } from 'react-router-dom';

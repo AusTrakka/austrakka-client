@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -8,16 +9,9 @@ import { useApi } from '../../../app/ApiContext';
 
 const submittingOrgFieldName = 'Owner_group';
 
-const columns:MRT_ColumnDef<any>[] = [
-  {
-    header: 'Owner organisation',
-    accessorKey: submittingOrgFieldName,
-    Cell: ({ cell }: any) => <div>{cell.getValue().split('-Owner')}</div>,
-  },
-  {
-    header: 'Sample Count',
-    accessorKey: 'sampleCount',
-  },
+const columns = [
+  { field: 'Owner_group', header: 'Owner organisation', body: (rowData: any) => rowData.Owner_group.split('-Owner') },
+  { field: 'sampleCount', header: 'Sample Count' },
 ];
 
 export default function Organisations(props: any) {
@@ -45,8 +39,8 @@ export default function Organisations(props: any) {
   }, [loading, organisationsDispatch, timeFilter,
     projectId, groupId, token, tokenLoading]);
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original;
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedRow = row.data;
     const drilldownFilter = [{
       field: submittingOrgFieldName,
       fieldType: 'string',
@@ -69,34 +63,21 @@ export default function Organisations(props: any) {
         Owner organisations
       </Typography>
       { loading === LoadingState.SUCCESS && (
-      <MaterialReactTable
-        columns={columns}
-        data={aggregatedCounts}
-        defaultColumn={{
-          size: 0,
-          minSize: 30,
-        }}
-        initialState={{ density: 'compact' }}
-            // Stripping down features
-        enableColumnActions={false}
-        enableColumnFilters={false}
-        enablePagination={false}
-        enableBottomToolbar={false}
-        enableTopToolbar={false}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: () => rowClickHandler(row),
-          sx: {
-            cursor: 'pointer',
-          },
-        })}
-        muiTablePaperProps={{
-          sx: {
-            boxShadow: 'none',
-          },
-        }}
-        muiTableContainerProps={{ sx: { maxHeight: '300px' } }}
-        enableStickyHeader
-      />
+        <DataTable
+          value={aggregatedCounts}
+          size="small"
+          onRowClick={rowClickHandler}
+          selectionMode="single"
+        >
+          {columns.map((col: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              body={col.body}
+            />
+          ))}
+        </DataTable>
       )}
       { loading === LoadingState.ERROR && (
         <Alert severity="error">

@@ -1,12 +1,17 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MaterialReactTable, { MRT_ColumnDef } from 'material-react-table';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
+import { Column } from 'primereact/column';
+import { Paper } from '@mui/material';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { PlotListing, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getPlots } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
 
 interface PlotListProps {
   projectDetails: Project | null
@@ -14,18 +19,26 @@ interface PlotListProps {
   setIsPlotsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const plotTableColumns: MRT_ColumnDef[] = [
-  { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'created', header: 'Created', Cell: ({ cell }: any) => <>{isoDateLocalDate(cell.getValue())}</> },
-];
-
 function PlotList(props: PlotListProps) {
   const { projectDetails, isPlotsLoading, setIsPlotsLoading } = props;
 
   const [plotList, setPlotList] = useState<PlotListing[]>([]);
   const navigate = useNavigate();
   const { token } = useApi();
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
+  const columns = [{
+    field: 'name',
+    header: 'Name',
+  }, {
+    field: 'description',
+    header: 'Description',
+  }, {
+    field: 'created',
+    header: 'Created',
+    body: (rowData: any) => isoDateLocalDate(rowData.created),
+  }];
 
   useEffect(() => {
     async function getPlotList() {
@@ -45,43 +58,61 @@ function PlotList(props: PlotListProps) {
     }
   }, [projectDetails, setIsPlotsLoading, token]);
 
-  const rowClickHandler = (row: any) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.original.abbreviation}`);
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
+  };
+
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const filters = { ...globalFilter };
+    (filters.global as DataTableFilterMetaData).value = value;
+    setGlobalFilter(filters);
   };
 
   if (isPlotsLoading) return null;
 
+  const header = (
+    <div style={{ display: 'flex' }}>
+      <SearchInput
+        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
+        onChange={onGlobalFilterChange}
+      />
+    </div>
+  );
+
   return (
-    <MaterialReactTable
-      columns={plotTableColumns}
-      data={plotList}
-      state={{
-        isLoading: isPlotsLoading,
-      }}
-      enableStickyHeader
-      initialState={{ density: 'compact' }}
-      enableColumnResizing
-      enableFullScreenToggle={false}
-      enableHiding={false}
-      enableDensityToggle={false}
-      muiLinearProgressProps={({ isTopToolbar }) => ({
-        color: 'secondary',
-        sx: { display: isTopToolbar ? 'block' : 'none' },
-      })}
-        // Layout props
-      muiTableProps={{
-        sx: {
-          'width': 'auto', 'tableLayout': 'auto', '& td:last-child': { width: '100%' }, '& th:last-child': { width: '100%' },
-        },
-      }}
-        // Row click handler
-      muiTableBodyRowProps={({ row }) => ({
-        onClick: () => rowClickHandler(row),
-        sx: {
-          cursor: 'pointer',
-        },
-      })}
-    />
+    <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <DataTable
+        value={plotList}
+        selectionMode="single"
+        onRowClick={rowClickHandler}
+        showGridlines
+        resizableColumns
+        scrollable
+        filters={globalFilter}
+        header={header}
+        globalFilterFields={columns.map((col) => col.field)}
+        size="small"
+        scrollHeight="calc(100vh - 500px)"
+        columnResizeMode="expand"
+        removableSort
+        reorderableColumns
+        sortIcon={sortIcon}
+      >
+        {columns.map((col: any) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            body={col.body}
+            sortable
+            resizeable
+            style={{ minWidth: '150px' }}
+            headerClassName="custom-title"
+          />
+        ))}
+      </DataTable>
+    </Paper>
   );
 }
 export default memo(PlotList);
