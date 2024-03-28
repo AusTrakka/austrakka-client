@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import './assets/themes/custom-style.css';
 import {
@@ -31,9 +31,6 @@ import { msalInstance } from './utilities/authUtils';
 import UserDetail from './components/Users/UserDetail';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
-import { selectUserState } from './app/userSlice';
-import { useAppSelector } from './app/store';
-import LoadingState from './constants/loadingState';
 
 function App() {
   const navigate = useNavigate();

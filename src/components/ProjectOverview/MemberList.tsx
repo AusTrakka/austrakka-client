@@ -45,6 +45,7 @@ function MemberList(props: MembersProps) {
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
     { field: 'displayName', header: 'Name' },
+    { field: 'contactEmail', header: 'Email', body: (rowData: any) => rowData.contactEmail ?? 'Unavailable' },
     { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
   ];
@@ -222,7 +223,7 @@ function MemberList(props: MembersProps) {
               removableSort
               size="small"
               scrollable
-              scrollHeight="calc(100vh - 300px)"
+              scrollHeight="100%"
               reorderableColumns
               showGridlines
               selectionMode="single"

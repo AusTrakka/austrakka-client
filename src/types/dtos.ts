@@ -70,11 +70,12 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
+  contactEmail: string,
 }
 
 export interface User {
   userId: number,
-  objectId: number,
+  objectId: string,
   isActive: boolean,
   organisation: {
     id: number,
@@ -95,6 +96,7 @@ export interface UserDetails {
   orgName: string,
   userRoleGroup: UserRoleGroup[],
   created: Date,
+  contactEmail: string,
 }
 
 export interface MetaDataColumnMapping {

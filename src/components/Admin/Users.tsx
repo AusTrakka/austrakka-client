@@ -1,24 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, FormControlLabel, Paper, Switch, Tooltip, Typography } from '@mui/material';
-import { Column } from 'primereact/column';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Paper, Switch, Tooltip, Typography } from '@mui/material';
+import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { DataTableRowClickEvent, DataTable, DataTableFilterMetaData, DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
-import { AdminPanelSettings, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
+import { AdminPanelSettings, Close, Done, ModeEdit, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
+import { InputText } from 'primereact/inputtext';
+import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { ResponseObject } from '../../types/responseObject.interface';
 import sortIcon from '../TableComponents/SortIcon';
 import { useApi } from '../../app/ApiContext';
 import { User } from '../../types/dtos';
-import { getAllUsers } from '../../utilities/resourceUtils';
+import { getAllUsers, patchUserContactEmail } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import { selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
-
-interface UserProps {
-  groupContext: string;
-  groupName: string;
-}
 
 const renderIcon = (rowData: any) => {
   const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
@@ -65,6 +62,10 @@ function Users() {
   const [isUserLoadError, setIsUserLoadError] = useState<boolean>(false);
   const [isUserLoadErrorMessage, setIsUserLoadErrorMessage] = useState<string>('');
   const { token, tokenLoading } = useApi();
+  const [editingRows, setEditingRows] = useState<any>(false);
+  const [confirmationDialog, setConfirmationDialog] = useState<boolean>(false);
+  const [currentRowData, setCurrentRowData] = useState<any>(null);
+  const navigate = useNavigate();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
@@ -74,14 +75,84 @@ function Users() {
     admin,
   } = useAppSelector(selectUserState);
 
-  // what fields are important at the momoent that work
-  // decided on Name,
-  // Email (which will need to poplated manually unfortunately),
-  // LastLoggedIn (Depricated),
-  // Active (could be icon related to active/admin/normal user etc).
+  const onCellEditInit = (event: any) => {
+    if (event.field === 'email') {
+      setEditingRows(event.data);
+      setCurrentRowData(event.data);
+    }
+  };
 
-  // However due to some of the current limitations I will stick with:
-  // Name, Org for now and depening on the course of action in the future we can add more fields.
+  const emailEditor = (options: ColumnEditorOptions) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        // Allow the default behavior of the Enter key
+        return;
+      }
+      e.stopPropagation();
+    };
+
+    return (
+      <InputText
+        type="text"
+        size="small"
+        value={options.value}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          options.editorCallback && options.editorCallback(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+    );
+  };
+  const onCellEditComplete = (e: ColumnEvent) => {
+    const { rowData, newValue, field, originalEvent: event } = e;
+    if (field === 'contactEmail') {
+      if (newValue === rowData.email) {
+        event.preventDefault();
+        return;
+      }
+      const copy = { ...rowData, [field]: newValue };
+      setCurrentRowData(copy);
+      setConfirmationDialog(true);
+    }
+  };
+
+  const patchUserEmail = async (userObjectId: string, newEmail: string) => {
+    const response: ResponseObject =
+        await patchUserContactEmail(userObjectId, newEmail, token);
+    if (response.status !== ResponseType.Success) {
+      throw new Error(response.message);
+    } else {
+      setUsers(users.map((user) => {
+        if (user.objectId === userObjectId) {
+          return {
+            ...user,
+            contactEmail: newEmail,
+          };
+        }
+        return user;
+      }));
+    }
+  };
+
+  const confirmEmailChange = () => {
+    const userObjectId = currentRowData.objectId;
+    const newEmail = currentRowData.contactEmail;
+
+    patchUserEmail(userObjectId, newEmail);
+    setConfirmationDialog(false);
+    setCurrentRowData(null);
+  };
+
+  const cancelEmailChange = () => {
+    setConfirmationDialog(false);
+    setEditingRows({});
+  };
+
+  const emailBodyTemplate = (rowData: any) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <span>{(!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ? '~Not Filled~' : rowData.contactEmail }</span>
+      <ModeEdit fontSize="small" color="disabled" />
+    </div>
+  );
 
   const columns = [
     {
@@ -89,6 +160,10 @@ function Users() {
       header: 'Name',
       body: (rowData: any) => renderDisplayName(rowData),
     },
+    { field: 'contactEmail',
+      header: 'Email',
+      editor: (options: ColumnEditorOptions) => emailEditor(options),
+      body: emailBodyTemplate },
     { field: 'organisation.abbreviation', header: 'Organisation' },
   ];
 
@@ -112,9 +187,16 @@ function Users() {
 
   // TODO: NEED TO DO THIS and get an actual implementation of the row clicker.
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    // need to implement add a todo or something please
-    // eslint-disable-next-line no-console
-    console.log(row);
+    const selectedRow = row; // Assuming "original" contains the row data
+    // Check if the "Object Id" property exists in the selected row
+    if ('objectId' in selectedRow.data) {
+      const { objectId } = selectedRow.data; // Replace "objectId" with the actual property name
+      const url = `/users/${objectId}`;
+      navigate(url);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('Object Id not found in selectedRow.');
+    }
   };
 
   const header = (
@@ -143,7 +225,6 @@ function Users() {
       </div>
     </div>
   );
-
   // need a nernary that opens a alert if the user is not allow here based on loading and admin
   return (
     loading === LoadingState.SUCCESS && !admin ? (
@@ -161,46 +242,84 @@ function Users() {
         {isUserLoadError ? (
           <Alert severity="error">{isUserLoadErrorMessage}</Alert>
         ) : (
-          <Paper elevation={2} sx={{ marginBottom: 10 }}>
-            <DataTable
-              value={users}
-              size="small"
-              columnResizeMode="expand"
-              resizableColumns
-              showGridlines
-              reorderableColumns
-              removableSort
-              header={header}
-              scrollable
-              scrollHeight="calc(100vh - 500px)"
-              sortIcon={sortIcon}
-              paginator
-              onRowClick={rowClickHandler}
-              selectionMode="single"
-              rows={25}
-              loading={dataLoading}
-              rowsPerPageOptions={[25, 50, 100, 150]}
-              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-              currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-              paginatorPosition="bottom"
-              paginatorRight
-              filters={globalFilter}
-              globalFilterFields={['displayName', 'organisation.abbreviation']}
+          <>
+            <Paper elevation={2} sx={{ marginBottom: 10 }}>
+              <DataTable
+                value={users}
+                size="small"
+                columnResizeMode="expand"
+                resizableColumns
+                showGridlines
+                reorderableColumns
+                removableSort
+                header={header}
+                scrollable
+                scrollHeight="calc(100vh - 300px)"
+                sortIcon={sortIcon}
+                paginator
+                onRowClick={rowClickHandler}
+                selectionMode="single"
+                rows={25}
+                loading={dataLoading}
+                rowsPerPageOptions={[25, 50, 100, 150]}
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+                currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+                paginatorPosition="bottom"
+                paginatorRight
+                editMode="cell"
+                editingRows={editingRows}
+                filters={globalFilter}
+                globalFilterFields={['displayName', 'organisation.abbreviation', 'contactEmail']}
+              >
+                {columns.map((col: any) => (
+                  <Column
+                    key={col.field}
+                    field={col.field}
+                    header={col.header}
+                    body={col.body}
+                    editor={col.editor}
+                    onCellEditInit={col.field === 'contactEmail' ? onCellEditInit : undefined}
+                    onCellEditComplete={col.field === 'contactEmail' ? onCellEditComplete : undefined}
+                    sortable={col.field !== 'contactEmail'}
+                    resizeable
+                    headerClassName="custom-title"
+                  />
+                ))}
+              </DataTable>
+            </Paper>
+            <Dialog
+              open={confirmationDialog}
+              onClose={cancelEmailChange}
+              aria-labelledby="confirm-email-change-dialog-title"
             >
-              {columns.map((col: any) => (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
-                  body={col.body}
-                  sortable
-                  resizeable
-                  style={{ minWidth: '150px' }}
-                  headerClassName="custom-title"
-                />
-              ))}
-            </DataTable>
-          </Paper>
+              <DialogTitle id="confirm-email-change-dialog-title">
+                Confirm Email Change
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to change the email address?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<Done />}
+                  onClick={confirmEmailChange}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<Close />}
+                  onClick={cancelEmailChange}
+                >
+                  No
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
         )}
       </>
     )

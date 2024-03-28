@@ -19,6 +19,7 @@ function UserDetail() {
     'displayName': 'Display Name',
     'orgName': 'Organisation',
     'created': 'Created Date',
+    'contactEmail': 'Email',
   };
   useEffect(() => {
     const updateUser = async () => {
@@ -41,7 +42,6 @@ function UserDetail() {
       <TableCell>
         {field === 'Last Logged In' || field === 'Created Date'
           ? isoDateLocalDate(value) : value}
-
       </TableCell>
     </TableRow>
   );
