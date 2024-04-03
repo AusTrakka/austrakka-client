@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Alert, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography, Box, IconButton, Collapse, Stack } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { getUser } from '../../utilities/resourceUtils';
 import { UserDetails, UserRoleGroup } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -14,13 +16,13 @@ function UserDetail() {
   const { token, tokenLoading } = useApi();
   const [user, setUser] = useState<UserDetails | null>();
   const [errMsg, setErrMsg] = useState<string | null>();
-
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
     'orgName': 'Organisation',
     'created': 'Created Date',
     'contactEmail': 'Email',
   };
+
   useEffect(() => {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
@@ -31,6 +33,7 @@ function UserDetail() {
         setErrMsg('User could not be accessed');
       }
     };
+
     if (token && tokenLoading === LoadingState.SUCCESS) {
       updateUser();
     }
@@ -41,39 +44,70 @@ function UserDetail() {
       <TableCell width="200em">{field}</TableCell>
       <TableCell>
         {field === 'Last Logged In' || field === 'Created Date'
-          ? isoDateLocalDate(value) : value}
+          ? isoDateLocalDate(value)
+          : value}
       </TableCell>
     </TableRow>
   );
 
+  const [openRoleGroups, setOpenRoleGroups] = useState<string[]>([]);
+
+  const handleRoleGroupToggle = (groupName: string) => {
+    setOpenRoleGroups((prev) => {
+      if (prev.includes(groupName)) {
+        return prev.filter((group) => group !== groupName);
+      }
+      return [...prev, groupName];
+    });
+  };
+
   const renderGroupedRolesAndGroups = (userRoleGroups: UserRoleGroup[]) => {
     const groupMap = new Map<string, { roleNames: string[] }>();
-
     userRoleGroups.forEach((userGroup) => {
       const groupName = userGroup.group.name;
       const roleName = userGroup.role.name;
-
       if (!groupMap.has(groupName)) {
         groupMap.set(groupName, { roleNames: [roleName] });
       } else {
         groupMap.get(groupName)?.roleNames.push(roleName);
       }
     });
-
     return Array.from(groupMap).map(([groupName, { roleNames }]) => (
-      <TableRow key={groupName}>
-        <TableCell width="20em">{`${groupName} - Roles`}</TableCell>
-        <TableCell>
-          {roleNames.map((roleName) => (
-            <Chip
-              key={roleName}
-              label={roleName}
-              color="primary"
-              variant="outlined"
-            />
-          ))}
-        </TableCell>
-      </TableRow>
+      <>
+        <TableRow>
+          <TableCell width="200em" colSpan={2}>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => handleRoleGroupToggle(groupName)}
+            >
+              {openRoleGroups.includes(groupName) ?
+                <KeyboardArrowUpIcon /> :
+                <KeyboardArrowDownIcon />}
+            </IconButton>
+            someParent
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{ padding: 0 }} colSpan={2}>
+            <Box sx={{ width: '100%' }}>
+              <Collapse in={openRoleGroups.includes(groupName)} timeout="auto" unmountOnExit>
+                <Stack direction="row" spacing={2} padding={2} alignItems="center">
+                  <Typography variant="body2">
+                    {groupName}
+                    -roles
+                  </Typography>
+                  <div>
+                    {roleNames.map((roleName) => (
+                      <Chip sx={{ marginX: 0.5 }} key={roleName} label={roleName} color="primary" variant="outlined" />
+                    ))}
+                  </div>
+                </Stack>
+              </Collapse>
+            </Box>
+          </TableCell>
+        </TableRow>
+      </>
     ));
   };
 
