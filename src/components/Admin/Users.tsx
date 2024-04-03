@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Icon, IconButton, Paper, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Paper, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { DataTableRowClickEvent, DataTable, DataTableFilterMetaData, DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
-import { AdminPanelSettings, BrushRounded, Close, Done, Margin, ModeEdit, Person, PersonAdd, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
-import { InputText } from 'primereact/inputtext';
+import { AdminPanelSettings, Close, Done, ModeEdit, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
@@ -16,7 +15,6 @@ import { getAllUsers, patchUserContactEmail } from '../../utilities/resourceUtil
 import SearchInput from '../TableComponents/SearchInput';
 import { selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
-import AddUserDialog from './AddUserDialog';
 
 const renderIcon = (rowData: any) => {
   const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
@@ -85,7 +83,6 @@ function Users() {
 
   const emailEditor = (options: ColumnEditorOptions) => {
     const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      console.log(e.key);
       if (e.key === 'Enter') {
         return;
       }
