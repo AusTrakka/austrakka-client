@@ -3,7 +3,27 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## 2024-03-20
+## 2024-03-27
+
+### Added
+
+- The functionality of tabular displays has been updated:
+  - Tables containing many rows, for instance sample table views for large projects, will now have significantly improved performance.
+  - CSV export of sample data should now correctly escape values containing quotes.
+  - A control is now available to toggle vertical rendering of table columns in the sample table. This allows column widths to be made very narrow, if desired, without hiding column headers.
+  - Default column widths now better adapt to the data.
+  - Column sort controls are now a toggle, rather than a dropdown, and are quicker to use.
+  - The pagination controls have been moved to the bottom-left of the table to make it more obvious when the current table view does not show all available items.
+
+### Fixed
+
+- The data filter component on tables, plots and trees now correctly makes available numerical operators (e.g. greater than, less than) for floating-point numerical fields. Previously numerical operators were only appearing for integer numerical fields.
+
+## 2024-03-21
+
+### Added
+
+- Override mode for project analysis metadata is now available. In the case of multiple active project datasets containing calculated values for the same field, AusTrakka will display only the most recent values of the metadata for that field. All values for a field (including nulls) will be sourced from the latest project dataset containing that field.
 
 ### Changed
 
@@ -47,6 +67,3 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ### Fixed
 
 - Buxfix display of booleans (Has_sequences) on the sample detail page; do not display timestamps on dates which should not have timestamps on the sample detail page (e.g. date of collection).
-
-
-
