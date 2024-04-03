@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Paper, Switch, Tooltip, Typography } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Icon, IconButton, Paper, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { DataTableRowClickEvent, DataTable, DataTableFilterMetaData, DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
-import { AdminPanelSettings, Close, Done, ModeEdit, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
+import { AdminPanelSettings, BrushRounded, Close, Done, Margin, ModeEdit, Person, PersonAdd, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
 import { InputText } from 'primereact/inputtext';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
@@ -16,6 +16,7 @@ import { getAllUsers, patchUserContactEmail } from '../../utilities/resourceUtil
 import SearchInput from '../TableComponents/SearchInput';
 import { selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import AddUserDialog from './AddUserDialog';
 
 const renderIcon = (rowData: any) => {
   const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
@@ -76,36 +77,45 @@ function Users() {
   } = useAppSelector(selectUserState);
 
   const onCellEditInit = (event: any) => {
-    if (event.field === 'email') {
+    if (event.field === 'contactEmail') {
       setEditingRows(event.data);
       setCurrentRowData(event.data);
     }
   };
 
   const emailEditor = (options: ColumnEditorOptions) => {
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      console.log(e.key);
       if (e.key === 'Enter') {
-        // Allow the default behavior of the Enter key
         return;
       }
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        return;
+      }
+
       e.stopPropagation();
     };
 
     return (
-      <InputText
+      <TextField
         type="text"
         size="small"
+        variant="standard"
+        color="secondary"
         value={options.value}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           options.editorCallback && options.editorCallback(e.target.value)}
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleKeyUp}
+        // onBlur should not override the onKeyUp events e.g. Enter and Escape
       />
     );
   };
   const onCellEditComplete = (e: ColumnEvent) => {
     const { rowData, newValue, field, originalEvent: event } = e;
     if (field === 'contactEmail') {
-      if (newValue === rowData.email) {
+      if (newValue === rowData.contactEmail || newValue === '' || newValue === undefined || newValue === null) {
         event.preventDefault();
         return;
       }
@@ -146,10 +156,9 @@ function Users() {
     setConfirmationDialog(false);
     setEditingRows({});
   };
-
   const emailBodyTemplate = (rowData: any) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <span>{(!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ? '~Not Filled~' : rowData.contactEmail }</span>
+      <span>{(!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ? '~Not Filled~' : rowData.contactEmail}</span>
       <ModeEdit fontSize="small" color="disabled" />
     </div>
   );
@@ -187,6 +196,8 @@ function Users() {
 
   // TODO: NEED TO DO THIS and get an actual implementation of the row clicker.
   const rowClickHandler = (row: DataTableRowClickEvent) => {
+    if ((row.originalEvent.target as HTMLElement)?.closest('td')?.className === 'p-editable-column') return;
+
     const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
     if ('objectId' in selectedRow.data) {
@@ -258,7 +269,6 @@ function Users() {
                 sortIcon={sortIcon}
                 paginator
                 onRowClick={rowClickHandler}
-                selectionMode="single"
                 rows={25}
                 loading={dataLoading}
                 rowsPerPageOptions={[25, 50, 100, 150]}
@@ -266,6 +276,7 @@ function Users() {
                 currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
                 paginatorPosition="bottom"
                 paginatorRight
+                selectionMode="single"
                 editMode="cell"
                 editingRows={editingRows}
                 filters={globalFilter}

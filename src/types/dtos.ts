@@ -220,10 +220,7 @@ export interface UserRoleGroup {
     id: number,
     name: string,
   }
-  group: {
-    id: number,
-    name: string,
-  }
+  group: Group
 }
 
 export interface Group {
