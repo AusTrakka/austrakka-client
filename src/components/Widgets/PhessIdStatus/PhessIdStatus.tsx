@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
