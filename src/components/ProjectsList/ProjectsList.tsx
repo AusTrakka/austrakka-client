@@ -105,7 +105,7 @@ function ProjectsList() {
               removableSort
               scrollable
               rows={25}
-              scrollHeight="calc(100vh - 500px)"
+              scrollHeight="calc(100vh - 300px)"
               onRowClick={rowClickHandler}
               selectionMode="single"
               paginator
