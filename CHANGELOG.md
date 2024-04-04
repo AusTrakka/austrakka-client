@@ -3,6 +3,12 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-04-04
+
+### Fixed
+
+- Fixes an issue where the Projects table did not occupy the full height of the browser window, and adds a minimum height regardless of window size.
+
 ## 2024-03-27
 
 ### Added
