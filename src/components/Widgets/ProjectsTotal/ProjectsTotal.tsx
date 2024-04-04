@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
@@ -36,8 +36,8 @@ export default function ProjectsTotal() {
     navigate('/projects');
   };
 
-  const rowClickHandler = (row: any) => {
-    const selectedRow = row.original;
+  const rowClickHandler = (row: DataTableRowClickEvent) => {
+    const selectedRow = row.data;
     navigate(`/projects/${selectedRow.abbrev}`);
   };
 
