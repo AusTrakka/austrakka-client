@@ -17,6 +17,7 @@ const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
+  { field: 'lastUpdated', header: 'Last Updated', body: (rowData: any) => isoDateLocalDate(rowData.lastUpdated) },
   { field: 'created', header: 'Created', body: (rowData: any) => isoDateLocalDate(rowData.created) },
 ];
 
