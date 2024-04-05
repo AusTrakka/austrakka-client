@@ -82,7 +82,7 @@ function MainMenuLayout() {
     datasets: 'Datasets',
   };
 
-  const breadcrumbNoLink: string[] = ['versions', 'records', 'users'];
+  const breadcrumbNoLink: string[] = ['versions', 'records'];
 
   /**
    * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
@@ -96,6 +96,11 @@ function MainMenuLayout() {
     ['summary', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
+
+  // when on a users detail page we should  not have 
+  if (pathnames.length > 1 && pathnames[0] === 'users') {
+    pathnames[1] = '';
+  }
 
   if (pathnames.length > 0 && pathnames.length <= 3 &&
       noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
