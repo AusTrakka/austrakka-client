@@ -19,24 +19,24 @@ steps:
   - task: Npm@1
     displayName: 'npm ci'
     inputs:
-      workingDirectory: '$(sourceDir)/client'
+      workingDir: $(sourceDir)/client
       command: 'custom'
       customCommand: 'ci'
   - task: Npm@1
     displayName: 'npm run build'
     inputs:
-      workingDirectory: '$(sourceDir)/client'
+      workingDir: $(sourceDir)/client
       command: 'custom'
       customCommand: 'run build'
   - template: create-swa-config.yml
     parameters:
       appName: $(appName)
       resourceGroup: $(resourceGroup)
-      workingDirectory: '$(sourceDir)/client'
+      workingDirectory: $(sourceDir)/client
   - task: AzureStaticWebApp@0
     displayName: 'Deploy SWA'
     inputs:
-      workingDirectory: '$(sourceDir)/client'
+      workingDirectory: $(sourceDir)/client
       app_location: 'dist'
       skip_app_build: true
       azure_static_web_Apps_api_token: $(swa_token)
