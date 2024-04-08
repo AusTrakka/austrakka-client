@@ -1,0 +1,44 @@
+resources:
+  repositories:
+    - repository: Pipelines
+      type: github
+      name: AusTrakka/austrakka-pipelines
+      ref: 5492-tf-apply-destroy-pipelines # TODO: update this
+      endpoint: AusTrakka
+    - repository: Infra
+      type: github
+      endpoint: AusTrakka
+      name: AusTrakka/austrakka2-infra
+      ref: 5361-uat-env # TODO: this needs to point to UAT once it's merged through
+
+trigger:
+  branches:
+    include:
+      - UAT
+
+pr: none
+
+pool:
+  name: UAT-New
+
+variables:
+  azureConnection: 'AusTrakka UAT'
+  azureConnectionAdmin: 'AusTrakka Data (Agent Pool)' # TODO: should rename this in the portal
+  backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
+  backendAzureRmStorageAccountName: 'stuatterfshdas1'
+  backendAzureRmContainerName: 'state'
+  backendAzureRmKey: '$(EnvId).tfstate'
+  terraformOutputArtifact: 'TerraformOutput'
+  buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
+  sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
+
+stages:
+  - stage: CheckoutRepos
+    jobs:
+      - job: CheckoutPortal
+        steps:
+          - template: templates/checkout/self.yml
+          - template: templates/checkout/infra.yml@Pipelines
+          - template: templates/checkout/pipelines.yml@Pipelines
+          - template: templates/terraform/output.yml@Pipelines
+          - template: templates/deploy-client.yml
