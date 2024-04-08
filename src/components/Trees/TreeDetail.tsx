@@ -203,15 +203,9 @@ function TreeDetail() {
               return prefix + ' '.repeat(blockLength);
             }
             if (state.alignLabels) {
-              let labelString;
-              // Check if label is a Date object
-              if (value[block].label instanceof Date) {
-                // Convert the Date object to a string using toLocaleDateString
-                labelString = isoDateLocalDateNoTime(value[block].label as string);
-              } else {
-                // Assume label is already a string
-                labelString = value[block].label.toString();
-              }
+              // Assume label is already a string
+              const labelString = value[block].label.toString();
+
               return prefix + labelString.padEnd(blockLength, ' ');
             }
             return prefix + value[block].label;
