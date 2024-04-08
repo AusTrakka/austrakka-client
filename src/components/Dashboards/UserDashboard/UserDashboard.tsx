@@ -2,6 +2,7 @@
 import React from 'react';
 import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
+import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
@@ -13,6 +14,7 @@ import { fetchUserOverview } from '../../Widgets/UserOverview/userOverviewSlice'
 import { fetchProjectsTotal } from '../../Widgets/ProjectsTotal/projectsTotalSlice';
 import { fetchPhessIdOverall } from '../../Widgets/PhessIdOverall/phessIdOverallSlice';
 import LoadingState from '../../../constants/loadingState';
+import FieldTypes from '../../../constants/fieldTypes';
 
 interface UserDashboardProps {
 }
@@ -28,16 +30,16 @@ function DateSelector(props: any) {
     let value;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
-      value = dayjs().subtract(7, 'days');
+      value = dayjs().subtract(7, 'days').toDate();
     } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
-      value = dayjs().subtract(1, 'month');
+      value = dayjs().subtract(1, 'month').toDate();
     }
 
     if (value !== undefined) {
       filterObject = {
         field: 'Date_created',
-        fieldType: 'date',
-        condition: '>',
+        fieldType: FieldTypes.DATE,
+        condition: FilterMatchMode.DATE_AFTER,
         value,
       };
     }
