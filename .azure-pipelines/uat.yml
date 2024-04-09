@@ -23,7 +23,7 @@ pool:
 
 variables:
   azureConnection: 'AusTrakka UAT'
-  azureConnectionAdmin: 'AusTrakka Data (Agent Pool)' # TODO: should rename this in the portal
+  azureConnectionAdmin: 'AusTrakka Data (Agent Pool)'
   backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
   backendAzureRmStorageAccountName: 'stuatterfshdas1'
   backendAzureRmContainerName: 'state'
