@@ -97,7 +97,7 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // when on a users detail page we should  not have 
+  // when on a users detail page we should  not have
   if (pathnames.length > 1 && pathnames[0] === 'users') {
     pathnames[1] = '';
   }

@@ -15,6 +15,7 @@ import { getAllUsers, patchUserContactEmail } from '../../utilities/resourceUtil
 import SearchInput from '../TableComponents/SearchInput';
 import { selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import ExportTableData from '../Common/ExportTableData';
 
 const renderIcon = (rowData: any) => {
   const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
@@ -65,6 +66,7 @@ function Users() {
   const [confirmationDialog, setConfirmationDialog] = useState<boolean>(false);
   const [currentRowData, setCurrentRowData] = useState<any>(null);
   const navigate = useNavigate();
+  const [exportData, setExportData] = useState<User[]>([]);
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
@@ -178,6 +180,7 @@ function Users() {
       const getUsersResponse: ResponseObject = await getAllUsers(includeAll, token);
       if (getUsersResponse.status === ResponseType.Success) {
         setUsers(getUsersResponse.data as User[]);
+        setExportData(getUsersResponse.data as User[]);
       } else {
         setIsUserLoadError(true);
         setIsUserLoadErrorMessage(getUsersResponse.message);
@@ -219,17 +222,24 @@ function Users() {
             setGlobalFilter(filters);
           }}
         />
-        <FormControlLabel
-          control={(
-            <Switch
-              color="primary"
-              size="small"
-              checked={includeAll}
-              onChange={() => setIncludeAll((prev) => !prev)}
-            />
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <FormControlLabel
+            control={(
+              <Switch
+                color="primary"
+                size="small"
+                checked={includeAll}
+                onChange={() => setIncludeAll((prev) => !prev)}
+              />
           )}
-          label={<Typography variant="subtitle2">Show Disabled</Typography>}
-        />
+            label={<Typography variant="subtitle2">Show Disabled</Typography>}
+          />
+          <ExportTableData
+            dataToExport={exportData}
+            disabled={false}
+            headers={columns.map((col) => ({ label: col.header, key: col.field }))}
+          />
+        </div>
       </div>
     </div>
   );
@@ -257,6 +267,7 @@ function Users() {
                 size="small"
                 columnResizeMode="expand"
                 resizableColumns
+                onValueChange={(e) => setExportData(e)}
                 showGridlines
                 reorderableColumns
                 removableSort

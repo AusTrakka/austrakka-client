@@ -42,6 +42,7 @@ function MemberList(props: MembersProps) {
 
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
+  const [exportData, setExportData] = useState<Member[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
     { field: 'displayName', header: 'Name' },
@@ -134,7 +135,7 @@ function MemberList(props: MembersProps) {
   const ExportButton = (
     <>
       <CSVLink
-        data={transformedData}
+        data={exportData.length > 0 ? exportData : transformedData}
         headers={[
           { label: 'Name', key: 'displayName' },
           { label: 'Organizations', key: 'organization' },
@@ -221,6 +222,7 @@ function MemberList(props: MembersProps) {
             <DataTable
               value={memberList}
               removableSort
+              onValueChange={(e) => setExportData(e)}
               size="small"
               scrollable
               scrollHeight="100%"
