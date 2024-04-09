@@ -41,4 +41,6 @@ stages:
           - template: templates/checkout/infra.yml@Pipelines
           - template: templates/checkout/pipelines.yml@Pipelines
           - template: templates/terraform/output.yml@Pipelines
+            parameters:
+              outputFilePath: $(buildDir)/tf/output.json
           - template: templates/deploy-client.yml
