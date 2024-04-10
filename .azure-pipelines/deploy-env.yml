@@ -17,7 +17,7 @@ trigger: none
 pr: none
 
 pool:
-  vmImage: Test
+  name: Test
 
 variables:
   azureConnection: 'AusTrakka Dev (austrakka tenancy)'
