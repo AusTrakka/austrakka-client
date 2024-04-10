@@ -57,7 +57,7 @@ interface Style {
 //  - it is less conservative than our Seq_ID regex, only checking newick constraints
 //  - the presence of ) in the first []+ means that internal node names will also be captured,
 //    if there are any
-const treenameRegex = /[(),]+([^;:[\s,()]+)/g;
+const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
   const { projectAbbrev, analysisId, jobInstanceId } = useParams();
