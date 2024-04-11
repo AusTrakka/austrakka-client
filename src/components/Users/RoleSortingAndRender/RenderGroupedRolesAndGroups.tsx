@@ -103,9 +103,9 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
   return (
     <>
-      {renderRoleGroups(personalOrgs, 'Personal Organizations')}
-      {renderRoleGroups(foriegnOrgs, 'Foreign Organizations')}
-      {renderRoleGroups(otherGroups, 'Other Groups')}
+      {renderRoleGroups(personalOrgs, 'Home Organisation')}
+      {renderRoleGroups(foriegnOrgs, 'Other Organisations')}
+      {renderRoleGroups(otherGroups, 'Projects and Other Groups')}
     </>
   );
 }
