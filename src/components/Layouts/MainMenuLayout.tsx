@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet,
@@ -5,7 +6,7 @@ import {
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People,
 } from '@mui/icons-material/';
 import {
   Box, Drawer, IconButton, List,
@@ -17,6 +18,9 @@ import styles from './MainMenuLayout.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
+import { useAppSelector } from '../../app/store';
+import { selectUserState } from '../../app/userSlice';
+import LoadingState from '../../constants/loadingState';
 
 const settings = [
   {
@@ -50,6 +54,11 @@ const pages = [
     link: '/upload',
     icon: <Upload />,
   },
+  {
+    title: 'Users',
+    link: '/users',
+    icon: <People />,
+  },
 ];
 
 function MainMenuLayout() {
@@ -73,7 +82,7 @@ function MainMenuLayout() {
     datasets: 'Datasets',
   };
 
-  const breadcrumbNoLink: string[] = ['versions', 'records', 'users'];
+  const breadcrumbNoLink: string[] = ['versions', 'records'];
 
   /**
    * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
@@ -88,6 +97,11 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
+  // when on a users detail page we should  not have
+  if (pathnames.length > 1 && pathnames[0] === 'users') {
+    pathnames[1] = '';
+  }
+
   if (pathnames.length > 0 && pathnames.length <= 3 &&
       noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
       && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
@@ -97,7 +111,12 @@ function MainMenuLayout() {
   const [username, setUsername] = useState('');
   const [user, setUser] = useState('');
   const { accounts } = useMsal();
+
   const account = useAccount(accounts[0] || {});
+  const {
+    loading,
+    admin,
+  } = useAppSelector(selectUserState);
 
   useEffect(() => {
     if (account && account.name && account.username) {
@@ -113,6 +132,8 @@ function MainMenuLayout() {
       updatePageStyling('page');
     }
   };
+
+  const canSee = () => (loading === LoadingState.SUCCESS && admin);
 
   const handleDrawer = () => {
     setDrawer(!drawer);
@@ -150,37 +171,48 @@ function MainMenuLayout() {
           <Divider />
           <List className={styles.pagelist}>
             {pages.map((page) => (
-              <NavLink
-                key={page.title}
-                to={page.link}
-                end={page.link === '/'}
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? '#dddddd' : '',
-                  borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
-                  fontWeight: isActive ? 'bold' : '',
-                })}
-              >
-                <Tooltip title={drawer ? '' : page.title} arrow placement="right">
-                  <MenuItem
+              <React.Fragment key={page.title}>
+                {canSee() || page.title !== 'Users' ? (
+                  <NavLink
                     key={page.title}
-                    sx={{ '&:hover': {
-                      backgroundColor: '#dddddd',
-                    },
-                    'width': '100%' }}
+                    to={page.link}
+                    end={page.link === '/'}
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? '#dddddd' : '',
+                      borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                      fontWeight: isActive ? 'bold' : '',
+                    })}
                   >
-                    <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
-                      {page.icon}
-                    </ListItemIcon>
-                    {drawer ? (
-                      <ListItemText>
-                        {page.title}
-                      </ListItemText>
-                    )
-                      :
-                      null}
-                  </MenuItem>
-                </Tooltip>
-              </NavLink>
+                    <Tooltip
+                      title={drawer ? '' : page.title}
+                      arrow
+                      placement="right"
+                    >
+                      <MenuItem
+                        key={page.title}
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: '#dddddd',
+                          },
+                          'width': '100%',
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            color: 'primary.main',
+                            minWidth: 0,
+                            mr: drawer ? 1 : 'auto',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {page.icon}
+                        </ListItemIcon>
+                        {drawer ? <ListItemText>{page.title}</ListItemText> : null}
+                      </MenuItem>
+                    </Tooltip>
+                  </NavLink>
+                ) : null}
+              </React.Fragment>
             ))}
           </List>
           <Divider />

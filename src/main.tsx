@@ -10,6 +10,7 @@ import App from './App';
 import { msalInstance } from './utilities/authUtils';
 import store from './app/store';
 import ApiProvider from './app/ApiContext';
+import UserProvider from './app/UserProvider';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
@@ -19,7 +20,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <StyledEngineProvider injectFirst>
         <MsalProvider instance={msalInstance}>
           <ApiProvider>
-            <App />
+            <UserProvider>
+              <App />
+            </UserProvider>
           </ApiProvider>
         </MsalProvider>
       </StyledEngineProvider>
