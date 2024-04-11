@@ -3,6 +3,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-04-11
+
+### Fixed
+- Dashboard table rows are now clickable.
+
 ## 2024-04-04
 
 ### Fixed
