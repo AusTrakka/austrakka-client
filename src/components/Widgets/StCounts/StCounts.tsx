@@ -5,11 +5,13 @@ import { TopLevelSpec, compile } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { useApi } from '../../../app/ApiContext';
+import FieldTypes from '../../../constants/fieldTypes';
 
 const stFieldName = 'ST';
 
@@ -145,8 +147,8 @@ export default function StCounts(props: any) {
     const selectedRow = row.data;
     const drilldownFilter = [{
       field: stFieldName,
-      fieldType: 'string',
-      condition: '=',
+      fieldType: FieldTypes.STRING,
+      condition: FilterMatchMode.EQUALS,
       value: selectedRow[stFieldName],
     }];
     // Append timeFilterObject for last_week and last_month filters
