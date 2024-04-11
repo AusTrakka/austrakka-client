@@ -71,7 +71,7 @@ function OrganisationOverview() {
     async function getOrgMembersList() {
       if (orgEveryone) {
         const memberListResponse: ResponseObject =
-          await getGroupMembers(orgEveryone.group.id, token);
+          await getGroupMembers(orgEveryone.group.groupId, token);
         if (memberListResponse.status === ResponseType.Success) {
           setProjectMembers(memberListResponse.data as Member[]);
           setMemberListError(false);
