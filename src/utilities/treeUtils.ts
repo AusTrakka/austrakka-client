@@ -4,6 +4,7 @@ import { Field } from '../types/dtos';
 import getColorScheme from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './helperUtils';
 
 const NULL_COLOUR = 'rgb(200,200,200)';
 
@@ -36,16 +37,22 @@ export default function mapMetadataToPhylocanvas(
     result[sampleName] = {};
 
     fieldInformation.forEach((fi) => {
-      if (fi.columnName !== SAMPLE_ID_FIELD) {
-        const value = sample[fi.columnName] ?? 'null';
-        const colour = fi.canVisualise ?
-          fieldPalettes[fi.columnName][value]
-          : 'rgba(0,0,0,0)'; // this black is assigned but we expect not to be used, as the field is not visualisable
-        result[sampleName][fi.columnName] = {
-          colour,
-          label: sample[fi.columnName] ?? '',
-        };
+      if (fi.columnName === SAMPLE_ID_FIELD) return;
+
+      const value = sample[fi.columnName] ?? 'null';
+      const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rgba(0,0,0,0)';
+
+      let label: string | undefined;
+      if (fi.primitiveType === 'date') {
+        label = fi.columnName === 'Date_coll' ? isoDateLocalDateNoTime(value) : isoDateLocalDate(value);
+      } else {
+        label = value;
       }
+
+      result[sampleName][fi.columnName] = {
+        colour,
+        label: label ?? '',
+      };
     });
   }
 

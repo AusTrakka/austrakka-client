@@ -5,6 +5,7 @@ import { Sample } from '../types/sample.interface';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
+  if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   return localDate;
@@ -12,6 +13,7 @@ export function isoDateLocalDate(datetime: string) {
 
 export function isoDateLocalDateNoTime(datetime: string) {
   if (!datetime) return '';
+  if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
   const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
   return localDate;
