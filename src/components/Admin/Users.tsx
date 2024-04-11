@@ -114,7 +114,7 @@ function Users() {
   const onCellEditComplete = (e: ColumnEvent) => {
     const { rowData, newValue, field, originalEvent: event } = e;
     if (field === 'contactEmail') {
-      if (newValue === rowData.contactEmail || newValue === '' || newValue === undefined || newValue === null) {
+      if (newValue === rowData.contactEmail || newValue === undefined || newValue === null) {
         event.preventDefault();
         return;
       }
@@ -126,7 +126,7 @@ function Users() {
 
   const patchUserEmail = async (userObjectId: string, newEmail: string) => {
     const response: ResponseObject =
-        await patchUserContactEmail(userObjectId, newEmail, token);
+    await patchUserContactEmail(userObjectId, token, newEmail);
     if (response.status !== ResponseType.Success) {
       throw new Error(response.message);
     } else {
