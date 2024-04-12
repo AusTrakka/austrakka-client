@@ -3,6 +3,14 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-04-12
+
+### Added
+- User management page for admins.
+
+### Fixed
+- Bug with quick search in tree view.
+
 ## 2024-04-11
 
 ### Fixed
