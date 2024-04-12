@@ -41,10 +41,11 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
         <Select
           labelId="org-select-label"
           id="org-select"
-          value={selectedGroup.group.id} // Use a unique identifier as the value
+          value={selectedGroup.group.groupId} // Use a unique identifier as the value
           onChange={(e) => {
             const selectedGroupId = e.target.value;
-            const selectedGroupObject = groups.find(group => group.group.id === selectedGroupId);
+            const selectedGroupObject = groups
+              .find(group => group.group.groupId === selectedGroupId);
 
             if (selectedGroupObject) {
               setSelectedGroup(selectedGroupObject);
@@ -55,8 +56,8 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
         >
           {groups.map((urg: UserRoleGroup) => (
             <MenuItem
-              value={urg.group.id} // Use the group's ID as the value
-              key={urg.group.id}
+              value={urg.group.groupId} // Use the group's ID as the value
+              key={urg.group.groupId}
             >
               {urg.group.name}
             </MenuItem>
@@ -111,7 +112,7 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
         setSelectedGroup={setSelectedGroup}
       />
       <SampleTable
-        groupContext={selectedGroup!.group.id}
+        groupContext={selectedGroup!.group.groupId}
         groupName={undefined}
       />
     </Box>
