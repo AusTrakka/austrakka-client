@@ -54,6 +54,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
       // TODO show a warning on the UI as well
       if (dataIndex === -1) {
+        // eslint-disable-next-line no-console
         console.error('Bad plot spec: inputdata slot not found in spec');
         return;
       }
