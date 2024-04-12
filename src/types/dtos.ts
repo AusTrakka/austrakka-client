@@ -70,11 +70,12 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
+  contactEmail: string,
 }
 
 export interface User {
   userId: number,
-  objectId: number,
+  objectId: string,
   isActive: boolean,
   organisation: {
     id: number,
@@ -85,6 +86,7 @@ export interface User {
   userRoleGroup: UserRoleGroup[],
   displayName: string,
   createdBy: Date,
+  contactEmail: string,
   lastUpdatedBy: Date,
   IsAustrakkaProcess: boolean
 }
@@ -94,6 +96,7 @@ export interface UserDetails {
   orgName: string,
   userRoleGroup: UserRoleGroup[],
   created: Date,
+  contactEmail: string,
 }
 
 export interface MetaDataColumnMapping {
@@ -217,10 +220,7 @@ export interface UserRoleGroup {
     id: number,
     name: string,
   }
-  group: {
-    id: number,
-    name: string,
-  }
+  group: Group
 }
 
 export interface Group {
