@@ -94,6 +94,7 @@ export interface User {
 export interface UserDetails {
   displayName: string,
   orgName: string,
+  orgAbbrev: string,
   userRoleGroup: UserRoleGroup[],
   created: Date,
   contactEmail: string,

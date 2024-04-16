@@ -19,6 +19,7 @@ function UserDetail() {
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
     'orgName': 'Organisation',
+    'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
     'contactEmail': 'Email',
   };

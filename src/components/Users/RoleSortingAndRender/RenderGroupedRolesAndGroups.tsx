@@ -14,12 +14,12 @@ interface RenderGroupedRolesAndGroupsProps {
 const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) => {
   const personalOrgs = userRoleGroups.filter(
     (group) =>
-      group.group.organisation?.abbreviation === user.orgName,
+      group.group.organisation?.abbreviation === user.orgAbbrev,
   );
 
   const foriegnOrgs = userRoleGroups.filter(
     (group) =>
-      group.group.organisation?.abbreviation !== user.orgName &&
+      group.group.organisation?.abbreviation !== user.orgAbbrev &&
         group.group.organisation?.abbreviation !== undefined,
   );
 
