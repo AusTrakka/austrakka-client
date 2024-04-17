@@ -9,7 +9,7 @@ import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
-import { Field, ProjectViewField } from '../../types/dtos';
+import { Field, MetaDataColumn, ProjectViewField } from '../../types/dtos';
 
 export interface DataFilter {
   shakeElement?: boolean,
@@ -36,7 +36,7 @@ interface DataFiltersProps {
   dataLength: number // need to pass through
   filteredDataLength: number // need to pass through
   visibleFields: any[] | null // need to passs through
-  allFields: ProjectViewField[] // need to pass through
+  allFields: ProjectViewField[] | MetaDataColumn[] // need to pass through
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
@@ -197,7 +197,6 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   const clearFilters = () => {
-    setLoadingState(true);
     setFilterError(false);
     setFilterList([]);
   };

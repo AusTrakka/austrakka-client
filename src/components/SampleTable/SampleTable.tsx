@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MRT_PaginationState, MRT_SortingState } from 'material-react-table';
 import { MetaDataColumn } from '../../types/dtos';
@@ -30,6 +30,9 @@ import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
+import { filter } from 'd3';
+import DataFilters from '../DataFilters/DataFilters';
+import { FilterMatchMode } from 'primereact/api';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -48,17 +51,10 @@ function SampleTable(props: SamplesProps) {
   const { groupContext, groupName } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
-  const [samplesPagination, setSamplesPagination] = useState<MRT_PaginationState>({
-    pageIndex: 0,
-    pageSize: 50,
-  });
-  const [columnOrderArrayInitial, setColumnOrderArrayInitial] = useState<string[]>([]);
-  const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [sampleList, setSampleList] = useState<Sample[]>([]);
-  const [totalSamples, setTotalSamples] = useState(0);
-  const [samplesCount, setSamplesCount] = useState(0);
+  const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
+  const [totalSamplesCount, setTotalSamplesCount] = useState(0);
   const [isSamplesError, setIsSamplesError] = useState({
     samplesHeaderError: false,
     samplesTotalError: false,
@@ -66,11 +62,13 @@ function SampleTable(props: SamplesProps) {
     samplesErrorMessage: '',
   });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [queryString, setQueryString] = useState('');
   const [filterList, setFilterList] = useState<Filter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
+  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(
+    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  );
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
@@ -95,12 +93,13 @@ function SampleTable(props: SamplesProps) {
         if (samplesResponse.status === ResponseType.Success) {
           const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
           setSampleList(sampleDataAltered);
+          setFilteredSampleList(sampleDataAltered);
           setIsSamplesError((prevState) => ({
             ...prevState,
             sampleMetadataError: false,
           }));
           const count: string = samplesResponse.headers?.get('X-Total-Count')!;
-          setSamplesCount(+count);
+          setTotalSamplesCount(+count);
         } else {
           setIsSamplesError((prevState) => ({
             ...prevState,
@@ -154,17 +153,6 @@ function SampleTable(props: SamplesProps) {
     ],
   );
 
-  const generateFilename = () => {
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    const h = dateObject.getHours();
-    const m = dateObject.getMinutes();
-    const s = dateObject.getSeconds();
-    return `austrakka_export_${year}${month}${day}_${h}${m}${s}`;
-  };
-
   useEffect(
     () => {
       if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
@@ -193,24 +181,6 @@ function SampleTable(props: SamplesProps) {
     }
   };
 
-  // GET SAMPLES - not paginated
-  const getExportData = async () => {
-    if (groupContext) {
-      setExportCSVStatus(LoadingState.LOADING);
-      const searchParams = new URLSearchParams({
-        Page: '1',
-        PageSize: (totalSamples).toString(),
-        filters: queryString,
-      });
-      const samplesResponse: ResponseObject = await getSamples(token, groupContext, searchParams);
-      if (samplesResponse.status === ResponseType.Success) {
-        setExportData(samplesResponse.data);
-      } else {
-        setExportCSVStatus(LoadingState.ERROR);
-      }
-    }
-  };
-
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
@@ -232,7 +202,7 @@ function SampleTable(props: SamplesProps) {
           }}
         />
         <ExportTableData
-          dataToExport={sampleList}
+          dataToExport={filteredSampleList}
           disabled={false}
         />
       </div>
@@ -263,19 +233,25 @@ function SampleTable(props: SamplesProps) {
           Please try again later, or contact an AusTrakka admin.
         </Alert>
       </Dialog>
-      <QueryBuilder
+      <DataFilters
+        dataLength={totalSamplesCount ?? 0}
+        filteredDataLength={filteredSampleList.length}
+        visibleFields={sampleTableColumns}
+        allFields={displayFields ?? []} // want to pass in field loading states?
+        setPrimeReactFilters={setCurrentFilters}
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
-        setQueryString={setQueryString}
-        fieldList={displayFields}
         filterList={filterList}
         setFilterList={setFilterList}
-        totalSamples={totalSamples}
-        samplesCount={samplesCount}
+        setLoadingState={setIsSamplesLoading}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
           value={sampleList}
+          onValueChange={(e) => {
+            setFilteredSampleList(e);
+          }}
+          filters={currentFilters}
           size="small"
           columnResizeMode="expand"
           resizableColumns
