@@ -90,22 +90,37 @@ function DataFilters(props: DataFiltersProps) {
     setTotalSamples(dataLength);
   }, [dataLength, filteredDataLength]);
 
+  function filterFieldsByVisibility<T extends ProjectViewField | MetaDataColumn>(
+    _fields: T[],
+    _visibleFields: any[],
+  ): T[] {
+    return _fields.filter((field): field is T =>
+      _visibleFields.some((visibleField) => visibleField.field === field.columnName));
+  }
+
+  function registerFilterHandlers<T extends ProjectViewField | MetaDataColumn>(_fields: T[]) {
+    _fields.forEach((field) => {
+      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
+        emptyFilter(value, filters));
+    });
+  }
+
   useEffect(() => {
     if (allFields.length > 0) {
       if (visibleFields === null) {
         setFields(allFields);
       } else {
-        const vFields = allFields
-          .filter((field) => visibleFields
-            .find((visibleField) => visibleField.field === field.columnName));
+        const onlyVisibleField = visibleFields.filter((field) => !field.hidden);
+        const vFields = filterFieldsByVisibility<ProjectViewField | MetaDataColumn>(
+          allFields,
+          onlyVisibleField,
+        );
         setNewFilter(initialFilterState);
         setFields(vFields);
       }
+
+      registerFilterHandlers<ProjectViewField | MetaDataColumn>(allFields);
     }
-    allFields.forEach(field => {
-      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
-        emptyFilter(value, filters));
-    });
   }, [allFields, visibleFields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {

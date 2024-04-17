@@ -15,24 +15,21 @@ import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { MRT_PaginationState, MRT_SortingState } from 'material-react-table';
+import { FilterMatchMode } from 'primereact/api';
 import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
-import QueryBuilder, { Filter } from '../Common/QueryBuilder';
+import { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { replaceHasSequencesNullsWithFalse } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
 import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
-import { filter } from 'd3';
 import DataFilters from '../DataFilters/DataFilters';
-import { FilterMatchMode } from 'primereact/api';
 
 interface SamplesProps {
   groupContext: number | undefined,
