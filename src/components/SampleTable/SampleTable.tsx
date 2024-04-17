@@ -21,7 +21,7 @@ import { Sample } from '../../types/sample.interface';
 import QueryBuilder, { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
 import { replaceHasSequencesNullsWithFalse } from '../../utilities/helperUtils';
-import { getDisplayFields, getSamples, getTotalSamples } from '../../utilities/resourceUtils';
+import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
 import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
@@ -75,39 +75,59 @@ function SampleTable(props: SamplesProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function getFields() {
-      const filterFieldsResponse: ResponseObject = await getDisplayFields(groupContext!, token);
-      if (filterFieldsResponse.status === ResponseType.Success) {
-        setDisplayFields(filterFieldsResponse.data);
-      } else {
+    async function fetchSamplesData() {
+      setIsSamplesLoading(true);
+      try {
+        // Fetch display fields
+        const filterFieldsResponse = await getDisplayFields(groupContext!, token);
+        if (filterFieldsResponse.status === ResponseType.Success) {
+          setDisplayFields(filterFieldsResponse.data);
+        } else {
+          setIsSamplesError((prevState) => ({
+            ...prevState,
+            samplesHeaderError: true,
+            samplesErrorMessage: filterFieldsResponse.message,
+          }));
+        }
+
+        // Fetch all samples data and total count
+        const samplesResponse = await getSamples(token, groupContext!);
+        if (samplesResponse.status === ResponseType.Success) {
+          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
+          setSampleList(sampleDataAltered);
+          setIsSamplesError((prevState) => ({
+            ...prevState,
+            sampleMetadataError: false,
+          }));
+          const count: string = samplesResponse.headers?.get('X-Total-Count')!;
+          setSamplesCount(+count);
+        } else {
+          setIsSamplesError((prevState) => ({
+            ...prevState,
+            sampleMetadataError: true,
+            samplesErrorMessage: samplesResponse.message,
+          }));
+          setSampleList([]);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching samples data:', error);
         setIsSamplesError((prevState) => ({
           ...prevState,
           samplesHeaderError: true,
-          samplesErrorMessage: filterFieldsResponse.message,
-        }));
-        setIsSamplesLoading(false);
-      }
-    }
-    async function getTotalSamplesOverall() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(groupContext!, token);
-      if (totalSamplesResponse.status === ResponseType.Success) {
-        const count: string = totalSamplesResponse.headers?.get('X-Total-Count')!;
-        setTotalSamples(+count);
-      } else {
-        setIsSamplesError((prevState) => ({
-          ...prevState,
           samplesTotalError: true,
-          samplesErrorMessage: totalSamplesResponse.message,
+          sampleMetadataError: true,
+          samplesErrorMessage: 'Error fetching samples data',
         }));
+      } finally {
         setIsSamplesLoading(false);
       }
     }
+
     if (groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
-      setIsSamplesLoading(true);
-      getFields();
-      getTotalSamplesOverall();
+      fetchSamplesData();
     }
   }, [groupContext, token, tokenLoading]);
 
@@ -132,60 +152,6 @@ function SampleTable(props: SamplesProps) {
       setIsSamplesError,
       setSampleTableColumns,
     ],
-  );
-
-  // GET SAMPLES - paginated
-  useEffect(
-    () => {
-    // Only get samples when columns are already populated
-    // effects should trigger getProject -> getHeaders -> this function
-      async function getSamplesList() {
-        let sortString = '';
-        if (sorting.length !== 0) {
-          if (sorting[0].desc === false) {
-            sortString = sorting[0].id;
-          } else {
-            sortString = `-${sorting[0].id}`;
-          }
-        }
-        const searchParams = new URLSearchParams({
-          Page: (samplesPagination.pageIndex + 1).toString(),
-          PageSize: (samplesPagination.pageSize).toString(),
-          filters: queryString,
-          sorts: sortString,
-        });
-        const samplesResponse: ResponseObject =
-          await getSamples(token, groupContext!, searchParams);
-        if (samplesResponse.status === ResponseType.Success) {
-          // changing null values in Has_sequences to false this is a temporary fix. As
-          // most data will be retrieved by redux and this will be handled there.
-          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
-          setSampleList(sampleDataAltered);
-          setIsSamplesError((prevState) => ({ ...prevState, sampleMetadataError: false }));
-          setIsSamplesLoading(false);
-          const count: string = samplesResponse.headers?.get('X-Total-Count')!;
-          setSamplesCount(+count);
-        } else {
-          setIsSamplesLoading(false);
-          setIsSamplesError((prevState) => ({
-            ...prevState,
-            sampleMetadataError: true,
-            samplesErrorMessage: samplesResponse.message,
-          }));
-          setSampleList([]);
-        }
-      }
-      if (sampleTableColumns.length > 0 &&
-        tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
-        getSamplesList();
-      } else {
-        setSampleList([]);
-        setIsSamplesLoading(false);
-      }
-    },
-    [groupContext, samplesPagination.pageIndex, samplesPagination.pageSize,
-      sampleTableColumns, queryString, sorting, token, tokenLoading],
   );
 
   const generateFilename = () => {
@@ -248,7 +214,6 @@ function SampleTable(props: SamplesProps) {
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
-  const totalSamplesDisplay = `Total unfiltered records: ${totalSamples.toLocaleString('en-us')}`;
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
