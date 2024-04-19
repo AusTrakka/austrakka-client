@@ -98,6 +98,9 @@ export interface UserDetails {
   userRoleGroup: UserRoleGroup[],
   created: Date,
   contactEmail: string,
+  isAustrakkaAdmin: boolean,
+  isAustrakkaProcess: boolean,
+  isActive: boolean,
 }
 
 export interface MetaDataColumnMapping {

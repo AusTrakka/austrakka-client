@@ -53,8 +53,6 @@ function SampleTable(props: SamplesProps) {
     pageIndex: 0,
     pageSize: 50,
   });
-  const [columnOrderArrayInitial, setColumnOrderArrayInitial] = useState<string[]>([]);
-  const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [sampleList, setSampleList] = useState<Sample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
