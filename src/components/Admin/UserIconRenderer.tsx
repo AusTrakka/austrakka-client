@@ -4,7 +4,6 @@ import { Tooltip } from '@mui/material';
 
 function renderIcon(rowData: any, size: any = 'small') {
   const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
-  console.log(rowData);
 
   if (!isAusTrakkaAdmin && !isAusTrakkaProcess) {
     return (
