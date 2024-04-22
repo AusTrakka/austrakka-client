@@ -81,7 +81,7 @@ export interface User {
   orgAbbrev: string,
   orgName: string,
   isAustrakkaAdmin: boolean,
-  roleGroups: RoleGroup[],
+  groupRoles: GroupRole[],
   displayName: string,
   createdBy: Date,
   contactEmail: string,
@@ -93,7 +93,7 @@ export interface UserDetails {
   displayName: string,
   orgName: string,
   orgAbbrev: string,
-  roleGroups: RoleGroup[],
+  groupRoles: GroupRole[],
   created: Date,
   contactEmail: string,
 }
@@ -213,7 +213,7 @@ export interface ThresholdAlertDTO {
   recentCount: number;
 }
 
-export interface RoleGroup {
+export interface GroupRole {
   role: {
     id: number,
     name: string,

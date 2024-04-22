@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { RoleGroup } from '../types/dtos';
+import { GroupRole } from '../types/dtos';
 import { getUserGroups } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import { AppState } from '../types/app.interface';
@@ -15,7 +15,7 @@ export interface UserSliceState {
 }
 
 interface FetchUserRolesResponse {
-  roleGroups: RoleGroup[],
+  groupRoles: GroupRole[],
   isAusTrakkaAdmin: boolean,
 }
 
@@ -24,12 +24,12 @@ const fetchUserRoles = createAsyncThunk(
   async (
     token: string,
     thunkAPI,
-  ): Promise<RoleGroup[] | unknown> => {
+  ): Promise<GroupRole[] | unknown> => {
     const groupResponse: ResponseObject = await getUserGroups(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { roleGroups, isAusTrakkaAdmin } = groupResponse.data;
+      const { groupRoles, isAusTrakkaAdmin } = groupResponse.data;
       return thunkAPI
-        .fulfillWithValue({ roleGroups, isAusTrakkaAdmin } as FetchUserRolesResponse);
+        .fulfillWithValue({ groupRoles, isAusTrakkaAdmin } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -52,11 +52,11 @@ const userSlice = createSlice({
         state.loading = LoadingState.SUCCESS;
         const holder = action.payload as FetchUserRolesResponse;
         const data: Record<string, string[]> = {};
-        holder.roleGroups.forEach((roleGroup) => {
-          if (data[roleGroup.group.name]) {
-            data[roleGroup.group.name].push(roleGroup.role.name);
+        holder.groupRoles.forEach((groupRole) => {
+          if (data[groupRole.group.name]) {
+            data[groupRole.group.name].push(groupRole.role.name);
           } else {
-            data[roleGroup.group.name] = [roleGroup.role.name];
+            data[groupRole.group.name] = [groupRole.role.name];
           }
         });
         state.data = data;
