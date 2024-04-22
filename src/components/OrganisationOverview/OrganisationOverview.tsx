@@ -34,14 +34,14 @@ function OrganisationOverview() {
       setGroupStatus(LoadingState.LOADING);
       const groupResponse: ResponseObject = await getUserGroups(token);
       if (groupResponse.status === ResponseType.Success) {
-        const { organisation, userRoleGroup, orgName }:
-        { organisation: { abbreviation: string, id: number },
-          userRoleGroup: UserRoleGroup[], orgName: string } = groupResponse.data;
-          // This is strictly Owner and Everyone groups
-          // Could instead check group organisation, if we want to include ad-hoc org groups
+        const { abbreviation,
+          userRoleGroup,
+          name } = groupResponse.data;
+        // This is strictly Owner and Everyone groups
+        // Could instead check group organisation, if we want to include ad-hoc org groups
         const orgViewerGroups = userRoleGroup.filter((roleGroup: UserRoleGroup) =>
-          (roleGroup.group.name === `${organisation.abbreviation}-Owner`
-                || roleGroup.group.name === `${organisation.abbreviation}-Everyone`)
+          (roleGroup.group.name === `${abbreviation}-Owner`
+                || roleGroup.group.name === `${abbreviation}-Everyone`)
               && (roleGroup.role.name === 'Viewer'))
           .sort((a: any, b: any) => {
             // Owner group first
@@ -51,12 +51,12 @@ function OrganisationOverview() {
             return 0;
           });
         setOrgEveryone(orgViewerGroups.find((roleGroup: UserRoleGroup) =>
-          roleGroup.group.name === `${organisation.abbreviation}-Everyone`));
+          roleGroup.group.name === `${abbreviation}-Everyone`));
         setUserGroups(orgViewerGroups);
         setIsUserGroupsLoading(false);
         setGroupStatus(LoadingState.SUCCESS);
-        setOrganisationName(orgName);
-        setOrgAbbrev(organisation.abbreviation);
+        setOrganisationName(name);
+        setOrgAbbrev(abbreviation);
       } else {
         setGroupStatus(LoadingState.ERROR);
         setGroupStatusMessage(groupResponse.message);

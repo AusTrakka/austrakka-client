@@ -77,11 +77,9 @@ export interface User {
   userId: number,
   objectId: string,
   isActive: boolean,
-  organisation: {
-    id: number,
-    abbreviation: string,
-  }
-  orgName: string,
+  organisationId: number,
+  abbreviation: string,
+  name: string,
   isAustrakkaAdmin: boolean,
   userRoleGroup: UserRoleGroup[],
   displayName: string,
@@ -216,7 +214,6 @@ export interface ThresholdAlertDTO {
 }
 
 export interface UserRoleGroup {
-  user: any,
   role: {
     id: number,
     name: string,
