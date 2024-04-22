@@ -9,6 +9,8 @@ interface RenderGroupedRolesAndGroupsProps {
   user: UserDetails;
   openRoleGroups: string[];
   setOpenRoleGroups: Dispatch<SetStateAction<string[]>>;
+  editing: boolean;
+  setUpdatedUserRoleGroups: Dispatch<SetStateAction<UserRoleGroup[]>>;
 }
 
 const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) => {
@@ -35,7 +37,12 @@ const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) =
 };
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
-  const { userRoleGroups, openRoleGroups, user, setOpenRoleGroups } = props;
+  const { userRoleGroups,
+    openRoleGroups,
+    user,
+    setOpenRoleGroups,
+    editing,
+    setUpdatedUserRoleGroups } = props;
 
   const [personalOrgs, foriegnOrgs, otherGroups] = sortUserRoleGroups(userRoleGroups, user);
 
@@ -44,6 +51,29 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
       (prevOpenRoleGroups.includes(groupName)
         ? prevOpenRoleGroups.filter((name) => name !== groupName)
         : [...prevOpenRoleGroups, groupName]));
+  };
+
+  const handleRoleDelete = (groupName: string, roleName: string) => {
+    setUpdatedUserRoleGroups((prevUserRoleGroups) =>
+      prevUserRoleGroups.reduce((acc, userGroup) => {
+        if (userGroup.group.name === groupName) {
+          if (userGroup.role.name === roleName) {
+            const groupsWithSameName = prevUserRoleGroups.filter(
+              (ug) => ug.group.name === groupName,
+            );
+            if (groupsWithSameName.length === 1) {
+              return acc;
+            }
+          } else {
+            // If the role doesn't match, add the original group object to the accumulator
+            acc.push(userGroup);
+          }
+        } else {
+          // If the group name doesn't match, add the original group object to the accumulator
+          acc.push(userGroup);
+        }
+        return acc;
+      }, [] as UserRoleGroup[]));
   };
 
   const renderGroupHeader = (groupType: string, groupMapSize: number) => (
@@ -95,6 +125,8 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
             groupName={groupName}
             roleNames={roleNames}
             isOpen={openRoleGroups.includes(groupType)}
+            editing={editing}
+            handleRoleDelete={handleRoleDelete}
           />
         ))}
       </>

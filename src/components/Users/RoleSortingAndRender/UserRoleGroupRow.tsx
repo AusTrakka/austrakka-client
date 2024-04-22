@@ -1,14 +1,18 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
+import { Cancel } from '@mui/icons-material';
+import { UserRoleGroup } from '../../../types/dtos';
 
 interface UserRoleGroupRowProps {
   groupName: string;
   roleNames: string[];
   isOpen: boolean;
+  editing: boolean;
+  handleRoleDelete: (groupName: string, roleName: string) => void;
 }
 
 function UserRoleGroupRow(props: UserRoleGroupRowProps) {
-  const { groupName, roleNames, isOpen } = props;
+  const { groupName, roleNames, isOpen, editing, handleRoleDelete } = props;
 
   return (
     isOpen ? (
@@ -21,7 +25,14 @@ function UserRoleGroupRow(props: UserRoleGroupRowProps) {
                   {groupName}
                 </Typography>
                 {roleNames.map((roleName) => (
-                  <Chip key={`${groupName}-${roleName}`} label={roleName} color="primary" variant="outlined" />
+                  <Chip
+                    key={`${groupName}-${roleName}`}
+                    label={roleName}
+                    color={editing ? 'error' : 'primary'}
+                    variant={editing ? 'filled' : 'outlined'}
+                    onDelete={editing ? () => handleRoleDelete(groupName, roleName) : undefined}
+                    deleteIcon={<Cancel />}
+                  />
                 ))}
               </Stack>
             </Collapse>

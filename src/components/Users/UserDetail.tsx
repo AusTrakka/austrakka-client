@@ -4,7 +4,7 @@ import { Alert, Button, Paper, Stack, Switch, Table, TableBody, TableCell, Table
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { getUser } from '../../utilities/resourceUtils';
-import { UserDetails } from '../../types/dtos';
+import { UserDetails, UserRoleGroup } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -73,6 +73,7 @@ function UserDetail() {
   const [editedValues, setEditedValues] = useState<{ [key: string]: any }>({});
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [openRoleGroups, setOpenRoleGroups] = useState<string[]>([]);
+  const [updatedUserRoleGroups, setUpdatedUserRoleGroups] = useState<UserRoleGroup[] | null>(null);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -80,6 +81,9 @@ function UserDetail() {
     'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
     'contactEmail': 'Email',
+    'isAusTrakkaAdmin': 'Austrakka Admin',
+    'isActive': 'Active',
+    'isAusTrakkaProcess': 'Austrakka Process',
   };
 
   useEffect(() => {
@@ -91,6 +95,7 @@ function UserDetail() {
         console.log('User:', userDto);
         setUser(userDto);
         setEditedValues(userDto); // Initialize editedValues with the original user data
+        setUpdatedUserRoleGroups(userDto.userRoleGroup);
       } else {
         setErrMsg('User could not be accessed');
       }
@@ -101,29 +106,67 @@ function UserDetail() {
     }
   }, [userObjectId, token, tokenLoading]);
 
-  const renderRow = (field: keyof UserDetails, value: any) => {
+  useEffect(() => {
+    if (updatedUserRoleGroups) {
+      console.log('Updated user role groups:', updatedUserRoleGroups);
+    }
+  }, [updatedUserRoleGroups]);
+
+  const renderEditableRow = (field: keyof UserDetails, value: any) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setEditedValues((prevValues) => ({
         ...prevValues,
         [field]: event.target.value,
       }));
     };
-    if (editing) {
-      console.log('Field:', field, 'Value:', value, 'typeof value:', typeof value);
-      switch (typeof value) {
-        case 'string':
-          if (field === 'created') {
-            return (
-              <TableRow key={field}>
-                <TableCell width="200em">{readableNames[field] || field}</TableCell>
-                <TableCell>
-                  {field === 'created'
-                    ? isoDateLocalDate(value)
-                    : value}
-                </TableCell>
-              </TableRow>
-            );
-          }
+
+    switch (typeof value) {
+      case 'string':
+        if (field === 'created') {
+          return (
+            <TableRow key={field}>
+              <TableCell width="200em">{readableNames[field] || field}</TableCell>
+              <TableCell>
+                isoDateLocalDate(value)
+              </TableCell>
+            </TableRow>
+          );
+        }
+        return (
+          <TableRow key={field}>
+            <TableCell width="200em">{readableNames[field] || field}</TableCell>
+            <TableCell>
+              <TextField
+                value={editedValues[field] || ''}
+                onChange={handleChange}
+                variant="filled"
+                fullWidth
+                size="small"
+                hiddenLabel
+                inputProps={{ style: { padding: '5px 10px', fontSize: '.9rem' } }}
+              />
+            </TableCell>
+          </TableRow>
+        );
+      case 'boolean':
+        return (
+          <TableRow key={field}>
+            <TableCell width="200em">{readableNames[field] || field}</TableCell>
+            <TableCell>
+              <Switch
+                size="small"
+                checked={editedValues[field] || false}
+                onChange={(event) =>
+                  setEditedValues((prevValues) => ({
+                    ...prevValues,
+                    [field]: event.target.checked,
+                  }))}
+              />
+            </TableCell>
+          </TableRow>
+        );
+      case 'object':
+        if (value === null) {
           return (
             <TableRow key={field}>
               <TableCell width="200em">{readableNames[field] || field}</TableCell>
@@ -138,70 +181,41 @@ function UserDetail() {
               </TableCell>
             </TableRow>
           );
-        case 'boolean':
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>
-                <Switch
-                  size="small"
-                  checked={editedValues[field] || false}
-                  onChange={(event) => setEditedValues((prevValues) => ({
-                    ...prevValues,
-                    [field]: event.target.checked,
-                  }))}
-                />
-              </TableCell>
-            </TableRow>
-          );
-        case 'object':
-          if (value === null) {
-            return (
-              <TableRow key={field}>
-                <TableCell width="200em">{readableNames[field] || field}</TableCell>
-                <TableCell>
-                  <TextField
-                    value={editedValues[field] || ''}
-                    onChange={handleChange}
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          }
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>
-                {field === 'created'
-                  ? isoDateLocalDate(value)
-                  : value}
-              </TableCell>
-            </TableRow>
-          );
-          break;
-        default:
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>{value}</TableCell>
-            </TableRow>
-          );
-      }
+        }
+        break;
+      default:
+        return (
+          <TableRow key={field}>
+            <TableCell width="200em">{readableNames[field] || field}</TableCell>
+            <TableCell>{value}</TableCell>
+          </TableRow>
+        );
     }
+  };
 
-    return (
-      <TableRow key={field}>
-        <TableCell width="200em">{readableNames[field] || field}</TableCell>
-        <TableCell>
-          {field === 'created'
-            ? isoDateLocalDate(value)
-            : value}
-        </TableCell>
-      </TableRow>
-    );
+  const renderNonEditableRow = (field: keyof UserDetails, value: any) => (
+    <TableRow key={field}>
+      <TableCell width="200em">{readableNames[field] || field}</TableCell>
+      <TableCell>
+        {(() => {
+          switch (true) {
+            case field === 'created':
+              return isoDateLocalDate(value);
+            case typeof value === 'boolean':
+              return <Switch disabled checked={value} size="small" />;
+            default:
+              return value;
+          }
+        })()}
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderRow = (field: keyof UserDetails, value: any) => {
+    if (editing) {
+      return renderEditableRow(field, value);
+    }
+    return renderNonEditableRow(field, value);
   };
 
   const onSave = () => {
@@ -250,6 +264,8 @@ function UserDetail() {
                     userRoleGroups={user.userRoleGroup}
                     openRoleGroups={openRoleGroups}
                     setOpenRoleGroups={setOpenRoleGroups}
+                    editing={editing}
+                    setUpdatedUserRoleGroups={setUpdatedUserRoleGroups}
                   />
                 );
               }
