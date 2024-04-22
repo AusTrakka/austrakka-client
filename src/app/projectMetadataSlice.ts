@@ -257,16 +257,11 @@ function calculateUniqueValues(
   data: Sample[],
 ) : Record<string, string[]> {
   const uniqueValues: Record<string, string[]> = {};
-  const fieldDetails = getFieldDetails(fieldNames, projectViewFields);
-  // fields with defined valid values can just be looked up
-  const categoricalFields = fieldDetails.filter(field =>
-    field.canVisualise && field.metaDataColumnValidValues);
-  categoricalFields.forEach(field => {
-    uniqueValues![field.columnName] = field.metaDataColumnValidValues!;
-  });
-  // visualisable string field unique values must be calculated
+  const fieldDetails: ProjectViewField[] = getFieldDetails(fieldNames, projectViewFields);
+  // we calculate unique values for both visualisable categorical and string fields
+  // this means we are ignoring validValues; values won't be in legends if not in data
   const visualisableFields = fieldDetails.filter(field =>
-    field.canVisualise && field.primitiveType === 'string');
+    field.canVisualise && (!field.primitiveType || field.primitiveType === 'string'));
   const valueSets : Record<string, Set<string>> = {};
   visualisableFields.forEach(field => {
     valueSets[field.columnName] = new Set();
