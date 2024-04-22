@@ -1,12 +1,10 @@
 /* eslint-disable no-plusplus */
 import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { Field } from '../types/dtos';
-import getColorScheme from './colourUtils';
+import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from './helperUtils';
-
-const NULL_COLOUR = 'rgb(200,200,200)';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
@@ -20,15 +18,10 @@ export default function mapMetadataToPhylocanvas(
   fieldInformation
     .filter((fi) => fi.canVisualise)
     .forEach((fi) => {
-      const values = fieldUniqueValues[fi.columnName]?.filter(val => val !== 'null') ?? [];
-      const colours = getColorScheme(colorSchemeSelected, values.length);
-      fieldPalettes[fi.columnName] = {};
-      values.forEach((val, index) => {
-        fieldPalettes[fi.columnName][val] = colours[index];
-      });
-      if (fieldUniqueValues[fi.columnName]?.includes('null')) {
-        fieldPalettes[fi.columnName].null = NULL_COLOUR;
-      }
+      fieldPalettes[fi.columnName] = createColourMapping(
+        fieldUniqueValues[fi.columnName] ?? [],
+        colorSchemeSelected,
+      );
     });
 
   const result: PhylocanvasMetadata = {};

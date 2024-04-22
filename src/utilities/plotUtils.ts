@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 
 import { TopLevelSpec } from 'vega-lite';
+import { createColourMapping } from './colourUtils';
 
 // Get the preferred field to populate a selector when fields first loaded
 // If a preferred field is not of the correct type it will simply appear unavailable
@@ -38,28 +39,37 @@ export const legendSpec = {
   orient: 'bottom',
   columns: 6,
   symbolLimit: 0, // no limit
+  labelExpr: "datum.label || 'null'",
 };
 
-// Does not use generic setFieldInSpec, as we handle 'none'
-export const setColorInSpecToValue =
-    (oldSpec: TopLevelSpec | null, colourField: string): TopLevelSpec | null => {
-      if (oldSpec == null) return null;
-      const newSpec: any = { ...oldSpec };
-      if (colourField === 'none') {
-        // Remove colour from encoding
-        const { color, ...newEncoding } = (oldSpec as any).encoding;
-        newSpec.encoding = newEncoding;
-      } else {
-        // Set colour in encoding
-        newSpec.encoding = { ...(oldSpec as any).encoding };
-        newSpec.encoding.color = {
-          field: colourField,
-          scale: { scheme: 'spectral' },
-          legend: legendSpec,
-        };
-      }
-      return newSpec as TopLevelSpec;
+// Takes in the known set of unique values for the field and uses these for our own colour mapping
+//   and legend sort order (override Vega's non-natural-sort order)
+export const setColorInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  colourField: string,
+  uniqueValues: string[],
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+  const newSpec: any = { ...oldSpec };
+  if (colourField === 'none') {
+    // Remove colour from encoding
+    const { color, ...newEncoding } = (oldSpec as any).encoding;
+    newSpec.encoding = newEncoding;
+  } else {
+    // Set colour in encoding
+    const colourMapping = createColourMapping(uniqueValues, 'spectral');
+    newSpec.encoding = { ...(oldSpec as any).encoding };
+    newSpec.encoding.color = {
+      field: colourField,
+      scale: {
+        domain: uniqueValues,
+        range: uniqueValues.map((val) => colourMapping[val]),
+      },
+      legend: legendSpec,
     };
+  }
+  return newSpec as TopLevelSpec;
+};
 
 // Facet row. Does not use generic setFieldInSpec, as we handle 'none'
 export const setRowInSpecToValue =

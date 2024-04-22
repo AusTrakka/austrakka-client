@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getThresholdAlerts } from '../../../utilities/resourceUtils';
 import { AppState } from '../../../types/app.interface';

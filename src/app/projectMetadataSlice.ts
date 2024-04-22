@@ -8,8 +8,8 @@ import { Sample } from '../types/sample.interface';
 import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
-import { replaceHasSequencesNullsWithFalse } from '../utilities/helperUtils';
+import { SAMPLE_ID_FIELD, HAS_SEQUENCES } from '../constants/metadataConsts';
+import { replaceNullsWithEmpty, replaceHasSequencesNullsWithFalse } from '../utilities/helperUtils';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 
@@ -274,8 +274,7 @@ function calculateUniqueValues(
   data.forEach(sample => {
     visualisableFields.forEach(field => {
       const value = sample[field.columnName];
-      // we conflate the string 'null' with empty values, but there may not be a better option
-      valueSets[field.columnName].add(value === null ? 'null' : value);
+      valueSets[field.columnName].add(value === null ? '' : value);
     });
   });
   visualisableFields.forEach(field => {
@@ -398,12 +397,13 @@ export const projectMetadataSlice = createSlice({
       const { projectAbbrev, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewResponse;
       const { viewFields } = state.data[projectAbbrev].views[viewIndex];
-      // Each returned view is a superset of the previous; we always replace the data
-      // I will go through all the data and if the field is has_sequence
-      // I will change all null values to false
-      replaceHasSequencesNullsWithFalse(data);
+      // For Has_sequences only
+      if (viewFields.includes(HAS_SEQUENCES)) {
+        replaceHasSequencesNullsWithFalse(data);
+      }
+      replaceNullsWithEmpty(data);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
-
+      // Each returned view is a superset of the previous; we always replace the data
       state.data[projectAbbrev].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap

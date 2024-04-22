@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { QcStatus } from './qc.status.interface';
 import { AppState } from '../../../types/app.interface';

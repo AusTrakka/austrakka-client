@@ -40,6 +40,26 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   // Render plot by creating vega view
   useEffect(() => {
+    // Modifies compiledSpec in place
+    const fixRowWidths = (compiledSpec: Spec) => {
+      if (!compiledSpec.signals) { compiledSpec.signals = []; }
+      // -80 compensates for default Vega facet padding values
+      const newSignal = {
+        name: 'child_width',
+        init: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+        on: [{
+          events: 'window:resize',
+          update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+        }],
+      };
+      const signalIndex: number = compiledSpec.signals.findIndex(sig => sig.name === 'child_width');
+      if (signalIndex > -1) {
+        compiledSpec.signals[signalIndex] = newSignal;
+      } else {
+        compiledSpec.signals.push(newSignal);
+      }
+    };
+
     const createVegaView = async () => {
       if (vegaView) {
         vegaView.finalize();
@@ -62,22 +82,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       (compiledSpec.data![dataIndex] as InlineData).values = mutableFilteredData ?? [];
       // Handle faceted rows in plot using responsive width
       if ((spec as any)?.encoding?.row) {
-        if (!compiledSpec.signals) { compiledSpec.signals = []; }
-        // -80 compensates for default Vega facet padding values
-        const newSignal = {
-          name: 'child_width',
-          init: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
-          on: [{
-            events: 'window:resize',
-            update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
-          }],
-        };
-        const signalIndex: number = compiledSpec.signals.findIndex(sig => sig.name === 'child_width');
-        if (signalIndex > -1) {
-          compiledSpec.signals[signalIndex] = newSignal;
-        } else {
-          compiledSpec.signals.push(newSignal);
-        }
+        fixRowWidths(compiledSpec);
       }
 
       setLoading(true);
@@ -89,7 +94,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    // TODO what if filtered data is filtered to empty? if([]) ok?
     if (spec &&
         metadata?.loadingState &&
         (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
