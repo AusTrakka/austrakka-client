@@ -172,7 +172,7 @@ function Users() {
       header: 'Email',
       editor: (options: ColumnEditorOptions) => emailEditor(options),
       body: emailBodyTemplate },
-    { field: 'abbreviation', header: 'Organisation' },
+    { field: 'orgAbbrev', header: 'Organisation' },
   ];
 
   useEffect(() => {

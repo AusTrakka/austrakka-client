@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { UserRoleGroup } from '../types/dtos';
+import { RoleGroup } from '../types/dtos';
 import { getUserGroups } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import { AppState } from '../types/app.interface';
@@ -15,7 +15,7 @@ export interface UserSliceState {
 }
 
 interface FetchUserRolesResponse {
-  userRoleGroup: UserRoleGroup[],
+  roleGroups: RoleGroup[],
   isAusTrakkaAdmin: boolean,
 }
 
@@ -24,12 +24,12 @@ const fetchUserRoles = createAsyncThunk(
   async (
     token: string,
     thunkAPI,
-  ): Promise<UserRoleGroup[] | unknown> => {
+  ): Promise<RoleGroup[] | unknown> => {
     const groupResponse: ResponseObject = await getUserGroups(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { userRoleGroup, isAusTrakkaAdmin } = groupResponse.data;
+      const { roleGroups, isAusTrakkaAdmin } = groupResponse.data;
       return thunkAPI
-        .fulfillWithValue({ userRoleGroup, isAusTrakkaAdmin } as FetchUserRolesResponse);
+        .fulfillWithValue({ roleGroups, isAusTrakkaAdmin } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -52,7 +52,7 @@ const userSlice = createSlice({
         state.loading = LoadingState.SUCCESS;
         const holder = action.payload as FetchUserRolesResponse;
         const data: Record<string, string[]> = {};
-        holder.userRoleGroup.forEach((roleGroup) => {
+        holder.roleGroups.forEach((roleGroup) => {
           if (data[roleGroup.group.name]) {
             data[roleGroup.group.name].push(roleGroup.role.name);
           } else {

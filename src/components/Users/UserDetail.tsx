@@ -67,7 +67,7 @@ function UserDetail() {
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
-                    userRoleGroups={user.userRoleGroup}
+                    userRoleGroups={user.roleGroups}
                     openRoleGroups={openRoleGroups}
                     setOpenRoleGroups={setOpenRoleGroups}
                   />
