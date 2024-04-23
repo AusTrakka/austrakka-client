@@ -3,13 +3,13 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: 5492-tf-apply-destroy-pipelines # TODO: update this
+      ref: UAT
       endpoint: AusTrakka
     - repository: Infra
       type: github
       endpoint: AusTrakka
       name: AusTrakka/austrakka2-infra
-      ref: 5361-uat-env # TODO: this needs to point to UAT once it's merged through
+      ref: UAT
 
 trigger:
   branches:
