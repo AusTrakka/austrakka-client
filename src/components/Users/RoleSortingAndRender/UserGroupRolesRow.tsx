@@ -1,7 +1,6 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel } from '@mui/icons-material';
-import { UserRoleGroup } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
   groupName: string;

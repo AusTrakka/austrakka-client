@@ -8,9 +8,9 @@ interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
   user: UserDetails;
   openGroupRoles: string[];
-  setOpenRoleGroups: Dispatch<SetStateAction<string[]>>;
+  setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
-  setUpdatedUserRoleGroups: Dispatch<SetStateAction<UserRoleGroup[]>>;
+  setUpdatedGroupRoles: Dispatch<SetStateAction<GroupRole[]>>;
 }
 
 const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
@@ -54,7 +54,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
   };
 
   const handleRoleDelete = (groupName: string, roleName: string) => {
-    setUpdatedUserRoleGroups((prevUserRoleGroups) =>
+    setUpdatedGroupRoles((prevUserRoleGroups) =>
       prevUserRoleGroups.reduce((acc, userGroup) => {
         if (userGroup.group.name === groupName) {
           if (userGroup.role.name === roleName) {
@@ -73,7 +73,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
           acc.push(userGroup);
         }
         return acc;
-      }, [] as UserRoleGroup[]));
+      }, [] as GroupRole[]));
   };
 
   const renderGroupHeader = (groupType: string, groupMapSize: number) => (

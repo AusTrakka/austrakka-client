@@ -2,9 +2,8 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Button, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
 import { Cancel, Edit, Save } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers';
 import { getUser } from '../../utilities/resourceUtils';
-import { UserDetails, UserRoleGroup } from '../../types/dtos';
+import { GroupRole, UserDetails } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -73,7 +72,7 @@ function UserDetail() {
   const [editedValues, setEditedValues] = useState<{ [key: string]: any }>({});
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
-  const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[] | null>(null);
+  const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[]>([]);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -95,7 +94,7 @@ function UserDetail() {
         console.log('User:', userDto);
         setUser(userDto);
         setEditedValues(userDto); // Initialize editedValues with the original user data
-        setUpdatedUserRoleGroups(userDto.userRoleGroup);
+        setUpdatedGroupRoles(userDto.groupRoles);
       } else {
         setErrMsg('User could not be accessed');
       }
@@ -107,10 +106,10 @@ function UserDetail() {
   }, [userObjectId, token, tokenLoading]);
 
   useEffect(() => {
-    if (updatedUserRoleGroups) {
-      console.log('Updated user role groups:', updatedUserRoleGroups);
+    if (updatedGroupRoles) {
+      console.log('Updated user role groups:', updatedGroupRoles);
     }
-  }, [updatedUserRoleGroups]);
+  }, [updatedGroupRoles]);
 
   const renderEditableRow = (field: keyof UserDetails, value: any) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -127,7 +126,7 @@ function UserDetail() {
             <TableRow key={field}>
               <TableCell width="200em">{readableNames[field] || field}</TableCell>
               <TableCell>
-                isoDateLocalDate(value)
+                {isoDateLocalDate(value)}
               </TableCell>
             </TableRow>
           );
@@ -261,11 +260,11 @@ function UserDetail() {
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
-                    userGroupRoles={user.userGroupRoles}
+                    userGroupRoles={user.groupRoles}
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editing}
-                    setUpdatedUserRoleGroups={setUpdatedGroupRoles}
+                    setUpdatedGroupRoles={setUpdatedGroupRoles}
                   />
                 );
               }
