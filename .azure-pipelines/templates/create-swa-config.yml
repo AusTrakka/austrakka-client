@@ -5,7 +5,7 @@ parameters:
     type: string
   - name: workingDirectory
     type: string
-    default: $(Pipeline.Workspace)
+    default: $(Build.Repository.LocalPath)
 
 steps:
   - task: PowerShell@2
