@@ -2,7 +2,7 @@
 // Implements elements common to all plot types
 
 import React, { useEffect, useRef, useState } from 'react';
-import { parse, View as VegaView } from 'vega';
+import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
@@ -17,7 +17,7 @@ import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 
 interface VegaDataPlotProps {
-  spec: TopLevelSpec | null,
+  spec: TopLevelSpec | Spec | null,
   projectAbbrev: string | undefined,
 }
 
@@ -44,8 +44,20 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       if (vegaView) {
         vegaView.finalize();
       }
-      const compiledSpec = compile(spec!).spec;
+      // Don't compile if spec is vega. If unspecified, assume vega-lite
+      let compiledSpec: Spec;
+      if (spec?.$schema && spec.$schema.includes('schema/vega/')) {
+        compiledSpec = spec as Spec;
+      } else {
+        compiledSpec = compile((spec as TopLevelSpec)!).spec;
+      }
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
+      // TODO show a warning on the UI as well
+      if (dataIndex === -1) {
+        // eslint-disable-next-line no-console
+        console.error('Bad plot spec: inputdata slot not found in spec');
+        return;
+      }
       // check if the filtered datastate is the same as before
       (compiledSpec.data![dataIndex] as InlineData).values = mutableFilteredData ?? [];
       // Handle faceted rows in plot using responsive width

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 
-interface UserRoleGroupRowProps {
+interface UserGroupRolesRowProps {
   groupName: string;
   roleNames: string[];
   isOpen: boolean;
 }
 
-function UserRoleGroupRow(props: UserRoleGroupRowProps) {
+function UserGroupRolesRow(props: UserGroupRolesRowProps) {
   const { groupName, roleNames, isOpen } = props;
 
   return (
@@ -33,4 +33,4 @@ function UserRoleGroupRow(props: UserRoleGroupRowProps) {
   );
 }
 
-export default UserRoleGroupRow;
+export default UserGroupRolesRow;

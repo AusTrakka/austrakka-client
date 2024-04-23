@@ -15,10 +15,11 @@ function UserDetail() {
   const { token, tokenLoading } = useApi();
   const [user, setUser] = useState<UserDetails | null>();
   const [errMsg, setErrMsg] = useState<string | null>();
-  const [openRoleGroups, setOpenRoleGroups] = useState<string[]>([]);
+  const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
     'orgName': 'Organisation',
+    'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
     'contactEmail': 'Email',
   };
@@ -61,14 +62,14 @@ function UserDetail() {
               if (typeof value !== 'object' || value === null) {
                 return renderRow(readableNames[field] || field, value);
               }
-              if (field === 'userRoleGroup') {
+              if (field === 'groupRoles') {
                 return (
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
-                    userRoleGroups={user.userRoleGroup}
-                    openRoleGroups={openRoleGroups}
-                    setOpenRoleGroups={setOpenRoleGroups}
+                    userGroupRoles={user.groupRoles}
+                    openGroupRoles={openGroupRoles}
+                    setOpenGroupRoles={setOpenGroupRoles}
                   />
                 );
               }
