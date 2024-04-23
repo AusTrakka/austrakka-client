@@ -1,0 +1,38 @@
+steps:
+  - task: PowerShell@2
+    displayName: Export terraform output
+    inputs:
+      targetType: 'inline'
+      script: |
+        $json = Get-Content @(Get-ChildItem $(buildDir)/tf/*.json)[0].FullName | Out-String | ConvertFrom-Json
+        Write-Host "##vso[task.setvariable variable=swa_token;issecret=true]$($json.static_site_api_key.value)"
+        Write-Host "##vso[task.setvariable variable=appName]$($json.static_site_resource_name.value)"
+        Write-Host "##vso[task.setvariable variable=resourceGroup]$($json.austrakka_app_rg.value)"
+        Write-Host "##vso[task.setvariable variable=VITE_AT_CLIENT_ID]$($json.frontend_app_id.value)"
+        Write-Host "##vso[task.setvariable variable=VITE_AT_TENANT_ID]$($json.tenant_id.value)"
+        Write-Host "##vso[task.setvariable variable=VITE_API_SCOPE]$($json.backend_scope.value)"
+        Write-Host "##vso[task.setvariable variable=VITE_REACT_API_URL]$($json.api_url.value)"
+  - task: Npm@1
+    displayName: 'npm ci'
+    inputs:
+      workingDir: $(sourceDir)/client
+      command: 'custom'
+      customCommand: 'ci'
+  - task: Npm@1
+    displayName: 'npm run build'
+    inputs:
+      workingDir: $(sourceDir)/client
+      command: 'custom'
+      customCommand: 'run build'
+  - template: create-swa-config.yml
+    parameters:
+      appName: $(appName)
+      resourceGroup: $(resourceGroup)
+      workingDirectory: $(sourceDir)/client
+  - task: AzureStaticWebApp@0
+    displayName: 'Deploy SWA'
+    inputs:
+      workingDirectory: $(sourceDir)/client
+      app_location: 'dist'
+      skip_app_build: true
+      azure_static_web_Apps_api_token: $(swa_token)

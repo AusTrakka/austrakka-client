@@ -1,29 +1,29 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { TableRow, TableCell, IconButton, Typography } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import UserRoleGroupRow from './UserRoleGroupRow';
-import { UserDetails, UserRoleGroup } from '../../../types/dtos';
+import UserGroupRolesRow from './UserGroupRolesRow';
+import { UserDetails, GroupRole } from '../../../types/dtos';
 
 interface RenderGroupedRolesAndGroupsProps {
-  userRoleGroups: UserRoleGroup[];
+  userGroupRoles: GroupRole[];
   user: UserDetails;
-  openRoleGroups: string[];
-  setOpenRoleGroups: Dispatch<SetStateAction<string[]>>;
+  openGroupRoles: string[];
+  setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
 }
 
-const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) => {
-  const personalOrgs = userRoleGroups.filter(
+const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
+  const personalOrgs = userGroupRoles.filter(
     (group) =>
-      group.group.organisation?.abbreviation === user.orgName,
+      group.group.organisation?.abbreviation === user.orgAbbrev,
   );
 
-  const foriegnOrgs = userRoleGroups.filter(
+  const foriegnOrgs = userGroupRoles.filter(
     (group) =>
-      group.group.organisation?.abbreviation !== user.orgName &&
+      group.group.organisation?.abbreviation !== user.orgAbbrev &&
         group.group.organisation?.abbreviation !== undefined,
   );
 
-  const otherGroups = userRoleGroups.filter(
+  const otherGroups = userGroupRoles.filter(
     (group) =>
       !personalOrgs.includes(group) &&
         !foriegnOrgs.includes(group) &&
@@ -35,15 +35,15 @@ const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) =
 };
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
-  const { userRoleGroups, openRoleGroups, user, setOpenRoleGroups } = props;
+  const { userGroupRoles, openGroupRoles, user, setOpenGroupRoles } = props;
 
-  const [personalOrgs, foriegnOrgs, otherGroups] = sortUserRoleGroups(userRoleGroups, user);
+  const [personalOrgs, foriegnOrgs, otherGroups] = sortGroupRoles(userGroupRoles, user);
 
-  const handleRoleGroupToggle = (groupName: string) => {
-    setOpenRoleGroups((prevOpenRoleGroups) =>
-      (prevOpenRoleGroups.includes(groupName)
-        ? prevOpenRoleGroups.filter((name) => name !== groupName)
-        : [...prevOpenRoleGroups, groupName]));
+  const handleGroupRoleToggle = (groupName: string) => {
+    setOpenGroupRoles((prevOpenGroupRoles) =>
+      (prevOpenGroupRoles.includes(groupName)
+        ? prevOpenGroupRoles.filter((name) => name !== groupName)
+        : [...prevOpenGroupRoles, groupName]));
   };
 
   const renderGroupHeader = (groupType: string, groupMapSize: number) => (
@@ -53,10 +53,10 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
           <IconButton
             aria-label="expand row"
             size="small"
-            onClick={() => handleRoleGroupToggle(groupType)}
+            onClick={() => handleGroupRoleToggle(groupType)}
             disabled={groupMapSize === 0}
           >
-            {openRoleGroups.includes(groupType) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            {openGroupRoles.includes(groupType) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
           {
           groupMapSize === 0 ? (
@@ -72,10 +72,10 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
     </TableRow>
   );
 
-  const renderRoleGroups = (roleGroups: UserRoleGroup[], groupType: string) => {
+  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string) => {
     const groupMap = new Map<string, { roleNames: string[] }>();
 
-    roleGroups.forEach((userGroup) => {
+    groupRoles.forEach((userGroup) => {
       const groupName = userGroup.group.name;
       const roleName = userGroup.role.name;
 
@@ -90,11 +90,11 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
       <>
         {renderGroupHeader(groupType, groupMap.size)}
         {Array.from(groupMap).map(([groupName, { roleNames }]) => (
-          <UserRoleGroupRow
+          <UserGroupRolesRow
             key={`${groupType}-${groupName}-${roleNames}`}
             groupName={groupName}
             roleNames={roleNames}
-            isOpen={openRoleGroups.includes(groupType)}
+            isOpen={openGroupRoles.includes(groupType)}
           />
         ))}
       </>
@@ -103,9 +103,9 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
   return (
     <>
-      {renderRoleGroups(personalOrgs, 'Home Organisation')}
-      {renderRoleGroups(foriegnOrgs, 'Other Organisations')}
-      {renderRoleGroups(otherGroups, 'Projects and Other Groups')}
+      {renderGroupRoles(personalOrgs, 'Home Organisation')}
+      {renderGroupRoles(foriegnOrgs, 'Other Organisations')}
+      {renderGroupRoles(otherGroups, 'Projects and Other Groups')}
     </>
   );
 }
