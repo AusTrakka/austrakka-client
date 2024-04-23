@@ -1,8 +1,9 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Button, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
+import { Alert, Button, Paper, Snackbar, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
 import { Cancel, Edit, Save } from '@mui/icons-material';
-import { getUser } from '../../utilities/resourceUtils';
+import { path } from 'd3';
+import { getUser, patchUserDetails } from '../../utilities/resourceUtils';
 import { GroupRole, UserDetails } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -16,12 +17,18 @@ interface EditButtonsProps {
   editing: boolean;
   setEditing: Dispatch<SetStateAction<boolean>>;
   onSave: () => void;
+  onCancel: () => void;
   hasSavedChanges: boolean;
 }
 
 // Define the EditButtons component outside the UserDetail component
 function EditButtons(props : EditButtonsProps) {
-  const { editing, setEditing, onSave, hasSavedChanges } = props;
+  const { editing,
+    setEditing,
+    onSave,
+    hasSavedChanges,
+    onCancel } = props;
+
   if (editing) {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
@@ -44,7 +51,7 @@ function EditButtons(props : EditButtonsProps) {
           size="large"
           variant="contained"
           color="error"
-          onClick={() => setEditing(false)}
+          onClick={onCancel}
         >
           Cancel
         </Button>
@@ -69,10 +76,12 @@ function UserDetail() {
   const { token, tokenLoading } = useApi();
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<UserDetails | null>(null);
-  const [editedValues, setEditedValues] = useState<{ [key: string]: any }>({});
+  const [editedValues, setEditedValues] = useState<UserDetails | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[]>([]);
+  const [patchMsg, setPatchMsg] = useState<string | null>(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -93,8 +102,9 @@ function UserDetail() {
         const userDto = userResponse.data as UserDetails;
         console.log('User:', userDto);
         setUser(userDto);
-        setEditedValues(userDto); // Initialize editedValues with the original user data
+        setEditedValues({ ...userDto });
         setUpdatedGroupRoles(userDto.groupRoles);
+        // Initialize editedValues with the original user data
       } else {
         setErrMsg('User could not be accessed');
       }
@@ -105,28 +115,45 @@ function UserDetail() {
     }
   }, [userObjectId, token, tokenLoading]);
 
-  useEffect(() => {
-    if (updatedGroupRoles) {
-      console.log('Updated user role groups:', updatedGroupRoles);
-    }
-  }, [updatedGroupRoles]);
-
-  const renderEditableRow = (field: keyof UserDetails, value: any) => {
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setEditedValues((prevValues) => ({
+  const updateUserGroupRoles = (groupRoles: GroupRole[]) => {
+    setUpdatedGroupRoles(groupRoles);
+    setEditedValues((prevValues) => {
+      if (prevValues === null) return null;
+      return {
         ...prevValues,
-        [field]: event.target.value,
-      }));
+        groupRoles,
+      };
+    });
+  };
+
+  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSnackbar(false);
+  };
+
+  const renderEditableRow = (field: keyof UserDetails, detailValue: any) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { value } = event.target;
+      setEditedValues((prevValues) => {
+        if (prevValues === null) return null;
+        return {
+          ...prevValues,
+          [field]: value,
+        };
+      });
     };
 
-    switch (typeof value) {
+    switch (typeof detailValue) {
       case 'string':
         if (field === 'created') {
           return (
             <TableRow key={field}>
               <TableCell width="200em">{readableNames[field] || field}</TableCell>
               <TableCell>
-                {isoDateLocalDate(value)}
+                {isoDateLocalDate(detailValue)}
               </TableCell>
             </TableRow>
           );
@@ -136,7 +163,7 @@ function UserDetail() {
             <TableCell width="200em">{readableNames[field] || field}</TableCell>
             <TableCell>
               <TextField
-                value={editedValues[field] || ''}
+                value={editedValues?.[field] || ''}
                 onChange={handleChange}
                 variant="filled"
                 fullWidth
@@ -154,24 +181,20 @@ function UserDetail() {
             <TableCell>
               <Switch
                 size="small"
-                checked={editedValues[field] || false}
-                onChange={(event) =>
-                  setEditedValues((prevValues) => ({
-                    ...prevValues,
-                    [field]: event.target.checked,
-                  }))}
+                checked={editedValues?.[field] as boolean || false}
+                onChange={handleChange}
               />
             </TableCell>
           </TableRow>
         );
       case 'object':
-        if (value === null) {
+        if (detailValue === null) {
           return (
             <TableRow key={field}>
               <TableCell width="200em">{readableNames[field] || field}</TableCell>
               <TableCell>
                 <TextField
-                  value={editedValues[field] || ''}
+                  value={editedValues?.[field] as string || ''}
                   onChange={handleChange}
                   variant="outlined"
                   fullWidth
@@ -186,7 +209,7 @@ function UserDetail() {
         return (
           <TableRow key={field}>
             <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>{value}</TableCell>
+            <TableCell>{detailValue}</TableCell>
           </TableRow>
         );
     }
@@ -217,13 +240,36 @@ function UserDetail() {
     return renderNonEditableRow(field, value);
   };
 
-  const onSave = () => {
-    // Save the edited values
-    console.log('Edited values:', editedValues);
+  const pathUserDetails = async () => {
+    const userResponse: ResponseObject = await patchUserDetails(userObjectId!, token, editedValues);
+    if (userResponse.status === ResponseType.Success) {
+      const userDto = userResponse.data as UserDetails;
+      setUser(userDto);
+      setEditedValues({ ...userDto });
+      setUpdatedGroupRoles(userDto.groupRoles);
+      setPatchMsg(userResponse.message);
+    } else {
+      setPatchMsg('User could not be accessed');
+    }
   };
 
-  const hasChanges = Object.entries(editedValues).some(
-    ([field, value]) => value !== user?.[field as keyof UserDetails],
+  const onSave = () => {
+    if (editedValues === null) return;
+    console.log('Saving changes:', editedValues);
+    pathUserDetails();
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    setUpdatedGroupRoles(user!.groupRoles);
+    setEditedValues({ ...user! });
+  };
+
+  const hasChanges =
+  editedValues !== null &&
+  user !== null &&
+  Object.entries(editedValues).some(
+    ([field, value]) => value !== user[field as keyof UserDetails],
   );
 
   return user ? (
@@ -243,8 +289,11 @@ function UserDetail() {
         <EditButtons
           editing={editing}
           setEditing={setEditing}
+          setUpdatedGroupRoles={setUpdatedGroupRoles}
           onSave={onSave}
+          onCancel={handleCancel}
           hasSavedChanges={hasChanges}
+          user={user}
         />
       </Stack>
       {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
@@ -260,11 +309,11 @@ function UserDetail() {
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
-                    userGroupRoles={user.groupRoles}
+                    userGroupRoles={updatedGroupRoles} // Pass the updated group roles
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editing}
-                    setUpdatedGroupRoles={setUpdatedGroupRoles}
+                    updateUserGroupRoles={updateUserGroupRoles}
                   />
                 );
               }
@@ -273,6 +322,13 @@ function UserDetail() {
           </TableBody>
         </Table>
       </TableContainer>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        message={patchMsg}
+        key="topcenter"
+      />
     </div>
   ) : null;
 }

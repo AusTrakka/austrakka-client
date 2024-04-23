@@ -1,17 +1,31 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel } from '@mui/icons-material';
+import { GroupRole } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
   groupName: string;
   roleNames: string[];
   isOpen: boolean;
   editing: boolean;
-  handleRoleDelete: (groupName: string, roleName: string) => void;
+  userGroupRoles: GroupRole[];
+  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
 }
 
 function UserGroupRolesRow(props: UserGroupRolesRowProps) {
-  const { groupName, roleNames, isOpen, editing, handleRoleDelete } = props;
+  const { groupName,
+    roleNames,
+    isOpen,
+    editing,
+    userGroupRoles,
+    updateUserGroupRoles } = props;
+
+  const handleRoleDelete = (roleName: string) => {
+    const updatedRoles = userGroupRoles.filter(
+      (groupRole) => groupRole.role.name !== roleName,
+    );
+    updateUserGroupRoles(updatedRoles);
+  };
 
   return (
     isOpen ? (
@@ -29,7 +43,7 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
                     label={roleName}
                     color={editing ? 'error' : 'primary'}
                     variant={editing ? 'filled' : 'outlined'}
-                    onDelete={editing ? () => handleRoleDelete(groupName, roleName) : undefined}
+                    onDelete={editing ? () => handleRoleDelete(roleName) : undefined}
                     deleteIcon={<Cancel />}
                   />
                 ))}

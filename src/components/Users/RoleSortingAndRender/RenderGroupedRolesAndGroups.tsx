@@ -10,7 +10,7 @@ interface RenderGroupedRolesAndGroupsProps {
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
-  setUpdatedGroupRoles: Dispatch<SetStateAction<GroupRole[]>>;
+  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
 }
 
 const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
@@ -42,7 +42,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
     user,
     setOpenGroupRoles,
     editing,
-    setUpdatedGroupRoles } = props;
+    updateUserGroupRoles } = props;
 
   const [personalOrgs, foriegnOrgs, otherGroups] = sortGroupRoles(userGroupRoles, user);
 
@@ -51,29 +51,6 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
       (prevOpenGroupRoles.includes(groupName)
         ? prevOpenGroupRoles.filter((name) => name !== groupName)
         : [...prevOpenGroupRoles, groupName]));
-  };
-
-  const handleRoleDelete = (groupName: string, roleName: string) => {
-    setUpdatedGroupRoles((prevUserRoleGroups) =>
-      prevUserRoleGroups.reduce((acc, userGroup) => {
-        if (userGroup.group.name === groupName) {
-          if (userGroup.role.name === roleName) {
-            const groupsWithSameName = prevUserRoleGroups.filter(
-              (ug) => ug.group.name === groupName,
-            );
-            if (groupsWithSameName.length === 1) {
-              return acc;
-            }
-          } else {
-            // If the role doesn't match, add the original group object to the accumulator
-            acc.push(userGroup);
-          }
-        } else {
-          // If the group name doesn't match, add the original group object to the accumulator
-          acc.push(userGroup);
-        }
-        return acc;
-      }, [] as GroupRole[]));
   };
 
   const renderGroupHeader = (groupType: string, groupMapSize: number) => (
@@ -96,7 +73,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
           ) : (
             <Typography variant="body2">{groupType}</Typography>
           )
-}
+          }
         </div>
       </TableCell>
     </TableRow>
@@ -126,7 +103,8 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
             roleNames={roleNames}
             isOpen={openGroupRoles.includes(groupType)}
             editing={editing}
-            handleRoleDelete={handleRoleDelete}
+            userGroupRoles={userGroupRoles}
+            updateUserGroupRoles={updateUserGroupRoles}
           />
         ))}
       </>
