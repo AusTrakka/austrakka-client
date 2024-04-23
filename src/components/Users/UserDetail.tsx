@@ -72,8 +72,8 @@ function UserDetail() {
   const [user, setUser] = useState<UserDetails | null>(null);
   const [editedValues, setEditedValues] = useState<{ [key: string]: any }>({});
   const [errMsg, setErrMsg] = useState<string | null>(null);
-  const [openRoleGroups, setOpenRoleGroups] = useState<string[]>([]);
-  const [updatedUserRoleGroups, setUpdatedUserRoleGroups] = useState<UserRoleGroup[] | null>(null);
+  const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
+  const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[] | null>(null);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -256,16 +256,16 @@ function UserDetail() {
               if (typeof value !== 'object' || value === null) {
                 return renderRow(field as keyof UserDetails, value);
               }
-              if (field === 'userRoleGroup') {
+              if (field === 'groupRoles') {
                 return (
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
-                    userRoleGroups={user.userRoleGroup}
-                    openRoleGroups={openRoleGroups}
-                    setOpenRoleGroups={setOpenRoleGroups}
+                    userGroupRoles={user.userGroupRoles}
+                    openGroupRoles={openGroupRoles}
+                    setOpenGroupRoles={setOpenGroupRoles}
                     editing={editing}
-                    setUpdatedUserRoleGroups={setUpdatedUserRoleGroups}
+                    setUpdatedUserRoleGroups={setUpdatedGroupRoles}
                   />
                 );
               }

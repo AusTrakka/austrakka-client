@@ -3,7 +3,7 @@ import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mu
 import { Cancel } from '@mui/icons-material';
 import { UserRoleGroup } from '../../../types/dtos';
 
-interface UserRoleGroupRowProps {
+interface UserGroupRolesRowProps {
   groupName: string;
   roleNames: string[];
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface UserRoleGroupRowProps {
   handleRoleDelete: (groupName: string, roleName: string) => void;
 }
 
-function UserRoleGroupRow(props: UserRoleGroupRowProps) {
+function UserGroupRolesRow(props: UserGroupRolesRowProps) {
   const { groupName, roleNames, isOpen, editing, handleRoleDelete } = props;
 
   return (
@@ -44,4 +44,4 @@ function UserRoleGroupRow(props: UserRoleGroupRowProps) {
   );
 }
 
-export default UserRoleGroupRow;
+export default UserGroupRolesRow;
