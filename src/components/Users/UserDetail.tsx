@@ -1,10 +1,10 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Button, Paper, Snackbar, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
+import { Alert, AlertColor, Autocomplete, Button, Paper, Snackbar, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
 import { Cancel, Edit, Save } from '@mui/icons-material';
-import { path } from 'd3';
-import { getUser, patchUserDetails } from '../../utilities/resourceUtils';
-import { GroupRole, UserDetails } from '../../types/dtos';
+import { getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
+import { GroupRole, Role, UserDetails } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -77,11 +77,16 @@ function UserDetail() {
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<UserDetails | null>(null);
   const [editedValues, setEditedValues] = useState<UserDetails | null>(null);
+  const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[]>([]);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [allRoles, setAllRoles] = useState<Role[]>([]);
+  const [allOrgs, setAllOrgs] = useState<any[]>([]);
+  const [patchSeverity, setPatchSeverity] = useState<string>('success');
+  const [orgChanged, setOrgChanged] = useState<boolean>(false);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -93,6 +98,12 @@ function UserDetail() {
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
   };
+
+  const nonDisplayFields = [
+    'orgAbbrev',
+    'isAusTrakkaAdmin',
+    'isAusTrakkaProcess',
+  ];
 
   useEffect(() => {
     const updateUser = async () => {
@@ -114,6 +125,42 @@ function UserDetail() {
       updateUser();
     }
   }, [userObjectId, token, tokenLoading]);
+
+  useEffect(() => {
+    const getOrgData = async () => {
+      const userResponse: ResponseObject = await getOrgansations(false, token);
+      if (userResponse.status === ResponseType.Success) {
+        const orgData = userResponse.data;
+        console.log('Orgs:', orgData);
+        setAllOrgs(orgData);
+      } else {
+        setErrMsg('Organisations could not be accessed');
+        setDataError(true);
+      }
+    };
+
+    if (token && tokenLoading === LoadingState.SUCCESS) {
+      getOrgData();
+    }
+  }, [token, tokenLoading]);
+
+  useEffect(() => {
+    const getRolesData = async () => {
+      const userResponse: ResponseObject = await getRoles(token);
+      if (userResponse.status === ResponseType.Success) {
+        const rolesData = userResponse.data as Role[];
+        console.log('Roles:', rolesData);
+        setAllRoles(rolesData);
+      } else {
+        setDataError(true);
+        setErrMsg('Organisations could not be accessed');
+      }
+    };
+
+    if (token && tokenLoading === LoadingState.SUCCESS) {
+      getRolesData();
+    }
+  }, [token, tokenLoading]);
 
   const updateUserGroupRoles = (groupRoles: GroupRole[]) => {
     setUpdatedGroupRoles(groupRoles);
@@ -154,6 +201,56 @@ function UserDetail() {
               <TableCell width="200em">{readableNames[field] || field}</TableCell>
               <TableCell>
                 {isoDateLocalDate(detailValue)}
+              </TableCell>
+            </TableRow>
+          );
+        }
+        if (field === 'orgName') {
+          return (
+            <TableRow key={field}>
+              <TableCell width="200em">{readableNames[field] || field}</TableCell>
+              <TableCell>
+                <Autocomplete
+                  options={allOrgs.map((org) => org.name)}
+                  disableClearable
+                  getOptionLabel={(option) => option.name ?? option}
+                  value={editedValues?.orgName || null}
+                  onChange={(event, newValue) => {
+                    console.log('New Value:', newValue);
+                    setOrgChanged(true);
+                    setEditedValues((prevValues) => {
+                      if (prevValues === null) return null;
+                      return {
+                        ...prevValues,
+                        [field]: newValue,
+                        'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation || prevValues.orgAbbrev,
+                      };
+                    });
+                  }}
+                  renderOption={(props, option) => (
+                    <li {...props} style={{ fontSize: '0.9em' }}>
+                      {option}
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      fullWidth
+                      hiddenLabel
+                      variant="filled"
+                      InputProps={{
+                        ...params.InputProps,
+                        inputProps: {
+                          ...params.inputProps,
+                          style: {
+                            fontSize: '0.9em',
+                          },
+                        },
+                      }}
+                    />
+                  )}
+                />
               </TableCell>
             </TableRow>
           );
@@ -213,6 +310,7 @@ function UserDetail() {
           </TableRow>
         );
     }
+    return null;
   };
 
   const renderNonEditableRow = (field: keyof UserDetails, value: any) => (
@@ -240,7 +338,7 @@ function UserDetail() {
     return renderNonEditableRow(field, value);
   };
 
-  const pathUserDetails = async () => {
+  const editUserDetails = async () => {
     const userResponse: ResponseObject = await patchUserDetails(userObjectId!, token, editedValues);
     if (userResponse.status === ResponseType.Success) {
       const userDto = userResponse.data as UserDetails;
@@ -248,21 +346,25 @@ function UserDetail() {
       setEditedValues({ ...userDto });
       setUpdatedGroupRoles(userDto.groupRoles);
       setPatchMsg(userResponse.message);
+      setPatchSeverity('success');
     } else {
       setPatchMsg('User could not be accessed');
+      setPatchSeverity('error');
     }
+    setOpenSnackbar(true);
   };
 
   const onSave = () => {
     if (editedValues === null) return;
     console.log('Saving changes:', editedValues);
-    pathUserDetails();
+    editUserDetails();
   };
 
   const handleCancel = () => {
     setEditing(false);
     setUpdatedGroupRoles(user!.groupRoles);
     setEditedValues({ ...user! });
+    setOrgChanged(false);
   };
 
   const hasChanges =
@@ -272,8 +374,9 @@ function UserDetail() {
     ([field, value]) => value !== user[field as keyof UserDetails],
   );
 
-  return user ? (
+  return (user && !dataError) ? (
     <div>
+
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -289,19 +392,20 @@ function UserDetail() {
         <EditButtons
           editing={editing}
           setEditing={setEditing}
-          setUpdatedGroupRoles={setUpdatedGroupRoles}
           onSave={onSave}
           onCancel={handleCancel}
           hasSavedChanges={hasChanges}
-          user={user}
         />
       </Stack>
+      {orgChanged ?
+        <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
+        : null}
       {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>
           <TableBody>
             {Object.entries(user).map(([field, value]) => {
-              if (typeof value !== 'object' || value === null) {
+              if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
                 return renderRow(field as keyof UserDetails, value);
               }
               if (field === 'groupRoles') {
@@ -326,9 +430,12 @@ function UserDetail() {
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleClose}
-        message={patchMsg}
-        key="topcenter"
-      />
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleClose} severity={patchSeverity as AlertColor}>
+          {patchMsg}
+        </Alert>
+      </Snackbar>
     </div>
   ) : null;
 }
