@@ -245,3 +245,9 @@ export interface DataSetEntry {
   uploadedDate: Date;
   fields: string[];
 }
+
+export interface Role {
+  roleId: number,
+  name: string,
+  description: string,
+}
