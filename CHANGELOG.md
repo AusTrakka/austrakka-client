@@ -5,8 +5,16 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 
 ## Unreleased
 
+### Added
+- Plot colouring now uses a neutral (grey) value for null metadata values.
+
 ### Changed
-- Plots may now be specified as Vega, instead of Vega-Lite
+- Plots may now optionally be specified as Vega, instead of Vega-Lite.
+- All legends (trees and plots) now list only values present in the data itself, even if the field is a categorical field with additional valid values.
+
+### Fixed
+- Has_sequences field will no longer display "false" values while the field is still loading; instead it will appear, correctly, as empty
+- Reinstate using a neutral (grey) value for null metadata values on trees.
 
 ## 2024-04-12
 
