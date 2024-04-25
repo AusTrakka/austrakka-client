@@ -4,7 +4,6 @@ import { StCounts } from './st.counts.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 // eslint-disable-next-line import/no-cycle
-import { AppState } from '../../../types/app.interface';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
 import type { RootState } from '../../../app/store';
 import { ResponseObject } from '../../../types/responseObject.interface';
@@ -57,7 +56,7 @@ const stCountsSlice = createSlice({
   },
 });
 
-export const selectStCounts = (state: AppState) => state.stCountsState;
+export const selectStCounts = (state: RootState) => state.stCountsState;
 
 // selectAggregatedStCounts: Aggregates sample counts based on ST
 export const selectAggregatedStCounts = createSelector(

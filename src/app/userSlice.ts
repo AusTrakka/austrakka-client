@@ -5,7 +5,7 @@ import { ResponseType } from '../constants/responseType';
 import { GroupRole } from '../types/dtos';
 import { getUserGroups } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import { AppState } from '../types/app.interface';
+import type { RootState } from '../app/store';
 
 export interface UserSliceState {
   data: Record<string, string[]>,
@@ -70,6 +70,6 @@ const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
-export const selectUserState = (state: AppState) : UserSliceState => state.userState;
+export const selectUserState = (state: RootState) : UserSliceState => state.userState;
 
 export { fetchUserRoles };
