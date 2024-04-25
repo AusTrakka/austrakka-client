@@ -5,7 +5,7 @@ import { ResponseType } from '../constants/responseType';
 import { GroupRole } from '../types/dtos';
 import { getUserGroups } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import type { RootState } from '../app/store';
+import type { RootState } from './store';
 
 export interface UserSliceState {
   data: Record<string, string[]>,
