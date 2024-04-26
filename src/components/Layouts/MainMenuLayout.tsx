@@ -6,7 +6,7 @@ import {
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
 } from '@mui/icons-material/';
 import {
   Box, Drawer, IconButton, List,
@@ -59,6 +59,11 @@ const pages = [
     link: '/users',
     icon: <People />,
   },
+  {
+    title: 'Fields',
+    link: '/fields',
+    icon: <ViewColumn />,
+  },
 ];
 
 function MainMenuLayout() {
@@ -79,6 +84,7 @@ function MainMenuLayout() {
     proformas: 'ProFormas',
     members: 'Members',
     users: 'Users',
+    fields: 'Fields',
     datasets: 'Datasets',
   };
 

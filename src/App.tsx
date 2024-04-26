@@ -31,6 +31,7 @@ import { msalInstance } from './utilities/authUtils';
 import UserDetail from './components/Users/UserDetail';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
+import Fields from './components/Fields/Fields';
 
 function App() {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ function App() {
                 <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                 <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
+                <Route path="fields" element={<Fields />} />
                 <Route path="users/:userObjectId" element={<UserDetail />} />
               </Route>
               <Route path="*" element={<Navigate to="/" />} />

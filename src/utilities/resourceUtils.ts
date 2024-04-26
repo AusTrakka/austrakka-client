@@ -34,6 +34,7 @@ export const getGroupProFormaVersions = (groupId: number, token: string) => call
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
 export const getProformaVersions = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+export const getFields = (token: string) => callGET('/api/MetaDataColumns', token);
 
 // Project metadata
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
