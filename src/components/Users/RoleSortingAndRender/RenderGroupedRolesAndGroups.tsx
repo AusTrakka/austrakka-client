@@ -2,16 +2,16 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { TableRow, TableCell, IconButton, Typography } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import UserGroupRolesRow from './UserGroupRolesRow';
-import { UserDetails, GroupRole } from '../../../types/dtos';
+import { User, GroupRole } from '../../../types/dtos';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
-  user: UserDetails;
+  user: User;
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
 }
 
-const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
+const sortGroupRoles = (userGroupRoles: GroupRole[], user:User) => {
   const personalOrgs = userGroupRoles.filter(
     (group) =>
       group.group.organisation?.abbreviation === user.orgAbbrev,
