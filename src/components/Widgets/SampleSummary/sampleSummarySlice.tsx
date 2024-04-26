@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SampleSummary } from './sample.summary.interface';
 import { getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
