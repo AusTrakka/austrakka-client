@@ -184,9 +184,6 @@ listenerMiddleware.startListening({
 // reducer utility functions - single-use, but improve reducer readability
 
 // Given a list of field names, calculate the viewFields for that field
-// TODO this algorithm is correct, but override mode will cause a bug until implemented server-side
-//      if override mode is set, a bare field name will be included in fields, but not actual views
-//      this will cause a bug when filtering the resulting empty field for null/not null
 function calculateViewFieldNames(
   field: ProjectField,
   mergeAlgorithm: string,
