@@ -216,7 +216,6 @@ function UserDetail() {
     setOpenDupSnackbar(false);
   };
 
-
   const renderEditableRow = (field: keyof UserDetails, detailValue: any) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { value } = event.target;
