@@ -1,6 +1,6 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
-import { Cancel } from '@mui/icons-material';
+import { Cancel, Lock } from '@mui/icons-material';
 import { GroupRole } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
@@ -10,6 +10,7 @@ interface UserGroupRolesRowProps {
   editing: boolean;
   userGroupRoles: GroupRole[];
   updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
+  locked: boolean;
 }
 
 function UserGroupRolesRow(props: UserGroupRolesRowProps) {
@@ -18,7 +19,8 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
     isOpen,
     editing,
     userGroupRoles,
-    updateUserGroupRoles } = props;
+    updateUserGroupRoles,
+    locked } = props;
 
   const handleRoleDelete = (roleName: string) => {
     const updatedRoles = userGroupRoles.filter(
@@ -27,13 +29,20 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
     updateUserGroupRoles(updatedRoles);
   };
 
+  const handleColor = () => {
+    if (editing && locked) {
+      return 'default';
+    }
+    return editing ? 'error' : 'primary';
+  };
+
   return (
     isOpen ? (
-      <TableRow>
+      <TableRow style={{ backgroundColor: '#F6F7F8' }}>
         <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
           <Box sx={{ width: '100%' }}>
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              <Stack direction="row" spacing={2} padding={2} alignItems="center">
+              <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
                 <Typography variant="body2" width="15em">
                   {groupName}
                 </Typography>
@@ -41,10 +50,11 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
                   <Chip
                     key={`${groupName}-${roleName}`}
                     label={roleName}
-                    color={editing ? 'error' : 'primary'}
+                    color={handleColor()}
                     variant={editing ? 'filled' : 'outlined'}
-                    onDelete={editing ? () => handleRoleDelete(roleName) : undefined}
+                    onDelete={editing && !locked ? () => handleRoleDelete(roleName) : undefined}
                     deleteIcon={<Cancel />}
+                    icon={editing && locked ? <Lock fontSize="small" /> : undefined}
                   />
                 ))}
               </Stack>

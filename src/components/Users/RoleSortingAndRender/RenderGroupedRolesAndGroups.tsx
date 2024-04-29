@@ -1,16 +1,19 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
-import { TableRow, TableCell, IconButton, Typography } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import UserGroupRolesRow from './UserGroupRolesRow';
-import { UserDetails, GroupRole } from '../../../types/dtos';
+import { UserDetails, GroupRole, Group, Role } from '../../../types/dtos';
+import GroupHeaderRow from './GroupRowHeader';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
   user: UserDetails;
+  setOpenDupSnackbar: Dispatch<SetStateAction<boolean>>;
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
   updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
+  allGroups: Group[]
+  allRoles: Role[];
 }
 
 const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
@@ -38,11 +41,14 @@ const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
   const { userGroupRoles,
+    setOpenDupSnackbar,
     openGroupRoles,
     user,
     setOpenGroupRoles,
     editing,
-    updateUserGroupRoles } = props;
+    updateUserGroupRoles,
+    allRoles,
+    allGroups } = props;
 
   const [personalOrgs, foriegnOrgs, otherGroups] = sortGroupRoles(userGroupRoles, user);
 
@@ -53,33 +59,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
         : [...prevOpenGroupRoles, groupName]));
   };
 
-  const renderGroupHeader = (groupType: string, groupMapSize: number) => (
-    <TableRow>
-      <TableCell width="300em" colSpan={2}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => handleGroupRoleToggle(groupType)}
-            disabled={groupMapSize === 0}
-          >
-            {openGroupRoles.includes(groupType) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-          </IconButton>
-          {
-          groupMapSize === 0 ? (
-            <Typography variant="body2" sx={{ color: 'grey' }}>
-              {groupType}
-            </Typography>
-          ) : (
-            <Typography variant="body2">{groupType}</Typography>
-          )
-          }
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-
-  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string) => {
+  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string, locked: boolean) => {
     const groupMap = new Map<string, { roleNames: string[] }>();
 
     groupRoles.forEach((userGroup) => {
@@ -95,7 +75,19 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
     return (
       <>
-        {renderGroupHeader(groupType, groupMap.size)}
+        <GroupHeaderRow
+          groupType={groupType}
+          groupMapSize={groupMap.size}
+          setOpenDupSnackbar={setOpenDupSnackbar}
+          user={user}
+          allGroups={allGroups}
+          allRoles={allRoles}
+          editing={editing}
+          openGroupRoles={openGroupRoles}
+          handleGroupRoleToggle={handleGroupRoleToggle}
+          existingGroupRoles={userGroupRoles}
+          updateUserGroupRoles={updateUserGroupRoles}
+        />
         {Array.from(groupMap).map(([groupName, { roleNames }]) => (
           <UserGroupRolesRow
             key={`${groupType}-${groupName}-${roleNames}`}
@@ -105,6 +97,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
             editing={editing}
             userGroupRoles={userGroupRoles}
             updateUserGroupRoles={updateUserGroupRoles}
+            locked={locked}
           />
         ))}
       </>
@@ -113,9 +106,9 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
   return (
     <>
-      {renderGroupRoles(personalOrgs, 'Home Organisation')}
-      {renderGroupRoles(foriegnOrgs, 'Other Organisations')}
-      {renderGroupRoles(otherGroups, 'Projects and Other Groups')}
+      {renderGroupRoles(personalOrgs, 'Home Organisation', true)}
+      {renderGroupRoles(foriegnOrgs, 'Other Organisations', false)}
+      {renderGroupRoles(otherGroups, 'Projects and Other Groups', false)}
     </>
   );
 }

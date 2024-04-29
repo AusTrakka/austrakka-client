@@ -3,8 +3,9 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Autocomplete, Button, Paper, Snackbar, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
 import { Cancel, Edit, Save } from '@mui/icons-material';
-import { getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
-import { GroupRole, Role, UserDetails } from '../../types/dtos';
+import { deepEqual } from 'vega-lite';
+import { getGroupList, getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
+import { Group, GroupRole, Role, UserDetails } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -12,6 +13,8 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
 import renderIcon from '../Admin/UserIconRenderer';
+import { useAppSelector } from '../../app/store';
+import { selectUserState } from '../../app/userSlice';
 
 interface EditButtonsProps {
   editing: boolean;
@@ -19,6 +22,7 @@ interface EditButtonsProps {
   onSave: () => void;
   onCancel: () => void;
   hasSavedChanges: boolean;
+  canSee: () => boolean;
 }
 
 // Define the EditButtons component outside the UserDetail component
@@ -27,7 +31,8 @@ function EditButtons(props : EditButtonsProps) {
     setEditing,
     onSave,
     hasSavedChanges,
-    onCancel } = props;
+    onCancel,
+    canSee } = props;
 
   if (editing) {
     return (
@@ -58,7 +63,7 @@ function EditButtons(props : EditButtonsProps) {
       </div>
     );
   }
-  return (
+  return canSee() ? (
     <Button
       startIcon={<Edit />}
       size="large"
@@ -68,7 +73,7 @@ function EditButtons(props : EditButtonsProps) {
     >
       Edit
     </Button>
-  );
+  ) : null;
 }
 
 function UserDetail() {
@@ -83,10 +88,16 @@ function UserDetail() {
   const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[]>([]);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openDupSnackbar, setOpenDupSnackbar] = useState(false);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
+  const {
+    loading,
+    admin,
+  } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
     'displayName': 'Display Name',
@@ -111,7 +122,6 @@ function UserDetail() {
 
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserDetails;
-        console.log('User:', userDto);
         setUser(userDto);
         setEditedValues({ ...userDto });
         setUpdatedGroupRoles(userDto.groupRoles);
@@ -131,7 +141,6 @@ function UserDetail() {
       const userResponse: ResponseObject = await getOrgansations(false, token);
       if (userResponse.status === ResponseType.Success) {
         const orgData = userResponse.data;
-        console.log('Orgs:', orgData);
         setAllOrgs(orgData);
       } else {
         setErrMsg('Organisations could not be accessed');
@@ -139,17 +148,33 @@ function UserDetail() {
       }
     };
 
-    if (token && tokenLoading === LoadingState.SUCCESS) {
+    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
       getOrgData();
     }
-  }, [token, tokenLoading]);
+  }, [token, tokenLoading, editing]);
+
+  useEffect(() => {
+    const getAllGroups = async () => {
+      const userResponse: ResponseObject = await getGroupList(token);
+      if (userResponse.status === ResponseType.Success) {
+        const groupData = userResponse.data as Group[];
+        setAllGroups(groupData);
+      } else {
+        setDataError(true);
+        setErrMsg('Organisations could not be accessed');
+      }
+    };
+
+    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
+      getAllGroups();
+    }
+  }, [token, tokenLoading, editing]);
 
   useEffect(() => {
     const getRolesData = async () => {
       const userResponse: ResponseObject = await getRoles(token);
       if (userResponse.status === ResponseType.Success) {
         const rolesData = userResponse.data as Role[];
-        console.log('Roles:', rolesData);
         setAllRoles(rolesData);
       } else {
         setDataError(true);
@@ -157,10 +182,10 @@ function UserDetail() {
       }
     };
 
-    if (token && tokenLoading === LoadingState.SUCCESS) {
+    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
       getRolesData();
     }
-  }, [token, tokenLoading]);
+  }, [token, tokenLoading, editing]);
 
   const updateUserGroupRoles = (groupRoles: GroupRole[]) => {
     setUpdatedGroupRoles(groupRoles);
@@ -173,6 +198,8 @@ function UserDetail() {
     });
   };
 
+  const canSee = () => (loading === LoadingState.SUCCESS && admin);
+
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -180,6 +207,15 @@ function UserDetail() {
 
     setOpenSnackbar(false);
   };
+
+  const handleDupClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenDupSnackbar(false);
+  };
+
 
   const renderEditableRow = (field: keyof UserDetails, detailValue: any) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -189,6 +225,17 @@ function UserDetail() {
         return {
           ...prevValues,
           [field]: value,
+        };
+      });
+    };
+
+    const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { checked } = event.target;
+      setEditedValues((prevValues) => {
+        if (prevValues === null) return null;
+        return {
+          ...prevValues,
+          [field]: checked,
         };
       });
     };
@@ -216,7 +263,6 @@ function UserDetail() {
                   getOptionLabel={(option) => option.name ?? option}
                   value={editedValues?.orgName || null}
                   onChange={(event, newValue) => {
-                    console.log('New Value:', newValue);
                     setOrgChanged(true);
                     setEditedValues((prevValues) => {
                       if (prevValues === null) return null;
@@ -266,7 +312,7 @@ function UserDetail() {
                 fullWidth
                 size="small"
                 hiddenLabel
-                inputProps={{ style: { padding: '5px 10px', fontSize: '.9rem' } }}
+                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
               />
             </TableCell>
           </TableRow>
@@ -279,7 +325,7 @@ function UserDetail() {
               <Switch
                 size="small"
                 checked={editedValues?.[field] as boolean || false}
-                onChange={handleChange}
+                onChange={handleChangeBoolean}
               />
             </TableCell>
           </TableRow>
@@ -356,7 +402,6 @@ function UserDetail() {
 
   const onSave = () => {
     if (editedValues === null) return;
-    console.log('Saving changes:', editedValues);
     editUserDetails();
   };
 
@@ -367,12 +412,7 @@ function UserDetail() {
     setOrgChanged(false);
   };
 
-  const hasChanges =
-  editedValues !== null &&
-  user !== null &&
-  Object.entries(editedValues).some(
-    ([field, value]) => value !== user[field as keyof UserDetails],
-  );
+  const hasChanges = !deepEqual(user, editedValues);
 
   return (user && !dataError) ? (
     <div>
@@ -395,6 +435,7 @@ function UserDetail() {
           onSave={onSave}
           onCancel={handleCancel}
           hasSavedChanges={hasChanges}
+          canSee={canSee}
         />
       </Stack>
       {orgChanged ?
@@ -413,11 +454,14 @@ function UserDetail() {
                   <RenderGroupedRolesAndGroups
                     key={field}
                     user={user}
+                    setOpenDupSnackbar={setOpenDupSnackbar}
                     userGroupRoles={updatedGroupRoles} // Pass the updated group roles
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editing}
                     updateUserGroupRoles={updateUserGroupRoles}
+                    allGroups={allGroups}
+                    allRoles={allRoles}
                   />
                 );
               }
@@ -434,6 +478,16 @@ function UserDetail() {
       >
         <Alert onClose={handleClose} severity={patchSeverity as AlertColor}>
           {patchMsg}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openDupSnackbar}
+        autoHideDuration={4000}
+        onClose={handleDupClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleDupClose} severity="error">
+          Group Role already exists
         </Alert>
       </Snackbar>
     </div>

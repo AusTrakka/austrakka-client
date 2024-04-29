@@ -90,5 +90,5 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 // Sample endpoints
 export const getSampleGroups = (sampleName:string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
 
-// Organisation endpoints 
+// Organisation endpoints
 export const getOrgansations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
