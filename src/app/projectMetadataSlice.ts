@@ -3,7 +3,7 @@
 import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import { Project, ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
+import { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
 import { Sample } from '../types/sample.interface';
 import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
@@ -89,7 +89,7 @@ const fetchProjectInfo = createAsyncThunk(
   async (
     params: FetchProjectInfoParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<Project | unknown > => {
+  ):Promise<FetchProjectInfoResponse | unknown> => {
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
@@ -117,7 +117,7 @@ const fetchDataView = createAsyncThunk(
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<Project | unknown > => {
+  ):Promise<FetchDataViewResponse | unknown > => {
     const { projectAbbrev, viewIndex } = params;
     const state = getState() as RootState;
     const { token } = state.projectMetadataState;
