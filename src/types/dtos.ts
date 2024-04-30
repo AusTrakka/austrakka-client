@@ -82,9 +82,8 @@ export interface User {
   isAustrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
-  createdBy: Date,
+  created: Date,
   contactEmail: string,
-  lastUpdatedBy: Date,
   IsAustrakkaProcess: boolean
 }
 export interface MetaDataColumnMapping {
