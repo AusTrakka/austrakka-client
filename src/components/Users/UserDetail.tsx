@@ -402,6 +402,7 @@ function UserDetail() {
   const onSave = () => {
     if (editedValues === null) return;
     editUserDetails();
+    setOrgChanged(false);
   };
 
   const handleCancel = () => {
@@ -415,7 +416,6 @@ function UserDetail() {
 
   return (user && !dataError) ? (
     <div>
-
       <Stack
         direction="row"
         justifyContent="space-between"
