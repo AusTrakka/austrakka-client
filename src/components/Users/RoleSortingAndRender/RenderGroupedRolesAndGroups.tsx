@@ -3,6 +3,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 import UserGroupRolesRow from './UserGroupRolesRow';
 import { UserDetails, GroupRole, Group, Role } from '../../../types/dtos';
 import GroupHeaderRow from './GroupRowHeader';
+import { GroupHeadings } from '../Enums/GroupHeadings';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
@@ -59,7 +60,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
         : [...prevOpenGroupRoles, groupName]));
   };
 
-  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string, locked: boolean) => {
+  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string) => {
     const groupMap = new Map<string, { roleNames: string[] }>();
 
     groupRoles.forEach((userGroup) => {
@@ -97,7 +98,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
             editing={editing}
             userGroupRoles={userGroupRoles}
             updateUserGroupRoles={updateUserGroupRoles}
-            locked={locked}
+            groupType={groupType}
           />
         ))}
       </>
@@ -106,9 +107,9 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
   return (
     <>
-      {renderGroupRoles(personalOrgs, 'Home Organisation', true)}
-      {renderGroupRoles(foriegnOrgs, 'Other Organisations', false)}
-      {renderGroupRoles(otherGroups, 'Projects and Other Groups', false)}
+      {renderGroupRoles(personalOrgs, GroupHeadings.HOME_ORG)}
+      {renderGroupRoles(foriegnOrgs, GroupHeadings.OTHER_ORGS)}
+      {renderGroupRoles(otherGroups, GroupHeadings.PROJECTS_AND_OTHER_GROUPS)}
     </>
   );
 }

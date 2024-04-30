@@ -2,6 +2,7 @@ import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel, Lock } from '@mui/icons-material';
 import { GroupRole } from '../../../types/dtos';
+import { GroupHeadings } from '../Enums/GroupHeadings';
 
 interface UserGroupRolesRowProps {
   groupName: string;
@@ -10,7 +11,7 @@ interface UserGroupRolesRowProps {
   editing: boolean;
   userGroupRoles: GroupRole[];
   updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
-  locked: boolean;
+  groupType: string;
 }
 
 function UserGroupRolesRow(props: UserGroupRolesRowProps) {
@@ -20,11 +21,30 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
     editing,
     userGroupRoles,
     updateUserGroupRoles,
-    locked } = props;
+    groupType } = props;
+
+  // locked now equals true if the type of group is personal orgs and its everything but
+  // the owner group for the subset of groups in this type. which will be locked.
+
+  const isItLocked = () => {
+    switch (groupType) {
+      case GroupHeadings.HOME_ORG:
+        return !groupName.includes('Owner');
+      default:
+        return false;
+    }
+  };
+
+  const locked = isItLocked();
 
   const handleRoleDelete = (roleName: string) => {
     const updatedRoles = userGroupRoles.filter(
-      (groupRole) => groupRole.role.name !== roleName,
+      (groupRole) => {
+        if (groupRole.group.name === groupName) {
+          return !groupRole.role.name.includes(roleName);
+        }
+        return true;
+      },
     );
     updateUserGroupRoles(updatedRoles);
   };
