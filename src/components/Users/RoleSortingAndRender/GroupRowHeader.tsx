@@ -3,6 +3,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
 import { Group, GroupRole, Role, UserDetails } from '../../../types/dtos';
+import { sortGroups } from '../Sorting/GroupSorting';
 
 interface GroupHeaderRowProps {
   groupType: string;
@@ -40,30 +41,6 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     setSelectedGroup(null);
     setSelectedRole(null);
   }, [editing]);
-
-  const sortGroups = (groups: Group[], _user: UserDetails) => {
-    const personalOrgGroups = groups.filter(
-      (_group) =>
-        _group.organisation?.abbreviation === _user.orgAbbrev,
-    );
-
-    const foriegnOrgGroups = groups.filter(
-      (_group) =>
-        (_group.organisation?.abbreviation !== _user.orgAbbrev &&
-          _group.organisation?.abbreviation !== undefined) &&
-          (!_group.name.endsWith('Owner') && !_group.name.endsWith('Everyone')),
-    );
-
-    const otherGroups = groups.filter(
-      (_group) =>
-        !personalOrgGroups.includes(_group) &&
-          !foriegnOrgGroups.includes(_group) &&
-          (_group.organisation?.abbreviation === undefined ||
-            _group.organisation === null),
-    );
-
-    return [personalOrgGroups, foriegnOrgGroups, otherGroups];
-  };
 
   const getGroupOptions = () => {
     const [personalOrgGroups, foriegnOrgGroups, restoftheGroups] = sortGroups(allGroups, user);

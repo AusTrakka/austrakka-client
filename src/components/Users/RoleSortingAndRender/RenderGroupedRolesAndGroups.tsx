@@ -4,6 +4,7 @@ import UserGroupRolesRow from './UserGroupRolesRow';
 import { UserDetails, GroupRole, Group, Role } from '../../../types/dtos';
 import GroupHeaderRow from './GroupRowHeader';
 import { GroupHeadings } from '../Enums/GroupHeadings';
+import { sortGroupRoles } from '../Sorting/GroupSorting';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
@@ -16,29 +17,6 @@ interface RenderGroupedRolesAndGroupsProps {
   allGroups: Group[]
   allRoles: Role[];
 }
-
-const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
-  const personalOrgs = userGroupRoles.filter(
-    (group) =>
-      group.group.organisation?.abbreviation === user.orgAbbrev,
-  );
-
-  const foriegnOrgs = userGroupRoles.filter(
-    (group) =>
-      group.group.organisation?.abbreviation !== user.orgAbbrev &&
-        group.group.organisation?.abbreviation !== undefined,
-  );
-
-  const otherGroups = userGroupRoles.filter(
-    (group) =>
-      !personalOrgs.includes(group) &&
-        !foriegnOrgs.includes(group) &&
-        (group.group.organisation?.abbreviation === undefined ||
-          group.group.organisation === null),
-  );
-
-  return [personalOrgs, foriegnOrgs, otherGroups];
-};
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
   const { userGroupRoles,

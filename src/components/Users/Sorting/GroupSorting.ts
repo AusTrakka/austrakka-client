@@ -1,0 +1,48 @@
+import { Group, GroupRole, UserDetails } from '../../../types/dtos';
+
+export const sortGroups = (groups: Group[], _user: UserDetails) => {
+  const personalOrgGroups = groups.filter(
+    (_group) =>
+      _group.organisation?.abbreviation === _user.orgAbbrev && !_group.name.endsWith('Contributor'),
+  );
+
+  const foriegnOrgGroups = groups.filter(
+    (_group) =>
+      (_group.organisation?.abbreviation !== _user.orgAbbrev &&
+          _group.organisation?.abbreviation !== undefined) &&
+          (!_group.name.endsWith('Owner') && !_group.name.endsWith('Everyone')),
+  );
+
+  const otherGroups = groups.filter(
+    (_group) =>
+      !personalOrgGroups.includes(_group) &&
+          !foriegnOrgGroups.includes(_group) &&
+          (_group.organisation?.abbreviation === undefined ||
+            _group.organisation === null),
+  );
+
+  return [personalOrgGroups, foriegnOrgGroups, otherGroups];
+};
+
+export const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
+  const personalOrgs = userGroupRoles.filter(
+    (group) =>
+      group.group.organisation?.abbreviation === user.orgAbbrev,
+  );
+
+  const foriegnOrgs = userGroupRoles.filter(
+    (group) =>
+      group.group.organisation?.abbreviation !== user.orgAbbrev &&
+          group.group.organisation?.abbreviation !== undefined,
+  );
+
+  const otherGroups = userGroupRoles.filter(
+    (group) =>
+      !personalOrgs.includes(group) &&
+          !foriegnOrgs.includes(group) &&
+          (group.group.organisation?.abbreviation === undefined ||
+            group.group.organisation === null),
+  );
+
+  return [personalOrgs, foriegnOrgs, otherGroups];
+};
