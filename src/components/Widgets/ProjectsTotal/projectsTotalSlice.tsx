@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ProjectsTotal } from './projects.total.interface';
-import { AppState } from '../../../types/app.interface';
 import { getUserDashboardProjects } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
@@ -55,6 +54,6 @@ const projectsTotalSlice = createSlice({
 });
 
 //
-export const selectProjectsTotal = (state: AppState) => state.projectTotalState;
+export const selectProjectsTotal = (state: RootState) => state.projectTotalState;
 
 export default projectsTotalSlice.reducer;

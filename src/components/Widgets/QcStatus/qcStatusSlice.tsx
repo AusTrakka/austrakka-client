@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { QcStatus } from './qc.status.interface';
-import { AppState } from '../../../types/app.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
@@ -56,7 +55,7 @@ const qcStatusSlice = createSlice({
 });
 
 //
-export const selectQcStatus = (state: AppState) => state.qcStatusState;
+export const selectQcStatus = (state: RootState) => state.qcStatusState;
 export const selectAggregatedQcStatus = createSelector(
   selectQcStatus,
   (qcStatus) => {
