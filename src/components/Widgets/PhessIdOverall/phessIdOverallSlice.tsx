@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { PhessIdOverall } from './phess.id.overall.interface';
-import { AppState } from '../../../types/app.interface';
 import { getUserDashboardPhessStatus } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
@@ -61,6 +60,6 @@ const phessIdOverallSlice = createSlice({
 });
 
 //
-export const selectPhessIdOverall = (state: AppState) => state.phessIdOverallState;
+export const selectPhessIdOverall = (state: RootState) => state.phessIdOverallState;
 
 export default phessIdOverallSlice.reducer;

@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { UserOverview } from './user.overview.interface';
-import { AppState } from '../../../types/app.interface';
 import { getUserDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { generateDateFilterString } from '../../../utilities/helperUtils';
@@ -55,6 +54,6 @@ const userOverviewSlice = createSlice({
 });
 
 //
-export const selectUserOverview = (state: AppState) => state.userOverviewState;
+export const selectUserOverview = (state: RootState) => state.userOverviewState;
 
 export default userOverviewSlice.reducer;
