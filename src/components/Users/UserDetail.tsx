@@ -1,80 +1,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, AlertColor, Autocomplete, Button, Paper, Snackbar, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from '@mui/material';
-import { Cancel, Edit, Save } from '@mui/icons-material';
+import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
 import { getGroupList, getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, UserDetails } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
 import renderIcon from '../Admin/UserIconRenderer';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
-
-interface EditButtonsProps {
-  editing: boolean;
-  setEditing: Dispatch<SetStateAction<boolean>>;
-  onSave: () => void;
-  onCancel: () => void;
-  hasSavedChanges: boolean;
-  canSee: () => boolean;
-}
-
-// Define the EditButtons component outside the UserDetail component
-function EditButtons(props : EditButtonsProps) {
-  const { editing,
-    setEditing,
-    onSave,
-    hasSavedChanges,
-    onCancel,
-    canSee } = props;
-
-  if (editing) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-        <Button
-          startIcon={<Save />}
-          size="large"
-          variant="contained"
-          color="success"
-          disabled={!hasSavedChanges}
-          style={{ marginRight: '1rem' }}
-          onClick={() => {
-            setEditing(false);
-            onSave(); // Call the onSave function when saving
-          }}
-        >
-          Save
-        </Button>
-        <Button
-          startIcon={<Cancel />}
-          size="large"
-          variant="contained"
-          color="error"
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
-      </div>
-    );
-  }
-  return canSee() ? (
-    <Button
-      startIcon={<Edit />}
-      size="large"
-      variant="contained"
-      color="primary"
-      onClick={() => setEditing(true)}
-    >
-      Edit
-    </Button>
-  ) : null;
-}
+import EditButtons from './EditButtons';
+import EditableRow from './RowRender/EditableRow';
+import BasicRow from './RowRender/BasicRow';
 
 function UserDetail() {
   const { userObjectId } = useParams();
@@ -216,171 +157,27 @@ function UserDetail() {
     setOpenDupSnackbar(false);
   };
 
-  const renderEditableRow = (field: keyof UserDetails, detailValue: any) => {
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { value } = event.target;
-      setEditedValues((prevValues) => {
-        if (prevValues === null) return null;
-        return {
-          ...prevValues,
-          [field]: value,
-        };
-      });
-    };
-
-    const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { checked } = event.target;
-      setEditedValues((prevValues) => {
-        if (prevValues === null) return null;
-        return {
-          ...prevValues,
-          [field]: checked,
-        };
-      });
-    };
-
-    switch (typeof detailValue) {
-      case 'string':
-        if (field === 'created') {
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>
-                {isoDateLocalDate(detailValue)}
-              </TableCell>
-            </TableRow>
-          );
-        }
-        if (field === 'orgName') {
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>
-                <Autocomplete
-                  options={allOrgs.map((org) => org.name)}
-                  disableClearable
-                  getOptionLabel={(option) => option.name ?? option}
-                  value={editedValues?.orgName || null}
-                  onChange={(event, newValue) => {
-                    setOrgChanged(true);
-                    setEditedValues((prevValues) => {
-                      if (prevValues === null) return null;
-                      return {
-                        ...prevValues,
-                        [field]: newValue,
-                        'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation || prevValues.orgAbbrev,
-                      };
-                    });
-                  }}
-                  renderOption={(props, option) => (
-                    <li {...props} style={{ fontSize: '0.9em' }}>
-                      {option}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      fullWidth
-                      hiddenLabel
-                      variant="filled"
-                      InputProps={{
-                        ...params.InputProps,
-                        inputProps: {
-                          ...params.inputProps,
-                          style: {
-                            fontSize: '0.9em',
-                          },
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </TableCell>
-            </TableRow>
-          );
-        }
-        return (
-          <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              <TextField
-                value={editedValues?.[field] || ''}
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                size="small"
-                hiddenLabel
-                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
-              />
-            </TableCell>
-          </TableRow>
-        );
-      case 'boolean':
-        return (
-          <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              <Switch
-                size="small"
-                checked={editedValues?.[field] as boolean || false}
-                onChange={handleChangeBoolean}
-              />
-            </TableCell>
-          </TableRow>
-        );
-      case 'object':
-        if (detailValue === null) {
-          return (
-            <TableRow key={field}>
-              <TableCell width="200em">{readableNames[field] || field}</TableCell>
-              <TableCell>
-                <TextField
-                  value={editedValues?.[field] as string || ''}
-                  onChange={handleChange}
-                  variant="outlined"
-                  fullWidth
-                  size="small"
-                />
-              </TableCell>
-            </TableRow>
-          );
-        }
-        break;
-      default:
-        return (
-          <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>{detailValue}</TableCell>
-          </TableRow>
-        );
-    }
-    return null;
-  };
-
-  const renderNonEditableRow = (field: keyof UserDetails, value: any) => (
-    <TableRow key={field}>
-      <TableCell width="200em">{readableNames[field] || field}</TableCell>
-      <TableCell>
-        {(() => {
-          switch (true) {
-            case field === 'created':
-              return isoDateLocalDate(value);
-            case typeof value === 'boolean':
-              return <Switch disabled checked={value} size="small" />;
-            default:
-              return value;
-          }
-        })()}
-      </TableCell>
-    </TableRow>
-  );
-
   const renderRow = (field: keyof UserDetails, value: any) => {
     if (editing) {
-      return renderEditableRow(field, value);
+      return (
+        <EditableRow
+          field={field}
+          detailValue={value}
+          editedValues={editedValues}
+          setEditedValues={setEditedValues}
+          readableNames={readableNames}
+          allOrgs={allOrgs}
+          setOrgChanged={setOrgChanged}
+        />
+      );
     }
-    return renderNonEditableRow(field, value);
+    return (
+      <BasicRow
+        field={field}
+        value={value}
+        readableNames={readableNames}
+      />
+    );
   };
 
   const editUserDetails = async () => {
