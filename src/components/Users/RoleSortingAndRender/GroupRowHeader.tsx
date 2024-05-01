@@ -49,8 +49,9 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
 
     const foriegnOrgGroups = groups.filter(
       (_group) =>
-        _group.organisation?.abbreviation !== _user.orgAbbrev &&
-          _group.organisation?.abbreviation !== undefined,
+        (_group.organisation?.abbreviation !== _user.orgAbbrev &&
+          _group.organisation?.abbreviation !== undefined) &&
+          (!_group.name.endsWith('Owner') && !_group.name.endsWith('Everyone')),
     );
 
     const otherGroups = groups.filter(
