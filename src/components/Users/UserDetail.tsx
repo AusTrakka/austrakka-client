@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
 import { getGroupList, getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
-import { Group, GroupRole, Role, UserDetails } from '../../types/dtos';
+import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -22,7 +22,7 @@ function UserDetail() {
   const { token, tokenLoading } = useApi();
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<UserDetails | null>(null);
-  const [editedValues, setEditedValues] = useState<UserDetails | null>(null);
+  const [editedValues, setEditedValues] = useState<User | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
@@ -62,7 +62,7 @@ function UserDetail() {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
 
       if (userResponse.status === ResponseType.Success) {
-        const userDto = userResponse.data as UserDetails;
+        const userDto = userResponse.data as User;
         setUser(userDto);
         setEditedValues({ ...userDto });
         setUpdatedGroupRoles(userDto.groupRoles);

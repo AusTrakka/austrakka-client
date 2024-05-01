@@ -1,14 +1,14 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
 import UserGroupRolesRow from './UserGroupRolesRow';
-import { UserDetails, GroupRole, Group, Role } from '../../../types/dtos';
+import { User, GroupRole, Group, Role } from '../../../types/dtos';
 import GroupHeaderRow from './GroupRowHeader';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 import { sortGroupRoles } from '../Sorting/groupSorting';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
-  user: UserDetails;
+  user: User;
   setOpenDupSnackbar: Dispatch<SetStateAction<boolean>>;
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
