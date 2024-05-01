@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, IconButton, Snackbar, Switch, TableCell, TableRow, Theme, Tooltip, makeStyles } from '@mui/material';
+import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
@@ -12,22 +12,12 @@ interface BasicRowProps {
 
 function BasicRow(props: BasicRowProps) {
   const { field, value, readableNames } = props;
-
   const [copied, setCopied] = useState(false);
-  const [openCopySnackbar, setOpenCopySnackbar] = useState(false);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
-  };
-
-  const handleCopyClose = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpenCopySnackbar(false);
   };
 
   return (

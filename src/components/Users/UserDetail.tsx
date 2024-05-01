@@ -60,8 +60,6 @@ function UserDetail() {
     'isAusTrakkaProcess',
   ];
 
-
-
   if (loading === LoadingState.SUCCESS && admin) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
