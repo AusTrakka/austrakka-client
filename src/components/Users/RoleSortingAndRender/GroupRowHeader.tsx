@@ -2,13 +2,13 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
-import { Group, GroupRole, Role, UserDetails } from '../../../types/dtos';
+import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { sortGroups } from '../Sorting/groupSorting';
 
 interface GroupHeaderRowProps {
   groupType: string;
   groupMapSize: number;
-  user: UserDetails;
+  user: User;
   allGroups: Group[];
   allRoles: Role[];
   editing: boolean;

@@ -1,6 +1,6 @@
-import { Group, GroupRole, UserDetails } from '../../../types/dtos';
+import { Group, GroupRole, User } from '../../../types/dtos';
 
-export const sortGroups = (groups: Group[], _user: UserDetails) => {
+export const sortGroups = (groups: Group[], _user: User) => {
   const personalOrgGroups = groups.filter(
     (_group) =>
       _group.organisation?.abbreviation === _user.orgAbbrev && !_group.name.endsWith('Contributor'),
@@ -24,7 +24,7 @@ export const sortGroups = (groups: Group[], _user: UserDetails) => {
   return [personalOrgGroups, foriegnOrgGroups, otherGroups];
 };
 
-export const sortGroupRoles = (userGroupRoles: GroupRole[], user:UserDetails) => {
+export const sortGroupRoles = (userGroupRoles: GroupRole[], user:User) => {
   const personalOrgs = userGroupRoles.filter(
     (group) =>
       group.group.organisation?.abbreviation === user.orgAbbrev,

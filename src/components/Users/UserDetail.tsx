@@ -21,7 +21,7 @@ function UserDetail() {
   const { userObjectId } = useParams();
   const { token, tokenLoading } = useApi();
   const [editing, setEditing] = useState(false);
-  const [user, setUser] = useState<UserDetails | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [editedValues, setEditedValues] = useState<User | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -41,6 +41,7 @@ function UserDetail() {
   } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
+    'objectId': 'Object ID',
     'displayName': 'Display Name',
     'orgName': 'Organisation',
     'orgAbbrev': 'Organisation Abbreviation',
@@ -51,11 +52,19 @@ function UserDetail() {
     'isAusTrakkaProcess': 'Austrakka Process',
   };
 
-  const nonDisplayFields = [
+  let nonDisplayFields = [
+    'objectId',
     'orgAbbrev',
+    'orgId',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
+
+
+
+  if (loading === LoadingState.SUCCESS && admin) {
+    nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
+  }
 
   useEffect(() => {
     const updateUser = async () => {
@@ -157,7 +166,7 @@ function UserDetail() {
     setOpenDupSnackbar(false);
   };
 
-  const renderRow = (field: keyof UserDetails, value: any) => {
+  const renderRow = (field: keyof User, value: any) => {
     if (editing) {
       return (
         <EditableRow
@@ -183,7 +192,7 @@ function UserDetail() {
   const editUserDetails = async () => {
     const userResponse: ResponseObject = await patchUserDetails(userObjectId!, token, editedValues);
     if (userResponse.status === ResponseType.Success) {
-      const userDto = userResponse.data as UserDetails;
+      const userDto = userResponse.data as User;
       setUser(userDto);
       setEditedValues({ ...userDto });
       setUpdatedGroupRoles(userDto.groupRoles);
@@ -243,7 +252,7 @@ function UserDetail() {
           <TableBody>
             {Object.entries(user).map(([field, value]) => {
               if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
-                return renderRow(field as keyof UserDetails, value);
+                return renderRow(field as keyof User, value);
               }
               if (field === 'groupRoles') {
                 return (

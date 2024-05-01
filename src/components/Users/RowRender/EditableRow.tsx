@@ -1,14 +1,14 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, Switch, TableCell, TableRow, TextField } from '@mui/material';
-import { UserDetails } from '../../../types/dtos';
+import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
 
 interface EditableRowProps {
-  field: keyof UserDetails;
+  field: keyof User;
   detailValue: any;
-  editedValues: UserDetails | null;
-  setEditedValues: Dispatch<SetStateAction<UserDetails | null>>;
+  editedValues: User | null;
+  setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
   allOrgs: any[];
   setOrgChanged: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,6 +24,11 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
+
+  const nonEditableFields = [
+    'created',
+    'objectId',
+  ];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
@@ -49,12 +54,12 @@ function EditableRow(props : EditableRowProps) {
 
   switch (typeof detailValue) {
     case 'string':
-      if (field === 'created') {
+      if (nonEditableFields.includes(field)) {
         return (
           <TableRow key={field}>
             <TableCell width="200em">{readableNames[field] || field}</TableCell>
             <TableCell>
-              {isoDateLocalDate(detailValue)}
+              {field === 'created' ? isoDateLocalDate(detailValue) : detailValue}
             </TableCell>
           </TableRow>
         );

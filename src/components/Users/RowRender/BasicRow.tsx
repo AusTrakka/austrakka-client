@@ -1,16 +1,35 @@
-import React from 'react';
-import { Switch, TableCell, TableRow } from '@mui/material';
-import { UserDetails } from '../../../types/dtos';
+import React, { useState } from 'react';
+import { Alert, IconButton, Snackbar, Switch, TableCell, TableRow, Theme, Tooltip, makeStyles } from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
+import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
 
 interface BasicRowProps {
-  field: keyof UserDetails;
+  field: keyof User;
   value: any;
   readableNames: Record<string, string>;
 }
 
 function BasicRow(props: BasicRowProps) {
   const { field, value, readableNames } = props;
+
+  const [copied, setCopied] = useState(false);
+  const [openCopySnackbar, setOpenCopySnackbar] = useState(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+  };
+
+  const handleCopyClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenCopySnackbar(false);
+  };
+
   return (
     <TableRow key={field}>
       <TableCell width="200em">{readableNames[field] || field}</TableCell>
@@ -19,6 +38,20 @@ function BasicRow(props: BasicRowProps) {
           switch (true) {
             case field === 'created':
               return isoDateLocalDate(value);
+            case field === 'objectId':
+              return (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '8px' }}>{value}</span>
+                  <Tooltip
+                    title={copied ? 'Copied!' : 'Copy to clipboard'}
+                    placement="top"
+                  >
+                    <IconButton size="small" onClick={() => handleCopy(value)}>
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              );
             case typeof value === 'boolean':
               return <Switch disabled checked={value} size="small" />;
             default:
