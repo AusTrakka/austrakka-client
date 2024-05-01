@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { getUser } from '../../utilities/resourceUtils';
-import { UserDetails } from '../../types/dtos';
+import { User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
@@ -13,7 +13,7 @@ import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRol
 function UserDetail() {
   const { userObjectId } = useParams();
   const { token, tokenLoading } = useApi();
-  const [user, setUser] = useState<UserDetails | null>();
+  const [user, setUser] = useState<User | null>();
   const [errMsg, setErrMsg] = useState<string | null>();
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const readableNames: Record<string, string> = {
@@ -28,7 +28,7 @@ function UserDetail() {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUser(userObjectId!, token);
       if (userResponse.status === ResponseType.Success) {
-        const userDto = userResponse.data as UserDetails;
+        const userDto = userResponse.data as User;
         setUser(userDto);
       } else {
         setErrMsg('User could not be accessed');
