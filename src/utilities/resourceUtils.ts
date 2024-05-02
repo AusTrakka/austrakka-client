@@ -78,7 +78,7 @@ export const getUserGroups = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getAllUsers = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const patchUserDetails = (userObjectId: string, token: string, user: any) => callPATCH(`/api/Users/userDetails/${userObjectId}`, token, user);
+export const putUserDetails = (userObjectId: string, token: string, user: any) => callPATCH(`/api/Users/userDetails/${userObjectId}`, token, user);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/Roles', token);
