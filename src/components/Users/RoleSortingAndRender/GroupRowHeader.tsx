@@ -5,7 +5,6 @@ import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-materi
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { sortGroups } from '../groupSorting';
 
-
 interface GroupHeaderRowProps {
   groupType: string;
   groupMapSize: number;
