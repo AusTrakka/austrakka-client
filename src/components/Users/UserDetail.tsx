@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrgansations, getRoles, getUser, patchUserDetails } from '../../utilities/resourceUtils';
+import { getGroupList, getOrgansations, getRoles, getUser, putUserDetails } from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -189,7 +189,7 @@ function UserDetail() {
   };
 
   const editUserDetails = async () => {
-    const userResponse: ResponseObject = await patchUserDetails(userObjectId!, token, editedValues);
+    const userResponse: ResponseObject = await putUserDetails(userObjectId!, token, editedValues);
     if (userResponse.status === ResponseType.Success) {
       const userDto = userResponse.data as User;
       setUser(userDto);
