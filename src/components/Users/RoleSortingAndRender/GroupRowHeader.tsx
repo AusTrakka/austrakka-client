@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField } from '@mui/material';
+import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, Stack } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { sortGroups } from '../Sorting/groupSorting';
@@ -35,7 +35,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   } = props;
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Role[] | null>(null);
 
   useEffect(() => {
     setSelectedGroup(null);
@@ -59,28 +59,36 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
 
   const groupOptions = editing ? getGroupOptions() : [];
 
+  const addGroupRoles = () => {
+    const newGroupRoles: GroupRole[] = (selectedRole as Role[]).map((role) => ({
+      group: selectedGroup!,
+      role: {
+        id: role.roleId,
+        name: role.name,
+      },
+    }));
+
+    const duplicateFound = newGroupRoles.some((newGroupRole) =>
+      existingGroupRoles.some(
+        (groupRole) =>
+          groupRole.group.groupId === newGroupRole.group.groupId &&
+          groupRole.role.id === newGroupRole.role.id,
+      ));
+
+    if (duplicateFound) {
+      setOpenDupSnackbar(true);
+      return;
+    }
+
+    const updatedGroupRoles = [...existingGroupRoles, ...newGroupRoles];
+    updateUserGroupRoles(updatedGroupRoles);
+    setSelectedGroup(null);
+    setSelectedRole(null);
+  };
+
   const handleAddGroupRole = () => {
     if (selectedGroup && selectedRole) {
-      const newGroupRole: GroupRole = {
-        group: selectedGroup,
-        role: {
-          id: selectedRole.roleId,
-          name: selectedRole.name,
-        },
-      };
-
-      if (existingGroupRoles.some((groupRole) =>
-        groupRole.group.groupId === newGroupRole.group.groupId &&
-        groupRole.role.id === newGroupRole.role.id)) {
-        setOpenDupSnackbar(true);
-        return;
-      }
-
-      const updatedGroupRoles = [...existingGroupRoles, newGroupRole];
-
-      updateUserGroupRoles(updatedGroupRoles);
-      setSelectedGroup(null);
-      setSelectedRole(null);
+      addGroupRoles();
     }
   };
 
@@ -109,12 +117,12 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
         </div>
       </TableCell>
       <TableCell>
-        <div style={{ display: 'flex' }}>
+        <Stack direction="row" spacing={1}>
           {editing ? (
             <>
               <Autocomplete
                 options={groupOptions}
-                style={{ marginRight: '1em', width: '15em' }}
+                style={{ width: '18em' }}
                 getOptionLabel={(option) => option.name}
                 onChange={(e, v) => setSelectedGroup(v)}
                 renderOption={(_props, option) => (
@@ -143,7 +151,9 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
               />
               <Autocomplete
                 options={allRoles}
-                style={{ width: '15em', marginRight: '1em' }}
+                multiple
+                limitTags={1}
+                style={{ width: '18em' }}
                 getOptionLabel={(option) => option.name}
                 onChange={(e, v) => setSelectedRole(v)}
                 renderOption={(_props, option) => (
@@ -170,18 +180,25 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                   />
                 )}
               />
-              <IconButton
-                aria-label="add"
-                size="small"
-                color={isAddButtonEnabled ? 'success' : 'default'}
-                onClick={handleAddGroupRole}
-                disabled={!isAddButtonEnabled}
-              >
-                <AddCircle />
-              </IconButton>
+              <div style={{ display: 'absolute' }}>
+                <IconButton
+                  aria-label="add"
+                  size="small"
+                  color={isAddButtonEnabled ? 'success' : 'default'}
+                  onClick={() => {
+                    handleAddGroupRole();
+                    if (!openGroupRoles.includes(groupType)) {
+                      handleGroupRoleToggle(groupType);
+                    }
+                  }}
+                  disabled={!isAddButtonEnabled}
+                >
+                  <AddCircle />
+                </IconButton>
+              </div>
             </>
           ) : null}
-        </div>
+        </Stack>
       </TableCell>
     </TableRow>
   );

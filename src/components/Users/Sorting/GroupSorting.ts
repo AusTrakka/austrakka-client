@@ -3,7 +3,8 @@ import { Group, GroupRole, User } from '../../../types/dtos';
 export const sortGroups = (groups: Group[], _user: User) => {
   const personalOrgGroups = groups.filter(
     (_group) =>
-      _group.organisation?.abbreviation === _user.orgAbbrev && !_group.name.endsWith('Contributor'),
+      _group.organisation?.abbreviation === _user.orgAbbrev &&
+    (!_group.name.endsWith('Contributor') && !_group.name.endsWith('Everyone')),
   );
 
   const foriegnOrgGroups = groups.filter(

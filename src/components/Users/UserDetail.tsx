@@ -122,7 +122,8 @@ function UserDetail() {
     const getRolesData = async () => {
       const userResponse: ResponseObject = await getRoles(token);
       if (userResponse.status === ResponseType.Success) {
-        const rolesData = userResponse.data as Role[];
+        let rolesData = userResponse.data as Role[];
+        rolesData = rolesData.filter((role) => role.name !== 'AusTrakkaAdmin');
         setAllRoles(rolesData);
       } else {
         setDataError(true);
