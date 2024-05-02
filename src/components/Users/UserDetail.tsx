@@ -189,7 +189,17 @@ function UserDetail() {
   };
 
   const editUserDetails = async () => {
-    const userResponse: ResponseObject = await putUserDetails(userObjectId!, token, editedValues);
+    const editedValuesDtoFormat: any = editedValues;
+    editedValuesDtoFormat.groupRoles = editedValuesDtoFormat.groupRoles
+      .map((groupRole: GroupRole) => ({
+        groupName: groupRole.group.name,
+        roleName: groupRole.role.name,
+      }));
+    const userResponse: ResponseObject = await putUserDetails(
+      userObjectId!,
+      token,
+      editedValuesDtoFormat,
+    );
     if (userResponse.status === ResponseType.Success) {
       const userDto = userResponse.data as User;
       setUser(userDto);
