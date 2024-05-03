@@ -4,7 +4,7 @@ import UserGroupRolesRow from './UserGroupRolesRow';
 import { User, GroupRole, Group, Role } from '../../../types/dtos';
 import GroupHeaderRow from './GroupRowHeader';
 import { GroupHeadings } from '../Enums/GroupHeadings';
-import { sortGroupRoles } from '../Sorting/groupSorting';
+import { sortGroupRoles } from '../Sorting/GroupSorting';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];

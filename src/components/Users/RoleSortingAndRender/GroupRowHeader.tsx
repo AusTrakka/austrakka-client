@@ -3,7 +3,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, Stack } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
-import { sortGroups } from '../Sorting/groupSorting';
+import { sortGroups } from '../Sorting/GroupSorting';
 import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
 
 interface GroupHeaderRowProps {

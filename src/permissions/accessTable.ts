@@ -1,4 +1,4 @@
-import { RoleName } from "./roles";
+import { RoleName } from './roles';
 
 export enum PermissionLevel {
   CanClick = 'canClick',
