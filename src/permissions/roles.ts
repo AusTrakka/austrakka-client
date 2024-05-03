@@ -1,4 +1,3 @@
-
 export enum RoleName {
   AusTrakkaAdmin = 'AusTrakkaAdmin',
   ProFormaEditor = 'ProFormaEditor',
@@ -7,7 +6,7 @@ export enum RoleName {
   Uploader = 'Uploader',
   ProjectAnalyst = 'ProjectAnalyst',
   ResultWriter = 'ResultWriter',
-};
+}
 
 // This information should perhaps be moved to server-side
 
