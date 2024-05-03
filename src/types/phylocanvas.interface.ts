@@ -9,7 +9,12 @@ export interface PhylocanvasMetadata {
 }
 
 export interface PhylocanvasLegends {
-  [key: string]: { [label: string]: string }
+  [key: string]: Legend
+}
+
+// Legend for a single field, maps value to colour
+export interface Legend {
+  [label: string]: string;
 }
 
 export interface PhylocanvasNode {

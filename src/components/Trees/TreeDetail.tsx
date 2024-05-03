@@ -434,7 +434,7 @@ function TreeDetail() {
                     border={1}
                     borderColor="#dddddd"
                   />
-                  <Typography variant="caption">{label}</Typography>
+                  <Typography variant="caption">{label || 'null'}</Typography>
                 </Box>
               </Grid>
             ))}
