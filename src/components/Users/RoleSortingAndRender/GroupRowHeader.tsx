@@ -4,6 +4,7 @@ import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, S
 import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { sortGroups } from '../Sorting/groupSorting';
+import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
 
 interface GroupHeaderRowProps {
   groupType: string;
@@ -41,6 +42,21 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     setSelectedGroup(null);
     setSelectedRole(null);
   }, [editing]);
+
+  const getRoleOptions = () => {
+    switch (groupType) {
+      case 'Home Organisation':
+        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
+      case 'Other Organisations':
+        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
+      case 'Projects and Other Groups':
+        return allRoles.filter((role) => projectRoles.includes(role.name as RoleName));
+      default:
+        return [];
+    }
+  };
+
+  const allRolesForGroup = getRoleOptions();
 
   const getGroupOptions = () => {
     const [personalOrgGroups, foriegnOrgGroups, restoftheGroups] = sortGroups(allGroups, user);
@@ -150,7 +166,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 )}
               />
               <Autocomplete
-                options={allRoles}
+                options={allRolesForGroup}
                 multiple
                 limitTags={1}
                 style={{ width: '18em' }}

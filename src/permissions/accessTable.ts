@@ -1,3 +1,5 @@
+import { RoleName } from "./roles";
+
 export enum PermissionLevel {
   CanClick = 'canClick',
   CanShow = 'canShow',
@@ -10,12 +12,12 @@ interface ResourcePriviledges {
 
 const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
   'project/tabs/datasettab': {
-    [PermissionLevel.CanShow]: ['Viewer', 'ProjectAnalyst'],
-    [PermissionLevel.CanClick]: ['Viewer', 'ProjectAnalyst'],
+    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanClick]: [RoleName.Viewer, RoleName.ProjectAnalyst],
   },
   'project/tabs/datasettab/datasettable': {
-    [PermissionLevel.CanShow]: ['Viewer', 'ProjectAnalyst'],
-    [PermissionLevel.CanClick]: ['ProjectAnalyst'],
+    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanClick]: [RoleName.ProjectAnalyst],
   },
 };
 
