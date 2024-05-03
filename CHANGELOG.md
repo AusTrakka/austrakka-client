@@ -3,13 +3,9 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## 2024-04-23
-
-### Fixed
-- Performance issues when loading users page
+## 2024-05-03
 
 ### Changed
-- Plots may now optionally be specified as Vega, instead of Vega-Lite.
 - All legends (trees and plots) now list only values present in the data itself, even if the field is a categorical field with additional valid values.
 - Plot and tree legends will now be sorted in natural sort order (ST1, ST5, ST11 rather than ST1, ST11, ST5).
 - Plot colouring now uses a neutral (grey) value for null metadata values.
@@ -17,6 +13,14 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ### Fixed
 - Has_sequences field will no longer display "false" values while the field is still loading; instead it will appear, correctly, as empty
 - Reinstate using a neutral (grey) value for null metadata values on trees.
+
+## 2024-04-23
+
+### Fixed
+- Performance issues when loading users page
+
+### Changed
+- Plots may now optionally be specified as Vega, instead of Vega-Lite.
 
 ## 2024-04-12
 
