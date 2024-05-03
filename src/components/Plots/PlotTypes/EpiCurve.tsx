@@ -40,7 +40,7 @@ const defaultSpec: TopLevelSpec = {
 function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
@@ -96,10 +96,12 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField);
+      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
 
-    setSpec(setColorInSpec);
-  }, [colourField]);
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
+    }
+  }, [colourField, fieldUniqueValues]);
 
   useEffect(() => {
     const setRowInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>

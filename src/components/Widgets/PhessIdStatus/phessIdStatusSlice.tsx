@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { PhessIdStatus } from './phess.id.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';

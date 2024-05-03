@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { Organisations } from './organisations.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';

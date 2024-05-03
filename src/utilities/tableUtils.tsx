@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import React from 'react';
 import { Field } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
