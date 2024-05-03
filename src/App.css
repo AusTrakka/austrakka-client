@@ -2,16 +2,16 @@
     --primary-blue: #0a3546;
     --primary-green: #90CA6D;
     --primary-grey: #F6F7F8;
-    --secordary-dark-grey: #353333;
-    --secordary-light-grey: #B3B3B3;
-    --secordary-teal: #3E7784;
-    --secordary-light-green: #68934B;
-    --secordary-dark-green: #375C2B;
-    --secordary-blue: #014F86;
-    --secordary-purple: #B9A8D2;
-    --secordary-orange: #D7534C;
-    --secordary-red: #A81E2C;
-    --secordary-yellow: #FCAF17;
+    --secondary-dark-grey: #353333;
+    --secondary-light-grey: #B3B3B3;
+    --secondary-teal: #3E7784;
+    --secondary-light-green: #68934B;
+    --secondary-dark-green: #375C2B;
+    --secondary-blue: #014F86;
+    --secondary-purple: #B9A8D2;
+    --secondary-orange: #D7534C;
+    --secondary-red: #A81E2C;
+    --secondary-yellow: #FCAF17;
     color-scheme: light;
 }
 

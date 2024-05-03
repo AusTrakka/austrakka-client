@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';

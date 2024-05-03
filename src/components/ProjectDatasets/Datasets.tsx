@@ -13,7 +13,7 @@ import { ResponseType } from '../../constants/responseType';
 import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
-import { selectUserState } from '../../app/userSlice';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
@@ -42,11 +42,7 @@ function Datasets(props: DatasetProps) {
     { field: 'uploadedDate', header: 'Uploaded Date', body: (rowData: any) => isoDateLocalDate(rowData.uploadedDate) },
     { field: 'fields', header: 'Fields', body: (rowData: any) => rowData.fields.join(', ') },
   ]);
-  const {
-    data,
-    loading,
-    admin,
-  } = useAppSelector(selectUserState);
+  const user: UserSliceState = useAppSelector(selectUserState);
 
   const renderDeleteButton = (
     rowData: any,
@@ -102,13 +98,13 @@ function Datasets(props: DatasetProps) {
   };
 
   const canDelete = () => {
-    if (loading === LoadingState.SUCCESS && projectDetails !== null) {
-      const rolesList = data[`${projectDetails.abbreviation}-Group`];
+    if (user.loading === LoadingState.SUCCESS && projectDetails !== null) {
+      const rolesList = user.data[`${projectDetails.abbreviation}-Group`];
       return hasPermission(
         rolesList,
         'project/tabs/datasettab/datasettable',
         PermissionLevel.CanClick,
-        admin,
+        user.admin,
       );
     }
     return false;
