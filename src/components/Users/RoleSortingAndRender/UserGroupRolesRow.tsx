@@ -29,7 +29,7 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
   const isItLocked = () => {
     switch (groupType) {
       case GroupHeadings.HOME_ORG:
-        return !groupName.includes('Owner');
+        return !groupName.endsWith('-Owner');
       default:
         return false;
     }

@@ -2,7 +2,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import UserGroupRolesRow from './UserGroupRolesRow';
 import { User, GroupRole, Group, Role } from '../../../types/dtos';
-import GroupHeaderRow from './GroupRowHeader';
+import GroupHeaderRow from './GroupHeaderRow';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 import { sortGroupRoles } from '../groupSorting';
 
