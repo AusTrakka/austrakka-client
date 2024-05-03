@@ -1,9 +1,9 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getThresholdAlerts } from '../../../utilities/resourceUtils';
-import { AppState } from '../../../types/app.interface';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
+import type { RootState } from '../../../app/store';
 
 interface ThresholdAlertsState {
   loading: string
@@ -49,6 +49,6 @@ const thresholdAlertsSlice = createSlice({
   },
 });
 
-export const selectThresholdAlerts = (state: AppState) => state.thresholdAlertsState;
+export const selectThresholdAlerts = (state: RootState) => state.thresholdAlertsState;
 
 export default thresholdAlertsSlice.reducer;

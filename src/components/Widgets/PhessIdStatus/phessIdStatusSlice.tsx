@@ -1,6 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { PhessIdStatus } from './phess.id.interface';
-import { AppState } from '../../../types/app.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
@@ -56,7 +55,7 @@ const phessIdStatusSlice = createSlice({
 });
 
 //
-export const selectPhessId = (state: AppState) => state.phessIdStatusState;
+export const selectPhessId = (state: RootState) => state.phessIdStatusState;
 export const selectAggregatedPhessIdStatus = createSelector(
   selectPhessId,
   (phessIds) => {

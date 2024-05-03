@@ -3,7 +3,10 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unreleased
+## 2024-04-23
+
+### Fixed
+- Performance issues when loading users page
 
 ### Changed
 - Plots may now optionally be specified as Vega, instead of Vega-Lite.

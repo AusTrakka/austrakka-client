@@ -1,6 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SampleSummary } from './sample.summary.interface';
-import { AppState } from '../../../types/app.interface';
 import { getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
@@ -55,7 +54,7 @@ const summarySlice = createSlice({
 });
 
 //
-export const selectSummary = (state: AppState) => state.sampleSummaryState;
+export const selectSummary = (state: RootState) => state.sampleSummaryState;
 
 // export const { updateCount } = summarySlice.actions;
 

@@ -74,32 +74,18 @@ export interface Member {
 }
 
 export interface User {
-  userId: number,
   objectId: string,
   isActive: boolean,
-  organisation: {
-    id: number,
-    abbreviation: string,
-  }
+  orgId: number,
+  orgAbbrev: string,
   orgName: string,
   isAustrakkaAdmin: boolean,
-  userRoleGroup: UserRoleGroup[],
+  groupRoles: GroupRole[],
   displayName: string,
-  createdBy: Date,
-  contactEmail: string,
-  lastUpdatedBy: Date,
-  IsAustrakkaProcess: boolean
-}
-
-export interface UserDetails {
-  displayName: string,
-  orgName: string,
-  orgAbbrev: string,
-  userRoleGroup: UserRoleGroup[],
   created: Date,
   contactEmail: string,
+  IsAustrakkaProcess: boolean
 }
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -215,8 +201,7 @@ export interface ThresholdAlertDTO {
   recentCount: number;
 }
 
-export interface UserRoleGroup {
-  user: any,
+export interface GroupRole {
   role: {
     id: number,
     name: string,

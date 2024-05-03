@@ -1,6 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { Organisations } from './organisations.interface';
-import { AppState } from '../../../types/app.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { aggregateArrayObjects, generateDateFilterString } from '../../../utilities/helperUtils';
@@ -55,7 +54,7 @@ const organisationsSlice = createSlice({
 });
 
 //
-export const selectOrganisations = (state: AppState) => state.organisationsState;
+export const selectOrganisations = (state: RootState) => state.organisationsState;
 export const selectAggregatedOrgs = createSelector(
   selectOrganisations,
   (organisations) => {
