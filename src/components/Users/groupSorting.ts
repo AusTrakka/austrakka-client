@@ -1,4 +1,4 @@
-import { Group, GroupRole, User } from '../../../types/dtos';
+import { Group, GroupRole, User } from '../../types/dtos';
 
 export const sortGroups = (groups: Group[], _user: User) => {
   const personalOrgGroups = groups.filter(
