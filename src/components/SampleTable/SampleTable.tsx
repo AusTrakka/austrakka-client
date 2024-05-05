@@ -1,6 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-param-reassign */
 import React, {
   memo, useEffect, useRef, useState,
 } from 'react';
@@ -53,8 +52,6 @@ function SampleTable(props: SamplesProps) {
     pageIndex: 0,
     pageSize: 50,
   });
-  const [columnOrderArrayInitial, setColumnOrderArrayInitial] = useState<string[]>([]);
-  const [columnOrderArray, setColumnOrderArray] = useState<string[]>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
   const [sampleList, setSampleList] = useState<Sample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
