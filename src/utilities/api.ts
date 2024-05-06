@@ -25,6 +25,15 @@ function getHeaders(token: string): any {
   };
 }
 
+function getHeadersPut(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json-patch+json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
 function getHeadersPatch(token: string): any {
   return {
     'Accept': 'application/json',
@@ -141,6 +150,19 @@ Promise<ResponseObject> {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: getHeadersPatch(token),
+  });
+}
+
+export async function callPUT(url: string, token: string, body: any):
+Promise<ResponseObject> {
+  if (!token) {
+    return noToken as ResponseObject;
+  }
+
+  return callApi(url, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: getHeadersPut(token),
   });
 }
 
