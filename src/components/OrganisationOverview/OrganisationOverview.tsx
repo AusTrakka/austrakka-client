@@ -3,7 +3,7 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import { getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
+import { getGroupMembers, getMe } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { Member, GroupRole } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
@@ -32,7 +32,7 @@ function OrganisationOverview() {
   useEffect(() => {
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
-      const groupResponse: ResponseObject = await getUserGroups(token);
+      const groupResponse: ResponseObject = await getMe(token);
       if (groupResponse.status === ResponseType.Success) {
         const { orgAbbrev,
           groupRoles,

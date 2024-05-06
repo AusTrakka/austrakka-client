@@ -6,11 +6,15 @@ import { getFields } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
+import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { useAppSelector } from '../../app/store';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
+  const user: UserSliceState = useAppSelector(selectUserState);
 
   // get all AT fields
   useEffect(() => {
@@ -18,7 +22,7 @@ function Fields() {
       const response: ResponseObject = await getFields(token);
       if (response.status === ResponseType.Success) {
         const fields: MetaDataColumn[] = response.data;
-        fields.sort((a,b) => a.columnOrder - b.columnOrder);
+        fields.sort((a, b) => a.columnOrder - b.columnOrder);
         setFields(fields);
       } else if (response.status === ResponseType.Error) {
         setError(response.message);
@@ -36,32 +40,38 @@ function Fields() {
   };
 
   return (
-    <>
-      <Typography className="pageTitle">Fields</Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      {/* TODO probably replace with better table */}
-      {/* TODO add descriptions in fields, and include e.g. NA is discouraged */}
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Field name</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Allowed values (if categorical)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {fields.map((field) => (
-              <TableRow key={field.columnName}>
-                <TableCell>{field.columnName}</TableCell>
-                <TableCell>{field.primitiveType ?? 'categorical'}</TableCell>
-                <TableCell>{renderAllowedValues(field.metaDataColumnValidValues)}</TableCell>
+    !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
+      <Alert severity="error">
+        Admin Only Page: Unauthorized
+      </Alert>
+    ) : (
+      <>
+        <Typography className="pageTitle">Fields</Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        {/* TODO probably replace with better table */}
+        {/* TODO add descriptions in fields, and include e.g. NA is discouraged */}
+        <TableContainer component={Paper} sx={{ mt: 3 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Field name</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Allowed values (if categorical)</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
+            </TableHead>
+            <TableBody>
+              {fields.map((field) => (
+                <TableRow key={field.columnName}>
+                  <TableCell>{field.columnName}</TableCell>
+                  <TableCell>{field.primitiveType ?? 'categorical'}</TableCell>
+                  <TableCell>{renderAllowedValues(field.metaDataColumnValidValues)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>
+    )
   );
 }
 

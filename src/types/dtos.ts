@@ -79,12 +79,12 @@ export interface User {
   orgId: number,
   orgAbbrev: string,
   orgName: string,
-  isAustrakkaAdmin: boolean,
+  isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
   created: Date,
   contactEmail: string,
-  IsAustrakkaProcess: boolean
+  isAusTrakkaProcess: boolean
 }
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
