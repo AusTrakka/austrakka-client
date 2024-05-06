@@ -3,6 +3,12 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-05-06
+
+### Added
+
+- Admin user management interface added. Admins can now view and edit user details, including display name, contact email, organisation, group-role assignments, and activation status. Easier access for admins to a user's objectID.
+
 ## 2024-05-03
 
 ### Changed
