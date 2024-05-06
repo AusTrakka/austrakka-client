@@ -99,14 +99,14 @@ function Users() {
     if (response.status !== ResponseType.Success) {
       throw new Error(response.message);
     } else {
-      setUsers(users.map((user) => {
-        if (user.objectId === userObjectId) {
+      setUsers(users.map((eachUser) => {
+        if (eachUser.objectId === userObjectId) {
           return {
-            ...user,
+            ...eachUser,
             contactEmail: newEmail,
           };
         }
-        return user;
+        return eachUser;
       }));
     }
   };
@@ -214,7 +214,7 @@ function Users() {
     </div>
   );
 
-  // need a ternary that opens a alert if the user is not allow here 
+  // need a ternary that opens a alert if the user is not allow here
   return (
     !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
       <Alert severity="error">

@@ -20,7 +20,6 @@ import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png'
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import LoadingState from '../../constants/loadingState';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 
 const settings = [
@@ -144,8 +143,6 @@ function MainMenuLayout() {
       updatePageStyling('page');
     }
   };
-
-  const canSee = () => (user.loading === LoadingState.SUCCESS && user.admin);
 
   const handleDrawer = () => {
     setDrawer(!drawer);
