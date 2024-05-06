@@ -3,6 +3,12 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Admin view of all AusTrakka field details
+
 ## 2024-05-06
 
 ### Added
