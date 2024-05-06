@@ -3,25 +3,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unreleased
+## 2024-05-06
 
 ### Added
 
-- Admin User Management (Editable User Page)
-- Admins can now edit:
-  - User's Display Name
-  - ContactEmail
-  - Organisation
-    - Automatically removes Organisation roles once changed
-  - Group-Role Assignments
-    - Add/Remove Role(s)
-    - Unwanted Assignments blocked
-    - Appropriate user feedback and warnings
-  - Activation Status
-
-- Save, Cancel, Edit buttons to user detail page.
-
-- Admin have more obvious access to a users objectID.
+- Admin user management interface added. Admins can now view and edit user details, including display name, contact email, organisation, group-role assignments, and activation status. Easier access for admins to a user's objectID.
 
 ## 2024-05-03
 
