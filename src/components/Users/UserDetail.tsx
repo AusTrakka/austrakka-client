@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrgansations, getRoles, getUser, putUserDetails } from '../../utilities/resourceUtils';
+import { getGroupList, getOrgansations, getRoles, getUser, putUser } from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -197,7 +197,7 @@ function UserDetail() {
         groupName: groupRole.group.name,
         roleName: groupRole.role.name,
       }));
-    const userResponse: ResponseObject = await putUserDetails(
+    const userResponse: ResponseObject = await putUser(
       userObjectId!,
       token,
       editedValuesDtoFormat,
