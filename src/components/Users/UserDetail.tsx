@@ -169,6 +169,7 @@ function UserDetail() {
     if (editing) {
       return (
         <EditableRow
+          key={field}
           field={field}
           detailValue={value}
           editedValues={editedValues}
@@ -181,6 +182,7 @@ function UserDetail() {
     }
     return (
       <BasicRow
+        key={field}
         field={field}
         value={value}
         readableNames={readableNames}
