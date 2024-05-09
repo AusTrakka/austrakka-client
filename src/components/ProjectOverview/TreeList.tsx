@@ -38,7 +38,11 @@ function TreeList(props: TreesProps) {
 
   useEffect(() => {
     async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
+      const treeListResponse: ResponseObject = await getTrees(
+        projectDetails!.abbreviation,
+        false,
+        token,
+      );
       if (treeListResponse.status === ResponseType.Success) {
         const newData = treeListResponse.data.map((tree: any) => ({
           ...tree,
