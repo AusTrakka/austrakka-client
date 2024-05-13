@@ -45,6 +45,7 @@ const defaultState: TreeState = {
   showBranchLengths: false,
   labelBlocks: [],
   keyValueLabelBlocks: false,
+  showShapes: true,
 };
 
 interface Style {
