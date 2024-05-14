@@ -26,11 +26,20 @@ function Fields() {
 
   // get all AT fields
   useEffect(() => {
+    const setNullsToCategorical = (inputFields: MetaDataColumn[]) => {
+      inputFields.forEach((field) => {
+        if (field.primitiveType === null) {
+          field.primitiveType = 'categorical';
+        }
+      });
+    };
+
     const retrieveFields = async () => {
       const response: ResponseObject = await getFields(token);
       if (response.status === ResponseType.Success) {
         const responseFields: MetaDataColumn[] = response.data;
         responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
+        setNullsToCategorical(responseFields);
         setFields(responseFields);
       } else if (response.status === ResponseType.Error) {
         setError(response.message);
@@ -63,12 +72,6 @@ function Fields() {
     return allowedValues.join(', ');
   };
 
-  const renderType = (type: string | null): JSX.Element => (
-    <div>
-      {type || 'categorical'}
-    </div>
-  );
-
   const columns = [
     {
       field: 'columnName',
@@ -81,7 +84,6 @@ function Fields() {
     {
       field: 'primitiveType',
       header: 'Type',
-      body: (rowData: any) => renderType(rowData.primitiveType),
     },
     {
       field: 'columnOrder',
