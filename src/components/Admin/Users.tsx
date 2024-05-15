@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Paper, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { DataTableRowClickEvent, DataTable, DataTableFilterMetaData, DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
-import { AdminPanelSettings, Close, Done, ModeEdit, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
+import { Close, Done, ModeEdit } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
@@ -16,36 +16,7 @@ import SearchInput from '../TableComponents/SearchInput';
 import { selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
-
-const renderIcon = (rowData: any) => {
-  const { isActive, isAusTrakkaAdmin, isAusTrakkaProcess } = rowData;
-  if (!isAusTrakkaAdmin && !isAusTrakkaProcess) {
-    return isActive ? (
-      <Tooltip title="User" placement="top" arrow>
-        <Person color="primary" style={{ marginRight: '0.5rem' }} />
-      </Tooltip>
-    ) : (
-      <Tooltip title="Disabled-User" placement="top" arrow>
-        <PersonOff color="error" style={{ marginRight: '0.5rem' }} />
-      </Tooltip>
-    );
-  }
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      {isAusTrakkaAdmin && (
-        <Tooltip title="AusTrakka-Admin" placement="top" arrow>
-          <AdminPanelSettings color="secondary" style={{ marginRight: '0.5rem' }} />
-        </Tooltip>
-      )}
-      {isAusTrakkaProcess && (
-        <Tooltip title="AusTrakkaProcess" placement="top" arrow>
-          <PrecisionManufacturing color="info" style={{ marginRight: '0.5rem' }} />
-        </Tooltip>
-      )}
-    </div>
-  );
-};
+import renderIcon from './UserIconRenderer';
 
 function renderDisplayName(rowData: any) {
   return (
@@ -172,7 +143,7 @@ function Users() {
       header: 'Email',
       editor: (options: ColumnEditorOptions) => emailEditor(options),
       body: emailBodyTemplate },
-    { field: 'organisation.abbreviation', header: 'Organisation' },
+    { field: 'orgAbbrev', header: 'Organisation' },
   ];
 
   useEffect(() => {
@@ -194,10 +165,11 @@ function Users() {
     }
   }, [includeAll, token, tokenLoading]);
 
-  // TODO: NEED TO DO THIS and get an actual implementation of the row clicker.
   const rowClickHandler = (row: DataTableRowClickEvent) => {
+    // will not need to do this once the email edit is gone from the main page
     if ((row.originalEvent.target as HTMLElement)?.closest('td')?.className === 'p-editable-column') return;
 
+    // wont need to this if else stuff once the email edit is gone from the main page
     const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
     if ('objectId' in selectedRow.data) {

@@ -1,81 +1,47 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
-import { TableRow, TableCell, IconButton, Typography } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import UserRoleGroupRow from './UserRoleGroupRow';
-import { UserDetails, UserRoleGroup } from '../../../types/dtos';
+import UserGroupRolesRow from './UserGroupRolesRow';
+import { User, GroupRole, Group, Role } from '../../../types/dtos';
+import GroupHeaderRow from './GroupHeaderRow';
+import { GroupHeadings } from '../Enums/GroupHeadings';
+import { sortGroupRoles } from '../groupSorting';
 
 interface RenderGroupedRolesAndGroupsProps {
-  userRoleGroups: UserRoleGroup[];
-  user: UserDetails;
-  openRoleGroups: string[];
-  setOpenRoleGroups: Dispatch<SetStateAction<string[]>>;
+  userGroupRoles: GroupRole[];
+  user: User;
+  setOpenDupSnackbar: Dispatch<SetStateAction<boolean>>;
+  openGroupRoles: string[];
+  setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
+  editing: boolean;
+  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
+  allGroups: Group[]
+  allRoles: Role[];
 }
-
-const sortUserRoleGroups = (userRoleGroups: UserRoleGroup[], user:UserDetails) => {
-  const personalOrgs = userRoleGroups.filter(
-    (group) =>
-      group.group.organisation?.abbreviation === user.orgAbbrev,
-  );
-
-  const foriegnOrgs = userRoleGroups.filter(
-    (group) =>
-      group.group.organisation?.abbreviation !== user.orgAbbrev &&
-        group.group.organisation?.abbreviation !== undefined,
-  );
-
-  const otherGroups = userRoleGroups.filter(
-    (group) =>
-      !personalOrgs.includes(group) &&
-        !foriegnOrgs.includes(group) &&
-        (group.group.organisation?.abbreviation === undefined ||
-          group.group.organisation === null),
-  );
-
-  return [personalOrgs, foriegnOrgs, otherGroups];
-};
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
-  const { userRoleGroups, openRoleGroups, user, setOpenRoleGroups } = props;
+  const { userGroupRoles,
+    setOpenDupSnackbar,
+    openGroupRoles,
+    user,
+    setOpenGroupRoles,
+    editing,
+    updateUserGroupRoles,
+    allRoles,
+    allGroups } = props;
 
-  const [personalOrgs, foriegnOrgs, otherGroups] = sortUserRoleGroups(userRoleGroups, user);
+  const [personalOrgs, foriegnOrgs, otherGroups] = sortGroupRoles(userGroupRoles, user);
 
-  const handleRoleGroupToggle = (groupName: string) => {
-    setOpenRoleGroups((prevOpenRoleGroups) =>
-      (prevOpenRoleGroups.includes(groupName)
-        ? prevOpenRoleGroups.filter((name) => name !== groupName)
-        : [...prevOpenRoleGroups, groupName]));
+  const handleGroupRoleToggle = (groupName: string) => {
+    setOpenGroupRoles((prevOpenGroupRoles) =>
+      (prevOpenGroupRoles.includes(groupName)
+        ? prevOpenGroupRoles.filter((name) => name !== groupName)
+        : [...prevOpenGroupRoles, groupName]));
   };
 
-  const renderGroupHeader = (groupType: string, groupMapSize: number) => (
-    <TableRow>
-      <TableCell width="300em" colSpan={2}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => handleRoleGroupToggle(groupType)}
-            disabled={groupMapSize === 0}
-          >
-            {openRoleGroups.includes(groupType) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-          </IconButton>
-          {
-          groupMapSize === 0 ? (
-            <Typography variant="body2" sx={{ color: 'grey' }}>
-              {groupType}
-            </Typography>
-          ) : (
-            <Typography variant="body2">{groupType}</Typography>
-          )
-}
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-
-  const renderRoleGroups = (roleGroups: UserRoleGroup[], groupType: string) => {
+  const renderGroupRoles = (groupRoles: GroupRole[], groupType: string) => {
     const groupMap = new Map<string, { roleNames: string[] }>();
 
-    roleGroups.forEach((userGroup) => {
+    groupRoles.forEach((userGroup) => {
       const groupName = userGroup.group.name;
       const roleName = userGroup.role.name;
 
@@ -88,13 +54,29 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
     return (
       <>
-        {renderGroupHeader(groupType, groupMap.size)}
+        <GroupHeaderRow
+          groupType={groupType}
+          groupMapSize={groupMap.size}
+          setOpenDupSnackbar={setOpenDupSnackbar}
+          user={user}
+          allGroups={allGroups}
+          allRoles={allRoles}
+          editing={editing}
+          openGroupRoles={openGroupRoles}
+          handleGroupRoleToggle={handleGroupRoleToggle}
+          existingGroupRoles={userGroupRoles}
+          updateUserGroupRoles={updateUserGroupRoles}
+        />
         {Array.from(groupMap).map(([groupName, { roleNames }]) => (
-          <UserRoleGroupRow
+          <UserGroupRolesRow
             key={`${groupType}-${groupName}-${roleNames}`}
             groupName={groupName}
             roleNames={roleNames}
-            isOpen={openRoleGroups.includes(groupType)}
+            isOpen={openGroupRoles.includes(groupType)}
+            editing={editing}
+            userGroupRoles={userGroupRoles}
+            updateUserGroupRoles={updateUserGroupRoles}
+            groupType={groupType}
           />
         ))}
       </>
@@ -103,9 +85,9 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
 
   return (
     <>
-      {renderRoleGroups(personalOrgs, 'Home Organisation')}
-      {renderRoleGroups(foriegnOrgs, 'Other Organisations')}
-      {renderRoleGroups(otherGroups, 'Projects and Other Groups')}
+      {renderGroupRoles(personalOrgs, GroupHeadings.HOME_ORG)}
+      {renderGroupRoles(foriegnOrgs, GroupHeadings.OTHER_ORGS)}
+      {renderGroupRoles(otherGroups, GroupHeadings.PROJECTS_AND_OTHER_GROUPS)}
     </>
   );
 }

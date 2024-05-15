@@ -3,11 +3,15 @@ parameters:
     type: string
   - name: resourceGroup
     type: string
+  - name: workingDirectory
+    type: string
+    default: $(Build.Repository.LocalPath)
 
 steps:
   - task: PowerShell@2
     displayName: Create SWA config
     inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
       targetType: 'inline'
       script: |
         $json = (get-content ./swa-cli.config.json) | convertfrom-json

@@ -3,6 +3,37 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-05-11
+
+### Fixed
+
+- SVG export of trees now correctly renders the tree nodes in the SVG file.
+
+## 2024-05-06
+
+### Added
+
+- Admin user management interface added. Admins can now view and edit user details, including display name, contact email, organisation, group-role assignments, and activation status. Easier access for admins to a user's objectID.
+
+## 2024-05-03
+
+### Changed
+- All legends (trees and plots) now list only values present in the data itself, even if the field is a categorical field with additional valid values.
+- Plot and tree legends will now be sorted in natural sort order (ST1, ST5, ST11 rather than ST1, ST11, ST5).
+- Plot colouring now uses a neutral (grey) value for null metadata values.
+
+### Fixed
+- Has_sequences field will no longer display "false" values while the field is still loading; instead it will appear, correctly, as empty
+- Reinstate using a neutral (grey) value for null metadata values on trees.
+
+## 2024-04-23
+
+### Fixed
+- Performance issues when loading users page
+
+### Changed
+- Plots may now optionally be specified as Vega, instead of Vega-Lite.
+
 ## 2024-04-12
 
 ### Added

@@ -23,6 +23,7 @@ module.exports = {
     'arrow-parens': 0,   // allow a => a+b. Alternatively could use ['error','as-needed']
     'quote-props': ['error', 'consistent'],  // enforce quotes on all properties, or none
     'import/prefer-default-export': 0, // allow single exports
+    'no-param-reassign': 0,  // allow modifying function parameters in-place
     'no-restricted-syntax': [  // dropping ForOfStatement; reiterating the other rules
       'error', 
       { 

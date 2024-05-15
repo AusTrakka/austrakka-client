@@ -31,7 +31,7 @@ const defaultSpec: TopLevelSpec = {
 function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -83,10 +83,12 @@ function Histogram(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField);
+      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
 
-    setSpec(setColorInSpec);
-  }, [colourField]);
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
+    }
+  }, [colourField, fieldUniqueValues]);
 
   useEffect(() => {
     const addBinningToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {

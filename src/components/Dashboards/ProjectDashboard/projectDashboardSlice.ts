@@ -1,10 +1,9 @@
-/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
-import { AppState } from '../../../types/app.interface';
+import type { RootState } from '../../../app/store';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
@@ -86,7 +85,7 @@ const projectDashboardSlice = createSlice({
   },
 });
 
-export const selectProjectDashboard = (state: AppState) => state.projectDashboardState;
+export const selectProjectDashboard = (state: RootState) => state.projectDashboardState;
 
 export const { updateTimeFilter, updateTimeFilterObject } = projectDashboardSlice.actions;
 
