@@ -26,8 +26,7 @@ export default function ProjectsTotal() {
 
   useEffect(() => {
     if (loading === 'idle' &&
-    tokenLoading !== LoadingState.IDLE &&
-    tokenLoading !== LoadingState.LOADING) {
+    tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchProjectsTotal(token));
     }
   }, [loading, dispatch, timeFilter, token, tokenLoading]);

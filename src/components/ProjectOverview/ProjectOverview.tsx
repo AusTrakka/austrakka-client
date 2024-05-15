@@ -76,7 +76,7 @@ function ProjectOverview() {
         setIsOverviewLoading(false);
       }
     }
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getProject();
     }
   }, [projectAbbrev, token, tokenLoading]);
@@ -103,8 +103,7 @@ function ProjectOverview() {
     }
 
     if (projectDetails &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
+      tokenLoading === LoadingState.SUCCESS
     ) {
       getProjectSummary();
       dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));

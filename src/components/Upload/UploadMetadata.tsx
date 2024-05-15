@@ -150,7 +150,7 @@ function UploadMetadata() {
         setProformaStatus(LoadingState.ERROR);
       }
     };
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getProformas();
     }
   }, [token, tokenLoading]);

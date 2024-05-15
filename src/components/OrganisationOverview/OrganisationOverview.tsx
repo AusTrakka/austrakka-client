@@ -62,7 +62,7 @@ function OrganisationOverview() {
         setGroupStatusMessage(groupResponse.message);
       }
     }
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getGroups();
     }
   }, [token, tokenLoading]);
@@ -86,7 +86,7 @@ function OrganisationOverview() {
     }
 
     if (groupsStatus === LoadingState.SUCCESS ||
-      (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING)) {
+      (tokenLoading === LoadingState.SUCCESS)) {
       getOrgMembersList();
     }
   }, [token, tokenLoading, groupsStatus, orgEveryone]);

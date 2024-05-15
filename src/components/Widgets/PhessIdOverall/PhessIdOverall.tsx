@@ -24,8 +24,7 @@ export default function PhessIdOverall() {
 
   useEffect(() => {
     if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
+      tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchPhessIdOverall(token));
     }
   }, [loading, dispatch, timeFilter, tokenLoading, token]);

@@ -48,7 +48,7 @@ function ProjectsList() {
     }
     // NEW: Only call endpoint if token has already been retrieved/attempted to be retrieved
     // Otherwise the first endpoint call will always be unsuccessful
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getProject();
     }
   }, [token, tokenLoading]);

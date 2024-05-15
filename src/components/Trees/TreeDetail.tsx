@@ -94,8 +94,7 @@ function TreeDetail() {
   // Request redux data if not loaded
   useEffect(() => {
     if (projectAbbrev &&
-       tokenLoading !== LoadingState.LOADING &&
-       tokenLoading !== LoadingState.IDLE) {
+       tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
   }, [projectAbbrev, dispatch, token, tokenLoading]);
@@ -157,7 +156,7 @@ function TreeDetail() {
       }
     };
 
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       fetchVersions();
     }
   }, [analysisId, token, tokenLoading]);
@@ -251,8 +250,7 @@ function TreeDetail() {
       }
       setIsTreeLoading(false);
     };
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getTree();
     }
   }, [analysisId, jobInstanceId, token, tokenLoading]);

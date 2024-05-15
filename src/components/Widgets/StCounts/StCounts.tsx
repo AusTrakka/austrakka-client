@@ -136,8 +136,7 @@ export default function StCounts(props: any) {
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter, aggField: stFieldName };
     if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
+      tokenLoading === LoadingState.SUCCESS
     ) {
       stCountsDispatch(fetchStCounts(dispatchProps));
     }

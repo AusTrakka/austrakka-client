@@ -47,8 +47,7 @@ function DateSelector(props: any) {
     dispatch(updateTimeFilterObject(filterObject));
 
     // Dispatch widget async thunks
-    if (tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchUserOverview(token));
       dispatch(fetchProjectsTotal(token));
       dispatch(fetchPhessIdOverall(token));

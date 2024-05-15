@@ -74,8 +74,7 @@ function ProFormaDetail() {
       setErrMsg(`Proforma ${proformaAbbrev} could not be accessed`);
     };
 
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getCurrentProformaDetails();
       getProformas();
     }

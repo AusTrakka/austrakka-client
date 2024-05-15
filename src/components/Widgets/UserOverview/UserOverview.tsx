@@ -16,8 +16,7 @@ export default function UserOverview() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     if (loading === 'idle' &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
+      tokenLoading === LoadingState.SUCCESS
     ) {
       dispatch(fetchUserOverview(token));
     }

@@ -159,7 +159,7 @@ function Users() {
       setDataLoading(false);
     };
 
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       setDataLoading(true);
       getUsers();
     }

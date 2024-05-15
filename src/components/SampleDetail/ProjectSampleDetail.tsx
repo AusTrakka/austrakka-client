@@ -29,8 +29,7 @@ function SampleDetail() {
 
   useEffect(() => {
     if (projectAbbrev &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
+      tokenLoading === LoadingState.SUCCESS
     ) {
       dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }

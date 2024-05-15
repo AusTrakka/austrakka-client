@@ -114,8 +114,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   useEffect(() => {
     if (projectId !== null &&
         projectId !== projectIdInRedux &&
-        tokenLoading !== LoadingState.IDLE &&
-        tokenLoading !== LoadingState.LOADING) {
+        tokenLoading === LoadingState.SUCCESS) {
       const thunkObj = { projectId, groupId, token };
       dispatch(fetchProjectDashboard(thunkObj));
     }

@@ -100,8 +100,7 @@ function SampleTable(props: SamplesProps) {
       }
     }
     if (groupContext !== undefined &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+      tokenLoading === LoadingState.SUCCESS) {
       setIsSamplesLoading(true);
       getFields();
       getTotalSamplesOverall();
@@ -173,8 +172,7 @@ function SampleTable(props: SamplesProps) {
         }
       }
       if (sampleTableColumns.length > 0 &&
-        tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
+        tokenLoading === LoadingState.SUCCESS) {
         getSamplesList();
       } else {
         setSampleList([]);

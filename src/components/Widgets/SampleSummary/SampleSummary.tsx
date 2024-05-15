@@ -48,8 +48,7 @@ export default function SampleSummary(props: any) {
 
   useEffect(() => {
     if (loading === 'idle' &&
-     tokenLoading !== LoadingState.IDLE &&
-     tokenLoading !== LoadingState.LOADING
+     tokenLoading === LoadingState.SUCCESS
     ) {
       // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
       const dispatchProps = { groupId, token, projectId, timeFilter };

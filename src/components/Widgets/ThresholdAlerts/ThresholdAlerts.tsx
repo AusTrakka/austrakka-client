@@ -22,8 +22,7 @@ export default function ThresholdAlerts(props: any) {
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId };
     if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
+      tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchThresholdAlerts(dispatchProps));
     }
   }, [loading, dispatch, projectId,

@@ -31,8 +31,7 @@ export default function PhessIdStatus(props: any) {
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };
     if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
+      tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchPhessIdStatus(dispatchProps));
     }
   }, [loading, dispatch, timeFilter, projectId,

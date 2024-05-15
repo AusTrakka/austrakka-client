@@ -55,13 +55,13 @@ function PlotDetail() {
       }
       setIsPlotLoading(false);
     };
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       getPlot();
     }
   }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
-    if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (plot && tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchProjectMetadata({ projectAbbrev: plot.projectAbbreviation, token }));
     }
   }, [plot, dispatch, token, tokenLoading]);

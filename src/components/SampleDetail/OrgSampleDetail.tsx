@@ -68,8 +68,7 @@ function SampleDetail() {
         console.error('Error updating project:', error);
       }
     };
-    if ((seqId || groupName) && tokenLoading !== LoadingState.LOADING &&
-    tokenLoading !== LoadingState.IDLE) {
+    if ((seqId || groupName) && tokenLoading === LoadingState.SUCCESS) {
       updateProject();
     }
   }, [token, seqId, groupName, selectedGroup, tokenLoading]);
@@ -111,8 +110,7 @@ function SampleDetail() {
     };
 
     // Make sure selectedGroup is not null before updating display fields
-    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (selectedGroup && tokenLoading === LoadingState.SUCCESS) {
       updateDisplayFields();
     }
   }, [token, tokenLoading, selectedGroup]);
@@ -129,8 +127,7 @@ function SampleDetail() {
         setErrMsg(`Record ${seqId} could not be found within the context of ${selectedGroup!.name}`);
       }
     };
-    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (selectedGroup && tokenLoading === LoadingState.SUCCESS) {
       updateSampleData();
     }
   }, [token, tokenLoading, selectedGroup, seqId]);

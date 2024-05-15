@@ -14,7 +14,7 @@ function UserProvider({ children }: UserProviderProps) {
   const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+    if (tokenLoading === LoadingState.SUCCESS) {
       dispatch(fetchUserRoles(token));
     }
   }, [token, tokenLoading, dispatch]);
