@@ -45,8 +45,7 @@ function Fields() {
         setError(response.message);
       }
     };
-    // TODO use this everywhere, not not idle/loading
-    if (tokenLoading === LoadingState.SUCCESS) {
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       retrieveFields();
     }
   }, [token, tokenLoading]);
