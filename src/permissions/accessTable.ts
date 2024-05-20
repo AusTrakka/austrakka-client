@@ -1,3 +1,4 @@
+import { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
 
 export enum PermissionLevel {
@@ -6,11 +7,17 @@ export enum PermissionLevel {
 }
 
 interface ResourcePriviledges {
-  [PermissionLevel.CanClick]: string[];
   [PermissionLevel.CanShow]: string[];
+  [PermissionLevel.CanClick]?: string[];
 }
 
 const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
+  'fields': {
+    [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin], // redundant, as admins can see everything
+  },
+  'users': {
+    [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
+  },
   'project/tabs/datasettab': {
     [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
     [PermissionLevel.CanClick]: [RoleName.Viewer, RoleName.ProjectAnalyst],
@@ -21,15 +28,20 @@ const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
   },
 };
 
+// Currently all roles are allocated via some group
+// The component specifies the relevant group, the component permission domain,
+// and the required permission level
 export function hasPermission(
-  roles: string[],
+  user: UserSliceState,
+  group: string,
   domain: string,
   permission: PermissionLevel,
-  admin:boolean,
 ): boolean {
-  if (admin) {
+  if (!user) return false;
+  if (user.admin) {
     return true;
   }
+  const userRoles = user.groupRoles[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
-  return roles.some(role => allowedRoles.includes(role));
+  return userRoles.some(role => allowedRoles.includes(role));
 }

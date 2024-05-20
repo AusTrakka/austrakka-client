@@ -6,7 +6,7 @@ import {
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
 } from '@mui/icons-material/';
 import {
   Box, Drawer, IconButton, List,
@@ -19,8 +19,8 @@ import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
-import { selectUserState } from '../../app/userSlice';
-import LoadingState from '../../constants/loadingState';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 
 const settings = [
   {
@@ -58,6 +58,13 @@ const pages = [
     title: 'Users',
     link: '/users',
     icon: <People />,
+    permissionDomain: 'users',
+  },
+  {
+    title: 'Fields',
+    link: '/fields',
+    icon: <ViewColumn />,
+    permissionDomain: 'fields',
   },
 ];
 
@@ -79,6 +86,7 @@ function MainMenuLayout() {
     proformas: 'ProFormas',
     members: 'Members',
     users: 'Users',
+    fields: 'Fields',
     datasets: 'Datasets',
   };
 
@@ -109,19 +117,22 @@ function MainMenuLayout() {
   }
 
   const [username, setUsername] = useState('');
-  const [user, setUser] = useState('');
   const { accounts } = useMsal();
 
   const account = useAccount(accounts[0] || {});
-  const {
-    loading,
-    admin,
-  } = useAppSelector(selectUserState);
+  const user: UserSliceState = useAppSelector(selectUserState);
+
+  const visiblePages = pages.filter((page) =>
+    !page.permissionDomain || hasPermission(
+      user,
+      'AusTrakka-Owner',
+      page.permissionDomain,
+      PermissionLevel.CanShow,
+    ));
 
   useEffect(() => {
-    if (account && account.name && account.username) {
-      setUser(account.name);
-      setUsername(account.username);
+    if (account && account.username) {
+      setUsername(account.username); // seems to be login email
     }
   }, [account]);
 
@@ -132,8 +143,6 @@ function MainMenuLayout() {
       updatePageStyling('page');
     }
   };
-
-  const canSee = () => (loading === LoadingState.SUCCESS && admin);
 
   const handleDrawer = () => {
     setDrawer(!drawer);
@@ -170,53 +179,51 @@ function MainMenuLayout() {
           </Box>
           <Divider />
           <List className={styles.pagelist}>
-            {pages.map((page) => (
+            {visiblePages.map((page) => (
               <React.Fragment key={page.title}>
-                {canSee() || page.title !== 'Users' ? (
-                  <NavLink
-                    key={page.title}
-                    to={page.link}
-                    end={page.link === '/'}
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? '#dddddd' : '',
-                      borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
-                      fontWeight: isActive ? 'bold' : '',
-                    })}
+                <NavLink
+                  key={page.title}
+                  to={page.link}
+                  end={page.link === '/'}
+                  style={({ isActive }) => ({
+                    backgroundColor: isActive ? '#dddddd' : '',
+                    borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                    fontWeight: isActive ? 'bold' : '',
+                  })}
+                >
+                  <Tooltip
+                    title={drawer ? '' : page.title}
+                    arrow
+                    placement="right"
                   >
-                    <Tooltip
-                      title={drawer ? '' : page.title}
-                      arrow
-                      placement="right"
+                    <MenuItem
+                      key={page.title}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: '#dddddd',
+                        },
+                        'width': '100%',
+                      }}
                     >
-                      <MenuItem
-                        key={page.title}
+                      <ListItemIcon
                         sx={{
-                          '&:hover': {
-                            backgroundColor: '#dddddd',
-                          },
-                          'width': '100%',
+                          color: 'primary.main',
+                          minWidth: 0,
+                          mr: drawer ? 1 : 'auto',
+                          justifyContent: 'center',
                         }}
                       >
-                        <ListItemIcon
-                          sx={{
-                            color: 'primary.main',
-                            minWidth: 0,
-                            mr: drawer ? 1 : 'auto',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {page.icon}
-                        </ListItemIcon>
-                        {drawer ? <ListItemText>{page.title}</ListItemText> : null}
-                      </MenuItem>
-                    </Tooltip>
-                  </NavLink>
-                ) : null}
+                        {page.icon}
+                      </ListItemIcon>
+                      {drawer ? <ListItemText>{page.title}</ListItemText> : null}
+                    </MenuItem>
+                  </Tooltip>
+                </NavLink>
               </React.Fragment>
             ))}
           </List>
           <Divider />
-          <Tooltip title={drawer ? username : `${user} - ${username}`} arrow placement="right">
+          <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
             <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
               <Grid item>
                 <AccountCircle color="primary" />
@@ -224,7 +231,7 @@ function MainMenuLayout() {
               {drawer ? (
                 <Grid item width="100%" textAlign="center">
                   <Typography noWrap color="primary.main">
-                    {user}
+                    {user.displayName}
                   </Typography>
                 </Grid>
               )

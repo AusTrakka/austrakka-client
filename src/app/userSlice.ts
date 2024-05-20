@@ -2,13 +2,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { GroupRole } from '../types/dtos';
-import { getUserGroups } from '../utilities/resourceUtils';
+import { GroupRole, User } from '../types/dtos';
+import { getMe } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 
 export interface UserSliceState {
-  data: Record<string, string[]>,
+  groupRoles: Record<string, string[]>,
+  displayName: string,
   admin: boolean,
   errorMessage: string,
   loading: LoadingState,
@@ -16,6 +17,7 @@ export interface UserSliceState {
 
 interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
+  displayName: string,
   isAusTrakkaAdmin: boolean,
 }
 
@@ -25,11 +27,11 @@ const fetchUserRoles = createAsyncThunk(
     token: string,
     thunkAPI,
   ): Promise<GroupRole[] | unknown> => {
-    const groupResponse: ResponseObject = await getUserGroups(token);
+    const groupResponse: ResponseObject = await getMe(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { groupRoles, isAusTrakkaAdmin } = groupResponse.data;
+      const { groupRoles, isAusTrakkaAdmin, displayName } = groupResponse.data as User;
       return thunkAPI
-        .fulfillWithValue({ groupRoles, isAusTrakkaAdmin } as FetchUserRolesResponse);
+        .fulfillWithValue({ groupRoles, displayName, isAusTrakkaAdmin } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -38,7 +40,7 @@ const fetchUserRoles = createAsyncThunk(
 const userSlice = createSlice({
   name: 'userSlice',
   initialState: {
-    data: {},
+    groupRoles: {},
     errorMessage: '',
     loading: LoadingState.IDLE,
   } as UserSliceState,
@@ -59,8 +61,9 @@ const userSlice = createSlice({
             data[groupRole.group.name] = [groupRole.role.name];
           }
         });
-        state.data = data;
+        state.groupRoles = data;
         state.admin = holder.isAusTrakkaAdmin;
+        state.displayName = holder.displayName;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;
