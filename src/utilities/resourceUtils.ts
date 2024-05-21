@@ -33,7 +33,7 @@ export const getDisplayFields = (groupId: number, token: string) => callGET(`/ap
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 
-// Proforma endpoints
+// Proforma and field endpoints
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
@@ -43,6 +43,7 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
     : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
+export const getFields = (token: string) => callGET('/api/MetaDataColumns', token);
 
 // Project metadata
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
@@ -74,7 +75,7 @@ export const validateSubmissions = (formData: FormData, params: string, token: s
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
 
 // User endpoints
-export const getUserGroups = (token: string) => callGET('/api/Users/Me', token);
+export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getAllUsers = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
