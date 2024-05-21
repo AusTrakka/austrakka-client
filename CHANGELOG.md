@@ -3,6 +3,20 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Admin view of all AusTrakka field details
+
+
+## 2024-05-11
+
+### Fixed
+
+- SVG export of trees now correctly renders the tree nodes in the SVG file.
+
+
 ## 2024-05-06
 
 ### Added

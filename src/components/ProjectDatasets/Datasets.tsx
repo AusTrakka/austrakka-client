@@ -99,12 +99,11 @@ function Datasets(props: DatasetProps) {
 
   const canDelete = () => {
     if (user.loading === LoadingState.SUCCESS && projectDetails !== null) {
-      const rolesList = user.data[`${projectDetails.abbreviation}-Group`];
       return hasPermission(
-        rolesList,
+        user,
+        `${projectDetails.abbreviation}-Group`,
         'project/tabs/datasettab/datasettable',
         PermissionLevel.CanClick,
-        user.admin,
       );
     }
     return false;
