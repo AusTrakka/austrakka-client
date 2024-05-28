@@ -32,6 +32,7 @@ export const getTotalSamples = (groupId: number, token: string) => callGET(`/api
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
+export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma endpoints
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
