@@ -49,7 +49,7 @@ export const getFields = (token: string) => callGET('/api/MetaDataColumns', toke
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
 export const getProjectFields = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
 export const getProjectViews = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view/${viewId}`, token);
+export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);
