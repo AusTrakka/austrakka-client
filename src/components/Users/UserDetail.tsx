@@ -199,6 +199,8 @@ function UserDetail() {
       roleName: groupRole.role.name,
     }));
 
+    console.log(groupAssignmentsFormat);
+
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat = {
       displayName: otherValues.displayName,
@@ -209,16 +211,6 @@ function UserDetail() {
 
     try {
       // Updating user details
-      const userResponse: ResponseObject = await putUser(
-        userObjectId!,
-        token,
-        editedValuesDtoFormat,
-      );
-
-      if (userResponse.status !== ResponseType.Success) {
-        throw new Error('User could not be accessed');
-      }
-
       // Replacing group assignments
       const assignmentResponse: ResponseObject = await replaceAssignments(
         userObjectId!,
@@ -228,6 +220,16 @@ function UserDetail() {
 
       if (assignmentResponse.status !== ResponseType.Success) {
         throw new Error('Could not assign group roles');
+      }
+
+      const userResponse: ResponseObject = await putUser(
+        userObjectId!,
+        token,
+        editedValuesDtoFormat,
+      );
+
+      if (userResponse.status !== ResponseType.Success) {
+        throw new Error('User could not be accessed');
       }
 
       // Updating local state with the new user data
