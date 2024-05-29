@@ -34,7 +34,7 @@ export const getGroupMembers = (groupId: number, token: string) => callGET(`/api
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
-// Proforma endpoints
+// Proforma and field endpoints
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
@@ -44,12 +44,13 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
     : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
+export const getFields = (token: string) => callGET('/api/MetaDataColumns', token);
 
 // Project metadata
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
 export const getProjectFields = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
 export const getProjectViews = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view/${viewId}`, token);
+export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);
@@ -75,7 +76,7 @@ export const validateSubmissions = (formData: FormData, params: string, token: s
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
 
 // User endpoints
-export const getUserGroups = (token: string) => callGET('/api/Users/Me', token);
+export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);

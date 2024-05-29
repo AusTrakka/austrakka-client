@@ -126,6 +126,8 @@ export interface MetaDataColumn extends Field {
   metaDataColumnTypeId: number
   metaDataColumnValidValues: string[] | null
   primitiveType: string | null
+  description: string
+  nndssFieldLabel: string
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean

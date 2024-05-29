@@ -12,10 +12,11 @@ import { useApi } from '../../app/ApiContext';
 import { UserList } from '../../types/dtos';
 import { getUserList } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
-import { selectUserState } from '../../app/userSlice';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import renderIcon from './UserIconRenderer';
+import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 
 function renderDisplayName(rowData: UserList) {
   return (
@@ -38,10 +39,7 @@ function Users() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const [dataLoading, setDataLoading] = useState<boolean>(true);
-  const {
-    loading,
-    admin,
-  } = useAppSelector(selectUserState);
+  const user: UserSliceState = useAppSelector(selectUserState);
 
   const emailBodyTemplate = (rowData: UserList) => (
     (!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ?
@@ -122,9 +120,10 @@ function Users() {
       </div>
     </div>
   );
-  // need a nernary that opens a alert if the user is not allow here based on loading and admin
+
+  // need a ternary that opens a alert if the user is not allow here
   return (
-    loading === LoadingState.SUCCESS && !admin ? (
+    !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
       <Alert severity="error">
         Admin Only Page: Unauthorized
       </Alert>
@@ -186,4 +185,5 @@ function Users() {
     )
   );
 }
+
 export default Users;
