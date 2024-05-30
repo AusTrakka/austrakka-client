@@ -74,30 +74,18 @@ export interface Member {
 }
 
 export interface User {
-  userId: number,
   objectId: string,
   isActive: boolean,
   orgId: number,
   orgAbbrev: string,
   orgName: string,
-  isAustrakkaAdmin: boolean,
+  isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
-  createdBy: Date,
-  contactEmail: string,
-  lastUpdatedBy: Date,
-  IsAustrakkaProcess: boolean
-}
-
-export interface UserDetails {
-  displayName: string,
-  orgName: string,
-  orgAbbrev: string,
-  groupRoles: GroupRole[],
   created: Date,
   contactEmail: string,
+  isAusTrakkaProcess: boolean
 }
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -126,6 +114,8 @@ export interface MetaDataColumn extends Field {
   metaDataColumnTypeId: number
   metaDataColumnValidValues: string[] | null
   primitiveType: string | null
+  description: string
+  nndssFieldLabel: string
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
@@ -242,4 +232,10 @@ export interface DataSetEntry {
   createdBy: string;
   uploadedDate: Date;
   fields: string[];
+}
+
+export interface Role {
+  roleId: number,
+  name: string,
+  description: string,
 }

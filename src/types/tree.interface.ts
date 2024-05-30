@@ -17,4 +17,5 @@ export default interface TreeState {
   // extra state for the tree controls
   labelBlocks: string[];
   keyValueLabelBlocks: boolean;
+  showShapes: boolean;
 }

@@ -26,8 +26,8 @@ variables:
   azureConnectionAdmin: 'AusTrakka Data (Agent Pool)'
   backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
   backendAzureRmStorageAccountName: 'stuatterfshdas1'
-  backendAzureRmContainerName: 'state'
-  backendAzureRmKey: '$(EnvId).tfstate'
+  backendAzureRmContainerName: 'env'
+  backendAzureRmKey: '$(EnvId)/$(EnvId).tfstate'
   terraformOutputArtifact: 'TerraformOutput'
   buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
   sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
@@ -40,7 +40,11 @@ stages:
           - template: templates/checkout/self.yml
           - template: templates/checkout/infra.yml@Pipelines
           - template: templates/checkout/pipelines.yml@Pipelines
+          - template: templates/terraform/init.yml@Pipelines
+            parameters:
+              workingDirectory: $(sourceDir)/infra/autotests
           - template: templates/terraform/output.yml@Pipelines
             parameters:
               outputFileDir: $(buildDir)/tf
+              workingDirectory: $(sourceDir)/infra/autotests
           - template: templates/deploy-client.yml

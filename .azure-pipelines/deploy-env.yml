@@ -38,7 +38,11 @@ stages:
           - template: templates/checkout/self.yml
           - template: templates/checkout/infra.yml@Pipelines
           - template: templates/checkout/pipelines.yml@Pipelines
+          - template: templates/terraform/init.yml@Pipelines
+            parameters:
+              workingDirectory: $(sourceDir)/infra/autotests
           - template: templates/terraform/output.yml@Pipelines
             parameters:
               outputFileDir: $(buildDir)/tf
+              workingDirectory: $(sourceDir)/infra/autotests
           - template: templates/deploy-client.yml
