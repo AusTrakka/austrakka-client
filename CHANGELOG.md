@@ -3,6 +3,9 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-06-06
+- Colour scheme is now selectable per field on the tree view.
+
 ## 2024-05-28
 
 ### Fixed
