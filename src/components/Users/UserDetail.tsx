@@ -199,8 +199,6 @@ function UserDetail() {
       roleName: groupRole.role.name,
     }));
 
-    console.log(groupAssignmentsFormat);
-
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat = {
       displayName: otherValues.displayName,
