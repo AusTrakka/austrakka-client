@@ -33,7 +33,7 @@ export default function mapMetadataToPhylocanvas(
       if (fi.columnName === SAMPLE_ID_FIELD) return;
 
       const value = sample[fi.columnName] ?? 'null';
-      const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rcgba(0,0,0,0)';
+      const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rgba(0,0,0,0)';
 
       let label: string | undefined;
       if (fi.primitiveType === 'date') {
