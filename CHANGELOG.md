@@ -3,6 +3,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-05-28
+
+### Fixed
+- Fixed broken sample view
+
 ## 2024-05-21
 
 ### Added
