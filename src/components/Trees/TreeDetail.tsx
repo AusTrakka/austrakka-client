@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
-import { PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
+import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
@@ -73,7 +73,7 @@ function TreeDetail() {
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
-  const [colourScheme, setColourScheme] = useState<string>('spectral');
+  const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
   );
@@ -131,11 +131,19 @@ function TreeDetail() {
       projectMetadata?.fields &&
       projectMetadata?.fieldUniqueValues
     ) {
+      if (Object.keys(colourSchemeMapping).length === 0) {
+        projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
+          setColourSchemeMapping((oldScheme) => ({
+            ...oldScheme,
+            [fi.columnName]: 'spectral',
+          }));
+        });
+      }
       const mappingData = mapMetadataToPhylocanvas(
         tableMetadata,
         projectMetadata.fields,
         projectMetadata.fieldUniqueValues,
-        colourScheme,
+        colourSchemeMapping,
       );
       setPhylocanvasMetadata(mappingData.result);
       setPhylocanvasLegends(mappingData.legends);
@@ -144,7 +152,7 @@ function TreeDetail() {
     tree,
     projectMetadata?.fields,
     projectMetadata?.fieldUniqueValues,
-    colourScheme,
+    colourSchemeMapping,
     tableMetadata,
   ]);
 
@@ -445,31 +453,44 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Stack direction="row" justifyContent="space-between">
-          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef}>
+        <Stack direction="row">
+          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef} width="100%">
             {/* Only render node colour entry if not already in the legend  */}
             {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
-            <>
-              {generateLegend(state.nodeColumn)}
-            </>
+              <Stack direction="row" spacing={2} display="flex" alignContent="space-between" justifyContent="space-between">
+                <div>
+                  {generateLegend(state.nodeColumn)}
+                </div>
+                <ColorSchemeSelector
+                  selectedScheme={colourSchemeMapping[state.nodeColumn]}
+                  onColourChange={(newColor) => setColourSchemeMapping((oldScheme) => ({
+                    ...oldScheme,
+                    [state.nodeColumn]: newColor,
+                  }))}
+                />
+              </Stack>
             )}
             {state.blocks.map((block) => (
               block !== '' && (
-              <div key={block}>
-                {generateLegend(block)}
-              </div>
+                <Stack direction="row" spacing={2} alignContent="space-between" justifyContent="space-between">
+                  <div key={block}>
+                    {generateLegend(block)}
+                  </div>
+                  <ColorSchemeSelector
+                    selectedScheme={colourSchemeMapping[block]}
+                    onColourChange={(newColor) => setColourSchemeMapping((oldScheme) => ({
+                      ...oldScheme,
+                      [block]: newColor,
+                    }))}
+                  />
+                </Stack>
               )
             ))}
           </Box>
-          {ColorSchemeSelector({
-            color: colourScheme,
-            onColourChange: (newColor) => setColourScheme(newColor),
-          })}
         </Stack>
       );
     }
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    return <></>;
+    return null;
   };
 
   const renderWarning = () => {
@@ -503,5 +524,4 @@ function TreeDetail() {
 
   );
 }
-
 export default TreeDetail;
