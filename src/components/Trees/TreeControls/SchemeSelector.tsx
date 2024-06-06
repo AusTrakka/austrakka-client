@@ -6,10 +6,8 @@ import MenuItem from '@mui/material/MenuItem';
 import { Stack, Tooltip } from '@mui/material';
 import { allColorSchemes } from '../../../constants/schemes';
 
-// Define your ColorScheme and allColorSchemes here
-type ColorScheme = (value: number) => string;
-
 const defaultColorSchemeName : string = 'spectral';
+type ColorScheme = (value: number) => string;
 
 interface SelectorProps {
   selectedScheme: string;
@@ -20,7 +18,6 @@ export default function ColorSchemeSelector({ onColourChange, selectedScheme }: 
   const handleSchemeChange = (event: SelectChangeEvent<string>) => {
     onColourChange(event.target.value);
   };
-
   // Function to generate a thumbnail and return it within a Tooltip
   const generateThumbnailWithTooltip = (colorScheme: ColorScheme, schemeName: string) => (
     <Tooltip title={schemeName} arrow>
@@ -123,13 +120,19 @@ export default function ColorSchemeSelector({ onColourChange, selectedScheme }: 
       <Select
         labelId="tree-select-colour-scheme"
         id="tree-colour-scheme"
-        value={selectedScheme ?? defaultColorSchemeName}
+        defaultValue={defaultColorSchemeName}
+        value={selectedScheme === null ||
+           selectedScheme === undefined ?
+          defaultColorSchemeName : selectedScheme}
         onChange={(e) => handleSchemeChange(e)}
         label="Colour Scheme"
         style={{ width: '180px' }}
         renderValue={(value) => (
           <div>
-            {generateThumbnailWithTooltipNoName(allColorSchemes[value], value)}
+            {generateThumbnailWithTooltipNoName(
+              allColorSchemes[value],
+              value,
+            )}
           </div>
         )}
       >

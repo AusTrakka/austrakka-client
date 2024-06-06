@@ -135,7 +135,7 @@ function TreeDetail() {
         projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
           setColourSchemeMapping((oldScheme) => ({
             ...oldScheme,
-            [fi.columnName]: '≥',
+            [fi.columnName]: 'spectral',
           }));
         });
       }
@@ -453,11 +453,11 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Stack direction="row" justifyContent="space-between">
-          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef}>
+        <Stack direction="row">
+          <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef} width="100%">
             {/* Only render node colour entry if not already in the legend  */}
             {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
-              <Stack direction="row" spacing={2} alignContent="space-between" justifyContent="space-between">
+              <Stack direction="row" spacing={2} display="flex" alignContent="space-between" justifyContent="space-between">
                 <div>
                   {generateLegend(state.nodeColumn)}
                 </div>
