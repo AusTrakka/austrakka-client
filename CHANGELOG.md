@@ -1,7 +1,11 @@
-
 # Changelog
 
 All notable user-facing changes to AusTrakka will be documented in this file.
+
+## Unreleased
+
+### Added
+- Colour scheme is now selectable per field on the tree view.
 
 ## 2024-05-28
 
