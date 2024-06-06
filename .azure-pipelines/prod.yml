@@ -3,18 +3,18 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: UAT
+      ref: master
       endpoint: AusTrakka
     - repository: Infra
       type: github
       endpoint: AusTrakka
       name: AusTrakka/austrakka2-infra
-      ref: UAT
+      ref: master
 
 trigger:
   branches:
     include:
-      - UAT
+      - master
 
 pr: none
 
@@ -22,10 +22,10 @@ pool:
   name: UAT-New
 
 variables:
-  azureConnection: 'AusTrakka UAT'
+  azureConnection: 'AusTrakka Prod'
   azureConnectionAdmin: 'AusTrakka Data (Agent Pool)'
-  backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
-  backendAzureRmStorageAccountName: 'stuatterfshdas1'
+  backendAzureRmResourceGroupName: 'rg-prodterf-shd-as-1'
+  backendAzureRmStorageAccountName: 'stprodterfshdas1'
   backendAzureRmContainerName: 'env'
   backendAzureRmKey: '$(EnvId)/$(EnvId).tfstate'
   terraformOutputArtifact: 'TerraformOutput'
