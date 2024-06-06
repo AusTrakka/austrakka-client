@@ -2,7 +2,7 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unrealeased
+## Unreleased
 
 ### Added
 - Colour scheme is now selectable per field on the tree view.
