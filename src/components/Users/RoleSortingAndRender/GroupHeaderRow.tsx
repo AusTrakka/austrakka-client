@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, Stack } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp, AddCircle } from '@mui/icons-material';
+import { KeyboardArrowDown, AddCircle, KeyboardArrowRight } from '@mui/icons-material';
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
 import { sortGroups } from '../groupSorting';
@@ -120,7 +120,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
             onClick={() => handleGroupRoleToggle(groupType)}
             disabled={!editing && groupMapSize === 0}
           >
-            {openGroupRoles.includes(groupType) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            {openGroupRoles.includes(groupType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
           </IconButton>
           {groupMapSize === 0 ? (
             <Typography variant="body2" sx={{ color: 'grey' }}>

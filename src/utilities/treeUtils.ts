@@ -1,5 +1,5 @@
 /* eslint-disable no-plusplus */
-import { PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
+import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
 import { Field } from '../types/dtos';
 import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
@@ -10,17 +10,18 @@ export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
   fieldInformation: Field[],
   fieldUniqueValues: Record<string, string[] | null>,
-  colorSchemeSelected: string,
+  colorSchemeSelected: FieldAndColourScheme,
 ) {
   // Create categorical colour palettes based on unique values
   // Note that to create numeric schemes we would need to know the max and min values
   const fieldPalettes: PhylocanvasLegends = {};
+
   fieldInformation
     .filter((fi) => fi.canVisualise)
     .forEach((fi) => {
       fieldPalettes[fi.columnName] = createColourMapping(
         fieldUniqueValues[fi.columnName] ?? [],
-        colorSchemeSelected,
+        colorSchemeSelected[fi.columnName] ?? 'spectral',
       );
     });
 
@@ -28,7 +29,6 @@ export default function mapMetadataToPhylocanvas(
   for (const sample of dataArray) {
     const sampleName = sample[SAMPLE_ID_FIELD];
     result[sampleName] = {};
-
     fieldInformation.forEach((fi) => {
       if (fi.columnName === SAMPLE_ID_FIELD) return;
 
