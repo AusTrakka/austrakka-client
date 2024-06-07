@@ -49,6 +49,11 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
     onColumnVisibilityChange([]);
   };
 
+  const onColumnHideAll = () => {
+    setSelectedColumns(columns);
+    onColumnVisibilityChange(columns);
+  };
+
   return (
     <Box style={{ display: 'flex', alignItems: 'center' }}>
       <Tooltip title="Show/Hide Columns" placement="top" arrow>
@@ -75,7 +80,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
         MenuListProps={{
           style: {
             padding: 0,
-            minWidth: '230px',
+            minWidth: '330px',
           },
         }}
       >
@@ -100,10 +105,11 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
               '&:hover': { backgroundColor: 'white' },
             }}
           >
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} justifyContent="space-evenly">
               <div>
                 <Button
                   variant="contained"
+                  color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     onColumnToggle();
@@ -116,7 +122,20 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
               <div>
                 <Button
                   variant="outlined"
-                  color="error"
+                  color="inherit"
+                  sx={{ pointerEvents: 'auto' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onColumnHideAll();
+                  }}
+                >
+                  Hide All
+                </Button>
+              </div>
+              <div style={{ marginRight: 10 }}>
+                <Button
+                  variant="outlined"
+                  color="inherit"
                   sx={{ pointerEvents: 'auto' }}
                   onClick={(e) => {
                     e.stopPropagation();
