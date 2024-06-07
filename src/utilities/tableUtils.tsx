@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field } from '../types/dtos';
+import { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
 
 export const compareFields = (field1: Field, field2: Field) =>
@@ -31,6 +31,41 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
       columnBuilder.push({
         field: field.columnName,
         header: `${field.columnName}`,
+      });
+    }
+  });
+  return columnBuilder;
+}
+
+export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) {
+  const columnBuilder: {
+    field: string,
+    header: string,
+    dataType?: string,
+    hidden?: boolean,
+    body?: (rowData: any) => React.ReactNode, }[] = [];
+
+  fields.forEach((field: ProjectViewField) => {
+    if (field.columnName in fieldRenderFunctions) {
+      columnBuilder.push({
+        field: field.columnName,
+        header: field.columnName,
+        hidden: field.hidden,
+        body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]),
+      });
+    } else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
+      columnBuilder.push({
+        field: field.columnName,
+        header: field.columnName,
+        hidden: field.hidden,
+        body: (rowData: any) =>
+          typeRenderFunctions[field.primitiveType!](rowData[field.columnName]),
+      });
+    } else {
+      columnBuilder.push({
+        field: field.columnName,
+        header: `${field.columnName}`,
+        hidden: field.hidden,
       });
     }
   });

@@ -133,6 +133,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
   createdBy: string,
@@ -150,6 +151,7 @@ export interface ProjectViewField extends Field {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  hidden: boolean,
   metaDataColumnValidValues: string[] | null,
 }
 
