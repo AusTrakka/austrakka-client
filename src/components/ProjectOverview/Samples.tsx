@@ -80,7 +80,6 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata!.fields!);
-    console.log('columnBuilder', columnBuilder);
     setReadyFields(metadata!.fieldLoadingStates);
     setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
