@@ -350,6 +350,12 @@ function TreeDetail() {
       setRootId(id);
     };
 
+    const handleMidpointReroot = () => {
+      if (treeRef.current) {
+        treeRef.current.midpointReroot();
+      }
+    };
+
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
@@ -375,6 +381,7 @@ function TreeDetail() {
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
                 onJumpToSubtree={handleJumpToSubtree}
+                handleMidpointReroot={handleMidpointReroot}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>
@@ -414,7 +421,6 @@ function TreeDetail() {
             legendRef={legRef}
           />
         </Grid>
-
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment

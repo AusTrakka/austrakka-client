@@ -15,6 +15,7 @@ export type TreeExportFuctions = {
   getSelectedLeafIDs(): string[];
   getVisibleLeafIDs(): string[];
   fitInCanvas(): void;
+  midpointReroot(): void;
   nodes: { ids: { [key: string]: PhylocanvasNode }, leaves: PhylocanvasNode[]; };
 };
 
@@ -47,6 +48,9 @@ const Tree = React.forwardRef(
       },
       fitInCanvas() {
         return tree.current?.fitInCanvas();
+      },
+      midpointReroot() {
+        return tree.current?.midpointRoot();
       },
       nodes: tree.current?.getGraphAfterLayout(),
     }));

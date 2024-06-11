@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Stack } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
@@ -21,6 +21,7 @@ interface TreeNavigationProps {
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
   ) => void;
   onJumpToSubtree: (id: string) => void;
+  handleMidpointReroot: () => void;
   phylocanvasRef: React.RefObject<TreeExportFuctions>,
 }
 
@@ -33,6 +34,7 @@ export default function TreeNavigation(
     rootId,
     onChange,
     onJumpToSubtree,
+    handleMidpointReroot,
     phylocanvasRef,
   }: TreeNavigationProps,
 ) {
@@ -177,23 +179,28 @@ export default function TreeNavigation(
           }
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={rootId === '0'} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
-        Go to Root
-      </Button>
-      <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
-        Jump to subtree
-      </Button>
-      <ButtonGroup fullWidth>
-        <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
-          Parent
+      <Stack spacing={1}>
+        <Button variant="outlined" disabled={rootId === '0'} fullWidth onClick={handleGoToRoot}>
+          Go to Root
         </Button>
-        <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
-          Back
+        <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth onClick={handleJumpToSubtree}>
+          Jump to subtree
         </Button>
-        <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>
-          Forward
+        <Button variant="outlined" fullWidth onClick={handleMidpointReroot}>
+          Re-root Midpoint
         </Button>
-      </ButtonGroup>
+        <ButtonGroup fullWidth>
+          <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
+            Parent
+          </Button>
+          <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
+            Back
+          </Button>
+          <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>
+            Forward
+          </Button>
+        </ButtonGroup>
+      </Stack>
     </Grid>
   );
 }
