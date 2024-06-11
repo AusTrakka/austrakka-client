@@ -55,6 +55,7 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
     return (
       <>
         <GroupHeaderRow
+          key={groupType}
           groupType={groupType}
           groupMapSize={groupMap.size}
           setOpenDupSnackbar={setOpenDupSnackbar}
