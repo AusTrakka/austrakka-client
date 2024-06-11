@@ -111,7 +111,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   const isAddButtonEnabled = selectedGroup !== null && selectedRole !== null;
 
   return (
-    <TableRow>
+    <TableRow key={groupType}>
       <TableCell width="250em">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
