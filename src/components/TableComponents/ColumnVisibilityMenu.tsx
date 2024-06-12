@@ -105,7 +105,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
               '&:hover': { backgroundColor: 'white' },
             }}
           >
-            <Stack direction="row" spacing={2} justifyContent="space-evenly">
+            <Stack direction="row" spacing={1} justifyContent="space-evenly">
               <div>
                 <Button
                   variant="contained"
@@ -142,7 +142,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
                     onColumnReset();
                   }}
                 >
-                  Reset
+                  Show All
                 </Button>
               </div>
             </Stack>
