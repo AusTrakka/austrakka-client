@@ -52,7 +52,6 @@ const Tree = React.forwardRef(
         return tree.current?.fitInCanvas();
       },
       midpointReroot() {
-        console.log('midpointReroot');
         return tree.current?.midpointRoot();
       },
       nodes: tree.current?.getGraphAfterLayout(),
@@ -60,11 +59,9 @@ const Tree = React.forwardRef(
 
     useEffect(() => {
       function handleResize() {
-        console.log('handleResize');
         const gridRef = document.querySelector(resizeWidthTo!);
         const width = gridRef?.getBoundingClientRect().width!;
         if (width) {
-          console.log('width', width);
           setSize({ height: size.height, width: width - 10 });
         }
       }
@@ -72,7 +69,6 @@ const Tree = React.forwardRef(
       // Initialization
       if (tree.current === null && treeDiv.current !== null) {
         if (resizeWidthTo !== null) {
-          console.log('resizeWidthTo', resizeWidthTo);
           handleResize();
         }
         tree.current = new Phylocanvas(treeDiv.current, { ...otherProps });
@@ -84,13 +80,11 @@ const Tree = React.forwardRef(
 
       // Resize event listener
       if (resizeWidthTo !== null) {
-        console.log('resizeWidthTo', resizeWidthTo);
         window.addEventListener('resize', handleResize);
       }
 
       // Cleanup on unmount
       return () => {
-        console.log('remove resize listener');
         window.removeEventListener('resize', handleResize);
       };
     }, [onSelectedIdsChange, otherProps, resizeWidthTo, size]);
@@ -104,8 +98,6 @@ const Tree = React.forwardRef(
 
         // Reroot if required
         if (otherProps.reroot === 'midpoint') {
-          console.log('midpoint when reroot is changed');
-          console.log('tree.current', tree.current);
           tree.current?.midpointRoot();
         }
       }

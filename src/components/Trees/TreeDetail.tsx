@@ -331,14 +331,11 @@ function TreeDetail() {
   ) => {
     // Detect if the event is coming from a checkbox
     const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
-    console.log(event.target.name);
-    console.log(event.target.value);
     setState({
       ...state,
       [event.target.name]:
         isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
     });
-    console.log(state);
   };
 
   const renderControls = () => {
