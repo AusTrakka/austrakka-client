@@ -3,12 +3,14 @@ import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, S
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
-import { TreeExportFuctions } from '../Tree';
+import { TreeFuctions } from '../Tree';
 import { JobInstance } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
+import { RerootType } from '../../../types/tree.interface';
 
 interface State {
   type: string,
+  reroot: RerootType,
 }
 
 interface TreeNavigationProps {
@@ -21,8 +23,7 @@ interface TreeNavigationProps {
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
   ) => void;
   onJumpToSubtree: (id: string) => void;
-  handleMidpointReroot: () => void;
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
+  phylocanvasRef: React.RefObject<TreeFuctions>,
 }
 
 export default function TreeNavigation(
@@ -34,7 +35,6 @@ export default function TreeNavigation(
     rootId,
     onChange,
     onJumpToSubtree,
-    handleMidpointReroot,
     phylocanvasRef,
   }: TreeNavigationProps,
 ) {
@@ -72,6 +72,17 @@ export default function TreeNavigation(
     setHistory([...newHistory, nodes['0']]);
     setHistoryIndex(newHistory.length);
     phylocanvasRef.current?.fitInCanvas();
+  };
+
+  const handlRoot = () => {
+    const syntheticEvent = {
+      target: {
+        name: 'reroot',
+        value: state.reroot === null ? 'midpoint' : null,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+
+    onChange(syntheticEvent);
   };
 
   const handleJumpToSubtree = () => {
@@ -186,8 +197,8 @@ export default function TreeNavigation(
         <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth onClick={handleJumpToSubtree}>
           Jump to subtree
         </Button>
-        <Button variant="outlined" fullWidth onClick={handleMidpointReroot}>
-          Re-root Midpoint
+        <Button variant="outlined" color={state.reroot !== 'midpoint' ? 'primary' : 'error'} fullWidth onClick={handlRoot}>
+          {state.reroot !== null ? 'Reset' : 'Midpoint Re-root'}
         </Button>
         <ButtonGroup fullWidth>
           <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>

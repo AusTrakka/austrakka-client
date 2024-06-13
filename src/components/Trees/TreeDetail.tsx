@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
 import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
-import Tree, { TreeExportFuctions } from './Tree';
+import Tree, { TreeFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
@@ -34,6 +34,7 @@ const defaultState: TreeState = {
   alignLabels: true,
   showBlockHeaders: true,
   blockHeaderFontSize: 13,
+  reroot: null,
   blockPadding: 3,
   blockSize: 16,
   showLeafLabels: true,
@@ -63,7 +64,7 @@ const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 function TreeDetail() {
   const { projectAbbrev, analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
-  const treeRef = createRef<TreeExportFuctions>();
+  const treeRef = createRef<TreeFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
   const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
@@ -330,11 +331,14 @@ function TreeDetail() {
   ) => {
     // Detect if the event is coming from a checkbox
     const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
+    console.log(event.target.name);
+    console.log(event.target.value);
     setState({
       ...state,
       [event.target.name]:
         isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
     });
+    console.log(state);
   };
 
   const renderControls = () => {
@@ -348,12 +352,6 @@ function TreeDetail() {
     const handleJumpToSubtree = (id: string) => {
       if (!tree) return;
       setRootId(id);
-    };
-
-    const handleMidpointReroot = () => {
-      if (treeRef.current) {
-        treeRef.current.midpointReroot();
-      }
     };
 
     if (tree) {
@@ -381,7 +379,6 @@ function TreeDetail() {
                 selectedIds={selectedIds}
                 onChange={handleStateChange}
                 onJumpToSubtree={handleJumpToSubtree}
-                handleMidpointReroot={handleMidpointReroot}
                 phylocanvasRef={treeRef}
               />
             </AccordionDetails>
@@ -520,6 +517,7 @@ function TreeDetail() {
         <Typography className="pageTitle">
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+          {tree && state.reroot ? ` - Rerooted at ${state.reroot}` : ''}
         </Typography>
         {renderWarning()}
         {renderTree()}

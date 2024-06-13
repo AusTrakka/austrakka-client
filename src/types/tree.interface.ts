@@ -1,3 +1,7 @@
+export type RerootType = null | 'midpoint' | NodeSampleName;
+
+export type NodeSampleName = string;
+
 export default interface TreeState {
   // state for phylocanvas
   blocks: any[];
@@ -5,6 +9,7 @@ export default interface TreeState {
   alignLabels: boolean;
   showBlockHeaders: boolean;
   blockHeaderFontSize: number;
+  reroot: RerootType;
   blockPadding: number;
   blockSize: number;
   showLeafLabels: boolean;
