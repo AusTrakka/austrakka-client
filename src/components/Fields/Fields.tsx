@@ -79,6 +79,7 @@ function Fields() {
     {
       field: 'description',
       header: 'Description',
+
     },
     {
       field: 'primitiveType',
@@ -138,6 +139,7 @@ function Fields() {
                 sortable
                 resizeable
                 headerClassName="custom-title"
+                style={{ whiteSpace: 'normal', maxWidth: '20rem' }}
               />
             ))}
           </DataTable>
