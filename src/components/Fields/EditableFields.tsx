@@ -14,10 +14,8 @@ function TextEditable({ value, editorCallback }:
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log("what key", e.key);
     if (e.key === 'Enter') {
       e.preventDefault();
-      console.log("Enter was pressed some might say")
       editorCallback(internalValue);
     }
   };
@@ -34,6 +32,8 @@ function TextEditable({ value, editorCallback }:
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      size="small"
+      variant="outlined"
       multiline
       fullWidth
     />
@@ -53,9 +53,7 @@ function NumericEditable({ value, editorCallback }:
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log("what key", e.key);
     if (e.key === 'Enter') {
-      console.log("Enter was pressed some might say")
       e.preventDefault();
       editorCallback(internalValue);
     }
@@ -73,6 +71,8 @@ function NumericEditable({ value, editorCallback }:
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      size="small"
+      variant="outlined"
       fullWidth
     />
   );

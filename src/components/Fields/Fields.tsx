@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Paper, TextField, Typography } from '@mui/material';
+import { Alert, Paper, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
+import { EditOutlined } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getFields, patchField } from '../../utilities/resourceUtils';
@@ -133,6 +134,13 @@ function Fields() {
     }
   };
 
+  const bodyValueWithEditIcon = (rowData: any, field: string) => (
+    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+      {rowData[field] === null ? <div /> : rowData[field]}
+      <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
+    </div>
+  );
+
   const columns = [
     {
       field: 'columnName',
@@ -141,6 +149,7 @@ function Fields() {
     {
       field: 'description',
       header: 'Description',
+      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'description'),
     },
     {
       field: 'primitiveType',
@@ -149,6 +158,7 @@ function Fields() {
     {
       field: 'columnOrder',
       header: 'Ordering',
+      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'columnOrder'),
     },
     {
       field: 'metaDataColumnValidValues',
@@ -200,7 +210,7 @@ function Fields() {
                 sortable
                 resizeable
                 headerClassName="custom-title"
-                style={{ whiteSpace: 'normal', maxWidth: '20rem' }}
+                style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
                 onCellEditComplete={onCellEditComplete}
               />
             ))}
