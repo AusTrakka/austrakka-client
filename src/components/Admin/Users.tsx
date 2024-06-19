@@ -164,7 +164,7 @@ function Users() {
               selectionMode="single"
               editMode="cell"
               filters={globalFilter}
-              globalFilterFields={['displayName', 'organisation.abbreviation', 'contactEmail']}
+              globalFilterFields={columns.map((col) => col.field)}
             >
               {columns.map((col: any) => (
                 <Column
