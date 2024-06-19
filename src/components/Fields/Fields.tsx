@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Paper, Typography } from '@mui/material';
+import { Alert, Paper, TextField, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Column, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
-import { getFields } from '../../utilities/resourceUtils';
+import { getFields, patchField } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
@@ -14,6 +14,7 @@ import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { NumericEditable, TextEditable } from './EditableFields';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -71,6 +72,67 @@ function Fields() {
     return allowedValues.join(', ');
   };
 
+  const cellEditor = (options: any) => {
+    if (options.field === 'columnOrder') {
+      return <NumericEditable value={options.value} editorCallback={options.editorCallback} />;
+    }
+    if (options.field === 'description') {
+      return <TextEditable value={options.value} editorCallback={options.editorCallback} />;
+    }
+    return undefined;
+  };
+
+  const isPositiveInteger = (val: number) => {
+    let str = String(val);
+
+    str = str.trim();
+
+    if (!str) {
+      return false;
+    }
+
+    str = str.replace(/^0+/, '') || '0';
+    const n = Math.floor(Number(str));
+
+    return n !== Infinity && String(n) === str && n >= 0;
+  };
+
+  const updateField = async (data: ColumnEvent) => {
+    const { rowData, field, newValue } = data;
+    const fieldId = rowData.metaDataColumnId;
+    const fieldData = { [field]: newValue };
+
+    const response = await patchField(fieldId, token, fieldData);
+    if (response.status === ResponseType.Success) {
+      setFields(fields.map((fieldMetadata: MetaDataColumn) =>
+        (fieldMetadata.metaDataColumnId === fieldId ?
+          { ...fieldMetadata, ...fieldData } :
+          fieldMetadata)));
+    } else {
+      setError(response.message);
+    }
+  };
+
+  const onCellEditComplete = (e: ColumnEvent) => {
+    const { rowData, newValue, field, originalEvent: event } = e;
+
+    switch (field) {
+      case 'columnOrder':
+        if (isPositiveInteger(newValue)) {
+          rowData[field] = newValue;
+          updateField(e);
+        } else event.preventDefault();
+        break;
+
+      default:
+        if (newValue && newValue.trim().length > 0) {
+          rowData[field] = newValue;
+          updateField(e);
+        } else event.preventDefault();
+        break;
+    }
+  };
+
   const columns = [
     {
       field: 'columnName',
@@ -79,7 +141,6 @@ function Fields() {
     {
       field: 'description',
       header: 'Description',
-
     },
     {
       field: 'primitiveType',
@@ -135,11 +196,12 @@ function Fields() {
                 field={col.field}
                 header={col.header}
                 body={col.body}
-                editor={col.editor}
+                editor={(options) => cellEditor(options)}
                 sortable
                 resizeable
                 headerClassName="custom-title"
                 style={{ whiteSpace: 'normal', maxWidth: '20rem' }}
+                onCellEditComplete={onCellEditComplete}
               />
             ))}
           </DataTable>
