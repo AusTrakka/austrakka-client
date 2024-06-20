@@ -10,6 +10,7 @@ import {
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -49,6 +50,7 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
   const [dateBinStep, setDateBinStep] = useState<number>(1);
   const [colourField, setColourField] = useState<string>('none');
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [rowField, setRowField] = useState<string>('none'); // facets by row
   const [stackType, setStackType] = useState<string>('zero');
 
@@ -96,12 +98,17 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
     if (fieldUniqueValues) {
       setSpec(setColorInSpec);
     }
-  }, [colourField, fieldUniqueValues]);
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const setRowInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -205,6 +212,12 @@ function EpiCurve(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="row-facet-select-label">Row facet</InputLabel>
         <Select
