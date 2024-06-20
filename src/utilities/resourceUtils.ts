@@ -45,6 +45,7 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
   return response;
 };
 export const getFields = (token: string) => callGET('/api/MetaDataColumns', token);
+export const patchField = (fieldId: number, token: string, field: any) => callPATCH(`/api/MetaDataColumns/${fieldId}`, token, field);
 
 // Project metadata
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
