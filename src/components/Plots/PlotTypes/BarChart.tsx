@@ -6,6 +6,7 @@ import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -37,6 +38,7 @@ function BarChart(props: PlotTypeProps) {
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
@@ -78,12 +80,17 @@ function BarChart(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
     if (fieldUniqueValues) {
       setSpec(setColorInSpec);
     }
-  }, [colourField, fieldUniqueValues]);
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const setStackTypeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -131,6 +138,12 @@ function BarChart(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Chart type</InputLabel>
         <Select
