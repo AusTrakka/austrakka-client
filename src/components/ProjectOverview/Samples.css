@@ -2,6 +2,9 @@
     padding-left: 10px;
     writing-mode: vertical-lr;
     transform: rotate(180deg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .custom-title .p-column-title {

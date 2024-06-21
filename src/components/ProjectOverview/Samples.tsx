@@ -4,7 +4,7 @@
 import React, {
   useEffect, useState,
 } from 'react';
-import { Close, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
@@ -105,6 +105,11 @@ function Samples(props: SamplesProps) {
     if (SAMPLE_ID_FIELD in selectedRow) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
+  };
+
+  const getFieldSource = (field: string) => {
+    const fieldObj = metadata?.fields?.find(f => f.columnName === field);
+    return `${fieldObj?.fieldSource}`;
   };
 
   const header = (
@@ -220,13 +225,23 @@ function Samples(props: SamplesProps) {
               <Column
                 key={col.field}
                 field={col.field}
-                header={(
-                  !verticalHeaders ? <div>{col.header}</div> : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
-                      {col.header}
-                    </div>
-                  )
-                )}
+                header={
+                    !verticalHeaders ? (
+                      <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                        {col.header}
+                        <Tooltip title={getFieldSource(col.field)} placement="top">
+                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        </Tooltip>
+                      </div>
+                    ) : (
+                      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                        {col.header}
+                        <Tooltip title={getFieldSource(col.field)} placement="top">
+                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        </Tooltip>
+                      </div>
+                    )
+                }
                 body={BodyComponent({ col, readyFields })}
                 hidden={col.hidden}
                 sortable
