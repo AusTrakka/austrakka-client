@@ -1,5 +1,3 @@
-import 'react-tabulator/lib/styles.css';
-import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
 import React, { useEffect, useState, SetStateAction } from 'react';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';

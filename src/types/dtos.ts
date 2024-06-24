@@ -84,8 +84,21 @@ export interface User {
   displayName: string,
   created: Date,
   contactEmail: string,
-  isAusTrakkaProcess: boolean
+  IsAusTrakkaProcess: boolean
 }
+
+export interface UserList {
+  name: string,
+  id: string,
+  organisation: string,
+  contactEmail: string,
+  isActive: boolean,
+  created: string,
+  createdBy: string,
+  isAusTrakkaAdmin: boolean,
+  isAusTrakkaProcess: boolean,
+}
+
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,

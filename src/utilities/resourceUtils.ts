@@ -11,7 +11,7 @@ export const getPlots = (projectId: number, token: string) => callGET(`/api/Plot
 export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Analysis endpoints
-export const getTrees = (projectAbbrev: string, token: string) => callGET(`/api/Analyses/project/${projectAbbrev}`, token);
+export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Analyses/project/${projectAbbrev}?includeall=${includeAll}`, token);
 export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/api/JobInstance/${jobInstanceId}`, token);
 export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
 export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
@@ -32,6 +32,7 @@ export const getTotalSamples = (groupId: number, token: string) => callGET(`/api
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
+export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma and field endpoints
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
@@ -44,6 +45,7 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
   return response;
 };
 export const getFields = (token: string) => callGET('/api/MetaDataColumns', token);
+export const patchField = (fieldId: number, token: string, field: any) => callPATCH(`/api/MetaDataColumns/${fieldId}`, token, field);
 
 // Project metadata
 export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
@@ -77,9 +79,9 @@ export const uploadSubmissions = (formData: FormData, params: string, token: str
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
-export const getAllUsers = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
+export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const putUserDetails = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/userDetails/${userObjectId}`, token, user);
+export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/Roles', token);
