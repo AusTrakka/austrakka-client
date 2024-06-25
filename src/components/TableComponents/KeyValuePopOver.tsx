@@ -83,6 +83,7 @@ function KeyValueInfoPopover<T>({
               onChange={(e) => setSearchQuery(e.target.value)}
               variant="outlined"
               size="small"
+              color="secondary"
               fullWidth
             />
           </Box>
