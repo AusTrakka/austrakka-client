@@ -39,13 +39,15 @@ function KeyValueInfoPopover<T>({
 
   const open = Boolean(anchorEl);
 
-  const filteredData = useMemo(
-    () => data.filter(item =>
-      keyExtractor(item).toLowerCase().includes(searchQuery.toLowerCase()))
-      .concat(data.filter(item =>
-        valueExtractor(item).toLowerCase().includes(searchQuery.toLowerCase()))),
-    [data, keyExtractor, valueExtractor, searchQuery],
-  );
+  const filteredData = useMemo(() => {
+    const searchQueryLower = searchQuery.toLowerCase();
+    return data.filter(item => {
+      const keyLower = keyExtractor(item).toLowerCase();
+      const valueLower = valueExtractor(item).toLowerCase();
+
+      return keyLower.includes(searchQueryLower) || valueLower.includes(searchQueryLower);
+    });
+  }, [data, searchQuery, keyExtractor, valueExtractor]);
 
   return (
     <>
