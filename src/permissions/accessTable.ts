@@ -41,7 +41,7 @@ export function hasPermission(
   if (user.admin) {
     return true;
   }
-  const userRoles = user.groupRoles[group] ?? [];
+  const userRoles = user.groupRolesGrouped[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return userRoles.some(role => allowedRoles.includes(role));
 }

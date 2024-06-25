@@ -33,41 +33,6 @@ const settings = [
   },
 ];
 
-const pages = [
-  {
-    title: 'Dashboard',
-    link: '/',
-    icon: <Dashboard />,
-  },
-  {
-    title: 'Projects',
-    link: '/projects',
-    icon: <Inventory />,
-  },
-  {
-    title: 'Organisation',
-    link: '/org',
-    icon: <AccountTree />,
-  },
-  {
-    title: 'Upload',
-    link: '/upload',
-    icon: <Upload />,
-  },
-  {
-    title: 'Users',
-    link: '/users',
-    icon: <People />,
-    permissionDomain: 'users',
-  },
-  {
-    title: 'Fields',
-    link: '/fields',
-    icon: <ViewColumn />,
-    permissionDomain: 'fields',
-  },
-];
-
 function MainMenuLayout() {
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
@@ -121,7 +86,40 @@ function MainMenuLayout() {
 
   const account = useAccount(accounts[0] || {});
   const user: UserSliceState = useAppSelector(selectUserState);
-
+  const pages = [
+    {
+      title: 'Dashboard',
+      link: '/',
+      icon: <Dashboard />,
+    },
+    {
+      title: 'Projects',
+      link: '/projects',
+      icon: <Inventory />,
+    },
+    {
+      title: 'Organisation',
+      link: `/org/${user.orgAbbrev}`,
+      icon: <AccountTree />,
+    },
+    {
+      title: 'Upload',
+      link: '/upload',
+      icon: <Upload />,
+    },
+    {
+      title: 'Users',
+      link: '/users',
+      icon: <People />,
+      permissionDomain: 'users',
+    },
+    {
+      title: 'Fields',
+      link: '/fields',
+      icon: <ViewColumn />,
+      permissionDomain: 'fields',
+    },
+  ];
   const visiblePages = pages.filter((page) =>
     !page.permissionDomain || hasPermission(
       user,

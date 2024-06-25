@@ -256,7 +256,7 @@ function SampleTable(props: SamplesProps) {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 500px)"
+          scrollHeight="calc(100vh - 300px)"
           sortIcon={sortIcon}
           paginator
           onRowClick={rowClickHandler}
