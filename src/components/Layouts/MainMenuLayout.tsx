@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet,
@@ -5,7 +6,7 @@ import {
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
 } from '@mui/icons-material/';
 import {
   Box, Drawer, IconButton, List,
@@ -17,6 +18,9 @@ import styles from './MainMenuLayout.module.css';
 import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
+import { useAppSelector } from '../../app/store';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 
 const settings = [
   {
@@ -50,6 +54,18 @@ const pages = [
     link: '/upload',
     icon: <Upload />,
   },
+  {
+    title: 'Users',
+    link: '/users',
+    icon: <People />,
+    permissionDomain: 'users',
+  },
+  {
+    title: 'Fields',
+    link: '/fields',
+    icon: <ViewColumn />,
+    permissionDomain: 'fields',
+  },
 ];
 
 function MainMenuLayout() {
@@ -70,10 +86,11 @@ function MainMenuLayout() {
     proformas: 'ProFormas',
     members: 'Members',
     users: 'Users',
+    fields: 'Fields',
     datasets: 'Datasets',
   };
 
-  const breadcrumbNoLink: string[] = ['versions', 'records', 'users'];
+  const breadcrumbNoLink: string[] = ['versions', 'records'];
 
   /**
    * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
@@ -88,6 +105,11 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
+  // when on a users detail page, do not show objectID that appears in URL
+  if (pathnames.length > 1 && pathnames[0] === 'users') {
+    pathnames[1] = '';
+  }
+
   if (pathnames.length > 0 && pathnames.length <= 3 &&
       noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
       && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
@@ -95,14 +117,22 @@ function MainMenuLayout() {
   }
 
   const [username, setUsername] = useState('');
-  const [user, setUser] = useState('');
   const { accounts } = useMsal();
+
   const account = useAccount(accounts[0] || {});
+  const user: UserSliceState = useAppSelector(selectUserState);
+
+  const visiblePages = pages.filter((page) =>
+    !page.permissionDomain || hasPermission(
+      user,
+      'AusTrakka-Owner',
+      page.permissionDomain,
+      PermissionLevel.CanShow,
+    ));
 
   useEffect(() => {
-    if (account && account.name && account.username) {
-      setUser(account.name);
-      setUsername(account.username);
+    if (account && account.username) {
+      setUsername(account.username); // seems to be login email
     }
   }, [account]);
 
@@ -149,42 +179,51 @@ function MainMenuLayout() {
           </Box>
           <Divider />
           <List className={styles.pagelist}>
-            {pages.map((page) => (
-              <NavLink
-                key={page.title}
-                to={page.link}
-                end={page.link === '/'}
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? '#dddddd' : '',
-                  borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
-                  fontWeight: isActive ? 'bold' : '',
-                })}
-              >
-                <Tooltip title={drawer ? '' : page.title} arrow placement="right">
-                  <MenuItem
-                    key={page.title}
-                    sx={{ '&:hover': {
-                      backgroundColor: '#dddddd',
-                    },
-                    'width': '100%' }}
+            {visiblePages.map((page) => (
+              <React.Fragment key={page.title}>
+                <NavLink
+                  key={page.title}
+                  to={page.link}
+                  end={page.link === '/'}
+                  style={({ isActive }) => ({
+                    backgroundColor: isActive ? '#dddddd' : '',
+                    borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                    fontWeight: isActive ? 'bold' : '',
+                  })}
+                >
+                  <Tooltip
+                    title={drawer ? '' : page.title}
+                    arrow
+                    placement="right"
                   >
-                    <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
-                      {page.icon}
-                    </ListItemIcon>
-                    {drawer ? (
-                      <ListItemText>
-                        {page.title}
-                      </ListItemText>
-                    )
-                      :
-                      null}
-                  </MenuItem>
-                </Tooltip>
-              </NavLink>
+                    <MenuItem
+                      key={page.title}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: '#dddddd',
+                        },
+                        'width': '100%',
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          color: 'primary.main',
+                          minWidth: 0,
+                          mr: drawer ? 1 : 'auto',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {page.icon}
+                      </ListItemIcon>
+                      {drawer ? <ListItemText>{page.title}</ListItemText> : null}
+                    </MenuItem>
+                  </Tooltip>
+                </NavLink>
+              </React.Fragment>
             ))}
           </List>
           <Divider />
-          <Tooltip title={drawer ? username : `${user} - ${username}`} arrow placement="right">
+          <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
             <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
               <Grid item>
                 <AccountCircle color="primary" />
@@ -192,7 +231,7 @@ function MainMenuLayout() {
               {drawer ? (
                 <Grid item width="100%" textAlign="center">
                   <Typography noWrap color="primary.main">
-                    {user}
+                    {user.displayName}
                   </Typography>
                 </Grid>
               )

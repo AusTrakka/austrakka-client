@@ -25,6 +25,24 @@ function getHeaders(token: string): any {
   };
 }
 
+function getHeadersPut(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json-patch+json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
+function getHeadersPatch(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json-patch+json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
 async function parseApiResponse<T = any>(response: Response): Promise<ApiResponse<T>> {
   return (await response.json()) as ApiResponse<T>;
 }
@@ -114,15 +132,37 @@ export async function callGET(url: string, token: string): Promise<ResponseObjec
   });
 }
 
-// NEW: Token passed as prop via endpoint calls
-export async function callPATCH(url: string, token: string): Promise<ResponseObject> {
+export async function callPATCH(url: string, token: string, body?: any):
+Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
     return noToken;
   }
+
+  if (!body) {
+    return callApi(url, {
+      method: 'PATCH',
+      headers: getHeaders(token),
+    });
+  }
+
   return callApi(url, {
     method: 'PATCH',
-    headers: getHeaders(token),
+    body: JSON.stringify(body),
+    headers: getHeadersPatch(token),
+  });
+}
+
+export async function callPUT(url: string, token: string, body: any):
+Promise<ResponseObject> {
+  if (!token) {
+    return noToken as ResponseObject;
+  }
+
+  return callApi(url, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: getHeadersPut(token),
   });
 }
 

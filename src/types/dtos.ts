@@ -70,30 +70,33 @@ export interface Member {
     abbreviation: string,
   },
   displayName: string,
+  contactEmail: string,
 }
 
 export interface User {
-  userId: number,
-  objectId: number,
+  objectId: string,
   isActive: boolean,
-  organisation: {
-    id: number,
-    abbreviation: string,
-  }
+  orgId: number,
+  orgAbbrev: string,
   orgName: string,
-  isAustrakkaAdmin: boolean,
-  userRoleGroup: UserRoleGroup[],
+  isAusTrakkaAdmin: boolean,
+  groupRoles: GroupRole[],
   displayName: string,
-  createdBy: Date,
-  lastUpdatedBy: Date,
-  IsAustrakkaProcess: boolean
+  created: Date,
+  contactEmail: string,
+  IsAusTrakkaProcess: boolean
 }
 
-export interface UserDetails {
-  displayName: string,
-  orgName: string,
-  userRoleGroup: UserRoleGroup[],
-  created: Date,
+export interface UserList {
+  name: string,
+  id: string,
+  organisation: string,
+  contactEmail: string,
+  isActive: boolean,
+  created: string,
+  createdBy: string,
+  isAusTrakkaAdmin: boolean,
+  isAusTrakkaProcess: boolean,
 }
 
 export interface MetaDataColumnMapping {
@@ -123,6 +126,8 @@ export interface MetaDataColumn extends Field {
   metaDataColumnTypeId: number
   metaDataColumnValidValues: string[] | null
   primitiveType: string | null
+  description: string
+  nndssFieldLabel: string
   canVisualise: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
@@ -211,16 +216,12 @@ export interface ThresholdAlertDTO {
   recentCount: number;
 }
 
-export interface UserRoleGroup {
-  user: any,
+export interface GroupRole {
   role: {
     id: number,
     name: string,
   }
-  group: {
-    id: number,
-    name: string,
-  }
+  group: Group
 }
 
 export interface Group {
@@ -243,4 +244,10 @@ export interface DataSetEntry {
   createdBy: string;
   uploadedDate: Date;
   fields: string[];
+}
+
+export interface Role {
+  roleId: number,
+  name: string,
+  description: string,
 }

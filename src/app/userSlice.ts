@@ -2,20 +2,22 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { UserRoleGroup } from '../types/dtos';
-import { getUserGroups } from '../utilities/resourceUtils';
+import { GroupRole, User } from '../types/dtos';
+import { getMe } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import { AppState } from '../types/app.interface';
+import type { RootState } from './store';
 
 export interface UserSliceState {
-  data: Record<string, string[]>,
+  groupRoles: Record<string, string[]>,
+  displayName: string,
   admin: boolean,
   errorMessage: string,
   loading: LoadingState,
 }
 
 interface FetchUserRolesResponse {
-  userRoleGroup: UserRoleGroup[],
+  groupRoles: GroupRole[],
+  displayName: string,
   isAusTrakkaAdmin: boolean,
 }
 
@@ -24,12 +26,12 @@ const fetchUserRoles = createAsyncThunk(
   async (
     token: string,
     thunkAPI,
-  ): Promise<UserRoleGroup[] | unknown> => {
-    const groupResponse: ResponseObject = await getUserGroups(token);
+  ): Promise<GroupRole[] | unknown> => {
+    const groupResponse: ResponseObject = await getMe(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { userRoleGroup, isAusTrakkaAdmin } = groupResponse.data;
+      const { groupRoles, isAusTrakkaAdmin, displayName } = groupResponse.data as User;
       return thunkAPI
-        .fulfillWithValue({ userRoleGroup, isAusTrakkaAdmin } as FetchUserRolesResponse);
+        .fulfillWithValue({ groupRoles, displayName, isAusTrakkaAdmin } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -38,7 +40,7 @@ const fetchUserRoles = createAsyncThunk(
 const userSlice = createSlice({
   name: 'userSlice',
   initialState: {
-    data: {},
+    groupRoles: {},
     errorMessage: '',
     loading: LoadingState.IDLE,
   } as UserSliceState,
@@ -52,15 +54,16 @@ const userSlice = createSlice({
         state.loading = LoadingState.SUCCESS;
         const holder = action.payload as FetchUserRolesResponse;
         const data: Record<string, string[]> = {};
-        holder.userRoleGroup.forEach((roleGroup) => {
-          if (data[roleGroup.group.name]) {
-            data[roleGroup.group.name].push(roleGroup.role.name);
+        holder.groupRoles.forEach((groupRole) => {
+          if (data[groupRole.group.name]) {
+            data[groupRole.group.name].push(groupRole.role.name);
           } else {
-            data[roleGroup.group.name] = [roleGroup.role.name];
+            data[groupRole.group.name] = [groupRole.role.name];
           }
         });
-        state.data = data;
+        state.groupRoles = data;
         state.admin = holder.isAusTrakkaAdmin;
+        state.displayName = holder.displayName;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;
@@ -70,6 +73,6 @@ const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
-export const selectUserState = (state: AppState) : UserSliceState => state.userState;
+export const selectUserState = (state: RootState) : UserSliceState => state.userState;
 
 export { fetchUserRoles };

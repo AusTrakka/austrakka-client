@@ -6,6 +6,7 @@ import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -31,12 +32,13 @@ const defaultSpec: TopLevelSpec = {
 function BarChart(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [stackType, setStackType] = useState<string>('zero');
 
   // Set spec on load
@@ -77,12 +79,18 @@ function BarChart(props: PlotTypeProps) {
   }, [xAxisField]);
 
   useEffect(() => {
-    // Does not use generic setFieldInSpec, for now, as we handle 'none'
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
-    setSpec(setColorInSpec);
-  }, [colourField]);
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
+    }
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const setStackTypeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -130,6 +138,12 @@ function BarChart(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Chart type</InputLabel>
         <Select

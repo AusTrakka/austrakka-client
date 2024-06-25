@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
+import FieldTypes from '../../../constants/fieldTypes';
+import { CustomFilterOperators } from '../../DataFilters/fieldTypeOperators';
 
 const columns = [
   { field: 'status', header: 'Status' },
@@ -40,9 +42,11 @@ export default function PhessIdStatus(props: any) {
     const selectedRow = row.data;
     const drilldownFilter = [{
       field: 'PHESS_ID',
-      fieldType: 'string',
-      condition: selectedRow.status === 'Missing' ? '=NULL' : '!=NULL',
-      value: 'null-or-empty',
+      fieldType: FieldTypes.STRING,
+      condition: selectedRow.status === 'Missing' ?
+        CustomFilterOperators.NULL_OR_EMPTY :
+        CustomFilterOperators.NOT_NULL_OR_EMPTY,
+      value: '',
     }];
     // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {

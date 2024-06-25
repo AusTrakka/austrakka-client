@@ -11,25 +11,34 @@ import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/helpe
 interface ExportTableDataProps {
   dataToExport: any[]
   disabled: boolean
+  headers?: any[]
 }
 
 function ExportTableData(props: ExportTableDataProps) {
-  const { dataToExport, disabled } = props;
+  const { dataToExport, disabled, headers } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
-  const formatDataAsCSV = (data: any[], headers: string[]) => {
+  const formatDataAsCSV = (data: any[], headerString: string[]) => {
     // Format data array as CSV string
+
     const csvRows = [];
 
     // Add headers
-    csvRows.push(headers.join(','));
+    csvRows.push(headerString.join(','));
 
     // Add data rows
     for (const row of data) {
-      const values = headers.map(header => {
-        const value = row[header];
-        return value !== undefined ? `"${value}"` : '';
+      const values = headerString.map(header => {
+        const keys = header.split('.');
+        let value = row;
+        for (const key of keys) {
+          value = value[key];
+          if (value === undefined) {
+            return '';
+          }
+        }
+        return `"${value}"`;
       });
       csvRows.push(values.join(','));
     }
@@ -73,10 +82,12 @@ function ExportTableData(props: ExportTableDataProps) {
         });
 
         // Set headers
-        const headers = Object.keys(formattedData[0]);
+        const header = headers === undefined ?
+          Object.keys(formattedData[0]) :
+          headers.map(h => h.key);
 
         // Set data for CSVLink
-        const csvData = formatDataAsCSV(formattedData, headers);
+        const csvData = formatDataAsCSV(formattedData, header);
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
 
@@ -121,6 +132,7 @@ function ExportTableData(props: ExportTableDataProps) {
         data={[]}
         ref={csvLink}
         filename={generateFilename() || 'austrakka_export.csv'}
+        headers={headers}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
         <span>
@@ -142,4 +154,8 @@ function ExportTableData(props: ExportTableDataProps) {
     </>
   );
 }
+
+ExportTableData.defaultProps = {
+  headers: undefined,
+};
 export default ExportTableData;

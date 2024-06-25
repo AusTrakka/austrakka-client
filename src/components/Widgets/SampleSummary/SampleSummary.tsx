@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
-import dayjs from 'dayjs';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
+import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
 import { formatDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
+import FieldTypes from '../../../constants/fieldTypes';
 
 export default function SampleSummary(props: any) {
   const {
@@ -28,18 +29,18 @@ export default function SampleSummary(props: any) {
   const hasSequenceFilter = [
     {
       field: 'Has_sequences',
-      fieldType: 'string',
-      condition: '=',
-      value: 'false',
+      fieldType: FieldTypes.BOOLEAN,
+      condition: FilterMatchMode.EQUALS,
+      value: false,
     },
   ];
   const getLastUploadFilter = (date: any) => {
     const latestUploadFilter = [
       {
         field: 'Date_created',
-        fieldType: 'date',
-        condition: '>',
-        value: dayjs(date),
+        fieldType: FieldTypes.DATE,
+        condition: FilterMatchMode.DATE_AFTER,
+        value: date,
       },
     ];
     return latestUploadFilter;

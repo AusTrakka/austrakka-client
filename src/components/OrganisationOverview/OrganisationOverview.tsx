@@ -3,9 +3,9 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import { getGroupMembers, getUserGroups } from '../../utilities/resourceUtils';
+import { getGroupMembers, getMe } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-import { Member, UserRoleGroup } from '../../types/dtos';
+import { Member, GroupRole } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
@@ -13,15 +13,15 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 
 function OrganisationOverview() {
-  const [userGroups, setUserGroups] = useState<UserRoleGroup[]>([]);
+  const [userGroups, setUserGroups] = useState<GroupRole[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
-  const [orgEveryone, setOrgEveryone] = useState<UserRoleGroup>();
+  const [orgEveryone, setOrgEveryone] = useState<GroupRole>();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
   const [organisationName, setOrganisationName] = useState('');
-  const [orgAbbrev, setOrgAbbrev] = useState('');
+  const [orgAbbreviation, setOrgAbbreviation] = useState('');
   const location = useLocation();
   const pathName = location.pathname;
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
@@ -32,17 +32,17 @@ function OrganisationOverview() {
   useEffect(() => {
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
-      const groupResponse: ResponseObject = await getUserGroups(token);
+      const groupResponse: ResponseObject = await getMe(token);
       if (groupResponse.status === ResponseType.Success) {
-        const { organisation, userRoleGroup, orgName }:
-        { organisation: { abbreviation: string, id: number },
-          userRoleGroup: UserRoleGroup[], orgName: string } = groupResponse.data;
-          // This is strictly Owner and Everyone groups
-          // Could instead check group organisation, if we want to include ad-hoc org groups
-        const orgViewerGroups = userRoleGroup.filter((roleGroup: UserRoleGroup) =>
-          (roleGroup.group.name === `${organisation.abbreviation}-Owner`
-                || roleGroup.group.name === `${organisation.abbreviation}-Everyone`)
-              && (roleGroup.role.name === 'Viewer'))
+        const { orgAbbrev,
+          groupRoles,
+          orgName } = groupResponse.data;
+        // This is strictly Owner and Everyone groups
+        // Could instead check group organisation, if we want to include ad-hoc org groups
+        const orgViewerGroups = groupRoles.filter((groupRole: GroupRole) =>
+          (groupRole.group.name === `${orgAbbrev}-Owner`
+                || groupRole.group.name === `${orgAbbrev}-Everyone`)
+              && (groupRole.role.name === 'Viewer'))
           .sort((a: any, b: any) => {
             // Owner group first
             if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
@@ -50,13 +50,13 @@ function OrganisationOverview() {
             if (b.group.name.endsWith('-Owner')) return 1;
             return 0;
           });
-        setOrgEveryone(orgViewerGroups.find((roleGroup: UserRoleGroup) =>
-          roleGroup.group.name === `${organisation.abbreviation}-Everyone`));
+        setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
+          groupRole.group.name === `${orgAbbrev}-Everyone`));
         setUserGroups(orgViewerGroups);
         setIsUserGroupsLoading(false);
         setGroupStatus(LoadingState.SUCCESS);
         setOrganisationName(orgName);
-        setOrgAbbrev(organisation.abbreviation);
+        setOrgAbbreviation(orgAbbrev);
       } else {
         setGroupStatus(LoadingState.ERROR);
         setGroupStatusMessage(groupResponse.message);
@@ -71,7 +71,7 @@ function OrganisationOverview() {
     async function getOrgMembersList() {
       if (orgEveryone) {
         const memberListResponse: ResponseObject =
-          await getGroupMembers(orgEveryone.group.id, token);
+          await getGroupMembers(orgEveryone.group.groupId, token);
         if (memberListResponse.status === ResponseType.Success) {
           setProjectMembers(memberListResponse.data as Member[]);
           setMemberListError(false);
@@ -121,7 +121,7 @@ function OrganisationOverview() {
         <>
           <Box>
             <Typography variant="h2" color="primary">
-              {`${organisationName} (${orgAbbrev})`}
+              {`${organisationName} (${orgAbbreviation})`}
             </Typography>
           </Box>
           <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />

@@ -1,6 +1,7 @@
 import React, { useEffect, Dispatch, SetStateAction } from 'react';
 import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
+import { FilterMatchMode } from 'primereact/api';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
@@ -9,6 +10,7 @@ import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from 
 import { DataFilter } from '../../DataFilters/DataFilters';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
+import FieldTypes from '../../../constants/fieldTypes';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -53,16 +55,16 @@ function DateSelector(props: any) {
     let value;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
-      value = dayjs().subtract(7, 'days');
+      value = dayjs().subtract(7, 'days').toDate();
     } else if (event.target.value === DashboardTimeFilter.LAST_MONTH) {
-      value = dayjs().subtract(1, 'month');
+      value = dayjs().subtract(1, 'month').toDate();
     }
 
     if (value !== undefined) {
       filterObject = {
         field: 'Date_created',
-        fieldType: 'date',
-        condition: '>',
+        fieldType: FieldTypes.DATE,
+        condition: FilterMatchMode.DATE_AFTER,
         value,
       };
     }

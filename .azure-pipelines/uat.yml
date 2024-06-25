@@ -1,0 +1,50 @@
+resources:
+  repositories:
+    - repository: Pipelines
+      type: github
+      name: AusTrakka/austrakka-pipelines
+      ref: UAT
+      endpoint: AusTrakka
+    - repository: Infra
+      type: github
+      endpoint: AusTrakka
+      name: AusTrakka/austrakka2-infra
+      ref: UAT
+
+trigger:
+  branches:
+    include:
+      - UAT
+
+pr: none
+
+pool:
+  name: UAT-New
+
+variables:
+  azureConnection: 'AusTrakka UAT'
+  azureConnectionAdmin: 'AusTrakka Data (Agent Pool)'
+  backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
+  backendAzureRmStorageAccountName: 'stuatterfshdas1'
+  backendAzureRmContainerName: 'env'
+  backendAzureRmKey: '$(EnvId)/$(EnvId).tfstate'
+  terraformOutputArtifact: 'TerraformOutput'
+  buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
+  sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
+
+stages:
+  - stage: CheckoutRepos
+    jobs:
+      - job: CheckoutPortal
+        steps:
+          - template: templates/checkout/self.yml
+          - template: templates/checkout/infra.yml@Pipelines
+          - template: templates/checkout/pipelines.yml@Pipelines
+          - template: templates/terraform/init.yml@Pipelines
+            parameters:
+              workingDirectory: $(sourceDir)/infra/prod
+          - template: templates/terraform/output.yml@Pipelines
+            parameters:
+              outputFileDir: $(buildDir)/tf
+              workingDirectory: $(sourceDir)/infra/prod
+          - template: templates/deploy-client.yml

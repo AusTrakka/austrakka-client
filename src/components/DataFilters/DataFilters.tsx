@@ -1,5 +1,3 @@
-import 'react-tabulator/lib/styles.css';
-import 'react-tabulator/lib/css/tabulator.min.css';
 import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack, Snackbar, Alert } from '@mui/material';
 import React, { useEffect, useState, SetStateAction } from 'react';
 import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
@@ -9,7 +7,7 @@ import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
-import { Field, ProjectViewField } from '../../types/dtos';
+import { Field } from '../../types/dtos';
 
 export interface DataFilter {
   shakeElement?: boolean,
@@ -36,7 +34,7 @@ interface DataFiltersProps {
   dataLength: number // need to pass through
   filteredDataLength: number // need to pass through
   visibleFields: any[] | null // need to passs through
-  allFields: ProjectViewField[] // need to pass through
+  allFields: Field[] // need to pass through
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
@@ -90,22 +88,37 @@ function DataFilters(props: DataFiltersProps) {
     setTotalSamples(dataLength);
   }, [dataLength, filteredDataLength]);
 
+  function filterFieldsByVisibility<T extends Field>(
+    _fields: T[],
+    _visibleFields: any[],
+  ): T[] {
+    return _fields.filter((field): field is T =>
+      _visibleFields.some((visibleField) => visibleField.field === field.columnName));
+  }
+
+  function registerFilterHandlers<T extends Field>(_fields: T[]) {
+    _fields.forEach((field) => {
+      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
+        emptyFilter(value, filters));
+    });
+  }
+
   useEffect(() => {
     if (allFields.length > 0) {
       if (visibleFields === null) {
         setFields(allFields);
       } else {
-        const vFields = allFields
-          .filter((field) => visibleFields
-            .find((visibleField) => visibleField.field === field.columnName));
+        const onlyVisibleField = visibleFields.filter((field) => !field.hidden);
+        const vFields = filterFieldsByVisibility<Field>(
+          allFields,
+          onlyVisibleField,
+        );
         setNewFilter(initialFilterState);
         setFields(vFields);
       }
+
+      registerFilterHandlers<Field>(allFields);
     }
-    allFields.forEach(field => {
-      FilterService.register(`custom_${field.columnName}`, (value, filters) =>
-        emptyFilter(value, filters));
-    });
   }, [allFields, visibleFields]);
 
   const handleFilterChange = (event: SelectChangeEvent) => {
@@ -197,7 +210,6 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   const clearFilters = () => {
-    setLoadingState(true);
     setFilterError(false);
     setFilterList([]);
   };

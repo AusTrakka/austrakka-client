@@ -6,6 +6,7 @@ import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -31,13 +32,14 @@ const defaultSpec: TopLevelSpec = {
 function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useState<string>('');
   const [colourField, setColourField] = useState<string>('none');
+  const [colourScheme, setColourScheme] = useState<string>('spectral');
   const [binMode, setBinMode] = useState<string>('auto');
   const [stepSize, setStepSize] = useState<number>(1);
 
@@ -83,10 +85,17 @@ function Histogram(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
-    setSpec(setColorInSpec);
-  }, [colourField]);
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
+    }
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const addBinningToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -137,6 +146,12 @@ function Histogram(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="binning-auto-select-label">Binning</InputLabel>
         <Select

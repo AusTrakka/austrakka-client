@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import './assets/themes/custom-style.css';
 import {
@@ -29,24 +29,14 @@ import UploadSequences from './components/Upload/UploadSequences';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
 import { msalInstance } from './utilities/authUtils';
 import UserDetail from './components/Users/UserDetail';
-import { useAppDispatch } from './app/store';
-import { fetchUserRoles } from './app/userSlice';
-import { useApi } from './app/ApiContext';
-import LoadingState from './constants/loadingState';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
+import Users from './components/Admin/Users';
+import Fields from './components/Fields/Fields';
 
 function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
   msalInstance.setNavigationClient(navigationClient);
-  const dispatch = useAppDispatch();
-  const { token, tokenLoading } = useApi();
-
-  useEffect(() => {
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchUserRoles(token));
-    }
-  }, [token, tokenLoading, dispatch]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -62,6 +52,7 @@ function App() {
                 <Route path="org" element={<OrganisationOverview />} />
                 <Route path="org/:tab" element={<OrganisationOverview />} />
                 <Route path="upload" element={<Upload />} />
+                <Route path="users" element={<Users />} />
                 <Route path="upload/metadata" element={<UploadMetadata />} />
                 <Route path="upload/sequences" element={<UploadSequences />} />
                 <Route path="projects" element={<ProjectsList />} />
@@ -72,6 +63,7 @@ function App() {
                 <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
                 <Route path="records/:seqId" element={<OrgSampleDetail />} />
                 <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
+                <Route path="fields" element={<Fields />} />
                 <Route path="users/:userObjectId" element={<UserDetail />} />
               </Route>
               <Route path="*" element={<Navigate to="/" />} />
