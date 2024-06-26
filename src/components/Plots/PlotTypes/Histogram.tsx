@@ -154,7 +154,7 @@ function Histogram(props: PlotTypeProps) {
           onChange={(e) => setXAxisField(e.target.value)}
         >
           {
-            numericFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            numericFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -169,7 +169,7 @@ function Histogram(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>

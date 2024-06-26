@@ -141,7 +141,7 @@ function HeatMap(props: PlotTypeProps) {
           onChange={(e) => setXAxisField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -155,7 +155,7 @@ function HeatMap(props: PlotTypeProps) {
           onChange={(e) => setYAxisField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>

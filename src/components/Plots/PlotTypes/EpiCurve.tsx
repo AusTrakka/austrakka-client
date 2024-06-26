@@ -209,11 +209,11 @@ function EpiCurve(props: PlotTypeProps) {
         >
           {
             [
-              <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
-              <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
-              <MenuItem value="yearweek">Week</MenuItem>,
-              <MenuItem value="yearmonth">Month</MenuItem>,
-              <MenuItem value="year">Year</MenuItem>,
+              <MenuItem key="yearmonthdate" value="yearmonthdate">Day (date)</MenuItem>,
+              <MenuItem key="yeardayofyear" value="yeardayofyear">Day (of year)</MenuItem>,
+              <MenuItem key="yearweek" value="yearweek">Week</MenuItem>,
+              <MenuItem key="yearmonth" value="yearmonth">Month</MenuItem>,
+              <MenuItem key="year" value="year">Year</MenuItem>,
             ]
           }
         </Select>
@@ -228,7 +228,7 @@ function EpiCurve(props: PlotTypeProps) {
           onChange={(e) => setDateField(e.target.value)}
         >
           {
-            dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -243,7 +243,7 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -264,7 +264,7 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
