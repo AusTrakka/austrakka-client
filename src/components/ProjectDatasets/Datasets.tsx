@@ -1,10 +1,11 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper } from '@mui/material';
+import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Tooltip } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
+import { HelpOutline, MergeType } from '@mui/icons-material';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -21,10 +22,11 @@ import sortIcon from '../TableComponents/SortIcon';
 
 interface DatasetProps {
   projectDetails: Project | null;
+  mergeAlgorithm: string | null;
 }
 
 function Datasets(props: DatasetProps) {
-  const { projectDetails } = props;
+  const { projectDetails, mergeAlgorithm } = props;
   const { token } = useApi();
   const [rows, setRows] = useState<DataSetEntry[]>([]);
   const [openSnackbar, setOpenSnackbar] = useState(false); // State for toast
@@ -136,19 +138,31 @@ function Datasets(props: DatasetProps) {
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        <ColumnVisibilityMenu
-          columns={columns}
-          onColumnVisibilityChange={(selectedCols) => {
-            const newColumns = columns.map((col: any) => {
-              const newCol = { ...col };
-              newCol.hidden = selectedCols.some(
-                (selectedCol: any) => selectedCol.field === col.field,
-              );
-              return newCol;
-            });
-            setColumns(newColumns);
-          }}
-        />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'row', alignItems: 'center' }}>
+          {mergeAlgorithm && (
+          <Tooltip placement="top" title={`Merge Algorithm: ${mergeAlgorithm}`}>
+            <IconButton
+              sx={{ mr: 0.5 }}
+              disableTouchRipple
+            >
+              <HelpOutline color="action" fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          )}
+          <ColumnVisibilityMenu
+            columns={columns}
+            onColumnVisibilityChange={(selectedCols) => {
+              const newColumns = columns.map((col: any) => {
+                const newCol = { ...col };
+                newCol.hidden = selectedCols.some(
+                  (selectedCol: any) => selectedCol.field === col.field,
+                );
+                return newCol;
+              });
+              setColumns(newColumns);
+            }}
+          />
+        </div>
       </div>
     </div>
   );

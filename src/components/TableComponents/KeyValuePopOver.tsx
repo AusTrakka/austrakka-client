@@ -14,7 +14,7 @@ interface KeyValueInfoPopoverProps<T> {
 const defaultProps = {
   valueFormatter: (value: string) => value,
   searchPlaceholder: 'Search by key...',
-  toolTipTitle: 'Show Info',
+toolTipTitle: 'Show Info',
 };
 
 function KeyValueInfoPopover<T>({
