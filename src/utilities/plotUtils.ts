@@ -72,6 +72,24 @@ export const setColorInSpecToValue = (
   return newSpec as TopLevelSpec;
 };
 
+export const setColorAggregateInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  colourScheme: string = 'spectral',
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+  const newSpec: any = { ...oldSpec };
+  newSpec.encoding = { ...(oldSpec as any).encoding };
+  newSpec.encoding.color = {
+    aggregate: 'count',
+    scale: {
+      scheme: colourScheme,
+    },
+    legend: legendSpec,
+  };
+
+  return newSpec as TopLevelSpec;
+};
+
 // Facet row. Does not use generic setFieldInSpec, as we handle 'none'
 export const setRowInSpecToValue =
     (oldSpec: TopLevelSpec | null, rowField: string): TopLevelSpec | null => {

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getStartingField, setColorAggregateInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -28,6 +30,10 @@ const defaultSpec: TopLevelSpec = {
     },
     color: {
       aggregate: 'count',
+      type: 'nominal',
+      scale: {
+        scheme: 'spectral',
+      },
     },
   },
 };
@@ -35,12 +41,26 @@ const defaultSpec: TopLevelSpec = {
 function HeatMap(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const searchParams = new URLSearchParams(window.location.search);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [xAxisField, setXAxisField] = useState<string>('');
-  const [yAxisField, setYAxisField] = useState<string>('');
+  const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
+    'xAxisField',
+    '',
+    searchParams,
+  );
+  const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
+    'yAxisField',
+    '',
+    searchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    searchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -65,13 +85,18 @@ function HeatMap(props: PlotTypeProps) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
       }
       const x = getStartingField(preferredCatFields, localCatFields);
-      setXAxisField(x);
-      // This will still set y=x if x is the only field; we just prefer y!=x
-      setYAxisField(getStartingField(
-        preferredCatFields.filter(fld => !(fld === x)),
-        localCatFields,
-      ));
+      if (xAxisField === '' && yAxisField === '') {
+        setXAxisField(x);
+        // This will still set y=x if x is the only field; we just prefer y!=x
+        setYAxisField(getStartingField(
+          preferredCatFields.filter(fld => !(fld === x)),
+          localCatFields,
+        ));
+      } else if (!localCatFields.includes(xAxisField) || !localCatFields.includes(yAxisField)) {
+        setPlotErrorMsg('One or more selected fields do not exist in the project, cannot render plot');
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -82,6 +107,18 @@ function HeatMap(props: PlotTypeProps) {
       setSpec(addXAxisToSpec);
     }
   }, [xAxisField]);
+
+  useEffect(() => {
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setColorAggregateInSpecToValue(
+        oldSpec,
+        colourScheme,
+      );
+
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
+    }
+  }, [colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const addYAxisToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -122,6 +159,10 @@ function HeatMap(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
+      <ColorSchemeSelectorPlotStyle
+        selectedScheme={colourScheme}
+        onColourChange={(newColor) => setColourScheme(newColor)}
+      />
     </Box>
   );
 
