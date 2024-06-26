@@ -5,7 +5,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
-import { HelpOutline, MergeType } from '@mui/icons-material';
+import { HelpOutline } from '@mui/icons-material';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
