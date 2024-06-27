@@ -4,12 +4,12 @@ import {
   MenuItem,
   Menu,
   Checkbox,
-  ListItemText,
   Button,
   Stack,
   Tooltip,
   Paper,
   Box,
+  Typography,
 } from '@mui/material';
 import { ViewColumn } from '@mui/icons-material';
 
@@ -159,7 +159,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
                 (p: any) => p.header === column.header,
               )}
             />
-            <ListItemText primary={column.header} />
+            <Typography>{column.header}</Typography>
           </MenuItem>
         ))}
       </Menu>
