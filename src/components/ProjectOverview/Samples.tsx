@@ -4,13 +4,14 @@
 import React, {
   useEffect, useState,
 } from 'react';
-import { Close, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
   Dialog,
   Alert, AlertTitle, Paper, Tooltip,
+  Typography,
 } from '@mui/material';
 import './Samples.css';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +29,8 @@ import ExportTableData from '../Common/ExportTableData';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
+import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
+import { ProjectField } from '../../types/dtos';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -79,7 +82,7 @@ function Samples(props: SamplesProps) {
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
-    const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields!);
+    const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields);
     setReadyFields(metadata!.fieldLoadingStates);
     setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
@@ -107,9 +110,22 @@ function Samples(props: SamplesProps) {
     }
   };
 
+  const getFieldSource = (field: string) => {
+    const fieldObj = metadata?.fields?.find(f => f.columnName === field);
+    return `${fieldObj?.fieldSource}`;
+  };
+
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <KeyValuePopOver
+          data={metadata?.projectFields || []}
+          keyExtractor={(field: ProjectField) => field.fieldName}
+          valueExtractor={(field: ProjectField) => field.fieldSource}
+          valueFormatter={(value: string) => value.replace(/^Source From\s*/i, '')}
+          searchPlaceholder="Search by field..."
+          toolTipTitle="Show Field Sources"
+        />
         <ColumnVisibilityMenu
           columns={sampleTableColumns}
           onColumnVisibilityChange={(selectedCols) => {
@@ -215,18 +231,33 @@ function Samples(props: SamplesProps) {
             reorderableColumns
             resizableColumns
             sortIcon={sortIcon}
+            emptyMessage={(
+              <Typography variant="subtitle1" color="textSecondary" align="center">
+                No samples found
+              </Typography>
+            )}
           >
-            {sampleTableColumns.map((col: any, index: any) => (
+            {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={(
-                  !verticalHeaders ? <div>{col.header}</div> : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
-                      {col.header}
-                    </div>
-                  )
-                )}
+                header={
+                    !verticalHeaders ? (
+                      <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                        {col.header}
+                        <Tooltip title={getFieldSource(col.field)} placement="top">
+                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        </Tooltip>
+                      </div>
+                    ) : (
+                      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                        {col.header}
+                        <Tooltip title={getFieldSource(col.field)} placement="top">
+                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        </Tooltip>
+                      </div>
+                    )
+                }
                 body={BodyComponent({ col, readyFields })}
                 hidden={col.hidden}
                 sortable
@@ -234,7 +265,7 @@ function Samples(props: SamplesProps) {
                 headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
                 headerClassName="custom-title"
               />
-            ))}
+            )) : null}
           </DataTable>
         </div>
       </Paper>

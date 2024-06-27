@@ -2,6 +2,18 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-06-27
+
+### Added
+- A colour scheme selector has been added to plots
+- Plot settings such as fields and colours will update the URL dynamically; they will persist on page reload and can be shared with others via URL
+- Sample tables in projects now show the field source (sourced from organisation sample metadata, or project datasets)
+- Hide all / show all columns buttons have been added to the column selector for the sample metadata tables
+- Admin UI for editing field details
+
+### Fixed
+- Fix to admin functionality to search users by name
+
 ## 2024-06-06
 
 ### Added
