@@ -5,8 +5,10 @@ import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
-import { getStartingField, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -51,15 +53,33 @@ const defaultSpec: TopLevelSpec = {
 function ClusterTimeline(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields } = useAppSelector(
+  const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const urlSearchParams = new URLSearchParams(window.location.search);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [yAxisField, setYAxisField] = useState<string>('');
-  const [colourField, setColourField] = useState<string>('');
+  const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
+    'yAxisField',
+    '',
+    urlSearchParams,
+  );
+  const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
+    'colourField',
+    '',
+    urlSearchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    urlSearchParams,
+  );
   const [dateFields, setDateFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useState<string>('');
+  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
+    'xAxisField',
+    '',
+    urlSearchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -91,10 +111,16 @@ function ClusterTimeline(props: PlotTypeProps) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
-      setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-      setColourField(getStartingField(preferredColourFields, localCatFields));
-      setDateField(getStartingField(preferredDateFields, localDateFields));
+      if (yAxisField === '' || colourField === '' || dateField === '') {
+        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+        setColourField(getStartingField(preferredColourFields, localCatFields));
+        setDateField(getStartingField(preferredDateFields, localDateFields));
+      } else if (!localCatFields.includes(yAxisField) || !localCatFields.includes(colourField)
+        || !localDateFields.includes(dateField)) {
+        setPlotErrorMsg('Invalid field in URL, cannot render plot');
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -110,13 +136,18 @@ function ClusterTimeline(props: PlotTypeProps) {
   // We know there must be at least one cat field for the y axis, so this will work,
   // but maybe the user would prefer none for colour field regardless
   useEffect(() => {
-    const addColourToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setFieldInSpec(oldSpec, 'color', colourField);
+    const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
-    if (colourField.length > 0) {
-      setSpec(addColourToSpec);
+    if (fieldUniqueValues) {
+      setSpec(setColorInSpec);
     }
-  }, [colourField]);
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const addDateFieldToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -139,7 +170,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           onChange={(e) => setYAxisField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -153,10 +184,16 @@ function ClusterTimeline(props: PlotTypeProps) {
           onChange={(e) => setColourField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-field-select-label">X-Axis Date Field</InputLabel>
         <Select
@@ -167,7 +204,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           onChange={(e) => setDateField(e.target.value)}
         >
           {
-            dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>

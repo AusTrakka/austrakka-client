@@ -48,6 +48,7 @@ export const setColorInSpecToValue = (
   oldSpec: TopLevelSpec | null,
   colourField: string,
   uniqueValues: string[],
+  colourScheme: string = 'spectral',
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
   const newSpec: any = { ...oldSpec };
@@ -57,7 +58,7 @@ export const setColorInSpecToValue = (
     newSpec.encoding = newEncoding;
   } else {
     // Set colour in encoding
-    const colourMapping = createColourMapping(uniqueValues, 'spectral');
+    const colourMapping = createColourMapping(uniqueValues, colourScheme);
     newSpec.encoding = { ...(oldSpec as any).encoding };
     newSpec.encoding.color = {
       field: colourField,
@@ -68,6 +69,24 @@ export const setColorInSpecToValue = (
       legend: legendSpec,
     };
   }
+  return newSpec as TopLevelSpec;
+};
+
+export const setColorAggregateInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  colourScheme: string = 'spectral',
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+  const newSpec: any = { ...oldSpec };
+  newSpec.encoding = { ...(oldSpec as any).encoding };
+  newSpec.encoding.color = {
+    aggregate: 'count',
+    scale: {
+      scheme: colourScheme,
+    },
+    legend: legendSpec,
+  };
+
   return newSpec as TopLevelSpec;
 };
 

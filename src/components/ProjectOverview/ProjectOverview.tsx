@@ -21,6 +21,7 @@ import { useApi } from '../../app/ApiContext';
 import {
   fetchProjectMetadata,
   selectAwaitingProjectMetadata,
+  selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -54,6 +55,8 @@ function ProjectOverview() {
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -208,7 +211,7 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={6} tabLoader={false}>
-            <Datasets projectDetails={projectDetails} />
+            <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
           </TabPanel>
         </>
       )

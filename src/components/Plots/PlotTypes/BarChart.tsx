@@ -6,6 +6,8 @@ import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -34,10 +36,28 @@ function BarChart(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const searchParams = new URLSearchParams(window.location.search);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [xAxisField, setXAxisField] = useState<string>('');
-  const [colourField, setColourField] = useState<string>('none');
-  const [stackType, setStackType] = useState<string>('zero');
+  const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
+    'xAxisField',
+    '',
+    searchParams,
+  );
+  const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
+    'colourField',
+    'none',
+    searchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    searchParams,
+  );
+  const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
+    'stackType',
+    'zero',
+    searchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -63,8 +83,13 @@ function BarChart(props: PlotTypeProps) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
-      setXAxisField(getStartingField(preferredCatFields, localCatFields));
+      if (xAxisField === '') {
+        setXAxisField(getStartingField(preferredCatFields, localCatFields));
+      } else if (!localCatFields.includes(xAxisField)) {
+        setPlotErrorMsg(`Selected X-axis field ${xAxisField} is not a valid categorical field`);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -78,12 +103,17 @@ function BarChart(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
     if (fieldUniqueValues) {
       setSpec(setColorInSpec);
     }
-  }, [colourField, fieldUniqueValues]);
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const setStackTypeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -112,7 +142,7 @@ function BarChart(props: PlotTypeProps) {
           onChange={(e) => setXAxisField(e.target.value)}
         >
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -127,10 +157,16 @@ function BarChart(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Chart type</InputLabel>
         <Select
