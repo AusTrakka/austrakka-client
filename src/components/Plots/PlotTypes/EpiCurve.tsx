@@ -11,6 +11,7 @@ import {
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -44,15 +45,44 @@ function EpiCurve(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useState<string>('');
-  const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
-  const [dateBinStep, setDateBinStep] = useState<number>(1);
-  const [colourField, setColourField] = useState<string>('none');
-  const [colourScheme, setColourScheme] = useState<string>('spectral');
-  const [rowField, setRowField] = useState<string>('none'); // facets by row
-  const [stackType, setStackType] = useState<string>('zero');
+  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
+    'dateField',
+    '',
+    searchParams,
+  );
+  const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
+    'dateBinUnit',
+    'yearmonthdate',
+    searchParams,
+  );
+  const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
+    'dateBinStep',
+    1,
+    searchParams,
+  );
+  const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
+    'colourField',
+    'none',
+    searchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    searchParams,
+  );
+  const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
+    'rowField',
+    'none',
+    searchParams,
+  );
+  const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
+    'stackType',
+    'zero',
+    searchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -83,8 +113,13 @@ function EpiCurve(props: PlotTypeProps) {
         setPlotErrorMsg('No date fields found in project, cannot render plot');
         return;
       }
-      setDateField(getStartingField(preferredDateFields, localDateFields));
+      if (dateField === '') {
+        setDateField(getStartingField(preferredDateFields, localDateFields));
+      } else if (!localDateFields.includes(dateField)) {
+        setPlotErrorMsg('Invalid field in URL, cannot render plot');
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -174,11 +209,11 @@ function EpiCurve(props: PlotTypeProps) {
         >
           {
             [
-              <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
-              <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
-              <MenuItem value="yearweek">Week</MenuItem>,
-              <MenuItem value="yearmonth">Month</MenuItem>,
-              <MenuItem value="year">Year</MenuItem>,
+              <MenuItem key="yearmonthdate" value="yearmonthdate">Day (date)</MenuItem>,
+              <MenuItem key="yeardayofyear" value="yeardayofyear">Day (of year)</MenuItem>,
+              <MenuItem key="yearweek" value="yearweek">Week</MenuItem>,
+              <MenuItem key="yearmonth" value="yearmonth">Month</MenuItem>,
+              <MenuItem key="year" value="year">Year</MenuItem>,
             ]
           }
         </Select>
@@ -193,7 +228,7 @@ function EpiCurve(props: PlotTypeProps) {
           onChange={(e) => setDateField(e.target.value)}
         >
           {
-            dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -208,7 +243,7 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -229,7 +264,7 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>

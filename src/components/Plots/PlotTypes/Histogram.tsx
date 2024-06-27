@@ -7,6 +7,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -35,13 +36,34 @@ function Histogram(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const searchParams = new URLSearchParams(window.location.search);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
-  const [xAxisField, setXAxisField] = useState<string>('');
-  const [colourField, setColourField] = useState<string>('none');
-  const [colourScheme, setColourScheme] = useState<string>('spectral');
-  const [binMode, setBinMode] = useState<string>('auto');
-  const [stepSize, setStepSize] = useState<number>(1);
+  const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
+    'xAxisField',
+    '',
+    searchParams,
+  );
+  const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
+    'colourField',
+    'none',
+    searchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    searchParams,
+  );
+  const [binMode, setBinMode] = useStateFromSearchParamsForPrimitive<string>(
+    'binMode',
+    'auto',
+    searchParams,
+  );
+  const [stepSize, setStepSize] = useStateFromSearchParamsForPrimitive<number>(
+    'stepSize',
+    1,
+    searchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -70,8 +92,13 @@ function Histogram(props: PlotTypeProps) {
       if (localNumericFields.length === 0) {
         setPlotErrorMsg('No numeric fields found in project, cannot render plot');
       }
-      setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
+      if (xAxisField === '') {
+        setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
+      } else if (!localNumericFields.includes(xAxisField)) {
+        setPlotErrorMsg('Invalid field in URL, cannot render plot');
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -127,7 +154,7 @@ function Histogram(props: PlotTypeProps) {
           onChange={(e) => setXAxisField(e.target.value)}
         >
           {
-            numericFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            numericFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -142,7 +169,7 @@ function Histogram(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
