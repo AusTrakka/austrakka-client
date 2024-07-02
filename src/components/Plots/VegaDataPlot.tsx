@@ -6,7 +6,8 @@ import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
 import {
@@ -15,6 +16,7 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
+import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -28,7 +30,14 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
+  const defualtState = { global:
+    { operator: 'and',
+      constraints: [{ value: null,
+        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defualtState,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
   const metadata : ProjectMetadataState | null =
@@ -37,6 +46,21 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
   }, [filteredData]);
+
+  useEffect(
+    () => {
+      if (filterList.length === 0
+         && !isEqual(currentFilters, defualtState)
+        && metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+        setFilterList(convertDataTableFilterMetaToDataFilterObject(
+          currentFilters,
+          metadata?.fields!,
+        ));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFilters, filterList, metadata],
+  );
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -114,7 +138,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-       Object.keys(currentFilter).length === 0) {
+       Object.keys(currentFilters).length === 0) {
       setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
       setLoading(false);
     }
@@ -142,7 +166,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
             filteredDataLength={filteredData.length ?? 0}
             visibleFields={null}
             allFields={metadata?.fields ?? []}
-            setPrimeReactFilters={setCurrentFilter}
+            setPrimeReactFilters={setCurrentFilters}
             isOpen={isDataFiltersOpen}
             setIsOpen={setIsDataFiltersOpen}
             filterList={filterList}
@@ -154,7 +178,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       <div style={{ display: 'none' }}>
         <DataTable
           value={metadata?.metadata ?? []}
-          filters={currentFilter}
+          filters={currentFilters}
           paginator
           rows={1}
           onValueChange={(e) => {

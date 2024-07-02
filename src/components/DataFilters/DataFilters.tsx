@@ -270,8 +270,8 @@ function DataFilters(props: DataFiltersProps) {
         };
       }
     });
-    console.warn('filtersBuilder', filtersBuilder);
     setPrimeReactFilters(filtersBuilder);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterList]);
 
   const renderValueElement = () => {

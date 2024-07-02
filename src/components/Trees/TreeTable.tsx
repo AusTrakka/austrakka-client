@@ -1,9 +1,10 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import { DataTable, DataTableOperatorFilterMetaData, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { FilterMatchMode } from 'primereact/api';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
@@ -14,6 +15,7 @@ import { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -57,7 +59,14 @@ export default function TreeTable(props: TreeTableProps) {
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
+  const defualtState = { global:
+    { operator: 'and',
+      constraints: [{ value: null,
+        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+  const [currentFilter, setCurrentFilter] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defualtState,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
@@ -78,6 +87,20 @@ export default function TreeTable(props: TreeTableProps) {
       formatTableHeaders();
     }
   }, [columnError, displayFields]);
+
+  useEffect(
+    () => {
+      if (filterList.length === 0
+         && !isEqual(currentFilter, defualtState)) {
+        setFilterList(convertDataTableFilterMetaToDataFilterObject(
+          currentFilter,
+          displayFields,
+        ));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFilter, filterList, displayFields],
+  );
 
   useEffect(() => {
     const processTableValues = () => {

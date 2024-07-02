@@ -5,7 +5,7 @@ import React, {
   useEffect, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent, DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
@@ -69,7 +69,6 @@ function Samples(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defualtState,
-    new URLSearchParams(window.location.search),
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
@@ -92,14 +91,14 @@ function Samples(props: SamplesProps) {
       if (filterList.length === 0
          && !isEqual(currentFilters, defualtState)
         && metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-        console.log('Setting filters from URL');
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
         ));
       }
     },
-    [currentFilters, defualtState, filterList, inputFilters, metadata],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFilters, filterList, metadata],
   );
   // Set column headers from metadata state
   useEffect(() => {

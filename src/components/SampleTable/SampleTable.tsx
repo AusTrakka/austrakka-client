@@ -12,14 +12,14 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableOperatorFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { replaceHasSequencesNullsWithFalse } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isEqual, replaceHasSequencesNullsWithFalse, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
 import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -32,7 +32,6 @@ import DataFilters from '../DataFilters/DataFilters';
 
 interface SamplesProps {
   groupContext: number | undefined,
-  groupName: string | undefined,
 }
 // SAMPLE TABLE
 // Transitionary sampel table component that contains repeat code from both
@@ -44,7 +43,7 @@ interface SamplesProps {
 // 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
-  const { groupContext, groupName } = props;
+  const { groupContext } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
@@ -62,11 +61,30 @@ function SampleTable(props: SamplesProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
-  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const defualtState = { global:
+    { operator: 'and',
+      constraints: [{ value: null,
+        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defualtState,
   );
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
+
+  useEffect(
+    () => {
+      if (filterList.length === 0
+         && !isEqual(currentFilters, defualtState)) {
+        setFilterList(convertDataTableFilterMetaToDataFilterObject(
+          currentFilters,
+          displayFields,
+        ));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFilters, displayFields, filterList],
+  );
 
   useEffect(() => {
     async function fetchSamplesData() {

@@ -8,7 +8,7 @@ import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { DataFilter } from '../components/DataFilters/DataFilters';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
-import { ProjectViewField } from '../types/dtos';
+import { MetaDataColumn, ProjectViewField } from '../types/dtos';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
@@ -320,17 +320,13 @@ function isEqualFilterMetaData(
 export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
-  console.log('Keys in Object 1:', keys1);
-  console.log('Keys in Object 2:', keys2);
 
   // first we could check if the keys have the same values
   if (!keys1.every(key => keys2.includes(key))) {
-    console.log('Objects have different keys. Not equal.');
     return false;
   }
 
   if (keys1.length !== keys2.length) {
-    console.log('Objects have different number of keys. Not equal.');
     return false;
   }
 
@@ -339,82 +335,56 @@ export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
   keys2.sort();
 
   for (const key of keys1) {
-    console.log(`Comparing key: ${key}`);
     const val1 = obj1[key];
     const val2 = obj2[key];
 
-    console.log('Value in Object 1:', val1);
-    console.log('Value in Object 2:', val2);
-
     if (isOperatorFilterMetaData(val1) && isOperatorFilterMetaData(val2)) {
-      console.log('Both values are OperatorFilterMetaData');
       if (val1.operator !== val2.operator || val1.constraints.length !== val2.constraints.length) {
-        console.log('Operators or constraint lengths differ. Not equal.');
         return false;
       }
-      console.log('Comparing constraints...');
+      // eslint-disable-next-line no-plusplus
       for (let i = 0; i < val1.constraints.length; i++) {
-        console.log(`Comparing constraint ${i}`);
         if (!isEqualFilterMetaData(val1.constraints[i], val2.constraints[i])) {
-          console.log(`Constraint ${i} is not equal. Objects are not equal.`);
           return false;
         }
       }
-      console.log('All constraints are equal.');
     } else if (!isOperatorFilterMetaData(val1) && !isOperatorFilterMetaData(val2)) {
-      console.log('Both values are FilterMetaData');
       if (!isEqualFilterMetaData(val1, val2)) {
-        console.log('FilterMetaData values are not equal. Objects are not equal.');
         return false;
       }
     } else {
-      console.log('One value is OperatorFilterMetaData and the other is not. Objects are not equal.');
       return false;
     }
   }
 
-  console.log('All checks passed. Objects are equal.');
   return true;
 }
 
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultState: DataTableFilterMeta,
-  currentSearchParams: URLSearchParams,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
-  console.log(`Initializing useStateFromSearchParamsForFilterObject with paramName: ${paramName}`);
-  console.log('Default state:', defaultState);
-
   const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultState);
-  console.log('State from search params:', stateSearchParams);
 
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
-  console.log('Initial state:', state);
 
   const navigate = useNavigate();
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
-    console.log('useStateWithQueryParam called with new state:', newState);
     setState(newState);
     const resolvedState = resolveState(newState, state);
-    console.log('Resolved state:', resolvedState);
 
     const currentSearchParams = new URLSearchParams(window.location.search);
-    console.log('Current search params:', currentSearchParams.toString());
 
     // If exists in the current searchParams, delete it
     if (currentSearchParams.has(paramName)) {
-      console.log(`Deleting existing ${paramName} from search params`);
       currentSearchParams.delete(paramName);
     }
 
     if (!isEqual(resolvedState, state)) {
-      console.log('State differs from default, appending to search params');
       const encodedFilter = encodeFilterObj(resolvedState);
-      console.log('Encoded filter:', encodedFilter);
       currentSearchParams.append(paramName, encodedFilter);
     } else {
-      console.log('State is equal to default or prevstate, not appending to search params');
       return;
     }
 
@@ -422,27 +392,22 @@ export function useStateFromSearchParamsForFilterObject(
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    console.log('New query string:', queryString);
-
     // Update the URL without navigating
     if (queryString === '' || queryString === `${paramName}=()`) {
-      console.log('Query string is empty, navigating to pathname only');
       navigate(window.location.pathname, { replace: true });
       return;
     }
 
     const newUrl = `${window.location.pathname}?${queryString}`;
-    console.log('Updating URL to:', newUrl);
     navigate(newUrl, { replace: true });
   };
 
-  console.log('Returning state and useStateWithQueryParam function');
   return [state, useStateWithQueryParam];
 }
 
 export function convertDataTableFilterMetaToDataFilterObject(
   filterMeta: DataTableFilterMeta,
-  fields: ProjectViewField[],
+  fields: ProjectViewField[] | MetaDataColumn[],
 ): DataFilter[] {
   if (fields.length === 0) return [];
   const conversion = Object.entries(filterMeta).flatMap(([key, value]
@@ -463,14 +428,5 @@ export function convertDataTableFilterMetaToDataFilterObject(
       value: value.value,
     } as DataFilter];
   });
-  console.log('Converted DataTableFilterMeta to DataFilter:', conversion);
   return conversion;
 }
-
-//  interface DataFilter {
-//   shakeElement?: boolean,
-//   field: string,
-//   fieldType: string,
-//   condition: FilterMatchMode | CustomFilterOperators | string,
-//   value: any
-// }
