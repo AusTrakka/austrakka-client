@@ -5,7 +5,7 @@ import React, {
   useEffect, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent, DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
@@ -31,6 +31,7 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
+import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -61,12 +62,19 @@ function Samples(props: SamplesProps) {
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
-  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const defualtState = { global:
+     { operator: 'and',
+       constraints: [{ value: null,
+         matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defualtState,
+    new URLSearchParams(window.location.search),
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
+
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
@@ -79,6 +87,20 @@ function Samples(props: SamplesProps) {
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
+  useEffect(
+    () => {
+      if (filterList.length === 0
+         && !isEqual(currentFilters, defualtState)
+        && metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+        console.log('Setting filters from URL');
+        setFilterList(convertDataTableFilterMetaToDataFilterObject(
+          currentFilters,
+          metadata?.fields!,
+        ));
+      }
+    },
+    [currentFilters, defualtState, filterList, inputFilters, metadata],
+  );
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;

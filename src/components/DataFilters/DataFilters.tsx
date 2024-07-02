@@ -223,7 +223,6 @@ function DataFilters(props: DataFiltersProps) {
     const filtersBuilder: DataTableFilterMeta = {};
 
     if (filterList.length === 0) {
-      setPrimeReactFilters(filtersBuilder);
       return;
     }
 
@@ -271,8 +270,9 @@ function DataFilters(props: DataFiltersProps) {
         };
       }
     });
+    console.warn('filtersBuilder', filtersBuilder);
     setPrimeReactFilters(filtersBuilder);
-  }, [filterList, setPrimeReactFilters]);
+  }, [filterList]);
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
