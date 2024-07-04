@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+- Added filter information to the url of all queriable table pages. This allows users to share a link to a table with the current filter settings applied.
+
 ## 2024-06-06
 
 ### Added
