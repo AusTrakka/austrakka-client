@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+- Admin only ability to navigate to other organisations through URL manipulation.
+
 ## 2024-06-06
 
 ### Added
