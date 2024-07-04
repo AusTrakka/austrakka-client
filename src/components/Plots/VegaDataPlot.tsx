@@ -6,10 +6,9 @@ import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { FilterMatchMode } from 'primereact/api';
+import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
 import {
   selectProjectMetadata, ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
@@ -30,13 +29,10 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const defualtState = { global:
-    { operator: 'and',
-      constraints: [{ value: null,
-        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
-    defualtState,
+    defaultState,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
@@ -47,20 +43,24 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
   }, [filteredData]);
 
-  useEffect(
-    () => {
-      if (filterList.length === 0
-         && !isEqual(currentFilters, defualtState)
-        && metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+  useEffect(() => {
+    const initialFilterState = () => {
+      if (!isEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
         ));
+      } else {
+        setFilterList([]);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFilters, filterList, metadata],
-  );
+      setInitialisingFilters(false);
+    };
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
+      metadata?.fields && initialisingFilters) {
+      initialFilterState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.loadingState, metadata?.fields]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -144,6 +144,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
+
+  if (initialisingFilters) { return null; }
 
   return (
     <>

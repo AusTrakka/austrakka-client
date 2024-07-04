@@ -1,13 +1,12 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
-import { DataTable, DataTableOperatorFilterMetaData, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import { DataTable, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
-import { FilterMatchMode } from 'primereact/api';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -59,16 +58,13 @@ export default function TreeTable(props: TreeTableProps) {
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const defualtState = { global:
-    { operator: 'and',
-      constraints: [{ value: null,
-        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
-  const [currentFilter, setCurrentFilter] = useStateFromSearchParamsForFilterObject(
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
-    defualtState,
+    defaultState,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
+  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
 
@@ -88,19 +84,24 @@ export default function TreeTable(props: TreeTableProps) {
     }
   }, [columnError, displayFields]);
 
-  useEffect(
-    () => {
-      if (filterList.length === 0
-         && !isEqual(currentFilter, defualtState)) {
+  useEffect(() => {
+    const initialFilterState = () => {
+      if (!isEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
-          currentFilter,
+          currentFilters,
           displayFields,
         ));
+      } else {
+        setFilterList([]);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFilter, filterList, displayFields],
-  );
+      setInitialisingFilters(false);
+    };
+    if (metadataLoadingState === MetadataLoadingState.DATA_LOADED &&
+        displayFields.length > 0 && initialisingFilters) {
+      initialFilterState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadataLoadingState, displayFields]);
 
   useEffect(() => {
     const processTableValues = () => {
@@ -119,18 +120,18 @@ export default function TreeTable(props: TreeTableProps) {
       return;
     }
 
-    if (Object.keys(currentFilter).length === 0) {
+    if (Object.keys(currentFilters).length === 0 || isEqual(currentFilters, defaultState)) {
       processTableValues();
     }
-  }, [tableMetadata, displayFields, metadataLoadingState, currentFilter]);
+  }, [tableMetadata, displayFields, metadataLoadingState, currentFilters]);
 
   useEffect(() => {
-    if (selectAll && Object.keys(currentFilter).length === 0) {
+    if (selectAll && Object.keys(currentFilters).length === 0) {
       setSelectedIds(allIds);
-    } else if (selectAll && Object.keys(currentFilter).length > 0) {
+    } else if (selectAll && Object.keys(currentFilters).length > 0) {
       setSelectedIds(filteredData.map((sample: any) => sample.Seq_ID));
     }
-  }, [allIds, currentFilter, filteredData, selectAll, setSelectedIds]);
+  }, [allIds, currentFilters, filteredData, selectAll, setSelectedIds]);
 
   useEffect(() => {
     setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
@@ -209,6 +210,11 @@ export default function TreeTable(props: TreeTableProps) {
       </div>
     </div>
   );
+
+  if (metadataLoadingState !== MetadataLoadingState.DATA_LOADED && initialisingFilters) {
+    return (<Skeleton />);
+  }
+
   return (
     <>
       <DataFilters
@@ -216,7 +222,7 @@ export default function TreeTable(props: TreeTableProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={displayFields}
-        setPrimeReactFilters={setCurrentFilter}
+        setPrimeReactFilters={setCurrentFilters}
         filterList={filterList}
         setFilterList={setFilterList}
         isOpen={isDataFiltersOpen}
@@ -235,7 +241,7 @@ export default function TreeTable(props: TreeTableProps) {
             size="small"
             removableSort
             showGridlines
-            filters={currentFilter}
+            filters={currentFilters}
             scrollable
             scrollHeight="calc(100vh - 300px)"
             paginator

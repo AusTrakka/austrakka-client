@@ -5,7 +5,7 @@ import React, {
   useEffect, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
@@ -16,10 +16,9 @@ import {
 import './Samples.css';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
-import { FilterMatchMode } from 'primereact/api';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -62,17 +61,13 @@ function Samples(props: SamplesProps) {
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
-  const defualtState = { global:
-     { operator: 'and',
-       constraints: [{ value: null,
-         matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
-    defualtState,
+    defaultState,
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
+  const [initalisingFilters, setInitialisingFilters] = useState<boolean>(true);
 
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
@@ -83,23 +78,31 @@ function Samples(props: SamplesProps) {
 
   const metadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
-  useEffect(
-    () => {
-      if (filterList.length === 0
-         && !isEqual(currentFilters, defualtState)
-        && metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+  useEffect(() => {
+    const initialFilterState = () => {
+      if (!isEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
         ));
+      } else if (inputFilters && inputFilters.length > 0) {
+        setFilterList(inputFilters);
+      } else {
+        setFilterList([]);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFilters, filterList, metadata],
-  );
+      setInitialisingFilters(false);
+    };
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
+      metadata?.fields && initalisingFilters) {
+      initialFilterState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.loadingState, metadata?.fields]);
+
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
@@ -180,7 +183,7 @@ function Samples(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading) return null;
+  if (isSamplesLoading || initalisingFilters) return null;
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
@@ -215,7 +218,7 @@ function Samples(props: SamplesProps) {
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        filterList={filterList}
+        filterList={filterList!}
         setFilterList={setFilterList}
         setLoadingState={setLoadingState}
       />

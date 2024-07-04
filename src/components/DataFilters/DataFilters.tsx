@@ -9,6 +9,10 @@ import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 
+export const defaultState = { global: { operator: 'and',
+  constraints: [{ value: null,
+    matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
+
 export interface DataFilter {
   shakeElement?: boolean,
   field: string,
@@ -221,8 +225,8 @@ function DataFilters(props: DataFiltersProps) {
   // Build filters in the prime react format
   useEffect(() => {
     const filtersBuilder: DataTableFilterMeta = {};
-
     if (filterList.length === 0) {
+      setPrimeReactFilters(defaultState);
       return;
     }
 

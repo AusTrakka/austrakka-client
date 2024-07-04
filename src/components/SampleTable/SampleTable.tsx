@@ -28,7 +28,7 @@ import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
-import DataFilters from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -56,35 +56,36 @@ function SampleTable(props: SamplesProps) {
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filterList, setFilterList] = useState<Filter[]>([]);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
+  const [initalisingFilters, setInitialisingFilters] = useState(true);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
-  const defualtState = { global:
-    { operator: 'and',
-      constraints: [{ value: null,
-        matchMode: FilterMatchMode.CONTAINS }] } as DataTableOperatorFilterMetaData };
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
-    defualtState,
+    defaultState,
   );
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
-  useEffect(
-    () => {
-      if (filterList.length === 0
-         && !isEqual(currentFilters, defualtState)) {
+  useEffect(() => {
+    const initialFilterState = () => {
+      if (!isEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           displayFields,
         ));
+      } else {
+        setFilterList([]);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFilters, displayFields, filterList],
-  );
+      setInitialisingFilters(false);
+    };
+    if (displayFields.length > 0 && initalisingFilters && !isSamplesLoading) {
+      initialFilterState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayFields, isSamplesLoading]);
 
   useEffect(() => {
     async function fetchSamplesData() {
@@ -222,6 +223,9 @@ function SampleTable(props: SamplesProps) {
       </div>
     </div>
   );
+
+  if (initalisingFilters) { return null; }
+
   return (
     <>
       <Backdrop

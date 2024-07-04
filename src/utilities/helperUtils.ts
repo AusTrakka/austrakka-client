@@ -8,7 +8,6 @@ import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { DataFilter } from '../components/DataFilters/DataFilters';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
-import { MetaDataColumn, ProjectViewField } from '../types/dtos';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
@@ -362,10 +361,9 @@ export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
 
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
-  defaultState: DataTableFilterMeta,
+  defaultFilter: DataTableFilterMeta,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
-  const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultState);
-
+  const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
 
   const navigate = useNavigate();
@@ -380,12 +378,9 @@ export function useStateFromSearchParamsForFilterObject(
     if (currentSearchParams.has(paramName)) {
       currentSearchParams.delete(paramName);
     }
-
-    if (!isEqual(resolvedState, state)) {
+    if (!isEqual(resolvedState, defaultFilter)) {
       const encodedFilter = encodeFilterObj(resolvedState);
       currentSearchParams.append(paramName, encodedFilter);
-    } else {
-      return;
     }
 
     const queryString = Array.from(currentSearchParams.entries())
@@ -407,7 +402,7 @@ export function useStateFromSearchParamsForFilterObject(
 
 export function convertDataTableFilterMetaToDataFilterObject(
   filterMeta: DataTableFilterMeta,
-  fields: ProjectViewField[] | MetaDataColumn[],
+  fields: any[],
 ): DataFilter[] {
   if (fields.length === 0) return [];
   const conversion = Object.entries(filterMeta).flatMap(([key, value]
@@ -416,7 +411,8 @@ export function convertDataTableFilterMetaToDataFilterObject(
       // Handle operator filters
       return value.constraints.map((constraint : DataTableFilterMetaData) => ({
         field: key,
-        fieldType: fields.find(field => field.columnName === key)?.primitiveType as FieldTypes,
+        fieldType: fields
+          .find((field: any) => field.columnName === key)?.primitiveType as FieldTypes,
         condition: constraint.matchMode as FilterMatchMode | CustomFilterOperators,
         value: constraint.value,
       } as DataFilter));
