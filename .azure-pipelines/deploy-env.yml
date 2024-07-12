@@ -1,5 +1,10 @@
 resources:
   repositories:
+    - repository: Client
+      type: github
+      name: AusTrakka/austrakka-client
+      ref: $(Build.SourceBranch) 
+      endpoint: AusTrakka
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
@@ -9,7 +14,7 @@ resources:
       type: github
       endpoint: AusTrakka
       name: AusTrakka/austrakka2-infra
-      ref: Development
+      ref: Development # TODO: this should possibly be configurable.
 
 
 trigger: none
@@ -24,25 +29,12 @@ variables:
   azureConnectionAdmin: 'AusTrakka Admin (austrakka tenancy)'
   backendAzureRmResourceGroupName: 'rg-devterf-shd-as-1'
   backendAzureRmStorageAccountName: 'stdevterfshdas1'
-  backendAzureRmContainerName: 'state'
-  backendAzureRmKey: '$(EnvId).tfstate'
-  terraformOutputArtifact: 'TerraformOutput'
-  buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
-  sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
+  backendAzureRmContainerName: 'env'
+  backendAzureRmKey: '$(EnvId)/$(EnvId).tfstate'
+  buildDir: '$(Build.BinariesDirectory)/$(Build.DefinitionName)/$(Build.BuildNumber)'
+  sourceDir: '$(Pipeline.Workspace)/$(Build.DefinitionName)/$(Build.BuildNumber)'
 
 stages:
-  - stage: CheckoutRepos
+  - stage: DeployClient
     jobs:
-      - job: CheckoutPortal
-        steps:
-          - template: templates/checkout/self.yml
-          - template: templates/checkout/infra.yml@Pipelines
-          - template: templates/checkout/pipelines.yml@Pipelines
-          - template: templates/terraform/init.yml@Pipelines
-            parameters:
-              workingDirectory: $(sourceDir)/infra/autotests
-          - template: templates/terraform/output.yml@Pipelines
-            parameters:
-              outputFileDir: $(buildDir)/tf
-              workingDirectory: $(sourceDir)/infra/autotests
-          - template: templates/deploy-client.yml
+      - template: templates/jobs/deployment/client.yml@Pipelines
