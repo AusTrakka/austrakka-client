@@ -8,7 +8,7 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: 5864-create-env-pipeline #TODO: change this back to Development
+      ref: Development
       endpoint: AusTrakka
     - repository: Infra
       type: github
