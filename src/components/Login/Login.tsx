@@ -64,7 +64,7 @@ function Login() {
               </Typography>
             </Grid>
             <Grid item>
-              If I can see this, it means the deployment worked
+              From genomics to public health decisions for Australia
             </Grid>
             <Grid item>
               Combining Genomics & Epidemiological Data
