@@ -236,7 +236,7 @@ function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOper
   return result;
 }
 
-function getRawQueryParams(url) {
+function getRawQueryParams(url : any) {
   const queryParams: { [key: string]: string } = {};
   const queryString = url.split('?')[1];
   if (!queryString) {
