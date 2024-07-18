@@ -76,7 +76,7 @@ function Samples(props: SamplesProps) {
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
 
-  const metadata : ProjectMetadataState | null =
+  const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const { maxHeight, getHeaderRef } =
@@ -100,7 +100,7 @@ function Samples(props: SamplesProps) {
       metadata?.fields && initalisingFilters) {
       initialFilterState();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.loadingState, metadata?.fields]);
 
   // Set column headers from metadata state
@@ -110,7 +110,7 @@ function Samples(props: SamplesProps) {
     setReadyFields(metadata!.fieldLoadingStates);
     setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
 
   useEffect(() => {
@@ -122,7 +122,7 @@ function Samples(props: SamplesProps) {
   // Open error dialog if loading state changes to error
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.ERROR ||
-        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -173,10 +173,10 @@ function Samples(props: SamplesProps) {
         </Tooltip>
         <ExportTableData
           dataToExport={
-        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-          ? []
-          : filteredData ?? []
-      }
+            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? []
+              : filteredData ?? []
+          }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
@@ -223,7 +223,7 @@ function Samples(props: SamplesProps) {
         setLoadingState={setLoadingState}
       />
       {
-      /* TODO: Make a function for the table so that a different sort is used per column type */
+        /* TODO: Make a function for the table so that a different sort is used per column type */
       }
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <div>
@@ -266,21 +266,21 @@ function Samples(props: SamplesProps) {
                 key={col.field}
                 field={col.field}
                 header={
-                    !verticalHeaders ? (
-                      <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
-                        {col.header}
-                        <Tooltip title={getFieldSource(col.field)} placement="top">
-                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
-                        </Tooltip>
-                      </div>
-                    ) : (
-                      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
-                        {col.header}
-                        <Tooltip title={getFieldSource(col.field)} placement="top">
-                          <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
-                        </Tooltip>
-                      </div>
-                    )
+                  !verticalHeaders ? (
+                    <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                      {col.header}
+                      <Tooltip title={getFieldSource(col.field)} placement="top">
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                      </Tooltip>
+                    </div>
+                  ) : (
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                      {col.header}
+                      <Tooltip title={getFieldSource(col.field)} placement="top">
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                      </Tooltip>
+                    </div>
+                  )
                 }
                 body={BodyComponent({ col, readyFields })}
                 hidden={col.hidden}

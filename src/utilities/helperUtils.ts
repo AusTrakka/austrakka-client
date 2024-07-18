@@ -52,7 +52,7 @@ export const renderValueWithEmptyNull = (value: any): string => {
 // Note that some datetime fields are included here in order to render them as datetimes,
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
-export const fieldRenderFunctions : { [index: string]: Function } = {
+export const fieldRenderFunctions: { [index: string]: Function } = {
   'Shared_groups': (value: any) => {
     if (value === null || value === undefined) return '';
 
@@ -72,12 +72,12 @@ export const fieldRenderFunctions : { [index: string]: Function } = {
 
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
-export const typeRenderFunctions : { [index: string]: Function } = {
+export const typeRenderFunctions: { [index: string]: Function } = {
   'boolean': (value: boolean): string => renderValueWithEmptyNull(value),
   'date': (value: string): string => isoDateLocalDateNoTime(value),
 };
 
-export const renderValue = (value: any, field: string, type: string) : string => {
+export const renderValue = (value: any, field: string, type: string): string => {
   if (field in fieldRenderFunctions) {
     return fieldRenderFunctions[field](value);
   }
@@ -151,7 +151,7 @@ export function replaceNullsWithEmpty(data: Sample[]) {
 }
 
 export function useStateFromSearchParamsForPrimitive
-<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+  <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
@@ -231,9 +231,26 @@ function parseValue(value: string) {
 }
 
 function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOperatorFilterMetaData):
- value is DataTableOperatorFilterMetaData {
+  value is DataTableOperatorFilterMetaData {
   const result = 'operator' in value && 'constraints' in value;
   return result;
+}
+
+function getRawQueryParams(url : any) {
+  const queryParams: { [key: string]: string } = {};
+  const queryString = url.split('?')[1];
+  if (!queryString) {
+    return queryParams;
+  }
+
+  const pairs = queryString.split('&');
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    // Decode only the key, but keep the value as is
+    queryParams[decodeURIComponent(key)] = value;
+  }
+
+  return queryParams;
 }
 
 function encodeFilterObj(filterObj: DataTableFilterMeta): string {
@@ -241,10 +258,10 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
     .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
       if (isOperatorFilterMetaData(value)) {
         const conditions = value.constraints.map(constraint =>
-          `${constraint.value}:${constraint.matchMode}`).join(',');
-        return `${key}:${value.operator}:(${conditions})`;
+          `${encodeURIComponent(constraint.value)}:${constraint.matchMode}`).join(',');
+        return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
       }
-      return `${key}:${value.value}:${value.matchMode}`;
+      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode}`;
     });
 
   // Join the encoded pairs with commas and add parentheses
@@ -259,7 +276,6 @@ function decodeFilterObj(encodedString: string): DataTableFilterMeta {
   pairs.forEach(pair => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);
-
     if (rest.length === 2) {
       // This is a simple filter
       decodedObj[key] = {
@@ -271,7 +287,6 @@ function decodeFilterObj(encodedString: string): DataTableFilterMeta {
       const operator = rest[0];
       const constraintsString = rest.slice(1).join(':');
       const constraints = constraintsString.slice(1, -1).split(','); // Remove parentheses and split
-
       decodedObj[key] = {
         operator: operator as FilterOperator,
         constraints: constraints.map(constraint => {
@@ -289,11 +304,10 @@ function decodeFilterObj(encodedString: string): DataTableFilterMeta {
 }
 
 const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTableFilterMeta) => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const encodedString = searchParams.get(paramName);
-  if (encodedString === null) return defaultState;
-  // return the filter object
-  return decodeFilterObj(encodedString);
+  const params = getRawQueryParams(window.location.search);
+  const filterString = params[paramName];
+  if (filterString === null || filterString === undefined) return defaultState;
+  return decodeFilterObj(filterString);
 };
 
 function resolveState(
@@ -409,7 +423,7 @@ export function convertDataTableFilterMetaToDataFilterObject(
   : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
     if (isOperatorFilterMetaData(value)) {
       // Handle operator filters
-      return value.constraints.map((constraint : DataTableFilterMetaData) => ({
+      return value.constraints.map((constraint: DataTableFilterMetaData) => ({
         field: key,
         fieldType: fields
           .find((field: any) => field.columnName === key)?.primitiveType as FieldTypes,
