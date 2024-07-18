@@ -12,14 +12,14 @@ import {
 } from '@mui/material';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableOperatorFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { replaceHasSequencesNullsWithFalse } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isEqual, replaceHasSequencesNullsWithFalse, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
 import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -28,11 +28,10 @@ import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
-import DataFilters from '../DataFilters/DataFilters';
+import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
 
 interface SamplesProps {
   groupContext: number | undefined,
-  groupName: string | undefined,
 }
 // SAMPLE TABLE
 // Transitionary sampel table component that contains repeat code from both
@@ -44,7 +43,7 @@ interface SamplesProps {
 // 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
-  const { groupContext, groupName } = props;
+  const { groupContext } = props;
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [isSamplesLoading, setIsSamplesLoading] = useState(false);
@@ -57,16 +56,36 @@ function SampleTable(props: SamplesProps) {
     sampleMetadataError: false,
     samplesErrorMessage: '',
   });
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filterList, setFilterList] = useState<Filter[]>([]);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
+  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Sample[]>([]);
+  const [initalisingFilters, setInitialisingFilters] = useState(true);
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
-  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defaultState,
   );
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const initialFilterState = () => {
+      if (!isEqual(currentFilters, defaultState)) {
+        setFilterList(convertDataTableFilterMetaToDataFilterObject(
+          currentFilters,
+          displayFields,
+        ));
+      } else {
+        setFilterList([]);
+      }
+      setInitialisingFilters(false);
+    };
+    if (displayFields.length > 0 && initalisingFilters && !isSamplesLoading) {
+      initialFilterState();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayFields, isSamplesLoading]);
 
   useEffect(() => {
     async function fetchSamplesData() {
@@ -204,6 +223,9 @@ function SampleTable(props: SamplesProps) {
       </div>
     </div>
   );
+
+  if (initalisingFilters) { return null; }
+
   return (
     <>
       <Backdrop

@@ -9,6 +9,16 @@ import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 
+export const defaultState = {
+  global: {
+    operator: 'and',
+    constraints: [{
+      value: null,
+      matchMode: FilterMatchMode.CONTAINS,
+    }],
+  } as DataTableOperatorFilterMetaData,
+};
+
 export interface DataFilter {
   shakeElement?: boolean,
   field: string,
@@ -221,9 +231,8 @@ function DataFilters(props: DataFiltersProps) {
   // Build filters in the prime react format
   useEffect(() => {
     const filtersBuilder: DataTableFilterMeta = {};
-
     if (filterList.length === 0) {
-      setPrimeReactFilters(filtersBuilder);
+      setPrimeReactFilters(defaultState);
       return;
     }
 
@@ -272,7 +281,8 @@ function DataFilters(props: DataFiltersProps) {
       }
     });
     setPrimeReactFilters(filtersBuilder);
-  }, [filterList, setPrimeReactFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterList]);
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
@@ -376,7 +386,7 @@ function DataFilters(props: DataFiltersProps) {
                 </Stack>
               </Grid>
               <Grid item sx={{ paddingLeft: 8 }}>
-                {`Showing ${sampleCount} of ${totalSamples} samples.` }
+                {`Showing ${sampleCount} of ${totalSamples} samples.`}
               </Grid>
             </Grid>
           </Button>
@@ -392,7 +402,7 @@ function DataFilters(props: DataFiltersProps) {
               {filterErrorMessage}
             </Alert>
           </Snackbar>
-          { isOpen ? (
+          {isOpen ? (
             <Box>
               <Snackbar
                 open={sampleCount === 0 && filterList.length > 0}
@@ -417,7 +427,7 @@ function DataFilters(props: DataFiltersProps) {
                       value={newFilter.field}
                       onChange={handleFilterChange}
                     >
-                      {fields.map((field : Field) => (
+                      {fields.map((field: Field) => (
                         <MenuItem key={field.columnName} value={field.columnName}>
                           {field.columnName}
                         </MenuItem>
@@ -443,7 +453,7 @@ function DataFilters(props: DataFiltersProps) {
                       ;
                     </Select>
                   </FormControl>
-                  { nullOrEmptyFlag ? null : (
+                  {nullOrEmptyFlag ? null : (
                     <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
                       {renderValueElement()}
                     </FormControl>
@@ -453,7 +463,7 @@ function DataFilters(props: DataFiltersProps) {
                     disabled={!nullOrEmptyFlag && (Object.values(newFilter).some((x) => x === null || x === ''))}
                   >
                     <AddCircle color={!nullOrEmptyFlag &&
-                    Object.values(newFilter).some((x) => x === null || x === '') ?
+                      Object.values(newFilter).some((x) => x === null || x === '') ?
                       'disabled' : 'secondary'}
                     />
                   </IconButton>
@@ -480,7 +490,7 @@ function DataFilters(props: DataFiltersProps) {
                             filter.fieldType === FieldTypes.DATE
                               ? (dateConditions.find((c) => c.value === filter.condition))?.name
                               : (filter.fieldType === FieldTypes.NUMBER ||
-                                 filter.fieldType === FieldTypes.DOUBLE)
+                                filter.fieldType === FieldTypes.DOUBLE)
                                 ? (numberConditions
                                   .find((c) => c.value === filter.condition))?.name
                                 : (stringConditions
@@ -503,15 +513,15 @@ function DataFilters(props: DataFiltersProps) {
                     sx={{
                       margin: 1,
                       animation:
-                      filter.shakeElement === true
-                        ? `${shake} 0.5s`
-                        : '',
+                        filter.shakeElement === true
+                          ? `${shake} 0.5s`
+                          : '',
                     }}
                   />
                 ))}
               </form>
             </Box>
-          ) : null }
+          ) : null}
         </Grid>
       </Box>
     </Box>

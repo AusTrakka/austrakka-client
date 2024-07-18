@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import getQueryParamOrDefault from './navigationUtils';
 import { Sample } from '../types/sample.interface';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
+import { DataFilter } from '../components/DataFilters/DataFilters';
+import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
+import FieldTypes from '../constants/fieldTypes';
 
 export function isoDateLocalDate(datetime: string) {
   if (!datetime) return '';
@@ -47,7 +52,7 @@ export const renderValueWithEmptyNull = (value: any): string => {
 // Note that some datetime fields are included here in order to render them as datetimes,
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
-export const fieldRenderFunctions : { [index: string]: Function } = {
+export const fieldRenderFunctions: { [index: string]: Function } = {
   'Shared_groups': (value: any) => {
     if (value === null || value === undefined) return '';
 
@@ -67,12 +72,12 @@ export const fieldRenderFunctions : { [index: string]: Function } = {
 
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
-export const typeRenderFunctions : { [index: string]: Function } = {
+export const typeRenderFunctions: { [index: string]: Function } = {
   'boolean': (value: boolean): string => renderValueWithEmptyNull(value),
   'date': (value: string): string => isoDateLocalDateNoTime(value),
 };
 
-export const renderValue = (value: any, field: string, type: string) : string => {
+export const renderValue = (value: any, field: string, type: string): string => {
   if (field in fieldRenderFunctions) {
     return fieldRenderFunctions[field](value);
   }
@@ -146,7 +151,7 @@ export function replaceNullsWithEmpty(data: Sample[]) {
 }
 
 export function useStateFromSearchParamsForPrimitive
-<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+  <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
@@ -215,4 +220,223 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
   return [stateObject, useStateWithQueryParam];
+}
+
+function parseValue(value: string) {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (!Number.isNaN(Number(value))) return Number(value);
+  if (value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) return new Date(value);
+  return value;
+}
+
+function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOperatorFilterMetaData):
+  value is DataTableOperatorFilterMetaData {
+  const result = 'operator' in value && 'constraints' in value;
+  return result;
+}
+
+function getRawQueryParams(url : any) {
+  const queryParams: { [key: string]: string } = {};
+  const queryString = url.split('?')[1];
+  if (!queryString) {
+    return queryParams;
+  }
+
+  const pairs = queryString.split('&');
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    // Decode only the key, but keep the value as is
+    queryParams[decodeURIComponent(key)] = value;
+  }
+
+  return queryParams;
+}
+
+function encodeFilterObj(filterObj: DataTableFilterMeta): string {
+  const encoded = Object.entries(filterObj)
+    .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
+      if (isOperatorFilterMetaData(value)) {
+        const conditions = value.constraints.map(constraint =>
+          `${encodeURIComponent(constraint.value)}:${constraint.matchMode}`).join(',');
+        return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
+      }
+      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode}`;
+    });
+
+  // Join the encoded pairs with commas and add parentheses
+  const result = encoded.join(',');
+  return `(${result})`;
+}
+
+function decodeFilterObj(encodedString: string): DataTableFilterMeta {
+  const decodedObj: DataTableFilterMeta = {};
+
+  const pairs = encodedString.slice(1, -1).split(/,\s*(?![^(]*\))/);
+  pairs.forEach(pair => {
+    const [encodedKey, ...rest] = pair.split(':');
+    const key = decodeURIComponent(encodedKey);
+    if (rest.length === 2) {
+      // This is a simple filter
+      decodedObj[key] = {
+        value: parseValue(decodeURIComponent(rest[0])),
+        matchMode: rest[1] as FilterMatchMode,
+      };
+    } else if (rest.length > 2) {
+      // This is an operator filter
+      const operator = rest[0];
+      const constraintsString = rest.slice(1).join(':');
+      const constraints = constraintsString.slice(1, -1).split(','); // Remove parentheses and split
+      decodedObj[key] = {
+        operator: operator as FilterOperator,
+        constraints: constraints.map(constraint => {
+          const [value, matchMode] = constraint.split(':');
+          return {
+            value: parseValue(decodeURIComponent(value)),
+            matchMode: matchMode as FilterMatchMode,
+          };
+        }),
+      };
+    }
+  });
+
+  return decodedObj;
+}
+
+const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTableFilterMeta) => {
+  const params = getRawQueryParams(window.location.search);
+  const filterString = params[paramName];
+  if (filterString === null || filterString === undefined) return defaultState;
+  return decodeFilterObj(filterString);
+};
+
+function resolveState(
+  newState: SetStateAction<DataTableFilterMeta>,
+  currentState: DataTableFilterMeta,
+):
+  DataTableFilterMeta {
+  if (typeof newState === 'function') {
+    // If it's a function, call it with the current state
+    return (newState as (prevState: DataTableFilterMeta) => DataTableFilterMeta)(currentState);
+  }
+  // If it's not a function, it's already the new state
+  return newState;
+}
+function isEqualFilterMetaData(
+  filter1: DataTableFilterMetaData,
+  filter2: DataTableFilterMetaData,
+): boolean {
+  const result = filter1.value === filter2.value && filter1.matchMode === filter2.matchMode;
+  return result;
+}
+
+export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  // first we could check if the keys have the same values
+  if (!keys1.every(key => keys2.includes(key))) {
+    return false;
+  }
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  // lets sort the keys to make sure we are comparing the same keys
+  keys1.sort();
+  keys2.sort();
+
+  for (const key of keys1) {
+    const val1 = obj1[key];
+    const val2 = obj2[key];
+
+    if (isOperatorFilterMetaData(val1) && isOperatorFilterMetaData(val2)) {
+      if (val1.operator !== val2.operator || val1.constraints.length !== val2.constraints.length) {
+        return false;
+      }
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < val1.constraints.length; i++) {
+        if (!isEqualFilterMetaData(val1.constraints[i], val2.constraints[i])) {
+          return false;
+        }
+      }
+    } else if (!isOperatorFilterMetaData(val1) && !isOperatorFilterMetaData(val2)) {
+      if (!isEqualFilterMetaData(val1, val2)) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function useStateFromSearchParamsForFilterObject(
+  paramName: string,
+  defaultFilter: DataTableFilterMeta,
+): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
+  const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
+  const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
+
+  const navigate = useNavigate();
+
+  const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
+    setState(newState);
+    const resolvedState = resolveState(newState, state);
+
+    const currentSearchParams = new URLSearchParams(window.location.search);
+
+    // If exists in the current searchParams, delete it
+    if (currentSearchParams.has(paramName)) {
+      currentSearchParams.delete(paramName);
+    }
+    if (!isEqual(resolvedState, defaultFilter)) {
+      const encodedFilter = encodeFilterObj(resolvedState);
+      currentSearchParams.append(paramName, encodedFilter);
+    }
+
+    const queryString = Array.from(currentSearchParams.entries())
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+
+    // Update the URL without navigating
+    if (queryString === '' || queryString === `${paramName}=()`) {
+      navigate(window.location.pathname, { replace: true });
+      return;
+    }
+
+    const newUrl = `${window.location.pathname}?${queryString}`;
+    navigate(newUrl, { replace: true });
+  };
+
+  return [state, useStateWithQueryParam];
+}
+
+export function convertDataTableFilterMetaToDataFilterObject(
+  filterMeta: DataTableFilterMeta,
+  fields: any[],
+): DataFilter[] {
+  if (fields.length === 0) return [];
+  const conversion = Object.entries(filterMeta).flatMap(([key, value]
+  : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
+    if (isOperatorFilterMetaData(value)) {
+      // Handle operator filters
+      return value.constraints.map((constraint: DataTableFilterMetaData) => ({
+        field: key,
+        fieldType: fields
+          .find((field: any) => field.columnName === key)?.primitiveType as FieldTypes,
+        condition: constraint.matchMode as FilterMatchMode | CustomFilterOperators,
+        value: constraint.value,
+      } as DataFilter));
+    }
+    return [{
+      field: key,
+      fieldType: fields.find(field => field.columnName === key)?.primitiveType as FieldTypes,
+      condition: value.matchMode as FilterMatchMode | CustomFilterOperators,
+      value: value.value,
+    } as DataFilter];
+  });
+  return conversion;
 }
