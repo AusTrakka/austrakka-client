@@ -112,6 +112,21 @@ export const setRowInSpecToValue =
       return newSpec as TopLevelSpec;
     };
 
+export const setAxisResolutionInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  axis: string,
+  resolution: string,
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+  
+  const newSpec: any = { ...oldSpec };
+  newSpec.resolve = { ...(oldSpec as any).resolve };
+  newSpec.resolve.scale = { ...(oldSpec as any).resolve.scale };
+  newSpec.resolve.scale[axis] = resolution;
+
+  return newSpec as TopLevelSpec;
+}
+
 // Creates an aggregate transform to bin time points, and sets tooltip and point size legend
 // Primarily intended for cluster timeline plots
 export const setTimeAggregationInSpecToValue = (
