@@ -3,8 +3,11 @@
 /* Disabling to make e.g. newSpec['encoding'][field]['field'] clearer */
 /* eslint-disable @typescript-eslint/dot-notation */
 
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { TopLevelSpec } from 'vega-lite';
 import { createColourMapping } from './colourUtils';
+
+const ONE_SAMPLE_POINT_SIZE = 80;
 
 // Get the preferred field to populate a selector when fields first loaded
 // If a preferred field is not of the correct type it will simply appear unavailable
@@ -108,3 +111,61 @@ export const setRowInSpecToValue =
       }
       return newSpec as TopLevelSpec;
     };
+
+// Creates an aggregate transform to bin time points, and sets tooltip and point size legend
+// Primarily intended for cluster timeline plots
+export const setTimeAggregationInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  timeUnit: string,
+  dateField: string,
+  groupFields: string[],
+  defaultTransforms: object[]
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+
+  let transforms: object[];
+  if (timeUnit === 'none') {
+    transforms = defaultTransforms;
+  } else {
+    transforms = [
+      {
+        'timeUnit': timeUnit,
+        'field': dateField,
+        'as': dateField,
+      },
+      {
+        'aggregate': [
+          { 'op': 'count', 'as': 'count' },
+        ],
+        'groupby': [dateField, ...groupFields],
+      },
+      ...defaultTransforms,
+    ];
+  }
+
+  let tooltip: object;
+  if (timeUnit === 'none') {
+    tooltip = { field: SAMPLE_ID_FIELD, type: 'nominal' };
+  } else {
+    tooltip = { field: 'count', type: 'quantitative' };
+  }
+
+  let size: object;
+  if (timeUnit === 'none') {
+    size = { value: ONE_SAMPLE_POINT_SIZE };
+  } else {
+    size = {
+      field: 'count',
+      scale: { rangeMin: ONE_SAMPLE_POINT_SIZE },
+      legend: { orient: 'bottom' },
+    };
+  }
+
+  const newSpec: any = { ...oldSpec };
+  newSpec.transform = transforms;
+  newSpec.encoding = { ...(oldSpec as any).encoding };
+  newSpec.encoding.tooltip = tooltip;
+  newSpec.encoding.size = size;
+
+  return newSpec as TopLevelSpec;
+}
