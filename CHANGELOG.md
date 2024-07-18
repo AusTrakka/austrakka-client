@@ -6,6 +6,8 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 
 ### Added
 - Added filter information to the url of all queriable table pages. This allows users to share a link to a table or plot with the current filter settings applied.
+- Cluster timeline plots are now able to bin samples by date and represent the number of samples via point size.
+- Cluster timeline plots now have the option of setting the colour to None.
 
 ## 2024-06-27
 
