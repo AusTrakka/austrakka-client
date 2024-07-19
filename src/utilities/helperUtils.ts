@@ -9,7 +9,7 @@ import { DataFilter } from '../components/DataFilters/DataFilters';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
 
-export function isoDateLocalDate(datetime: string) {
+export function isoDateLocalDate(datetime: string): string {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
