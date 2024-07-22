@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useRef, useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
@@ -32,17 +32,6 @@ export function formatDate(dateUTC: string): string {
   const date = new Date(dateUTC);
   return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
 }
-
-export function useFirstRender() {
-  const firstRender = useRef(true);
-  useEffect(() => {
-    firstRender.current = false;
-  }, []);
-
-  return firstRender.current;
-}
-
-// These render functions be may passed in to tables per-column, or used via renderValue()
 
 export const renderValueWithEmptyNull = (value: any): string => {
   if (value === null || value === undefined) {
