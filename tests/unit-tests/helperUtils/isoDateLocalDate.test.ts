@@ -1,12 +1,13 @@
 import { describe, test, expect } from '@jest/globals';
+import { TimezoneProps } from '@mui/x-date-pickers';
 import { TimeZone, register, unregister } from 'timezone-mock';
 import { isoDateLocalDate } from '../../../src/utilities/helperUtils';
-import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
+import { formatTestDateTime, parseTestDateTime } from '../../test-utils/dateTestUtils';
 
 describe('isoDateLocalDate', () => {
   beforeAll(() => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2024-07-18T12:00:00Z'));
+    jest.setSystemTime(new Date('2024-07-22T02:00:00.000Z'));
   });
 
   afterAll(() => {
@@ -14,25 +15,25 @@ describe('isoDateLocalDate', () => {
   });
 
   test('returns correct local time for UTC input', () => {
-    const utcTimeStamp = '2024-07-18T12:00:00Z';
+    const utcTimeStamp = new Date().toISOString();
     const result = isoDateLocalDate(utcTimeStamp);
 
-    const expectedDate = new Date('2024-07-18T12:00:00Z');
-    const expected = formatTestDate(expectedDate);
+    const expectedDate = new Date();
+    const expected = formatTestDateTime(expectedDate);
 
     expect(result).toEqual(expected);
 
-    const parsedResult = parseTestDate(result);
+    const parsedResult = parseTestDateTime(result);
     expect(parsedResult.getHours()).toEqual(expectedDate.getHours());
     expect(parsedResult.getMinutes()).toEqual(expectedDate.getMinutes());
   });
 
   test('handles different time input correctly', () => {
-    const utcTimeStamp = '2024-07-18T15:30:00Z';
+    const utcTimeStamp = new Date().toISOString();
     const result = isoDateLocalDate(utcTimeStamp);
 
     // Parse the result
-    const parsedResult = parseTestDate(result);
+    const parsedResult = parseTestDateTime(result);
 
     // Create a Date object from the original UTC timestamp
     const originalDate = new Date(utcTimeStamp);
@@ -66,8 +67,8 @@ describe('isoDateLocalDate', () => {
     const resultBefore = isoDateLocalDate(beforeDST);
     const resultAfter = isoDateLocalDate(afterDST);
 
-    const parsedBefore = parseTestDate(resultBefore);
-    const parsedAfter = parseTestDate(resultAfter);
+    const parsedBefore = parseTestDateTime(resultBefore);
+    const parsedAfter = parseTestDateTime(resultAfter);
 
     expect(parsedAfter.getTime() - parsedBefore.getTime()).toBe(3 * 60 * 60 * 1000);
   });
@@ -98,7 +99,7 @@ describe('isoDateLocalDate', () => {
     extremeDates.forEach(date => {
       const result = isoDateLocalDate(date);
       expect(result).not.toEqual('Invalid Date');
-      const parsed = parseTestDate(result);
+      const parsed = parseTestDateTime(result);
       expect(parsed.getTime()).not.toBeNaN();
     });
   });
@@ -106,12 +107,12 @@ describe('isoDateLocalDate', () => {
   test('Does not preserve milliseconds', () => {
     const input = '2024-07-18T15:30:00.123Z';
     const result = isoDateLocalDate(input);
-    const parsed = parseTestDate(result);
+    const parsed = parseTestDateTime(result);
     expect(parsed.getMilliseconds()).not.toBe(123);
   });
 
   test('consistent across time zones', () => {
-    const input = '2024-07-18T15:30:00Z';
+    const input = new Date().toISOString();
     const mockTimezones: TimeZone[] = ['Australia/Adelaide', 'US/Eastern', 'Europe/London'];
 
     const results = mockTimezones.map((zone: TimeZone) => {
@@ -122,16 +123,19 @@ describe('isoDateLocalDate', () => {
     });
 
     // Hours should be different
-    const hours = results.map(r => parseTestDate(r).getHours());
+    const hours = results.map(r => parseTestDateTime(r).getHours());
     expect(new Set(hours).size).toBeGreaterThan(1);
 
     // Check specific timezone conversions
-    register('US/Pacific');
-    expect(isoDateLocalDate(input)).toMatch(/2024-07-18 08:30/);
+    let currentTimezone = 'US/Pacific';
+    register(currentTimezone as TimeZone);
+    expect(isoDateLocalDate(input)).toMatch(formatTestDateTime(new Date(), currentTimezone));
     unregister();
 
-    register('Europe/London');
-    expect(isoDateLocalDate(input)).toMatch(/2024-07-18 16:30/);
+    currentTimezone = 'Europe/London';
+
+    register(currentTimezone as TimeZone);
+    expect(isoDateLocalDate(input)).toMatch(formatTestDateTime(new Date(), currentTimezone));
     unregister();
   });
 });

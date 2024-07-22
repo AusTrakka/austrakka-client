@@ -1,6 +1,6 @@
 export const TEST_LOCALE = 'sv-SE';
 
-export const TEST_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+export const TEST_DATE_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'numeric',
   day: 'numeric',
@@ -8,17 +8,38 @@ export const TEST_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: 'numeric',
 } as const;
 
-export function parseTestDate(dateString: string): Date {
+export const TEST_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+};
+
+export function parseTestDateTime(dateString: string): Date {
   const [datePart, timePart] = dateString.split(' ');
   const [year, month, day] = datePart.split('-').map(Number);
   const [hour, minute] = timePart.split(':').map(Number);
-
   return new Date(year, month - 1, day, hour, minute);
 }
 
-export function formatTestDate(date: Date): string {
-  return date.toLocaleString(TEST_LOCALE, {
+export function parseTestDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+export function formatTestDateTime(date: Date, timezone?: string): string {
+  const options: Intl.DateTimeFormatOptions = {
+    ...TEST_DATE_TIME_FORMAT_OPTIONS,
+    timeZone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+
+  return date.toLocaleString(TEST_LOCALE, options);
+}
+
+export function formatTestDate(date: Date, timezone?: string): string {
+  const options: Intl.DateTimeFormatOptions = {
     ...TEST_DATE_FORMAT_OPTIONS,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  });
+    timeZone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+
+  return date.toLocaleString(TEST_LOCALE, options);
 }

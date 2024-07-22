@@ -152,10 +152,10 @@ export function replaceNullsWithEmpty(data: Sample[]) {
 
 export function useStateFromSearchParamsForPrimitive
   <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
-  paramName: string,
-  defaultState: T,
-  searchParams: URLSearchParams,
-): [T, React.Dispatch<React.SetStateAction<T>>] {
+    paramName: string,
+    defaultState: T,
+    searchParams: URLSearchParams,
+  ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
   const [state, setState] = useState<T>(stateSearchParams);
   const navigate = useNavigate();
@@ -236,7 +236,7 @@ function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOper
   return result;
 }
 
-function getRawQueryParams(url : any) {
+function getRawQueryParams(url: any) {
   const queryParams: { [key: string]: string } = {};
   const queryString = url.split('?')[1];
   if (!queryString) {
@@ -420,7 +420,7 @@ export function convertDataTableFilterMetaToDataFilterObject(
 ): DataFilter[] {
   if (fields.length === 0) return [];
   const conversion = Object.entries(filterMeta).flatMap(([key, value]
-  : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
+    : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
     if (isOperatorFilterMetaData(value)) {
       // Handle operator filters
       return value.constraints.map((constraint: DataTableFilterMetaData) => ({
