@@ -44,6 +44,11 @@ describe('isoDateLocalDateNoTime', () => {
     expect(isoDateLocalDateNoTime('null')).toEqual('');
   });
 
+  test('handles invalid input', () => {
+    const result = isoDateLocalDateNoTime('not a date');
+    expect(result).toBe('Invalid Date');
+  });
+
   test('handles dates near Daylight Saving Time changes', () => {
     const beforeDST = new Date('2024-03-31T00:30:00Z');
     const afterDST = new Date('2024-03-31T03:30:00Z');

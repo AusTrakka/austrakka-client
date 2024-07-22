@@ -25,9 +25,12 @@ export function isoDateLocalDateNoTime(datetime: string) {
   return localDate;
 }
 
-export function formatDate(dateUTC: any) {
+export function formatDate(dateUTC: string): string {
+  if (!dateUTC) return '';
+  if (dateUTC === 'null') return '';
+  if (Number.isNaN(Date.parse(dateUTC))) return 'Invalid Date';
   const date = new Date(dateUTC);
-  return new Intl.DateTimeFormat('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' }).format(date).toString();
+  return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
 }
 
 export function useFirstRender() {
@@ -152,10 +155,10 @@ export function replaceNullsWithEmpty(data: Sample[]) {
 
 export function useStateFromSearchParamsForPrimitive
   <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
-    paramName: string,
-    defaultState: T,
-    searchParams: URLSearchParams,
-  ): [T, React.Dispatch<React.SetStateAction<T>>] {
+  paramName: string,
+  defaultState: T,
+  searchParams: URLSearchParams,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
   const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
   const [state, setState] = useState<T>(stateSearchParams);
   const navigate = useNavigate();
@@ -420,7 +423,7 @@ export function convertDataTableFilterMetaToDataFilterObject(
 ): DataFilter[] {
   if (fields.length === 0) return [];
   const conversion = Object.entries(filterMeta).flatMap(([key, value]
-    : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
+  : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
     if (isOperatorFilterMetaData(value)) {
       // Handle operator filters
       return value.constraints.map((constraint: DataTableFilterMetaData) => ({

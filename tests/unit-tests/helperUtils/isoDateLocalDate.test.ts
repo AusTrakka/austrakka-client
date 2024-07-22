@@ -1,5 +1,4 @@
 import { describe, test, expect } from '@jest/globals';
-import { TimezoneProps } from '@mui/x-date-pickers';
 import { TimeZone, register, unregister } from 'timezone-mock';
 import { isoDateLocalDate } from '../../../src/utilities/helperUtils';
 import { formatTestDateTime, parseTestDateTime } from '../../test-utils/dateTestUtils';
@@ -57,6 +56,11 @@ describe('isoDateLocalDate', () => {
 
   test('returns null when null is given', () => {
     expect(isoDateLocalDate('null')).toEqual('');
+  });
+
+  test('handles invalid input', () => {
+    const result = isoDateLocalDate('not a date');
+    expect(result).toBe('Invalid Date');
   });
 
   test('handles dates near Daylight Saving Time changes', () => {
