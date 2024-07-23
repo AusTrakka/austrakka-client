@@ -133,25 +133,28 @@ export function generateDateFilterString(
   return filterString;
 }
 
-export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
-  data.map((sample) => {
+export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
+  data.forEach((sample) => {
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
       sample[HAS_SEQUENCES] = false;
     }
-    return sample;
   });
 
   return data;
 }
 
-export function replaceNullsWithEmpty(data: Sample[]) {
-  data.forEach((sample) => {
-    Object.keys(sample).forEach((key) => {
-      if (sample[key] === null) {
-        sample[key] = '';
+export function replaceNullsWithEmpty(data: Sample[]): void {
+  const replaceNullsInObject = (obj: Sample): void => {
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] === null) {
+        obj[key] = '';
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        replaceNullsInObject(obj[key]);
       }
     });
-  });
+  };
+
+  data.forEach(replaceNullsInObject);
 }
 
 export function useStateFromSearchParamsForPrimitive
