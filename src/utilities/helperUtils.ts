@@ -116,10 +116,20 @@ export function generateDateFilterString(
   dateObject: { field: string, condition: string, fieldType: string, value: any },
 ) {
   let filterString = '';
-  if (Object.keys(dateObject).length !== 0) {
-    const date = `${dateObject.value.$d.toISOString()}`;
+
+  if (
+    dateObject &&
+    typeof dateObject.field === 'string' &&
+    typeof dateObject.condition === 'string' &&
+    typeof dateObject.fieldType === 'string' &&
+    dateObject.value &&
+    dateObject.value.$d instanceof Date &&
+    !Number.isNaN(dateObject.value.$d.getTime()) // Ensure it's a valid date
+  ) {
+    const date = dateObject.value.$d.toISOString();
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
   }
+
   return filterString;
 }
 
