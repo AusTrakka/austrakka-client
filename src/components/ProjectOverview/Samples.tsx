@@ -108,9 +108,17 @@ function Samples(props: SamplesProps) {
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields);
     setReadyFields(metadata!.fieldLoadingStates);
     setSampleTableColumns(columnBuilder);
-    // disable because TS doesn't understand that initial return statement ensures metadata !== null
+    setFilteredDataLength(metadata!.metadata?.length ?? 0);
+    // disable because TS doesn't understand that initial
+    // return statement ensures metadata !== null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {

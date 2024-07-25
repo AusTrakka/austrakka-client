@@ -183,8 +183,11 @@ export function useStateFromSearchParamsForPrimitive
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  // TODO memoise the proxy setter function
-  return [state, useStateWithQueryParam];
+  return [state, useMemo(
+    () => useStateWithQueryParam,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paramName, defaultState, searchParams, setState],
+  )];
 }
 
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
@@ -227,8 +230,8 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  // TODO memoise the proxy setter function
-  return [stateObject, useStateWithQueryParam];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
 function parseValue(value: string) {
@@ -422,6 +425,7 @@ export function useStateFromSearchParamsForFilterObject(
   };
 
   // the function we return here acts like a setter and should not be updated on every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
 }
 
@@ -451,4 +455,3 @@ export function convertDataTableFilterMetaToDataFilterObject(
   });
   return conversion;
 }
-
