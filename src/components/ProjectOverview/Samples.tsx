@@ -5,7 +5,7 @@ import React, {
   useEffect, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
@@ -67,7 +67,7 @@ function Samples(props: SamplesProps) {
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [initalisingFilters, setInitialisingFilters] = useState<boolean>(true);
+  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
 
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
@@ -97,19 +97,20 @@ function Samples(props: SamplesProps) {
       setInitialisingFilters(false);
     };
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
-      metadata?.fields && initalisingFilters) {
+      metadata?.fields && initialisingFilters) {
       initialFilterState();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.loadingState, metadata?.fields]);
+  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters, inputFilters]);
 
   // Set column headers from metadata state
   useEffect(() => {
-    if (!metadata?.fields) return;
+    if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields);
     setReadyFields(metadata!.fieldLoadingStates);
-    setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
+    setFilteredDataLength(metadata!.metadata?.length ?? 0);
+    // disable because TS doesn't understand that initial
+    // return statement ensures metadata !== null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
 
@@ -177,7 +178,7 @@ function Samples(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading || initalisingFilters) return null;
+  if (isSamplesLoading || initialisingFilters) return null;
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>

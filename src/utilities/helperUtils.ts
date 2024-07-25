@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
@@ -182,7 +182,11 @@ export function useStateFromSearchParamsForPrimitive
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  return [state, useStateWithQueryParam];
+  return [state, useMemo(
+    () => useStateWithQueryParam,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paramName, defaultState, searchParams, setState],
+  )];
 }
 
 // TODO: Need to move this function else where as it is more than a utillitiy
@@ -226,7 +230,8 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  return [stateObject, useStateWithQueryParam];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
 // TODO: Decide whether this method is worth
@@ -407,17 +412,20 @@ export function useStateFromSearchParamsForFilterObject(
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    // Update the URL without navigating
+    // Update the URL without navigating -> DOES navigate, but replaces history?
     if (queryString === '' || queryString === `${paramName}=()`) {
       navigate(window.location.pathname, { replace: true });
       return;
     }
 
     const newUrl = `${window.location.pathname}?${queryString}`;
+
     navigate(newUrl, { replace: true });
   };
 
-  return [state, useStateWithQueryParam];
+  // the function we return here acts like a setter and should not be updated on every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
 }
 
 export function convertDataTableFilterMetaToDataFilterObject(
