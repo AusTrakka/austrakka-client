@@ -120,7 +120,8 @@ export default function TreeTable(props: TreeTableProps) {
       return;
     }
 
-    if (Object.keys(currentFilters).length === 0 || isDataTableFiltersEqual(currentFilters, defaultState)) {
+    if (Object.keys(currentFilters).length === 0 ||
+        isDataTableFiltersEqual(currentFilters, defaultState)) {
       processTableValues();
     }
   }, [tableMetadata, displayFields, metadataLoadingState, currentFilters]);
