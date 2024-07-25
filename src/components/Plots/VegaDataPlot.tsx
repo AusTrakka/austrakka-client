@@ -15,7 +15,7 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -50,7 +50,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
