@@ -30,7 +30,7 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -84,7 +84,7 @@ function Samples(props: SamplesProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
@@ -113,12 +113,6 @@ function Samples(props: SamplesProps) {
     // return statement ensures metadata !== null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
-
-  useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata!);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {

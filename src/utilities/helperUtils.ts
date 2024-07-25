@@ -81,7 +81,6 @@ export const renderValue = (value: any, field: string, type: string): string => 
 };
 
 // Function to aggregate counts of objects in an array, on a certain property
-
 export function aggregateArrayObjects(property: string, array: Array<any>) {
   if (!array || !Array.isArray(array)) {
     return [];
@@ -156,9 +155,9 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
 
   data.forEach(replaceNullsInObject);
 }
-
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForPrimitive
-  <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
@@ -190,6 +189,7 @@ export function useStateFromSearchParamsForPrimitive
   )];
 }
 
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
   defaultState: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
@@ -234,14 +234,8 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
-function parseValue(value: string) {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (!Number.isNaN(Number(value))) return Number(value);
-  if (value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) return new Date(value);
-  return value;
-}
-
+// TODO: Decide whether this method is worth
+// testing or not I really should now that I think about it.
 function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOperatorFilterMetaData):
   value is DataTableOperatorFilterMetaData {
   const result = 'operator' in value && 'constraints' in value;
@@ -270,10 +264,10 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
     .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
       if (isOperatorFilterMetaData(value)) {
         const conditions = value.constraints.map(constraint =>
-          `${encodeURIComponent(constraint.value)}:${constraint.matchMode}`).join(',');
+          `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`).join(',');
         return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
       }
-      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode}`;
+      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
     });
 
   // Join the encoded pairs with commas and add parentheses
@@ -281,30 +275,33 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
   return `(${result})`;
 }
 
-function decodeFilterObj(encodedString: string): DataTableFilterMeta {
+function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   const decodedObj: DataTableFilterMeta = {};
 
+  // Remove the outer parentheses and split on commas not within parentheses
   const pairs = encodedString.slice(1, -1).split(/,\s*(?![^(]*\))/);
   pairs.forEach(pair => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);
+
     if (rest.length === 2) {
-      // This is a simple filter
+      // Simple filter
       decodedObj[key] = {
-        value: parseValue(decodeURIComponent(rest[0])),
+        value: decodeURIComponent(rest[0]),
         matchMode: rest[1] as FilterMatchMode,
       };
     } else if (rest.length > 2) {
-      // This is an operator filter
+      // Operator filter
       const operator = rest[0];
       const constraintsString = rest.slice(1).join(':');
-      const constraints = constraintsString.slice(1, -1).split(','); // Remove parentheses and split
+      const constraints = constraintsString.slice(1, -1).split(/,(?![^()]*\))/); // Remove parentheses and split
+
       decodedObj[key] = {
         operator: operator as FilterOperator,
         constraints: constraints.map(constraint => {
           const [value, matchMode] = constraint.split(':');
           return {
-            value: parseValue(decodeURIComponent(value)),
+            value: decodeURIComponent(value),
             matchMode: matchMode as FilterMatchMode,
           };
         }),
@@ -319,7 +316,7 @@ const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTable
   const params = getRawQueryParams(window.location.search);
   const filterString = params[paramName];
   if (filterString === null || filterString === undefined) return defaultState;
-  return decodeFilterObj(filterString);
+  return decodeUrlToFilterObj(filterString);
 };
 
 function resolveState(
@@ -342,7 +339,8 @@ function isEqualFilterMetaData(
   return result;
 }
 
-export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
+export function
+isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
@@ -385,6 +383,7 @@ export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
   return true;
 }
 
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
@@ -404,7 +403,7 @@ export function useStateFromSearchParamsForFilterObject(
     if (currentSearchParams.has(paramName)) {
       currentSearchParams.delete(paramName);
     }
-    if (!isEqual(resolvedState, defaultFilter)) {
+    if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
       const encodedFilter = encodeFilterObj(resolvedState);
       currentSearchParams.append(paramName, encodedFilter);
     }
@@ -455,3 +454,9 @@ export function convertDataTableFilterMetaToDataFilterObject(
   });
   return conversion;
 }
+
+// THIS OBJECT IS ONLY FOR TESTS
+export const testOnlyExports = {
+  decodeUrlToFilterObj,
+  encodeFilterObj,
+};
