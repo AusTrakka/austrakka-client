@@ -6,7 +6,7 @@ The tests have been structured in this way
 
 With this if a test needs some setup of utility function for arranging/orchestrating a test case and it is reused
 it may be of use to put it in the test-utils (utility folder I know :grimacing:) this can be changed if a better
-solution for orginasing the setup methods occurs.
+solution for organising the setup methods reveals itself.
 
 ## Naming
 
