@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "fix": "eslint . --fix",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "test-verbose": "jest --verbose"
   },
   "dependencies": {
     "@azure/msal-browser": "^2.30.0",

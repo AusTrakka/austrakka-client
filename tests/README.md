@@ -1,3 +1,10 @@
+# USAGE:
+
+```
+npm run test [runs jest --watch] // this is interactive
+npm run test-verbose [runs jest --verbose] // this gives all outputs and testcases
+```
+
 # STRUCTURE AND CONVENTION FOR THE CLIENT TESTS.
 
 The tests have been structured in this way
