@@ -1,13 +1,14 @@
 import { fieldRenderFunctions } from '../../../src/utilities/helperUtils';
 
 describe('fieldRenderFunctions', () => {
-  describe('Shared_groups', () => {
-    test('should return empty string for null or undefined values', () => {
+  describe('when given variations of'
+           + 'possible inputs for the Shared_groups input', () => {
+    test('return empty string for null or undefined values', () => {
       expect(fieldRenderFunctions.Shared_groups(null)).toBe('');
       expect(fieldRenderFunctions.Shared_groups(undefined)).toBe('');
     });
 
-    test('should sanitize and format the value correctly', () => {
+    test('sanitize and format inconsistent correctly', () => {
       const input = 'value1,"value2",[value3]';
       const expectedOutput = 'value1, value2, value3';
       const result = fieldRenderFunctions.Shared_groups(input);
@@ -23,7 +24,7 @@ describe('fieldRenderFunctions', () => {
   });
 
   describe('Date functions (function logic is tested elsewhere))', () => {
-    test('Date_created and Date_updated are implemented', () => {
+    test('Date_created and Date_updated tests are implemented', () => {
       expect(typeof fieldRenderFunctions.Date_created).toBe('function');
       expect(typeof fieldRenderFunctions.Date_updated).toBe('function');
     });
