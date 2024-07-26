@@ -6,7 +6,7 @@ const { encodeFilterObj } = testOnlyExports;
 
 describe('encodeFilterObj', () => {
   describe('when given a simple filter object', () => {
-    it('produces a correctly formatted string with a single key-value pair', () => {
+    test('produces a correctly formatted string with a single key-value pair', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: 'John',
@@ -19,7 +19,7 @@ describe('encodeFilterObj', () => {
   });
 
   describe('when given multiple filters', () => {
-    it('produces a correctly formatted string with multiple key-value pairs', () => {
+    test('produces a correctly formatted string with multiple key-value pairs', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: 'John',
@@ -36,7 +36,7 @@ describe('encodeFilterObj', () => {
   });
 
   describe('when given operator constraints', () => {
-    it('correctly encodes nested constraints with an operator', () => {
+    test('correctly encodes nested constraints with an operator', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           operator: 'and',
@@ -52,7 +52,7 @@ describe('encodeFilterObj', () => {
   });
 
   describe('when given special characters in values', () => {
-    it('properly URL-encodes special characters while maintaining filter structure', () => {
+    test('properly URL-encodes special characters while maintaining filter structure', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: 'John Doe & Co.',
@@ -76,7 +76,7 @@ describe('encodeFilterObj', () => {
   });
 
   describe('when given edge cases', () => {
-    it('omits the matchMode when it is undefined', () => {
+    test('omits the matchMode when it is undefined', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: 'John',
@@ -87,13 +87,13 @@ describe('encodeFilterObj', () => {
       expect(result).toBe('(name:John:)');
     });
 
-    it('returns an empty parentheses string for an empty object', () => {
+    test('returns an empty parentheses string for an empty object', () => {
       const filterObj: DataTableFilterMeta = {};
       const result = encodeFilterObj(filterObj);
       expect(result).toBe('()');
     });
 
-    it('encodes null and undefined values as strings', () => {
+    test('encodes null and undefined values as strings', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: null,
@@ -108,7 +108,7 @@ describe('encodeFilterObj', () => {
       expect(result).toBe('(name:null:equals,age:undefined:gt)');
     });
 
-    it('encodes an empty constraints array as empty parentheses', () => {
+    test('encodes an empty constraints array as empty parentheses', () => {
       const filterObj: DataTableFilterMeta = {
         empty: {
           operator: 'or',
@@ -121,7 +121,7 @@ describe('encodeFilterObj', () => {
   });
 
   describe('when given mixed types of values', () => {
-    it('correctly encodes string, number, boolean, and array values', () => {
+    test('correctly encodes string, number, boolean, and array values', () => {
       const filterObj: DataTableFilterMeta = {
         name: {
           value: 'John',
