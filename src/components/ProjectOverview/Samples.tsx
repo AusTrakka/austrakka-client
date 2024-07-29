@@ -129,6 +129,12 @@ function Samples(props: SamplesProps) {
     }
   };
 
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
+
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find(f => f.columnName === field);
     return `${fieldObj?.fieldSource}`;
