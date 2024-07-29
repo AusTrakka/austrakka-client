@@ -2,9 +2,9 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, {
-  useEffect, useState,
+  useEffect, useRef, useState,
 } from 'react';
-import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Battery0Bar, Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
@@ -58,6 +58,7 @@ function Samples(props: SamplesProps) {
     isSamplesLoading,
     inputFilters,
   } = props;
+  const prevInputProp = useRef<DataFilter[] | null>();
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -78,19 +79,20 @@ function Samples(props: SamplesProps) {
 
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [filterList, setFilterList] =
+      useState<DataFilter[]>(inputFilters && inputFilters.length > 0 ? inputFilters : []);
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
+      if (inputFilters && inputFilters.length > 0) {
+        setFilterList(inputFilters);
+      } else if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
         ));
-      } else if (inputFilters && inputFilters.length > 0) {
-        setFilterList(inputFilters);
       } else {
         setFilterList([]);
       }
@@ -100,6 +102,10 @@ function Samples(props: SamplesProps) {
       metadata?.fields && initialisingFilters) {
       initialFilterState();
     }
+    if (prevInputProp.current !== inputFilters && inputFilters && inputFilters.length > 0) {
+      setFilterList(inputFilters);
+    }
+    prevInputProp.current = inputFilters;
   }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters, inputFilters]);
 
   // Set column headers from metadata state

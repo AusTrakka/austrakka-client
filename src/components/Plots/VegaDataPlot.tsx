@@ -1,6 +1,5 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
@@ -64,8 +63,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       metadata?.fields && initialisingFilters) {
       if (metadata.fields.length > 0) initialFilterState();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.loadingState, metadata?.fields]);
+  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters]);
 
   // Render plot by creating vega view
   useEffect(() => {
