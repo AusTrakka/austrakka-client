@@ -4,7 +4,7 @@
 import React, {
   useEffect, useRef, useState,
 } from 'react';
-import { Battery0Bar, Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
