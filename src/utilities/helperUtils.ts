@@ -253,7 +253,7 @@ function getRawQueryParams(url: any) {
   for (const pair of pairs) {
     const [key, value] = pair.split('=');
     // Decode only the key, but keep the value as is
-    queryParams[decodeURIComponent(key)] = value;
+    queryParams[(key)] = value;
   }
 
   return queryParams;
@@ -278,8 +278,14 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
 function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   const decodedObj: DataTableFilterMeta = {};
 
+  let cleanedString = encodedString.replace(/^%28|%29$/g, '');
+
+  // Remove normal parentheses
+  if (cleanedString.startsWith('(') && cleanedString.endsWith(')')) {
+    cleanedString = cleanedString.slice(1, -1);
+  }
   // Remove the outer parentheses and split on commas not within parentheses
-  const pairs = encodedString.slice(1, -1).split(/,\s*(?![^(]*\))/);
+  const pairs = cleanedString.split(/,\s*(?![^(]*\))/);
   pairs.forEach(pair => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);

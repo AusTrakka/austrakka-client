@@ -44,7 +44,22 @@ describe('decodeUrlToFilterObj', () => {
     test('handles the special characters correctly', () => {
       const encodedStr = '(name:John%20Doe%20%26%20Co.:equals,address:' +
         '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)';
+
       const result = decodeUrlToFilterObj(encodedStr);
+
+      expect(result).toEqual({
+        name: { value: 'John Doe & Co.', matchMode: 'equals' },
+        address: { value: '123 Main St. Apt #4A', matchMode: 'contains' },
+        notes: { value: 'Check-in: 10:00 AM; Check-out: 2:00 PM', matchMode: 'custom' },
+      });
+    });
+
+    test('encoded outer brackets shoudld be decodable', () => {
+      const encodedStr = '%28name:John%20Doe%20%26%20Co.:equals,address:' +
+        '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom%29';
+
+      const result = decodeUrlToFilterObj(encodedStr);
+
       expect(result).toEqual({
         name: { value: 'John Doe & Co.', matchMode: 'equals' },
         address: { value: '123 Main St. Apt #4A', matchMode: 'contains' },
