@@ -66,6 +66,21 @@ describe('decodeUrlToFilterObj', () => {
         notes: { value: 'Check-in: 10:00 AM; Check-out: 2:00 PM', matchMode: 'custom' },
       });
     });
+
+    test('encoded brackets within a filter should be parsed correctly', () => {
+      const encodedStr = '%28name:or:(John:equals,%28Doe%29:equals)%29';
+      const result = decodeUrlToFilterObj(encodedStr);
+
+      expect(result).toEqual({
+        name: {
+          operator: 'or',
+          constraints: [
+            { value: 'John', matchMode: 'equals' },
+            { value: '(Doe)', matchMode: 'equals' },
+          ],
+        },
+      });
+    });
   });
 
   describe('when given edge cases', () => {

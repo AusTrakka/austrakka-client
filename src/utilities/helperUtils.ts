@@ -279,7 +279,6 @@ function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   const decodedObj: DataTableFilterMeta = {};
 
   let cleanedString = encodedString.replace(/^%28|%29$/g, '');
-
   // Remove normal parentheses
   if (cleanedString.startsWith('(') && cleanedString.endsWith(')')) {
     cleanedString = cleanedString.slice(1, -1);
