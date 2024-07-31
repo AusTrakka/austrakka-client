@@ -17,7 +17,7 @@ describe('fieldRenderFunctions.Shared_groups', () => {
     });
   });
 
-  describe('when input is given with now spacing', () => {
+  describe('when input is given with no spacing', () => {
     test('space out values for readibility', () => {
       const input = 'value1,value2,value3';
       const expectedOutput = 'value1, value2, value3';
