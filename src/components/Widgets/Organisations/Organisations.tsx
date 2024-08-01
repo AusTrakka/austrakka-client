@@ -29,6 +29,7 @@ export default function Organisations(props: any) {
   const organisationsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
   const { token, tokenLoading } = useApi();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };
@@ -56,6 +57,8 @@ export default function Organisations(props: any) {
     } else {
       setFilterList(drilldownFilter);
     }
+    // TODO here and in other widgets, use navigate() and get rid of setFilterList();
+    // put query in nav URL instead
     setTabValue(1); // Navigate to "Samples" tab
   };
 

@@ -1,6 +1,5 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
@@ -15,7 +14,7 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -50,7 +49,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
@@ -64,8 +63,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       metadata?.fields && initialisingFilters) {
       if (metadata.fields.length > 0) initialFilterState();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.loadingState, metadata?.fields]);
+  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters]);
 
   // Render plot by creating vega view
   useEffect(() => {

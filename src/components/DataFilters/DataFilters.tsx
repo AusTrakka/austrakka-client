@@ -232,7 +232,7 @@ function DataFilters(props: DataFiltersProps) {
   useEffect(() => {
     const filtersBuilder: DataTableFilterMeta = {};
     if (filterList.length === 0) {
-      setPrimeReactFilters(defaultState);
+      setPrimeReactFilters(defaultState); // maybe should only set if states don't match?
       return;
     }
 
@@ -280,9 +280,8 @@ function DataFilters(props: DataFiltersProps) {
         };
       }
     });
-    setPrimeReactFilters(filtersBuilder);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterList]);
+    setPrimeReactFilters(filtersBuilder); // maybe should only set if states don't match?
+  }, [filterList, setPrimeReactFilters]);
 
   const renderValueElement = () => {
     switch (selectedFieldType) {

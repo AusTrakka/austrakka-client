@@ -14,7 +14,7 @@ import { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -86,7 +86,7 @@ export default function TreeTable(props: TreeTableProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           displayFields,
@@ -120,7 +120,8 @@ export default function TreeTable(props: TreeTableProps) {
       return;
     }
 
-    if (Object.keys(currentFilters).length === 0 || isEqual(currentFilters, defaultState)) {
+    if (Object.keys(currentFilters).length === 0 ||
+        isDataTableFiltersEqual(currentFilters, defaultState)) {
       processTableValues();
     }
   }, [tableMetadata, displayFields, metadataLoadingState, currentFilters]);

@@ -2,7 +2,7 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, {
-  useEffect, useState,
+  useEffect, useRef, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -30,7 +30,7 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -58,6 +58,7 @@ function Samples(props: SamplesProps) {
     isSamplesLoading,
     inputFilters,
   } = props;
+  const prevInputProp = useRef<DataFilter[] | null>();
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -67,7 +68,7 @@ function Samples(props: SamplesProps) {
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [initalisingFilters, setInitialisingFilters] = useState<boolean>(true);
+  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
 
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
@@ -78,46 +79,46 @@ function Samples(props: SamplesProps) {
 
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
+  const [filterList, setFilterList] =
+      useState<DataFilter[]>(inputFilters && inputFilters.length > 0 ? inputFilters : []);
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (inputFilters && inputFilters.length > 0) {
+        setFilterList(inputFilters);
+      } else if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           metadata?.fields!,
         ));
-      } else if (inputFilters && inputFilters.length > 0) {
-        setFilterList(inputFilters);
       } else {
         setFilterList([]);
       }
       setInitialisingFilters(false);
     };
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
-      metadata?.fields && initalisingFilters) {
+      metadata?.fields && initialisingFilters) {
       initialFilterState();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.loadingState, metadata?.fields]);
+    if (prevInputProp.current !== inputFilters && inputFilters && inputFilters.length > 0) {
+      setFilterList(inputFilters);
+    }
+    prevInputProp.current = inputFilters;
+  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters, inputFilters]);
 
   // Set column headers from metadata state
   useEffect(() => {
-    if (!metadata?.fields) return;
+    if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields);
     setReadyFields(metadata!.fieldLoadingStates);
-    setFilteredDataLength(metadata!.metadata?.length ?? 0);
     setSampleTableColumns(columnBuilder);
+    setFilteredDataLength(metadata!.metadata?.length ?? 0);
+    // disable because TS doesn't understand that initial
+    // return statement ensures metadata !== null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.fields, metadata?.fieldLoadingStates]);
-
-  useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata!);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
@@ -133,6 +134,12 @@ function Samples(props: SamplesProps) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
   };
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find(f => f.columnName === field);
@@ -183,7 +190,7 @@ function Samples(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading || initalisingFilters) return null;
+  if (isSamplesLoading || initialisingFilters) return null;
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
