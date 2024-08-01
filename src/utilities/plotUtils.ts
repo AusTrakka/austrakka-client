@@ -171,8 +171,8 @@ export const setTimeAggregationInSpecToValue = (
   } else {
     size = {
       field: 'count',
-      scale: { rangeMin: ONE_SAMPLE_POINT_SIZE },
-      legend: { orient: 'bottom' },
+      scale: { rangeMin: ONE_SAMPLE_POINT_SIZE, type: 'linear' },
+      legend: null,
     };
   }
 

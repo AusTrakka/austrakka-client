@@ -18,7 +18,7 @@ const preferredDateFields = ['Date_coll'];
 
 const defaultTransforms = [
   {
-    calculate: '(floor(random()*2)*2-1)*(pow(random(),3))',
+    calculate: '(floor(random()*2)*2-1)*(pow(random(),1.5))',
     as: 'jitter',
   },
 ];
@@ -43,7 +43,7 @@ const defaultSpec: TopLevelSpec = {
       type: 'nominal',
       axis: { grid: true, tickBand: 'extent' },
     },
-    yOffset: { field: 'jitter', type: 'quantitative' },
+    yOffset: { field: 'jitter', type: 'quantitative'},  // Could control padding with eg scale: { range: [5,45] } },
     color: {
       field: 'cgMLST',
       scale: { scheme: 'spectral' },
