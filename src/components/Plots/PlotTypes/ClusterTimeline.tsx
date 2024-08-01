@@ -16,9 +16,13 @@ const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
 const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
 const preferredDateFields = ['Date_coll'];
 
+// The opacity to use for points when they are selected, or when all points are selected
+// Should match the Vega-lite default for circle marks
+const pointOpacity = 0.7;
+
 const defaultTransforms = [
   {
-    calculate: '(floor(random()*2)*2-1)*(pow(random(),3))',
+    calculate: '(floor(random()*2)*2-1)*(pow(random(),1.5))',
     as: 'jitter',
   },
 ];
@@ -43,7 +47,7 @@ const defaultSpec: TopLevelSpec = {
       type: 'nominal',
       axis: { grid: true, tickBand: 'extent' },
     },
-    yOffset: { field: 'jitter', type: 'quantitative' },
+    yOffset: { field: 'jitter', type: 'quantitative' }, // Could control padding with eg scale: { range: [5,45] }
     color: {
       field: 'cgMLST',
       scale: { scheme: 'spectral' },
@@ -149,6 +153,7 @@ function ClusterTimeline(props: PlotTypeProps) {
         colourField,
         fieldUniqueValues![colourField] ?? [],
         colourScheme,
+        pointOpacity,
       );
 
     if (fieldUniqueValues) {
