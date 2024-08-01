@@ -175,10 +175,15 @@ function ClusterTimeline(props: PlotTypeProps) {
     }
 
     const addTimeAggregationToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setTimeAggregationInSpecToValue(oldSpec, dateBinUnit, dateField, groupFields, defaultTransforms);
+      setTimeAggregationInSpecToValue(
+        oldSpec,
+        dateBinUnit,
+        dateField,
+        groupFields,
+        defaultTransforms,
+      );
 
     setSpec(addTimeAggregationToSpec);
-
   }, [dateBinUnit, yAxisField, colourField, dateField]);
 
   const renderControls = () => (

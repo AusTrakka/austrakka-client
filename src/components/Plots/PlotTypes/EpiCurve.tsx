@@ -38,11 +38,11 @@ const defaultSpec: TopLevelSpec = {
     },
   },
   resolve: { // used when a row facet is applied
-    scale: { 
+    scale: {
       x: 'shared',
       y: 'shared',
     },
-  }
+  },
 };
 
 function EpiCurve(props: PlotTypeProps) {
@@ -171,14 +171,14 @@ function EpiCurve(props: PlotTypeProps) {
   useEffect(() => {
     const setFacetYAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setAxisResolutionInSpecToValue(oldSpec, 'y', facetYAxisMode);
-    
+
     setSpec(setFacetYAxisModeInSpec);
   }, [facetYAxisMode]);
 
   useEffect(() => {
     const setFacetXAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setAxisResolutionInSpecToValue(oldSpec, 'x', facetXAxisMode);
-    
+
     setSpec(setFacetXAxisModeInSpec);
   }, [facetXAxisMode]);
 

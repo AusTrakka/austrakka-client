@@ -3,8 +3,8 @@
 /* Disabling to make e.g. newSpec['encoding'][field]['field'] clearer */
 /* eslint-disable @typescript-eslint/dot-notation */
 
-import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { TopLevelSpec } from 'vega-lite';
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
 
 const ONE_SAMPLE_POINT_SIZE = 80;
@@ -118,14 +118,14 @@ export const setAxisResolutionInSpecToValue = (
   resolution: string,
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
-  
+
   const newSpec: any = { ...oldSpec };
   newSpec.resolve = { ...(oldSpec as any).resolve };
   newSpec.resolve.scale = { ...(oldSpec as any).resolve.scale };
   newSpec.resolve.scale[axis] = resolution;
 
   return newSpec as TopLevelSpec;
-}
+};
 
 // Creates an aggregate transform to bin time points, and sets tooltip and point size legend
 // Primarily intended for cluster timeline plots
@@ -134,7 +134,7 @@ export const setTimeAggregationInSpecToValue = (
   timeUnit: string,
   dateField: string,
   groupFields: string[],
-  defaultTransforms: object[]
+  defaultTransforms: object[],
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
 
@@ -183,4 +183,4 @@ export const setTimeAggregationInSpecToValue = (
   newSpec.encoding.size = size;
 
   return newSpec as TopLevelSpec;
-}
+};
