@@ -5,7 +5,7 @@ import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
-import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
+import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
@@ -16,20 +16,22 @@ const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
 const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
 const preferredDateFields = ['Date_coll'];
 
+const defaultTransforms = [
+  {
+    calculate: '(floor(random()*2)*2-1)*(pow(random(),3))',
+    as: 'jitter',
+  },
+];
+
 // Assumed fields here are Date_coll, Seq_ID(SAMPLE_ID_FIELD)
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
   description: 'Categorical faceted timeline diagram with jitter - e.g. cluster timeline',
   data: { name: 'inputdata' }, // for Vega-Lite an object, for Vega a list of objects
-  transform: [
-    {
-      calculate: '(floor(random()*2)*2-1)*(pow(random(),2))',
-      as: 'jitter',
-    },
-  ],
+  transform: defaultTransforms,
   width: 'container',
   height: { step: 70 },
-  mark: 'point',
+  mark: 'circle',
   encoding: {
     x: {
       field: 'Date_coll',
@@ -66,7 +68,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
-    '',
+    'none',
     urlSearchParams,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
@@ -78,6 +80,11 @@ function ClusterTimeline(props: PlotTypeProps) {
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
+    urlSearchParams,
+  );
+  const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
+    'dateBinUnit',
+    'yearmonthdate',
     urlSearchParams,
   );
 
@@ -158,6 +165,27 @@ function ClusterTimeline(props: PlotTypeProps) {
     }
   }, [dateField]);
 
+  useEffect(() => {
+    const groupFields: string[] = [];
+    if (yAxisField !== 'none') {
+      groupFields.push(yAxisField);
+    }
+    if (colourField !== 'none' && colourField !== yAxisField) {
+      groupFields.push(colourField);
+    }
+
+    const addTimeAggregationToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setTimeAggregationInSpecToValue(
+        oldSpec,
+        dateBinUnit,
+        dateField,
+        groupFields,
+        defaultTransforms,
+      );
+
+    setSpec(addTimeAggregationToSpec);
+  }, [dateBinUnit, yAxisField, colourField, dateField]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -183,6 +211,7 @@ function ClusterTimeline(props: PlotTypeProps) {
           label="Colour"
           onChange={(e) => setColourField(e.target.value)}
         >
+          <MenuItem value="none">None</MenuItem>
           {
             categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
@@ -205,6 +234,28 @@ function ClusterTimeline(props: PlotTypeProps) {
         >
           {
             dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
+        <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
+        <Select
+          labelId="date-bin-unit-select-label"
+          id="date-bin-unit-select"
+          label="Bin Unit"
+          value={dateBinUnit}
+          onChange={(e) => {
+            setDateBinUnit(e.target.value);
+          }}
+        >
+          {
+            [
+              <MenuItem key="none" value="none">None</MenuItem>,
+              <MenuItem key="yearmonthdate" value="yearmonthdate">Day</MenuItem>,
+              <MenuItem key="yearweek" value="yearweek">Week</MenuItem>,
+              <MenuItem key="yearmonth" value="yearmonth">Month</MenuItem>,
+              <MenuItem key="year" value="year">Year</MenuItem>,
+            ]
           }
         </Select>
       </FormControl>

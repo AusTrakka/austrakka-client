@@ -5,7 +5,7 @@ import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import {
-  getStartingField, setColorInSpecToValue,
+  getStartingField, setAxisResolutionInSpecToValue, setColorInSpecToValue,
   setFieldInSpec,
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
@@ -35,6 +35,12 @@ const defaultSpec: TopLevelSpec = {
     y: {
       aggregate: 'count',
       stack: 'zero',
+    },
+  },
+  resolve: { // used when a row facet is applied
+    scale: {
+      x: 'shared',
+      y: 'shared',
     },
   },
 };
@@ -76,6 +82,16 @@ function EpiCurve(props: PlotTypeProps) {
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
     'rowField',
     'none',
+    searchParams,
+  );
+  const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
+    'facetYAxisMode',
+    'shared',
+    searchParams,
+  );
+  const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
+    'facetXAxisMode',
+    'shared',
     searchParams,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
@@ -151,6 +167,20 @@ function EpiCurve(props: PlotTypeProps) {
 
     setSpec(setRowInSpec);
   }, [rowField]);
+
+  useEffect(() => {
+    const setFacetYAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setAxisResolutionInSpecToValue(oldSpec, 'y', facetYAxisMode);
+
+    setSpec(setFacetYAxisModeInSpec);
+  }, [facetYAxisMode]);
+
+  useEffect(() => {
+    const setFacetXAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setAxisResolutionInSpecToValue(oldSpec, 'x', facetXAxisMode);
+
+    setSpec(setFacetXAxisModeInSpec);
+  }, [facetXAxisMode]);
 
   useEffect(() => {
     const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -254,6 +284,19 @@ function EpiCurve(props: PlotTypeProps) {
         />
       )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
+        <InputLabel id="stack-type-select-label">Chart type</InputLabel>
+        <Select
+          labelId="stack-type-select-label"
+          id="stack-type-select"
+          value={stackType}
+          label="Chart type"
+          onChange={(e) => setStackType(e.target.value)}
+        >
+          <MenuItem value="zero">Stacked</MenuItem>
+          <MenuItem value="normalize">Proportional</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="row-facet-select-label">Row facet</InputLabel>
         <Select
           labelId="row-facet-select-label"
@@ -268,17 +311,30 @@ function EpiCurve(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
-        <InputLabel id="stack-type-select-label">Chart type</InputLabel>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: '9em' }}>
+        <InputLabel id="facet-y-axis-select-label">Facet Y-Axes</InputLabel>
         <Select
-          labelId="stack-type-select-label"
-          id="stack-type-select"
-          value={stackType}
-          label="Chart type"
-          onChange={(e) => setStackType(e.target.value)}
+          labelId="facet-y-axis-select-label"
+          id="facet-y-axis-select"
+          value={facetYAxisMode}
+          label="Facet Y-Axes"
+          onChange={(e) => setFacetYAxisMode(e.target.value)}
         >
-          <MenuItem value="zero">Stacked</MenuItem>
-          <MenuItem value="normalize">Proportional</MenuItem>
+          <MenuItem value="shared">Shared</MenuItem>
+          <MenuItem value="independent">Independent</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: '9em' }}>
+        <InputLabel id="facet-x-axis-select-label">Facet X-Axes</InputLabel>
+        <Select
+          labelId="facet-x-axis-select-label"
+          id="facet-x-axis-select"
+          value={facetXAxisMode}
+          label="Facet X-Axes"
+          onChange={(e) => setFacetXAxisMode(e.target.value)}
+        >
+          <MenuItem value="shared">Shared</MenuItem>
+          <MenuItem value="independent">Independent</MenuItem>
         </Select>
       </FormControl>
     </Box>
