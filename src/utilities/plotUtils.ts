@@ -45,6 +45,8 @@ export const legendSpec = {
   labelExpr: "datum.label || 'null'",
 };
 
+const unselectedOpacity = 0.15;
+
 // Takes in the known set of unique values for the field and uses these for our own colour mapping
 //   and legend sort order (override Vega's non-natural-sort order)
 export const setColorInSpecToValue = (
@@ -52,12 +54,14 @@ export const setColorInSpecToValue = (
   colourField: string,
   uniqueValues: string[],
   colourScheme: string = 'spectral',
+  opacity: number = 1,
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
-  const newSpec: any = { ...oldSpec };
+  let newSpec: any = { ...oldSpec };
   if (colourField === 'none') {
-    // Remove colour from encoding
-    const { color, ...newEncoding } = (oldSpec as any).encoding;
+    // Remove colour, legend opacity, legend selection params - note we assume no other params
+    delete newSpec.params;
+    const { color, opacity, ...newEncoding } = (oldSpec as any).encoding;
     newSpec.encoding = newEncoding;
   } else {
     // Set colour in encoding
@@ -71,6 +75,20 @@ export const setColorInSpecToValue = (
       },
       legend: legendSpec,
     };
+    // Set opacity on interactive legend
+    newSpec.encoding.opacity = {
+      condition: {
+        selection: 'selectedcolour',
+        value: opacity,
+      },
+      value: unselectedOpacity,
+    };
+    // Add params for selection
+    newSpec.params = [{
+      name: 'selectedcolour',
+      select: { type: 'point', fields: [colourField] },
+      bind: 'legend'
+    }];
   }
   return newSpec as TopLevelSpec;
 };

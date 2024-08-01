@@ -149,6 +149,7 @@ function ClusterTimeline(props: PlotTypeProps) {
         colourField,
         fieldUniqueValues![colourField] ?? [],
         colourScheme,
+        0.7,
       );
 
     if (fieldUniqueValues) {
