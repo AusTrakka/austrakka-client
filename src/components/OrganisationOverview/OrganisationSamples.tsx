@@ -113,7 +113,6 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
       />
       <SampleTable
         groupContext={selectedGroup!.group.groupId}
-        groupName={undefined}
       />
     </Box>
   );
