@@ -2,6 +2,22 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-08-01
+
+### Added
+- Added filter information to the url of all queryable table pages. This allows users to share a link to a table or plot with the current filter settings applied.
+- Cluster timeline plots are now able to bin samples by date and represent the number of samples via point size.
+- Cluster timeline plots now have the option of setting the colour to None.
+- Epi curve plots with a row facet now allow independent Y axes (and X axes) for each row.
+
+## 2024-07-08
+
+### Added
+- Server-side support for more sequence data types: ONT FASTQ and multi-contig FASTA assemblies (fastq-ont and fasta-asm).
+
+### Changed
+- The existing fastq sequence data type is now split explicitly into fastq-ill-pe and fastq-ill-se; the existing fasta sequence data type, representing single-contig consensus genomes, is now named fasta-cns. Existing data has been migrated to the new types.
+
 ## 2024-06-27
 
 ### Added
