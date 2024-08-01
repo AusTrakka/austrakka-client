@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useRef, useState } from 'react';
+import { SetStateAction, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
@@ -9,7 +9,7 @@ import { DataFilter } from '../components/DataFilters/DataFilters';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
 
-export function isoDateLocalDate(datetime: string) {
+export function isoDateLocalDate(datetime: string): string {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
@@ -25,21 +25,13 @@ export function isoDateLocalDateNoTime(datetime: string) {
   return localDate;
 }
 
-export function formatDate(dateUTC: any) {
+export function formatDate(dateUTC: string): string {
+  if (!dateUTC) return '';
+  if (dateUTC === 'null') return '';
+  if (Number.isNaN(Date.parse(dateUTC))) return 'Invalid Date';
   const date = new Date(dateUTC);
-  return new Intl.DateTimeFormat('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' }).format(date).toString();
+  return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
 }
-
-export function useFirstRender() {
-  const firstRender = useRef(true);
-  useEffect(() => {
-    firstRender.current = false;
-  }, []);
-
-  return firstRender.current;
-}
-
-// These render functions be may passed in to tables per-column, or used via renderValue()
 
 export const renderValueWithEmptyNull = (value: any): string => {
   if (value === null || value === undefined) {
@@ -90,30 +82,31 @@ export const renderValue = (value: any, field: string, type: string): string => 
 
 // Function to aggregate counts of objects in an array, on a certain property
 export function aggregateArrayObjects(property: string, array: Array<any>) {
-  const initialArray = array;
+  if (!array || !Array.isArray(array)) {
+    return [];
+  }
+
   const aggregatedCounts = [];
   const map = new Map();
-  if (initialArray !== undefined) {
-    for (let i = 0; i < initialArray.length; i += 1) {
-      let found = false;
-      for (const [key, value] of map) {
-        if (key === initialArray[i][property]) {
-          found = true;
-          const newValue = value + 1;
-          map.set(initialArray[i][property], newValue);
-          break;
-        }
-      }
-      if (!found) { map.set(initialArray[i][property], 1); }
-    }
 
-    for (const [key, value] of map) {
-      const obj = { [property]: '', sampleCount: 0 };
-      obj[property] = key;
-      obj.sampleCount = value;
-      aggregatedCounts.push(obj);
+  for (let i = 0; i < array.length; i += 1) {
+    const item = array[i];
+
+    if (item && typeof item === 'object' && property in item) {
+      const value = item[property];
+      if (map.has(value)) {
+        map.set(value, map.get(value) + 1);
+      } else {
+        map.set(value, 1);
+      }
     }
   }
+
+  for (const [key, value] of map) {
+    const obj = { [property]: key, sampleCount: value };
+    aggregatedCounts.push(obj);
+  }
+
   return aggregatedCounts;
 }
 
@@ -122,36 +115,49 @@ export function generateDateFilterString(
   dateObject: { field: string, condition: string, fieldType: string, value: any },
 ) {
   let filterString = '';
-  if (Object.keys(dateObject).length !== 0) {
-    const date = `${dateObject.value.$d.toISOString()}`;
+
+  if (
+    dateObject &&
+    typeof dateObject.field === 'string' &&
+    typeof dateObject.condition === 'string' &&
+    typeof dateObject.fieldType === 'string' &&
+    dateObject.value &&
+    dateObject.value.$d instanceof Date &&
+    !Number.isNaN(dateObject.value.$d.getTime()) // Ensure it's a valid date
+  ) {
+    const date = dateObject.value.$d.toISOString();
     filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
   }
+
   return filterString;
 }
 
-export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
-  data.map((sample) => {
+export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
+  data.forEach((sample) => {
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
       sample[HAS_SEQUENCES] = false;
     }
-    return sample;
   });
 
   return data;
 }
 
-export function replaceNullsWithEmpty(data: Sample[]) {
-  data.forEach((sample) => {
-    Object.keys(sample).forEach((key) => {
-      if (sample[key] === null) {
-        sample[key] = '';
+export function replaceNullsWithEmpty(data: Sample[]): void {
+  const replaceNullsInObject = (obj: Sample): void => {
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] === null) {
+        obj[key] = '';
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        replaceNullsInObject(obj[key]);
       }
     });
-  });
-}
+  };
 
+  data.forEach(replaceNullsInObject);
+}
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForPrimitive
-  <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
+<T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
   searchParams: URLSearchParams,
@@ -176,9 +182,14 @@ export function useStateFromSearchParamsForPrimitive
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  return [state, useStateWithQueryParam];
+  return [state, useMemo(
+    () => useStateWithQueryParam,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paramName, defaultState, searchParams, setState],
+  )];
 }
 
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
   defaultState: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
@@ -219,24 +230,19 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  return [stateObject, useStateWithQueryParam];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
-function parseValue(value: string) {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (!Number.isNaN(Number(value))) return Number(value);
-  if (value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) return new Date(value);
-  return value;
-}
-
+// TODO: Decide whether this method is worth
+// testing or not I really should now that I think about it.
 function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOperatorFilterMetaData):
   value is DataTableOperatorFilterMetaData {
   const result = 'operator' in value && 'constraints' in value;
   return result;
 }
 
-function getRawQueryParams(url : any) {
+function getRawQueryParams(url: any) {
   const queryParams: { [key: string]: string } = {};
   const queryString = url.split('?')[1];
   if (!queryString) {
@@ -247,7 +253,7 @@ function getRawQueryParams(url : any) {
   for (const pair of pairs) {
     const [key, value] = pair.split('=');
     // Decode only the key, but keep the value as is
-    queryParams[decodeURIComponent(key)] = value;
+    queryParams[(key)] = value;
   }
 
   return queryParams;
@@ -258,10 +264,10 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
     .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
       if (isOperatorFilterMetaData(value)) {
         const conditions = value.constraints.map(constraint =>
-          `${encodeURIComponent(constraint.value)}:${constraint.matchMode}`).join(',');
+          `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`).join(',');
         return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
       }
-      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode}`;
+      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
     });
 
   // Join the encoded pairs with commas and add parentheses
@@ -269,30 +275,38 @@ function encodeFilterObj(filterObj: DataTableFilterMeta): string {
   return `(${result})`;
 }
 
-function decodeFilterObj(encodedString: string): DataTableFilterMeta {
+function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   const decodedObj: DataTableFilterMeta = {};
 
-  const pairs = encodedString.slice(1, -1).split(/,\s*(?![^(]*\))/);
+  let cleanedString = encodedString.replace(/^%28|%29$/g, '');
+  // Remove normal parentheses
+  if (cleanedString.startsWith('(') && cleanedString.endsWith(')')) {
+    cleanedString = cleanedString.slice(1, -1);
+  }
+  // Remove the outer parentheses and split on commas not within parentheses
+  const pairs = cleanedString.split(/,\s*(?![^(]*\))/);
   pairs.forEach(pair => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);
+
     if (rest.length === 2) {
-      // This is a simple filter
+      // Simple filter
       decodedObj[key] = {
-        value: parseValue(decodeURIComponent(rest[0])),
+        value: decodeURIComponent(rest[0]),
         matchMode: rest[1] as FilterMatchMode,
       };
     } else if (rest.length > 2) {
-      // This is an operator filter
+      // Operator filter
       const operator = rest[0];
       const constraintsString = rest.slice(1).join(':');
-      const constraints = constraintsString.slice(1, -1).split(','); // Remove parentheses and split
+      const constraints = constraintsString.slice(1, -1).split(/,(?![^()]*\))/); // Remove parentheses and split
+
       decodedObj[key] = {
         operator: operator as FilterOperator,
         constraints: constraints.map(constraint => {
           const [value, matchMode] = constraint.split(':');
           return {
-            value: parseValue(decodeURIComponent(value)),
+            value: decodeURIComponent(value),
             matchMode: matchMode as FilterMatchMode,
           };
         }),
@@ -307,7 +321,7 @@ const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTable
   const params = getRawQueryParams(window.location.search);
   const filterString = params[paramName];
   if (filterString === null || filterString === undefined) return defaultState;
-  return decodeFilterObj(filterString);
+  return decodeUrlToFilterObj(filterString);
 };
 
 function resolveState(
@@ -330,7 +344,8 @@ function isEqualFilterMetaData(
   return result;
 }
 
-export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
+export function
+isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
@@ -373,6 +388,7 @@ export function isEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
   return true;
 }
 
+// TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
@@ -392,7 +408,7 @@ export function useStateFromSearchParamsForFilterObject(
     if (currentSearchParams.has(paramName)) {
       currentSearchParams.delete(paramName);
     }
-    if (!isEqual(resolvedState, defaultFilter)) {
+    if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
       const encodedFilter = encodeFilterObj(resolvedState);
       currentSearchParams.append(paramName, encodedFilter);
     }
@@ -401,17 +417,20 @@ export function useStateFromSearchParamsForFilterObject(
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    // Update the URL without navigating
+    // Update the URL without navigating -> DOES navigate, but replaces history?
     if (queryString === '' || queryString === `${paramName}=()`) {
       navigate(window.location.pathname, { replace: true });
       return;
     }
 
     const newUrl = `${window.location.pathname}?${queryString}`;
+
     navigate(newUrl, { replace: true });
   };
 
-  return [state, useStateWithQueryParam];
+  // the function we return here acts like a setter and should not be updated on every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
 }
 
 export function convertDataTableFilterMetaToDataFilterObject(
@@ -440,3 +459,9 @@ export function convertDataTableFilterMetaToDataFilterObject(
   });
   return conversion;
 }
+
+// THIS OBJECT IS ONLY FOR TESTS
+export const testOnlyExports = {
+  decodeUrlToFilterObj,
+  encodeFilterObj,
+};

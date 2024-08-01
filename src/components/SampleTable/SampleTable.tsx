@@ -19,7 +19,7 @@ import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { convertDataTableFilterMetaToDataFilterObject, isEqual, replaceHasSequencesNullsWithFalse, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, replaceHasSequencesNullsWithFalse, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
 import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -71,7 +71,7 @@ function SampleTable(props: SamplesProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
-      if (!isEqual(currentFilters, defaultState)) {
+      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
           displayFields,

@@ -10,6 +10,7 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 - Cluster timeline plots now have the option of setting the colour to None.
 - Epi curve plots with a row facet now allow independent Y axes (and X axes) for each row.
 
+
 ## 2024-06-27
 
 ### Added

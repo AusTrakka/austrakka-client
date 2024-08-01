@@ -1,7 +1,7 @@
 import React, {
   useEffect, useMemo, useState,
 } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getProjectDetails, getTotalSamples,
@@ -29,11 +29,9 @@ import { ResponseType } from '../../constants/responseType';
 import { DataFilter } from '../DataFilters/DataFilters';
 
 function ProjectOverview() {
-  const { projectAbbrev } = useParams();
+  const { projectAbbrev, tab } = useParams();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
-  const location = useLocation();
-  const pathName = location.pathname;
 
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
@@ -49,6 +47,7 @@ function ProjectOverview() {
   });
   // const [lastUpload] = useState('');
 
+  // TODO get rid of this filter state, use navigation URL to set filters instead
   // Samples component states
   const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
@@ -147,11 +146,11 @@ function ProjectOverview() {
 
   useEffect(() => {
     const initialTabValue = projectOverviewTabs
-      .findIndex((tab) => pathName.endsWith(tab.title.toLowerCase()));
+      .findIndex((t) => tab === t.title.toLowerCase());
     if (initialTabValue !== -1) {
       setTabValue(initialTabValue);
     }
-  }, [pathName, projectOverviewTabs]);
+  }, [tab, projectOverviewTabs]);
 
   return (
     isOverviewError.detailsError
