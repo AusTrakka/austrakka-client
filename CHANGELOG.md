@@ -10,6 +10,13 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 - Cluster timeline plots now have the option of setting the colour to None.
 - Epi curve plots with a row facet now allow independent Y axes (and X axes) for each row.
 
+## 2024-07-08
+
+### Added
+- Server-side support for more sequence data types: ONT FASTQ and multi-contig FASTA assemblies (fastq-ont and fasta-asm).
+
+### Changed
+- The existing fastq sequence data type is now split explicitly into fastq-ill-pe and fastq-ill-se; the existing fasta sequence data type, representing single-contig consensus genomes, is now named fasta-cns. Existing data has been migrated to the new types.
 
 ## 2024-06-27
 
