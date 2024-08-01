@@ -57,11 +57,13 @@ export const setColorInSpecToValue = (
   opacity: number = 1,
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
-  let newSpec: any = { ...oldSpec };
+  const newSpec: any = { ...oldSpec };
   if (colourField === 'none') {
     // Remove colour, legend opacity, legend selection params - note we assume no other params
     delete newSpec.params;
-    const { color, opacity, ...newEncoding } = (oldSpec as any).encoding;
+    const { ...newEncoding } = (oldSpec as any).encoding;
+    delete newEncoding.color;
+    delete newEncoding.opacity;
     newSpec.encoding = newEncoding;
   } else {
     // Set colour in encoding
@@ -87,7 +89,7 @@ export const setColorInSpecToValue = (
     newSpec.params = [{
       name: 'selectedcolour',
       select: { type: 'point', fields: [colourField] },
-      bind: 'legend'
+      bind: 'legend',
     }];
   }
   return newSpec as TopLevelSpec;

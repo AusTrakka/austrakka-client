@@ -43,7 +43,7 @@ const defaultSpec: TopLevelSpec = {
       type: 'nominal',
       axis: { grid: true, tickBand: 'extent' },
     },
-    yOffset: { field: 'jitter', type: 'quantitative'},  // Could control padding with eg scale: { range: [5,45] } },
+    yOffset: { field: 'jitter', type: 'quantitative' }, // Could control padding with eg scale: { range: [5,45] }
     color: {
       field: 'cgMLST',
       scale: { scheme: 'spectral' },
