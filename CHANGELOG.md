@@ -6,6 +6,7 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 
 ### Added
 - Added filter information to the url of all queryable table pages. This allows users to share a link to a table or plot with the current filter settings applied.
+- Plot colour legends are now interactive; click a legend item to highlight the corresponding data in the plot.
 - Cluster timeline plots are now able to bin samples by date and represent the number of samples via point size.
 - Cluster timeline plots now have the option of setting the colour to None.
 - Epi curve plots with a row facet now allow independent Y axes (and X axes) for each row.
