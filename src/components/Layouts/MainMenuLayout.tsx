@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import {
-  NavLink, useLocation, Link, Outlet,
+  NavLink, useLocation, Link, Outlet, useNavigate,
 } from 'react-router-dom';
 import {
   Inventory, Upload, Help,
@@ -69,6 +69,7 @@ const pages = [
 ];
 
 function MainMenuLayout() {
+  const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
   const breadcrumbNameMap: { [key: string]: any } = {
@@ -165,7 +166,7 @@ function MainMenuLayout() {
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
               {drawer ? (<img src={AusTrakkaLogo} alt="logo" className={styles.logo} />) : <img src={AusTrakkaLogoSmall} alt="logo" className={styles.logo} />}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
