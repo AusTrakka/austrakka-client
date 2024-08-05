@@ -7,7 +7,7 @@ import { TopLevelSpec } from 'vega-lite';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
 
-const ONE_SAMPLE_POINT_SIZE = 80;
+const ONE_SAMPLE_POINT_SIZE = 40;
 
 // Get the preferred field to populate a selector when fields first loaded
 // If a preferred field is not of the correct type it will simply appear unavailable
@@ -192,7 +192,7 @@ export const setTimeAggregationInSpecToValue = (
     size = {
       field: 'count',
       scale: { rangeMin: ONE_SAMPLE_POINT_SIZE, type: 'linear' },
-      legend: null,
+      legend: { orient: 'bottom' },
     };
   }
 
