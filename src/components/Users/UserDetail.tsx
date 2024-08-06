@@ -50,6 +50,7 @@ function UserDetail() {
     'isAusTrakkaAdmin': 'Austrakka Admin',
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
+    'analysisServerUsername': 'Analysis Server Username',
   };
 
   let nonDisplayFields = [
@@ -205,6 +206,7 @@ function UserDetail() {
       contactEmail: otherValues.contactEmail,
       orgAbbrev: otherValues.orgAbbrev,
       isActive: otherValues.isActive,
+      analysisServerUsername: otherValues.analysisServerUsername,
     };
 
     try {

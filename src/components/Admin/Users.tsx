@@ -60,6 +60,7 @@ function Users() {
       header: 'Email',
       body: emailBodyTemplate },
     { field: 'organisation', header: 'Organisation' },
+    { field: 'analysisServerUsername', header: 'Analysis Server Username' },
   ];
 
   useEffect(() => {
