@@ -22,14 +22,18 @@ export function getFieldDetails(
   );
 }
 
-export function replaceNullsWithEmpty(data: Sample[]) {
-  data.forEach((sample) => {
-    Object.keys(sample).forEach((key) => {
-      if (sample[key] === null) {
-        sample[key] = '';
+export function replaceNullsWithEmpty(data: Sample[]): void {
+  const replaceNullsInObject = (obj: Sample): void => {
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] === null) {
+        obj[key] = '';
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        replaceNullsInObject(obj[key]);
       }
     });
-  });
+  };
+
+  data.forEach(replaceNullsInObject);
 }
 
 export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
