@@ -8,7 +8,7 @@ import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 
 export interface UserSliceState {
-  groupRolesGrouped: Record<string, string[]>,
+  groupRolesByGroup: Record<string, string[]>,
   groupRoles: GroupRole[],
   displayName: string,
   admin: boolean,
@@ -50,7 +50,7 @@ const fetchUserRoles = createAsyncThunk(
 const userSlice = createSlice({
   name: 'userSlice',
   initialState: {
-    groupRolesGrouped: {},
+    groupRolesByGroup: {},
     errorMessage: '',
     loading: LoadingState.IDLE,
   } as UserSliceState,
@@ -71,7 +71,7 @@ const userSlice = createSlice({
             data[groupRole.group.name] = [groupRole.role.name];
           }
         });
-        state.groupRolesGrouped = data;
+        state.groupRolesByGroup = data;
         state.groupRoles = holder.groupRoles;
         state.admin = holder.isAusTrakkaAdmin;
         state.displayName = holder.displayName;

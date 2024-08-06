@@ -4,8 +4,8 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 
 ## Unreleased
 
-### Added
-- Admin only ability to navigate to other organisations through URL manipulation.
+### Changed
+- Org page now appears at org-specific URL rather than a universal /org URL.
 
 ## 2024-06-06
 

@@ -20,7 +20,7 @@ function OrganisationOverview() {
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
-  const [orgEveryone, setOrgEveryone] = useState< Group>();
+  const [orgEveryone, setOrgEveryone] = useState<Group>();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
   const [organisationName, setOrganisationName] = useState('');
@@ -35,7 +35,6 @@ function OrganisationOverview() {
   const user: UserSliceState = useAppSelector(selectUserState);
 
   useEffect(() => {
-    // can you put the filter method here so the getGroups func is better structured
     const getCorrectGroups = (groupRoles: GroupRole[]) =>
       groupRoles.filter((groupRole: GroupRole) =>
         (groupRole.group.name === `${orgAbbrev}-Owner`
