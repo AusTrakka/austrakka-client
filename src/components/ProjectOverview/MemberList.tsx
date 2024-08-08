@@ -222,6 +222,8 @@ function MemberList(props: MembersProps) {
             <DataTable
               value={memberList}
               removableSort
+              columnResizeMode="expand"
+              resizableColumns
               onValueChange={(e) => setExportData(e)}
               size="small"
               scrollable
@@ -233,8 +235,8 @@ function MemberList(props: MembersProps) {
               header={header}
               filters={globalFilter}
               globalFilterFields={columns.map((col) => col.field)}
-              columnResizeMode="expand"
               sortIcon={sortIcon}
+              className="my-flexible-table"
             >
               {columns.map((col: any) => (
                 <Column
@@ -245,6 +247,7 @@ function MemberList(props: MembersProps) {
                   hidden={col.hidden ?? false}
                   sortable
                   resizeable
+                  className="flexible-column"
                   style={{ minWidth: '150px' }}
                   headerClassName="custom-title"
                 />
