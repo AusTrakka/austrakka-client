@@ -1,5 +1,5 @@
 import React, {
-  memo, useEffect, useRef, useState,
+  memo, useEffect, useState,
 } from 'react';
 
 import { Close } from '@mui/icons-material';
@@ -8,7 +8,6 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
-import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
 
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -48,7 +47,6 @@ interface SamplesProps {
 
 function SampleTable(props: SamplesProps) {
   const { groupContext } = props;
-  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -56,7 +54,6 @@ function SampleTable(props: SamplesProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [exportData, setExportData] = useState<Sample[]>([]);
   const [initialisingFilters, setInitialisingFilters] = useState(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
@@ -74,6 +71,11 @@ function SampleTable(props: SamplesProps) {
 
   useEffect(() => {
     const initialFilterState = () => {
+      if (metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
+        metadata?.loadingState === MetadataLoadingState.ERROR) {
+        setInitialisingFilters(false);
+        return;
+      }
       if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
@@ -113,22 +115,6 @@ function SampleTable(props: SamplesProps) {
     setSampleTableColumns(columnBuilder);
   }, [metadata?.columnLoadingStates, metadata?.fields]);
 
-  useEffect(
-    () => {
-      if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
-        try {
-          csvLink?.current?.link.click();
-          setExportCSVStatus(LoadingState.IDLE);
-          setExportData([]);
-        } catch (error) {
-          setExportCSVStatus(LoadingState.ERROR);
-          setExportData([]);
-        }
-      }
-    },
-    [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
-  );
-
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
     if (SAMPLE_ID_FIELD in selectedRow) {
@@ -140,6 +126,12 @@ function SampleTable(props: SamplesProps) {
       console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
     }
   };
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredSampleList(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
@@ -162,14 +154,47 @@ function SampleTable(props: SamplesProps) {
           }}
         />
         <ExportTableData
-          dataToExport={filteredSampleList}
-          disabled={false}
+          dataToExport={
+            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? []
+              : filteredSampleList ?? []
+          }
+          disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
     </div>
   );
 
-  if (initialisingFilters || isSamplesLoading) { return null; }
+  const renderErrorDialog = () => (
+    <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
+      <Alert severity="error" sx={{ padding: 3 }}>
+        <IconButton
+          aria-label="close"
+          onClick={() => setErrorDialogOpen(false)}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <Close />
+        </IconButton>
+        <AlertTitle sx={{ paddingBottom: 1 }}>
+          <strong>
+            {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? 'Project metadata could not be fully loaded'
+              : 'Project metadata could not be loaded'}
+          </strong>
+        </AlertTitle>
+        {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+          ? `An error occurred loading project metadata. Some fields will be null, and 
+             CSV export will not be available. Refresh to reload.`
+          : 'An error occurred loading project metadata. Refresh to reload.'}
+        <br />
+        Please contact an AusTrakka admin if this error persists.
+      </Alert>
+    </Dialog>
+  );
+
+  if (initialisingFilters || isSamplesLoading) {
+    return renderErrorDialog();
+  }
   return (
     <>
       <Backdrop
@@ -178,34 +203,7 @@ function SampleTable(props: SamplesProps) {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
-        <Alert severity="error" sx={{ padding: 3 }}>
-          <IconButton aria-label="close" onClick={() => setErrorDialogOpen(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
-            {' '}
-            <Close />
-            {' '}
-          </IconButton>
-          {' '}
-          <AlertTitle sx={{ paddingBottom: 1 }}>
-            {' '}
-            <strong>
-              {' '}
-              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-                'Project metadata could not be fully loaded' :
-                'Project metadata could not be loaded'}
-              {' '}
-            </strong>
-            {' '}
-          </AlertTitle>
-          {' '}
-          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-            `An error occured loading project metadata. Some fields will be null, and 
-          CSV export will not be available. Refresh to reload.` :
-            'An error occured loading project metadata. Refresh to reload.'}
-          <br />
-          Please contact an AusTrakka admin if this error persists.
-        </Alert>
-      </Dialog>
+      {renderErrorDialog()}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
