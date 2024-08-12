@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import getQueryParamOrDefault from './navigationUtils';
-import { Sample } from '../types/sample.interface';
-import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { DataFilter } from '../components/DataFilters/DataFilters';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
@@ -236,12 +234,31 @@ function getRawQueryParams(url: any) {
   return queryParams;
 }
 
+function isISODateString(value: string) {
+  const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?$/;
+
+  if (isoDateRegex.test(value)) {
+    const parsedDate = new Date(value);
+    return !Number.isNaN(parsedDate.getTime()); // Valid date check
+  }
+  return false;
+}
+
 function encodeFilterObj(filterObj: DataTableFilterMeta): string {
   const encoded = Object.entries(filterObj)
     .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
       if (isOperatorFilterMetaData(value)) {
-        const conditions = value.constraints.map(constraint =>
-          `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`).join(',');
+        const conditions = value.constraints.map(constraint => {
+          // if the value to be encoded is part of a date condition or is itself a date
+          // then encode it as an ISO string
+          if (constraint.value instanceof Date &&
+              !Number.isNaN(constraint.value.getTime()) &&
+              (constraint.matchMode?.includes('date') ||
+                  constraint.matchMode?.includes('custom'))) {
+            return `${encodeURIComponent(constraint.value.toISOString())}:${constraint.matchMode || ''}`;
+          }
+          return `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`;
+        }).join(',');
         return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
       }
       return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
@@ -265,11 +282,12 @@ function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   pairs.forEach(pair => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);
-
     if (rest.length === 2) {
-      // Simple filter
+      const decodedValue = decodeURIComponent(rest[0]);
       decodedObj[key] = {
-        value: decodeURIComponent(rest[0]),
+        value: isISODateString(decodedValue) ?
+          new Date(decodedValue) :
+          decodedValue,
         matchMode: rest[1] as FilterMatchMode,
       };
     } else if (rest.length > 2) {
@@ -282,15 +300,17 @@ function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
         operator: operator as FilterOperator,
         constraints: constraints.map(constraint => {
           const [value, matchMode] = constraint.split(':');
+          const decodedValue = decodeURIComponent(value);
           return {
-            value: decodeURIComponent(value),
+            value: isISODateString(decodedValue) ?
+              new Date(decodedValue) :
+              decodeURIComponent(value),
             matchMode: matchMode as FilterMatchMode,
           };
         }),
       };
     }
   });
-
   return decodedObj;
 }
 
@@ -419,12 +439,14 @@ export function convertDataTableFilterMetaToDataFilterObject(
   : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
     if (isOperatorFilterMetaData(value)) {
       // Handle operator filters
+      const filterField = fields.find(field => field.columnName === key);
       return value.constraints.map((constraint: DataTableFilterMetaData) => ({
         field: key,
-        fieldType: fields
-          .find((field: any) => field.columnName === key)?.primitiveType as FieldTypes,
+        fieldType: filterField.primitiveType as FieldTypes,
         condition: constraint.matchMode as FilterMatchMode | CustomFilterOperators,
-        value: constraint.value,
+        value: filterField.primitiveType === FieldTypes.DATE ?
+          new Date(constraint.value)
+          : constraint.value,
       } as DataFilter));
     }
     return [{

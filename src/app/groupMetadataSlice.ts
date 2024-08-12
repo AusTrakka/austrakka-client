@@ -7,7 +7,12 @@ import { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import {
+  replaceDateStrings,
+  replaceHasSequencesNullsWithFalse,
+  replaceNullsWithEmpty,
+} from './metadataSliceUtils';
 
 // These are hard-coded desired field sets, used as an interim measure
 // until we have project data views implemented server-side.
@@ -246,11 +251,18 @@ export const groupMetadataSlice = createSlice({
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
       const { groupId, fields, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewsResponse;
+      const viewFields = state.data[groupId].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
+      if (viewFields.includes(HAS_SEQUENCES)) {
+        replaceHasSequencesNullsWithFalse(data);
+      }
+      replaceNullsWithEmpty(data);
+      replaceDateStrings(data, state.data[groupId].fields!, viewFields);
       state.data[groupId].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
+      if (state.data[groupId].metadata!.length > 0 &&
+          state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         state.data[groupId].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));

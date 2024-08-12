@@ -111,14 +111,11 @@ function Samples(props: SamplesProps) {
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
-    const columnBuilder = buildPrimeReactColumnDefinitions(metadata!.fields);
-    setReadyFields(metadata!.fieldLoadingStates);
+    const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
+    setReadyFields(metadata.fieldLoadingStates);
     setSampleTableColumns(columnBuilder);
-    setFilteredDataLength(metadata!.metadata?.length ?? 0);
-    // disable because TS doesn't understand that initial
-    // return statement ensures metadata !== null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.fields, metadata?.fieldLoadingStates]);
+    setFilteredDataLength(metadata.metadata?.length ?? 0);
+  }, [metadata?.fields, metadata?.fieldLoadingStates, metadata?.metadata?.length]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
