@@ -7,6 +7,12 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ### Changed
 - Org page now appears at org-specific URL rather than a universal /org URL.
 
+## 2024-08-07
+
+### Added
+- Display Analysis Server Username for users.
+- Clicking on the AusTrakka logo will navigate home.
+
 ## 2024-08-01
 
 ### Added
