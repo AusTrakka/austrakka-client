@@ -207,7 +207,9 @@ function DataFilters(props: DataFiltersProps) {
         const filter: DataFilter = {
           field: newFilter.field,
           condition: newFilter.condition,
-          value: newFilter.value,
+          value: newFilter.fieldType === FieldTypes.DATE ?
+            new Date(newFilter.value) :
+            newFilter.value,
           fieldType: newFilter.fieldType,
           shakeElement: newFilter.shakeElement,
         };
@@ -253,7 +255,7 @@ function DataFilters(props: DataFiltersProps) {
           filterValue = false;
           break;
         case isDateField:
-          filterValue = new Date(value.$d);
+          filterValue = value;
           break;
         default:
           filterValue = value;
@@ -368,7 +370,6 @@ function DataFilters(props: DataFiltersProps) {
       <CloseRounded fontSize="small" />
     </IconButton>
   );
-
   return (
     <Box sx={{ paddingTop: 1 }}>
       <Box sx={{
@@ -476,15 +477,16 @@ function DataFilters(props: DataFiltersProps) {
                   </Button>
                   <br />
                 </div>
-                {filterList.map((filter) => (
-                  <Chip
-                    key={filter.field + filter.condition + filter.value}
-                    label={(
-                      <>
-                        {filter.field}
-                        {' '}
-                        <b>
-                          {
+                {
+                  filterList.map((filter) => (
+                    <Chip
+                      key={filter.field + filter.condition + filter.value}
+                      label={(
+                        <>
+                          {filter.field}
+                          {' '}
+                          <b>
+                            {
                             // eslint-disable-next-line no-nested-ternary
                             filter.fieldType === FieldTypes.DATE
                               ? (dateConditions.find((c) => c.value === filter.condition))?.name
@@ -495,29 +497,30 @@ function DataFilters(props: DataFiltersProps) {
                                 : (stringConditions
                                   .find((c) => c.value === filter.condition))?.name
                           }
-                        </b>
-                        {' '}
-                        {
+                          </b>
+                          {' '}
+                          {
                           // eslint-disable-next-line no-nested-ternary
                           (filter.condition === CustomFilterOperators.NULL_OR_EMPTY ||
                             filter.condition === CustomFilterOperators.NOT_NULL_OR_EMPTY)
                             ? null
                             : filter.fieldType === FieldTypes.DATE
-                              ? filter.value.format('YYYY-MM-DD')
+                              ? new Date(filter.value).toLocaleDateString('en-CA')
                               : `${filter.value}`
                         }
-                      </>
+                        </>
                     )}
-                    onDelete={() => handleFilterDelete(filter)}
-                    sx={{
-                      margin: 1,
-                      animation:
+                      onDelete={() => handleFilterDelete(filter)}
+                      sx={{
+                        margin: 1,
+                        animation:
                         filter.shakeElement === true
                           ? `${shake} 0.5s`
                           : '',
-                    }}
-                  />
-                ))}
+                      }}
+                    />
+                  ))
+}
               </form>
             </Box>
           ) : null}

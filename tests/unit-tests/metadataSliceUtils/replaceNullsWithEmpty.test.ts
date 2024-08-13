@@ -1,4 +1,4 @@
-import { replaceNullsWithEmpty } from '../../../src/utilities/helperUtils';
+import { replaceNullsWithEmpty } from '../../../src/app/metadataSliceUtils';
 
 describe('replaceNullsWithEmpty', () => {
   describe('when given an array with null values', () => {
