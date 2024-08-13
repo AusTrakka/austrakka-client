@@ -36,14 +36,6 @@ import MetadataLoadingState from '../../constants/metadataLoadingState';
 interface SamplesProps {
   groupContext: number | undefined,
 }
-// SAMPLE TABLE
-// Transitionary sampel table component that contains repeat code from both
-//    - ProjectOverview.tsx and,
-//    - Samples.tsx
-// Takes groupContext as input and:
-// 1. Gets display fields for that group to a) builds columns and b) order columns
-// 2. Gets sample list (paginated, filtered + sorted) for display in table
-// 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
   const { groupContext } = props;
@@ -96,7 +88,6 @@ function SampleTable(props: SamplesProps) {
     if (groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
-      // fetchSamplesData();
       dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
     }
   }, [groupContext, token, tokenLoading, dispatch]);
@@ -178,14 +169,14 @@ function SampleTable(props: SamplesProps) {
         <AlertTitle sx={{ paddingBottom: 1 }}>
           <strong>
             {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-              ? 'Project metadata could not be fully loaded'
-              : 'Project metadata could not be loaded'}
+              ? 'Organisation metadata could not be fully loaded'
+              : 'Organisation metadata could not be loaded'}
           </strong>
         </AlertTitle>
         {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-          ? `An error occurred loading project metadata. Some fields will be null, and 
+          ? `An error occurred loading organisation metadata. Some fields will be null, and 
              CSV export will not be available. Refresh to reload.`
-          : 'An error occurred loading project metadata. Refresh to reload.'}
+          : 'An error occurred loading organisation metadata. Refresh to reload.'}
         <br />
         Please contact an AusTrakka admin if this error persists.
       </Alert>
