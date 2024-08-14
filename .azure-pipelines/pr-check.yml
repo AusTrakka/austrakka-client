@@ -18,8 +18,6 @@ pr:
   - UAT
   - master
 
-pool:
-  name: Test
 
 variables:
   - template: variables/devops/setup.yml@Pipelines
