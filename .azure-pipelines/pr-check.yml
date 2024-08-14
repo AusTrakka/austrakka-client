@@ -8,7 +8,7 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: Development
+      ref: 5929-client-test-cicd
       endpoint: AusTrakka
 
 trigger: none
