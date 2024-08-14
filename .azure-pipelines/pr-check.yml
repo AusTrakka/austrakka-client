@@ -1,0 +1,31 @@
+resources:
+  repositories:
+    - repository: Client
+      type: github
+      name: AusTrakka/austrakka-client
+      ref: $(Build.SourceBranch)
+      endpoint: AusTrakka
+    - repository: Pipelines
+      type: github
+      name: AusTrakka/austrakka-pipelines
+      ref: Development
+      endpoint: AusTrakka
+
+trigger: none
+
+pr:
+  - Development
+  - UAT
+  - master
+
+variables:
+  - template: variables/devops/setup.yml@Pipelines
+
+stages:
+  - stage: CheckoutRepos
+    jobs:
+      - job: CheckoutClient
+        steps:
+          - template: templates/checkout/client.yml@Pipelines
+          - template: templates/build/client/build.yml@Pipelines
+          - template: templates/test/unit/client.yml@Pipelines
