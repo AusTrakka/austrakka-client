@@ -8,7 +8,7 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: 5929-client-test-cicd
+      ref: Development
       endpoint: AusTrakka
 
 trigger: none
@@ -17,7 +17,6 @@ pr:
   - Development
   - UAT
   - master
-
 
 variables:
   - template: variables/devops/setup.yml@Pipelines
