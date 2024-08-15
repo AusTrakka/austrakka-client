@@ -3,19 +3,19 @@ import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, 
 import { Error } from '@mui/icons-material';
 import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
-import { GroupRole } from '../../types/dtos';
+import { Group } from '../../types/dtos';
 
 interface OrgansiationSampleProps {
-  defaultGroup: GroupRole;
-  groups: GroupRole[];
+  defaultGroup: Group;
+  groups: Group[];
   groupStatus: LoadingState;
   groupStatusMessage: string;
 }
 
 interface OrgGroupSelectorProps {
-  selectedGroup: GroupRole;
-  setSelectedGroup: (group: GroupRole) => void;
-  groups: GroupRole[];
+  selectedGroup: Group;
+  setSelectedGroup: (group: Group) => void;
+  groups: Group[];
   groupStatus: LoadingState;
   groupStatusMessage: string;
 }
@@ -41,11 +41,11 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
         <Select
           labelId="org-select-label"
           id="org-select"
-          value={selectedGroup.group.groupId} // Use a unique identifier as the value
+          value={selectedGroup.groupId} // Use a unique identifier as the value
           onChange={(e) => {
             const selectedGroupId = e.target.value;
             const selectedGroupObject = groups
-              .find(group => group.group.groupId === selectedGroupId);
+              .find(group => group.groupId === selectedGroupId);
 
             if (selectedGroupObject) {
               setSelectedGroup(selectedGroupObject);
@@ -54,12 +54,12 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
           label="Organisation group"
           autoWidth
         >
-          {groups.map((rg: GroupRole) => (
+          {groups.map((rg: Group) => (
             <MenuItem
-              value={rg.group.groupId} // Use the group's ID as the value
-              key={rg.group.groupId}
+              value={rg.groupId} // Use the group's ID as the value
+              key={rg.groupId}
             >
-              {rg.group.name}
+              {rg.name}
             </MenuItem>
           )) }
           { groups.length === 0 ? (
@@ -80,7 +80,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
 
 function OrganisationSamples(props: OrgansiationSampleProps) {
   const { defaultGroup, groups, groupStatus, groupStatusMessage } = props;
-  const [selectedGroup, setSelectedGroup] = useState<GroupRole | null>(defaultGroup || null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
   if (groupStatus === LoadingState.ERROR) {
     return (
@@ -112,7 +112,7 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
         setSelectedGroup={setSelectedGroup}
       />
       <SampleTable
-        groupContext={selectedGroup!.group.groupId}
+        groupContext={selectedGroup!.groupId}
       />
     </Box>
   );

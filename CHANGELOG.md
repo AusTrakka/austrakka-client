@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-08-16
+
+### Changed
+- Org page now appears at org-specific URL rather than a universal /org URL.
+
 ## 2024-08-07
 
 ### Added
