@@ -1,12 +1,18 @@
+/* eslint-disable no-param-reassign */
 import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import { MetaDataColumn, Project } from '../types/dtos';
+import { MetaDataColumn } from '../types/dtos';
 import { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import {
+  replaceDateStrings,
+  replaceHasSequencesNullsWithFalse,
+  replaceNullsWithEmpty,
+} from './metadataSliceUtils';
 
 // These are hard-coded desired field sets, used as an interim measure
 // until we have project data views implemented server-side.
@@ -93,7 +99,7 @@ const fetchGroupFields = createAsyncThunk(
   async (
     params: FetchGroupFieldsParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<Project | unknown > => {
+  ):Promise<FetchGroupFieldsResponse | unknown > => {
     const { groupId } = params;
     const { token } = (getState() as RootState).groupMetadataState;
     const response = await getDisplayFields(groupId, token!);
@@ -111,7 +117,7 @@ const fetchDataView = createAsyncThunk(
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<Project | unknown > => {
+  ):Promise<FetchDataViewsResponse | unknown > => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).groupMetadataState;
     const response = await getMetadata(groupId, fields, token!);
@@ -173,7 +179,7 @@ listenerMiddleware.startListening({
   },
 });
 
-export const metadataSlice = createSlice({
+export const groupMetadataSlice = createSlice({
   name: 'groupMetadata',
   initialState,
   reducers: {
@@ -225,7 +231,7 @@ export const metadataSlice = createSlice({
     });
     builder.addCase(fetchGroupFields.rejected, (state, action) => {
       const { groupId } = action.meta.arg;
-      state.data[groupId].errorMessage = `Unable to load project fields: ${action.payload}`;
+      state.data[groupId].errorMessage = `Unable to load group fields: ${action.payload}`;
       state.data[groupId].loadingState = MetadataLoadingState.ERROR;
     });
     builder.addCase(fetchDataView.pending, (state, action) => {
@@ -245,11 +251,18 @@ export const metadataSlice = createSlice({
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
       const { groupId, fields, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewsResponse;
+      const viewFields = state.data[groupId].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
+      if (viewFields.includes(HAS_SEQUENCES)) {
+        replaceHasSequencesNullsWithFalse(data);
+      }
+      replaceNullsWithEmpty(data);
+      replaceDateStrings(data, state.data[groupId].fields!, viewFields);
       state.data[groupId].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
+      if (state.data[groupId].metadata!.length > 0 &&
+          state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         state.data[groupId].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
@@ -326,10 +339,10 @@ export const metadataSlice = createSlice({
       // If this is the first view, we are in an error state, otherwise a partial error state
       if (viewIndex === 0) {
         state.data[groupId].loadingState = MetadataLoadingState.ERROR;
-        state.data[groupId].errorMessage = `Unable to load project data: ${action.payload}`;
+        state.data[groupId].errorMessage = `Unable to load metadata: ${action.payload}`;
       } else {
         state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
-        state.data[groupId].errorMessage = `Unable to complete loading project data: ${action.payload}`;
+        state.data[groupId].errorMessage = `Unable to complete metadata: ${action.payload}`;
       }
       // Currently we don't try to fetch more views after an error
       // If we want to, we should incremement viewToFetch if there are views left,
@@ -339,10 +352,10 @@ export const metadataSlice = createSlice({
 });
 
 // reducer
-export default metadataSlice.reducer;
+export default groupMetadataSlice.reducer;
 
 // actions only. Thunks are for internal state machine use
-export const { fetchGroupMetadata } = metadataSlice.actions;
+export const { fetchGroupMetadata } = groupMetadataSlice.actions;
 
 // selectors
 

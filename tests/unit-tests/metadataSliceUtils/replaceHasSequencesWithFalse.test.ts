@@ -1,4 +1,4 @@
-import { replaceHasSequencesNullsWithFalse } from '../../../src/utilities/helperUtils';
+import { replaceHasSequencesNullsWithFalse } from '../../../src/app/metadataSliceUtils';
 
 describe('replaceHasSequencesNullsWithFalse', () => {
   describe('when given an array with Has_sequences property', () => {

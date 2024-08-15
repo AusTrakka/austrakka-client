@@ -1,23 +1,26 @@
 // first lets make the get organisation information
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import { getGroupMembers, getMe } from '../../utilities/resourceUtils';
+import { getGroupList, getGroupMembers } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-import { Member, GroupRole } from '../../types/dtos';
+import { Member, GroupRole, Group } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { useAppSelector } from '../../app/store';
 
 function OrganisationOverview() {
-  const [userGroups, setUserGroups] = useState<GroupRole[]>([]);
+  const { orgAbbrev } = useParams();
+  const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
-  const [orgEveryone, setOrgEveryone] = useState<GroupRole>();
+  const [orgEveryone, setOrgEveryone] = useState<Group>();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
   const [organisationName, setOrganisationName] = useState('');
@@ -29,49 +32,72 @@ function OrganisationOverview() {
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
 
+  const user: UserSliceState = useAppSelector(selectUserState);
+
   useEffect(() => {
+    const getCorrectGroups = (groupRoles: GroupRole[]) =>
+      groupRoles.filter((groupRole: GroupRole) =>
+        (groupRole.group.name === `${orgAbbrev}-Owner`
+            || groupRole.group.name === `${orgAbbrev}-Everyone`)
+          && (groupRole.role.name === 'Viewer'))
+        .sort((a: any, b: any) => {
+        // Owner group first
+          if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
+          if (a.group.name.endsWith('-Owner')) return -1;
+          if (b.group.name.endsWith('-Owner')) return 1;
+          return 0;
+        });
+
+    const getCorrectGroupsAdmin = (groups: Group[]) =>
+      groups.filter((group: Group) => (
+        group.name === `${orgAbbrev}-Owner`
+            || group.name === `${orgAbbrev}-Everyone`)).sort((a: any, b: any) => {
+        // Owner group first
+        if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
+        if (a.name.endsWith('-Owner')) return -1;
+        if (b.name.endsWith('-Owner')) return 1;
+        return 0;
+      });
+
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
-      const groupResponse: ResponseObject = await getMe(token);
-      if (groupResponse.status === ResponseType.Success) {
-        const { orgAbbrev,
-          groupRoles,
-          orgName } = groupResponse.data;
-        // This is strictly Owner and Everyone groups
-        // Could instead check group organisation, if we want to include ad-hoc org groups
-        const orgViewerGroups = groupRoles.filter((groupRole: GroupRole) =>
-          (groupRole.group.name === `${orgAbbrev}-Owner`
-                || groupRole.group.name === `${orgAbbrev}-Everyone`)
-              && (groupRole.role.name === 'Viewer'))
-          .sort((a: any, b: any) => {
-            // Owner group first
-            if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
-            if (a.group.name.endsWith('-Owner')) return -1;
-            if (b.group.name.endsWith('-Owner')) return 1;
-            return 0;
-          });
+      const { groupRoles, orgName, admin } = user;
+      if (!admin) {
+        const orgViewerGroups = getCorrectGroups(groupRoles);
         setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
-          groupRole.group.name === `${orgAbbrev}-Everyone`));
-        setUserGroups(orgViewerGroups);
-        setIsUserGroupsLoading(false);
-        setGroupStatus(LoadingState.SUCCESS);
-        setOrganisationName(orgName);
-        setOrgAbbreviation(orgAbbrev);
+          groupRole.group.name === `${orgAbbrev}-Everyone`)?.group);
+        setUserGroups(orgViewerGroups.map((groupRole: GroupRole) => groupRole.group));
       } else {
-        setGroupStatus(LoadingState.ERROR);
-        setGroupStatusMessage(groupResponse.message);
+        const groupsResponseObject : ResponseObject = await getGroupList(token);
+        if (groupsResponseObject.status === ResponseType.Success) {
+          const groupsData = groupsResponseObject.data as Group[];
+          const orgAdminGroups = getCorrectGroupsAdmin(groupsData);
+          setOrgEveryone(orgAdminGroups.find((group: Group) =>
+            group.name === `${orgAbbrev}-Everyone`));
+          setUserGroups(orgAdminGroups);
+        }
       }
+      setIsUserGroupsLoading(false);
+      setGroupStatus(LoadingState.SUCCESS);
+      setOrganisationName(orgName);
+      setOrgAbbreviation(orgAbbrev!);
     }
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+
+    if (user.loading === LoadingState.SUCCESS &&
+        tokenLoading !== LoadingState.IDLE &&
+         tokenLoading !== LoadingState.LOADING) {
       getGroups();
+    } else if (user.loading === LoadingState.ERROR) {
+      setGroupStatus(LoadingState.ERROR);
+      setGroupStatusMessage(user.errorMessage);
     }
-  }, [token, tokenLoading]);
+  }, [orgAbbrev, token, tokenLoading, user]);
 
   useEffect(() => {
     async function getOrgMembersList() {
       if (orgEveryone) {
         const memberListResponse: ResponseObject =
-          await getGroupMembers(orgEveryone.group.groupId, token);
+          await getGroupMembers(orgEveryone.groupId, token);
         if (memberListResponse.status === ResponseType.Success) {
           setProjectMembers(memberListResponse.data as Member[]);
           setMemberListError(false);
@@ -111,10 +137,12 @@ function OrganisationOverview() {
   }, [pathName, orgOverviewTabs]);
 
   return (
-    groupsStatus === LoadingState.ERROR
+    groupsStatus === LoadingState.ERROR || (!user.admin && orgAbbrev !== user.orgAbbrev)
       ? (
         <Alert severity="error">
-          {groupStatusMessage}
+          {groupsStatus === LoadingState.ERROR
+            ? groupStatusMessage
+            : 'You do not have access to this page'}
         </Alert>
       )
       : (

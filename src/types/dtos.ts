@@ -118,6 +118,7 @@ export interface Field {
   columnName: string,
   primitiveType: string | null,
   metaDataColumnTypeName: string,
+  metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
   columnOrder: number,
 }

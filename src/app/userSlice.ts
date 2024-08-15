@@ -8,9 +8,12 @@ import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 
 export interface UserSliceState {
-  groupRoles: Record<string, string[]>,
+  groupRolesByGroup: Record<string, string[]>,
+  groupRoles: GroupRole[],
   displayName: string,
   admin: boolean,
+  orgAbbrev: string,
+  orgName: string,
   errorMessage: string,
   loading: LoadingState,
 }
@@ -19,6 +22,8 @@ interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
   displayName: string,
   isAusTrakkaAdmin: boolean,
+  orgAbbrev: string,
+  orgName: string,
 }
 
 const fetchUserRoles = createAsyncThunk(
@@ -29,9 +34,14 @@ const fetchUserRoles = createAsyncThunk(
   ): Promise<GroupRole[] | unknown> => {
     const groupResponse: ResponseObject = await getMe(token);
     if (groupResponse.status === ResponseType.Success) {
-      const { groupRoles, isAusTrakkaAdmin, displayName } = groupResponse.data as User;
+      const { groupRoles, isAusTrakkaAdmin, displayName, orgAbbrev, orgName } =
+        groupResponse.data as User;
       return thunkAPI
-        .fulfillWithValue({ groupRoles, displayName, isAusTrakkaAdmin } as FetchUserRolesResponse);
+        .fulfillWithValue({ groupRoles,
+          displayName,
+          isAusTrakkaAdmin,
+          orgAbbrev,
+          orgName } as FetchUserRolesResponse);
     }
     return thunkAPI.rejectWithValue(groupResponse.message);
   },
@@ -40,7 +50,7 @@ const fetchUserRoles = createAsyncThunk(
 const userSlice = createSlice({
   name: 'userSlice',
   initialState: {
-    groupRoles: {},
+    groupRolesByGroup: {},
     errorMessage: '',
     loading: LoadingState.IDLE,
   } as UserSliceState,
@@ -61,9 +71,12 @@ const userSlice = createSlice({
             data[groupRole.group.name] = [groupRole.role.name];
           }
         });
-        state.groupRoles = data;
+        state.groupRolesByGroup = data;
+        state.groupRoles = holder.groupRoles;
         state.admin = holder.isAusTrakkaAdmin;
         state.displayName = holder.displayName;
+        state.orgAbbrev = holder.orgAbbrev;
+        state.orgName = holder.orgName;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;
