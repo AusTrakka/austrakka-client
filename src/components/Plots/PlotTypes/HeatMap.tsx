@@ -11,7 +11,7 @@ import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSel
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredCatFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
