@@ -12,8 +12,7 @@ import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperU
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
-const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredYAxisFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
 const preferredDateFields = ['Date_coll'];
 
 // The opacity to use for points when they are selected, or when all points are selected
@@ -124,7 +123,6 @@ function ClusterTimeline(props: PlotTypeProps) {
       }
       if (yAxisField === '' || colourField === '' || dateField === '') {
         setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-        setColourField(getStartingField(preferredColourFields, localCatFields));
         setDateField(getStartingField(preferredDateFields, localDateFields));
       } else if (!localCatFields.includes(yAxisField) || !localCatFields.includes(colourField)
         || !localDateFields.includes(dateField)) {
