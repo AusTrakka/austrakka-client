@@ -92,10 +92,9 @@ function Histogram(props: PlotTypeProps) {
       if (localNumericFields.length === 0) {
         setPlotErrorMsg('No numeric fields found in project, cannot render plot');
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
         setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
-      } else if (!localNumericFields.includes(xAxisField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

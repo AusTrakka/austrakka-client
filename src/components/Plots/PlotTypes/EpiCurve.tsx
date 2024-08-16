@@ -129,10 +129,9 @@ function EpiCurve(props: PlotTypeProps) {
         setPlotErrorMsg('No date fields found in project, cannot render plot');
         return;
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (dateField === '') {
         setDateField(getStartingField(preferredDateFields, localDateFields));
-      } else if (!localDateFields.includes(dateField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

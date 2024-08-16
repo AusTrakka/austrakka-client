@@ -121,13 +121,11 @@ function ClusterTimeline(props: PlotTypeProps) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
-      if (yAxisField === '' || colourField === '' || dateField === '') {
+      // If the URL does not specify a mandatory field, try to set the preferred field
+      if (yAxisField === '')
         setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+      if (dateField === '')
         setDateField(getStartingField(preferredDateFields, localDateFields));
-      } else if (!localCatFields.includes(yAxisField) || !localCatFields.includes(colourField)
-        || !localDateFields.includes(dateField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
-      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);

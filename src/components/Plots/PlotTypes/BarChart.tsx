@@ -83,10 +83,9 @@ function BarChart(props: PlotTypeProps) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
         setXAxisField(getStartingField(preferredCatFields, localCatFields));
-      } else if (!localCatFields.includes(xAxisField)) {
-        setPlotErrorMsg(`Selected X-axis field ${xAxisField} is not a valid categorical field`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

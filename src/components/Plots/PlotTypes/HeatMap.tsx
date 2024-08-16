@@ -84,16 +84,16 @@ function HeatMap(props: PlotTypeProps) {
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
       }
-      const x = getStartingField(preferredCatFields, localCatFields);
-      if (xAxisField === '' && yAxisField === '') {
-        setXAxisField(x);
+      // If the URL does not specify a mandatory field, try to set the preferred field
+      if (xAxisField === '') {
+        setXAxisField(getStartingField(preferredCatFields, localCatFields));
+      }
+      if (yAxisField === '') {
         // This will still set y=x if x is the only field; we just prefer y!=x
         setYAxisField(getStartingField(
-          preferredCatFields.filter(fld => !(fld === x)),
+          preferredCatFields.filter(fld => !(fld === xAxisField)),
           localCatFields,
         ));
-      } else if (!localCatFields.includes(xAxisField) || !localCatFields.includes(yAxisField)) {
-        setPlotErrorMsg('One or more selected fields do not exist in the project, cannot render plot');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
