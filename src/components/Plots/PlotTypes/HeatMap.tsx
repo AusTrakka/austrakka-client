@@ -8,6 +8,7 @@ import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import {ProjectViewField} from "../../../types/dtos";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -75,11 +76,10 @@ function HeatMap(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');

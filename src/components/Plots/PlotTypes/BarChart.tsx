@@ -8,6 +8,7 @@ import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../.
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
+import { ProjectViewField } from "../../../types/dtos";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -72,11 +73,10 @@ function BarChart(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {

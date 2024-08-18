@@ -9,6 +9,7 @@ import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggrega
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
+import {ProjectViewField} from "../../../types/dtos";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -107,15 +108,13 @@ function ClusterTimeline(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       // Note this does not include numerical or date fields
       // For now this selection need only depend on canVisualise
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
-      const localDateFields = fields
-        .filter(field => field.primitiveType === 'date')
-        .map(field => field.columnName);
-      setDateFields(localDateFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
+      const localDateFields : ProjectViewField[] = fields
+        .filter(field => field.primitiveType === 'date');
+      setDateFields(localDateFields.map(field => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
