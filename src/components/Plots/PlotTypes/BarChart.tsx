@@ -8,7 +8,7 @@ import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../.
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
-import { ProjectViewField } from "../../../types/dtos";
+import { ProjectViewField } from '../../../types/dtos';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these

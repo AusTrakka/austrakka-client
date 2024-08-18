@@ -9,7 +9,7 @@ import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggrega
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
-import {ProjectViewField} from "../../../types/dtos";
+import { ProjectViewField } from '../../../types/dtos';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -121,10 +121,8 @@ function ClusterTimeline(props: PlotTypeProps) {
         return;
       }
       // If the URL does not specify a mandatory field, try to set the preferred field
-      if (yAxisField === '')
-        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-      if (dateField === '')
-        setDateField(getStartingField(preferredDateFields, localDateFields));
+      if (yAxisField === '') setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+      if (dateField === '') setDateField(getStartingField(preferredDateFields, localDateFields));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
