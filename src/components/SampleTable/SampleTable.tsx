@@ -9,9 +9,9 @@ import {
   Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import LoadingState from '../../constants/loadingState';
 import { convertDataTableFilterMetaToDataFilterObject,
@@ -23,15 +23,7 @@ import { useApi } from '../../app/ApiContext';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
-import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
-import {
-  fetchGroupMetadata,
-  GroupMetadataState,
-  selectGroupMetadata,
-  selectAwaitingGroupMetadata,
-} from '../../app/groupMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -44,7 +36,6 @@ function SampleTable(props: SamplesProps) {
   const [filtering, setFiltering] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [initialisingFilters, setInitialisingFilters] = useState(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(

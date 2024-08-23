@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import getQueryParamOrDefault from './navigationUtils';
-import { DataFilter } from '../components/DataFilters/DataFilters';
+import { Sample } from '../types/sample.interface';
+import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
 import FieldTypes from '../constants/fieldTypes';
+import {DataFilter} from "../components/DataFilters/DataFilters";
 
 export function isoDateLocalDate(datetime: string): string {
   if (!datetime) return '';
@@ -130,7 +132,30 @@ export function generateDateFilterString(
   return filterString;
 }
 
-// TODO: Need to move this function else where as it is more than a utillitiy
+export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
+  data.forEach((sample) => {
+    if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
+      sample[HAS_SEQUENCES] = false;
+    }
+  });
+
+  return data;
+}
+
+export function replaceNullsWithEmpty(data: Sample[]): void {
+  const replaceNullsInObject = (obj: Sample): void => {
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] === null) {
+        obj[key] = '';
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        replaceNullsInObject(obj[key]);
+      }
+    });
+  };
+
+  data.forEach(replaceNullsInObject);
+}
+// TODO: Need to move this function else where as it is more than a utility
 export function useStateFromSearchParamsForPrimitive
 <T extends string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
@@ -209,9 +234,10 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
-// TODO: Decide whether this method is worth
-// testing or not I really should now that I think about it.
-function isOperatorFilterMetaData(value: DataTableFilterMetaData | DataTableOperatorFilterMetaData):
+// TODO: WILL NEED TO TEST THIS NOW
+export function isOperatorFilterMetaData(
+  value: DataTableFilterMetaData | DataTableOperatorFilterMetaData,
+):
   value is DataTableOperatorFilterMetaData {
   const result = 'operator' in value && 'constraints' in value;
   return result;

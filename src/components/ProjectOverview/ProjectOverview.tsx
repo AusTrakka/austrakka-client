@@ -26,7 +26,6 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { DataFilter } from '../DataFilters/DataFilters';
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
@@ -46,10 +45,6 @@ function ProjectOverview() {
     latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
   });
   // const [lastUpload] = useState('');
-
-  // TODO get rid of this filter state, use navigation URL to set filters instead
-  // Samples component states
-  const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
@@ -170,7 +165,6 @@ function ProjectOverview() {
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
               groupId={projectDetails ? projectDetails!.projectMembers.id : null}
-              setFilterList={setSampleFilters}
               setTabValue={setTabValue}
             />
           </TabPanel>
@@ -178,7 +172,6 @@ function ProjectOverview() {
             <Samples
               projectAbbrev={projectAbbrev!}
               isSamplesLoading={isSamplesLoading}
-              inputFilters={sampleFilters}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
