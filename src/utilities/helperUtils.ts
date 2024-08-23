@@ -5,24 +5,25 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import getQueryParamOrDefault from './navigationUtils';
 import { Sample } from '../types/sample.interface';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
-import FieldTypes from '../constants/fieldTypes';
-import {DataFilter} from "../components/DataFilters/DataFilters";
 
 export function isoDateLocalDate(datetime: string): string {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
-  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
-  return localDate;
+  return isoDate.toLocaleString('sv-SE', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  });
 }
 
 export function isoDateLocalDateNoTime(datetime: string) {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
-  const localDate = isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
-  return localDate;
+  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
 }
 
 export function formatDate(dateUTC: string): string {
@@ -454,35 +455,6 @@ export function useStateFromSearchParamsForFilterObject(
   // the function we return here acts like a setter and should not be updated on every render
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
-}
-
-export function convertDataTableFilterMetaToDataFilterObject(
-  filterMeta: DataTableFilterMeta,
-  fields: any[],
-): DataFilter[] {
-  if (fields.length === 0) return [];
-  const conversion = Object.entries(filterMeta).flatMap(([key, value]
-  : [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
-    if (isOperatorFilterMetaData(value)) {
-      // Handle operator filters
-      const filterField = fields.find(field => field.columnName === key);
-      return value.constraints.map((constraint: DataTableFilterMetaData) => ({
-        field: key,
-        fieldType: filterField.primitiveType as FieldTypes,
-        condition: constraint.matchMode as FilterMatchMode | CustomFilterOperators,
-        value: filterField.primitiveType === FieldTypes.DATE ?
-          new Date(constraint.value)
-          : constraint.value,
-      } as DataFilter));
-    }
-    return [{
-      field: key,
-      fieldType: fields.find(field => field.columnName === key)?.primitiveType as FieldTypes,
-      condition: value.matchMode as FilterMatchMode | CustomFilterOperators,
-      value: value.value,
-    } as DataFilter];
-  });
-  return conversion;
 }
 
 // THIS OBJECT IS ONLY FOR TESTS

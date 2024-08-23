@@ -7,14 +7,14 @@ import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import {
   selectProjectMetadata, ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
-import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -27,8 +27,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
@@ -46,24 +44,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       setFilteredData(metadata?.metadata!);
     }
   }, [metadata?.loadingState, metadata?.metadata]);
-
-  useEffect(() => {
-    const initialFilterState = () => {
-      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
-        setFilterList(convertDataTableFilterMetaToDataFilterObject(
-          currentFilters,
-          metadata?.fields!,
-        ));
-      } else {
-        setFilterList([]);
-      }
-      setInitialisingFilters(false);
-    };
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
-      metadata?.fields && initialisingFilters) {
-      if (metadata.fields.length > 0) initialFilterState();
-    }
-  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -149,7 +129,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
 
-  if (initialisingFilters) { return null; }
   return (
     <>
       <Grid container direction="column">
@@ -174,9 +153,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
             setPrimeReactFilters={setCurrentFilters}
             isOpen={isDataFiltersOpen}
             setIsOpen={setIsDataFiltersOpen}
-            filterList={filterList}
-            setFilterList={setFilterList}
             setLoadingState={setLoading}
+            primeReactFilters={currentFilters}
           />
         </Grid>
       </Grid>

@@ -159,13 +159,12 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {projectDetails ? projectDetails.name : ''}
           </Typography>
-          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
+          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
               groupId={projectDetails ? projectDetails!.projectMembers.id : null}
-              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>

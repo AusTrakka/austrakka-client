@@ -1,4 +1,4 @@
-import React, { useEffect, Dispatch, SetStateAction } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { FilterMatchMode } from 'primereact/api';
@@ -7,7 +7,6 @@ import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
-import { DataFilter } from '../../DataFilters/DataFilters';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
 import FieldTypes from '../../../constants/fieldTypes';
@@ -16,21 +15,17 @@ interface ProjectDashboardProps {
   projectDesc: string,
   projectId: number | null,
   groupId: number | null,
-  setFilterList: Dispatch<SetStateAction<DataFilter[]>>,
-  setTabValue: Dispatch<SetStateAction<number>>,
 }
 
 function renderDashboard(
   dashboardName: any,
   projectId: any,
   groupId: any,
-  setFilterList: any,
-  setTabValue: Dispatch<React.SetStateAction<number>>,
 ) {
   if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
     return React.createElement(
       DashboardTemplates[dashboardName],
-      { projectId, groupId, setFilterList, setTabValue },
+      { projectId, groupId },
     );
   }
   // Returns nothing if a matching React dashboard template component doesn't exist
@@ -101,7 +96,7 @@ function DateSelector(props: any) {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, groupId, setFilterList, setTabValue } = props;
+  const { projectDesc, projectId, groupId } = props;
   const { token, tokenLoading } = useApi();
   const {
     data,
@@ -133,7 +128,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               ) : null }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              {renderDashboard(data.data, projectId, groupId, setFilterList, setTabValue)}
+              {renderDashboard(data.data, projectId, groupId)}
             </Grid>
           </>
         )}

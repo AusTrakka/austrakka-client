@@ -11,12 +11,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import LoadingState from '../../constants/loadingState';
-import { convertDataTableFilterMetaToDataFilterObject,
-  isDataTableFiltersEqual,
-  useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
@@ -24,6 +21,14 @@ import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import {
+  fetchGroupMetadata,
+  GroupMetadataState,
+  selectAwaitingGroupMetadata,
+  selectGroupMetadata,
+} from '../../app/groupMetadataSlice';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -37,7 +42,6 @@ function SampleTable(props: SamplesProps) {
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [initialisingFilters, setInitialisingFilters] = useState(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
@@ -51,29 +55,6 @@ function SampleTable(props: SamplesProps) {
       useAppSelector(state => selectGroupMetadata(state, groupContext));
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingGroupMetadata(state, groupContext));
-
-  useEffect(() => {
-    const initialFilterState = () => {
-      if (metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
-        metadata?.loadingState === MetadataLoadingState.ERROR) {
-        setInitialisingFilters(false);
-        return;
-      }
-      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
-        setFilterList(convertDataTableFilterMetaToDataFilterObject(
-          currentFilters,
-          metadata?.fields!,
-        ));
-      } else {
-        setFilterList([]);
-      }
-      setInitialisingFilters(false);
-    };
-    if (metadata?.fields && initialisingFilters &&
-        metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      initialFilterState();
-    }
-  }, [currentFilters, initialisingFilters, metadata?.fields, metadata?.loadingState]);
 
   useEffect(() => {
     if (groupContext !== undefined &&
@@ -174,7 +155,7 @@ function SampleTable(props: SamplesProps) {
     </Dialog>
   );
 
-  if (initialisingFilters || isSamplesLoading) {
+  if (isSamplesLoading) {
     return renderErrorDialog();
   }
   return (
@@ -209,10 +190,9 @@ function SampleTable(props: SamplesProps) {
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
         setPrimeReactFilters={setCurrentFilters}
+        primeReactFilters={currentFilters}
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
-        filterList={filterList}
-        setFilterList={setFilterList}
         setLoadingState={setFiltering}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
@@ -261,4 +241,5 @@ function SampleTable(props: SamplesProps) {
     </>
   );
 }
+
 export default memo(SampleTable);

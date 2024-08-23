@@ -80,14 +80,6 @@ const defaultFormState = {
   value: '',
 };
 
-const shake = keyframes`
-  0% { transform: translateY(0) }
-  25% { transform: translateY(5px) }
-  50% { transform: translateY(-5px) }
-  75% { transform: translateY(5px) }
-  100% { transform: translateY(0) }
-`;
-
 function DataFilters(props: DataFiltersProps) {
   const {
     dataLength,
@@ -223,7 +215,8 @@ function DataFilters(props: DataFiltersProps) {
             && fieldName === filterFormValues.field) {
           doesExist = true;
         }
-        // Note: The shake element logic was removed as per your comment
+        // There is no shake attribute to add to the filter object, I also feel its
+        // not needed as a toast message will be enough to notify the user.
       });
       if (doesExist) {
         setFilterError(true);
@@ -242,10 +235,15 @@ function DataFilters(props: DataFiltersProps) {
           },
         };
 
-        setPrimeReactFilters((prevState) => ({
-          ...prevState,
-          ...filter,
-        }));
+        setPrimeReactFilters((prevState) => {
+          if (isDataTableFiltersEqual(prevState, defaultState)) {
+            return filter;
+          }
+          return {
+            ...prevState,
+            ...filter,
+          };
+        });
         setFilterFormValues(defaultFormState);
         setNullOrEmptyFlag(false);
       }
@@ -499,56 +497,56 @@ function DataFilters(props: DataFiltersProps) {
                   <br />
                 </div>
                 {
-                  Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
-                    if (isOperatorFilterMetaData(filterData)) {
-                      return filterData.constraints.map((constraint) => {
+                  isDataTableFiltersEqual(primeReactFilters, defaultState) ? null :
+                    Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
+                      if (isOperatorFilterMetaData(filterData)) {
+                        return filterData.constraints.map((constraint) => {
                         // Determine the condition name based on matchMode
-                        const conditionName = (() => {
-                          const findConditionName = (_conditions: { value: string;
-                            name: string }[]) =>
-                            _conditions.find((c) => c.value === constraint.matchMode)?.name ||
+                          const conditionName = (() => {
+                            const findConditionName = (_conditions: { value: string;
+                              name: string }[]) =>
+                              _conditions.find((c) => c.value === constraint.matchMode)?.name ||
                               'Unknown';
 
-                          return findConditionName(
-                            [...dateConditions, ...numberConditions, ...stringConditions],
-                          );
-                        })();
+                            return findConditionName(
+                              [...dateConditions, ...numberConditions, ...stringConditions],
+                            );
+                          })();
 
-                        const displayValue = (() => {
-                          switch (constraint.matchMode) {
-                            case FilterMatchMode.CUSTOM:
+                          const displayValue = (() => {
+                            switch (constraint.matchMode) {
+                              case FilterMatchMode.CUSTOM:
                               // Handle special cases where no value should be displayed
-                              return null;
-                            default:
-                              return dateConditions.some((c) => c.name === conditionName)
-                                ? new Date(constraint.value).toLocaleDateString('en-CA')
-                                : `${constraint.value}`;
-                          }
-                        })();
+                                return null;
+                              default:
+                                return dateConditions.some((c) => c.name === conditionName)
+                                  ? new Date(constraint.value).toLocaleDateString('en-CA')
+                                  : `${constraint.value}`;
+                            }
+                          })();
 
-                        return (
-                          <Chip
-                            key={`${field}-${constraint.matchMode}-${constraint.value}`}
-                            label={(
-                              <>
-                                {field}
-                                {' '}
-                                <b>{conditionName}</b>
-                                {' '}
-                                {displayValue}
-                              </>
+                          return (
+                            <Chip
+                              key={`${field}-${constraint.matchMode}-${constraint.value}`}
+                              label={(
+                                <>
+                                  {field}
+                                  {' '}
+                                  <b>{conditionName}</b>
+                                  {' '}
+                                  {displayValue}
+                                </>
                                 )}
-                            onDelete={() => handleFilterDelete({ [field]: filterData })}
-                            sx={{
-                              margin: 1,
-                              animation: `${shake} 0.5s`,
-                            }}
-                          />
-                        );
-                      });
-                    }
-                    return [];
-                  })
+                              onDelete={() => handleFilterDelete({ [field]: filterData })}
+                              sx={{
+                                margin: 1,
+                              }}
+                            />
+                          );
+                        });
+                      }
+                      return [];
+                    })
                 }
               </form>
             </Box>
