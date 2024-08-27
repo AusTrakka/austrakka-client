@@ -1,3 +1,6 @@
+import { DataTableFilterMeta } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
+
 function parse<T>(value: string | null, defaultValue: T): T {
   if (value === undefined || value === null) {
     return defaultValue as T;
@@ -33,3 +36,23 @@ export default function getQueryParamOrDefault<T>(
   const paramValue = searchParams.get(String(paramName));
   return parse(paramValue, defaultState);
 }
+
+export const updateTabUrlWithSearch = (tabUrl: string, filter?: DataTableFilterMeta) => {
+  const currentPath = window.location.pathname;
+  const currentSearch = window.location.search;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const navigate = useNavigate();
+
+  // Split the path into segments
+
+  // Check if the last segment is the project abbreviation
+  let newPath: string;
+  if (filter) {
+    const encodedFilter = encodeURIComponent(JSON.stringify(filter));
+    newPath = `${currentPath + tabUrl}?filters=${encodedFilter}`;
+  } else {
+    newPath = currentPath + tabUrl + currentSearch;
+  }
+
+  navigate(newPath);
+};

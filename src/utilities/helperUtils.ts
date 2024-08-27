@@ -1,38 +1,12 @@
 import { SetStateAction, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import getQueryParamOrDefault from './navigationUtils';
 import { Sample } from '../types/sample.interface';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-
-export function isoDateLocalDate(datetime: string): string {
-  if (!datetime) return '';
-  if (datetime === 'null') return '';
-  const isoDate = new Date(Date.parse(datetime));
-  return isoDate.toLocaleString('sv-SE', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-  });
-}
-
-export function isoDateLocalDateNoTime(datetime: string) {
-  if (!datetime) return '';
-  if (datetime === 'null') return '';
-  const isoDate = new Date(Date.parse(datetime));
-  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
-}
-
-export function formatDate(dateUTC: string): string {
-  if (!dateUTC) return '';
-  if (dateUTC === 'null') return '';
-  if (Number.isNaN(Date.parse(dateUTC))) return 'Invalid Date';
-  const date = new Date(dateUTC);
-  return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
-}
+import { isOperatorFilterMetaData } from './filterUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
+import { decodeUrlToFilterObj, encodeFilterObj } from './urlUtils';
 
 export const renderValueWithEmptyNull = (value: any): string => {
   if (value === null || value === undefined) {
@@ -235,15 +209,6 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
-// TODO: WILL NEED TO TEST THIS NOW
-export function isOperatorFilterMetaData(
-  value: DataTableFilterMetaData | DataTableOperatorFilterMetaData,
-):
-  value is DataTableOperatorFilterMetaData {
-  const result = 'operator' in value && 'constraints' in value;
-  return result;
-}
-
 function getRawQueryParams(url: any) {
   const queryParams: { [key: string]: string } = {};
   const queryString = url.split('?')[1];
@@ -259,86 +224,6 @@ function getRawQueryParams(url: any) {
   }
 
   return queryParams;
-}
-
-function isISODateString(value: string) {
-  const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?$/;
-
-  if (isoDateRegex.test(value)) {
-    const parsedDate = new Date(value);
-    return !Number.isNaN(parsedDate.getTime()); // Valid date check
-  }
-  return false;
-}
-
-function encodeFilterObj(filterObj: DataTableFilterMeta): string {
-  const encoded = Object.entries(filterObj)
-    .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
-      if (isOperatorFilterMetaData(value)) {
-        const conditions = value.constraints.map(constraint => {
-          // if the value to be encoded is part of a date condition or is itself a date
-          // then encode it as an ISO string
-          if (constraint.value instanceof Date &&
-              !Number.isNaN(constraint.value.getTime()) &&
-              (constraint.matchMode?.includes('date') ||
-                  constraint.matchMode?.includes('custom'))) {
-            return `${encodeURIComponent(constraint.value.toISOString())}:${constraint.matchMode || ''}`;
-          }
-          return `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`;
-        }).join(',');
-        return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
-      }
-      return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
-    });
-
-  // Join the encoded pairs with commas and add parentheses
-  const result = encoded.join(',');
-  return `(${result})`;
-}
-
-function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
-  const decodedObj: DataTableFilterMeta = {};
-
-  let cleanedString = encodedString.replace(/^%28|%29$/g, '');
-  // Remove normal parentheses
-  if (cleanedString.startsWith('(') && cleanedString.endsWith(')')) {
-    cleanedString = cleanedString.slice(1, -1);
-  }
-  // Remove the outer parentheses and split on commas not within parentheses
-  const pairs = cleanedString.split(/,\s*(?![^(]*\))/);
-  pairs.forEach(pair => {
-    const [encodedKey, ...rest] = pair.split(':');
-    const key = decodeURIComponent(encodedKey);
-    if (rest.length === 2) {
-      const decodedValue = decodeURIComponent(rest[0]);
-      decodedObj[key] = {
-        value: isISODateString(decodedValue) ?
-          new Date(decodedValue) :
-          decodedValue,
-        matchMode: rest[1] as FilterMatchMode,
-      };
-    } else if (rest.length > 2) {
-      // Operator filter
-      const operator = rest[0];
-      const constraintsString = rest.slice(1).join(':');
-      const constraints = constraintsString.slice(1, -1).split(/,(?![^()]*\))/); // Remove parentheses and split
-
-      decodedObj[key] = {
-        operator: operator as FilterOperator,
-        constraints: constraints.map(constraint => {
-          const [value, matchMode] = constraint.split(':');
-          const decodedValue = decodeURIComponent(value);
-          return {
-            value: isISODateString(decodedValue) ?
-              new Date(decodedValue) :
-              decodeURIComponent(value),
-            matchMode: matchMode as FilterMatchMode,
-          };
-        }),
-      };
-    }
-  });
-  return decodedObj;
 }
 
 const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTableFilterMeta) => {
