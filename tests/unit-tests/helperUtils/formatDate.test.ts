@@ -1,5 +1,5 @@
 import { register, unregister } from 'timezone-mock';
-import { formatDate } from '../../../src/utilities/helperUtils';
+import { formatDate } from '../../../src/utilities/dateUtils';
 
 describe('formatDate', () => {
   const originalDateParse = Date.parse;

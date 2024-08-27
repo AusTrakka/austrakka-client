@@ -13,7 +13,6 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import { isoDateLocalDate, isoDateLocalDateNoTime, useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -27,6 +26,8 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
+import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 
 const defaultState: TreeState = {
   blocks: [],

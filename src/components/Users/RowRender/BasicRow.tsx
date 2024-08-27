@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { User } from '../../../types/dtos';
-import { isoDateLocalDate } from '../../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../../utilities/dateUtils';
 
 interface BasicRowProps {
   field: keyof User;

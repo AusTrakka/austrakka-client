@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import { FilterMatchMode } from 'primereact/api';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
@@ -9,7 +10,6 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -30,9 +30,7 @@ function renderDashboard(
   }
   // Returns nothing if a matching React dashboard template component doesn't exist
   return React.createElement(
-    () => (
-      null
-    ),
+    () => null,
   );
 }
 
@@ -46,8 +44,10 @@ function DateSelector(props: any) {
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
-    let filterObject = {};
-    let value;
+    const dateField = 'Date_created';
+    let primeTableFilterObject: DataTableFilterMeta = {};
+
+    let value: Date | undefined;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
       value = dayjs().subtract(7, 'days').toDate();
@@ -56,15 +56,19 @@ function DateSelector(props: any) {
     }
 
     if (value !== undefined) {
-      filterObject = {
-        field: 'Date_created',
-        fieldType: FieldTypes.DATE,
-        condition: FilterMatchMode.DATE_AFTER,
-        value,
+      primeTableFilterObject = {
+        [dateField]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              value,
+              matchMode: FilterMatchMode.DATE_AFTER,
+            }],
+        },
       };
     }
 
-    dispatch(updateTimeFilterObject(filterObject));
+    dispatch(updateTimeFilterObject(primeTableFilterObject));
 
     const dispatchProps = {
       projectId,

@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode } from 'primereact/api';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 const submittingOrgFieldName = 'Owner_group';
 
@@ -18,8 +18,6 @@ const columns = [
 
 export default function Organisations(props: any) {
   const {
-    setFilterList,
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -44,22 +42,27 @@ export default function Organisations(props: any) {
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    const drilldownFilter = [{
-      field: submittingOrgFieldName,
-      fieldType: FieldTypes.STRING,
-      condition: FilterMatchMode.EQUALS,
-      value: selectedRow.Owner_group,
-    }];
-    // Append timeFilterObject for last_week and last_month filters
+    const drillDownTableMetaFilters: DataTableFilterMeta = {
+      [submittingOrgFieldName]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: selectedRow.Owner_group,
+          },
+        ],
+      },
+    };
+
     if (Object.keys(timeFilterObject).length !== 0) {
-      const appendedFilters = [...drilldownFilter, timeFilterObject];
-      setFilterList(appendedFilters);
+      const combinedFilters: DataTableFilterMeta = {
+        ...drillDownTableMetaFilters,
+        ...timeFilterObject,
+      };
+      updateTabUrlWithSearch('/samples', combinedFilters);
     } else {
-      setFilterList(drilldownFilter);
+      updateTabUrlWithSearch('/samples', drillDownTableMetaFilters);
     }
-    // TODO here and in other widgets, use navigate() and get rid of setFilterList();
-    // put query in nav URL instead
-    setTabValue(1); // Navigate to "Samples" tab
   };
 
   return (

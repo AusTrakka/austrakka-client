@@ -1,10 +1,11 @@
-import { SetStateAction, useMemo, useState } from 'react';
+import React, { SetStateAction, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
 import getQueryParamOrDefault from './navigationUtils';
 import { Sample } from '../types/sample.interface';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-import { isOperatorFilterMetaData } from './filterUtils';
+import { filterMatchModeToOperator, isOperatorFilterMetaData } from './filterUtils';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 import { decodeUrlToFilterObj, encodeFilterObj } from './urlUtils';
 
@@ -16,7 +17,7 @@ export const renderValueWithEmptyNull = (value: any): string => {
 };
 
 // Maps from a hard-coded metadata field name to a function to render the data value
-// Note that some datetime fields are included here in order to render them as datetimes,
+// Note that some datetime fields are included here in order to render them as datetime,
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
 export const fieldRenderFunctions: { [index: string]: Function } = {
@@ -27,10 +28,8 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
     const sanitizedValue = value.toString().replace(/[[\]"']/g, '');
 
     // 2. Replace commas with comma and space
-    const formattedValue = sanitizedValue.replace(/,/g, ', ');
-
     // Return the formatted value
-    return formattedValue;
+    return sanitizedValue.replace(/,/g, ', ');
   },
 
   'Date_created': (value: string) => isoDateLocalDate(value),
@@ -87,24 +86,47 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
 
 // Generic function to create filter string in SSKV format from date filter object
 export function generateDateFilterString(
-  dateObject: { field: string, condition: string, fieldType: string, value: any },
-) {
-  let filterString = '';
-
-  if (
-    dateObject &&
-    typeof dateObject.field === 'string' &&
-    typeof dateObject.condition === 'string' &&
-    typeof dateObject.fieldType === 'string' &&
-    dateObject.value &&
-    dateObject.value.$d instanceof Date &&
-    !Number.isNaN(dateObject.value.$d.getTime()) // Ensure it's a valid date
-  ) {
-    const date = dateObject.value.$d.toISOString();
-    filterString = `SSKV${dateObject.condition}=${dateObject.field}|${date}`;
+  dateFilterObject: DataTableFilterMeta,
+): string {
+  if (Object.keys(dateFilterObject).length === 0) {
+    return '';
   }
 
-  return filterString;
+  // Assuming we're working with the first key in the dateObject
+  const key = Object.keys(dateFilterObject)[0];
+  const filterData = dateFilterObject[key];
+
+  if (!filterData) {
+    return '';
+  }
+
+  let dateValue: Date | undefined;
+  let matchMode: FilterMatchMode | undefined;
+
+  if (isOperatorFilterMetaData(filterData)) {
+    // Handle operator type with a single constraint
+    if (filterData.constraints.length > 0) {
+      const constraint = filterData.constraints[0];
+      dateValue = constraint.value;
+      matchMode = constraint.matchMode as FilterMatchMode;
+    }
+  } else {
+    dateValue = filterData.value;
+    matchMode = filterData.matchMode as FilterMatchMode;
+  }
+
+  if (
+    dateValue instanceof Date &&
+      !Number.isNaN(dateValue.getTime()) && // Ensure it's a valid date
+      matchMode &&
+      filterMatchModeToOperator[matchMode]
+  ) {
+    const date = dateValue.toISOString();
+    const condition = filterMatchModeToOperator[matchMode];
+    return `SSKV${condition}=${key}|${date}`;
+  }
+
+  return '';
 }
 
 export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
@@ -249,8 +271,7 @@ function isEqualFilterMetaData(
   filter1: DataTableFilterMetaData,
   filter2: DataTableFilterMetaData,
 ): boolean {
-  const result = filter1.value === filter2.value && filter1.matchMode === filter2.matchMode;
-  return result;
+  return filter1.value === filter2.value && filter1.matchMode === filter2.matchMode;
 }
 
 export function
@@ -267,7 +288,7 @@ isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
     return false;
   }
 
-  // lets sort the keys to make sure we are comparing the same keys
+  // let's sort the keys to make sure we are comparing the same keys
   keys1.sort();
   keys2.sort();
 

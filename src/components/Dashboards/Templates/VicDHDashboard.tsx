@@ -9,7 +9,6 @@ import StCounts from '../../Widgets/StCounts/StCounts';
 // TODO: Set a max card height and handle scroll voerflow
 function VicDHDashboard(props: any) {
   const {
-    setFilterList,
     setTabValue,
     projectId,
     groupId,
@@ -26,7 +25,6 @@ function VicDHDashboard(props: any) {
                   <SampleSummary
                     projectId={projectId}
                     groupId={groupId}
-                    setFilterList={setFilterList}
                     setTabValue={setTabValue}
                   />
                 </CardContent>
@@ -38,7 +36,6 @@ function VicDHDashboard(props: any) {
                   <StCounts
                     projectId={projectId}
                     groupId={groupId}
-                    setFilterList={setFilterList}
                     setTabValue={setTabValue}
                   />
                 </CardContent>
@@ -54,7 +51,6 @@ function VicDHDashboard(props: any) {
                   <Organisations
                     projectId={projectId}
                     groupId={groupId}
-                    setFilterList={setFilterList}
                     setTabValue={setTabValue}
                   />
                 </CardContent>
@@ -78,7 +74,6 @@ function VicDHDashboard(props: any) {
                   <PhessIdStatus
                     projectId={projectId}
                     groupId={groupId}
-                    setFilterList={setFilterList}
                     setTabValue={setTabValue}
                   />
                 </CardContent>

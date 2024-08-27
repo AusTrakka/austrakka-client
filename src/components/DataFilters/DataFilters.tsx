@@ -1,4 +1,4 @@
-import { Box, keyframes, TextField, Button, FormControl, InputLabel, MenuItem,
+import { Box, TextField, Button, FormControl, InputLabel, MenuItem,
   Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack,
   Snackbar, Alert } from '@mui/material';
 import React, { useEffect, useState, SetStateAction } from 'react';
@@ -13,7 +13,8 @@ import {
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
-import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/helperUtils';
+import { isOperatorFilterMetaData } from '../../utilities/filterUtils';
+import { isDataTableFiltersEqual } from '../../utilities/helperUtils';
 
 export const defaultState = {
   global: {

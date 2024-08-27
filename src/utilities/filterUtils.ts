@@ -25,6 +25,5 @@ export function isOperatorFilterMetaData(
   value: DataTableFilterMetaData | DataTableOperatorFilterMetaData,
 ):
     value is DataTableOperatorFilterMetaData {
-  const result = 'operator' in value && 'constraints' in value;
-  return result;
+  return 'operator' in value && 'constraints' in value;
 }

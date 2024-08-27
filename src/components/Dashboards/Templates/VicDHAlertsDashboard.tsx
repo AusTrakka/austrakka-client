@@ -7,7 +7,6 @@ import ThresholdAlerts from '../../Widgets/ThresholdAlerts/ThresholdAlerts';
 
 function VicDHAlertsDashboard(props: any) {
   const {
-    setFilterList,
     setTabValue,
     projectId,
     groupId,
@@ -21,8 +20,6 @@ function VicDHAlertsDashboard(props: any) {
             <SampleSummary
               projectId={projectId}
               groupId={groupId}
-              setFilterList={setFilterList}
-              setTabValue={setTabValue}
             />
           </CardContent>
         </Card>
@@ -33,8 +30,6 @@ function VicDHAlertsDashboard(props: any) {
             <PhessIdStatus
               projectId={projectId}
               groupId={groupId}
-              setFilterList={setFilterList}
-              setTabValue={setTabValue}
             />
           </CardContent>
         </Card>
@@ -45,7 +40,6 @@ function VicDHAlertsDashboard(props: any) {
             <Organisations
               projectId={projectId}
               groupId={groupId}
-              setFilterList={setFilterList}
               setTabValue={setTabValue}
             />
           </CardContent>
@@ -57,8 +51,6 @@ function VicDHAlertsDashboard(props: any) {
             <ThresholdAlerts
               projectId={projectId}
               groupId={groupId}
-              setFilterList={setFilterList}
-              setTabValue={setTabValue}
             />
           </CardContent>
         </Card>

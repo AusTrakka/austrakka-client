@@ -152,7 +152,7 @@ function OrganisationOverview() {
               {`${organisationName} (${orgAbbreviation})`}
             </Typography>
           </Box>
-          <CustomTabs setValue={setTabValue} tabContent={orgOverviewTabs} />
+          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
           <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
             {isUserGroupsLoading ? null : (
               <OrganisationSamples

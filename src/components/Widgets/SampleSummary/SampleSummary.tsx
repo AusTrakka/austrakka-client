@@ -6,9 +6,9 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
-import { formatDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
 import FieldTypes from '../../../constants/fieldTypes';
+import { formatDate } from '../../../utilities/dateUtils';
 
 export default function SampleSummary(props: any) {
   const {
