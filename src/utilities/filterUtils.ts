@@ -20,10 +20,8 @@ export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = 
   [FilterMatchMode.CUSTOM]: undefined, // Custom might not map directly
 };
 
-// TODO: WILL NEED TO TEST THIS NOW
 export function isOperatorFilterMetaData(
-  value: DataTableFilterMetaData | DataTableOperatorFilterMetaData,
-):
-    value is DataTableOperatorFilterMetaData {
-  return 'operator' in value && 'constraints' in value;
+  value: DataTableFilterMetaData | DataTableOperatorFilterMetaData | null | undefined,
+): value is DataTableOperatorFilterMetaData {
+  return !!value && typeof value === 'object' && 'operator' in value && 'constraints' in value;
 }
