@@ -12,8 +12,15 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 const submittingOrgFieldName = 'Owner_group';
 
 const columns = [
-  { field: 'Owner_group', header: 'Owner organisation', body: (rowData: any) => rowData.Owner_group.split('-Owner') },
-  { field: 'sampleCount', header: 'Sample Count' },
+  {
+    field: 'Owner_group',
+    header: 'Owner organisation',
+    body: (rowData: any) => rowData.Owner_group.split('-Owner'),
+  },
+  {
+    field: 'sampleCount',
+    header: 'Sample Count',
+  },
 ];
 
 export default function Organisations(props: any) {
@@ -27,7 +34,6 @@ export default function Organisations(props: any) {
   const organisationsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
   const { token, tokenLoading } = useApi();
-  // const navigate = useNavigate();
 
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };

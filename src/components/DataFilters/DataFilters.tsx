@@ -44,7 +44,7 @@ interface InternalFormProperties {
   field: string,
   fieldType?: string,
   operator: string,
-  condition: string,
+  condition: string | CustomFilterOperators | FilterMatchMode,
   value: any,
 }
 
@@ -118,6 +118,8 @@ function DataFilters(props: DataFiltersProps) {
       _visibleFields.some((visibleField) => visibleField.field === field.columnName));
   }
 
+  console.log(filterFormValues);
+
   function registerFilterHandlers<T extends Field>(_fields: T[]) {
     _fields.forEach((field) => {
       FilterService.register(`custom_${field.columnName}`, (value, filters) =>
@@ -144,6 +146,9 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     const { name, value } = event.target;
+    console.log(name, value);
+    console.log('I hate this so much');
+    console.log('filterFormValues', filterFormValues);
     if (name === 'field') {
       setDateError(null);
 
@@ -180,9 +185,14 @@ function DataFilters(props: DataFiltersProps) {
         condition: defaultCondition,
         value: '',
       }));
+    } else if (name === 'condition' && value.includes('null')) {
+      setNullOrEmptyFlag(true);
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value as CustomFilterOperators,
+        value: !value.includes('not'),
+      }));
     } else {
-      const flag = (event.target.name === 'condition' && event.target.value.includes('null'));
-      setNullOrEmptyFlag(flag);
       setFilterFormValues((prevState) => ({
         ...prevState,
         [name]: value,
@@ -224,6 +234,11 @@ function DataFilters(props: DataFiltersProps) {
         setFilterErrorMessage('This filter has already been applied.');
         setFilterFormValues(defaultFormState);
       } else {
+        const filterMatchMode = Object.values(CustomFilterOperators)
+          .includes(filterFormValues.condition as CustomFilterOperators) ?
+          FilterMatchMode.CUSTOM :
+          filterFormValues.condition as FilterMatchMode;
+
         const filter: DataTableFilterMeta = {
           [filterFormValues.field]: {
             operator: FilterOperator.AND,
@@ -231,7 +246,7 @@ function DataFilters(props: DataFiltersProps) {
               value: filterFormValues.fieldType === FieldTypes.DATE
                 ? new Date(filterFormValues.value)
                 : filterFormValues.value,
-              matchMode: filterFormValues.condition as FilterMatchMode,
+              matchMode: filterMatchMode,
             }],
           },
         };
@@ -274,7 +289,7 @@ function DataFilters(props: DataFiltersProps) {
             (constraint: any) =>
               !(
                 constraint.value === filterEntryToRemove.constraints[0].value &&
-                      constraint.matchMode === filterEntryToRemove.constraints[0].matchMode
+                constraint.matchMode === filterEntryToRemove.constraints[0].matchMode
               ),
           );
 
@@ -305,6 +320,7 @@ function DataFilters(props: DataFiltersProps) {
   // TODO: Delete this. You have been marked for death good sir. Prepare yourself.
 
   const renderValueElement = () => {
+    console.log('Do I even reach here when I want to do the thing');
     switch (selectedFieldType) {
       case FieldTypes.DATE:
         return (
@@ -333,7 +349,10 @@ function DataFilters(props: DataFiltersProps) {
               label="Value"
               name="value"
               value={filterFormValues.value}
-              onChange={handleFilterChange}
+              onChange={(event) => {
+                console.log(event);
+                handleFilterChange(event);
+              }}
               disabled={nullOrEmptyFlag}
             >
               <MenuItem value={true as any}>
@@ -507,8 +526,12 @@ function DataFilters(props: DataFiltersProps) {
                             const findConditionName = (_conditions: { value: string;
                               name: string }[]) =>
                               _conditions.find((c) => c.value === constraint.matchMode)?.name ||
-                              'Unknown';
-
+                                (constraint.matchMode === FilterMatchMode.CUSTOM &&
+                                  constraint.value === true &&
+                                  'Null or Empty') ||
+                                (constraint.matchMode === FilterMatchMode.CUSTOM &&
+                                  constraint.value === false && 'Not Null or Empty') ||
+                                'Unknown';
                             return findConditionName(
                               [...dateConditions, ...numberConditions, ...stringConditions],
                             );
