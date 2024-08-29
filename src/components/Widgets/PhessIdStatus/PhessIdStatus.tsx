@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -25,6 +26,7 @@ export default function PhessIdStatus(props: any) {
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };
@@ -55,9 +57,10 @@ export default function PhessIdStatus(props: any) {
         ...drillDownFilter,
         ...timeFilterObject,
       };
-      updateTabUrlWithSearch('/samples', appendedFilters);
+      updateTabUrlWithSearch(navigate, '/samples', appendedFilters);
     } else {
       updateTabUrlWithSearch(
+        navigate,
         '/samples',
         drillDownFilter,
       );

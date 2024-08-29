@@ -26,6 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
@@ -108,36 +109,7 @@ function ProjectOverview() {
     }
   }, [projectDetails, token, tokenLoading, dispatch]);
 
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => [
-    {
-      index: 0,
-      title: 'Summary',
-    },
-    {
-      index: 1,
-      title: 'Samples',
-    },
-    {
-      index: 2,
-      title: 'Trees',
-    },
-    {
-      index: 3,
-      title: 'Plots',
-    },
-    {
-      index: 4,
-      title: 'Members',
-    },
-    {
-      index: 5,
-      title: 'Proformas',
-    },
-    {
-      index: 6,
-      title: 'Datasets',
-    },
-  ], []);
+  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
   useEffect(() => {
     const initialTabValue = projectOverviewTabs

@@ -13,6 +13,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import { ORG_OVERVIEW_TABS } from './orgTabConstants';
 
 function OrganisationOverview() {
   const { orgAbbrev } = useParams();
@@ -117,16 +118,7 @@ function OrganisationOverview() {
     }
   }, [token, tokenLoading, groupsStatus, orgEveryone]);
 
-  const orgOverviewTabs: TabContentProps[] = useMemo(() => [
-    {
-      index: 0,
-      title: 'Samples',
-    },
-    {
-      index: 1,
-      title: 'Members',
-    },
-  ], []);
+  const orgOverviewTabs: TabContentProps[] = useMemo(() => ORG_OVERVIEW_TABS, []);
 
   useEffect(() => {
     const initialTabValue = orgOverviewTabs

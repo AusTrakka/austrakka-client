@@ -400,6 +400,8 @@ function DataFilters(props: DataFiltersProps) {
       <CloseRounded fontSize="small" />
     </IconButton>
   );
+
+  console.log(primeReactFilters);
   return (
     <Box sx={{ paddingTop: 1 }}>
       <Box sx={{
@@ -519,10 +521,11 @@ function DataFilters(props: DataFiltersProps) {
                               name: string }[]) =>
                               _conditions.find((c) => c.value === constraint.matchMode)?.name ||
                                 (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                  constraint.value === true &&
+                                    (constraint.value === true || constraint.value === 'true') &&
                                   'Null or Empty') ||
                                 (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                  constraint.value === false && 'Not Null or Empty') ||
+                                    (constraint.value === false || constraint.value === 'false')
+                                && 'Not Null or Empty') ||
                                 'Unknown';
                             return findConditionName(
                               [...dateConditions, ...numberConditions, ...stringConditions],

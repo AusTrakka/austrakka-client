@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
@@ -22,6 +23,7 @@ export default function SampleSummary(props: any) {
   const sampleSummaryDispatch = useAppDispatch();
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   // Drilldown filters
   const allSamplesFilter: any [] = [];
@@ -73,12 +75,12 @@ export default function SampleSummary(props: any) {
           ...drilldownFilters,
           ...timeFilterObject,
         };
-        updateTabUrlWithSearch('/samples', appendedFilters);
+        updateTabUrlWithSearch(navigate, '/samples', appendedFilters);
       } else {
-        updateTabUrlWithSearch('/samples', drilldownFilters);
+        updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
       }
     } else {
-      updateTabUrlWithSearch('/samples', drilldownFilters);
+      updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
     }
   };
 

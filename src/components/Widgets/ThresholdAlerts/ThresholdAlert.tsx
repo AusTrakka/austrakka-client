@@ -3,6 +3,7 @@ import { Card, Typography, Stack, CardActionArea, CardContent } from '@mui/mater
 import { alpha } from '@mui/material/styles';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
 import { ThresholdAlertDTO } from '../../../types/dtos';
 import theme from '../../../assets/themes/theme';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
@@ -25,7 +26,7 @@ const alertColours:{ [key: string]: string } = {
 
 export default function ThresholdAlert(props: ThresholdAlertProps) {
   const { alertRow } = props;
-
+  const navigation = useNavigate();
   const rowClickHandler = () => {
     const drillDownFilter: DataTableFilterMeta = {
       [alertRow.categoryField]: {
@@ -38,7 +39,7 @@ export default function ThresholdAlert(props: ThresholdAlertProps) {
         ],
       },
     };
-    updateTabUrlWithSearch('/samples', drillDownFilter);
+    updateTabUrlWithSearch(navigation, '/samples', drillDownFilter);
   };
 
   return (

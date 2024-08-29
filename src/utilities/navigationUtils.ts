@@ -1,5 +1,9 @@
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction } from 'react-router-dom';
+import { Tab } from '@mui/material';
+import { encodeFilterObj } from './urlUtils';
+import { ORG_OVERVIEW_TABS } from '../components/OrganisationOverview/orgTabConstants';
+import { PROJECT_OVERVIEW_TABS } from '../components/ProjectOverview/projTabConstants';
 
 function parse<T>(value: string | null, defaultValue: T): T {
   if (value === undefined || value === null) {
@@ -37,21 +41,41 @@ export default function getQueryParamOrDefault<T>(
   return parse(paramValue, defaultState);
 }
 
-export const updateTabUrlWithSearch = (tabUrl: string, filter?: DataTableFilterMeta) => {
+// Helper function to determine if the last segment matches any tab title
+const shouldReplaceLastSegment =
+    (lastSegment: string) =>
+      ORG_OVERVIEW_TABS
+        .some(tab => tab.title.toLowerCase() === lastSegment) ||
+        PROJECT_OVERVIEW_TABS
+          .some(tab => tab.title.toLowerCase() === lastSegment);
+
+// Helper function to build the new path based on current path and tabs
+const buildNewPath = (currentPath: string, tabUrl: string) => {
+  const pathSegments = currentPath.split('/');
+  const lastSegment = pathSegments[pathSegments.length - 1].toLowerCase();
+
+  return shouldReplaceLastSegment(lastSegment)
+    ? `${pathSegments.slice(0, -1).join('/')}${tabUrl}`
+    : `${currentPath}${tabUrl}`;
+};
+
+// Main function to update the tab URL with optional search filters
+export const updateTabUrlWithSearch = (
+  navigate: NavigateFunction,
+  tabUrl: string,
+  filter?: DataTableFilterMeta,
+) => {
   const currentPath = window.location.pathname;
   const currentSearch = window.location.search;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const navigate = useNavigate();
 
-  // Split the path into segments
+  let newPath = buildNewPath(currentPath, tabUrl);
 
-  // Check if the last segment is the project abbreviation
-  let newPath: string;
+  // Add the filter query string if provided
   if (filter) {
-    const encodedFilter = encodeURIComponent(JSON.stringify(filter));
-    newPath = `${currentPath + tabUrl}?filters=${encodedFilter}`;
+    const encodedFilter = encodeFilterObj(filter);
+    newPath += `?filters=${encodedFilter}`;
   } else {
-    newPath = currentPath + tabUrl + currentSearch;
+    newPath += currentSearch;
   }
 
   navigate(newPath);

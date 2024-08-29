@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -34,6 +35,7 @@ export default function Organisations(props: any) {
   const organisationsDispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };
@@ -65,9 +67,9 @@ export default function Organisations(props: any) {
         ...drillDownTableMetaFilters,
         ...timeFilterObject,
       };
-      updateTabUrlWithSearch('/samples', combinedFilters);
+      updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
     } else {
-      updateTabUrlWithSearch('/samples', drillDownTableMetaFilters);
+      updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
     }
   };
 
