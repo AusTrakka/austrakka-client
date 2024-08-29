@@ -401,7 +401,6 @@ function DataFilters(props: DataFiltersProps) {
     </IconButton>
   );
 
-  console.log(primeReactFilters);
   return (
     <Box sx={{ paddingTop: 1 }}>
       <Box sx={{

@@ -1,6 +1,5 @@
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { NavigateFunction } from 'react-router-dom';
-import { Tab } from '@mui/material';
 import { encodeFilterObj } from './urlUtils';
 import { ORG_OVERVIEW_TABS } from '../components/OrganisationOverview/orgTabConstants';
 import { PROJECT_OVERVIEW_TABS } from '../components/ProjectOverview/projTabConstants';
