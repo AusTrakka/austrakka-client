@@ -5,11 +5,12 @@ import { MetaDataColumn, Group, Field } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { renderValue, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
+import { renderValue } from '../../utilities/renderUtils';
+import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 
 function SampleDetail() {
   const { seqId } = useParams();

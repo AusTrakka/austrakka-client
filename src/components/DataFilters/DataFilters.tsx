@@ -13,8 +13,7 @@ import {
 import FieldTypes from '../../constants/fieldTypes';
 import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
-import { isOperatorFilterMetaData } from '../../utilities/filterUtils';
-import { isDataTableFiltersEqual } from '../../utilities/helperUtils';
+import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/filterUtils';
 
 export const defaultState = {
   global: {

@@ -30,7 +30,8 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface SamplesProps {
   projectAbbrev: string,

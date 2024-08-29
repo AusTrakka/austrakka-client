@@ -14,7 +14,8 @@ import { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
-import { isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface TreeTableProps {
   selectedIds: string[],

@@ -26,8 +26,8 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/helperUtils';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
+import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 
 const defaultState: TreeState = {
   blocks: [],

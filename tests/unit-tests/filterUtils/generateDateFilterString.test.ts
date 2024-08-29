@@ -1,6 +1,7 @@
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
-import { generateDateFilterString } from '../../../src/utilities/helperUtils';
+
+import { generateDateFilterString } from '../../../src/utilities/filterUtils';
 
 describe('generateDateFilterString', () => {
   describe('when given a valid date object', () => {

@@ -14,7 +14,8 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,

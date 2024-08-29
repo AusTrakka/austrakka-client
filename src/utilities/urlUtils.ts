@@ -72,3 +72,28 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
   });
   return decodedObj;
 }
+
+export function getRawQueryParams(url: any) {
+  const queryParams: { [key: string]: string } = {};
+  const queryString = url.split('?')[1];
+  if (!queryString) {
+    return queryParams;
+  }
+
+  const pairs = queryString.split('&');
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    // Decode only the key, but keep the value as is
+    queryParams[(key)] = value;
+  }
+
+  return queryParams;
+}
+
+export const getFilterObjFromSearchParams =
+    (paramName: string, defaultState: DataTableFilterMeta) => {
+      const params = getRawQueryParams(window.location.search);
+      const filterString = params[paramName];
+      if (filterString === null || filterString === undefined) return defaultState;
+      return decodeUrlToFilterObj(filterString);
+    };

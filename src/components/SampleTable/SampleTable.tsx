@@ -13,7 +13,6 @@ import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Sample } from '../../types/sample.interface';
 import LoadingState from '../../constants/loadingState';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
@@ -29,6 +28,7 @@ import {
   selectGroupMetadata,
 } from '../../app/groupMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface SamplesProps {
   groupContext: number | undefined,

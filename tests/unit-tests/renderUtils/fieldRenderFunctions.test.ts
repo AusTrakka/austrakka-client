@@ -1,4 +1,4 @@
-import { fieldRenderFunctions } from '../../../src/utilities/helperUtils';
+import { fieldRenderFunctions } from '../../../src/utilities/renderUtils';
 
 describe('fieldRenderFunctions.Shared_groups', () => {
   describe('when dealing with null or undefined', () => {

@@ -1,4 +1,4 @@
-import { aggregateArrayObjects } from '../../../src/utilities/helperUtils';
+import { aggregateArrayObjects } from '../../../src/utilities/renderUtils';
 
 describe('aggregateArrayObjects', () => {
   describe('when given an input of expected data with singular datatype', () => {

@@ -1,4 +1,4 @@
-import { typeRenderFunctions } from '../../../src/utilities/helperUtils';
+import { typeRenderFunctions } from '../../../src/utilities/renderUtils';
 
 describe('typeRenderFunctions (function logic is tested elsewhere)', () => {
   describe('when checking boolean and date functions', () => {
