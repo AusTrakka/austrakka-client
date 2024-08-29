@@ -7,7 +7,6 @@ import ThresholdAlerts from '../../Widgets/ThresholdAlerts/ThresholdAlerts';
 
 function VicDHAlertsDashboard(props: any) {
   const {
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -40,7 +39,6 @@ function VicDHAlertsDashboard(props: any) {
             <Organisations
               projectId={projectId}
               groupId={groupId}
-              setTabValue={setTabValue}
             />
           </CardContent>
         </Card>

@@ -1,15 +1,16 @@
 import React from 'react';
 import { Card, Typography, Stack, CardActionArea, CardContent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import { ThresholdAlertDTO } from '../../../types/dtos';
 import theme from '../../../assets/themes/theme';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // Render a single alert
 
 interface ThresholdAlertProps {
   alertRow: ThresholdAlertDTO;
-  setFilterList: Function,
-  setTabValue: Function,
 }
 
 const alertColours:{ [key: string]: string } = {
@@ -23,17 +24,21 @@ const alertColours:{ [key: string]: string } = {
 };
 
 export default function ThresholdAlert(props: ThresholdAlertProps) {
-  const { alertRow, setFilterList, setTabValue } = props;
+  const { alertRow } = props;
 
   const rowClickHandler = () => {
-    const drilldownFilter = [{
-      field: alertRow.categoryField,
-      fieldType: 'string',
-      condition: '=',
-      value: alertRow.categoryValue,
-    }];
-    setFilterList(drilldownFilter);
-    setTabValue(1); // Navigate to "Samples" tab
+    const drillDownFilter: DataTableFilterMeta = {
+      [alertRow.categoryField]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: alertRow.categoryValue,
+          },
+        ],
+      },
+    };
+    updateTabUrlWithSearch('/samples', drillDownFilter);
   };
 
   return (

@@ -118,8 +118,6 @@ function DataFilters(props: DataFiltersProps) {
       _visibleFields.some((visibleField) => visibleField.field === field.columnName));
   }
 
-  console.log(filterFormValues);
-
   function registerFilterHandlers<T extends Field>(_fields: T[]) {
     _fields.forEach((field) => {
       FilterService.register(`custom_${field.columnName}`, (value, filters) =>
@@ -146,9 +144,6 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     const { name, value } = event.target;
-    console.log(name, value);
-    console.log('I hate this so much');
-    console.log('filterFormValues', filterFormValues);
     if (name === 'field') {
       setDateError(null);
 
@@ -320,7 +315,6 @@ function DataFilters(props: DataFiltersProps) {
   // TODO: Delete this. You have been marked for death good sir. Prepare yourself.
 
   const renderValueElement = () => {
-    console.log('Do I even reach here when I want to do the thing');
     switch (selectedFieldType) {
       case FieldTypes.DATE:
         return (
@@ -350,7 +344,6 @@ function DataFilters(props: DataFiltersProps) {
               name="value"
               value={filterFormValues.value}
               onChange={(event) => {
-                console.log(event);
                 handleFilterChange(event);
               }}
               disabled={nullOrEmptyFlag}

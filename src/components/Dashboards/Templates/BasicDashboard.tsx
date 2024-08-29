@@ -6,7 +6,6 @@ import Organisations from '../../Widgets/Organisations/Organisations';
 // TODO: Set a max card height and handle scroll voerflow
 function BasicDashboard(props: any) {
   const {
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -20,7 +19,6 @@ function BasicDashboard(props: any) {
               <SampleSummary
                 projectId={projectId}
                 groupId={groupId}
-                setTabValue={setTabValue}
               />
             </CardContent>
           </Card>
@@ -31,7 +29,6 @@ function BasicDashboard(props: any) {
               <Organisations
                 projectId={projectId}
                 groupId={groupId}
-                setTabValue={setTabValue}
               />
             </CardContent>
           </Card>
