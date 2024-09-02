@@ -1,13 +1,15 @@
 import React, { useRef, useEffect, useState, useImperativeHandle } from 'react';
 import { Phylocanvas } from './PhylocanvasGL';
 import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
+import { RerootType } from '../../types/tree.interface';
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
   onSelectedIdsChange: React.Dispatch<React.SetStateAction<string[]>>;
+  reroot: RerootType;
 }
 
-export type TreeExportFuctions = {
+export type TreeFuctions = {
   exportNewick(): string;
   exportSVG(): Blob;
   exportPNG(): Blob;
@@ -15,6 +17,7 @@ export type TreeExportFuctions = {
   getSelectedLeafIDs(): string[];
   getVisibleLeafIDs(): string[];
   fitInCanvas(): void;
+  midpointReroot(): void;
   nodes: { ids: { [key: string]: PhylocanvasNode }, leaves: PhylocanvasNode[]; };
 };
 
@@ -48,6 +51,9 @@ const Tree = React.forwardRef(
       fitInCanvas() {
         return tree.current?.fitInCanvas();
       },
+      midpointReroot() {
+        return tree.current?.midpointRoot();
+      },
       nodes: tree.current?.getGraphAfterLayout(),
     }));
 
@@ -59,30 +65,41 @@ const Tree = React.forwardRef(
           setSize({ height: size.height, width: width - 10 });
         }
       }
-      if (tree.current == null && treeDiv.current !== null) {
+
+      // Initialization
+      if (tree.current === null && treeDiv.current !== null) {
         if (resizeWidthTo !== null) {
           handleResize();
         }
         tree.current = new Phylocanvas(treeDiv.current, { ...otherProps });
         tree.current.addClickHandler(() => {
-          // save the selectedIds in the state
           const selected = tree.current?.props.selectedIds;
           onSelectedIdsChange(selected);
         });
       }
+
+      // Resize event listener
       if (resizeWidthTo !== null) {
         window.addEventListener('resize', handleResize);
       }
+
+      // Cleanup on unmount
       return () => {
         window.removeEventListener('resize', handleResize);
       };
     }, [onSelectedIdsChange, otherProps, resizeWidthTo, size]);
 
+    // Consolidate props update and rerooting
     useEffect(() => {
       const updatedProps = { ...otherProps, size };
       if (tree.current) {
-      // update the props on change
+        // Update the props on change
         tree.current.setProps({ ...updatedProps });
+
+        // Reroot if required
+        if (otherProps.reroot === 'midpoint') {
+          tree.current?.midpointRoot();
+        }
       }
     }, [otherProps, size]);
 

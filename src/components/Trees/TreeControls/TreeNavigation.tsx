@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
-import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Stack } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
-import { TreeExportFuctions } from '../Tree';
+import { TreeFuctions } from '../Tree';
 import { JobInstance } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/helperUtils';
+import { RerootType } from '../../../types/tree.interface';
 
 interface State {
   type: string,
+  reroot: RerootType,
 }
 
 interface TreeNavigationProps {
@@ -21,7 +23,7 @@ interface TreeNavigationProps {
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
   ) => void;
   onJumpToSubtree: (id: string) => void;
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
+  phylocanvasRef: React.RefObject<TreeFuctions>,
 }
 
 export default function TreeNavigation(
@@ -70,6 +72,17 @@ export default function TreeNavigation(
     setHistory([...newHistory, nodes['0']]);
     setHistoryIndex(newHistory.length);
     phylocanvasRef.current?.fitInCanvas();
+  };
+
+  const handlRoot = () => {
+    const syntheticEvent = {
+      target: {
+        name: 'reroot',
+        value: state.reroot === null ? 'midpoint' : null,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+
+    onChange(syntheticEvent);
   };
 
   const handleJumpToSubtree = () => {
@@ -177,23 +190,28 @@ export default function TreeNavigation(
           }
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={rootId === '0'} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
-        Go to Root
-      </Button>
-      <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
-        Jump to subtree
-      </Button>
-      <ButtonGroup fullWidth>
-        <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
-          Parent
+      <Stack spacing={1}>
+        <Button variant="outlined" disabled={rootId === '0'} fullWidth onClick={handleGoToRoot}>
+          Go to Root
         </Button>
-        <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
-          Back
+        <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth onClick={handleJumpToSubtree}>
+          Jump to subtree
         </Button>
-        <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>
-          Forward
+        <Button variant="outlined" color={state.reroot !== 'midpoint' ? 'primary' : 'error'} fullWidth onClick={handlRoot}>
+          {state.reroot !== null ? 'Reset' : 'Midpoint Re-root'}
         </Button>
-      </ButtonGroup>
+        <ButtonGroup fullWidth>
+          <Button variant="outlined" disabled={!history[historyIndex]?.parent} onClick={handleParent}>
+            Parent
+          </Button>
+          <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
+            Back
+          </Button>
+          <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>
+            Forward
+          </Button>
+        </ButtonGroup>
+      </Stack>
     </Grid>
   );
 }

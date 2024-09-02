@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { JobInstance } from '../../types/dtos';
 import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
-import Tree, { TreeExportFuctions } from './Tree';
+import Tree, { TreeFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
@@ -34,6 +34,7 @@ const defaultState: TreeState = {
   alignLabels: true,
   showBlockHeaders: true,
   blockHeaderFontSize: 13,
+  reroot: null,
   blockPadding: 3,
   blockSize: 16,
   showLeafLabels: true,
@@ -63,7 +64,7 @@ const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 function TreeDetail() {
   const { projectAbbrev, analysisId, jobInstanceId } = useParams();
   const [tree, setTree] = useState<JobInstance | null>();
-  const treeRef = createRef<TreeExportFuctions>();
+  const treeRef = createRef<TreeFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
   const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
@@ -414,7 +415,6 @@ function TreeDetail() {
             legendRef={legRef}
           />
         </Grid>
-
       );
     }
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -514,6 +514,7 @@ function TreeDetail() {
         <Typography className="pageTitle">
           {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+          {tree && state.reroot ? ` - Rerooted at ${state.reroot}` : ''}
         </Typography>
         {renderWarning()}
         {renderTree()}

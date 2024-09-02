@@ -6,7 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Menu } from '@mui/material';
 import html2canvas from 'html2canvas';
-import { TreeExportFuctions } from '../Tree';
+import { TreeFuctions } from '../Tree';
 
 interface Option {
   exportFunction: CallableFunction
@@ -35,7 +35,7 @@ const base64toBlob = (base64Image: string) => {
 
 interface Props {
   analysisName: string,
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
+  phylocanvasRef: React.RefObject<TreeFuctions>,
   legendRef: React.RefObject<HTMLDivElement>,
 }
 
