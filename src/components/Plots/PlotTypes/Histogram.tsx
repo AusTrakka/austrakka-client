@@ -8,6 +8,7 @@ import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
+import { ProjectViewField } from '../../../types/dtos';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -78,10 +79,9 @@ function Histogram(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localNumericFields = fields
-        .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double')
-        .map(field => field.columnName);
-      setNumericFields(localNumericFields);
+      const localNumericFields : ProjectViewField[] = fields
+        .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double');
+      setNumericFields(localNumericFields.map(field => field.columnName));
       const localCatFields = fields
         .filter(field => field.canVisualise &&
           (field.primitiveType === 'string' || field.primitiveType === null))
@@ -92,10 +92,9 @@ function Histogram(props: PlotTypeProps) {
       if (localNumericFields.length === 0) {
         setPlotErrorMsg('No numeric fields found in project, cannot render plot');
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
         setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
-      } else if (!localNumericFields.includes(xAxisField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

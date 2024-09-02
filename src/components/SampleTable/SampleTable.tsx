@@ -1,7 +1,5 @@
-/* eslint-disable react/jsx-pascal-case */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {
-  memo, useEffect, useRef, useState,
+  memo, useEffect, useState,
 } from 'react';
 
 import { Close } from '@mui/icons-material';
@@ -10,179 +8,103 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
-import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableFilterMeta, DataTableOperatorFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode } from 'primereact/api';
-import { MetaDataColumn } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
-import { Filter } from '../Common/QueryBuilder';
 import LoadingState from '../../constants/loadingState';
-import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, replaceHasSequencesNullsWithFalse, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
-import { getDisplayFields, getSamples } from '../../utilities/resourceUtils';
-import { buildPrimeReactColumnDefinitions, compareFields } from '../../utilities/tableUtils';
+import { convertDataTableFilterMetaToDataFilterObject,
+  isDataTableFiltersEqual,
+  useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
-import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
+import {
+  fetchGroupMetadata,
+  GroupMetadataState,
+  selectGroupMetadata,
+  selectAwaitingGroupMetadata,
+} from '../../app/groupMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
 
 interface SamplesProps {
   groupContext: number | undefined,
 }
-// SAMPLE TABLE
-// Transitionary sampel table component that contains repeat code from both
-//    - ProjectOverview.tsx and,
-//    - Samples.tsx
-// Takes groupContext as input and:
-// 1. Gets display fields for that group to a) builds columns and b) order columns
-// 2. Gets sample list (paginated, filtered + sorted) for display in table
-// 3. Gets sample list (unpaginated, filtered + sorted) for csv export
 
 function SampleTable(props: SamplesProps) {
   const { groupContext } = props;
-  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
-  const [isSamplesLoading, setIsSamplesLoading] = useState(false);
-  const [sampleList, setSampleList] = useState<Sample[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
-  const [totalSamplesCount, setTotalSamplesCount] = useState(0);
-  const [isSamplesError, setIsSamplesError] = useState({
-    samplesHeaderError: false,
-    samplesTotalError: false,
-    sampleMetadataError: false,
-    samplesErrorMessage: '',
-  });
+  const [filtering, setFiltering] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [exportData, setExportData] = useState<Sample[]>([]);
-  const [initalisingFilters, setInitialisingFilters] = useState(true);
-  const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
+  const [initialisingFilters, setInitialisingFilters] = useState(true);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
+
+  const dispatch = useAppDispatch();
+
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
+  const metadata: GroupMetadataState | null =
+      useAppSelector(state => selectGroupMetadata(state, groupContext));
+  const isSamplesLoading : boolean = useAppSelector((state) =>
+    selectAwaitingGroupMetadata(state, groupContext));
 
   useEffect(() => {
     const initialFilterState = () => {
+      if (metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
+        metadata?.loadingState === MetadataLoadingState.ERROR) {
+        setInitialisingFilters(false);
+        return;
+      }
       if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
         setFilterList(convertDataTableFilterMetaToDataFilterObject(
           currentFilters,
-          displayFields,
+          metadata?.fields!,
         ));
       } else {
         setFilterList([]);
       }
       setInitialisingFilters(false);
     };
-    if (displayFields.length > 0 && initalisingFilters && !isSamplesLoading) {
+    if (metadata?.fields && initialisingFilters &&
+        metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
       initialFilterState();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayFields, isSamplesLoading]);
+  }, [currentFilters, initialisingFilters, metadata?.fields, metadata?.loadingState]);
 
   useEffect(() => {
-    async function fetchSamplesData() {
-      setIsSamplesLoading(true);
-      try {
-        // Fetch display fields
-        const filterFieldsResponse = await getDisplayFields(groupContext!, token);
-        if (filterFieldsResponse.status === ResponseType.Success) {
-          setDisplayFields(filterFieldsResponse.data);
-        } else {
-          setIsSamplesError((prevState) => ({
-            ...prevState,
-            samplesHeaderError: true,
-            samplesErrorMessage: filterFieldsResponse.message,
-          }));
-        }
-
-        // Fetch all samples data and total count
-        const samplesResponse = await getSamples(token, groupContext!);
-        if (samplesResponse.status === ResponseType.Success) {
-          const sampleDataAltered = replaceHasSequencesNullsWithFalse(samplesResponse.data);
-          setSampleList(sampleDataAltered);
-          setFilteredSampleList(sampleDataAltered);
-          setIsSamplesError((prevState) => ({
-            ...prevState,
-            sampleMetadataError: false,
-          }));
-          const count: string = samplesResponse.headers?.get('X-Total-Count')!;
-          setTotalSamplesCount(+count);
-        } else {
-          setIsSamplesError((prevState) => ({
-            ...prevState,
-            sampleMetadataError: true,
-            samplesErrorMessage: samplesResponse.message,
-          }));
-          setSampleList([]);
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching samples data:', error);
-        setIsSamplesError((prevState) => ({
-          ...prevState,
-          samplesHeaderError: true,
-          samplesTotalError: true,
-          sampleMetadataError: true,
-          samplesErrorMessage: 'Error fetching samples data',
-        }));
-      } finally {
-        setIsSamplesLoading(false);
-      }
-    }
-
     if (groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
-      fetchSamplesData();
+      dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
     }
-  }, [groupContext, token, tokenLoading]);
+  }, [groupContext, token, tokenLoading, dispatch]);
 
-  useEffect(
-    () => {
-      // BUILD COLUMNS
-      const formatTableHeaders = () => {
-        const sortedDisplayFields = [...displayFields];
-        sortedDisplayFields.sort(compareFields);
-        const columnBuilder = buildPrimeReactColumnDefinitions(sortedDisplayFields);
-        setSampleTableColumns(columnBuilder);
-        setIsSamplesError((prevState: any) => ({ ...prevState, samplesHeaderError: false }));
-      };
-      if (!isSamplesError.samplesHeaderError && !isSamplesError.samplesTotalError) {
-        formatTableHeaders();
-      }
-    },
-    [
-      displayFields,
-      isSamplesError.samplesHeaderError,
-      isSamplesError.samplesTotalError,
-      setIsSamplesError,
-      setSampleTableColumns,
-    ],
-  );
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR ||
+        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      setErrorDialogOpen(true);
+    }
+  }, [metadata?.loadingState]);
 
-  useEffect(
-    () => {
-      if (exportData.length > 0 && exportCSVStatus === LoadingState.LOADING) {
-        try {
-          csvLink?.current?.link.click();
-          setExportCSVStatus(LoadingState.IDLE);
-          setExportData([]);
-        } catch (error) {
-          setExportCSVStatus(LoadingState.ERROR);
-          setExportData([]);
-        }
-      }
-    },
-    [exportCSVStatus, exportData, sampleTableColumns, setExportCSVStatus, setExportData],
-  );
+  useEffect(() => {
+    // BUILD COLUMNS
+    if (!metadata?.fields || !metadata?.columnLoadingStates) return;
+    const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
+    setSampleTableColumns(columnBuilder);
+  }, [metadata?.columnLoadingStates, metadata?.fields]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
@@ -195,6 +117,12 @@ function SampleTable(props: SamplesProps) {
       console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
     }
   };
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredSampleList(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
@@ -217,15 +145,47 @@ function SampleTable(props: SamplesProps) {
           }}
         />
         <ExportTableData
-          dataToExport={filteredSampleList}
-          disabled={false}
+          dataToExport={
+            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? []
+              : filteredSampleList ?? []
+          }
+          disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
     </div>
   );
 
-  if (initalisingFilters) { return null; }
+  const renderErrorDialog = () => (
+    <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
+      <Alert severity="error" sx={{ padding: 3 }}>
+        <IconButton
+          aria-label="close"
+          onClick={() => setErrorDialogOpen(false)}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <Close />
+        </IconButton>
+        <AlertTitle sx={{ paddingBottom: 1 }}>
+          <strong>
+            {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? 'Organisation metadata could not be fully loaded'
+              : 'Organisation metadata could not be loaded'}
+          </strong>
+        </AlertTitle>
+        {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+          ? `An error occurred loading organisation metadata. Some fields will be null, and 
+             CSV export will not be available. Refresh to reload.`
+          : 'An error occurred loading organisation metadata. Refresh to reload.'}
+        <br />
+        Please contact an AusTrakka admin if this error persists.
+      </Alert>
+    </Dialog>
+  );
 
+  if (initialisingFilters || isSamplesLoading) {
+    return renderErrorDialog();
+  }
   return (
     <>
       <Backdrop
@@ -234,6 +194,7 @@ function SampleTable(props: SamplesProps) {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+      {renderErrorDialog()}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -252,20 +213,20 @@ function SampleTable(props: SamplesProps) {
         </Alert>
       </Dialog>
       <DataFilters
-        dataLength={totalSamplesCount ?? 0}
+        dataLength={metadata?.metadata?.length ?? 0}
         filteredDataLength={filteredSampleList.length}
         visibleFields={sampleTableColumns}
-        allFields={displayFields ?? []} // want to pass in field loading states?
+        allFields={metadata?.fields ?? []} // want to pass in field loading states?
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
         filterList={filterList}
         setFilterList={setFilterList}
-        setLoadingState={setIsSamplesLoading}
+        setLoadingState={setFiltering}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
-          value={sampleList}
+          value={metadata?.metadata ?? []}
           onValueChange={(e) => {
             setFilteredSampleList(e);
           }}
@@ -278,13 +239,13 @@ function SampleTable(props: SamplesProps) {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 500px)"
+          scrollHeight="calc(100vh - 300px)"
           sortIcon={sortIcon}
           paginator
           onRowClick={rowClickHandler}
           selectionMode="single"
           rows={25}
-          loading={isSamplesLoading}
+          loading={filtering}
           rowsPerPageOptions={[25, 50, 100, 500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"

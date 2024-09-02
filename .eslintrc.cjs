@@ -24,6 +24,7 @@ module.exports = {
     'quote-props': ['error', 'consistent'],  // enforce quotes on all properties, or none
     'import/prefer-default-export': 0, // allow single exports
     'no-param-reassign': 0,  // allow modifying function parameters in-place
+    'no-trailing-spaces': ['error', { 'ignoreComments': true, 'skipBlankLines': true }],
     'no-restricted-syntax': [  // dropping ForOfStatement; reiterating the other rules
       'error',
       {

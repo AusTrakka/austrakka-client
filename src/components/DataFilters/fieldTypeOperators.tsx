@@ -18,8 +18,8 @@ export const stringConditions = [
 
 export const dateConditions = [
   { value: FilterMatchMode.DATE_IS, name: 'On' },
-  { value: FilterMatchMode.DATE_BEFORE, name: 'before' },
-  { value: FilterMatchMode.DATE_AFTER, name: 'after' },
+  { value: FilterMatchMode.DATE_BEFORE, name: 'Before' },
+  { value: FilterMatchMode.DATE_AFTER, name: 'After' },
   { value: FilterMatchMode.DATE_IS_NOT, name: 'Is not' },
   { value: CustomFilterOperators.NULL_OR_EMPTY, name: 'Is null or empty' },
   { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
