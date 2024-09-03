@@ -25,20 +25,6 @@ export const defaultState = {
   } as DataTableOperatorFilterMetaData,
 };
 
-/**
- * @deprecated This is an old object that was used to track
- * the filter state internally and convert it to a table
- * compatible filter within this component. No longer needed, kept for reference.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface DataFilter {
-  shakeElement?: boolean,
-  field: string,
-  fieldType: string,
-  condition: FilterMatchMode | CustomFilterOperators | string,
-  value: any
-}
-
 interface InternalFormProperties {
   field: string,
   fieldType?: string,
@@ -60,12 +46,11 @@ function isEmptyFilter(value: any, filters: boolean | null) {
   return value !== '' && value !== null;
 }
 
-// TODO: Will most probs need to add the current PrimeReactFilters in here as well.
 interface DataFiltersProps {
-  dataLength: number // need to pass through
-  filteredDataLength: number // need to pass through
-  visibleFields: any[] | null // need to passs through
-  allFields: Field[] // need to pass through
+  dataLength: number
+  filteredDataLength: number
+  visibleFields: any[] | null
+  allFields: Field[]
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   primeReactFilters: DataTableFilterMeta
   isOpen: boolean
@@ -98,8 +83,8 @@ function DataFilters(props: DataFiltersProps) {
       useState<InternalFormProperties>(defaultFormState);
   const [conditions, setConditions] = useState(stringConditions);
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
-  const [filterError, setFilterError] = useState(false); // TODO: This will most probs be removed
-  const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.'); // TODO: This will most probs be removed
+  const [filterError, setFilterError] = useState(false);
+  const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [dateError, setDateError] = useState<DateValidationError>(null);
   const [fields, setFields] = useState<Field[]>([]);
@@ -260,14 +245,13 @@ function DataFilters(props: DataFiltersProps) {
     }
     setLoadingState(false);
   };
-  // This should be removed as the filter list no longer exists
+
   const clearFilters = () => {
     setFilterError(false);
     setPrimeReactFilters(defaultState);
   };
-  // same with this one the filter list no longer exists.
 
-  // TODO: This method needs to be tested as well quite crucial and alot of edge cases.
+  // TODO: This method needs to be tested as well quite crucial and a lot of edge cases.
   const handleFilterDelete = (filterToRemove: DataTableFilterMeta) => {
     setPrimeReactFilters((oldList) => {
       const updatedFilters = { ...oldList };
@@ -307,11 +291,6 @@ function DataFilters(props: DataFiltersProps) {
       return updatedFilters;
     });
   };
-
-  // Build filters in the prime react format
-  // So this goes from the filterList to the primeReactFilters
-  // But since the filter list has been removed this method most probs will be of no use.
-  // TODO: Delete this. You have been marked for death good sir. Prepare yourself.
 
   const renderValueElement = () => {
     switch (selectedFieldType) {
