@@ -7,11 +7,12 @@ import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredCatFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -75,25 +76,24 @@ function HeatMap(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
       }
-      const x = getStartingField(preferredCatFields, localCatFields);
-      if (xAxisField === '' && yAxisField === '') {
-        setXAxisField(x);
+      // If the URL does not specify a mandatory field, try to set the preferred field
+      if (xAxisField === '') {
+        setXAxisField(getStartingField(preferredCatFields, localCatFields));
+      }
+      if (yAxisField === '') {
         // This will still set y=x if x is the only field; we just prefer y!=x
         setYAxisField(getStartingField(
-          preferredCatFields.filter(fld => !(fld === x)),
+          preferredCatFields.filter(fld => !(fld === xAxisField)),
           localCatFields,
         ));
-      } else if (!localCatFields.includes(xAxisField) || !localCatFields.includes(yAxisField)) {
-        setPlotErrorMsg('One or more selected fields do not exist in the project, cannot render plot');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

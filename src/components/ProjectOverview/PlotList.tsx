@@ -97,6 +97,7 @@ function PlotList(props: PlotListProps) {
         columnResizeMode="expand"
         removableSort
         reorderableColumns
+        className="my-flexible-table"
         sortIcon={sortIcon}
       >
         {columns.map((col: any) => (
@@ -109,6 +110,7 @@ function PlotList(props: PlotListProps) {
             resizeable
             style={{ minWidth: '150px' }}
             headerClassName="custom-title"
+            className="flexible-column"
           />
         ))}
       </DataTable>

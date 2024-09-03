@@ -8,13 +8,12 @@ import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
-
+import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredYAxisFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
-const preferredColourFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredYAxisFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
 const preferredDateFields = ['Date_coll'];
 
 // The opacity to use for points when they are selected, or when all points are selected
@@ -109,28 +108,21 @@ function ClusterTimeline(props: PlotTypeProps) {
     if (fields && fields.length > 0) {
       // Note this does not include numerical or date fields
       // For now this selection need only depend on canVisualise
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
-      const localDateFields = fields
-        .filter(field => field.primitiveType === 'date')
-        .map(field => field.columnName);
-      setDateFields(localDateFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
+      const localDateFields : ProjectViewField[] = fields
+        .filter(field => field.primitiveType === 'date');
+      setDateFields(localDateFields.map(field => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
-      if (yAxisField === '' || colourField === '' || dateField === '') {
-        setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
-        setColourField(getStartingField(preferredColourFields, localCatFields));
-        setDateField(getStartingField(preferredDateFields, localDateFields));
-      } else if (!localCatFields.includes(yAxisField) || !localCatFields.includes(colourField)
-        || !localDateFields.includes(dateField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
-      }
+      // If the URL does not specify a mandatory field, try to set the preferred field
+      if (yAxisField === '') setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
+      if (dateField === '') setDateField(getStartingField(preferredDateFields, localDateFields));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
@@ -143,10 +135,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       setSpec(addYAxisToSpec);
     }
   }, [yAxisField]);
-
-  // TODO maybe handle none and set better legend, as for other plots?
-  // We know there must be at least one cat field for the y axis, so this will work,
-  // but maybe the user would prefer none for colour field regardless
+  
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setColorInSpecToValue(

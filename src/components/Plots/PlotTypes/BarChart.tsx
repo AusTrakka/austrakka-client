@@ -7,12 +7,12 @@ import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
-
+import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'ST', 'SNP_cluster', 'Lineage_family'];
+const preferredCatFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -73,21 +73,19 @@ function BarChart(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+          (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
         return;
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
         setXAxisField(getStartingField(preferredCatFields, localCatFields));
-      } else if (!localCatFields.includes(xAxisField)) {
-        setPlotErrorMsg(`Selected X-axis field ${xAxisField} is not a valid categorical field`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
