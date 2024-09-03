@@ -95,7 +95,7 @@ function ProjectsList() {
           <Paper elevation={2} sx={{ marginBottom: 10 }}>
             <DataTable
               value={projectsList}
-              columnResizeMode="expand"
+              className="my-flexible-table"
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
@@ -124,9 +124,9 @@ function ProjectsList() {
                   header={col.header}
                   body={col.body}
                   sortable
-                  resizeable
+                  className="flexible-column"
                   headerClassName="custom-title"
-                  style={{ minWidth: '150px' }}
+                  bodyClassName="value-cells"
                 />
               ))}
             </DataTable>
