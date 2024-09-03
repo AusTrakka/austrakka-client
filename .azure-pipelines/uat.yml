@@ -8,7 +8,7 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: 6078-deployment-perm-env # TODO: change this back to UAT
+      ref: UAT
       endpoint: AusTrakka
     - repository: Infra
       type: github
