@@ -108,6 +108,7 @@ function TreeList(props: TreesProps) {
           removableSort
           reorderableColumns
           columnResizeMode="expand"
+          className="my-flexible-table"
           sortIcon={sortIcon}
         >
           {columns.map((col) => (
@@ -119,6 +120,8 @@ function TreeList(props: TreesProps) {
               sortable
               resizeable
               headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
             />
           ))}
         </DataTable>

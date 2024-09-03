@@ -17,7 +17,8 @@
     }
 
     .p-datatable.p-datatable-gridlines {
-      --data-table-border-color: #cdc7cd; /* Change this to your desired color */
+      --data-table-border-color: rgb(234, 229, 234); /* This will change the border 
+                                                    colours should be some sort of grey */
     }
     
     .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th,

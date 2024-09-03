@@ -250,6 +250,7 @@ function MemberList(props: MembersProps) {
                   className="flexible-column"
                   style={{ minWidth: '150px' }}
                   headerClassName="custom-title"
+                  bodyClassName="value-cells"
                 />
               ))}
             </DataTable>
