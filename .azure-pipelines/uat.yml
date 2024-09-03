@@ -1,9 +1,14 @@
 resources:
   repositories:
+    - repository: Client
+      type: github
+      name: AusTrakka/austrakka-client
+      ref: $(Build.SourceBranch) 
+      endpoint: AusTrakka
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: UAT
+      ref: 6078-deployment-perm-env # TODO: change this back to UAT
       endpoint: AusTrakka
     - repository: Infra
       type: github
@@ -22,29 +27,12 @@ pool:
   name: UAT-New
 
 variables:
-  azureConnection: 'AusTrakka UAT'
-  azureConnectionAdmin: 'AusTrakka Data (Agent Pool)'
-  backendAzureRmResourceGroupName: 'rg-uatterf-shd-as-1'
-  backendAzureRmStorageAccountName: 'stuatterfshdas1'
-  backendAzureRmContainerName: 'env'
-  backendAzureRmKey: '$(EnvId)/$(EnvId).tfstate'
-  terraformOutputArtifact: 'TerraformOutput'
-  buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
-  sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
+- template: variables/uat/azure/connection.yml@Pipelines
+- template: variables/uat/terraform/storage.yml@Pipelines
+- template: variables/uat/terraform/key.yml@Pipelines
+- template: variables/devops/setup.yml@Pipelines
 
 stages:
-  - stage: CheckoutRepos
-    jobs:
-      - job: CheckoutPortal
-        steps:
-          - template: templates/checkout/self.yml
-          - template: templates/checkout/infra.yml@Pipelines
-          - template: templates/checkout/pipelines.yml@Pipelines
-          - template: templates/terraform/init.yml@Pipelines
-            parameters:
-              workingDirectory: $(sourceDir)/infra/prod
-          - template: templates/terraform/output.yml@Pipelines
-            parameters:
-              outputFileDir: $(buildDir)/tf
-              workingDirectory: $(sourceDir)/infra/prod
-          - template: templates/deploy-client.yml
+  - template: templates/stages/deploy/client.yml@Pipelines
+    parameters:
+      failIfNotExists: false
