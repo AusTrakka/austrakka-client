@@ -20,7 +20,6 @@ interface CustomTabsProps {
   value: number,
   setValue: React.Dispatch<React.SetStateAction<number>>
 }
-/// /
 
 export function TabPanel(props: TabPanelProps) {
   const {
@@ -28,6 +27,7 @@ export function TabPanel(props: TabPanelProps) {
   } = props;
 
   // Mount the panel when it is first selected, and do not unmount it when it is deselected
+  // Keeping the set tab state just for this thing I'm not sure the effects of it but lets see
   const [visited, setVisited] = useState<boolean>(false);
 
   useEffect(() => {

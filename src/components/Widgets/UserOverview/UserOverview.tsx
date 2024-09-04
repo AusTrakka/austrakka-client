@@ -4,8 +4,8 @@ import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchUserOverview } from './userOverviewSlice';
-import { formatDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
+import { formatDate } from '../../../utilities/dateUtils';
 
 export default function UserOverview() {
   // Get initial state from store

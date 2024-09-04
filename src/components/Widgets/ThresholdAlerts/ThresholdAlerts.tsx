@@ -9,8 +9,6 @@ import { useApi } from '../../../app/ApiContext';
 
 export default function ThresholdAlerts(props: any) {
   const {
-    setFilterList,
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -56,7 +54,7 @@ export default function ThresholdAlerts(props: any) {
             data.data.slice()
               .sort((a: ThresholdAlertDTO, b:ThresholdAlertDTO) => sortAlerts(a, b))
               .map((alertRow: ThresholdAlertDTO) => (
-                <ThresholdAlert {...{ alertRow, setFilterList, setTabValue }} />
+                <ThresholdAlert {...{ alertRow }} />
               ))
           }
         </Stack>

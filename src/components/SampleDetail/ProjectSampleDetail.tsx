@@ -6,9 +6,9 @@ import { Sample } from '../../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { renderValue } from '../../utilities/helperUtils';
 import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
+import { renderValue } from '../../utilities/renderUtils';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();

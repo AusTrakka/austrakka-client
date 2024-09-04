@@ -1,8 +1,6 @@
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { testOnlyExports } from '../../../src/utilities/helperUtils';
-
-const { encodeFilterObj } = testOnlyExports;
+import { encodeFilterObj } from '../../../src/utilities/urlUtils';
 
 describe('encodeFilterObj', () => {
   describe('when given a simple filter object', () => {

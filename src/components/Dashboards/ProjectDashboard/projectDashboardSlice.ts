@@ -1,4 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import { ProjectDashboardWidget } from './project.dashboard.interface';
@@ -11,7 +12,7 @@ import { ResponseType } from '../../../constants/responseType';
 interface ProjectDashboardState {
   loading: LoadingState
   timeFilter: string
-  timeFilterObject: any // TODO: Fix
+  timeFilterObject: DataTableFilterMeta
   projectIdInRedux: any
   data: ProjectDashboardWidget | any
 }

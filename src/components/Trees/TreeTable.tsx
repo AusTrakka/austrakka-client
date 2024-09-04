@@ -6,7 +6,7 @@ import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
-import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -14,7 +14,8 @@ import { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
-import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -57,14 +58,12 @@ export default function TreeTable(props: TreeTableProps) {
   const [selectAll, setSelectAll] = useState(false);
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
-  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
 
@@ -83,25 +82,6 @@ export default function TreeTable(props: TreeTableProps) {
       formatTableHeaders();
     }
   }, [columnError, displayFields]);
-
-  useEffect(() => {
-    const initialFilterState = () => {
-      if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
-        setFilterList(convertDataTableFilterMetaToDataFilterObject(
-          currentFilters,
-          displayFields,
-        ));
-      } else {
-        setFilterList([]);
-      }
-      setInitialisingFilters(false);
-    };
-    if (metadataLoadingState === MetadataLoadingState.DATA_LOADED &&
-        displayFields.length > 0 && initialisingFilters) {
-      initialFilterState();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadataLoadingState, displayFields]);
 
   useEffect(() => {
     const processTableValues = () => {
@@ -212,7 +192,7 @@ export default function TreeTable(props: TreeTableProps) {
     </div>
   );
 
-  if (metadataLoadingState !== MetadataLoadingState.DATA_LOADED && initialisingFilters) {
+  if (metadataLoadingState !== MetadataLoadingState.DATA_LOADED) {
     return (<Skeleton />);
   }
 
@@ -224,8 +204,7 @@ export default function TreeTable(props: TreeTableProps) {
         visibleFields={sampleTableColumns}
         allFields={displayFields}
         setPrimeReactFilters={setCurrentFilters}
-        filterList={filterList}
-        setFilterList={setFilterList}
+        primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
         setLoadingState={setLoading}

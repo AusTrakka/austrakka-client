@@ -3,10 +3,10 @@ import { PhessIdStatus } from './phess.id.interface';
 import { getDashboardFields } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
-import { generateDateFilterString } from '../../../utilities/helperUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 // import { aggregateArrayObjects } from '../../../utilities/helperUtils';
 import { ResponseType } from '../../../constants/responseType';
+import { generateDateFilterString } from '../../../utilities/filterUtils';
 
 interface PhessIdStatusState {
   loading: string

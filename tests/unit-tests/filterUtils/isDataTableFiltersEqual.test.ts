@@ -1,5 +1,6 @@
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { isDataTableFiltersEqual } from '../../../src/utilities/helperUtils';
+
+import { isDataTableFiltersEqual } from '../../../src/utilities/filterUtils';
 
 describe('isDataTableFiltersEqual', () => {
   describe('when comparing simple filter objects', () => {

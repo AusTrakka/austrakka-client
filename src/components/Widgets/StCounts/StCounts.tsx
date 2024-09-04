@@ -3,15 +3,16 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode } from 'primereact/api';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 const stFieldName = 'ST';
 
@@ -119,8 +120,6 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    setFilterList,
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -130,7 +129,7 @@ export default function StCounts(props: any) {
   const aggregatedCounts = useAppSelector(state => selectAggregatedStCounts(state, stFieldName));
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const { token, tokenLoading } = useApi();
-
+  const navigation = useNavigate();
   const stCountsDispatch = useAppDispatch();
 
   useEffect(() => {
@@ -145,20 +144,29 @@ export default function StCounts(props: any) {
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    const drilldownFilter = [{
-      field: stFieldName,
-      fieldType: FieldTypes.STRING,
-      condition: FilterMatchMode.EQUALS,
-      value: selectedRow[stFieldName],
-    }];
+
+    const drilldownFilter: DataTableFilterMeta = {
+      [stFieldName]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: selectedRow[stFieldName],
+          },
+        ],
+      },
+    };
     // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {
-      const appendedFilters = [...drilldownFilter, timeFilterObject];
-      setFilterList(appendedFilters);
+      const appendedFilters: DataTableFilterMeta =
+          {
+            ...drilldownFilter,
+            ...timeFilterObject,
+          };
+      updateTabUrlWithSearch(navigation, '/samples', appendedFilters);
     } else {
-      setFilterList(drilldownFilter);
+      updateTabUrlWithSearch(navigation, '/samples', drilldownFilter);
     }
-    setTabValue(1); // Navigate to "Samples" tab
   };
 
   const columns = useMemo<any[]>(() => [
