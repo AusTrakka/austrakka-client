@@ -434,7 +434,7 @@ function TreeDetail() {
           <Typography variant="body2" fontWeight="bold">{selectedColumn}</Typography>
           <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
             {Object.entries(legendValues).map(([label, color]) => (
-              <Grid item key={color}>
+              <Grid item key={label}>
                 <Box display="flex" alignItems="center">
                   <Box
                     width="10px"
@@ -454,7 +454,7 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Stack direction="row">
+        <Stack direction="column" spacing={6} alignContent="space-between" justifyContent="space-between">
           <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef} width="100%">
             {/* Only render node colour entry if not already in the legend  */}
             {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
@@ -468,6 +468,8 @@ function TreeDetail() {
                     ...oldScheme,
                     [state.nodeColumn]: newColor,
                   }))}
+                  variant="standard"
+                  size="medium"
                 />
               </Stack>
             )}
@@ -483,6 +485,8 @@ function TreeDetail() {
                       ...oldScheme,
                       [block]: newColor,
                     }))}
+                    variant="standard"
+                    size="medium"
                   />
                 </Stack>
               )

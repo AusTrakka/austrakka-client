@@ -7,7 +7,7 @@ import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
@@ -213,9 +213,11 @@ function ClusterTimeline(props: PlotTypeProps) {
         </Select>
       </FormControl>
       {colourField !== 'none' && (
-        <ColorSchemeSelectorPlotStyle
+        <ColorSchemeSelector
           selectedScheme={colourScheme}
           onColourChange={(newColor) => setColourScheme(newColor)}
+          variant="outlined"
+          size="small"
         />
       )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>

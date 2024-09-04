@@ -1,11 +1,11 @@
 import * as d3 from 'd3';
 
 // I don't know if this a good structure for types, but it works for now
-type ColorSchemeRange = Record<string,
+export type ColorSchemeRange = Record<string,
 d3.ScaleSequential<string, never> |
 d3.ScaleDiverging<string, never>>;
 
-type ColorSchemeDiscrete = Record<string,
+export type ColorSchemeDiscrete = Record<string,
 d3.ScaleOrdinal<string, string>>;
 
 type ColorSchemeAll = Record<string,
@@ -28,17 +28,17 @@ const schemeColorBlindFriendly: string[] =
 
 // Diverging Color Schemes
 export const diverging: ColorSchemeRange = {
-  brownBlueGreen: d3.scaleSequential(d3.interpolateBrBG),
-  purpleRedGreen: d3.scaleSequential(d3.interpolatePRGn),
-  purpleOrange: d3.scaleSequential(d3.interpolatePuOr),
-  redBlue: d3.scaleSequential(d3.interpolateRdBu),
-  redGrey: d3.scaleSequential(d3.interpolateRdGy),
-  redYellowBlue: d3.scaleSequential(d3.interpolateRdYlBu),
+  brownBlueGreen: d3.scaleDiverging(d3.interpolateBrBG),
+  purpleRedGreen: d3.scaleDiverging(d3.interpolatePRGn),
+  purpleOrange: d3.scaleDiverging(d3.interpolatePuOr),
+  redBlue: d3.scaleDiverging(d3.interpolateRdBu),
+  redGrey: d3.scaleDiverging(d3.interpolateRdGy),
+  redYellowBlue: d3.scaleDiverging(d3.interpolateRdYlBu),
   redYellowGreen: d3.scaleDiverging(d3.interpolateRdYlGn),
-  yellowOrangeBrown: d3.scaleSequential(d3.interpolateYlOrBr),
-  yellowOrangeRed: d3.scaleSequential(d3.interpolateYlOrRd),
-  pinkYellowGreen: d3.scaleSequential(d3.interpolatePiYG),
-  purpleBlueGreen: d3.scaleSequential(d3.interpolatePuBuGn),
+  yellowOrangeBrown: d3.scaleDiverging(d3.interpolateYlOrBr),
+  yellowOrangeRed: d3.scaleDiverging(d3.interpolateYlOrRd),
+  pinkYellowGreen: d3.scaleDiverging(d3.interpolatePiYG),
+  purpleBlueGreen: d3.scaleDiverging(d3.interpolatePuBuGn),
 };
 
 // Sequential Color Schemes
@@ -131,7 +131,7 @@ export enum ColorSchemeNames {
   sinebow = 'Sinebow',
   turbo = 'Turbo',
   cubeHelixDefault = 'CubeHelixDefault',
-  spectral = 'spectral',
+  spectral = 'Spectral',
   // Discrete
   category10 = 'Category10',
   tableau10 = 'Tableau10',
@@ -143,4 +143,6 @@ export enum ColorSchemeNames {
   set1 = 'Set1',
   set2 = 'Set2',
   set3 = 'Set3',
+  // CUSTOM
+  colorBlindSet8 = 'ColorBlind8',
 }

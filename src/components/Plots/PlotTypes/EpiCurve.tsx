@@ -10,7 +10,7 @@ import {
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
@@ -276,9 +276,11 @@ function EpiCurve(props: PlotTypeProps) {
         </Select>
       </FormControl>
       {colourField !== 'none' && (
-        <ColorSchemeSelectorPlotStyle
+        <ColorSchemeSelector
           selectedScheme={colourScheme}
           onColourChange={(newColor) => setColourScheme(newColor)}
+          variant="outlined"
+          size="small"
         />
       )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>

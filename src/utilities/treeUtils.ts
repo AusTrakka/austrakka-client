@@ -48,7 +48,6 @@ export default function mapMetadataToPhylocanvas(
       };
     });
   }
-
   const metadataAndLegends = {
     result,
     legends: fieldPalettes,

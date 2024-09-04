@@ -6,9 +6,9 @@ import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -159,9 +159,11 @@ function HeatMap(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <ColorSchemeSelectorPlotStyle
+      <ColorSchemeSelector
         selectedScheme={colourScheme}
         onColourChange={(newColor) => setColourScheme(newColor)}
+        variant="standard"
+        size="small"
       />
     </Box>
   );

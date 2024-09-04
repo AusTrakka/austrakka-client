@@ -20,7 +20,8 @@ function getPaletteForRangeColorScheme(schemeName: string, values: string[]): Le
 
 function getPaletteForDiscreteColorScheme(schemeName: string, values: string[]): Legend {
   if (discrete[schemeName]) {
-    const coloursScale = discrete[schemeName].domain(values);
+    const colorsScheme = discrete[schemeName];
+    const coloursScale = colorsScheme.domain(values);
     const mapping: Legend = {};
     values.forEach((val) => {
       mapping[val] = coloursScale(val);
@@ -50,4 +51,15 @@ export function createColourMapping(uniqueValues: string[], colorScheme: string)
     mapping[''] = NULL_COLOUR;
   }
   return mapping;
+}
+
+export function generateColorSchemeThumbnail(schemeName: string): string[] {
+  if (!allColorSchemes[schemeName]) return [];
+  
+  if (discrete[schemeName]) {
+    const domain = discrete[schemeName].range();
+    return domain.slice(0, 5);
+  }
+  
+  return d3.quantize(rangeColorSchemes[schemeName], 5);
 }
