@@ -13,6 +13,8 @@ d3.ScaleOrdinal<string, string> |
 d3.ScaleSequential<string, never> |
 d3.ScaleDiverging<string, never>>;
 
+export const defaultColorSchemeName : string = 'tableau10';
+
 // Colorblind friendly color scheme
 const schemeColorBlindFriendly: string[] =
     [
@@ -30,15 +32,13 @@ const schemeColorBlindFriendly: string[] =
 export const diverging: ColorSchemeRange = {
   brownBlueGreen: d3.scaleDiverging(d3.interpolateBrBG),
   purpleRedGreen: d3.scaleDiverging(d3.interpolatePRGn),
+  pinkYellowGreen: d3.scaleDiverging(d3.interpolatePiYG),
   purpleOrange: d3.scaleDiverging(d3.interpolatePuOr),
   redBlue: d3.scaleDiverging(d3.interpolateRdBu),
   redGrey: d3.scaleDiverging(d3.interpolateRdGy),
   redYellowBlue: d3.scaleDiverging(d3.interpolateRdYlBu),
   redYellowGreen: d3.scaleDiverging(d3.interpolateRdYlGn),
-  yellowOrangeBrown: d3.scaleDiverging(d3.interpolateYlOrBr),
-  yellowOrangeRed: d3.scaleDiverging(d3.interpolateYlOrRd),
-  pinkYellowGreen: d3.scaleDiverging(d3.interpolatePiYG),
-  purpleBlueGreen: d3.scaleDiverging(d3.interpolatePuBuGn),
+  spectral: d3.scaleDiverging(d3.interpolateSpectral),
 };
 
 // Sequential Color Schemes
@@ -53,24 +53,26 @@ export const sequential: ColorSchemeRange = {
   bluePurple: d3.scaleSequential(d3.interpolateBuPu),
   greenBlue: d3.scaleSequential(d3.interpolateYlGnBu),
   orangeRed: d3.scaleSequential(d3.interpolateOrRd),
+  purpleBlueGreen: d3.scaleSequential(d3.interpolatePuBuGn),
   purpleBlue: d3.scaleSequential(d3.interpolatePuBu),
   purpleRed: d3.scaleSequential(d3.interpolatePuRd),
   redPurple: d3.scaleSequential(d3.interpolateRdPu),
   yellowGreen: d3.scaleSequential(d3.interpolateYlGn),
-};
-
-// External Color Schemes
-export const external: ColorSchemeRange = {
+  yellowOrangeBrown: d3.scaleSequential(d3.interpolateYlOrBr),
+  yellowOrangeRed: d3.scaleSequential(d3.interpolateYlOrRd),
   viridis: d3.scaleSequential(d3.interpolateViridis),
   magma: d3.scaleSequential(d3.interpolateMagma),
   inferno: d3.scaleSequential(d3.interpolateInferno),
   plasma: d3.scaleSequential(d3.interpolatePlasma),
   cividis: d3.scaleSequential(d3.interpolateCividis),
-  rainbow: d3.scaleSequential(d3.interpolateRainbow),
-  sinebow: d3.scaleSequential(d3.interpolateSinebow),
-  spectral: d3.scaleSequential(d3.interpolateSpectral),
   turbo: d3.scaleSequential(d3.interpolateTurbo),
   cubeHelixDefault: d3.scaleSequential(d3.interpolateCubehelixDefault),
+};
+
+// External Color Schemes
+export const cyclical: ColorSchemeRange = {
+  rainbow: d3.scaleSequential(d3.interpolateRainbow),
+  sinebow: d3.scaleSequential(d3.interpolateSinebow),
 };
 
 // add a type to this when we ever want to use it??
@@ -88,7 +90,7 @@ export const discrete: ColorSchemeDiscrete = {
   colorBlindSet8: d3.scaleOrdinal(schemeColorBlindFriendly),
 };
 
-export const rangeColorSchemes: ColorSchemeRange = { ...sequential, ...diverging, ...external };
+export const rangeColorSchemes: ColorSchemeRange = { ...sequential, ...diverging, ...cyclical };
 export const discreteColorSchemes: ColorSchemeDiscrete = { ...discrete };
 export const allColorSchemes: ColorSchemeAll = { ...rangeColorSchemes, ...discreteColorSchemes };
 
@@ -130,19 +132,19 @@ export enum ColorSchemeNames {
   rainbow = 'Rainbow',
   sinebow = 'Sinebow',
   turbo = 'Turbo',
-  cubeHelixDefault = 'CubeHelixDefault',
+  cubeHelixDefault = 'Cube-Helix-Default',
   spectral = 'Spectral',
   // Discrete
-  category10 = 'Category10',
-  tableau10 = 'Tableau10',
-  accent = 'Accent',
-  dark2 = 'Dark2',
-  paired = 'Paired',
-  pastel1 = 'Pastel1',
-  pastel2 = 'Pastel2',
-  set1 = 'Set1',
-  set2 = 'Set2',
-  set3 = 'Set3',
+  category10 = 'Category [10]',
+  tableau10 = 'Tableau [10]',
+  accent = 'Accent [8]',
+  dark2 = 'Dark [8]',
+  paired = 'Paired [12]',
+  pastel1 = 'Pastel [9]',
+  pastel2 = 'Pastel [8]',
+  set1 = 'Set1 [9]',
+  set2 = 'Set2 [8]',
+  set3 = 'Set3 [12]',
   // CUSTOM
-  colorBlindSet8 = 'ColorBlind8',
+  colorBlindSet8 = 'Color-Blind Set [8]',
 }

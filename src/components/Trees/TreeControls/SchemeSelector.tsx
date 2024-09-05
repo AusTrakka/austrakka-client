@@ -4,15 +4,10 @@ import Typography from '@mui/material/Typography';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { InputLabel, ListSubheader, MenuItem, Stack, Tooltip } from '@mui/material';
 import {
-  ColorSchemeNames,
-  discreteColorSchemes,
-  diverging,
-  external,
-  sequential,
+  ColorSchemeNames, cyclical, defaultColorSchemeName,
+  discreteColorSchemes, diverging, sequential,
 } from '../../../constants/schemes';
 import { generateColorSchemeThumbnail } from '../../../utilities/colourUtils';
-
-const defaultColorSchemeName : string = 'spectral';
 
 interface SelectorProps {
   onColourChange: (value: string) => void;
@@ -114,16 +109,7 @@ export default function ColorSchemeSelector({
             )}
           </MenuItem>
         ))}
-        <ListSubheader>External</ListSubheader>
-        {Object.keys(external).map((schemeName) => (
-          <MenuItem key={schemeName} value={schemeName}>
-            {generateThumbnailWithTooltip(
-              generateColorSchemeThumbnail(schemeName),
-              schemeName,
-              true,
-            )}
-          </MenuItem>
-        ))}
+        
         <ListSubheader>Diverging</ListSubheader>
         {Object.keys(diverging).map((schemeName) => (
           <MenuItem key={schemeName} value={schemeName}>
@@ -136,6 +122,16 @@ export default function ColorSchemeSelector({
         ))}
         <ListSubheader>Sequential</ListSubheader>
         {Object.keys(sequential).map((schemeName) => (
+          <MenuItem key={schemeName} value={schemeName}>
+            {generateThumbnailWithTooltip(
+              generateColorSchemeThumbnail(schemeName),
+              schemeName,
+              true,
+            )}
+          </MenuItem>
+        ))}
+        <ListSubheader>Cyclical</ListSubheader>
+        {Object.keys(cyclical).map((schemeName) => (
           <MenuItem key={schemeName} value={schemeName}>
             {generateThumbnailWithTooltip(
               generateColorSchemeThumbnail(schemeName),

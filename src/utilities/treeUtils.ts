@@ -5,6 +5,7 @@ import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
+import { defaultColorSchemeName } from '../constants/schemes';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
@@ -21,7 +22,7 @@ export default function mapMetadataToPhylocanvas(
     .forEach((fi) => {
       fieldPalettes[fi.columnName] = createColourMapping(
         fieldUniqueValues[fi.columnName] ?? [],
-        colorSchemeSelected[fi.columnName] ?? 'spectral',
+        colorSchemeSelected[fi.columnName] ?? defaultColorSchemeName,
       );
     });
 
