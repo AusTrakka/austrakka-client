@@ -118,7 +118,6 @@ function MainMenuLayout() {
       title: 'Fields',
       link: '/fields',
       icon: <ViewColumn />,
-      permissionDomain: 'fields',
     },
   ];
   const visiblePages = pages.filter((page) =>

@@ -6,18 +6,27 @@
 import { TopLevelSpec } from 'vega-lite';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
+import { ProjectViewField } from '../types/dtos';
 
-const ONE_SAMPLE_POINT_SIZE = 80;
+const ONE_SAMPLE_POINT_SIZE = 40;
 
-// Get the preferred field to populate a selector when fields first loaded
-// If a preferred field is not of the correct type it will simply appear unavailable
-export const getStartingField = (preferredFields: string[], availableFields: string[]): string => {
+// Get the preferred field to populate a selector when fields first loaded.
+// If a preferred field is not of the correct type it will simply appear unavailable.
+// If in show-all mode, the first preferredField is SNP_cluster and available fields are
+// SNP_cluster_analysis1 and SNP_cluster_analysis2, one of these will be selected, and
+// which one is not strictly defined.
+export const getStartingField = (
+  preferredFields: string[],
+  availableFields: ProjectViewField[],
+): string => {
   for (const preferredField of preferredFields) {
-    if (availableFields.includes(preferredField)) {
-      return preferredField;
+    for (const availableField of availableFields) {
+      if (availableField.projectFieldName === preferredField) {
+        return availableField.columnName;
+      }
     }
   }
-  return availableFields[0];
+  return availableFields[0].columnName;
 };
 
 // Update a spec to replace a field value, returning the new object
@@ -192,7 +201,7 @@ export const setTimeAggregationInSpecToValue = (
     size = {
       field: 'count',
       scale: { rangeMin: ONE_SAMPLE_POINT_SIZE, type: 'linear' },
-      legend: null,
+      legend: { orient: 'bottom' },
     };
   }
 

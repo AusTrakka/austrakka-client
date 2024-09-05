@@ -1,4 +1,4 @@
-import { renderValueWithEmptyNull } from '../../../src/utilities/helperUtils';
+import { renderValueWithEmptyNull } from '../../../src/utilities/renderUtils';
 
 describe('renderValueWithEmptyNull', () => {
   describe('when given null or undefined', () => {

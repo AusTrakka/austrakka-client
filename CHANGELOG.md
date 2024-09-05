@@ -2,6 +2,13 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-08-27
+
+### Changed
+- The condition `on and after` and `on and before` have been changed to just be 
+  `After` and `Before` respectively. This is due to in the change of TableComponent.
+  To have the same effect as before you must use the `On` condition in conjunction with the `After` or `Before` condition.
+
 ## 2024-08-16
 
 ### Changed

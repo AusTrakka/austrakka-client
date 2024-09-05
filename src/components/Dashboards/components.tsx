@@ -1,5 +1,5 @@
 /* eslint-disable import/no-cycle */
-import React, { Dispatch } from 'react';
+import React from 'react';
 
 // Importing all possible dashboard components
 import SampleSummary from '../Widgets/SampleSummary/SampleSummary';
@@ -28,16 +28,12 @@ export const ComponentActions: any = {
 
 export default function renderComponent(
   component: { name: keyof ComponentsType ; width: number; order: number; },
-  setFilterList: any, // TODO: Fix
-  setTabValue: Dispatch<React.SetStateAction<number>>,
 ) {
   if (typeof Components[component.name] !== 'undefined') {
-    return React.createElement(Components[component.name], { setFilterList, setTabValue });
+    return React.createElement(Components[component.name]);
   }
   // Returns nothing if a matching React component doesn't exist
   return React.createElement(
-    () => (
-      null
-    ),
+    () => null,
   );
 }

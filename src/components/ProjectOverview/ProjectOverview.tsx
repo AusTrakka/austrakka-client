@@ -26,7 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { DataFilter } from '../DataFilters/DataFilters';
+import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
@@ -46,10 +46,6 @@ function ProjectOverview() {
     latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
   });
   // const [lastUpload] = useState('');
-
-  // TODO get rid of this filter state, use navigation URL to set filters instead
-  // Samples component states
-  const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
 
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
@@ -113,36 +109,7 @@ function ProjectOverview() {
     }
   }, [projectDetails, token, tokenLoading, dispatch]);
 
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => [
-    {
-      index: 0,
-      title: 'Summary',
-    },
-    {
-      index: 1,
-      title: 'Samples',
-    },
-    {
-      index: 2,
-      title: 'Trees',
-    },
-    {
-      index: 3,
-      title: 'Plots',
-    },
-    {
-      index: 4,
-      title: 'Members',
-    },
-    {
-      index: 5,
-      title: 'Proformas',
-    },
-    {
-      index: 6,
-      title: 'Datasets',
-    },
-  ], []);
+  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
   useEffect(() => {
     const initialTabValue = projectOverviewTabs
@@ -164,21 +131,18 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {projectDetails ? projectDetails.name : ''}
           </Typography>
-          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
+          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
               groupId={projectDetails ? projectDetails!.projectMembers.id : null}
-              setFilterList={setSampleFilters}
-              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
               projectAbbrev={projectAbbrev!}
               isSamplesLoading={isSamplesLoading}
-              inputFilters={sampleFilters}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>

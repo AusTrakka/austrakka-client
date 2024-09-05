@@ -1,6 +1,6 @@
 import { register, TimeZone, unregister } from 'timezone-mock';
-import { isoDateLocalDateNoTime } from '../../../src/utilities/helperUtils';
 import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
+import { isoDateLocalDateNoTime } from '../../../src/utilities/dateUtils';
 
 describe('isoDateLocalDateNoTime', () => {
   beforeAll(() => {

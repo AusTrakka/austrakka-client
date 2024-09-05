@@ -1,43 +1,36 @@
-import React, { useEffect, Dispatch, SetStateAction } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import { FilterMatchMode } from 'primereact/api';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
-import { DataFilter } from '../../DataFilters/DataFilters';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
 
 interface ProjectDashboardProps {
   projectDesc: string,
   projectId: number | null,
   groupId: number | null,
-  setFilterList: Dispatch<SetStateAction<DataFilter[]>>,
-  setTabValue: Dispatch<SetStateAction<number>>,
 }
 
 function renderDashboard(
   dashboardName: any,
   projectId: any,
   groupId: any,
-  setFilterList: any,
-  setTabValue: Dispatch<React.SetStateAction<number>>,
 ) {
   if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
     return React.createElement(
       DashboardTemplates[dashboardName],
-      { projectId, groupId, setFilterList, setTabValue },
+      { projectId, groupId },
     );
   }
   // Returns nothing if a matching React dashboard template component doesn't exist
   return React.createElement(
-    () => (
-      null
-    ),
+    () => null,
   );
 }
 
@@ -51,8 +44,10 @@ function DateSelector(props: any) {
 
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     dispatch(updateTimeFilter(event.target.value as string));
-    let filterObject = {};
-    let value;
+    const dateField = 'Date_created';
+    let primeTableFilterObject: DataTableFilterMeta = {};
+
+    let value: Date | undefined;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
       value = dayjs().subtract(7, 'days').toDate();
@@ -61,15 +56,19 @@ function DateSelector(props: any) {
     }
 
     if (value !== undefined) {
-      filterObject = {
-        field: 'Date_created',
-        fieldType: FieldTypes.DATE,
-        condition: FilterMatchMode.DATE_AFTER,
-        value,
+      primeTableFilterObject = {
+        [dateField]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              value,
+              matchMode: FilterMatchMode.DATE_AFTER,
+            }],
+        },
       };
     }
 
-    dispatch(updateTimeFilterObject(filterObject));
+    dispatch(updateTimeFilterObject(primeTableFilterObject));
 
     const dispatchProps = {
       projectId,
@@ -101,7 +100,7 @@ function DateSelector(props: any) {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, groupId, setFilterList, setTabValue } = props;
+  const { projectDesc, projectId, groupId } = props;
   const { token, tokenLoading } = useApi();
   const {
     data,
@@ -133,7 +132,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               ) : null }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              {renderDashboard(data.data, projectId, groupId, setFilterList, setTabValue)}
+              {renderDashboard(data.data, projectId, groupId)}
             </Grid>
           </>
         )}

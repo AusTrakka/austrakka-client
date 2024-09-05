@@ -1,27 +1,57 @@
+.my-flexible-table {
+  width: 100%;
+}
+
+.my-flexible-table .p-datatable-wrapper {
+  overflow: hidden;
+}
+
+.my-flexible-table .p-datatable-table {
+  table-layout: auto;
+}
+
+.my-flexible-table .flexible-column {
+  width: 0px;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value-cells {
+  padding-right: 15px;
+}
+
+/* This targets the last visible column */
+.my-flexible-table .flexible-column:last-child {
+  width: auto;
+}
+
+/* Your existing custom header styles */
 .custom-header {
-    padding-left: 10px;
-    writing-mode: vertical-lr;
-    transform: rotate(180deg);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  padding-left: 10px;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .custom-title .p-column-title {
-    display: flex;
-    align-items: center;
-  }
-  .custom-title .p-column-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    white-space: nowrap;
-    flex-direction: row; /* Add this line */;
-  }
+.custom-title .p-column-title {
+  display: flex;
+  align-items: center;
+}
 
-  .custom-icon-container {
-    display: flex;
-    align-items: center;
-    padding: 5px;
-  }
+.custom-title .p-column-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  flex-direction: row;
+}
 
+.custom-icon-container {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}

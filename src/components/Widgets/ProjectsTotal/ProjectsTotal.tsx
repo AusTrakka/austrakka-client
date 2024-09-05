@@ -7,8 +7,8 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../Common/DrilldownButton';
-import { isoDateLocalDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
+import { isoDateLocalDate } from '../../../utilities/dateUtils';
 
 const columns = [
   { field: 'projectName', header: 'Project Name' },

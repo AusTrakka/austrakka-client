@@ -2,7 +2,7 @@
 /* eslint-disable react/jsx-pascal-case */
 
 import React, {
-  useEffect, useRef, useState,
+  useEffect, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import DataFilters, { DataFilter, defaultState } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -30,12 +30,12 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-import { convertDataTableFilterMetaToDataFilterObject, isDataTableFiltersEqual, useStateFromSearchParamsForFilterObject } from '../../utilities/helperUtils';
+
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface SamplesProps {
   projectAbbrev: string,
   isSamplesLoading: boolean,
-  inputFilters: DataFilter[] | null,
 }
 
 interface BodyComponentProps {
@@ -56,9 +56,7 @@ function Samples(props: SamplesProps) {
   const {
     projectAbbrev,
     isSamplesLoading,
-    inputFilters,
   } = props;
-  const prevInputProp = useRef<DataFilter[] | null>();
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -68,7 +66,6 @@ function Samples(props: SamplesProps) {
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [initialisingFilters, setInitialisingFilters] = useState<boolean>(true);
 
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
@@ -79,34 +76,8 @@ function Samples(props: SamplesProps) {
 
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const [filterList, setFilterList] =
-      useState<DataFilter[]>(inputFilters && inputFilters.length > 0 ? inputFilters : []);
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
-
-  useEffect(() => {
-    const initialFilterState = () => {
-      if (inputFilters && inputFilters.length > 0) {
-        setFilterList(inputFilters);
-      } else if (!isDataTableFiltersEqual(currentFilters, defaultState)) {
-        setFilterList(convertDataTableFilterMetaToDataFilterObject(
-          currentFilters,
-          metadata?.fields!,
-        ));
-      } else {
-        setFilterList([]);
-      }
-      setInitialisingFilters(false);
-    };
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED &&
-      metadata?.fields && initialisingFilters) {
-      initialFilterState();
-    }
-    if (prevInputProp.current !== inputFilters && inputFilters && inputFilters.length > 0) {
-      setFilterList(inputFilters);
-    }
-    prevInputProp.current = inputFilters;
-  }, [metadata?.loadingState, metadata?.fields, initialisingFilters, currentFilters, inputFilters]);
 
   // Set column headers from metadata state
   useEffect(() => {
@@ -187,7 +158,7 @@ function Samples(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading || initialisingFilters) return null;
+  if (isSamplesLoading) return null;
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
@@ -222,9 +193,8 @@ function Samples(props: SamplesProps) {
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        filterList={filterList!}
-        setFilterList={setFilterList}
         setLoadingState={setLoadingState}
+        primeReactFilters={currentFilters}
       />
       {
         /* TODO: Make a function for the table so that a different sort is used per column type */

@@ -2,7 +2,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, Switch, TableCell, TableRow, TextField } from '@mui/material';
 import { User } from '../../../types/dtos';
-import { isoDateLocalDate } from '../../../utilities/helperUtils';
+import { isoDateLocalDate } from '../../../utilities/dateUtils';
 
 interface EditableRowProps {
   field: keyof User;

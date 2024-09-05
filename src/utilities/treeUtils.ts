@@ -4,7 +4,7 @@ import { Field } from '../types/dtos';
 import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from './helperUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],

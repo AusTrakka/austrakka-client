@@ -25,6 +25,7 @@ function Fields() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const user: UserSliceState = useAppSelector(selectUserState);
+  const interactionPermission = hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick);
 
   // get all AT fields
   useEffect(() => {
@@ -37,18 +38,25 @@ function Fields() {
     };
 
     const retrieveFields = async () => {
-      const response: ResponseObject = await getFields(token);
-      if (response.status === ResponseType.Success) {
-        const responseFields: MetaDataColumn[] = response.data;
-        responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
-        setNullsToCategorical(responseFields);
-        setFields(responseFields);
-      } else if (response.status === ResponseType.Error) {
-        setError(response.message);
+      try {
+        const response: ResponseObject = await getFields(token);
+        if (response.status === ResponseType.Success) {
+          const responseFields: MetaDataColumn[] = response.data;
+          responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
+          setNullsToCategorical(responseFields);
+          setFields(responseFields);
+        } else if (response.status === ResponseType.Error) {
+          setError(response.message);
+        }
+      } catch (e) {
+        setError('An unexpected error occurred.');
       }
     };
+
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      retrieveFields();
+      (async () => {
+        await retrieveFields(); // Await the promise to avoid unhandled rejection warnings
+      })();
     }
   }, [token, tokenLoading]);
 
@@ -141,7 +149,7 @@ function Fields() {
     </div>
   );
 
-  const columns = [
+  const interactiveColumns = [
     {
       field: 'columnName',
       header: 'Field',
@@ -167,57 +175,73 @@ function Fields() {
     },
   ];
 
+  const nonInteractiveColumns = [
+    {
+      field: 'columnName',
+      header: 'Field',
+    },
+    {
+      field: 'description',
+      header: 'Description',
+    },
+    {
+      field: 'primitiveType',
+      header: 'Type',
+    },
+    {
+      field: 'metaDataColumnValidValues',
+      header: 'Allowed Values',
+      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+    },
+  ];
+
+  const columns = interactionPermission ? interactiveColumns : nonInteractiveColumns;
+
   return (
-    !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
-      <Alert severity="error">
-        Admin Only Page: Unauthorized
-      </Alert>
-    ) : (
-      <>
-        <Typography className="pageTitle">Fields</Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Paper elevation={2} sx={{ marginBottom: 10 }}>
-          <DataTable
-            value={fields}
-            size="small"
-            columnResizeMode="expand"
-            resizableColumns
-            showGridlines
-            reorderableColumns
-            removableSort
-            header={header}
-            scrollable
-            scrollHeight="calc(100vh - 300px)"
-            sortIcon={sortIcon}
-            paginator
-            rows={25}
-            rowsPerPageOptions={[25, 50, 100, 150]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight
-            selectionMode="single"
-            editMode="cell"
-            filters={globalFilter}
-          >
-            {columns.map((col: any) => (
-              <Column
-                key={col.field}
-                field={col.field}
-                header={col.header}
-                body={col.body}
-                editor={(options) => cellEditor(options)}
-                sortable
-                resizeable
-                headerClassName="custom-title"
-                style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
-                onCellEditComplete={onCellEditComplete}
-              />
-            ))}
-          </DataTable>
-        </Paper>
-      </>
-    )
+    <>
+      <Typography className="pageTitle">Fields</Typography>
+      {error && <Alert severity="error">{error}</Alert>}
+      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+        <DataTable
+          value={fields}
+          size="small"
+          columnResizeMode="expand"
+          resizableColumns
+          showGridlines
+          reorderableColumns
+          removableSort
+          header={header}
+          scrollable
+          scrollHeight="calc(100vh - 300px)"
+          sortIcon={sortIcon}
+          paginator
+          rows={25}
+          rowsPerPageOptions={[25, 50, 100, 150]}
+          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+          paginatorPosition="bottom"
+          paginatorRight
+          selectionMode="single"
+          editMode={hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick) ? 'cell' : undefined}
+          filters={globalFilter}
+        >
+          {columns.map((col: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              body={col.body}
+              editor={interactionPermission ? (options) => cellEditor(options) : undefined}
+              sortable
+              resizeable
+              headerClassName="custom-title"
+              style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
+              onCellEditComplete={onCellEditComplete}
+            />
+          ))}
+        </DataTable>
+      </Paper>
+    </>
   );
 }
 
