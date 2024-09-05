@@ -3,9 +3,9 @@ import { SampleSummary } from './sample.summary.interface';
 import { getProjectDashboardOveriew } from '../../../utilities/resourceUtils';
 import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
-import { generateDateFilterString } from '../../../utilities/helperUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
+import { generateDateFilterString } from '../../../utilities/filterUtils';
 
 interface SampleSummaryState {
   loading: LoadingState

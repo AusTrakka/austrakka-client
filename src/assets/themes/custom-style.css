@@ -16,6 +16,17 @@
     
     }
 
+    .p-datatable.p-datatable-gridlines {
+      --data-table-border-color: rgb(234, 229, 234); /* This will change the border 
+                                                    colours should be some sort of grey */
+    }
+    
+    .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th,
+    .p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td,
+    .p-datatable.p-datatable-gridlines .p-datatable-tfoot > tr > td {
+      border-color: var(--data-table-border-color) !important;
+    }
+
     .p-datatable-wrapper
     {
       min-height: 80px;

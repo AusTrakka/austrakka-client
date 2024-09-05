@@ -1,19 +1,19 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
-import { FilterMatchMode } from 'primereact/api';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTableFilterMeta } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchSummary } from './sampleSummarySlice';
 import LoadingState from '../../../constants/loadingState';
 import DrilldownButton from '../../Common/DrilldownButton';
-import { formatDate } from '../../../utilities/helperUtils';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
+import { formatDate } from '../../../utilities/dateUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 export default function SampleSummary(props: any) {
   const {
-    setFilterList,
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -23,26 +23,34 @@ export default function SampleSummary(props: any) {
   const sampleSummaryDispatch = useAppDispatch();
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   // Drilldown filters
   const allSamplesFilter: any [] = [];
-  const hasSequenceFilter = [
-    {
-      field: 'Has_sequences',
-      fieldType: FieldTypes.BOOLEAN,
-      condition: FilterMatchMode.EQUALS,
-      value: false,
+
+  const hasSequenceFilter: DataTableFilterMeta = {
+    Has_sequences: {
+      operator: FilterOperator.AND,
+      constraints: [
+        {
+          matchMode: FilterMatchMode.EQUALS,
+          value: false,
+        },
+      ],
     },
-  ];
+  };
   const getLastUploadFilter = (date: any) => {
-    const latestUploadFilter = [
-      {
-        field: 'Date_created',
-        fieldType: FieldTypes.DATE,
-        condition: FilterMatchMode.DATE_AFTER,
-        value: date,
+    const latestUploadFilter: DataTableFilterMeta = {
+      Date_created: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.DATE_AFTER,
+            value: date,
+          },
+        ],
       },
-    ];
+    };
     return latestUploadFilter;
   };
 
@@ -63,16 +71,17 @@ export default function SampleSummary(props: any) {
     if (Object.keys(timeFilterObject).length !== 0) {
       // AppendtimeFilterObject for drills down other than latest_upload
       if (drilldownName === 'all_samples' || drilldownName === 'has_sequence') {
-        const appendedFilters = [...drilldownFilters, timeFilterObject];
-        // TODO to make these dashboard calls work have change DataFilters
-        setFilterList(appendedFilters);
+        const appendedFilters: DataTableFilterMeta = {
+          ...drilldownFilters,
+          ...timeFilterObject,
+        };
+        updateTabUrlWithSearch(navigate, '/samples', appendedFilters);
       } else {
-        setFilterList(drilldownFilters);
+        updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
       }
     } else {
-      setFilterList(drilldownFilters);
+      updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
     }
-    setTabValue(1);
   };
 
   return (

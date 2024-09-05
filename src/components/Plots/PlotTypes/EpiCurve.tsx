@@ -11,7 +11,8 @@ import {
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
-import { useStateFromSearchParamsForPrimitive } from '../../../utilities/helperUtils';
+import { ProjectViewField } from '../../../types/dtos';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -113,26 +114,23 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-                        (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+                        (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Similarly starting value for row facet is None
-      const localDateFields = fields
-        .filter(field => field.primitiveType === 'date')
-        .map(field => field.columnName);
-      setDateFields(localDateFields);
+      const localDateFields : ProjectViewField[] = fields
+        .filter(field => field.primitiveType === 'date');
+      setDateFields(localDateFields.map(field => field.columnName));
       // Mandatory fields: one date field
       if (localDateFields.length === 0) {
         setPlotErrorMsg('No date fields found in project, cannot render plot');
         return;
       }
+      // If the URL does not specify a mandatory field, try to set the preferred field
       if (dateField === '') {
         setDateField(getStartingField(preferredDateFields, localDateFields));
-      } else if (!localDateFields.includes(dateField)) {
-        setPlotErrorMsg('Invalid field in URL, cannot render plot');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

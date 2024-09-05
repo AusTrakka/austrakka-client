@@ -1,6 +1,4 @@
-import { testOnlyExports } from '../../../src/utilities/helperUtils';
-
-const { decodeUrlToFilterObj } = testOnlyExports;
+import { decodeUrlToFilterObj } from '../../../src/utilities/urlUtils';
 
 describe('decodeUrlToFilterObj', () => {
   describe('when given a simple filter object', () => {

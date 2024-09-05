@@ -11,7 +11,6 @@ import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
@@ -19,6 +18,7 @@ import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 
 interface DatasetProps {
   projectDetails: Project | null;

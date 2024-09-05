@@ -43,11 +43,9 @@ function Users() {
 
   const emailBodyTemplate = (rowData: UserList) => (
     (!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ?
-      <Typography>~Not Filled~</Typography> : (
-        <Typography>
-          {rowData.contactEmail}
-        </Typography>
-      )
+      '~Not Filled~' :
+      rowData.contactEmail
+      
   );
 
   const columns = [
@@ -164,6 +162,7 @@ function Users() {
               paginatorRight
               selectionMode="single"
               editMode="cell"
+              className="my-flexible-table"
               filters={globalFilter}
               globalFilterFields={columns.map((col) => col.field)}
             >
@@ -177,6 +176,8 @@ function Users() {
                   sortable={col.field !== 'contactEmail'}
                   resizeable
                   headerClassName="custom-title"
+                  className="flexible-column"
+                  bodyClassName="value-cells"
                 />
               ))}
             </DataTable>
