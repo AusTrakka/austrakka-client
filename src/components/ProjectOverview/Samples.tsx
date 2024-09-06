@@ -4,21 +4,21 @@
 import React, {
   useEffect, useState,
 } from 'react';
-import { Close, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent, DataTableFilterMeta } from 'primereact/datatable';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton,
   Dialog,
   Alert, AlertTitle, Paper, Tooltip,
+  Typography,
 } from '@mui/material';
 import './Samples.css';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
-import { FilterMatchMode } from 'primereact/api';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { buildPrimeReactColumnDefinitionsPVF } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -28,11 +28,14 @@ import ExportTableData from '../Common/ExportTableData';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
+import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
+import { ProjectField } from '../../types/dtos';
+
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface SamplesProps {
   projectAbbrev: string,
   isSamplesLoading: boolean,
-  inputFilters: DataFilter[] | null,
 }
 
 interface BodyComponentProps {
@@ -53,17 +56,17 @@ function Samples(props: SamplesProps) {
   const {
     projectAbbrev,
     isSamplesLoading,
-    inputFilters,
   } = props;
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
-  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defaultState,
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>(inputFilters ?? []);
+
   const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
@@ -71,31 +74,24 @@ function Samples(props: SamplesProps) {
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
 
-  const metadata : ProjectMetadataState | null =
+  const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
 
   // Set column headers from metadata state
   useEffect(() => {
-    if (!metadata?.fields) return;
-    const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata!.fields!);
-    setReadyFields(metadata!.fieldLoadingStates);
-    setFilteredDataLength(metadata!.metadata?.length ?? 0);
+    if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
+    const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
+    setReadyFields(metadata.fieldLoadingStates);
     setSampleTableColumns(columnBuilder);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata?.fields, metadata?.fieldLoadingStates]);
-
-  useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata!);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
+    setFilteredDataLength(metadata.metadata?.length ?? 0);
+  }, [metadata?.fields, metadata?.fieldLoadingStates, metadata?.metadata?.length]);
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.ERROR ||
-        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -107,9 +103,28 @@ function Samples(props: SamplesProps) {
     }
   };
 
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
+
+  const getFieldSource = (field: string) => {
+    const fieldObj = metadata?.fields?.find(f => f.columnName === field);
+    return `${fieldObj?.fieldSource}`;
+  };
+
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <KeyValuePopOver
+          data={metadata?.projectFields || []}
+          keyExtractor={(field: ProjectField) => field.fieldName}
+          valueExtractor={(field: ProjectField) => field.fieldSource}
+          valueFormatter={(value: string) => value.replace(/^Source From\s*/i, '')}
+          searchPlaceholder="Search by field..."
+          toolTipTitle="Show Field Sources"
+        />
         <ColumnVisibilityMenu
           columns={sampleTableColumns}
           onColumnVisibilityChange={(selectedCols) => {
@@ -133,10 +148,10 @@ function Samples(props: SamplesProps) {
         </Tooltip>
         <ExportTableData
           dataToExport={
-        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-          ? []
-          : filteredData ?? []
-      }
+            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+              ? []
+              : filteredData ?? []
+          }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
         />
       </div>
@@ -178,12 +193,11 @@ function Samples(props: SamplesProps) {
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        filterList={filterList}
-        setFilterList={setFilterList}
         setLoadingState={setLoadingState}
+        primeReactFilters={currentFilters}
       />
       {
-      /* TODO: Make a function for the table so that a different sort is used per column type */
+        /* TODO: Make a function for the table so that a different sort is used per column type */
       }
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <div>
@@ -215,18 +229,33 @@ function Samples(props: SamplesProps) {
             reorderableColumns
             resizableColumns
             sortIcon={sortIcon}
+            emptyMessage={(
+              <Typography variant="subtitle1" color="textSecondary" align="center">
+                No samples found
+              </Typography>
+            )}
           >
-            {sampleTableColumns.map((col: any, index: any) => (
+            {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={(
-                  !verticalHeaders ? <div>{col.header}</div> : (
+                header={
+                  !verticalHeaders ? (
+                    <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                      {col.header}
+                      <Tooltip title={getFieldSource(col.field)} placement="top">
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                      </Tooltip>
+                    </div>
+                  ) : (
                     <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
                       {col.header}
+                      <Tooltip title={getFieldSource(col.field)} placement="top">
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                      </Tooltip>
                     </div>
                   )
-                )}
+                }
                 body={BodyComponent({ col, readyFields })}
                 hidden={col.hidden}
                 sortable
@@ -234,7 +263,7 @@ function Samples(props: SamplesProps) {
                 headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
                 headerClassName="custom-title"
               />
-            ))}
+            )) : null}
           </DataTable>
         </div>
       </Paper>

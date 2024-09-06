@@ -2,18 +2,18 @@ import { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
 
 export enum PermissionLevel {
-  CanClick = 'canClick',
+  CanClick = 'canClick', // maybe should be renamed to canInteract
   CanShow = 'canShow',
 }
 
 interface ResourcePriviledges {
-  [PermissionLevel.CanShow]: string[];
+  [PermissionLevel.CanShow]?: string[];
   [PermissionLevel.CanClick]?: string[];
 }
 
 const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
   'fields': {
-    [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin], // redundant, as admins can see everything
+    [PermissionLevel.CanClick]: [RoleName.AusTrakkaAdmin],
   },
   'users': {
     [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
@@ -41,7 +41,7 @@ export function hasPermission(
   if (user.admin) {
     return true;
   }
-  const userRoles = user.groupRoles[group] ?? [];
+  const userRoles = user.groupRolesByGroup[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return userRoles.some(role => allowedRoles.includes(role));
 }

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
-import FieldTypes from '../../../constants/fieldTypes';
-import { CustomFilterOperators } from '../../DataFilters/fieldTypeOperators';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 const columns = [
   { field: 'status', header: 'Status' },
@@ -16,8 +17,6 @@ const columns = [
 
 export default function PhessIdStatus(props: any) {
   const {
-    setFilterList,
-    setTabValue,
     projectId,
     groupId,
   } = props;
@@ -27,6 +26,7 @@ export default function PhessIdStatus(props: any) {
   const dispatch = useAppDispatch();
   const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dispatchProps = { groupId, token, projectId, timeFilter };
@@ -40,22 +40,31 @@ export default function PhessIdStatus(props: any) {
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    const drilldownFilter = [{
-      field: 'PHESS_ID',
-      fieldType: FieldTypes.STRING,
-      condition: selectedRow.status === 'Missing' ?
-        CustomFilterOperators.NULL_OR_EMPTY :
-        CustomFilterOperators.NOT_NULL_OR_EMPTY,
-      value: '',
-    }];
+    const drillDownFilter: DataTableFilterMeta = {
+      PHESS_ID: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.CUSTOM,
+            value: selectedRow.status === 'Missing',
+          },
+        ],
+      },
+    };
     // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {
-      const appendedFilters = [...drilldownFilter, timeFilterObject];
-      setFilterList(appendedFilters);
+      const appendedFilters : DataTableFilterMeta = {
+        ...drillDownFilter,
+        ...timeFilterObject,
+      };
+      updateTabUrlWithSearch(navigate, '/samples', appendedFilters);
     } else {
-      setFilterList(drilldownFilter);
+      updateTabUrlWithSearch(
+        navigate,
+        '/samples',
+        drillDownFilter,
+      );
     }
-    setTabValue(1); // Navigate to "Samples" tab
   };
 
   return (

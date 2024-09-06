@@ -4,7 +4,6 @@ import { Alert, Paper, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -12,6 +11,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
@@ -95,7 +95,7 @@ function ProjectsList() {
           <Paper elevation={2} sx={{ marginBottom: 10 }}>
             <DataTable
               value={projectsList}
-              columnResizeMode="expand"
+              className="my-flexible-table"
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
@@ -124,9 +124,9 @@ function ProjectsList() {
                   header={col.header}
                   body={col.body}
                   sortable
-                  resizeable
+                  className="flexible-column"
                   headerClassName="custom-title"
-                  style={{ minWidth: '150px' }}
+                  bodyClassName="value-cells"
                 />
               ))}
             </DataTable>

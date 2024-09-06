@@ -1,20 +1,21 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import {
   selectProjectMetadata, ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
+
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -27,16 +28,23 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defaultState,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
-  const metadata : ProjectMetadataState | null =
+  const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-
   useEffect(() => {
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
   }, [filteredData]);
+
+  useEffect(() => {
+    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(metadata?.metadata!);
+    }
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -95,18 +103,19 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
     // For now we recreate view if data changes, not just if spec changes
     if (spec &&
-        metadata?.loadingState &&
-        (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-          metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-          metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-        mutableFilteredData &&
-        plotDiv?.current) {
+      metadata?.loadingState &&
+      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
+        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+      mutableFilteredData &&
+      plotDiv?.current) {
       // TODO it appears this may trigger too often?
       createVegaView();
     }
-  // Review: old vegaView is just being cleaned up and should NOT be a dependency?
-  // loadingState is not a dependency as we only care about changes that co-occur with filteredData
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Review: old vegaView is just being cleaned up and should NOT be a dependency?
+    // loadingState is not a dependency as we only care about changes that co-occur with
+    // filteredData
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec, mutableFilteredData, plotDiv]);
 
   useEffect(() => {
@@ -114,11 +123,11 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-       Object.keys(currentFilter).length === 0) {
+      Object.keys(currentFilters).length === 0) {
       setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
 
   return (
@@ -136,25 +145,24 @@ function VegaDataPlot(props: VegaDataPlotProps) {
         </Grid>
         <Grid item xs={12}>
           {loading &&
-          <LinearProgress color="success" variant="indeterminate" />}
+            <LinearProgress color="success" variant="indeterminate" />}
           <DataFilters
             dataLength={metadata?.metadata?.length ?? 0}
             filteredDataLength={filteredData.length ?? 0}
             visibleFields={null}
             allFields={metadata?.fields ?? []}
-            setPrimeReactFilters={setCurrentFilter}
+            setPrimeReactFilters={setCurrentFilters}
             isOpen={isDataFiltersOpen}
             setIsOpen={setIsDataFiltersOpen}
-            filterList={filterList}
-            setFilterList={setFilterList}
             setLoadingState={setLoading}
+            primeReactFilters={currentFilters}
           />
         </Grid>
       </Grid>
       <div style={{ display: 'none' }}>
         <DataTable
           value={metadata?.metadata ?? []}
-          filters={currentFilter}
+          filters={currentFilters}
           paginator
           rows={1}
           onValueChange={(e) => {

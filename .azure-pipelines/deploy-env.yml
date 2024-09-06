@@ -1,5 +1,10 @@
 resources:
   repositories:
+    - repository: Client
+      type: github
+      name: AusTrakka/austrakka-client
+      ref: $(Build.SourceBranch) 
+      endpoint: AusTrakka
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
@@ -9,7 +14,7 @@ resources:
       type: github
       endpoint: AusTrakka
       name: AusTrakka/austrakka2-infra
-      ref: Development
+      ref: $(infraBranch)
 
 
 trigger: none
@@ -20,29 +25,19 @@ pool:
   name: Test
 
 variables:
-  azureConnection: 'AusTrakka Dev (austrakka tenancy)'
-  azureConnectionAdmin: 'AusTrakka Admin (austrakka tenancy)'
-  backendAzureRmResourceGroupName: 'rg-devterf-shd-as-1'
-  backendAzureRmStorageAccountName: 'stdevterfshdas1'
-  backendAzureRmContainerName: 'state'
-  backendAzureRmKey: '$(EnvId).tfstate'
-  terraformOutputArtifact: 'TerraformOutput'
-  buildDir: '$(Build.BinariesDirectory)/$(Build.BuildNumber)'
-  sourceDir: '$(Pipeline.Workspace)/$(Build.BuildNumber)'
+- template: variables/dev/azure/connection.yml@Pipelines
+- template: variables/dev/terraform/storage.yml@Pipelines
+- template: variables/devops/setup.yml@Pipelines
 
 stages:
-  - stage: CheckoutRepos
+  - stage: VerifyInput
     jobs:
-      - job: CheckoutPortal
+      - job: VerifyInput
         steps:
-          - template: templates/checkout/self.yml
-          - template: templates/checkout/infra.yml@Pipelines
-          - template: templates/checkout/pipelines.yml@Pipelines
-          - template: templates/terraform/init.yml@Pipelines
+          - template: templates/orchestration/assert-value-set.yml@Pipelines
             parameters:
-              workingDirectory: $(sourceDir)/infra/autotests
-          - template: templates/terraform/output.yml@Pipelines
-            parameters:
-              outputFileDir: $(buildDir)/tf
-              workingDirectory: $(sourceDir)/infra/autotests
-          - template: templates/deploy-client.yml
+              value: $(backendAzureRmKey)
+              name: backendAzureRmKey
+  - stage: DeployClient
+    jobs:
+      - template: templates/jobs/deployment/client.yml@Pipelines

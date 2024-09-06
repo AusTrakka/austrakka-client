@@ -1,12 +1,12 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import { DataTable, DataTableSelectAllChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
 import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
-import DataFilters, { DataFilter } from '../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
@@ -14,6 +14,8 @@ import { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface TreeTableProps {
   selectedIds: string[],
@@ -56,8 +58,10 @@ export default function TreeTable(props: TreeTableProps) {
   const [selectAll, setSelectAll] = useState(false);
   const [allIds, setAllIds] = useState<string[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [filterList, setFilterList] = useState<DataFilter[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<DataTableFilterMeta>({});
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filters',
+    defaultState,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
@@ -96,18 +100,19 @@ export default function TreeTable(props: TreeTableProps) {
       return;
     }
 
-    if (Object.keys(currentFilter).length === 0) {
+    if (Object.keys(currentFilters).length === 0 ||
+        isDataTableFiltersEqual(currentFilters, defaultState)) {
       processTableValues();
     }
-  }, [tableMetadata, displayFields, metadataLoadingState, currentFilter]);
+  }, [tableMetadata, displayFields, metadataLoadingState, currentFilters]);
 
   useEffect(() => {
-    if (selectAll && Object.keys(currentFilter).length === 0) {
+    if (selectAll && Object.keys(currentFilters).length === 0) {
       setSelectedIds(allIds);
-    } else if (selectAll && Object.keys(currentFilter).length > 0) {
+    } else if (selectAll && Object.keys(currentFilters).length > 0) {
       setSelectedIds(filteredData.map((sample: any) => sample.Seq_ID));
     }
-  }, [allIds, currentFilter, filteredData, selectAll, setSelectedIds]);
+  }, [allIds, currentFilters, filteredData, selectAll, setSelectedIds]);
 
   useEffect(() => {
     setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
@@ -186,6 +191,11 @@ export default function TreeTable(props: TreeTableProps) {
       </div>
     </div>
   );
+
+  if (metadataLoadingState !== MetadataLoadingState.DATA_LOADED) {
+    return (<Skeleton />);
+  }
+
   return (
     <>
       <DataFilters
@@ -193,9 +203,8 @@ export default function TreeTable(props: TreeTableProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={displayFields}
-        setPrimeReactFilters={setCurrentFilter}
-        filterList={filterList}
-        setFilterList={setFilterList}
+        setPrimeReactFilters={setCurrentFilters}
+        primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
         setLoadingState={setLoading}
@@ -212,7 +221,7 @@ export default function TreeTable(props: TreeTableProps) {
             size="small"
             removableSort
             showGridlines
-            filters={currentFilter}
+            filters={currentFilters}
             scrollable
             scrollHeight="calc(100vh - 300px)"
             paginator

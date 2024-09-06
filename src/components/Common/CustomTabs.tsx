@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Tab, Tabs, LinearProgress,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 /// / Types
 export interface TabContentProps {
@@ -19,7 +20,6 @@ interface CustomTabsProps {
   value: number,
   setValue: React.Dispatch<React.SetStateAction<number>>
 }
-/// /
 
 export function TabPanel(props: TabPanelProps) {
   const {
@@ -27,6 +27,7 @@ export function TabPanel(props: TabPanelProps) {
   } = props;
 
   // Mount the panel when it is first selected, and do not unmount it when it is deselected
+  // Keeping the set tab state just for this thing I'm not sure the effects of it but lets see
   const [visited, setVisited] = useState<boolean>(false);
 
   useEffect(() => {
@@ -58,6 +59,8 @@ export function TabPanel(props: TabPanelProps) {
 
 export default function CustomTabs(props: CustomTabsProps) {
   const { tabContent, value, setValue } = props;
+  const navigate = useNavigate();
+
   // Function to update the URL to match the selected tab
   const updateTabUrl = (tabUrl: string) => {
     const currentPath = window.location.pathname;
@@ -76,11 +79,7 @@ export default function CustomTabs(props: CustomTabsProps) {
       // Replace the last part of the path
       newPath = pathSegments.slice(0, -1).join('/') + tabUrl + currentSearch;
     }
-    // React Router V6 does not currently provide any way to update the URL without
-    // triggering navigation. In this case we are updating the URL to match the updated
-    // react state, so a re-render is unnecessary and needs to be avoided for performance.
-    // react-router github discussion: https://github.com/remix-run/react-router/discussions/9851
-    window.history.pushState(window.history.state, '', newPath);
+    navigate(newPath);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

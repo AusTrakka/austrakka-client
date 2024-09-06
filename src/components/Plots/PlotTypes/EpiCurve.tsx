@@ -5,11 +5,14 @@ import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import {
-  getStartingField, setColorInSpecToValue,
+  getStartingField, setAxisResolutionInSpecToValue, setColorInSpecToValue,
   setFieldInSpec,
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
+import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import { ProjectViewField } from '../../../types/dtos';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -35,6 +38,12 @@ const defaultSpec: TopLevelSpec = {
       stack: 'zero',
     },
   },
+  resolve: { // used when a row facet is applied
+    scale: {
+      x: 'shared',
+      y: 'shared',
+    },
+  },
 };
 
 function EpiCurve(props: PlotTypeProps) {
@@ -43,14 +52,54 @@ function EpiCurve(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useState<string>('');
-  const [dateBinUnit, setDateBinUnit] = useState<string>('yearmonthdate');
-  const [dateBinStep, setDateBinStep] = useState<number>(1);
-  const [colourField, setColourField] = useState<string>('none');
-  const [rowField, setRowField] = useState<string>('none'); // facets by row
-  const [stackType, setStackType] = useState<string>('zero');
+  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
+    'dateField',
+    '',
+    searchParams,
+  );
+  const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
+    'dateBinUnit',
+    'yearmonthdate',
+    searchParams,
+  );
+  const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
+    'dateBinStep',
+    1,
+    searchParams,
+  );
+  const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
+    'colourField',
+    'none',
+    searchParams,
+  );
+  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
+    'colourScheme',
+    'spectral',
+    searchParams,
+  );
+  const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
+    'rowField',
+    'none',
+    searchParams,
+  );
+  const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
+    'facetYAxisMode',
+    'shared',
+    searchParams,
+  );
+  const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
+    'facetXAxisMode',
+    'shared',
+    searchParams,
+  );
+  const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
+    'stackType',
+    'zero',
+    searchParams,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -65,24 +114,26 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields = fields
+      const localCatFields : ProjectViewField[] = fields
         .filter(field => field.canVisualise &&
-                        (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
-      setCategoricalFields(localCatFields);
+                        (field.primitiveType === 'string' || field.primitiveType === null));
+      setCategoricalFields(localCatFields.map(field => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Similarly starting value for row facet is None
-      const localDateFields = fields
-        .filter(field => field.primitiveType === 'date')
-        .map(field => field.columnName);
-      setDateFields(localDateFields);
+      const localDateFields : ProjectViewField[] = fields
+        .filter(field => field.primitiveType === 'date');
+      setDateFields(localDateFields.map(field => field.columnName));
       // Mandatory fields: one date field
       if (localDateFields.length === 0) {
         setPlotErrorMsg('No date fields found in project, cannot render plot');
         return;
       }
-      setDateField(getStartingField(preferredDateFields, localDateFields));
+      // If the URL does not specify a mandatory field, try to set the preferred field
+      if (dateField === '') {
+        setDateField(getStartingField(preferredDateFields, localDateFields));
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -96,12 +147,17 @@ function EpiCurve(props: PlotTypeProps) {
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorInSpecToValue(oldSpec, colourField, fieldUniqueValues![colourField] ?? []);
+      setColorInSpecToValue(
+        oldSpec,
+        colourField,
+        fieldUniqueValues![colourField] ?? [],
+        colourScheme,
+      );
 
     if (fieldUniqueValues) {
       setSpec(setColorInSpec);
     }
-  }, [colourField, fieldUniqueValues]);
+  }, [colourField, colourScheme, fieldUniqueValues]);
 
   useEffect(() => {
     const setRowInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -109,6 +165,20 @@ function EpiCurve(props: PlotTypeProps) {
 
     setSpec(setRowInSpec);
   }, [rowField]);
+
+  useEffect(() => {
+    const setFacetYAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setAxisResolutionInSpecToValue(oldSpec, 'y', facetYAxisMode);
+
+    setSpec(setFacetYAxisModeInSpec);
+  }, [facetYAxisMode]);
+
+  useEffect(() => {
+    const setFacetXAxisModeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
+      setAxisResolutionInSpecToValue(oldSpec, 'x', facetXAxisMode);
+
+    setSpec(setFacetXAxisModeInSpec);
+  }, [facetXAxisMode]);
 
   useEffect(() => {
     const setDateBinningInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
@@ -167,11 +237,11 @@ function EpiCurve(props: PlotTypeProps) {
         >
           {
             [
-              <MenuItem value="yearmonthdate">Day (date)</MenuItem>,
-              <MenuItem value="yeardayofyear">Day (of year)</MenuItem>,
-              <MenuItem value="yearweek">Week</MenuItem>,
-              <MenuItem value="yearmonth">Month</MenuItem>,
-              <MenuItem value="year">Year</MenuItem>,
+              <MenuItem key="yearmonthdate" value="yearmonthdate">Day (date)</MenuItem>,
+              <MenuItem key="yeardayofyear" value="yeardayofyear">Day (of year)</MenuItem>,
+              <MenuItem key="yearweek" value="yearweek">Week</MenuItem>,
+              <MenuItem key="yearmonth" value="yearmonth">Month</MenuItem>,
+              <MenuItem key="year" value="year">Year</MenuItem>,
             ]
           }
         </Select>
@@ -186,7 +256,7 @@ function EpiCurve(props: PlotTypeProps) {
           onChange={(e) => setDateField(e.target.value)}
         >
           {
-            dateFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
@@ -201,8 +271,27 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
+        </Select>
+      </FormControl>
+      {colourField !== 'none' && (
+        <ColorSchemeSelectorPlotStyle
+          selectedScheme={colourScheme}
+          onColourChange={(newColor) => setColourScheme(newColor)}
+        />
+      )}
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
+        <InputLabel id="stack-type-select-label">Chart type</InputLabel>
+        <Select
+          labelId="stack-type-select-label"
+          id="stack-type-select"
+          value={stackType}
+          label="Chart type"
+          onChange={(e) => setStackType(e.target.value)}
+        >
+          <MenuItem value="zero">Stacked</MenuItem>
+          <MenuItem value="normalize">Proportional</MenuItem>
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -216,21 +305,34 @@ function EpiCurve(props: PlotTypeProps) {
         >
           <MenuItem value="none">None</MenuItem>
           {
-            categoricalFields.map(field => <MenuItem value={field}>{field}</MenuItem>)
+            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
       </FormControl>
-      <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
-        <InputLabel id="stack-type-select-label">Chart type</InputLabel>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: '9em' }}>
+        <InputLabel id="facet-y-axis-select-label">Facet Y-Axes</InputLabel>
         <Select
-          labelId="stack-type-select-label"
-          id="stack-type-select"
-          value={stackType}
-          label="Chart type"
-          onChange={(e) => setStackType(e.target.value)}
+          labelId="facet-y-axis-select-label"
+          id="facet-y-axis-select"
+          value={facetYAxisMode}
+          label="Facet Y-Axes"
+          onChange={(e) => setFacetYAxisMode(e.target.value)}
         >
-          <MenuItem value="zero">Stacked</MenuItem>
-          <MenuItem value="normalize">Proportional</MenuItem>
+          <MenuItem value="shared">Shared</MenuItem>
+          <MenuItem value="independent">Independent</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: '9em' }}>
+        <InputLabel id="facet-x-axis-select-label">Facet X-Axes</InputLabel>
+        <Select
+          labelId="facet-x-axis-select-label"
+          id="facet-x-axis-select"
+          value={facetXAxisMode}
+          label="Facet X-Axes"
+          onChange={(e) => setFacetXAxisMode(e.target.value)}
+        >
+          <MenuItem value="shared">Shared</MenuItem>
+          <MenuItem value="independent">Independent</MenuItem>
         </Select>
       </FormControl>
     </Box>

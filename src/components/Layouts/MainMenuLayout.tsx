@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import {
-  NavLink, useLocation, Link, Outlet,
+  NavLink, useLocation, Link, Outlet, useNavigate,
 } from 'react-router-dom';
 import {
   Inventory, Upload, Help,
@@ -33,42 +33,8 @@ const settings = [
   },
 ];
 
-const pages = [
-  {
-    title: 'Dashboard',
-    link: '/',
-    icon: <Dashboard />,
-  },
-  {
-    title: 'Projects',
-    link: '/projects',
-    icon: <Inventory />,
-  },
-  {
-    title: 'Organisation',
-    link: '/org',
-    icon: <AccountTree />,
-  },
-  {
-    title: 'Upload',
-    link: '/upload',
-    icon: <Upload />,
-  },
-  {
-    title: 'Users',
-    link: '/users',
-    icon: <People />,
-    permissionDomain: 'users',
-  },
-  {
-    title: 'Fields',
-    link: '/fields',
-    icon: <ViewColumn />,
-    permissionDomain: 'fields',
-  },
-];
-
 function MainMenuLayout() {
+  const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
   const breadcrumbNameMap: { [key: string]: any } = {
@@ -121,7 +87,39 @@ function MainMenuLayout() {
 
   const account = useAccount(accounts[0] || {});
   const user: UserSliceState = useAppSelector(selectUserState);
-
+  const pages = [
+    {
+      title: 'Dashboard',
+      link: '/',
+      icon: <Dashboard />,
+    },
+    {
+      title: 'Projects',
+      link: '/projects',
+      icon: <Inventory />,
+    },
+    {
+      title: 'Organisation',
+      link: `/org/${user.orgAbbrev}`,
+      icon: <AccountTree />,
+    },
+    {
+      title: 'Upload',
+      link: '/upload',
+      icon: <Upload />,
+    },
+    {
+      title: 'Users',
+      link: '/users',
+      icon: <People />,
+      permissionDomain: 'users',
+    },
+    {
+      title: 'Fields',
+      link: '/fields',
+      icon: <ViewColumn />,
+    },
+  ];
   const visiblePages = pages.filter((page) =>
     !page.permissionDomain || hasPermission(
       user,
@@ -165,7 +163,7 @@ function MainMenuLayout() {
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
               {drawer ? (<img src={AusTrakkaLogo} alt="logo" className={styles.logo} />) : <img src={AusTrakkaLogoSmall} alt="logo" className={styles.logo} />}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

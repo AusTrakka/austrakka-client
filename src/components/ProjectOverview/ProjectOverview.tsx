@@ -1,7 +1,7 @@
 import React, {
   useEffect, useMemo, useState,
 } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import {
   getProjectDetails, getTotalSamples,
@@ -21,18 +21,17 @@ import { useApi } from '../../app/ApiContext';
 import {
   fetchProjectMetadata,
   selectAwaitingProjectMetadata,
+  selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { DataFilter } from '../DataFilters/DataFilters';
+import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
 function ProjectOverview() {
-  const { projectAbbrev } = useParams();
+  const { projectAbbrev, tab } = useParams();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
-  const location = useLocation();
-  const pathName = location.pathname;
 
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
@@ -48,12 +47,11 @@ function ProjectOverview() {
   });
   // const [lastUpload] = useState('');
 
-  // Samples component states
-  const [sampleFilters, setSampleFilters] = useState<DataFilter[]>([]);
-
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -111,44 +109,15 @@ function ProjectOverview() {
     }
   }, [projectDetails, token, tokenLoading, dispatch]);
 
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => [
-    {
-      index: 0,
-      title: 'Summary',
-    },
-    {
-      index: 1,
-      title: 'Samples',
-    },
-    {
-      index: 2,
-      title: 'Trees',
-    },
-    {
-      index: 3,
-      title: 'Plots',
-    },
-    {
-      index: 4,
-      title: 'Members',
-    },
-    {
-      index: 5,
-      title: 'Proformas',
-    },
-    {
-      index: 6,
-      title: 'Datasets',
-    },
-  ], []);
+  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
   useEffect(() => {
     const initialTabValue = projectOverviewTabs
-      .findIndex((tab) => pathName.endsWith(tab.title.toLowerCase()));
+      .findIndex((t) => tab === t.title.toLowerCase());
     if (initialTabValue !== -1) {
       setTabValue(initialTabValue);
     }
-  }, [pathName, projectOverviewTabs]);
+  }, [tab, projectOverviewTabs]);
 
   return (
     isOverviewError.detailsError
@@ -162,21 +131,18 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {projectDetails ? projectDetails.name : ''}
           </Typography>
-          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={projectOverviewTabs} />
+          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectId={projectDetails ? projectDetails!.projectId : null}
               groupId={projectDetails ? projectDetails!.projectMembers.id : null}
-              setFilterList={setSampleFilters}
-              setTabValue={setTabValue}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
               projectAbbrev={projectAbbrev!}
               isSamplesLoading={isSamplesLoading}
-              inputFilters={sampleFilters}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
@@ -208,7 +174,7 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={6} tabLoader={false}>
-            <Datasets projectDetails={projectDetails} />
+            <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
           </TabPanel>
         </>
       )

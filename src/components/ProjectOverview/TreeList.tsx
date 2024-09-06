@@ -4,7 +4,6 @@ import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowCl
 import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { isoDateLocalDate } from '../../utilities/helperUtils';
 import { Project } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getTrees } from '../../utilities/resourceUtils';
@@ -12,6 +11,7 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 
 interface TreesProps {
   projectDetails: Project | null
@@ -38,7 +38,11 @@ function TreeList(props: TreesProps) {
 
   useEffect(() => {
     async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(projectDetails!.abbreviation, token);
+      const treeListResponse: ResponseObject = await getTrees(
+        projectDetails!.abbreviation,
+        false,
+        token,
+      );
       if (treeListResponse.status === ResponseType.Success) {
         const newData = treeListResponse.data.map((tree: any) => ({
           ...tree,
@@ -104,6 +108,7 @@ function TreeList(props: TreesProps) {
           removableSort
           reorderableColumns
           columnResizeMode="expand"
+          className="my-flexible-table"
           sortIcon={sortIcon}
         >
           {columns.map((col) => (
@@ -115,6 +120,8 @@ function TreeList(props: TreesProps) {
               sortable
               resizeable
               headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
             />
           ))}
         </DataTable>

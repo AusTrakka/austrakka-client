@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, ProjectViewField } from '../types/dtos';
-import { fieldRenderFunctions, typeRenderFunctions } from './helperUtils';
+import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export const compareFields = (field1: Field, field2: Field) =>
   field1.columnOrder - field2.columnOrder;

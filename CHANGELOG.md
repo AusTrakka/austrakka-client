@@ -2,7 +2,54 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unreleased
+## 2024-08-27
+
+### Changed
+- The condition `on and after` and `on and before` have been changed to just be 
+  `After` and `Before` respectively. This is due to in the change of TableComponent.
+  To have the same effect as before you must use the `On` condition in conjunction with the `After` or `Before` condition.
+
+## 2024-08-16
+
+### Changed
+- Org page now appears at org-specific URL rather than a universal /org URL.
+
+## 2024-08-07
+
+### Added
+- Display Analysis Server Username for users.
+- Clicking on the AusTrakka logo will navigate home.
+
+## 2024-08-01
+
+### Added
+- Added filter information to the url of all queryable table pages. This allows users to share a link to a table or plot with the current filter settings applied.
+- Plot colour legends are now interactive; click a legend item to highlight the corresponding data in the plot.
+- Cluster timeline plots are now able to bin samples by date and represent the number of samples via point size.
+- Cluster timeline plots now have the option of setting the colour to None.
+- Epi curve plots with a row facet now allow independent Y axes (and X axes) for each row.
+
+## 2024-07-08
+
+### Added
+- Server-side support for more sequence data types: ONT FASTQ and multi-contig FASTA assemblies (fastq-ont and fasta-asm).
+
+### Changed
+- The existing fastq sequence data type is now split explicitly into fastq-ill-pe and fastq-ill-se; the existing fasta sequence data type, representing single-contig consensus genomes, is now named fasta-cns. Existing data has been migrated to the new types.
+
+## 2024-06-27
+
+### Added
+- A colour scheme selector has been added to plots
+- Plot settings such as fields and colours will update the URL dynamically; they will persist on page reload and can be shared with others via URL
+- Sample tables in projects now show the field source (sourced from organisation sample metadata, or project datasets)
+- Hide all / show all columns buttons have been added to the column selector for the sample metadata tables
+- Admin UI for editing field details
+
+### Fixed
+- Fix to admin functionality to search users by name
+
+## 2024-06-06
 
 ### Added
 - Colour scheme is now selectable per field on the tree view.

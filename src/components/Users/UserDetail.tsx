@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrgansations, getRoles, getUser, putUserDetails } from '../../utilities/resourceUtils';
+import { getGroupList, getOrgansations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -50,6 +50,7 @@ function UserDetail() {
     'isAusTrakkaAdmin': 'Austrakka Admin',
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
+    'analysisServerUsername': 'Analysis Server Username',
   };
 
   let nonDisplayFields = [
@@ -169,6 +170,7 @@ function UserDetail() {
     if (editing) {
       return (
         <EditableRow
+          key={field}
           field={field}
           detailValue={value}
           editedValues={editedValues}
@@ -181,6 +183,7 @@ function UserDetail() {
     }
     return (
       <BasicRow
+        key={field}
         field={field}
         value={value}
         readableNames={readableNames}
@@ -189,29 +192,59 @@ function UserDetail() {
   };
 
   const editUserDetails = async () => {
-    const editedValuesDtoFormat: any = editedValues;
-    editedValuesDtoFormat.groupRoles = editedValuesDtoFormat.groupRoles
-      .map((groupRole: GroupRole) => ({
-        groupName: groupRole.group.name,
-        roleName: groupRole.role.name,
-      }));
-    const userResponse: ResponseObject = await putUserDetails(
-      userObjectId!,
-      token,
-      editedValuesDtoFormat,
-    );
-    if (userResponse.status === ResponseType.Success) {
+    const { groupRoles, ...otherValues } = editedValues as User;
+
+    // Mapping groupRoles to the desired format
+    const groupAssignmentsFormat = groupRoles.map((groupRole: GroupRole) => ({
+      groupName: groupRole.group.name,
+      roleName: groupRole.role.name,
+    }));
+
+    // Creating editedValuesDtoFormat object
+    const editedValuesDtoFormat = {
+      displayName: otherValues.displayName,
+      contactEmail: otherValues.contactEmail,
+      orgAbbrev: otherValues.orgAbbrev,
+      isActive: otherValues.isActive,
+      analysisServerUsername: otherValues.analysisServerUsername,
+    };
+
+    try {
+      // Updating user details
+      // Replacing group assignments
+      const assignmentResponse: ResponseObject = await replaceAssignments(
+        userObjectId!,
+        token,
+        groupAssignmentsFormat,
+      );
+
+      if (assignmentResponse.status !== ResponseType.Success) {
+        throw new Error('Could not assign group roles');
+      }
+
+      const userResponse: ResponseObject = await putUser(
+        userObjectId!,
+        token,
+        editedValuesDtoFormat,
+      );
+
+      if (userResponse.status !== ResponseType.Success) {
+        throw new Error('User could not be accessed');
+      }
+
+      // Updating local state with the new user data
       const userDto = userResponse.data as User;
       setUser(userDto);
       setEditedValues({ ...userDto });
       setUpdatedGroupRoles(userDto.groupRoles);
       setPatchMsg(userResponse.message);
       setPatchSeverity('success');
-    } else {
-      setPatchMsg('User could not be accessed');
+    } catch (error: any) {
+      setPatchMsg(error.message);
       setPatchSeverity('error');
+    } finally {
+      setOpenSnackbar(true);
     }
-    setOpenSnackbar(true);
   };
 
   const onSave = () => {
