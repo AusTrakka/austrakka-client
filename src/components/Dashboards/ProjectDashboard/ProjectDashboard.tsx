@@ -14,18 +14,20 @@ import { useApi } from '../../../app/ApiContext';
 interface ProjectDashboardProps {
   projectDesc: string,
   projectId: number | null,
+  projectAbbrev: string,
   groupId: number | null,
 }
 
 function renderDashboard(
   dashboardName: any,
   projectId: any,
+  projectAbbrev: string,
   groupId: any,
 ) {
   if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
     return React.createElement(
       DashboardTemplates[dashboardName],
-      { projectId, groupId },
+      { projectId, projectAbbrev, groupId },
     );
   }
   // Returns nothing if a matching React dashboard template component doesn't exist
@@ -62,7 +64,7 @@ function DateSelector(props: any) {
           constraints: [
             {
               value,
-              matchMode: FilterMatchMode.DATE_AFTER,
+              matchMode: FilterMatchMode.DATE_IS,
             }],
         },
       };
@@ -100,7 +102,7 @@ function DateSelector(props: any) {
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, groupId } = props;
+  const { projectDesc, projectId, projectAbbrev, groupId } = props;
   const { token, tokenLoading } = useApi();
   const {
     data,
@@ -132,7 +134,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               ) : null }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
-              {renderDashboard(data.data, projectId, groupId)}
+              {renderDashboard(data.data, projectId, projectAbbrev, groupId)}
             </Grid>
           </>
         )}

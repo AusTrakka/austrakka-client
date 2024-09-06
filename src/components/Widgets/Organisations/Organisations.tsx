@@ -1,20 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchOrganisations, selectAggregatedOrgs } from './organisationsSlice';
-import LoadingState from '../../../constants/loadingState';
-import { useApi } from '../../../app/ApiContext';
+import { useAppSelector } from '../../../app/store';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import LoadingState from '../../../constants/loadingState';
 
-const submittingOrgFieldName = 'Owner_group';
+const ORG_FIELD_NAME = 'Owner_group';
+
+// TODO pass in the filtered data from the dashboard, so the time filter is applied once
+
+interface CountRow {
+  [ORG_FIELD_NAME]: string;
+  sampleCount: number;
+}
 
 const columns = [
   {
-    field: 'Owner_group',
+    field: ORG_FIELD_NAME,
     header: 'Owner organisation',
     body: (rowData: any) => rowData.Owner_group.split('-Owner'),
   },
@@ -24,34 +32,45 @@ const columns = [
   },
 ];
 
+// NB dispatch request for project metadata is in ProjectOverview page
+
+// TODO rename to ProjectOrganisations or rename directory; give proper props type; 
+//  maybe pass in timefilter
 export default function Organisations(props: any) {
   const {
-    projectId,
-    groupId,
+    projectAbbrev,
   } = props;
-  // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.organisationsState);
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  // TODO replace with prop
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const organisationsDispatch = useAppDispatch();
-  const aggregatedCounts = useAppSelector(selectAggregatedOrgs);
-  const { token, tokenLoading } = useApi();
+  const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const dispatchProps = { groupId, token, projectId, timeFilter };
-    if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      organisationsDispatch(fetchOrganisations(dispatchProps));
+    if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
+      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
+        data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)) {
+      const counts = aggregateArrayObjects(ORG_FIELD_NAME, data!.metadata!) as CountRow[];
+      setAggregatedCounts(counts);
     }
-  }, [loading, organisationsDispatch, timeFilter,
-    projectId, groupId, token, tokenLoading]);
-
+  }, [data]);
+  
+  useEffect(() => {
+    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
+      setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
+    } else if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+    } else if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${ORG_FIELD_NAME} values`);
+    }
+  }, [data]);
+  
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
     const drillDownTableMetaFilters: DataTableFilterMeta = {
-      [submittingOrgFieldName]: {
+      [ORG_FIELD_NAME]: {
         operator: FilterOperator.AND,
         constraints: [
           {
@@ -72,36 +91,38 @@ export default function Organisations(props: any) {
       updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
     }
   };
-
+  
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
         Owner organisations
       </Typography>
-      { loading === LoadingState.SUCCESS && (
-        <DataTable
-          value={aggregatedCounts}
-          size="small"
-          onRowClick={rowClickHandler}
-          selectionMode="single"
-        >
-          {columns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-            />
-          ))}
-        </DataTable>
+      { data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
+      <DataTable
+        value={aggregatedCounts}
+        size="small"
+        onRowClick={rowClickHandler}
+        selectionMode="single"
+      >
+        {columns.map((col: any) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            body={col.body}
+          />
+        ))}
+      </DataTable>
       )}
-      { loading === LoadingState.ERROR && (
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          {data.message}
-        </Alert>
+      {errorMessage && (
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        {errorMessage}
+      </Alert>
       )}
-      { loading === LoadingState.LOADING && (
+      {(!(data?.fieldLoadingStates) ||
+        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.LOADING ||
+        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.IDLE) && (
         <div>Loading...</div>
       )}
     </Box>

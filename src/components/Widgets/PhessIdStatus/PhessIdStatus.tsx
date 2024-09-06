@@ -1,14 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchPhessIdStatus, selectAggregatedPhessIdStatus } from './phessIdStatusSlice';
+import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
-import { useApi } from '../../../app/ApiContext';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { countPresentOrMissing } from '../../../utilities/dataProcessingUtils';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+
+const PHESS_ID_FIELD_NAME = 'PHESS_ID';
+
+interface CountRow {
+  status: string;
+  sampleCount: number;
+}
 
 const columns = [
   { field: 'status', header: 'Status' },
@@ -17,27 +25,38 @@ const columns = [
 
 export default function PhessIdStatus(props: any) {
   const {
-    projectId,
-    groupId,
+    projectAbbrev,
   } = props;
-  // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.phessIdStatusState);
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  // TODO remove
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const dispatch = useAppDispatch();
-  const aggregatedCounts = useAppSelector(selectAggregatedPhessIdStatus);
-  const { token, tokenLoading } = useApi();
+  const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const dispatchProps = { groupId, token, projectId, timeFilter };
-    if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchPhessIdStatus(dispatchProps));
+    if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
+      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
+        data.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS)) {
+      // count Present if there is a PHESS_ID value and Missing if null/empty
+      const counts = countPresentOrMissing(PHESS_ID_FIELD_NAME, data!.metadata!) as CountRow[];
+        
+      // aggregateArrayObjects(PHESS_ID_FIELD_NAME, data!.metadata!) as CountRow[];
+      setAggregatedCounts(counts);
     }
-  }, [loading, dispatch, timeFilter, projectId,
-    groupId, token, tokenLoading]);
+  }, [data]);
 
+  useEffect(() => {
+    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(PHESS_ID_FIELD_NAME)) {
+      setErrorMessage(`Field ${PHESS_ID_FIELD_NAME} not found in project`);
+    } else if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+    } else if (data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${PHESS_ID_FIELD_NAME} values`);
+    }
+  }, [data]);
+  
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
     const drillDownFilter: DataTableFilterMeta = {
@@ -72,7 +91,7 @@ export default function PhessIdStatus(props: any) {
       <Typography variant="h5" paddingBottom={3} color="primary">
         PHESS ID Status
       </Typography>
-      { loading === LoadingState.SUCCESS && (
+      { data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS && (
       <DataTable
         value={aggregatedCounts}
         size="small"
@@ -88,13 +107,15 @@ export default function PhessIdStatus(props: any) {
         ))}
       </DataTable>
       )}
-      { loading === LoadingState.ERROR && (
+      {errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {data.message}
+          {errorMessage}
         </Alert>
       )}
-      { loading === LoadingState.LOADING && (
+      {(!(data?.fieldLoadingStates) ||
+        data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.LOADING ||
+        data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.IDLE) && (
         <div>Loading...</div>
       )}
     </Box>

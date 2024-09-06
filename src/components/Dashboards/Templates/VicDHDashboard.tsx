@@ -5,11 +5,13 @@ import Organisations from '../../Widgets/Organisations/Organisations';
 // import QcStatus from '../../Widgets/QcStatus/QcStatus';
 import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
 import StCounts from '../../Widgets/StCounts/StCounts';
+import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 // TODO: Set a max card height and handle scroll voerflow
-function VicDHDashboard(props: any) {
+function VicDHDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectId,
+    projectAbbrev,
     groupId,
   } = props;
 
@@ -23,6 +25,7 @@ function VicDHDashboard(props: any) {
                 <CardContent>
                   <SampleSummary
                     projectId={projectId}
+                    projectAbbrev={projectAbbrev}
                     groupId={groupId}
                   />
                 </CardContent>
@@ -33,6 +36,7 @@ function VicDHDashboard(props: any) {
                 <CardContent>
                   <StCounts
                     projectId={projectId}
+                    projectAbbrev={projectAbbrev}
                     groupId={groupId}
                   />
                 </CardContent>
@@ -47,6 +51,7 @@ function VicDHDashboard(props: any) {
                 <CardContent>
                   <Organisations
                     projectId={projectId}
+                    projectAbbrev={projectAbbrev}
                     groupId={groupId}
                   />
                 </CardContent>
@@ -69,6 +74,7 @@ function VicDHDashboard(props: any) {
                 <CardContent>
                   <PhessIdStatus
                     projectId={projectId}
+                    projectAbbrev={projectAbbrev}
                     groupId={groupId}
                   />
                 </CardContent>

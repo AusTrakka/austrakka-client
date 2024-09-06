@@ -4,10 +4,12 @@ import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
 import Organisations from '../../Widgets/Organisations/Organisations';
 import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
 import ThresholdAlerts from '../../Widgets/ThresholdAlerts/ThresholdAlerts';
+import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
-function VicDHAlertsDashboard(props: any) {
+function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectId,
+    projectAbbrev,
     groupId,
   } = props;
 
@@ -18,6 +20,7 @@ function VicDHAlertsDashboard(props: any) {
           <CardContent>
             <SampleSummary
               projectId={projectId}
+              projectAbbrev={projectAbbrev}
               groupId={groupId}
             />
           </CardContent>
@@ -28,6 +31,7 @@ function VicDHAlertsDashboard(props: any) {
           <CardContent>
             <PhessIdStatus
               projectId={projectId}
+              projectAbbrev={projectAbbrev}
               groupId={groupId}
             />
           </CardContent>
@@ -38,6 +42,7 @@ function VicDHAlertsDashboard(props: any) {
           <CardContent>
             <Organisations
               projectId={projectId}
+              projectAbbrev={projectAbbrev}
               groupId={groupId}
             />
           </CardContent>

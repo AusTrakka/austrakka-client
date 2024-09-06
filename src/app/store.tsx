@@ -2,12 +2,10 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
 import sampleSummaryReducer from '../components/Widgets/SampleSummary/sampleSummarySlice';
-import organisationsReducer from '../components/Widgets/Organisations/organisationsSlice';
 import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import stCountsReducer from '../components/Widgets/StCounts/stCountsSlice';
 import thresholdAlertsReducer from '../components/Widgets/ThresholdAlerts/thresholdAlertsSlice';
 import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
-import phessIdStatusReducer from '../components/Widgets/PhessIdStatus/phessIdStatusSlice';
 import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
 import userOverviewReducer from '../components/Widgets/UserOverview/userOverviewSlice';
 import projectsTotalReducer from '../components/Widgets/ProjectsTotal/projectsTotalSlice';
@@ -19,9 +17,7 @@ import userReducer from './userSlice';
 const store = configureStore({
   reducer: {
     sampleSummaryState: sampleSummaryReducer,
-    organisationsState: organisationsReducer,
     qcStatusState: qcStatusReducer,
-    phessIdStatusState: phessIdStatusReducer,
     stCountsState: stCountsReducer,
     thresholdAlertsState: thresholdAlertsReducer,
     projectDashboardState: projectDashboardReducer,

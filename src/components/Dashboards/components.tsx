@@ -8,7 +8,6 @@ import StCounts from '../Widgets/StCounts/StCounts';
 import { ComponentsType } from './ProjectDashboard/project.dashboard.interface';
 import { fetchSummary } from '../Widgets/SampleSummary/sampleSummarySlice';
 import { fetchStCounts } from '../Widgets/StCounts/stCountsSlice';
-import { fetchOrganisations } from '../Widgets/Organisations/organisationsSlice';
 
 // OBJECT Components:
 // Object that maps the React components (above) to the name we have
@@ -22,7 +21,6 @@ const Components:ComponentsType = {
 
 export const ComponentActions: any = {
   overview: fetchSummary,
-  orgSampleCounts: fetchOrganisations,
   stCounts: fetchStCounts,
 };
 

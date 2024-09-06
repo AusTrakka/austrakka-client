@@ -5,7 +5,7 @@ import LoadingState from '../../../constants/loadingState';
 import type { RootState } from '../../../app/store';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
-import { aggregateArrayObjects } from '../../../utilities/renderUtils';
+import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import { generateDateFilterString } from '../../../utilities/filterUtils';
 
 interface StCountsState {

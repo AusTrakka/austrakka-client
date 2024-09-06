@@ -2,14 +2,16 @@ import { Box, Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
 import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
 import Organisations from '../../Widgets/Organisations/Organisations';
+import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 // TODO: Set a max card height and handle scroll voerflow
-function BasicDashboard(props: any) {
+function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
+    projectAbbrev,
     projectId,
     groupId,
   } = props;
-
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
@@ -18,6 +20,7 @@ function BasicDashboard(props: any) {
             <CardContent>
               <SampleSummary
                 projectId={projectId}
+                projectAbbrev={projectAbbrev}
                 groupId={groupId}
               />
             </CardContent>
@@ -28,6 +31,7 @@ function BasicDashboard(props: any) {
             <CardContent>
               <Organisations
                 projectId={projectId}
+                projectAbbrev={projectAbbrev}
                 groupId={groupId}
               />
             </CardContent>

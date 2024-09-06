@@ -1,4 +1,4 @@
-import { aggregateArrayObjects } from '../../../src/utilities/renderUtils';
+import { aggregateArrayObjects } from '../../../src/utilities/dataProcessingUtils';
 
 describe('aggregateArrayObjects', () => {
   describe('when given an input of expected data with singular datatype', () => {
@@ -39,7 +39,7 @@ describe('aggregateArrayObjects', () => {
       expect(result).toEqual(expectedOutput);
     });
 
-    test('merge array with null or undefined values as its own unqiue value', () => {
+    test('merge array with null or undefined values as its own unique value', () => {
       const inputArray = [
         { category: 'A' },
         { category: null },
