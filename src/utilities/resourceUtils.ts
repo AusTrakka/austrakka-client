@@ -1,4 +1,6 @@
-import { callGET, callPATCH, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
+import {callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile} from './api';
+import {FeedbackPost} from "../types/dtos";
+import {ResponseObject} from "../types/responseObject.interface";
 
 // Definition of endpoints
 
@@ -95,3 +97,5 @@ export const getSampleGroups = (sampleName:string, token: string) => callGET(`/a
 
 // Organisation endpoints
 export const getOrgansations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
+
+export const postFeedback = (feedbackPostDto: FeedbackPost, token: string) => callPost(`/api/Feedback`, token, feedbackPostDto)

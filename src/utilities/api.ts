@@ -166,6 +166,19 @@ Promise<ResponseObject> {
   });
 }
 
+export async function callPost(url: string, token: string, body: any):
+    Promise<ResponseObject> {
+  if (!token) {
+    return noToken as ResponseObject;
+  }
+
+  return callApi(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: getHeaders(token),
+  });
+}
+
 export async function callPOSTForm(url: string, formData: FormData, token: string)
   : Promise<ResponseObject> {
   if (!token) {

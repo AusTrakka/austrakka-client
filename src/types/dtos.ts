@@ -254,3 +254,9 @@ export interface Role {
   name: string,
   description: string,
 }
+
+export interface FeedbackPost {
+  title: string,
+  description: string,
+  currentPage: string,
+}

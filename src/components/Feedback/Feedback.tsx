@@ -1,0 +1,112 @@
+import React, {ChangeEvent, FormEventHandler, MouseEventHandler, useEffect, useRef, useState} from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  DialogContentText,
+  Button, Box,
+} from '@mui/material'
+import {FeedbackPost} from "../../types/dtos";
+import {postFeedback} from "../../utilities/resourceUtils";
+import {useApi} from "../../app/ApiContext";
+
+interface FeedbackProps {
+  help: boolean;
+  handleHelpClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void);
+}
+// TODO: need to update this to properly validate on submission
+function Feedback(props: FeedbackProps) {
+  const { token, tokenLoading } = useApi();
+  const [feedbackDto, setFeedbackDto] = useState({
+    title: "",
+    description: "",
+    currentPage: "",
+  } as FeedbackPost)
+  const formValid = useRef({
+    title: false,
+    description: false,
+  })
+  const [titleError, setTitleError] = useState(false);
+  const [descError, setDescError] = useState(false);
+
+  const submitFeedback = async (e: any) => {
+    e.preventDefault();
+    if (Object.values(formValid.current).every(isValid => isValid)) {
+      alert("Form is valid! Submitting the form...");
+    } else {
+      alert("Form is invalid! Please check the fields...");
+    }
+    // const feedbackResp = await postFeedback(feedbackDto, token)
+    // console.log(feedbackResp.message)
+  }
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFeedbackDto({
+      ...feedbackDto,
+      ["title"]: e.target.value
+    });
+    setTitleError(!e.target.validity.valid)
+    formValid.current.title = e.target.validity.valid;
+  };
+  const formRef = useRef();
+
+
+  const handleDescChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFeedbackDto({
+      ...feedbackDto,
+      ["description"]: e.target.value
+    });
+    setDescError(!e.target.validity.valid)
+    formValid.current.description = e.target.validity.valid;
+  };
+
+  return (
+    <Dialog
+      open={props.help}
+      onClose={props.handleHelpClose}
+    >
+      <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
+        <DialogTitle>Feedback and Bug Reports</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Use this form to to submit bug reports or general feedback directly to the AusTrakka team. The current page you are on will also be submitted.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            required
+            value={feedbackDto.title}
+            onChange={handleTitleChange}
+            error={titleError}
+            helperText={titleError ? "Please enter a title" : ""}
+            margin="dense"
+            id="feedback-title"
+            name="title"
+            label="Title"
+            fullWidth
+            variant="standard"
+          />
+          <TextField
+            id="feedback-description"
+            label="Description"
+            multiline
+            rows={4}
+            variant="standard"
+            fullWidth
+            required
+            value={feedbackDto.description}
+            onChange={handleDescChange}
+            error={descError}
+            helperText={descError ? "Please enter a description" : ""}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => props.handleHelpClose({undefined}, "backdropClick")}>Cancel</Button>
+          <Button type="submit">Submit</Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
+  )
+}
+
+export default Feedback;
