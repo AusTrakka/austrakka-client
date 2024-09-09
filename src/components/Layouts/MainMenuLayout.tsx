@@ -299,7 +299,7 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
-      <Feedback help={help} handleHelpClose={handleHelpClose}></Feedback>
+      <Feedback help={help} handleHelpClose={handleHelpClose} location={location}></Feedback>
     </>
   );
 }

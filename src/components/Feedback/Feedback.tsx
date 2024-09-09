@@ -11,18 +11,20 @@ import {
 import {FeedbackPost} from "../../types/dtos";
 import {postFeedback} from "../../utilities/resourceUtils";
 import {useApi} from "../../app/ApiContext";
+import {Location} from "react-router-dom";
 
 interface FeedbackProps {
   help: boolean;
   handleHelpClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void);
+  location: Location<any>;
 }
-// TODO: need to update this to properly validate on submission
+// TODO: need this to popup a toast on submission
 function Feedback(props: FeedbackProps) {
   const { token, tokenLoading } = useApi();
   const [feedbackDto, setFeedbackDto] = useState({
     title: "",
     description: "",
-    currentPage: "", // TODO: need to set this to the currentPage
+    currentPage: props.location.pathname,
   } as FeedbackPost)
   const formValid = useRef({
     title: false,
