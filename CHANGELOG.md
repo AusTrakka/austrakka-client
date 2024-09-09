@@ -2,6 +2,12 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Changed
+- Now fields that have been configured to be initially hidden will be hidden by default in the table view.
+  This can be changed by access the column hide/show dropdown and selecting the field to be shown.
+
 ## 2024-08-27
 
 ### Changed
