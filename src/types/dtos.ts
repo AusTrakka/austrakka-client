@@ -260,3 +260,8 @@ export interface FeedbackPost {
   description: string,
   currentPage: string,
 }
+
+export interface Feedback {
+  feedbackPost: FeedbackPost,
+  id: string,
+}

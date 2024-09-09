@@ -72,7 +72,7 @@ function tokenExpired(response: Response) {
   return response.headers.get(WWW_AUTHENTICATE)?.includes(INVALID_TOKEN);
 }
 
-function tokenExpiredResponse(response: Response): ResponseObject {
+function tokenExpiredResponse<T = any>(response: Response): ResponseObject {
   return {
     status: ResponseType.Error,
     type: response.statusText,
@@ -80,7 +80,7 @@ function tokenExpiredResponse(response: Response): ResponseObject {
   };
 }
 
-function successResponse(response: Response, apiResp: ApiResponse<any>): ResponseObject {
+function successResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Success,
     message: apiResp.messages[0]?.ResponseMessage,
@@ -90,7 +90,7 @@ function successResponse(response: Response, apiResp: ApiResponse<any>): Respons
   };
 }
 
-function errorResponse(response: Response, apiResp: ApiResponse<any>): ResponseObject {
+function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Error,
     type: response.statusText,
@@ -99,22 +99,22 @@ function errorResponse(response: Response, apiResp: ApiResponse<any>): ResponseO
   };
 }
 
-function fatalResponse(error: any): ResponseObject {
+function fatalResponse<T = any>(error: any): ResponseObject {
   return ({ status: ResponseType.Error, message: genericErrorMessage, error });
 }
 
-async function callApi(url: string, options: HTTPOptions): Promise<ResponseObject> {
+async function callApi<T = any>(url: string, options: HTTPOptions): Promise<ResponseObject<T>> {
   try {
-    const [apiResp, response] = await fetchAndParse(url, options);
+    const [apiResp, response] = await fetchAndParse<T>(url, options);
     if (tokenExpired(response)) {
-      return tokenExpiredResponse(response);
+      return tokenExpiredResponse<T>(response);
     }
     if (apiResp !== null && response.ok) {
-      return successResponse(response, apiResp);
+      return successResponse<T>(response, apiResp);
     }
-    return errorResponse(response, apiResp);
+    return errorResponse<T>(response, apiResp);
   } catch (error: any) {
-    return fatalResponse(error);
+    return fatalResponse<T>(error);
   }
 }
 
@@ -175,13 +175,13 @@ Promise<ResponseObject> {
   });
 }
 
-export async function callPost(url: string, token: string, body: any):
+export async function callPost<T>(url: string, token: string, body: any):
     Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
 
-  return callApi(url, {
+  return callApi<T>(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: getHeadersPost(token),
