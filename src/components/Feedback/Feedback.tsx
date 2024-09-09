@@ -22,7 +22,7 @@ function Feedback(props: FeedbackProps) {
   const [feedbackDto, setFeedbackDto] = useState({
     title: "",
     description: "",
-    currentPage: "",
+    currentPage: "", // TODO: need to set this to the currentPage
   } as FeedbackPost)
   const formValid = useRef({
     title: false,
@@ -30,16 +30,20 @@ function Feedback(props: FeedbackProps) {
   })
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
-
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
-      alert("Form is valid! Submitting the form...");
+      const feedbackResp = await postFeedback(feedbackDto, token)
+      console.log(feedbackResp.message);
+      props.handleHelpClose({}, "escapeKeyDown");
     } else {
-      alert("Form is invalid! Please check the fields...");
+      if (!formValid.current.title) {
+        setTitleError(true)  
+      }
+      if (!formValid.current.description) {
+        setDescError(true)
+      }
     }
-    // const feedbackResp = await postFeedback(feedbackDto, token)
-    // console.log(feedbackResp.message)
   }
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFeedbackDto({

@@ -43,6 +43,15 @@ function getHeadersPatch(token: string): any {
   };
 }
 
+function getHeadersPost(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
 async function parseApiResponse<T = any>(response: Response): Promise<ApiResponse<T>> {
   return (await response.json()) as ApiResponse<T>;
 }
@@ -175,7 +184,7 @@ export async function callPost(url: string, token: string, body: any):
   return callApi(url, {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: getHeaders(token),
+    headers: getHeadersPost(token),
   });
 }
 
