@@ -35,6 +35,11 @@ function Feedback(props: FeedbackProps) {
     if (Object.values(formValid.current).every(isValid => isValid)) {
       const feedbackResp = await postFeedback(feedbackDto, token)
       console.log(feedbackResp.message);
+      setFeedbackDto({
+        ...feedbackDto,
+        ["title"]: "",
+        ["description"]: "",
+      })
       props.handleHelpClose({}, "escapeKeyDown");
     } else {
       if (!formValid.current.title) {
