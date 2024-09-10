@@ -72,7 +72,7 @@ function tokenExpired(response: Response) {
   return response.headers.get(WWW_AUTHENTICATE)?.includes(INVALID_TOKEN);
 }
 
-function tokenExpiredResponse<T = any>(response: Response): ResponseObject {
+function tokenExpiredResponse(response: Response): ResponseObject {
   return {
     status: ResponseType.Error,
     type: response.statusText,
@@ -99,7 +99,7 @@ function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): Re
   };
 }
 
-function fatalResponse<T = any>(error: any): ResponseObject {
+function fatalResponse(error: any): ResponseObject {
   return ({ status: ResponseType.Error, message: genericErrorMessage, error });
 }
 
@@ -107,14 +107,14 @@ async function callApi<T = any>(url: string, options: HTTPOptions): Promise<Resp
   try {
     const [apiResp, response] = await fetchAndParse<T>(url, options);
     if (tokenExpired(response)) {
-      return tokenExpiredResponse<T>(response);
+      return tokenExpiredResponse(response);
     }
     if (apiResp !== null && response.ok) {
       return successResponse<T>(response, apiResp);
     }
     return errorResponse<T>(response, apiResp);
   } catch (error: any) {
-    return fatalResponse<T>(error);
+    return fatalResponse(error);
   }
 }
 
@@ -176,7 +176,7 @@ Promise<ResponseObject> {
 }
 
 export async function callPost<T>(url: string, token: string, body: any):
-    Promise<ResponseObject> {
+Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }

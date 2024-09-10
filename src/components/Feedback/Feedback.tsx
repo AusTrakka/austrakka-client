@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useRef, useState} from 'react';
+import React, { ChangeEvent, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -11,34 +11,39 @@ import {
   Snackbar,
   TextField,
   AlertColor,
-} from '@mui/material'
-import {FeedbackPost} from "../../types/dtos";
-import {postFeedback} from "../../utilities/resourceUtils";
-import {useApi} from "../../app/ApiContext";
-import {Location} from "react-router-dom";
-import {ResponseType} from "../../constants/responseType";
+} from '@mui/material';
+import { Location } from 'react-router-dom';
+import { FeedbackPost } from '../../types/dtos';
+import { postFeedback } from '../../utilities/resourceUtils';
+import { useApi } from '../../app/ApiContext';
+import { ResponseType } from '../../constants/responseType';
 
 interface FeedbackProps {
   help: boolean;
-  handleHelpClose: ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void);
+  handleHelpClose: ((event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void);
   location: Location<any>;
 }
 
 function Feedback(props: FeedbackProps) {
-  const { token, tokenLoading } = useApi();
+  const {
+    help,
+    handleHelpClose,
+    location,
+  } = props;
+  const { token } = useApi();
   const [feedbackDto, setFeedbackDto] = useState({
-    title: "",
-    description: "",
-    currentPage: props.location.pathname,
-  } as FeedbackPost)
+    title: '',
+    description: '',
+    currentPage: location.pathname,
+  } as FeedbackPost);
   const formValid = useRef({
     title: false,
     description: false,
-  })
+  });
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>("success");
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
   const [toast, setToast] = useState<boolean>(false);
   const handleToastClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -50,108 +55,108 @@ function Feedback(props: FeedbackProps) {
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
-      const feedbackResp = await postFeedback(feedbackDto, token)
-      if (feedbackResp.status == ResponseType.Success) {
+      const feedbackResp = await postFeedback(feedbackDto, token);
+      if (feedbackResp.status === ResponseType.Success) {
         setFeedbackMessage(`Feedback received. ID: ${feedbackResp.data?.id}`);
-        setToastSeverity("success");
+        setToastSeverity('success');
         setFeedbackDto({
           ...feedbackDto,
-          ["title"]: "",
-          ["description"]: "",
-        })
+          'title': '',
+          'description': '',
+        });
       } else {
         setFeedbackMessage(feedbackResp.message);
-        setToastSeverity("error");
+        setToastSeverity('error');
       }
-      props.handleHelpClose({}, "escapeKeyDown");
+      handleHelpClose({}, 'escapeKeyDown');
       setToast(true);
     } else {
       if (!formValid.current.title) {
-        setTitleError(true)  
+        setTitleError(true);
       }
       if (!formValid.current.description) {
-        setDescError(true)
+        setDescError(true);
       }
     }
-  }
+  };
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFeedbackDto({
       ...feedbackDto,
-      ["title"]: e.target.value
+      'title': e.target.value,
     });
-    setTitleError(!e.target.validity.valid)
+    setTitleError(!e.target.validity.valid);
     formValid.current.title = e.target.validity.valid;
   };
   const formRef = useRef();
 
-
   const handleDescChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFeedbackDto({
       ...feedbackDto,
-      ["description"]: e.target.value
+      'description': e.target.value,
     });
-    setDescError(!e.target.validity.valid)
+    setDescError(!e.target.validity.valid);
     formValid.current.description = e.target.validity.valid;
   };
 
   return (
-    <React.Fragment>
+    <>
       <Dialog
-          open={props.help}
-          onClose={props.handleHelpClose}
+        open={help}
+        onClose={handleHelpClose}
       >
         <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
           <DialogTitle>Feedback and Bug Reports</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Use this form to to submit bug reports or general feedback directly to the AusTrakka team. The current page you are on will also be submitted.
+              Use this form to to submit bug reports or general feedback directly to the AusTrakka
+              team. The current page you are on will also be submitted.
             </DialogContentText>
             <TextField
-                autoFocus
-                required
-                value={feedbackDto.title}
-                onChange={handleTitleChange}
-                error={titleError}
-                helperText={titleError ? "Please enter a title" : ""}
-                margin="dense"
-                id="feedback-title"
-                name="title"
-                label="Title"
-                fullWidth
-                variant="standard"
+              autoFocus
+              required
+              value={feedbackDto.title}
+              onChange={handleTitleChange}
+              error={titleError}
+              helperText={titleError ? 'Please enter a title' : ''}
+              margin="dense"
+              id="feedback-title"
+              name="title"
+              label="Title"
+              fullWidth
+              variant="standard"
             />
             <TextField
-                id="feedback-description"
-                label="Description"
-                multiline
-                rows={4}
-                variant="standard"
-                fullWidth
-                required
-                value={feedbackDto.description}
-                onChange={handleDescChange}
-                error={descError}
-                helperText={descError ? "Please enter a description" : ""}
+              id="feedback-description"
+              label="Description"
+              multiline
+              rows={4}
+              variant="standard"
+              fullWidth
+              required
+              value={feedbackDto.description}
+              onChange={handleDescChange}
+              error={descError}
+              helperText={descError ? 'Please enter a description' : ''}
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => props.handleHelpClose({undefined}, "backdropClick")}>Cancel</Button>
+            <Button onClick={() => handleHelpClose({ undefined }, 'backdropClick')}>Cancel</Button>
             <Button type="submit">Submit</Button>
           </DialogActions>
         </Box>
       </Dialog>
       <Snackbar
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          open={toast}
-          autoHideDuration={6000}
-          onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={toast}
+        autoHideDuration={6000}
+        onClose={handleToastClose}
       >
         <Alert onClose={handleToastClose} severity={toastSeverity}>
           {feedbackMessage}
         </Alert>
       </Snackbar>
-    </React.Fragment>
-  )
+    </>
+  );
 }
 
 export default Feedback;
