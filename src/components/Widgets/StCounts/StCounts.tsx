@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
-import { parse, View as VegaView } from 'vega';
+import { ColorScheme, parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
@@ -13,6 +13,7 @@ import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { useApi } from '../../../app/ApiContext';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { defaultColorSchemeName } from '../../../constants/schemes';
 
 const stFieldName = 'ST';
 
@@ -30,7 +31,7 @@ const spec: TopLevelSpec = {
     color: {
       field: stFieldName,
       title: `${stFieldName} Value`,
-      scale: { scheme: 'spectral' },
+      scale: { scheme: defaultColorSchemeName as ColorScheme },
     },
   },
   config: {

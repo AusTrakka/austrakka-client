@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { ColorScheme } from 'vega';
 import { getStartingField, setColorAggregateInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
+import { defaultColorSchemeName } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -33,7 +35,7 @@ const defaultSpec: TopLevelSpec = {
       aggregate: 'count',
       type: 'nominal',
       scale: {
-        scheme: 'spectral',
+        scheme: defaultColorSchemeName as ColorScheme,
       },
     },
   },
@@ -59,7 +61,7 @@ function HeatMap(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    'spectral',
+    defaultColorSchemeName,
     searchParams,
   );
 
@@ -159,9 +161,11 @@ function HeatMap(props: PlotTypeProps) {
           }
         </Select>
       </FormControl>
-      <ColorSchemeSelectorPlotStyle
+      <ColorSchemeSelector
         selectedScheme={colourScheme}
         onColourChange={(newColor) => setColourScheme(newColor)}
+        variant="standard"
+        size="small"
       />
     </Box>
   );

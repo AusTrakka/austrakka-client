@@ -2,6 +2,14 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+- Added new discrete colour schemes for plots and trees, includes a colourblind-friendly scheme.
+
+### Changed
+- Colour Scheme Selector now groups colour schemes by type and has a more organised look.
+
 ## 2024-09-05
 
 ### Added
