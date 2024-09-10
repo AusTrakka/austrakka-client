@@ -105,7 +105,7 @@ function DataFilters(props: DataFiltersProps) {
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [dateError, setDateError] = useState<DateValidationError>(null);
   const [fields, setFields] = useState<Field[]>([]);
-
+  
   useEffect(() => {
     setSampleCount(filteredDataLength);
     setTotalSamples(dataLength);
@@ -197,6 +197,16 @@ function DataFilters(props: DataFiltersProps) {
       }));
     }
   };
+  
+  const handleDateDependingOnCondition = (condition: FilterMatchMode, date: Date) => {
+    if (condition === FilterMatchMode.DATE_AFTER) {
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
+      return endOfDay;
+    }
+    
+    return date;
+  };
 
   const handleFilterDateChange = (newDate: any) => {
     setFilterFormValues((prevState) => ({
@@ -241,22 +251,39 @@ function DataFilters(props: DataFiltersProps) {
             operator: FilterOperator.AND,
             constraints: [{
               value: filterFormValues.fieldType === FieldTypes.DATE
-                ? new Date(filterFormValues.value)
+                ? handleDateDependingOnCondition(filterMatchMode, new Date(filterFormValues.value))
                 : filterFormValues.value,
               matchMode: filterMatchMode,
             }],
-          },
+          } as DataTableOperatorFilterMetaData,
         };
+        const existingFilter =
+            primeReactFilters[filterFormValues.field] as DataTableOperatorFilterMetaData;
 
-        setPrimeReactFilters((prevState) => {
-          if (isDataTableFiltersEqual(prevState, defaultState)) {
-            return filter;
-          }
-          return {
-            ...prevState,
-            ...filter,
+        const filterOperatorObject =
+            filter[filterFormValues.field] as DataTableOperatorFilterMetaData;
+        // Check if the current filters are equal to the default filters
+        if (isDataTableFiltersEqual(primeReactFilters, defaultState)) {
+          setPrimeReactFilters(filter);
+        } else if (existingFilter) {
+          const holder = {
+            ...primeReactFilters,
+            [filterFormValues.field]: {
+              operator: filterOperatorObject.operator, // Preserve existing operator
+              constraints: [
+                ...existingFilter.constraints, // Preserve existing constraints
+                ...filterOperatorObject.constraints, // Add new constraints
+              ],
+            },
           };
-        });
+          setPrimeReactFilters(holder);
+        } else {
+          setPrimeReactFilters({
+            ...primeReactFilters,
+            ...filter, // Add the new filter
+          });
+        }
+
         setFilterFormValues(defaultFormState);
         setNullOrEmptyFlag(false);
       }
@@ -270,44 +297,39 @@ function DataFilters(props: DataFiltersProps) {
   };
 
   // TODO: This method needs to be tested as well quite crucial and a lot of edge cases.
-  const handleFilterDelete = (filterToRemove: DataTableFilterMeta) => {
-    setPrimeReactFilters((oldList) => {
-      const updatedFilters = { ...oldList };
+  const handleFilterDelete = (
+    _fieldName: string,
+    _constraint: { value: any, matchMode: FilterMatchMode },
+  ) => {
+    const updatedFilters = { ...primeReactFilters };
+    Object.entries(updatedFilters).forEach(([fieldName, filter]) => {
+      if (_fieldName !== fieldName) return;
 
-      Object.entries(updatedFilters).forEach(([fieldName, filter]) => {
-        const filterEntryToRemove = filterToRemove[fieldName];
-
-        if (!filterEntryToRemove) return;
-
-        if (isOperatorFilterMetaData(filter) && isOperatorFilterMetaData(filterEntryToRemove)) {
-          // Handle case where the field has constraints
-          filter.constraints = filter.constraints.filter(
-            (constraint: any) =>
-              !(
-                constraint.value === filterEntryToRemove.constraints[0].value &&
-                constraint.matchMode === filterEntryToRemove.constraints[0].matchMode
-              ),
-          );
-
-          // If no constraints remain, delete the field
-          if (filter.constraints.length === 0) {
-            delete updatedFilters[fieldName];
-          }
-        } else if (!isOperatorFilterMetaData(filter) &&
-            !isOperatorFilterMetaData(filterEntryToRemove)) {
-          // Handle case where the field is a direct value and comparator
-          if (filter === filterEntryToRemove) {
-            delete updatedFilters[fieldName];
-          }
-        } else {
-          // Handle case where the filter types don't match
-          // eslint-disable-next-line no-console
-          console.error('Filter type mismatch');
+      if (isOperatorFilterMetaData(filter)) {
+        // Handle case where the field has constraints
+        filter.constraints = filter.constraints.filter(
+          (constraint: any) =>
+            !(
+              constraint.value === _constraint.value &&
+                    constraint.matchMode === _constraint.matchMode
+            ),
+        );
+        if (filter.constraints.length === 0) {
+          delete updatedFilters[fieldName];
         }
-      });
-
-      return updatedFilters;
+      } else if (!isOperatorFilterMetaData(filter)) {
+        // Handle case where the field is a direct value and comparator
+        if (filter.value === _constraint.value &&
+            filter.matchMode === _constraint.matchMode) {
+          delete updatedFilters[fieldName];
+        }
+      } else {
+        // Handle case where the filter types don't match
+        // eslint-disable-next-line no-console
+        console.error('Filter type mismatch');
+      }
     });
+    setPrimeReactFilters(updatedFilters);
   };
 
   const renderValueElement = () => {
@@ -552,7 +574,11 @@ function DataFilters(props: DataFiltersProps) {
                                   {displayValue}
                                 </>
                                 )}
-                              onDelete={() => handleFilterDelete({ [field]: filterData })}
+                              onDelete={() => handleFilterDelete(
+                                field,
+                                { value: constraint.value,
+                                  matchMode: constraint.matchMode as FilterMatchMode },
+                              )}
                               sx={{
                                 margin: 1,
                               }}
