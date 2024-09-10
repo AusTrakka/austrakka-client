@@ -52,7 +52,7 @@ describe('decodeUrlToFilterObj', () => {
       });
     });
 
-    test('encoded outer brackets shoudld be decodable', () => {
+    test('encoded outer brackets should be decodable', () => {
       const encodedStr = '%28name:John%20Doe%20%26%20Co.:equals,address:' +
         '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom%29';
 
