@@ -21,7 +21,7 @@ import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
-import Feedback from "../Feedback/Feedback";
+import Feedback from '../Feedback/Feedback';
 
 const settings = [
   {
@@ -299,7 +299,7 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
-      <Feedback help={help} handleHelpClose={handleHelpClose} location={location}></Feedback>
+      <Feedback help={help} handleHelpClose={handleHelpClose} location={location}/>
     </>
   );
 }
