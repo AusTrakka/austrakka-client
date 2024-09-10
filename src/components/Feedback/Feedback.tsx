@@ -1,20 +1,22 @@
 import React, {ChangeEvent, useRef, useState} from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  DialogContentText,
-  Button, 
-  Box, 
-  Snackbar, 
   Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  TextField,
+  AlertColor,
 } from '@mui/material'
 import {FeedbackPost} from "../../types/dtos";
 import {postFeedback} from "../../utilities/resourceUtils";
 import {useApi} from "../../app/ApiContext";
 import {Location} from "react-router-dom";
+import {ResponseType} from "../../constants/responseType";
 
 interface FeedbackProps {
   help: boolean;
@@ -35,28 +37,34 @@ function Feedback(props: FeedbackProps) {
   })
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
-  const [feedbackId, setFeedbackId] = useState("");
-  const [successToast, setSuccessToast] = useState<boolean>(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<AlertColor>("success");
+  const [toast, setToast] = useState<boolean>(false);
   const handleToastClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
-      setSuccessToast(false);
+      setToast(false);
       return;
     }
-    setSuccessToast(false);
+    setToast(false);
   };
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
       const feedbackResp = await postFeedback(feedbackDto, token)
-      setFeedbackId(feedbackResp.data?.id ?? "");
-      console.log(feedbackResp.message);
-      setFeedbackDto({
-        ...feedbackDto,
-        ["title"]: "",
-        ["description"]: "",
-      })
+      if (feedbackResp.status == ResponseType.Success) {
+        setFeedbackMessage(`Feedback received. ID: ${feedbackResp.data?.id}`);
+        setToastSeverity("success");
+        setFeedbackDto({
+          ...feedbackDto,
+          ["title"]: "",
+          ["description"]: "",
+        })
+      } else {
+        setFeedbackMessage(feedbackResp.message);
+        setToastSeverity("error");
+      }
       props.handleHelpClose({}, "escapeKeyDown");
-      setSuccessToast(true);
+      setToast(true);
     } else {
       if (!formValid.current.title) {
         setTitleError(true)  
@@ -134,12 +142,12 @@ function Feedback(props: FeedbackProps) {
       </Dialog>
       <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          open={successToast}
+          open={toast}
           autoHideDuration={6000}
           onClose={handleToastClose}
       >
-        <Alert onClose={handleToastClose} severity="success">
-          Feedback received. ID: {feedbackId}
+        <Alert onClose={handleToastClose} severity={toastSeverity}>
+          {feedbackMessage}
         </Alert>
       </Snackbar>
     </React.Fragment>
