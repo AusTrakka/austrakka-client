@@ -2,12 +2,19 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## 2024-08-27
+## 2024-09-05
+
+### Added
+- A Fields page, listing all defined AusTrakka fields, is now available to all users.
 
 ### Changed
-- The condition `on and after` and `on and before` have been changed to just be 
-  `After` and `Before` respectively. This is due to in the change of TableComponent.
-  To have the same effect as before you must use the `On` condition in conjunction with the `After` or `Before` condition.
+- Minor plot tweaks: update preferred fields, smaller cluster timeline point size
+- The condition `on and after` and `on and before` have been changed to just be `After` and `Before` respectively. 
+This is due to a change in available table component filters.
+- Table column layout and appearance improvements, including darker cell separator lines for accessibility.
+
+### Fixed
+- Plots in projects in show-all mode will select their preferred fields when they exist, independent of dataset analysis label.
 
 ## 2024-08-16
 
