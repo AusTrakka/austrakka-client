@@ -1,17 +1,34 @@
-import { Box, TextField, Button, FormControl, InputLabel, MenuItem,
-  Select, SelectChangeEvent, IconButton, Chip, Grid, Typography, Stack,
-  Snackbar, Alert } from '@mui/material';
-import React, { useEffect, useState, SetStateAction } from 'react';
-import { AddBox, AddCircle, IndeterminateCheckBox, CloseRounded } from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import React, { SetStateAction, useEffect, useState } from 'react';
+import { AddBox, AddCircle, CloseRounded, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
-import {
-  DataTableFilterMeta,
-  DataTableOperatorFilterMetaData,
-} from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
-import { dateConditions, stringConditions, numberConditions, booleanConditions, CustomFilterOperators } from './fieldTypeOperators';
+import {
+  booleanConditions,
+  CustomFilterOperators,
+  dateConditions,
+  numberConditions,
+  stringConditions,
+} from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/filterUtils';
 
@@ -135,32 +152,34 @@ function DataFilters(props: DataFiltersProps) {
         field.columnName === value);
 
       let defaultCondition = '';
+      let fieldType: FieldTypes = FieldTypes.STRING;
 
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
-        setSelectedFieldType(FieldTypes.DATE);
+        fieldType = FieldTypes.DATE;
         defaultCondition = FilterMatchMode.DATE_IS;
       } else if (
         targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
           targetFieldProps?.primitiveType === FieldTypes.DOUBLE
       ) {
         setConditions(numberConditions);
-        setSelectedFieldType(targetFieldProps.primitiveType);
+        fieldType = targetFieldProps.primitiveType;
         defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
         setConditions(booleanConditions);
-        setSelectedFieldType(FieldTypes.BOOLEAN);
+        fieldType = FieldTypes.BOOLEAN;
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
         setConditions(stringConditions);
-        setSelectedFieldType(FieldTypes.STRING);
+        fieldType = FieldTypes.STRING;
         defaultCondition = FilterMatchMode.EQUALS;
       }
       setNullOrEmptyFlag(false);
+      setSelectedFieldType(fieldType as FieldTypes);
       setFilterFormValues((prevState) => ({
         ...prevState,
         [name]: value,
-        fieldType: selectedFieldType,
+        fieldType,
         condition: defaultCondition,
         value: '',
       }));
@@ -217,7 +236,6 @@ function DataFilters(props: DataFiltersProps) {
           .includes(filterFormValues.condition as CustomFilterOperators) ?
           FilterMatchMode.CUSTOM :
           filterFormValues.condition as FilterMatchMode;
-
         const filter: DataTableFilterMeta = {
           [filterFormValues.field]: {
             operator: FilterOperator.AND,
