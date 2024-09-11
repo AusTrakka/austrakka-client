@@ -2,6 +2,19 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-09-11
+
+### Added
+- Added new discrete colour schemes for plots and trees, includes a colourblind-friendly scheme.
+
+### Changed
+- Colour Scheme Selector now groups colour schemes by type and has a more organised look.
+
+### Fixed
+- Fixed an issue where applying a date filter could cause a crash.
+- Fixed an issue where the "after" date filter filtered to timestamps after 00:00:00 on the selected date, rather than after 23:59:59.
+- Fixed an issue where boolean filters such as is-null-or-empty were not parsed correctly from the URL.
+
 ## 2024-09-05
 
 ### Added

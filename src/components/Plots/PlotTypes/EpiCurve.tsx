@@ -10,9 +10,10 @@ import {
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import { defaultColorSchemeName } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -77,7 +78,7 @@ function EpiCurve(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    'spectral',
+    defaultColorSchemeName,
     searchParams,
   );
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
@@ -276,9 +277,11 @@ function EpiCurve(props: PlotTypeProps) {
         </Select>
       </FormControl>
       {colourField !== 'none' && (
-        <ColorSchemeSelectorPlotStyle
+        <ColorSchemeSelector
           selectedScheme={colourScheme}
           onColourChange={(newColor) => setColourScheme(newColor)}
+          variant="outlined"
+          size="small"
         />
       )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>

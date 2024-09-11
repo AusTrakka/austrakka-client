@@ -24,7 +24,6 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
-
   const nonEditableFields = [
     'created',
     'objectId',
@@ -51,7 +50,6 @@ function EditableRow(props : EditableRowProps) {
       };
     });
   };
-
   switch (typeof detailValue) {
     case 'string':
       if (nonEditableFields.includes(field)) {
@@ -151,8 +149,9 @@ function EditableRow(props : EditableRowProps) {
               <TextField
                 value={editedValues?.[field] as string || ''}
                 onChange={handleChange}
-                variant="outlined"
+                variant="filled"
                 fullWidth
+                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
                 size="small"
               />
             </TableCell>

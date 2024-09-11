@@ -67,7 +67,6 @@ function DateSelector(props: any) {
         },
       };
     }
-
     dispatch(updateTimeFilterObject(primeTableFilterObject));
 
     const dispatchProps = {
