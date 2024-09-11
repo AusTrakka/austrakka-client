@@ -237,6 +237,8 @@ function Fields() {
               headerClassName="custom-title"
               style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
               onCellEditComplete={onCellEditComplete}
+              onBeforeCellEditShow={(e) => (col.body === undefined ?
+                e.originalEvent.preventDefault() : undefined)}
             />
           ))}
         </DataTable>

@@ -63,6 +63,7 @@ function OrganisationOverview() {
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
       const { groupRoles, orgName, admin } = user;
+      let foundOrgName = null;
       if (!admin) {
         const orgViewerGroups = getCorrectGroups(groupRoles);
         setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
@@ -76,11 +77,13 @@ function OrganisationOverview() {
           setOrgEveryone(orgAdminGroups.find((group: Group) =>
             group.name === `${orgAbbrev}-Everyone`));
           setUserGroups(orgAdminGroups);
+          foundOrgName = orgAdminGroups.find((group: Group) =>
+            group.organisation.abbreviation === orgAbbrev)?.organisation.name;
         }
       }
       setIsUserGroupsLoading(false);
       setGroupStatus(LoadingState.SUCCESS);
-      setOrganisationName(orgName);
+      setOrganisationName(foundOrgName || orgName);
       setOrgAbbreviation(orgAbbrev!);
     }
 

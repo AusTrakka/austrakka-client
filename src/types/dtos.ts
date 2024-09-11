@@ -236,6 +236,7 @@ export interface Group {
   createdBy: string,
   organisation: {
     abbreviation: string
+    name: string
   }
 }
 
