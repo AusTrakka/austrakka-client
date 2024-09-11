@@ -28,6 +28,17 @@ export function encodeFilterObj(filterObj: DataTableFilterMeta): string {
   return `(${result})`;
 }
 
+export function parseUrlValue(value: string): string | Date | boolean {
+  // If the value is a date, parse it as a date
+  if (isISODateString(value)) return new Date(value);
+  // If the value is a boolean, parse it as a boolean
+  const tempValue = value.toLowerCase();
+  if (tempValue === 'true') return true;
+  if (tempValue === 'false') return false;
+  // Otherwise, return the value as a string
+  return decodeURIComponent(value);
+}
+
 export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta {
   const decodedObj: DataTableFilterMeta = {};
 
@@ -44,9 +55,7 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
     if (rest.length === 2) {
       const decodedValue = decodeURIComponent(rest[0]);
       decodedObj[key] = {
-        value: isISODateString(decodedValue) ?
-          new Date(decodedValue) :
-          decodedValue,
+        value: parseUrlValue(decodedValue),
         matchMode: rest[1] as FilterMatchMode,
       };
     } else if (rest.length > 2) {
@@ -61,9 +70,7 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
           const [value, matchMode] = constraint.split(':');
           const decodedValue = decodeURIComponent(value);
           return {
-            value: isISODateString(decodedValue) ?
-              new Date(decodedValue) :
-              decodeURIComponent(value),
+            value: parseUrlValue(decodedValue),
             matchMode: matchMode as FilterMatchMode,
           };
         }),
@@ -97,3 +104,5 @@ export const getFilterObjFromSearchParams =
       if (filterString === null || filterString === undefined) return defaultState;
       return decodeUrlToFilterObj(filterString);
     };
+
+// Decodes a URL value to a string, number, or boolean
