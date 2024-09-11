@@ -16,6 +16,7 @@ import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import LoadingState from '../../constants/loadingState';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -34,6 +35,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   useEffect(() => {
@@ -43,8 +45,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
       setFilteredData(metadata?.metadata!);
+      if (Object.values(metadata.fieldLoadingStates)
+        .every(field => field === LoadingState.SUCCESS)) {
+        setAllFieldsLoaded(true);
+      }
     }
-  }, [metadata?.loadingState, metadata?.metadata]);
+  }, [metadata?.fieldLoadingStates, metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -156,13 +162,14 @@ function VegaDataPlot(props: VegaDataPlotProps) {
             setIsOpen={setIsDataFiltersOpen}
             setLoadingState={setLoading}
             primeReactFilters={currentFilters}
+            dataLoadingState={allFieldsLoaded}
           />
         </Grid>
       </Grid>
       <div style={{ display: 'none' }}>
         <DataTable
           value={metadata?.metadata ?? []}
-          filters={currentFilters}
+          filters={allFieldsLoaded ? currentFilters : defaultState}
           paginator
           rows={1}
           onValueChange={(e) => {
