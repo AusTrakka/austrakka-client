@@ -150,20 +150,22 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   return (
     <>
       <Grid container direction="column">
-        <Grid container item direction="row">
-          <Grid item xs={11}>
-            {!errorOccurred ? <div id="#plot-container" ref={plotDiv} /> : (
-              <Alert severity="error" sx={{ marginTop: '10px' }}>
-                {errorMsg}
-              </Alert>
-            )}
+        {!errorOccurred ? (
+          <Grid container item direction="row">
+            <Grid item xs={11}>
+              <div id="#plot-container" ref={plotDiv} />
+            </Grid>
+            <Grid item xs={1}>
+              <ExportVegaPlot
+                vegaView={vegaView}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={1}>
-            <ExportVegaPlot
-              vegaView={vegaView}
-            />
-          </Grid>
-        </Grid>
+        ) : (
+          <Alert severity="error" sx={{ marginTop: '10px' }}>
+            {errorMsg}
+          </Alert>
+        )}
         <Grid item xs={12}>
           {loading &&
             <LinearProgress color="success" variant="indeterminate" />}
