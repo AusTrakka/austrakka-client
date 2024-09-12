@@ -1,9 +1,9 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Grid, LinearProgress } from '@mui/material';
+import { Alert, Grid, LinearProgress } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
@@ -16,6 +16,7 @@ import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { useGlobalErrorListener } from './globalErrorListener';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
@@ -28,6 +29,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorOccurred, setErrorOccurred] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
@@ -39,6 +42,20 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
   }, [filteredData]);
+
+  const handleGlobalError = useCallback((event: ErrorEvent) => {
+    if (event.error instanceof DOMException) {
+      setErrorMsg('The plot could not be rendered. It may be too large for the browser. ' +
+          'Consider filtering the data, or changing the selected fields.');
+    } else {
+      setErrorMsg('An error occurred rendering the plot. Please contact AusTrakka Support.');
+    }
+
+    setErrorOccurred(true);
+    setLoading(false);
+  }, []);
+  
+  useGlobalErrorListener(handleGlobalError);
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
@@ -135,7 +152,11 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       <Grid container direction="column">
         <Grid container item direction="row">
           <Grid item xs={11}>
-            <div id="#plot-container" ref={plotDiv} />
+            {!errorOccurred ? <div id="#plot-container" ref={plotDiv} /> : (
+              <Alert severity="error" sx={{ marginTop: '10px' }}>
+                {errorMsg}
+              </Alert>
+            )}
           </Grid>
           <Grid item xs={1}>
             <ExportVegaPlot
