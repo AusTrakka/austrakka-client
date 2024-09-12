@@ -14,6 +14,7 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 - Fixed an issue where applying a date filter could cause a crash.
 - Fixed an issue where the "after" date filter filtered to timestamps after 00:00:00 on the selected date, rather than after 23:59:59.
 - Fixed an issue where boolean filters such as is-null-or-empty were not parsed correctly from the URL.
+- Improved reliability of sequence upload by requiring the client to send the file hash at the start of upload.
 
 ## 2024-09-05
 
