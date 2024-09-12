@@ -66,6 +66,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   // Render plot by creating vega view
   useEffect(() => {
+    setErrorOccurred(false);
     // Modifies compiledSpec in place
     const fixRowWidths = (compiledSpec: Spec) => {
       if (!compiledSpec.signals) { compiledSpec.signals = []; }
@@ -87,7 +88,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     const createVegaView = async () => {
-      setErrorOccurred(false);
       if (vegaView) {
         vegaView.finalize();
       }
