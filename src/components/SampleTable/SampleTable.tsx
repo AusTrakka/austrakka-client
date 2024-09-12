@@ -197,7 +197,7 @@ function SampleTable(props: SamplesProps) {
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
         setLoadingState={setFiltering}
-        dataLoadingState={allFieldsLoaded}
+        dataLoaded={allFieldsLoaded}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable

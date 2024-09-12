@@ -72,7 +72,7 @@ interface DataFiltersProps {
   primeReactFilters: DataTableFilterMeta
   isOpen: boolean
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
-  dataLoadingState: boolean
+  dataLoaded: boolean
   setLoadingState: React.Dispatch<SetStateAction<boolean>>
 }
 
@@ -93,7 +93,7 @@ function DataFilters(props: DataFiltersProps) {
     primeReactFilters,
     isOpen,
     setIsOpen,
-    dataLoadingState,
+    dataLoaded,
     setLoadingState,
   } = props;
   const [sampleCount, setSampleCount] = useState<number | undefined>();
@@ -424,7 +424,7 @@ function DataFilters(props: DataFiltersProps) {
 
   return (
     <div style={{ paddingTop: 5 }}>
-      {!dataLoadingState ? (
+      {!dataLoaded ? (
         <LinearProgress style={{ margin: 0, padding: 0, height: 5, borderRadius: 3 }} color="success" />
       ) : null}
       <Box>

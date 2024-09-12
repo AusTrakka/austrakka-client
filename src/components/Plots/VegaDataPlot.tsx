@@ -45,10 +45,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
       setFilteredData(metadata?.metadata!);
-      if (Object.values(metadata.fieldLoadingStates)
-        .every(field => field === LoadingState.SUCCESS)) {
-        setAllFieldsLoaded(true);
-      }
+      setAllFieldsLoaded(true);
     }
   }, [metadata?.fieldLoadingStates, metadata?.loadingState, metadata?.metadata]);
 
@@ -150,8 +147,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          {loading &&
-            <LinearProgress color="success" variant="indeterminate" />}
           <DataFilters
             dataLength={metadata?.metadata?.length ?? 0}
             filteredDataLength={filteredData.length ?? 0}
@@ -162,7 +157,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
             setIsOpen={setIsDataFiltersOpen}
             setLoadingState={setLoading}
             primeReactFilters={currentFilters}
-            dataLoadingState={allFieldsLoaded}
+            dataLoaded={loading || allFieldsLoaded}
           />
         </Grid>
       </Grid>

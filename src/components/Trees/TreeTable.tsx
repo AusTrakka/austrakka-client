@@ -223,7 +223,7 @@ export default function TreeTable(props: TreeTableProps) {
         primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        dataLoadingState={allFieldsLoaded}
+        dataLoaded={allFieldsLoaded}
         setLoadingState={setLoading}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>

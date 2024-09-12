@@ -195,7 +195,7 @@ function Samples(props: SamplesProps) {
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        dataLoadingState={allFieldsLoaded}
+        dataLoaded={allFieldsLoaded}
         setLoadingState={setLoadingState} // TODO: This is a hack to get the filters to update
         primeReactFilters={currentFilters}
       />
@@ -228,7 +228,9 @@ function Samples(props: SamplesProps) {
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
-            filters={allFieldsLoaded ? currentFilters : defaultState}
+            filters={allFieldsLoaded ?
+              currentFilters :
+              defaultState}
             reorderableColumns
             resizableColumns
             sortIcon={sortIcon}
