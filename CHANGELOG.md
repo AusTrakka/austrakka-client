@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-09-12
+
+### Fixed
+- Filtered sample counts now display correctly when the filters are loaded from the URL.
+
 ## 2024-09-11
 
 ### Added
