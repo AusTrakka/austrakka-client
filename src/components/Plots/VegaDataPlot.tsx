@@ -40,6 +40,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   useEffect(() => {
+    setErrorOccurred(false);
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
   }, [filteredData]);
 
@@ -86,6 +87,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     const createVegaView = async () => {
+      setErrorOccurred(false);
       if (vegaView) {
         vegaView.finalize();
       }
