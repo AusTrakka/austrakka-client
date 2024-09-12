@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Grid, LinearProgress } from '@mui/material';
+import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
@@ -34,6 +34,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   useEffect(() => {
@@ -43,8 +44,9 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
       setFilteredData(metadata?.metadata!);
+      setAllFieldsLoaded(true);
     }
-  }, [metadata?.loadingState, metadata?.metadata]);
+  }, [metadata?.fieldLoadingStates, metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
   useEffect(() => {
@@ -144,8 +146,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          {loading &&
-            <LinearProgress color="success" variant="indeterminate" />}
           <DataFilters
             dataLength={metadata?.metadata?.length ?? 0}
             filteredDataLength={filteredData.length ?? 0}
@@ -156,13 +156,14 @@ function VegaDataPlot(props: VegaDataPlotProps) {
             setIsOpen={setIsDataFiltersOpen}
             setLoadingState={setLoading}
             primeReactFilters={currentFilters}
+            dataLoaded={loading || allFieldsLoaded}
           />
         </Grid>
       </Grid>
       <div style={{ display: 'none' }}>
         <DataTable
           value={metadata?.metadata ?? []}
-          filters={currentFilters}
+          filters={allFieldsLoaded ? currentFilters : defaultState}
           paginator
           rows={1}
           onValueChange={(e) => {

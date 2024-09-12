@@ -1,7 +1,11 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
-import { DataTable, DataTableSelectAllChangeEvent } from 'primereact/datatable';
+import {
+  DataTable,
+  DataTableSelectAllChangeEvent,
+  DataTableSelectionMultipleChangeEvent,
+} from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
@@ -63,9 +67,10 @@ export default function TreeTable(props: TreeTableProps) {
     defaultState,
   );
   const [loading, setLoading] = useState<boolean>(true);
-  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
+  const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
 
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadataLoadingState ?? MetadataLoadingState.IDLE);
@@ -85,11 +90,11 @@ export default function TreeTable(props: TreeTableProps) {
 
   useEffect(() => {
     const processTableValues = () => {
+      // The data is loaded
       setLoading(false);
-      setAllIds(tableMetadata.map((sample: any) => sample.Seq_ID));
+      setFilteredDataLength(tableMetadata.length);
       setFormattedData(tableMetadata);
       setFilteredData(tableMetadata);
-      setFilteredDataLength(tableMetadata.length);
       setDisplayRows(tableMetadata);
     };
 
@@ -99,12 +104,21 @@ export default function TreeTable(props: TreeTableProps) {
       setLoading(true);
       return;
     }
-
     if (Object.keys(currentFilters).length === 0 ||
         isDataTableFiltersEqual(currentFilters, defaultState)) {
       processTableValues();
     }
-  }, [tableMetadata, displayFields, metadataLoadingState, currentFilters]);
+  }, [currentFilters, metadataLoadingState, tableMetadata]);
+  
+  useEffect(() => {
+    if (fieldLoadingState && displayRows.length > 0) {
+      if (Object.values(fieldLoadingState)
+        .every(field => field === LoadingState.SUCCESS)) {
+        setAllFieldsLoaded(true);
+        setAllIds(tableMetadata.map((sample: any) => sample.Seq_ID));
+      }
+    }
+  }, [displayRows.length, fieldLoadingState, tableMetadata]);
 
   useEffect(() => {
     if (selectAll && Object.keys(currentFilters).length === 0) {
@@ -119,17 +133,19 @@ export default function TreeTable(props: TreeTableProps) {
   }, [formattedData, selectedIds]);
 
   useEffect(() => {
-    if (showSelectedRowsOnly) {
+    if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
-    } else {
-      setDisplayRows(filteredData);
+    } else if (metadataLoadingState === MetadataLoadingState.DATA_LOADED) {
+      setShowSelectedRowsOnly(false);
+      setDisplayRows(tableMetadata);
     }
-  }, [selectedSamples, filteredData, showSelectedRowsOnly]);
+  }, [selectedSamples, filteredData, showSelectedRowsOnly,
+    tableMetadata, metadataLoadingState]);
 
   const toggleShowSelectedRowsOnly = () => {
     setShowSelectedRowsOnly((prev) => !prev);
     if (showSelectedRowsOnly) {
-      setDisplayRows(filteredData);
+      setDisplayRows(tableMetadata);
     } else {
       setDisplayRows(selectedSamples);
     }
@@ -207,21 +223,24 @@ export default function TreeTable(props: TreeTableProps) {
         primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
+        dataLoaded={allFieldsLoaded}
         setLoadingState={setLoading}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <div>
           <DataTable
-            value={displayRows ?? []}
+            value={displayRows}
             onValueChange={(e) => {
               setFilteredDataLength(e.length);
               setLoading(false);
               setFilteredData(e);
+              setFormattedData(e);
             }}
             size="small"
             removableSort
             showGridlines
-            filters={currentFilters}
+            filters={allFieldsLoaded ?
+              currentFilters : defaultState}
             scrollable
             scrollHeight="calc(100vh - 300px)"
             paginator
@@ -233,14 +252,14 @@ export default function TreeTable(props: TreeTableProps) {
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
             paginatorRight
-            loading={loading}
+            loading={!allFieldsLoaded || loading}
             header={header}
             reorderableColumns
             selectionMode="multiple"
             selection={selectedSamples}
             selectAll={selectAll}
             onSelectAllChange={onSelectAllChange}
-            onSelectionChange={(e: any) => {
+            onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
               setSelectedSamples(e.value as Sample[]);
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
