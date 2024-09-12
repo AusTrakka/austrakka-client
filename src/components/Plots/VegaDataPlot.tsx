@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parse, Spec, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Grid, LinearProgress } from '@mui/material';
+import { Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
@@ -16,7 +16,6 @@ import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
-import LoadingState from '../../constants/loadingState';
 
 interface VegaDataPlotProps {
   spec: TopLevelSpec | Spec | null,
