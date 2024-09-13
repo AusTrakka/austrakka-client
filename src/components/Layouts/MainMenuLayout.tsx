@@ -23,26 +23,26 @@ import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 
-const settings = [
-  {
-    title: 'Documentation',
-    icon: <Description fontSize="small" />,
-    disabled: true,
-  },
-  {
-    title: 'Feedback',
-    icon: <Help fontSize="small" />,
-    disabled: false,
-  },
-];
 
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
-  const handleHelpOpen = () => setHelp(true);
-  const handleHelpClose = () => setHelp(false);
+  const settings = [
+    {
+      title: 'Documentation',
+      icon: <Description fontSize="small" />,
+      disabled: true,
+      onClick: () => {},
+    },
+    {
+      title: 'Feedback',
+      icon: <Help fontSize="small" />,
+      disabled: false,
+      onClick: () => setHelp((prev) => !prev),
+    },
+  ];
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
@@ -245,7 +245,7 @@ function MainMenuLayout() {
           <Divider />
           <List>
             {settings.map((setting) => (
-              <MenuItem key={setting.title} disabled={setting.disabled} onClick={handleHelpOpen}>
+              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
                 <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
                   {setting.icon}
                 </ListItemIcon>
@@ -299,7 +299,7 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
-      <Feedback help={help} handleHelpClose={handleHelpClose} location={location} />
+      <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
     </>
   );
 }

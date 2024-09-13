@@ -57,7 +57,7 @@ function Feedback(props: FeedbackProps) {
     if (Object.values(formValid.current).every(isValid => isValid)) {
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
-        setFeedbackMessage(`Feedback received. ID: ${feedbackResp.data?.id}`);
+        setFeedbackMessage(`Feedback received. Ticket number: ${feedbackResp.data?.id}`);
         setToastSeverity('success');
         setFeedbackDto({
           ...feedbackDto,
@@ -107,7 +107,7 @@ function Feedback(props: FeedbackProps) {
         <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
           <DialogTitle>Feedback and Bug Reports</DialogTitle>
           <DialogContent>
-            <DialogContentText>
+            <DialogContentText variant="subtitle2">
               Use this form to to submit bug reports or general feedback directly to the AusTrakka
               team. The current page you are on will also be submitted.
             </DialogContentText>
@@ -123,14 +123,14 @@ function Feedback(props: FeedbackProps) {
               name="title"
               label="Title"
               fullWidth
-              variant="standard"
+              variant="filled"
             />
             <TextField
               id="feedback-description"
               label="Description"
               multiline
               rows={4}
-              variant="standard"
+              variant="filled"
               fullWidth
               required
               value={feedbackDto.description}
@@ -148,8 +148,7 @@ function Feedback(props: FeedbackProps) {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={toast}
-        autoHideDuration={6000}
-        onClose={handleToastClose}
+        autoHideDuration={10000}
       >
         <Alert onClose={handleToastClose} severity={toastSeverity}>
           {feedbackMessage}
