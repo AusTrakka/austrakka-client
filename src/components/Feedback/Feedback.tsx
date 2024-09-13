@@ -102,6 +102,15 @@ function Feedback(props: FeedbackProps) {
     formValid.current.description = e.target.validity.valid;
   };
 
+  const cancelFeedback = () => {
+    setFeedbackDto({
+      ...feedbackDto,
+      'title': '',
+      'description': '',
+    })
+    handleHelpClose({ undefined }, 'backdropClick')
+  }
+
   return (
     <>
       <Dialog
@@ -148,7 +157,7 @@ function Feedback(props: FeedbackProps) {
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={() => handleHelpClose({ undefined }, 'backdropClick')}
+              onClick={cancelFeedback}
             >
               Cancel
             </Button>
