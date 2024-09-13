@@ -149,11 +149,17 @@ function Feedback(props: FeedbackProps) {
           <DialogActions>
             <Button
               onClick={() => handleHelpClose({ undefined }, 'backdropClick')}
-              disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
             >
               Cancel
             </Button>
-            <Button type="submit">Submit</Button>
+            <Button 
+              type="submit"
+              disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
+              color='primary'
+              variant='contained'
+            >
+              Submit
+            </Button>
           </DialogActions>
         </Box>
       </Dialog>
