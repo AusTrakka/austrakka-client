@@ -34,15 +34,12 @@ function Feedback(props: FeedbackProps) {
     location,
   } = props;
   const { token, tokenLoading } = useApi();
-  const [feedbackDto, setFeedbackDto] = useState({
-    title: '',
-    description: '',
-    currentPage: '/',
-  } as FeedbackPost);
   const formValid = useRef({
     title: false,
     description: false,
   });
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -58,16 +55,17 @@ function Feedback(props: FeedbackProps) {
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
-      feedbackDto.currentPage = location.pathname;
+      const feedbackDto: FeedbackPost = {
+        title,
+        description,
+        currentPage: location.pathname,
+      };
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
         setFeedbackMessage(`Feedback received. Ticket number: ${feedbackResp.data?.id}`);
         setToastSeverity('success');
-        setFeedbackDto({
-          ...feedbackDto,
-          'title': '',
-          'description': '',
-        });
+        setTitle('');
+        setDescription('');
       } else {
         setFeedbackMessage(feedbackResp.message);
         setToastSeverity('error');
@@ -84,32 +82,23 @@ function Feedback(props: FeedbackProps) {
     }
   };
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFeedbackDto({
-      ...feedbackDto,
-      'title': e.target.value,
-    });
+    setTitle(e.target.value);
     setTitleError(!e.target.validity.valid);
     formValid.current.title = e.target.validity.valid;
   };
   const formRef = useRef();
 
   const handleDescChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFeedbackDto({
-      ...feedbackDto,
-      'description': e.target.value,
-    });
+    setDescription(e.target.value);
     setDescError(!e.target.validity.valid);
     formValid.current.description = e.target.validity.valid;
   };
 
   const cancelFeedback = () => {
-    setFeedbackDto({
-      ...feedbackDto,
-      'title': '',
-      'description': '',
-    })
-    handleHelpClose({ undefined }, 'backdropClick')
-  }
+    setTitle('');
+    setDescription('');
+    handleHelpClose({ undefined }, 'backdropClick');
+  };
 
   return (
     <>
@@ -126,34 +115,34 @@ function Feedback(props: FeedbackProps) {
             </DialogContentText>
             <Stack direction="column" paddingY={2} spacing={3}>
               <Divider orientation="horizontal" flexItem />
-            <TextField
-              autoFocus
-              required
-              value={feedbackDto.title}
-              onChange={handleTitleChange}
-              error={titleError}
-              helperText={titleError ? 'Please enter a title' : ''}
-              margin="dense"
-              id="feedback-title"
-              name="title"
-              label="Title"
-              fullWidth
-              variant="filled"
-            />
-            <TextField
-              id="feedback-description"
-              label="Description"
-              multiline
-              rows={4}
-              variant="filled"
-              fullWidth
-              required
-              value={feedbackDto.description}
-              onChange={handleDescChange}
-              error={descError}
-              helperText={descError ? 'Please enter a description' : ''}
-            />
-          </Stack>
+              <TextField
+                autoFocus
+                required
+                value={title}
+                onChange={handleTitleChange}
+                error={titleError}
+                helperText={titleError ? 'Please enter a title' : ''}
+                margin="dense"
+                id="feedback-title"
+                name="title"
+                label="Title"
+                fullWidth
+                variant="filled"
+              />
+              <TextField
+                id="feedback-description"
+                label="Description"
+                multiline
+                rows={4}
+                variant="filled"
+                fullWidth
+                required
+                value={description}
+                onChange={handleDescChange}
+                error={descError}
+                helperText={descError ? 'Please enter a description' : ''}
+              />
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button
@@ -161,11 +150,11 @@ function Feedback(props: FeedbackProps) {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               type="submit"
               disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
-              color='primary'
-              variant='contained'
+              color="primary"
+              variant="contained"
             >
               Submit
             </Button>
