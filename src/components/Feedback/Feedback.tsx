@@ -11,7 +11,6 @@ import {
   Snackbar,
   TextField,
   AlertColor,
-  IconButton,
 } from '@mui/material';
 import { Location } from 'react-router-dom';
 import { FeedbackPost } from '../../types/dtos';
@@ -36,7 +35,7 @@ function Feedback(props: FeedbackProps) {
   const [feedbackDto, setFeedbackDto] = useState({
     title: '',
     description: '',
-    currentPage: location.pathname, //TODO: need to work out how to get this to update dynamically
+    currentPage: '/',
   } as FeedbackPost);
   const formValid = useRef({
     title: false,
@@ -57,6 +56,7 @@ function Feedback(props: FeedbackProps) {
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
+      feedbackDto.currentPage = location.pathname;
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
         setFeedbackMessage(`Feedback received. Ticket number: ${feedbackResp.data?.id}`);
