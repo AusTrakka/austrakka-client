@@ -11,12 +11,14 @@ import {
   Snackbar,
   TextField,
   AlertColor,
+  IconButton,
 } from '@mui/material';
 import { Location } from 'react-router-dom';
 import { FeedbackPost } from '../../types/dtos';
 import { postFeedback } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
+import LoadingState from '../../constants/loadingState';
 
 interface FeedbackProps {
   help: boolean;
@@ -30,11 +32,11 @@ function Feedback(props: FeedbackProps) {
     handleHelpClose,
     location,
   } = props;
-  const { token } = useApi();
+  const { token, tokenLoading } = useApi();
   const [feedbackDto, setFeedbackDto] = useState({
     title: '',
     description: '',
-    currentPage: location.pathname,
+    currentPage: location.pathname, //TODO: need to work out how to get this to update dynamically
   } as FeedbackPost);
   const formValid = useRef({
     title: false,
@@ -140,7 +142,12 @@ function Feedback(props: FeedbackProps) {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => handleHelpClose({ undefined }, 'backdropClick')}>Cancel</Button>
+            <Button
+              onClick={() => handleHelpClose({ undefined }, 'backdropClick')}
+              disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
+            >
+              Cancel
+            </Button>
             <Button type="submit">Submit</Button>
           </DialogActions>
         </Box>
