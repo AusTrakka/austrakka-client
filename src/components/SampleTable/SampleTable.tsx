@@ -46,6 +46,7 @@ function SampleTable(props: SamplesProps) {
     'filters',
     defaultState,
   );
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
 
@@ -60,6 +61,7 @@ function SampleTable(props: SamplesProps) {
     if (groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
+      setAllFieldsLoaded(false);
       dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
     }
   }, [groupContext, token, tokenLoading, dispatch]);
@@ -76,6 +78,10 @@ function SampleTable(props: SamplesProps) {
     if (!metadata?.fields || !metadata?.columnLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
+    if (Object.values(metadata.columnLoadingStates)
+      .every(field => field === LoadingState.SUCCESS)) {
+      setAllFieldsLoaded(true);
+    }
   }, [metadata?.columnLoadingStates, metadata?.fields]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
@@ -155,9 +161,6 @@ function SampleTable(props: SamplesProps) {
     </Dialog>
   );
 
-  if (isSamplesLoading) {
-    return renderErrorDialog();
-  }
   return (
     <>
       <Backdrop
@@ -194,6 +197,7 @@ function SampleTable(props: SamplesProps) {
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
         setLoadingState={setFiltering}
+        dataLoaded={allFieldsLoaded}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
@@ -201,7 +205,7 @@ function SampleTable(props: SamplesProps) {
           onValueChange={(e) => {
             setFilteredSampleList(e);
           }}
-          filters={currentFilters}
+          filters={allFieldsLoaded ? currentFilters : defaultState}
           size="small"
           columnResizeMode="expand"
           resizableColumns
@@ -216,7 +220,7 @@ function SampleTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           rows={25}
-          loading={filtering}
+          loading={filtering || isSamplesLoading}
           rowsPerPageOptions={[25, 50, 100, 500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
