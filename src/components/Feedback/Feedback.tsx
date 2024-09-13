@@ -11,6 +11,8 @@ import {
   Snackbar,
   TextField,
   AlertColor,
+  Stack,
+  Divider,
 } from '@mui/material';
 import { Location } from 'react-router-dom';
 import { FeedbackPost } from '../../types/dtos';
@@ -113,6 +115,8 @@ function Feedback(props: FeedbackProps) {
               Use this form to to submit bug reports or general feedback directly to the AusTrakka
               team. The current page you are on will also be submitted.
             </DialogContentText>
+            <Stack direction="column" paddingY={2} spacing={3}>
+              <Divider orientation="horizontal" flexItem />
             <TextField
               autoFocus
               required
@@ -140,6 +144,7 @@ function Feedback(props: FeedbackProps) {
               error={descError}
               helperText={descError ? 'Please enter a description' : ''}
             />
+          </Stack>
           </DialogContent>
           <DialogActions>
             <Button
