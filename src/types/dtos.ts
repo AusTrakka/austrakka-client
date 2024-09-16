@@ -255,3 +255,14 @@ export interface Role {
   name: string,
   description: string,
 }
+
+export interface FeedbackPost {
+  title: string,
+  description: string,
+  currentPage: string,
+}
+
+export interface Feedback {
+  feedbackPost: FeedbackPost,
+  id: string,
+}
