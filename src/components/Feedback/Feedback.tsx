@@ -112,8 +112,8 @@ function Feedback(props: FeedbackProps) {
           <DialogTitle>Support Requests</DialogTitle>
           <DialogContent>
             <DialogContentText variant="subtitle2">
-              Use this form to submit bug reports, support requests, or general feedback directly to the AusTrakka
-              team. The current page you are on will also be submitted.
+              Use this form to submit bug reports, support requests, or general feedback
+              directly to the AusTrakka team. The current page you are on will also be submitted.
             </DialogContentText>
             <Stack direction="column" paddingY={2} spacing={3}>
               <Divider orientation="horizontal" flexItem />
