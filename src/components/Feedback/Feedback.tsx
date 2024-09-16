@@ -70,6 +70,8 @@ function Feedback(props: FeedbackProps) {
         setFeedbackMessage(feedbackResp.message);
         setToastSeverity('error');
       }
+      formValid.current.description = false;
+      formValid.current.title = false;
       handleHelpClose({}, 'escapeKeyDown');
       setToast(true);
     } else {
