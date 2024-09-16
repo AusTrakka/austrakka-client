@@ -109,10 +109,10 @@ function Feedback(props: FeedbackProps) {
         onClose={handleHelpClose}
       >
         <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
-          <DialogTitle>Feedback and Bug Reports</DialogTitle>
+          <DialogTitle>Support Requests</DialogTitle>
           <DialogContent>
             <DialogContentText variant="subtitle2">
-              Use this form to to submit bug reports or general feedback directly to the AusTrakka
+              Use this form to submit bug reports, support requests, or general feedback directly to the AusTrakka
               team. The current page you are on will also be submitted.
             </DialogContentText>
             <Stack direction="column" paddingY={2} spacing={3}>
