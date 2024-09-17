@@ -36,7 +36,7 @@ function MainMenuLayout() {
       onClick: () => {},
     },
     {
-      title: 'Feedback',
+      title: 'Support',
       icon: <Help fontSize="small" />,
       disabled: false,
       onClick: () => setHelp((prev) => !prev),
