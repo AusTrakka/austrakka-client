@@ -8,7 +8,7 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: Development
+      ref: 6219-many-clients-one-backend
       endpoint: AusTrakka
     - repository: Infra
       type: github
