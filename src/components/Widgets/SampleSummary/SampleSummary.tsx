@@ -45,7 +45,7 @@ export default function SampleSummary(props: any) {
         operator: FilterOperator.AND,
         constraints: [
           {
-            matchMode: FilterMatchMode.DATE_AFTER,
+            matchMode: FilterMatchMode.DATE_IS,
             value: date,
           },
         ],
