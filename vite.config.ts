@@ -20,6 +20,15 @@ export default defineConfig({
             VITE_API_SCOPE: Schema.string({
                 message: "Scope URI for API application"
             }),
+            VITE_THEME_PRIMARY_HEX: Schema.string({
+                message: "Primary hex colour"
+            }),
+            VITE_THEME_SECONDARY_HEX: Schema.string({
+                message: "Secondary hex colour"
+            }),
+            VITE_THEME_BACKGROUND_HEX: Schema.string({
+                message: "Background hex colour"
+            }),
       }),
       {
           apply: 'build',

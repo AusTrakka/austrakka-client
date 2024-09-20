@@ -1,17 +1,21 @@
 import { createTheme } from '@mui/material';
 import { ThemeOptions } from '@mui/material/styles';
 
+// TODO: Store these three in terraform config, and pull these from vite
 const theme: ThemeOptions = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#0a3546',
+      //main: '#0a3546',
+      main: import.meta.env.VITE_THEME_PRIMARY_HEX,
     },
     secondary: {
-      main: '#90ca6d',
+      //main: '#90ca6d',
+      main: import.meta.env.VITE_THEME_SECONDARY_HEX,
     },
     background: {
-      paper: '#ffffff',
+      //paper: '#ffffff',
+      main: import.meta.env.VITE_THEME_BACKGROUND_HEX,
     },
   },
   typography: {
