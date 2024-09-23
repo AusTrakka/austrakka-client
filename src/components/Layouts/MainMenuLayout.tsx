@@ -249,7 +249,7 @@ function MainMenuLayout() {
                   {setting.icon}
                 </ListItemIcon>
                 { drawer ? (
-                  <ListItemText>
+                  <ListItemText sx={{ color: 'primary.main' }}>
                     {setting.title}
                   </ListItemText>
                 )
