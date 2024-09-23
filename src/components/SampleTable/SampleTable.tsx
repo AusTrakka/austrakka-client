@@ -164,7 +164,8 @@ function SampleTable(props: SamplesProps) {
   return (
     <>
       <Backdrop
-        sx={{ color: import.meta.env.VITE_THEME_BACKGROUND_HEX, zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
+        // TODO: Find a better way to set index higher then top menu
+        sx={{ color: import.meta.env.VITE_THEME_BACKGROUND_HEX, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />

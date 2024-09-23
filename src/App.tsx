@@ -8,7 +8,7 @@ import {
   AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate,
 } from '@azure/msal-react';
 import { InteractionType } from '@azure/msal-browser';
-import { ThemeProvider } from '@mui/material';
+import { ThemeProvider, GlobalStyles } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
@@ -32,7 +32,6 @@ import UserDetail from './components/Users/UserDetail';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
-import { GlobalStyles } from '@mui/material';
 
 function App() {
   const navigate = useNavigate();
@@ -67,11 +66,11 @@ function App() {
       '--primary-800': import.meta.env.VITE_THEME_PRIMARY_GREEN_800_HEX,
       '--primary-900': import.meta.env.VITE_THEME_PRIMARY_GREEN_900_HEX,
     },
-  }
+  };
   
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyles styles={globalStyles}></GlobalStyles>
+      <GlobalStyles styles={globalStyles} />
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
         <AuthenticatedTemplate>
           <MsalAuthenticationTemplate
