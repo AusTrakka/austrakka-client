@@ -1,28 +1,25 @@
-import React, { useEffect } from 'react';
-import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
+import React from 'react';
+import { Alert, AlertTitle, Box, Grid, Tooltip, Typography } from '@mui/material';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchSummary } from './sampleSummarySlice';
-import LoadingState from '../../../constants/loadingState';
+import { useAppSelector } from '../../../app/store';
 import DrilldownButton from '../../Common/DrilldownButton';
-import { useApi } from '../../../app/ApiContext';
 import { formatDate } from '../../../utilities/dateUtils';
+import { maxObj } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
 
 export default function SampleSummary(props: any) {
   const {
-    projectId,
-    groupId,
+    projectAbbrev,
   } = props;
-
-  // Get initial state from store
-  const { data, loading } = useAppSelector((state) => state.sampleSummaryState);
-  const sampleSummaryDispatch = useAppDispatch();
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  // TODO timeFilter should be a prop, as should filtered data
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
 
   // Drilldown filters
@@ -54,18 +51,6 @@ export default function SampleSummary(props: any) {
     return latestUploadFilter;
   };
 
-  useEffect(() => {
-    if (loading === 'idle' &&
-     tokenLoading !== LoadingState.IDLE &&
-     tokenLoading !== LoadingState.LOADING
-    ) {
-      // TODO: Proper state selection for projectId and timeFilter (not prop drilling)
-      const dispatchProps = { groupId, token, projectId, timeFilter };
-      sampleSummaryDispatch(fetchSummary(dispatchProps));
-    }
-  }, [loading, sampleSummaryDispatch, timeFilter, projectId,
-    groupId, token, tokenLoading]);
-
   const handleDrilldownFilters = (drilldownName: string, drilldownFilters: any) => {
     // Append timeFilterObject for last_week and last_month filters
     if (Object.keys(timeFilterObject).length !== 0) {
@@ -87,15 +72,15 @@ export default function SampleSummary(props: any) {
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
-        { loading === LoadingState.SUCCESS && (
+        { data?.loadingState === MetadataLoadingState.DATA_LOADED && (
         <>
           <Grid item>
             <FileUploadOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
-              Total uploaded samples
+              Total samples
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
-              {parseFloat(data.data.total).toLocaleString('en-US')}
+              {(data!.metadata!.length).toLocaleString('en-US')}
             </Typography>
             <DrilldownButton
               title="View Samples"
@@ -107,41 +92,67 @@ export default function SampleSummary(props: any) {
             <Typography variant="h5" paddingBottom={1} color="primary">
               Latest sample upload
             </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary">
-              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
-            </Typography>
-            <DrilldownButton
-              title="View Samples"
-              onClick={() => handleDrilldownFilters('lastest_upload', getLastUploadFilter(data.data.latestUploadedDateUtc))}
-            />
+            { (data!.fields!.some((field) => field.columnName === 'Date_created') ? (
+              <>
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  { formatDate(maxObj(data!.metadata!.map((sample) => sample.Date_created))) }
+                </Typography>
+                <DrilldownButton
+                  title="View Samples"
+                  onClick={() => handleDrilldownFilters(
+                    'lastest_upload',
+                    getLastUploadFilter(maxObj(data!.metadata!.map((sample) => sample.Date_created))),
+                  )}
+                />
+              </>
+            ) : (
+              <Tooltip title="Date_created is not a project field, so latest uploaded sample is not known" placement="top">
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  Unknown
+                </Typography>
+              </Tooltip>
+            )) }
           </Grid>
           <Grid item>
             <RuleOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
               Records without sequences
             </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary">
-              {parseFloat(data.data.samplesNotSequenced).toLocaleString('en-US')}
-            </Typography>
-            <DrilldownButton
-              title="View Samples"
-              onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
-            />
+            { (data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
+              <>
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  {(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')}
+                </Typography>
+                <DrilldownButton
+                  title="View Samples"
+                  onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
+                />
+              </>
+            ) : (
+              <Tooltip title="Has_sequences is not a project field, so this count is not known" placement="top">
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  Unknown
+                </Typography>
+              </Tooltip>
+            )) }
           </Grid>
         </>
         )}
-        { loading === LoadingState.ERROR && (
+        { data?.errorMessage && (
         <Grid container item>
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {data.message}
+            {data!.errorMessage}
           </Alert>
         </Grid>
         )}
-        { loading === LoadingState.LOADING && (
-        <Grid container item>
-          Loading...
-        </Grid>
+        { (!data?.loadingState ||
+          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+            data.loadingState === MetadataLoadingState.ERROR ||
+            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+            <Grid container item>
+              Loading...
+            </Grid>
         )}
       </Grid>
     </Box>

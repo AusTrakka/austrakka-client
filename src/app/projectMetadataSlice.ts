@@ -370,7 +370,7 @@ export const { fetchProjectMetadata } = projectMetadataSlice.actions;
 // selectors
 
 export const selectProjectMetadata:
-(state: RootState, projectAbbrev: string | undefined) => ProjectMetadataState | null =
+(state: RootState, projectAbbrev: string | null | undefined) => ProjectMetadataState | null =
   (state, projectAbbrev) => {
     if (!projectAbbrev) return null; // should not be 0, which is fine
     return state.projectMetadataState.data[projectAbbrev!] ?? null;

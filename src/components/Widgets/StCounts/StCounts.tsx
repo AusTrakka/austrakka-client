@@ -1,86 +1,58 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
+import { compile, TopLevelSpec } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchStCounts, selectAggregatedStCounts, selectStCounts } from './stCountsSlice';
+import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
-import { useApi } from '../../../app/ApiContext';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 
 const stFieldName = 'ST';
 
-const spec: TopLevelSpec = {
-  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-  data: {
-    name: 'inputdata',
-  },
-  width: 'container',
-  height: 250,
-  mark: { type: 'bar', tooltip: true },
-  encoding: {
-    x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', bin: { maxbins: 20 }, axis: { format: ' %d %b %Y' } },
-    y: { aggregate: 'count', title: 'Count of Samples' },
-    color: {
-      field: stFieldName,
-      title: `${stFieldName} Value`,
-      scale: { scheme: 'spectral' },
-    },
-  },
-  config: {
-    legend: {
-      symbolLimit: 0,
-    },
-  },
-  // params: [
-  //   {
-  //     name: 'ST',
-  //     select: { type: 'point', fields: ['ST'] },
-  //     bind: 'legend',
-  //   },
-  //   {
-  //     name: 'hover',
-  //     select: { type: 'point', on: 'mouseover', clear: 'mouseout' },
-  //   },
-  // ],
-  // encoding: {
-  //   x: {
-  //     timeUnit: 'yearmonthdate',
-  //     field: 'Date_created',
-  //     type: 'temporal',
-  //     title: 'Sample created date',
-  //     // scale: { type: 'utc' }
-  //   },
-  //   y: { aggregate: 'count', title: 'Count of Samples' },
-  //   color: { field: 'ST', title: 'ST Value' },
-  //   opacity: {
-  //     condition: { param: 'ST', value: 1 },
-  //     value: 0.2,
-  //   },
-  //   strokeWidth: {
-  //     condition: [
-  //       {
-  //         param: 'hover',
-  //         empty: false,
-  //         value: 1,
-  //       },
-  //     ],
-  //     value: 0,
-  //   },
-  // },
-};
+// NB need to change this interface if field name becomes dynamic
+interface CountRow {
+  [stFieldName]: string;
+  sampleCount: number;
+}
 
 function STChart(props: any) {
   const { stData, stDataAggregated } = props;
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
 
+  const spec: TopLevelSpec = {
+    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+    data: {
+      name: 'inputdata',
+    },
+    width: 'container',
+    height: 250,
+    mark: { type: 'bar', tooltip: true },
+    encoding: {
+      x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', bin: { maxbins: 20 }, axis: { format: ' %d %b %Y' } },
+      y: { aggregate: 'count', title: 'Count of Samples' },
+      color: {
+        field: stFieldName,
+        title: `${stFieldName} Value`,
+        scale: { scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10' },
+      },
+    },
+    config: {
+      legend: {
+        symbolLimit: 0,
+        orient: 'right',
+      },
+    },
+  };
+  
   useEffect(() => {
     const createVegaView = async () => {
       if (vegaView) {
@@ -120,28 +92,38 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    projectId,
-    groupId,
+    projectAbbrev,
   } = props;
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+
   // Get initial state from store
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data, loading } = useAppSelector(selectStCounts);
-  const aggregatedCounts = useAppSelector(state => selectAggregatedStCounts(state, stFieldName));
+  const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // TODO replace with prop
   const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
-  const { token, tokenLoading } = useApi();
   const navigation = useNavigate();
-  const stCountsDispatch = useAppDispatch();
 
   useEffect(() => {
-    const dispatchProps = { groupId, token, projectId, timeFilter, aggField: stFieldName };
-    if (loading === 'idle' &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      stCountsDispatch(fetchStCounts(dispatchProps));
+    if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
+      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
+        data.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS)) {
+      const counts = aggregateArrayObjects(stFieldName, data!.metadata!) as CountRow[];
+      setAggregatedCounts(counts);
     }
-  }, [loading, stCountsDispatch, timeFilter, projectId, groupId, token, tokenLoading]);
+  }, [data]);
 
+  useEffect(() => {
+    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(stFieldName)) {
+      setErrorMessage(`Field ${stFieldName} not found in project`);
+    } else if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+    } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${stFieldName} values`);
+    }
+  }, [data]);
+  
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
 
@@ -182,7 +164,7 @@ export default function StCounts(props: any) {
         {' '}
         Counts
       </Typography>
-      { loading === LoadingState.SUCCESS && (
+      { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
       <Grid container direction="row" alignItems="center" spacing={2}>
         <Grid item xl={3} xs={4}>
           <DataTable
@@ -202,20 +184,23 @@ export default function StCounts(props: any) {
         </Grid>
         <Grid item xl={9} xs={8}>
           <STChart
-            stData={data.data}
+            stData={data.metadata}
             stDataAggregated={aggregatedCounts}
           />
         </Grid>
       </Grid>
       )}
-      { loading === LoadingState.ERROR && (
+      { errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {data.message}
+          {data.errorMessage}
         </Alert>
       )}
-      { loading === LoadingState.LOADING && (
-        <div>Loading...</div>
+      { (!data?.loadingState ||
+          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+            data.loadingState === MetadataLoadingState.ERROR ||
+            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+            <div>Loading...</div>
       )}
     </Box>
   );

@@ -80,3 +80,6 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
 
   data.forEach(replaceNullsInObject);
 }
+
+// Get max for any object kind that implements comparison
+export const maxObj = (arr: any[]) => arr.reduce((a, b) => (a > b ? a : b));
