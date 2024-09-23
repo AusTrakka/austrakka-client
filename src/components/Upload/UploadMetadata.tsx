@@ -409,7 +409,7 @@ function UploadMetadata() {
         <UploadInstructions setDrawerOpen={setDrawerOpen} />
       </Drawer>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: import.meta.env.VITE_THEME_BACKGROUND_HEX, zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={submission.status === LoadingState.LOADING}
       >
         <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">

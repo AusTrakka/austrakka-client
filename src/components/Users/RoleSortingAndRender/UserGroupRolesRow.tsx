@@ -58,7 +58,7 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
 
   return (
     isOpen ? (
-      <TableRow style={{ backgroundColor: '#F6F7F8' }}>
+      <TableRow style={{ backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREY_HEX }}>
         <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
           <Box sx={{ width: '100%' }}>
             <Collapse in={isOpen} timeout="auto" unmountOnExit>

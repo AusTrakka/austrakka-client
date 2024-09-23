@@ -93,7 +93,7 @@ function GenerateCards(
     <Card
       key={version.proFormaVersionId}
       style={{
-        backgroundColor: cardType === CardType.Summary ? '#0A3546' : 'white',
+        backgroundColor: cardType === CardType.Summary ? import.meta.env.VITE_THEME_PRIMARY_BLUE_HEX: 'white',
         width: '330px', // Set a fixed width
         height: '300px', // Set a fixed height
         display: 'flex', // Use flex to control layout
@@ -105,7 +105,7 @@ function GenerateCards(
         onClick={() => handleClickOpen(version.columnMappings, version.abbreviation)}
         sx={{ pointerEvents: 'auto',
           borderBottom: 1,
-          borderColor: '#B3B3B3',
+          borderColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREY_HEX,
           cursor: 'zoom-in' }}
       >
         <CardMedia
@@ -140,7 +140,7 @@ function GenerateCards(
                 .map((item) => renderColumnFields(item))}
             </Stack>
           </Grid>
-          <Typography color="#cdcdcd" variant="button">
+          <Typography color="#cdcdcd" variant="button"> 
             EXPAND
           </Typography>
         </CardMedia>
