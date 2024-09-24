@@ -80,4 +80,4 @@ export const globalStyles = {
     '--primary-grey-800': import.meta.env.VITE_THEME_PRIMARY_GREY_800_HEX,
     '--primary-grey-900': import.meta.env.VITE_THEME_PRIMARY_GREY_900_HEX,
   },
-}
+};
