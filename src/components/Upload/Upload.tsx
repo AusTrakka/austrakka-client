@@ -14,7 +14,7 @@ const uploadPages = [
   {
     title: 'Upload Sequences',
     link: '/sequences',
-    icon: <TextSnippet style={{ color: '#aaaaaa' }} />,
+    icon: <TextSnippet style={{ color: 'var(--primary-grey-500)' }} />,
     description: 'Submit sequence files',
     disabled: true,
   },
@@ -35,7 +35,7 @@ function Upload() {
               <CardActionArea
                 sx={{ height: '100%',
                   borderBottom: 4,
-                  borderColor: page.link === '/sequences' ? '#aaaaaa' : 'secondary.main' }}
+                  borderColor: page.link === '/sequences' ? 'var(--primary-grey-500)' : 'secondary.main' }}
                 component={Link}
                 to={location.pathname + page.link}
                 disabled={page.disabled}
@@ -49,7 +49,7 @@ function Upload() {
                       <Typography
                         variant="h5"
                         component="div"
-                        color={page.link === '/sequences' ? '#999999' : 'primary'}
+                        color={page.link === '/sequences' ? 'var(--primary-grey-500)' : 'primary'}
                         sx={{ paddingTop: 1 }}
                       >
                         {page.title}
@@ -59,7 +59,7 @@ function Upload() {
                       <Typography
                         variant="body2"
                         component="div"
-                        color={page.link === '/sequences' ? '#999999' : 'primary'}
+                        color={page.link === '/sequences' ? 'var(--primary-grey-500)' : 'primary'}
                       >
                         {page.description}
                       </Typography>

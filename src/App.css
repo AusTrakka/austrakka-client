@@ -18,7 +18,6 @@ html, body, span {
     /* transition: all 330ms ease-in-out; */
     padding: 0px 35px 0px 35px;
     /* width: 100vw; */
-    /* background-image: linear-gradient( #FFFFFF, #EEF2F6); */
     min-height: 100vh;
 }
 
@@ -29,7 +28,6 @@ html, body, span {
     margin-left: 190px;
     min-height: 100vh;
     /* width: calc(100vw - 240px);  */
-    /* background-image: linear-gradient( #FFFFFF, #EEF2F6); */
 }
 
 .pageHeader {

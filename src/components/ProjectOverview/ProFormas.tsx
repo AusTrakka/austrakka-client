@@ -91,7 +91,7 @@ function ProFormaList(props: ProFormasListProps) {
 
   // Sorting function
   const StyledAccordion = styled(Accordion)(({ theme }) => ({
-    backgroundColor: '#eef2f6',
+    backgroundColor: 'var(--primary-grey-100)',
     color: theme.palette.text.secondary,
     flexDirection: 'column',
   }));
@@ -123,7 +123,7 @@ function ProFormaList(props: ProFormasListProps) {
             sx={{ minWidth: '400px',
               maxWidth: '400px',
               minHeight: '372px',
-              backgroundColor: '#eef2f6' }}
+              backgroundColor: 'var(--primary-grey-100)' }}
           >
             <StyledAccordion sx={{ pointerEvents: 'none', margin: '0px' }}>
               <AccordionSummary

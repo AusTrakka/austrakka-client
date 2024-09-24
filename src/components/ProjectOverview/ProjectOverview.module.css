@@ -25,8 +25,8 @@
 
 .squareTile {
     max-width: 400px;
-    color: #353333;
-    background-color: #F9F9F9;
+    color: var(--primary-grey-800);
+    background-color: var(--primary-grey-100);
 }
 
 .cardTitle {

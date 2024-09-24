@@ -92,7 +92,38 @@ export default defineConfig({
       VITE_THEME_PRIMARY_GREEN_900_HEX: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen900)
       },
-    }),
+      VITE_THEME_PRIMARY_GREY_50_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey50)
+      },
+      VITE_THEME_PRIMARY_GREY_100_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey100)
+      },
+      VITE_THEME_PRIMARY_GREY_200_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey200)
+      },
+      VITE_THEME_PRIMARY_GREY_300_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey300)
+      },
+      VITE_THEME_PRIMARY_GREY_400_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey400)
+      },
+      VITE_THEME_PRIMARY_GREY_500_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey500)
+      },
+      VITE_THEME_PRIMARY_GREY_600_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey600)
+      },
+      VITE_THEME_PRIMARY_GREY_700_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey700)
+      },
+      VITE_THEME_PRIMARY_GREY_800_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey800)
+      },
+      VITE_THEME_PRIMARY_GREY_900_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey900)
+      },
+
+}),
     {
       apply: 'build',
       ...eslint({
@@ -136,4 +167,14 @@ enum ThemeDefaultValues {
   PrimaryGreen700 = '#388e3c',
   PrimaryGreen800 = '#2e7d32',
   PrimaryGreen900 = '#1b5e20',
+  PrimaryGrey50 = '#fafafa', 
+  PrimaryGrey100 = '#f5f5f5', 
+  PrimaryGrey200 = '#eeeeee', 
+  PrimaryGrey300 = '#e0e0e0', 
+  PrimaryGrey400 = '#bdbdbd', 
+  PrimaryGrey500 = '#9e9e9e', 
+  PrimaryGrey600 = '#757575', 
+  PrimaryGrey700 = '#616161', 
+  PrimaryGrey800 = '#424242', 
+  PrimaryGrey900 = '#212121',
 }

@@ -29,6 +29,16 @@ interface ImportMetaEnv {
   readonly VITE_THEME_PRIMARY_GREEN_700_HEX: string
   readonly VITE_THEME_PRIMARY_GREEN_800_HEX: string
   readonly VITE_THEME_PRIMARY_GREEN_900_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_50_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_100_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_200_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_300_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_400_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_500_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_600_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_700_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_800_HEX: string
+  readonly VITE_THEME_PRIMARY_GREY_900_HEX: string
 }
 
 interface ImportMeta {

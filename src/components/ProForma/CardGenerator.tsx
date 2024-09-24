@@ -140,7 +140,7 @@ function GenerateCards(
                 .map((item) => renderColumnFields(item))}
             </Stack>
           </Grid>
-          <Typography color="#cdcdcd" variant="button">
+          <Typography color="var(--primary-grey-400)" variant="button">
             EXPAND
           </Typography>
         </CardMedia>
