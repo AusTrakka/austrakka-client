@@ -39,6 +39,7 @@ interface ImportMetaEnv {
   readonly VITE_THEME_PRIMARY_GREY_700_HEX: string
   readonly VITE_THEME_PRIMARY_GREY_800_HEX: string
   readonly VITE_THEME_PRIMARY_GREY_900_HEX: string
+  readonly VITE_THEME_PRIMARY_BLUE_BG_HEX: string
 }
 
 interface ImportMeta {

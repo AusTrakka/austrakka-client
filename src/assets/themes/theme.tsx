@@ -79,5 +79,6 @@ export const globalStyles = {
     '--primary-grey-700': import.meta.env.VITE_THEME_PRIMARY_GREY_700_HEX,
     '--primary-grey-800': import.meta.env.VITE_THEME_PRIMARY_GREY_800_HEX,
     '--primary-grey-900': import.meta.env.VITE_THEME_PRIMARY_GREY_900_HEX,
+    '--primary-blue-bg': import.meta.env.VITE_THEME_PRIMARY_BLUE_BG_HEX,
   },
 };

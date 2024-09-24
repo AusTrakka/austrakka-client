@@ -122,6 +122,9 @@ export default defineConfig({
       VITE_THEME_PRIMARY_GREY_900_HEX: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey900)
       },
+      VITE_THEME_PRIMARY_BLUE_BG_HEX: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlueBackground)
+      },
 
 }),
     {
@@ -177,4 +180,5 @@ enum ThemeDefaultValues {
   PrimaryGrey700 = '#616161', 
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
+  PrimaryBlueBackground = '#eef2f6'
 }

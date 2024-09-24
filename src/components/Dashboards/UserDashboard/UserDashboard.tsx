@@ -84,7 +84,7 @@ function UserDashboard(props: UserDashboardProps) {
           <Typography variant="h2" color="primary">Dashboard</Typography>
           <DateSelector />
         </Grid>
-        <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-grey-200)' }}>
+        <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-blue-bg)' }}>
           <Grid container spacing={2}>
             <Grid container item xs={12}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
