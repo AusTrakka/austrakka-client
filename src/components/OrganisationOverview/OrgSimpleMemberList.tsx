@@ -23,7 +23,7 @@ function UserCard({ user }: { user: Member }) {
 
   const contentStyle = {
     padding: '8px', // Add some padding
-    borderBottom: `4px solid ${import.meta.env.VITE_THEME_PRIMARY_GREEN_HEX}`,
+    borderBottom: `4px solid var(--primary-green)`,
   };
 
   function handleCardClick() {

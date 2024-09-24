@@ -55,7 +55,7 @@ function Datasets(props: DatasetProps) {
       sx={{ color: 'gray' }}
       size="small"
     >
-      <DeleteOutlineIcon sx={{ '&:hover': { color: import.meta.env.VITE_THEME_SECONDARY_RED_HEX } }} />
+      <DeleteOutlineIcon sx={{ '&:hover': { color: 'var(--secondary-red)' } }} />
     </IconButton>
   );
 

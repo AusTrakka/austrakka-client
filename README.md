@@ -33,7 +33,6 @@ These can also be set in a `.env` file in the root directory.
 | VITE_THEME_SECONDARY_ORANGE_HEX      | Hex colour for css variable `--secondary-ornage`      |
 | VITE_THEME_SECONDARY_RED_HEX         | Hex colour for css variable `--secondary-red`         |
 | VITE_THEME_SECONDARY_YELLOW_HEX      | Hex colour for css variable `--secondary-yellow`      |
-| VITE_THEME_BACKGROUND_HEX            | Hex colour for css variable `--secondary-dark-grey`   |
 | VITE_THEME_PRIMARY_GREEN_50_HEX      | Hex colour for css variable `--primary-50`            |
 | VITE_THEME_PRIMARY_GREEN_100_HEX     | Hex colour for css variable `--primary-100`           |
 | VITE_THEME_PRIMARY_GREEN_200_HEX     | Hex colour for css variable `--primary-200`           |

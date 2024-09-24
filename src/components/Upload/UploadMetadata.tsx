@@ -410,7 +410,7 @@ function UploadMetadata() {
       </Drawer>
       <Backdrop
         sx={{
-          color: import.meta.env.VITE_THEME_BACKGROUND_HEX,
+          color: 'var(--background-colour)',
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
         open={submission.status === LoadingState.LOADING}

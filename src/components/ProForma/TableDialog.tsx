@@ -24,7 +24,7 @@ function TableDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ color: import.meta.env.VITE_THEME_PRIMARY_BLUE_HEX, fontWeight: 'bold', paddingLeft: '40px' }}>
+      <DialogTitle sx={{ color: 'var(--primary-blue)', fontWeight: 'bold', paddingLeft: '40px' }}>
         {proformaTitle}
         {' '}
         pro forma validation details
@@ -37,19 +37,19 @@ function TableDialog({
                 <TableCell
                   component="th"
                   scope="row"
-                  style={{ backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREEN_200_HEX, fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Name
                 </TableCell>
                 <TableCell
                   align="right"
-                  style={{ backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREEN_200_HEX, fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Required
                 </TableCell>
                 <TableCell
                   align="right"
-                  style={{ backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREEN_200_HEX, fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Type
                 </TableCell>
