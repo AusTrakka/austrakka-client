@@ -54,8 +54,7 @@ export const globalStyles = {
     '--secondary-orange': import.meta.env.VITE_THEME_SECONDARY_ORANGE_HEX,
     '--secondary-red': import.meta.env.VITE_THEME_SECONDARY_RED_HEX,
     '--secondary-yellow': import.meta.env.VITE_THEME_SECONDARY_YELLOW_HEX,
-    // TODO: this should never have been a hex, either light or dark
-    'color-scheme': import.meta.env.VITE_THEME_BACKGROUND_HEX,
+    'color-scheme': 'light',
     // primereact
     '--primary-50': import.meta.env.VITE_THEME_PRIMARY_GREEN_50_HEX,
     '--primary-100': import.meta.env.VITE_THEME_PRIMARY_GREEN_100_HEX,
