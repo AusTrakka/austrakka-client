@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
-import projectDashboardReducer from '../components/Dashboards/ProjectDashboard/projectDashboardSlice';
 import thresholdAlertsReducer from '../components/Widgets/ThresholdAlerts/thresholdAlertsSlice';
 import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
 import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
@@ -16,7 +15,6 @@ const store = configureStore({
   reducer: {
     qcStatusState: qcStatusReducer,
     thresholdAlertsState: thresholdAlertsReducer,
-    projectDashboardState: projectDashboardReducer,
     userDashboardState: userDashboardReducer,
     userOverviewState: userOverviewReducer,
     projectTotalState: projectsTotalReducer,

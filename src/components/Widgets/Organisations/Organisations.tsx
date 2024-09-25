@@ -38,12 +38,10 @@ const columns = [
 //  maybe pass in timefilter
 export default function Organisations(props: any) {
   const {
-    projectAbbrev,
+    projectAbbrev, filteredData, timeFilterObject,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  // TODO replace with prop
-  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -52,10 +50,10 @@ export default function Organisations(props: any) {
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)) {
-      const counts = aggregateArrayObjects(ORG_FIELD_NAME, data!.metadata!) as CountRow[];
+      const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [data]);
+  }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
   
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {

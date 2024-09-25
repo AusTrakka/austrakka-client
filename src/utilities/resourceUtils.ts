@@ -54,7 +54,7 @@ export const getProjectViews = (projectAbbrev: string, token: string) => callGET
 export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`, token);
 
 // Project dashboards endpoints
-export const getProjectDashboard = (projectId: number, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectId}`, token);
+export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 export const getProjectDashboardOveriew = (groupId: number, token: string, searchParams?: string) => callGET(`/api/DashboardSearch/project-dashboard/overview/?groupContext=${groupId}&filters=${searchParams}`, token);
 
 // User dashboard endpoints

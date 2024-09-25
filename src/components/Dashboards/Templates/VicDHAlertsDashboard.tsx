@@ -11,6 +11,8 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
     projectId,
     projectAbbrev,
     groupId,
+    filteredData,
+    timeFilterObject,
   } = props;
 
   return (
@@ -22,6 +24,8 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
               projectId={projectId}
               projectAbbrev={projectAbbrev}
               groupId={groupId}
+              filteredData={filteredData}
+              timeFilterObject={timeFilterObject}
             />
           </CardContent>
         </Card>
@@ -33,6 +37,8 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
               projectId={projectId}
               projectAbbrev={projectAbbrev}
               groupId={groupId}
+              filteredData={filteredData}
+              timeFilterObject={timeFilterObject}
             />
           </CardContent>
         </Card>
@@ -44,6 +50,8 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
               projectId={projectId}
               projectAbbrev={projectAbbrev}
               groupId={groupId}
+              filteredData={filteredData}
+              timeFilterObject={timeFilterObject}
             />
           </CardContent>
         </Card>

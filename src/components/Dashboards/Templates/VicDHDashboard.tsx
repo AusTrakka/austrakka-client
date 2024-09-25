@@ -13,6 +13,8 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
     projectId,
     projectAbbrev,
     groupId,
+    filteredData,
+    timeFilterObject,
   } = props;
 
   return (
@@ -27,6 +29,8 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                     projectId={projectId}
                     projectAbbrev={projectAbbrev}
                     groupId={groupId}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
                   />
                 </CardContent>
               </Card>
@@ -38,6 +42,8 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                     projectId={projectId}
                     projectAbbrev={projectAbbrev}
                     groupId={groupId}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
                   />
                 </CardContent>
               </Card>
@@ -53,6 +59,8 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                     projectId={projectId}
                     projectAbbrev={projectAbbrev}
                     groupId={groupId}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
                   />
                 </CardContent>
               </Card>
@@ -76,6 +84,8 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                     projectId={projectId}
                     projectAbbrev={projectAbbrev}
                     groupId={groupId}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
                   />
                 </CardContent>
               </Card>

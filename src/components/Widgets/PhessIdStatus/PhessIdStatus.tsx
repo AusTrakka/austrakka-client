@@ -25,12 +25,10 @@ const columns = [
 
 export default function PhessIdStatus(props: any) {
   const {
-    projectAbbrev,
+    projectAbbrev, filteredData, timeFilterObject,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  // TODO remove
-  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -40,12 +38,11 @@ export default function PhessIdStatus(props: any) {
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS)) {
       // count Present if there is a PHESS_ID value and Missing if null/empty
-      const counts = countPresentOrMissing(PHESS_ID_FIELD_NAME, data!.metadata!) as CountRow[];
-        
-      // aggregateArrayObjects(PHESS_ID_FIELD_NAME, data!.metadata!) as CountRow[];
+      // TODO is this going to be recalculated on multiple view loads?
+      const counts = countPresentOrMissing(PHESS_ID_FIELD_NAME, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [data]);
+  }, [data?.loadingState, data?.fieldLoadingStates, filteredData]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(PHESS_ID_FIELD_NAME)) {

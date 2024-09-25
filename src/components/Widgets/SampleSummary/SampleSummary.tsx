@@ -14,12 +14,10 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 
 export default function SampleSummary(props: any) {
   const {
-    projectAbbrev,
+    projectAbbrev, filteredData, timeFilterObject,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  // TODO timeFilter should be a prop, as should filtered data
-  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const navigate = useNavigate();
 
   // Drilldown filters
@@ -80,7 +78,8 @@ export default function SampleSummary(props: any) {
               Total samples
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
-              {(data!.metadata!.length).toLocaleString('en-US')}
+              { filteredData!.length.toLocaleString('en-US') + (
+                (Object.keys(timeFilterObject).length > 0) ? ` (${data!.metadata!.length.toLocaleString('en-US')})` : '')}
             </Typography>
             <DrilldownButton
               title="View Samples"
@@ -101,7 +100,9 @@ export default function SampleSummary(props: any) {
                   title="View Samples"
                   onClick={() => handleDrilldownFilters(
                     'lastest_upload',
-                    getLastUploadFilter(maxObj(data!.metadata!.map((sample) => sample.Date_created))),
+                    getLastUploadFilter(
+                      maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+                    ),
                   )}
                 />
               </>
@@ -121,7 +122,10 @@ export default function SampleSummary(props: any) {
             { (data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
               <>
                 <Typography variant="h2" paddingBottom={1} color="primary">
-                  {(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')}
+                  { (filteredData!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US') + (
+                    (Object.keys(timeFilterObject).length > 0) ?
+                      ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})` : ''
+                  )}
                 </Typography>
                 <DrilldownButton
                   title="View Samples"

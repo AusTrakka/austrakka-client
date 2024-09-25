@@ -49,6 +49,7 @@ function STChart(props: any) {
       legend: {
         symbolLimit: 0,
         orient: 'right',
+        direction: 'vertical',
       },
     },
   };
@@ -92,7 +93,7 @@ function STChart(props: any) {
 
 export default function StCounts(props: any) {
   const {
-    projectAbbrev,
+    projectAbbrev, filteredData, timeFilterObject,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -101,18 +102,16 @@ export default function StCounts(props: any) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // TODO replace with prop
-  const { timeFilter, timeFilterObject } = useAppSelector((state) => state.projectDashboardState);
   const navigation = useNavigate();
 
   useEffect(() => {
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS)) {
-      const counts = aggregateArrayObjects(stFieldName, data!.metadata!) as CountRow[];
+      const counts = aggregateArrayObjects(stFieldName, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [data]);
+  }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(stFieldName)) {
@@ -184,7 +183,7 @@ export default function StCounts(props: any) {
         </Grid>
         <Grid item xl={9} xs={8}>
           <STChart
-            stData={data.metadata}
+            stData={filteredData}
             stDataAggregated={aggregatedCounts}
           />
         </Grid>

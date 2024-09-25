@@ -10,6 +10,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
     projectAbbrev,
     projectId,
     groupId,
+    filteredData,
+    timeFilterObject,
   } = props;
   
   return (
@@ -22,6 +24,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
                 projectId={projectId}
                 projectAbbrev={projectAbbrev}
                 groupId={groupId}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
               />
             </CardContent>
           </Card>
@@ -33,6 +37,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
                 projectId={projectId}
                 projectAbbrev={projectAbbrev}
                 groupId={groupId}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
               />
             </CardContent>
           </Card>
