@@ -55,3 +55,14 @@ These can also be set in a `.env` file in the root directory.
 | VITE_THEME_PRIMARY_GREY_800_HEX      | Hex colour for css variable `--primary-grey-800`      |
 | VITE_THEME_PRIMARY_GREY_900_HEX      | Hex colour for css variable `--primary-grey-900`      |
 | VITE_THEME_PRIMARY_BLUE_BG_HEX       | Hex colour for css variable `--primary-blue-bg`       |
+
+## Colours and themes.
+
+Any element that needs to be explicitly coloured should use the css variables defined in `src/assets/themes/theme.tsx:globalStyles`.
+This ensures that any environment that specifies it's own colour scheme will be handled.
+
+Currently the theme is determined at build time based on environment variables.
+However in the future if we need to allow for changing of themes dynamically (including dark mode), 
+we can migrate `src/assets/themes/theme.tsx:globalStyles` to be a list of css variable sets, place it in the react state
+and allow for user selection of one set of variables.
+It probably still makes sense for each environment to define the default theme at build time using the environment variables.
