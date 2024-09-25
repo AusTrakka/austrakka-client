@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_AT_TENANT_ID: string
   readonly VITE_REACT_API_URL: string
   readonly VITE_API_SCOPE: string
+  // The VITE_THEME_[name]_HEX env vars must map to terraform output `colour_scheme.[name]`.
   readonly VITE_THEME_PRIMARY_BLUE_HEX: string
   readonly VITE_THEME_PRIMARY_GREEN_HEX: string
   readonly VITE_THEME_PRIMARY_GREY_HEX: string
