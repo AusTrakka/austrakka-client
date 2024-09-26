@@ -2,6 +2,10 @@ import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 import {Schema, ValidateEnv} from '@julr/vite-plugin-validate-env'
 import eslint from 'vite-plugin-eslint'
+import fs from 'fs'
+import path from 'path'
+
+const customLogoDir : string = path.join(__dirname, 'src', 'assets', 'logos')
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -125,7 +129,12 @@ export default defineConfig({
       VITE_THEME_PRIMARY_BLUE_BG_HEX: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlueBackground)
       },
-
+      VITE_LOGO_PATH: (key, value) => {
+        return defaultCustomLogoValue(key, value, LogoDefaultValues.Logo)
+      },
+      VITE_LOGO_ONLY_PATH: (key, value) => {
+        return defaultCustomLogoValue(key, value, LogoDefaultValues.LogoSmall)
+      },
 }),
     {
       apply: 'build',
@@ -136,6 +145,15 @@ export default defineConfig({
     }
   ]
 })
+
+function defaultCustomLogoValue(key: string, value: string, defaultValue: string) {
+  value = defaultConfigValue(key, value, defaultValue);
+  const logoPath: string = path.join(customLogoDir, value);
+  if (!fs.existsSync(logoPath)) {
+    throw new Error(`Custom logo at ${logoPath} does not exist`);
+  }
+  return value;
+}
 
 function defaultConfigValue(key: string, value: string, defaultValue: string): string {
   if (!value) {
@@ -181,4 +199,9 @@ enum ThemeDefaultValues {
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
   PrimaryBlueBackground = '#eef2f6'
+}
+
+enum LogoDefaultValues {
+  Logo = "AusTrakka_Logo_cmyk.png",
+  LogoSmall = "AusTrakka_Logo_only_cmyk.png",
 }

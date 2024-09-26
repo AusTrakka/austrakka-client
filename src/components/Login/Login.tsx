@@ -3,8 +3,9 @@ import { Button, Alert, Typography, Box, Grid } from '@mui/material';
 import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { LoginRounded } from '@mui/icons-material';
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import { loginRequest } from '../../config/authConfig';
+
+const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href
 
 // TODO: Add login loading and login failure features
 function LoginButton() {
@@ -56,7 +57,7 @@ function Login() {
         <Box sx={{ backgroundColor: 'white', padding: 6, borderRadius: 0, borderBottom: 4, borderColor: 'secondary.main' }}>
           <Grid container spacing={3} direction="column" justifyContent="center" alignItems="stretch" textAlign="center">
             <Grid item>
-              <img src={AusTrakkaLogo} alt="at-logo" width="280px" />
+              <img src={logoUrl} alt="at-logo" width="280px" />
             </Grid>
             <Grid item>
               <Typography variant="h2" color="primary">

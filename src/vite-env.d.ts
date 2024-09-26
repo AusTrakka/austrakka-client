@@ -41,6 +41,9 @@ interface ImportMetaEnv {
   readonly VITE_THEME_PRIMARY_GREY_800_HEX: string
   readonly VITE_THEME_PRIMARY_GREY_900_HEX: string
   readonly VITE_THEME_PRIMARY_BLUE_BG_HEX: string
+  // Logo paths must be relative src/assets/logos
+  readonly VITE_LOGO_PATH: string
+  readonly VITE_LOGO_SMALL_PATH: string
 }
 
 interface ImportMeta {
