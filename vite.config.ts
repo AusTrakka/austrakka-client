@@ -20,109 +20,109 @@ export default defineConfig({
       VITE_API_SCOPE: Schema.string({
         message: "Scope URI for API application"
       }),
-      VITE_THEME_PRIMARY_BLUE_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_BLUE: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlue)
       },
-      VITE_THEME_PRIMARY_GREEN_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen)
       },
-      VITE_THEME_PRIMARY_GREY_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey)
       },
-      VITE_THEME_SECONDARY_DARK_GREY_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_DARK_GREY: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryDarkGrey)
       },
-      VITE_THEME_SECONDARY_LIGHT_GREY_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_LIGHT_GREY: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryLightGrey)
       },
-      VITE_THEME_SECONDARY_TEAL_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_TEAL: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryTeal)
       },
-      VITE_THEME_SECONDARY_LIGHT_GREEN_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_LIGHT_GREEN: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryLightGreen)
       },
-      VITE_THEME_SECONDARY_DARK_GREEN_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_DARK_GREEN: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryDarkGreen)
       },
-      VITE_THEME_SECONDARY_BLUE_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_BLUE: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryBlue)
       },
-      VITE_THEME_SECONDARY_PURPLE_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_PURPLE: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryPurple)
       },
-      VITE_THEME_SECONDARY_ORANGE_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_ORANGE: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryOrange)
       },
-      VITE_THEME_SECONDARY_RED_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_RED: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryRed)
       },
-      VITE_THEME_SECONDARY_YELLOW_HEX: (key, value) => {
+      VITE_THEME_SECONDARY_YELLOW: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryYellow)
       },
-      VITE_THEME_BACKGROUND_HEX: (key, value) => {
+      VITE_THEME_BACKGROUND: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.Background)
       },
-      VITE_THEME_PRIMARY_GREEN_50_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_50: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen50)
       },
-      VITE_THEME_PRIMARY_GREEN_100_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_100: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen100)
       },
-      VITE_THEME_PRIMARY_GREEN_200_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_200: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen200)
       },
-      VITE_THEME_PRIMARY_GREEN_300_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_300: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen300)
       },
-      VITE_THEME_PRIMARY_GREEN_400_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_400: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen400)
       },
-      VITE_THEME_PRIMARY_GREEN_500_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_500: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen500)
       },
-      VITE_THEME_PRIMARY_GREEN_600_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_600: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen600)
       },
-      VITE_THEME_PRIMARY_GREEN_700_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_700: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen700)
       },
-      VITE_THEME_PRIMARY_GREEN_800_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_800: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen800)
       },
-      VITE_THEME_PRIMARY_GREEN_900_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREEN_900: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen900)
       },
-      VITE_THEME_PRIMARY_GREY_50_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_50: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey50)
       },
-      VITE_THEME_PRIMARY_GREY_100_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_100: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey100)
       },
-      VITE_THEME_PRIMARY_GREY_200_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_200: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey200)
       },
-      VITE_THEME_PRIMARY_GREY_300_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_300: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey300)
       },
-      VITE_THEME_PRIMARY_GREY_400_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_400: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey400)
       },
-      VITE_THEME_PRIMARY_GREY_500_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_500: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey500)
       },
-      VITE_THEME_PRIMARY_GREY_600_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_600: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey600)
       },
-      VITE_THEME_PRIMARY_GREY_700_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_700: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey700)
       },
-      VITE_THEME_PRIMARY_GREY_800_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_800: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey800)
       },
-      VITE_THEME_PRIMARY_GREY_900_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_GREY_900: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey900)
       },
-      VITE_THEME_PRIMARY_BLUE_BG_HEX: (key, value) => {
+      VITE_THEME_PRIMARY_BLUE_BG: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlueBackground)
       },
 
