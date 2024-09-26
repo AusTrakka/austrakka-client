@@ -132,7 +132,7 @@ export default defineConfig({
       VITE_LOGO_PATH: (key, value) => {
         return defaultCustomLogoValue(key, value, LogoDefaultValues.Logo)
       },
-      VITE_LOGO_ONLY_PATH: (key, value) => {
+      VITE_LOGO_SMALL_PATH: (key, value) => {
         return defaultCustomLogoValue(key, value, LogoDefaultValues.LogoSmall)
       },
 }),

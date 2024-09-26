@@ -22,7 +22,7 @@ import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 
 const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href
-const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_ONLY_PATH}`, import.meta.url).href
+const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_SMALL_PATH}`, import.meta.url).href
 
 function MainMenuLayout() {
   const navigate = useNavigate();
