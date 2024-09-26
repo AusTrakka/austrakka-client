@@ -64,7 +64,7 @@ function GenerateCards(
   const renderInformationButton = (version: ProFormaVersion) => {
     if (version.isCurrent === false && cardType === CardType.Summary) {
       return (
-        <Tooltip title="This is the latest template, but the definition in AusTrakka has changed since this was uploaded" sx={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <Tooltip title={`This is the latest template, but the definition in ${import.meta.env.VITE_BRANDING_NAME} has changed since this was uploaded`} sx={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
           <InfoOutlined
             sx={{ fontSize: '15px', padding: 0, marginLeft: '5px', color: 'white', pointerEvents: 'auto' }}
           />

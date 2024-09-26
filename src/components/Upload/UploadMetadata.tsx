@@ -393,7 +393,10 @@ function UploadMetadata() {
                   {' '}
                   This was a validation only.
                   Please uncheck the &quot;Validate only&quot; option
-                  and upload to load data into AusTrakka.
+                  and upload to load data into
+                  {' '}
+                  {import.meta.env.VITE_BRANDING_NAME}
+                  .
                 </Alert>
               </Grid>
               ) : null }

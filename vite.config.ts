@@ -135,6 +135,15 @@ export default defineConfig({
       VITE_LOGO_SMALL_PATH: (key, value) => {
         return defaultCustomLogoValue(key, value, LogoDefaultValues.LogoSmall)
       },
+      VITE_BRANDING_NAME: (key, value) => {
+        return defaultConfigValue(key, value, BrandingDefaultValues.Name)
+      },
+      VITE_BRANDING_TAGLINE_1: (key, value) => {
+        return defaultConfigValue(key, value, BrandingDefaultValues.Tagline1)
+      },
+      VITE_BRANDING_TAGLINE_2: (key, value) => {
+        return defaultConfigValue(key, value, BrandingDefaultValues.Tagline2)
+      },
 }),
     {
       apply: 'build',
@@ -204,4 +213,10 @@ enum ThemeDefaultValues {
 enum LogoDefaultValues {
   Logo = "AusTrakka_Logo_cmyk.png",
   LogoSmall = "AusTrakka_Logo_only_cmyk.png",
+}
+
+enum BrandingDefaultValues {
+  Name = "AusTrakka",
+  Tagline1 = "From genomics to public health decisions for Australia",
+  Tagline2 = "Combining Genomics & Epidemiological Data",
 }

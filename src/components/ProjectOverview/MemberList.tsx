@@ -15,6 +15,7 @@ import { getGroupMembers } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { generateFilename } from '../../utilities/file';
 
 interface MembersProps {
   projectDetails: Project | null
@@ -79,15 +80,6 @@ function MemberList(props: MembersProps) {
     }
   }, [projectDetails, setIsMembersLoading, token]);
 
-  const generateFilename = () => {
-    if (!projectDetails) return null;
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    return `austrakka_${projectDetails!.abbreviation}_users_export_${year}${month}${day}`;
-  };
-
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
   useEffect(() => {
@@ -143,7 +135,7 @@ function MemberList(props: MembersProps) {
         ]}
         ref={csvLink}
         style={{ display: 'none' }}
-        filename={generateFilename() || 'austrakka_export.csv'}
+        filename={generateFilename(projectDetails?.abbreviation ?? '')}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
         <IconButton
@@ -215,7 +207,11 @@ function MemberList(props: MembersProps) {
               </AlertTitle>
               There has been an error exporting your data to CSV.
               <br />
-              Please try again later, or contact an AusTrakka admin.
+              Please try again later, or contact an
+              {' '}
+              {import.meta.env.VITE_BRANDING_NAME}
+              {' '}
+              admin.
             </Alert>
           </Dialog>
           <Paper elevation={2} sx={{ marginBottom: 10 }}>

@@ -57,6 +57,9 @@ These can also be set in a `.env` file in the root directory.
 | VITE_THEME_PRIMARY_BLUE_BG_HEX       | Hex colour for css variable `--primary-blue-bg`         |
 | VITE_LOGO_PATH                       | Path under `./src/assets/logos/` for logo.              |
 | VITE_LOGO_SMALL_PATH                 | Path under `./src/assets/logos/` for small square logo. |
+| VITE_BRANDING_NAME                   | Name of the application.                                |
+| VITE_BRANDING_TAGLINE_1              | First tagline used on the landing page.                 |
+| VITE_BRANDING_TAGLINE_2              | Second tagline used on the langing page.                |
 
 ## Colours and themes.
 

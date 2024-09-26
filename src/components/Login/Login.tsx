@@ -5,7 +5,7 @@ import { InteractionStatus } from '@azure/msal-browser';
 import { LoginRounded } from '@mui/icons-material';
 import { loginRequest } from '../../config/authConfig';
 
-const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href
+const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
 
 // TODO: Add login loading and login failure features
 function LoginButton() {
@@ -33,7 +33,10 @@ function LoginButton() {
       { loginError
         ? (
           <Alert severity="error" sx={{ m: 2, textAlign: 'left' }}>
-            There has been an error logging you in to AusTrakka, please try again later.
+            There has been an error logging you in to
+            {' '}
+            {import.meta.env.VITE_BRANDING_NAME}
+            , please try again later.
           </Alert>
         ) : null }
     </>
@@ -61,14 +64,16 @@ function Login() {
             </Grid>
             <Grid item>
               <Typography variant="h2" color="primary">
-                Welcome to AusTrakka
+                Welcome to
+                {' '}
+                {import.meta.env.VITE_BRANDING_NAME}
               </Typography>
             </Grid>
             <Grid item>
-              From genomics to public health decisions for Australia
+              {import.meta.env.VITE_BRANDING_TAGLINE_1}
             </Grid>
             <Grid item>
-              Combining Genomics & Epidemiological Data
+              {import.meta.env.VITE_BRANDING_TAGLINE_2}
             </Grid>
             <Grid item>
               <LoginButton />

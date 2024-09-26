@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
+import { generateFilename } from '../../utilities/file';
 
 import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/renderUtils';
 
@@ -47,14 +48,6 @@ function ExportTableData(props: ExportTableDataProps) {
     return csvRows.join('\n');
   };
 
-  const generateFilename = () => {
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    return `austrakka_export_${year}${month}${day}`;
-  };
-
   const exportData = () => {
     setExportCSVStatus(LoadingState.LOADING);
     if (dataToExport.length > 0) {
@@ -93,7 +86,7 @@ function ExportTableData(props: ExportTableDataProps) {
         const url = URL.createObjectURL(blob);
 
         csvLink.current?.link.setAttribute('href', url);
-        csvLink.current?.link.setAttribute('download', generateFilename() || 'austrakka_export.csv');
+        csvLink.current?.link.setAttribute('download', generateFilename());
 
         // Trigger click to download
         csvLink.current?.link.click();
@@ -126,13 +119,17 @@ function ExportTableData(props: ExportTableDataProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact an AusTrakka admin.
+          Please try again later, or contact an
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          admin.
         </Alert>
       </Dialog>
       <CSVLink
         data={[]}
         ref={csvLink}
-        filename={generateFilename() || 'austrakka_export.csv'}
+        filename={generateFilename()}
         headers={headers}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
