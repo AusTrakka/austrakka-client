@@ -2,8 +2,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { GroupRole, User } from '../types/dtos';
-import { getMe } from '../utilities/resourceUtils';
+import { GroupRole, MinimalScope, User } from '../types/dtos';
+import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 
@@ -16,6 +16,8 @@ export interface UserSliceState {
   orgName: string,
   errorMessage: string,
   loading: LoadingState,
+  defaultTenant: string,
+  scopes: MinimalScope[],
 }
 
 interface FetchUserRolesResponse {
@@ -32,18 +34,47 @@ const fetchUserRoles = createAsyncThunk(
     token: string,
     thunkAPI,
   ): Promise<GroupRole[] | unknown> => {
-    const groupResponse: ResponseObject = await getMe(token);
-    if (groupResponse.status === ResponseType.Success) {
-      const { groupRoles, isAusTrakkaAdmin, displayName, orgAbbrev, orgName } =
-        groupResponse.data as User;
-      return thunkAPI
-        .fulfillWithValue({ groupRoles,
-          displayName,
-          isAusTrakkaAdmin,
-          orgAbbrev,
-          orgName } as FetchUserRolesResponse);
+    try {
+      // Fetch default tenant and group details
+      const defaultTenant: ResponseObject = await getTenant(token);
+      if (defaultTenant.status !== ResponseType.Success) {
+        return thunkAPI.rejectWithValue(defaultTenant.message);
+      }
+
+      const groupResponse: ResponseObject = await getMe(token);
+      if (groupResponse.status !== ResponseType.Success) {
+        return thunkAPI.rejectWithValue(groupResponse.message);
+      }
+
+      // Fetch user scope using tenant globalId
+      const { globalId } = defaultTenant.data;
+      const scopeResponse: ResponseObject = await getMeV2(globalId, token);
+      if (scopeResponse.status !== ResponseType.Success) {
+        return thunkAPI.rejectWithValue(scopeResponse.message);
+      }
+
+      // Destructure the response data
+      const {
+        groupRoles,
+        isAusTrakkaAdmin,
+        displayName,
+        orgAbbrev,
+        orgName,
+      } = groupResponse.data as User;
+      const { scopes } = scopeResponse.data as User;
+
+      // Fulfill with user role data
+      return thunkAPI.fulfillWithValue({
+        groupRoles,
+        displayName,
+        isAusTrakkaAdmin,
+        orgAbbrev,
+        orgName,
+        scopes,
+      } as FetchUserRolesResponse);
+    } catch (error) {
+      return thunkAPI.rejectWithValue('An unexpected error occurred');
     }
-    return thunkAPI.rejectWithValue(groupResponse.message);
   },
 );
 

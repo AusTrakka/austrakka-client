@@ -6,12 +6,12 @@ export enum PermissionLevel {
   CanShow = 'canShow',
 }
 
-interface ResourcePriviledges {
+interface ResourcePrivileges {
   [PermissionLevel.CanShow]?: string[];
   [PermissionLevel.CanClick]?: string[];
 }
 
-const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
+const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
   'fields': {
     [PermissionLevel.CanClick]: [RoleName.AusTrakkaAdmin],
   },

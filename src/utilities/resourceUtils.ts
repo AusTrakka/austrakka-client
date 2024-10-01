@@ -99,3 +99,9 @@ export const getSampleGroups = (sampleName:string, token: string) => callGET(`/a
 export const getOrgansations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
+
+// PermissionV2 endpoints
+// Tenant
+export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
+// User
+export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/UsersV2/Me?owningTenantGlobalId=${owningTenantGlobalId}`, token);

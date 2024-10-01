@@ -86,6 +86,7 @@ export interface User {
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
+  scopes: MinimalScope[],
 }
 
 export interface UserList {
@@ -225,6 +226,11 @@ export interface GroupRole {
     name: string,
   }
   group: Group
+}
+
+export interface MinimalScope {
+  scopePath: string,
+  shortDescription: string,
 }
 
 export interface Group {
