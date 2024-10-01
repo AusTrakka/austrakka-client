@@ -21,22 +21,27 @@ import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
-
-const settings = [
-  {
-    title: 'Documentation',
-    icon: <Description fontSize="small" />,
-  },
-  {
-    title: 'Help',
-    icon: <Help fontSize="small" />,
-  },
-];
+import Feedback from '../Feedback/Feedback';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
+  const [help, setHelp] = useState(false);
+  const settings = [
+    {
+      title: 'Documentation',
+      icon: <Description fontSize="small" />,
+      disabled: true,
+      onClick: () => {},
+    },
+    {
+      title: 'Support',
+      icon: <Help fontSize="small" />,
+      disabled: false,
+      onClick: () => setHelp((prev) => !prev),
+    },
+  ];
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
@@ -239,7 +244,7 @@ function MainMenuLayout() {
           <Divider />
           <List>
             {settings.map((setting) => (
-              <MenuItem key={setting.title} disabled>
+              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
                 <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
                   {setting.icon}
                 </ListItemIcon>
@@ -293,6 +298,7 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
+      <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
     </>
   );
 }

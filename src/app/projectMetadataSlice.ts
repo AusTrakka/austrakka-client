@@ -262,8 +262,8 @@ export const projectMetadataSlice = createSlice({
       // Set column loading states to IDLE for all fields, and initialise unique values
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
-        state.data[projectAbbrev].fieldLoadingStates[field.columnName] = LoadingState.IDLE;
-        state.data[projectAbbrev].fieldUniqueValues![field.columnName] = null;
+        state.data[projectAbbrev].fieldLoadingStates[field.columnName!] = LoadingState.IDLE;
+        state.data[projectAbbrev].fieldUniqueValues![field.columnName!] = null;
       });
       state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
@@ -276,13 +276,13 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchDataView.pending, (state, action) => {
       const { projectAbbrev, viewIndex } = action.meta.arg;
-      const { fields } = state.data[projectAbbrev].views[viewIndex];
+      const { viewFields } = state.data[projectAbbrev].views[viewIndex];
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.LOADING;
       // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
       if (viewIndex === 0) {
         state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
       }
-      fields.forEach(field => {
+      viewFields.forEach(field => {
         // Check per-column state; columns new in this load get LOADING status
         if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
           state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.LOADING;

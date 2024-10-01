@@ -1,15 +1,17 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
+import { ColorScheme } from 'vega';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
-import { ColorSchemeSelectorPlotStyle } from '../../Trees/TreeControls/SchemeSelector';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import { defaultColorSchemeName } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -50,7 +52,7 @@ const defaultSpec: TopLevelSpec = {
     yOffset: { field: 'jitter', type: 'quantitative' }, // Could control padding with eg scale: { range: [5,45] }
     color: {
       field: 'cgMLST',
-      scale: { scheme: 'spectral' },
+      scale: { scheme: defaultColorSchemeName as ColorScheme },
     },
     tooltip: { field: SAMPLE_ID_FIELD, type: 'nominal' },
   },
@@ -77,7 +79,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    'spectral',
+    defaultColorSchemeName,
     urlSearchParams,
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
@@ -213,9 +215,11 @@ function ClusterTimeline(props: PlotTypeProps) {
         </Select>
       </FormControl>
       {colourField !== 'none' && (
-        <ColorSchemeSelectorPlotStyle
+        <ColorSchemeSelector
           selectedScheme={colourScheme}
           onColourChange={(newColor) => setColourScheme(newColor)}
+          variant="outlined"
+          size="small"
         />
       )}
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>

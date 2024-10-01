@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
+
 import { parse, View as VegaView } from 'vega';
-import { compile, TopLevelSpec } from 'vega-lite';
+import { TopLevelSpec, compile } from 'vega-lite';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -11,6 +12,7 @@ import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
@@ -42,6 +44,7 @@ function STChart(props: any) {
       color: {
         field: stFieldName,
         title: `${stFieldName} Value`,
+        // NB not currently using defaultColorSchemeName
         scale: { scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10' },
       },
     },
