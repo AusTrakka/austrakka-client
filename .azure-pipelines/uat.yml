@@ -8,13 +8,13 @@ resources:
     - repository: Pipelines
       type: github
       name: AusTrakka/austrakka-pipelines
-      ref: 6257-pull-assets
+      ref: UAT
       endpoint: AusTrakka
     - repository: Infra
       type: github
       endpoint: AusTrakka
       name: AusTrakka/austrakka2-infra
-      ref: 6175-storing-logo
+      ref: UAT
 
 trigger:
   branches:
