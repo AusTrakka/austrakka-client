@@ -184,11 +184,11 @@ function Samples(props: SamplesProps) {
           CSV export will not be available. Refresh to reload.` :
             'An error occured loading project metadata. Refresh to reload.'}
           <br />
-          Please contact an
+          Please contact the
           {' '}
           {import.meta.env.VITE_BRANDING_NAME}
           {' '}
-          admin if this error persists.
+          team if this error persists.
         </Alert>
       </Dialog>
       <DataFilters

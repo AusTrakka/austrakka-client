@@ -43,7 +43,7 @@ function ProjectOverview() {
     totalSamplesError: false,
     totalSamplesErrorMessage: '',
     latestDateError: true,
-    latestDateErrorMessage: `There was an error, please report this to an ${import.meta.env.VITE_BRANDING_NAME} admin.`,
+    latestDateErrorMessage: `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`,
   });
   // const [lastUpload] = useState('');
 

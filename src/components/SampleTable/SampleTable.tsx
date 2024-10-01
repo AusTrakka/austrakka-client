@@ -156,11 +156,11 @@ function SampleTable(props: SamplesProps) {
              CSV export will not be available. Refresh to reload.`
           : 'An error occurred loading organisation metadata. Refresh to reload.'}
         <br />
-        Please contact an
+        Please contact the
         {' '}
         {import.meta.env.VITE_BRANDING_NAME}
         {' '}
-        admin if this error persists.
+        team if this error persists.
       </Alert>
     </Dialog>
   );
@@ -188,11 +188,11 @@ function SampleTable(props: SamplesProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact an
+          Please try again later, or contact the
           {' '}
           {import.meta.env.VITE_BRANDING_NAME}
           {' '}
-          admin.
+          team.
         </Alert>
       </Dialog>
       <DataFilters

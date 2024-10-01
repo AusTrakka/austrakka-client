@@ -207,11 +207,11 @@ function MemberList(props: MembersProps) {
               </AlertTitle>
               There has been an error exporting your data to CSV.
               <br />
-              Please try again later, or contact an
+              Please try again later, or contact the
               {' '}
               {import.meta.env.VITE_BRANDING_NAME}
               {' '}
-              admin.
+              team.
             </Alert>
           </Dialog>
           <Paper elevation={2} sx={{ marginBottom: 10 }}>
