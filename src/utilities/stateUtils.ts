@@ -1,5 +1,5 @@
 // TODO: Need to move this function else where as it is more than a utility
-import React, { SetStateAction, useMemo, useState } from 'react';
+import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import getQueryParamOrDefault from './navigationUtils';
@@ -97,14 +97,24 @@ function resolveState(
   return newState;
 }
 
-// TODO: Need to move this function else where as it is more than a utillitiy
+// TODO: Need to move this function else where as it is more than a utility
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
   const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
+  // This default initialisation only happens on the first render
+  // Thus when the stateSearchParams changes, state here will not be updated
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
-
+  
+  // This is why we need to use useEffect
+  useEffect(() => {
+    // Stringify and compare to avoid reference inequality in objects
+    if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
+      setState(stateSearchParams);
+    }
+  }, [state, stateSearchParams]);
+  
   const navigate = useNavigate();
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
