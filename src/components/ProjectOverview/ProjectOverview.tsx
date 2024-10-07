@@ -135,9 +135,7 @@ function ProjectOverview() {
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
-              projectId={projectDetails ? projectDetails!.projectId : null} // TODO remove
               projectAbbrev={projectAbbrev!}
-              groupId={projectDetails ? projectDetails!.projectMembers.id : null}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>

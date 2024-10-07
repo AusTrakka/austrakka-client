@@ -50,7 +50,7 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
     if (item && typeof item === 'object' && property in item) {
       const value = item[property];
       // Note that false counts as present
-      if (value !== '' && value !== null && value !== undefined) {
+      if (!isNullOrEmpty(value)) {
         presentCount += 1;
       }
     }
@@ -64,6 +64,7 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
 
 export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
   data.forEach((sample) => {
+    // note NOT isNullOrEmpty as undefined is not allowed
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
       sample[HAS_SEQUENCES] = false;
     }

@@ -35,13 +35,11 @@ const DATE_FIELD_NAME = 'Date_created';
 
 interface ProjectDashboardProps {
   projectDesc: string,
-  projectId: number | null,
   projectAbbrev: string | null,
-  groupId: number | null,
 }
 
 function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, projectAbbrev, groupId } = props;
+  const { projectDesc, projectAbbrev } = props;
   const { token, tokenLoading } = useApi();
   const [dashboardName, setDashboardName] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
