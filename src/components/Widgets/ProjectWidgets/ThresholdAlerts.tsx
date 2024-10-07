@@ -6,12 +6,14 @@ import { calculateAlertList, ThresholdAlert } from '../../../utilities/threshold
 import { ThresholdAlertFields } from '../../../constants/thresholdAlertConstants';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 // Threshold alerts use historical data and do not pay attention to dashboard time filter
 
+// May want to make this a parameter later
 const ALERT_CATEGORY_FIELD = 'Serotype';
 
-export default function ThresholdAlerts(props: any) {
+export default function ThresholdAlerts(props: ProjectWidgetProps) {
   const {
     projectAbbrev,
   } = props;

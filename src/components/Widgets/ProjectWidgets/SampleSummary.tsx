@@ -11,8 +11,9 @@ import { maxObj } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import ProjectWidgetProps from '../../../types/projectwidget.props';
 
-export default function SampleSummary(props: any) {
+export default function SampleSummary(props: ProjectWidgetProps) {
   const {
     projectAbbrev, filteredData, timeFilterObject,
   } = props;
@@ -51,7 +52,7 @@ export default function SampleSummary(props: any) {
 
   const handleDrilldownFilters = (drilldownName: string, drilldownFilters: any) => {
     // Append timeFilterObject for last_week and last_month filters
-    if (Object.keys(timeFilterObject).length !== 0) {
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
       // AppendtimeFilterObject for drills down other than latest_upload
       if (drilldownName === 'all_samples' || drilldownName === 'has_sequence') {
         const appendedFilters: DataTableFilterMeta = {
@@ -79,7 +80,7 @@ export default function SampleSummary(props: any) {
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
               { filteredData!.length.toLocaleString('en-US') + (
-                (Object.keys(timeFilterObject).length > 0) ? ` (${data!.metadata!.length.toLocaleString('en-US')})` : '')}
+                (timeFilterObject && Object.keys(timeFilterObject).length > 0) ? ` (${data!.metadata!.length.toLocaleString('en-US')})` : '')}
             </Typography>
             <DrilldownButton
               title="View Samples"
@@ -99,7 +100,7 @@ export default function SampleSummary(props: any) {
                 <DrilldownButton
                   title="View Samples"
                   onClick={() => handleDrilldownFilters(
-                    'lastest_upload',
+                    'latest_upload',
                     getLastUploadFilter(
                       maxObj(data!.metadata!.map((sample) => sample.Date_created)),
                     ),
@@ -123,7 +124,7 @@ export default function SampleSummary(props: any) {
               <>
                 <Typography variant="h2" paddingBottom={1} color="primary">
                   { (filteredData!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US') + (
-                    (Object.keys(timeFilterObject).length > 0) ?
+                    (timeFilterObject && Object.keys(timeFilterObject).length > 0) ?
                       ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})` : ''
                   )}
                 </Typography>

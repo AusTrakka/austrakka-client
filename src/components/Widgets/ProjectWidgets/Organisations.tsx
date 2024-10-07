@@ -10,6 +10,7 @@ import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projec
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
+import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 const ORG_FIELD_NAME = 'Owner_group';
 
@@ -30,11 +31,7 @@ const columns = [
   },
 ];
 
-// NB dispatch request for project metadata is in ProjectOverview page
-
-// TODO rename to ProjectOrganisations or rename directory; give proper props type; 
-//  maybe pass in timefilter
-export default function Organisations(props: any) {
+export default function Organisations(props: ProjectWidgetProps) {
   const {
     projectAbbrev, filteredData, timeFilterObject,
   } = props;

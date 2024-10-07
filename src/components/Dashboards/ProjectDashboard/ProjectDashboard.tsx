@@ -72,7 +72,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       return React.createElement(() => null);
     }
     const dashboardProps: ProjectDashboardTemplateProps = {
-      projectId, projectAbbrev, groupId, filteredData, timeFilterObject,
+      projectAbbrev, filteredData, timeFilterObject,
     };
     return React.createElement(
       DashboardTemplates[dashboardName],

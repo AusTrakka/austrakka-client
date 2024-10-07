@@ -10,6 +10,7 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { countPresentOrMissing } from '../../../utilities/dataProcessingUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 const PHESS_ID_FIELD_NAME = 'PHESS_ID';
 
@@ -23,7 +24,7 @@ const columns = [
   { field: 'sampleCount', header: 'Sample Count' },
 ];
 
-export default function PhessIdStatus(props: any) {
+export default function PhessIdStatus(props: ProjectWidgetProps) {
   const {
     projectAbbrev, filteredData, timeFilterObject,
   } = props;
@@ -68,7 +69,7 @@ export default function PhessIdStatus(props: any) {
       },
     };
     // Append timeFilterObject for last_week and last_month filters
-    if (Object.keys(timeFilterObject).length !== 0) {
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
       const appendedFilters : DataTableFilterMeta = {
         ...drillDownFilter,
         ...timeFilterObject,

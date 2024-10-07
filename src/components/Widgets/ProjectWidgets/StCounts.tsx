@@ -16,6 +16,7 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
@@ -94,7 +95,7 @@ function STChart(props: any) {
   );
 }
 
-export default function StCounts(props: any) {
+export default function StCounts(props: ProjectWidgetProps) {
   const {
     projectAbbrev, filteredData, timeFilterObject,
   } = props;
@@ -141,7 +142,7 @@ export default function StCounts(props: any) {
       },
     };
     // Append timeFilterObject for last_week and last_month filters
-    if (Object.keys(timeFilterObject).length !== 0) {
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
       const appendedFilters: DataTableFilterMeta =
           {
             ...drilldownFilter,
