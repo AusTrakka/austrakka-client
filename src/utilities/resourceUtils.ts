@@ -69,7 +69,6 @@ export const getDashboardFields = (
   const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
   return callGET(`/api/DashboardSearch/project-dashboard/select-fields-by-date?groupContext=${groupId}&${fieldsQuery}&filters=${searchParams}`, token);
 };
-export const getThresholdAlerts = (groupId: number, alertField: string, token: string) => callGET(`/api/DashboardSearch/project-dashboard/threshold-alerts?groupContext=${groupId}&alertField=${alertField}`, token);
 export const getUserDashboardOveriew = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
 export const getUserDashboardProjects = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/projects-total?filters=${searchParams}`, token);
 export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);

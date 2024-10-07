@@ -210,15 +210,6 @@ export interface ProFormaVersion {
   createdBy: string,
 }
 
-export interface ThresholdAlertDTO {
-  alertLevelOrder: number;
-  alertLevel: string;
-  categoryField: string;
-  categoryValue: string;
-  ratio: number | null;
-  recentCount: number;
-}
-
 export interface GroupRole {
   role: {
     id: number,

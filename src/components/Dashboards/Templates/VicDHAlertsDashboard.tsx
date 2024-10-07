@@ -60,8 +60,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', maxHeight: '70vh', overflow: 'auto' }}>
           <CardContent>
             <ThresholdAlerts
-              projectId={projectId}
-              groupId={groupId}
+              projectAbbrev={projectAbbrev}
             />
           </CardContent>
         </Card>

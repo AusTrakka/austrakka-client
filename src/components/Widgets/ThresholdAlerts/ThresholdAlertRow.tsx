@@ -4,14 +4,14 @@ import { alpha } from '@mui/material/styles';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
-import { ThresholdAlertDTO } from '../../../types/dtos';
+import { ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
 import theme from '../../../assets/themes/theme';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // Render a single alert
 
-interface ThresholdAlertProps {
-  alertRow: ThresholdAlertDTO;
+interface ThresholdAlertRowProps {
+  alertRow: ThresholdAlert;
 }
 
 const alertColours:{ [key: string]: string } = {
@@ -24,7 +24,7 @@ const alertColours:{ [key: string]: string } = {
   'Investigate': alpha(theme.palette.error.light, 0.3),
 };
 
-export default function ThresholdAlert(props: ThresholdAlertProps) {
+export default function ThresholdAlertRow(props: ThresholdAlertRowProps) {
   const { alertRow } = props;
   const navigation = useNavigate();
   const rowClickHandler = () => {

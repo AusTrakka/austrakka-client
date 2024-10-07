@@ -13,8 +13,6 @@ import LoadingState from '../../../constants/loadingState';
 
 const ORG_FIELD_NAME = 'Owner_group';
 
-// TODO pass in the filtered data from the dashboard, so the time filter is applied once
-
 interface CountRow {
   [ORG_FIELD_NAME]: string;
   sampleCount: number;

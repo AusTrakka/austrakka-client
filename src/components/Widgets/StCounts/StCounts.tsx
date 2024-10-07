@@ -17,9 +17,9 @@ import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projec
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 
+// May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
 
-// NB need to change this interface if field name becomes dynamic
 interface CountRow {
   [stFieldName]: string;
   sampleCount: number;
@@ -195,7 +195,7 @@ export default function StCounts(props: any) {
       { errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {data.errorMessage}
+          {errorMessage}
         </Alert>
       )}
       { (!data?.loadingState ||

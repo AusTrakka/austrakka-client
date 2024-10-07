@@ -1,6 +1,11 @@
 import { Sample } from '../types/sample.interface';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 
+export function isNullOrEmpty(value: any) {
+  // null, undefined, empty; but not false or 0
+  return (value == null || value === '');
+}
+
 // Function to aggregate counts of objects in an array, on a certain property
 
 export function aggregateArrayObjects(property: string, array: Array<any>) {
