@@ -1,4 +1,3 @@
-
 export const AlertLevels : Record<string, string> = {
   NoAlert: 'No Alert',
   Monitor: 'Monitor',

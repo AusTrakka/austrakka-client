@@ -1,5 +1,5 @@
-import {sortAlerts, ThresholdAlert} from '../../../src/utilities/thresholdAlertUtils';
-import {AlertLevels} from '../../../src/constants/thresholdAlertConstants';
+import { sortAlerts, ThresholdAlert } from '../../../src/utilities/thresholdAlertUtils';
+import { AlertLevels } from '../../../src/constants/thresholdAlertConstants';
 
 describe('sortAlerts', () => {
   test('should sort alerts by descending alertLevelOrder', () => {

@@ -1,4 +1,3 @@
-
 import { Sample } from '../../../src/types/sample.interface';
 import { calculateAlertList } from '../../../src/utilities/thresholdAlertUtils';
 
@@ -124,7 +123,7 @@ describe('calculateAlertList', () => {
       { Date_notification: '2015-01-10', PHESS_ID: 'PHESS_ID', alertField: 'alertFieldValue1' },
       { Date_notification: '2019-04-10', PHESS_ID: 'PHESS_ID', alertField: 'alertFieldValue2' },
       { Date_notification: '2019-04-10', PHESS_ID: 'PHESS_ID', alertField: 'alertFieldValue2' },
-      { Date_notification: '2019-04-10', PHESS_ID: 'PHESS_ID', alertField: 'alertFieldValue3' }
+      { Date_notification: '2019-04-10', PHESS_ID: 'PHESS_ID', alertField: 'alertFieldValue3' },
     ];
     const result = calculateAlertList(
       alertField,

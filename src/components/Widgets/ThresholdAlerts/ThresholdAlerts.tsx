@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Box, Stack, Typography} from '@mui/material';
-import {useAppSelector} from '../../../app/store';
+import React, { useEffect, useState } from 'react';
+import { Alert, Box, Stack, Typography } from '@mui/material';
+import { useAppSelector } from '../../../app/store';
 import ThresholdAlertRow from './ThresholdAlertRow';
-import {calculateAlertList, ThresholdAlert} from '../../../utilities/thresholdAlertUtils';
-import {ThresholdAlertFields} from '../../../constants/thresholdAlertConstants';
-import {ProjectMetadataState, selectProjectMetadata} from '../../../app/projectMetadataSlice';
+import { calculateAlertList, ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
+import { ThresholdAlertFields } from '../../../constants/thresholdAlertConstants';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 
 // Threshold alerts use historical data and do not pay attention to dashboard time filter
