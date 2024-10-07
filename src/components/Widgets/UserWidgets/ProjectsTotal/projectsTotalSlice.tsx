@@ -1,11 +1,11 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ProjectsTotal } from './projects.total.interface';
-import { getUserDashboardProjects } from '../../../utilities/resourceUtils';
-import LoadingState from '../../../constants/loadingState';
-import type { RootState } from '../../../app/store';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import { ResponseType } from '../../../constants/responseType';
-import { generateDateFilterString } from '../../../utilities/filterUtils';
+import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
+import LoadingState from '../../../../constants/loadingState';
+import type { RootState } from '../../../../app/store';
+import { ResponseObject } from '../../../../types/responseObject.interface';
+import { ResponseType } from '../../../../constants/responseType';
+import { generateDateFilterString } from '../../../../utilities/filterUtils';
 
 interface ProjectsTotalState {
   loading: string

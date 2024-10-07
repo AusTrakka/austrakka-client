@@ -3,12 +3,12 @@ import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
+import { useAppDispatch, useAppSelector } from '../../../../app/store';
+import LoadingState from '../../../../constants/loadingState';
 import { fetchProjectsTotal } from './projectsTotalSlice';
-import DrilldownButton from '../../Common/DrilldownButton';
-import { useApi } from '../../../app/ApiContext';
-import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import DrilldownButton from '../../../Common/DrilldownButton';
+import { useApi } from '../../../../app/ApiContext';
+import { isoDateLocalDate } from '../../../../utilities/dateUtils';
 
 const columns = [
   { field: 'projectName', header: 'Project Name' },

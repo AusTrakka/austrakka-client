@@ -1,9 +1,9 @@
 import { Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
-import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
-import Organisations from '../../Widgets/Organisations/Organisations';
-import PhessIdStatus from '../../Widgets/PhessIdStatus/PhessIdStatus';
-import ThresholdAlerts from '../../Widgets/ThresholdAlerts/ThresholdAlerts';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
+import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import PhessIdStatus from '../../Widgets/ProjectWidgets/PhessIdStatus';
+import ThresholdAlerts from '../../Widgets/ProjectWidgets/ThresholdAlerts';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
