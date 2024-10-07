@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
-import qcStatusReducer from '../components/Widgets/QcStatus/qcStatusSlice';
 import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
 import userOverviewReducer from '../components/Widgets/UserOverview/userOverviewSlice';
 import projectsTotalReducer from '../components/Widgets/ProjectsTotal/projectsTotalSlice';
@@ -12,7 +11,6 @@ import userReducer from './userSlice';
 
 const store = configureStore({
   reducer: {
-    qcStatusState: qcStatusReducer,
     userDashboardState: userDashboardReducer,
     userOverviewState: userOverviewReducer,
     projectTotalState: projectsTotalReducer,
