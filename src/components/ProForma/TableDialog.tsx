@@ -24,7 +24,7 @@ function TableDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ color: 'var(--primary-blue)', fontWeight: 'bold', paddingLeft: '40px' }}>
+      <DialogTitle sx={{ color: 'var(--primary-main)', fontWeight: 'bold', paddingLeft: '40px' }}>
         {proformaTitle}
         {' '}
         pro forma validation details

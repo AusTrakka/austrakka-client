@@ -189,7 +189,7 @@ function MainMenuLayout() {
                   end={page.link === '/'}
                   style={({ isActive }) => ({
                     backgroundColor: isActive ? 'var(--primary-grey-300)' : '',
-                    borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                    borderRight: isActive ? 'solid 3px var(--secondary-main)' : '',
                     fontWeight: isActive ? 'bold' : '',
                   })}
                 >
