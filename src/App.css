@@ -36,27 +36,27 @@ html, body, span {
 }
 
 .breadcrumbs a {
-    color: var(--primary-blue) ;
+    color: var(--primary-main) ;
     text-decoration: none ;
     padding-bottom: 10px;
 }
 
 .breadcrumbs a:hover {
-    color: var(--primary-blue) ;
+    color: var(--primary-main) ;
     text-decoration: underline ;
     padding-bottom: 10px;
 }
 
 .breadcrumbs p {
-    color: var(--primary-blue) ;
+    color: var(--primary-main) ;
 }
 
 .breadcrumbs li {
-    color: var(--primary-blue) ;
+    color: var(--primary-main) ;
 }
 
 .pageTitle {
-    color: var(--primary-blue);
+    color: var(--primary-main);
     font-weight: bold;
     font-size: 2rem;
     padding-bottom: 10px;

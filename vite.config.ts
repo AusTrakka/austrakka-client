@@ -24,11 +24,11 @@ export default defineConfig({
       VITE_API_SCOPE: Schema.string({
         message: "Scope URI for API application"
       }),
-      VITE_THEME_PRIMARY_BLUE: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlue)
+      VITE_THEME_PRIMARY_MAIN: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryMain)
       },
-      VITE_THEME_PRIMARY_GREEN: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen)
+      VITE_THEME_SECONDARY_MAIN: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain)
       },
       VITE_THEME_PRIMARY_GREY: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey)
@@ -66,35 +66,35 @@ export default defineConfig({
       VITE_THEME_BACKGROUND: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.Background)
       },
-      VITE_THEME_PRIMARY_GREEN_50: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen50)
+      VITE_THEME_SECONDARY_MAIN_50: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain50)
       },
-      VITE_THEME_PRIMARY_GREEN_100: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen100)
+      VITE_THEME_SECONDARY_MAIN_100: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain100)
       },
-      VITE_THEME_PRIMARY_GREEN_200: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen200)
+      VITE_THEME_SECONDARY_MAIN_200: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain200)
       },
-      VITE_THEME_PRIMARY_GREEN_300: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen300)
+      VITE_THEME_SECONDARY_MAIN_300: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain300)
       },
-      VITE_THEME_PRIMARY_GREEN_400: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen400)
+      VITE_THEME_SECONDARY_MAIN_400: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain400)
       },
-      VITE_THEME_PRIMARY_GREEN_500: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen500)
+      VITE_THEME_SECONDARY_MAIN_500: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain500)
       },
-      VITE_THEME_PRIMARY_GREEN_600: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen600)
+      VITE_THEME_SECONDARY_MAIN_600: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain600)
       },
-      VITE_THEME_PRIMARY_GREEN_700: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen700)
+      VITE_THEME_SECONDARY_MAIN_700: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain700)
       },
-      VITE_THEME_PRIMARY_GREEN_800: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen800)
+      VITE_THEME_SECONDARY_MAIN_800: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain800)
       },
-      VITE_THEME_PRIMARY_GREEN_900: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGreen900)
+      VITE_THEME_SECONDARY_MAIN_900: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.SecondaryMain900)
       },
       VITE_THEME_PRIMARY_GREY_50: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey50)
@@ -126,8 +126,8 @@ export default defineConfig({
       VITE_THEME_PRIMARY_GREY_900: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryGrey900)
       },
-      VITE_THEME_PRIMARY_BLUE_BG: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryBlueBackground)
+      VITE_THEME_PRIMARY_MAIN_BG: (key, value) => {
+        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryMainBackground)
       },
       VITE_LOGO_PATH: (key, value) => {
         return defaultCustomLogoValue(key, value, LogoDefaultValues.Logo)
@@ -173,8 +173,8 @@ function defaultConfigValue(key: string, value: string, defaultValue: string): s
 }
 
 enum ThemeDefaultValues {
-  PrimaryBlue = '#0a3546',
-  PrimaryGreen = '#90CA6D',
+  PrimaryMain = '#0a3546',
+  SecondaryMain = '#90CA6D',
   PrimaryGrey = '#F6F7F8',
   SecondaryDarkGrey = '#353333',
   SecondaryLightGrey = '#B3B3B3',
@@ -187,16 +187,16 @@ enum ThemeDefaultValues {
   SecondaryRed = '#A81E2C',
   SecondaryYellow = '#FCAF17',
   Background = '#FFFFFF',
-  PrimaryGreen50 = '#e8f5e9',
-  PrimaryGreen100 = '#c8e6c9',
-  PrimaryGreen200 = '#a5d6a7',
-  PrimaryGreen300 = '#81c784',
-  PrimaryGreen400 = '#66bb6a',
-  PrimaryGreen500 = '#4caf50',
-  PrimaryGreen600 = '#43a047',
-  PrimaryGreen700 = '#388e3c',
-  PrimaryGreen800 = '#2e7d32',
-  PrimaryGreen900 = '#1b5e20',
+  SecondaryMain50 = '#e8f5e9',
+  SecondaryMain100 = '#c8e6c9',
+  SecondaryMain200 = '#a5d6a7',
+  SecondaryMain300 = '#81c784',
+  SecondaryMain400 = '#66bb6a',
+  SecondaryMain500 = '#4caf50',
+  SecondaryMain600 = '#43a047',
+  SecondaryMain700 = '#388e3c',
+  SecondaryMain800 = '#2e7d32',
+  SecondaryMain900 = '#1b5e20',
   PrimaryGrey50 = '#fafafa', 
   PrimaryGrey100 = '#f5f5f5', 
   PrimaryGrey200 = '#eeeeee', 
@@ -207,7 +207,7 @@ enum ThemeDefaultValues {
   PrimaryGrey700 = '#616161', 
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
-  PrimaryBlueBackground = '#eef2f6'
+  PrimaryMainBackground = '#eef2f6'
 }
 
 enum LogoDefaultValues {

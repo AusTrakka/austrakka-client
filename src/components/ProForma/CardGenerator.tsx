@@ -93,7 +93,7 @@ function GenerateCards(
     <Card
       key={version.proFormaVersionId}
       style={{
-        backgroundColor: cardType === CardType.Summary ? 'var(--primary-blue)' : 'white',
+        backgroundColor: cardType === CardType.Summary ? 'var(--primary-main)' : 'white',
         width: '330px', // Set a fixed width
         height: '300px', // Set a fixed height
         display: 'flex', // Use flex to control layout

@@ -12,7 +12,7 @@
 }
 
 .h1, .h2, .h3 {
-    color: var(--primary-blue);
+    color: var(--primary-main);
     margin-bottom: 20px;
     line-height: 1.2;
 }
@@ -26,7 +26,7 @@
 }
 
 .button {
-    background-color: var(--primary-blue);
+    background-color: var(--primary-main);
     font-weight: bold;
     text-transform: none;
     margin-top: 30px;
