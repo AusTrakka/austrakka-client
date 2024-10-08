@@ -163,7 +163,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               <Typography>{projectDesc}</Typography>
               { renderDateSelector() }
             </Grid>
-            <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'rgb(238, 242, 246)' }}>
+            <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-main-bg)' }}>
               {renderDashboard()}
             </Grid>
           </>

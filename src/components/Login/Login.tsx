@@ -50,7 +50,7 @@ function Login() {
       direction="row"
       alignItems="center"
       justifyContent="center"
-      sx={{ minHeight: '100vh', backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)' }}
+      sx={{ minHeight: '100vh', backgroundImage: 'linear-gradient(var(--background-colour), var(--primary-grey-200))' }}
     >
       <Grid item>
         <Box sx={{ backgroundColor: 'white', padding: 6, borderRadius: 0, borderBottom: 4, borderColor: 'secondary.main' }}>

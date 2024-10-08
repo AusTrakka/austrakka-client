@@ -61,12 +61,12 @@ function FileDragDrop(props: FileDragDropProps) {
       onDrop={handleDrop}
       sx={{ p: 3,
         borderRadius: 2,
-        backgroundColor: dragActive ? '' : 'rgb(238, 242, 246)',
+        backgroundColor: dragActive ? '' : 'var(--primary-main-bg)',
         marginTop: 2,
         marginBottom: 2,
         height: '100%',
         border: dragActive ? 4 : 0,
-        borderColor: 'rgb(238, 242, 246)',
+        borderColor: 'var(--primary-main-bg)',
         borderStyle: dragActive ? 'dashed' : 'solid',
         transition: theme.transitions?.create!(
           ['background-color', 'border'],

@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { allColorSchemes, discrete, rangeColorSchemes } from '../constants/schemes';
 import { Legend } from '../types/phylocanvas.interface';
 
-const NULL_COLOUR = 'rgb(200,200,200)';
+const NULL_COLOUR = 'var(--primary-grey-400)';
 
 function getPaletteForRangeColorScheme(schemeName: string, values: string[]): Legend {
   const colorScale = rangeColorSchemes[schemeName];
