@@ -34,7 +34,7 @@ export default function ColorSchemeSelector({
                 backgroundColor: colorScheme[0],
                 width: '20px',
                 height: '20px',
-                border: '1px solid #dddddd',
+                border: '1px solid var(--primary-grey-300)',
               }}
             />
             <div
@@ -42,7 +42,7 @@ export default function ColorSchemeSelector({
                 backgroundColor: colorScheme[1],
                 width: '20px',
                 height: '20px',
-                border: '1px solid #dddddd',
+                border: '1px solid var(--primary-grey-300)',
               }}
             />
             <div
@@ -50,7 +50,7 @@ export default function ColorSchemeSelector({
                 backgroundColor: colorScheme[2],
                 width: '20px',
                 height: '20px',
-                border: '1px solid #dddddd',
+                border: '1px solid var(--primary-grey-300)',
               }}
             />
             <div
@@ -58,7 +58,7 @@ export default function ColorSchemeSelector({
                 backgroundColor: colorScheme[3],
                 width: '20px',
                 height: '20px',
-                border: '1px solid #dddddd',
+                border: '1px solid var(--primary-grey-300)',
               }}
             />
             <div
@@ -66,7 +66,7 @@ export default function ColorSchemeSelector({
                 backgroundColor: colorScheme[4],
                 width: '20px',
                 height: '20px',
-                border: '1px solid #dddddd',
+                border: '1px solid var(--primary-grey-300)',
               }}
             />
             {showName && (

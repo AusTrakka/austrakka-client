@@ -160,8 +160,7 @@ function MainMenuLayout() {
           variant="permanent"
           PaperProps={{
             sx: {
-              // backgroundImage: 'linear-gradient(#ffffff, #EEF2F6)',
-              boxShadow: '0px 0px 8px #D8D8D8',
+              boxShadow: '0px 0px 8px var(--primary-grey-300)',
               maxWidth: 190,
               minWidth: 70,
             },
@@ -189,8 +188,8 @@ function MainMenuLayout() {
                   to={page.link}
                   end={page.link === '/'}
                   style={({ isActive }) => ({
-                    backgroundColor: isActive ? '#dddddd' : '',
-                    borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                    backgroundColor: isActive ? 'var(--primary-grey-300)' : '',
+                    borderRight: isActive ? 'solid 3px var(--secondary-main)' : '',
                     fontWeight: isActive ? 'bold' : '',
                   })}
                 >
@@ -203,7 +202,7 @@ function MainMenuLayout() {
                       key={page.title}
                       sx={{
                         '&:hover': {
-                          backgroundColor: '#dddddd',
+                          backgroundColor: 'var(--primary-grey-300)',
                         },
                         'width': '100%',
                       }}
@@ -249,7 +248,7 @@ function MainMenuLayout() {
                   {setting.icon}
                 </ListItemIcon>
                 { drawer ? (
-                  <ListItemText>
+                  <ListItemText sx={{ color: 'primary.main' }}>
                     {setting.title}
                   </ListItemText>
                 )
