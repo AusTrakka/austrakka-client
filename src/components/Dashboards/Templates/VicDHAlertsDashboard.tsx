@@ -8,9 +8,7 @@ import ProjectDashboardTemplateProps from '../../../types/projectdashboardtempla
 
 function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
   const {
-    projectId,
     projectAbbrev,
-    groupId,
     filteredData,
     timeFilterObject,
   } = props;
@@ -21,9 +19,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <SampleSummary
-              projectId={projectId}
               projectAbbrev={projectAbbrev}
-              groupId={groupId}
               filteredData={filteredData}
               timeFilterObject={timeFilterObject}
             />
@@ -34,9 +30,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <PhessIdStatus
-              projectId={projectId}
               projectAbbrev={projectAbbrev}
-              groupId={groupId}
               filteredData={filteredData}
               timeFilterObject={timeFilterObject}
             />
@@ -47,9 +41,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <Organisations
-              projectId={projectId}
               projectAbbrev={projectAbbrev}
-              groupId={groupId}
               filteredData={filteredData}
               timeFilterObject={timeFilterObject}
             />

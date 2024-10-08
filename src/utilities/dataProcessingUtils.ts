@@ -1,6 +1,3 @@
-import { Sample } from '../types/sample.interface';
-import { HAS_SEQUENCES } from '../constants/metadataConsts';
-
 export function isNullOrEmpty(value: any) {
   // null, undefined, empty; but not false or 0
   return (value == null || value === '');

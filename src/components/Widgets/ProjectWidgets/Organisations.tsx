@@ -74,7 +74,7 @@ export default function Organisations(props: ProjectWidgetProps) {
       },
     };
 
-    if (Object.keys(timeFilterObject).length !== 0) {
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
       const combinedFilters: DataTableFilterMeta = {
         ...drillDownTableMetaFilters,
         ...timeFilterObject,

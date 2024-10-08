@@ -8,8 +8,6 @@ import ProjectDashboardTemplateProps from '../../../types/projectdashboardtempla
 function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
-    projectId,
-    groupId,
     filteredData,
     timeFilterObject,
   } = props;
@@ -21,9 +19,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <SampleSummary
-                projectId={projectId}
                 projectAbbrev={projectAbbrev}
-                groupId={groupId}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
               />
@@ -34,9 +30,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <Organisations
-                projectId={projectId}
                 projectAbbrev={projectAbbrev}
-                groupId={groupId}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
               />
