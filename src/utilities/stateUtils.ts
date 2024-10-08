@@ -15,6 +15,13 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
   const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
   const [state, setState] = useState<T>(stateSearchParams);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
+      setState(stateSearchParams);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateSearchParams]);
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setState(newState);
     const currentSearchParams = new URLSearchParams(window.location.search);
@@ -57,6 +64,15 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   });
   const [stateObject, setStateObject] = useState<T>(state);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Stringify and compare to avoid reference inequality in objects
+    if (JSON.stringify(state) !== JSON.stringify(stateObject)) {
+      setStateObject(state);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+  
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setStateObject(newState);
     const currentSearchParams = new URLSearchParams(window.location.search);
@@ -113,7 +129,8 @@ export function useStateFromSearchParamsForFilterObject(
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
     }
-  }, [state, stateSearchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateSearchParams]);
   
   const navigate = useNavigate();
 
