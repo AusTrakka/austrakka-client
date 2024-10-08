@@ -62,30 +62,5 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
   ];
 }
 
-export function replaceHasSequencesNullsWithFalse(data: Sample[]): Sample[] {
-  data.forEach((sample) => {
-    // note NOT isNullOrEmpty as undefined is not allowed
-    if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
-      sample[HAS_SEQUENCES] = false;
-    }
-  });
-
-  return data;
-}
-
-export function replaceNullsWithEmpty(data: Sample[]): void {
-  const replaceNullsInObject = (obj: Sample): void => {
-    Object.keys(obj).forEach((key) => {
-      if (obj[key] === null) {
-        obj[key] = '';
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        replaceNullsInObject(obj[key]);
-      }
-    });
-  };
-
-  data.forEach(replaceNullsInObject);
-}
-
 // Get max for any object kind that implements comparison
 export const maxObj = (arr: any[]) => arr.reduce((a, b) => (a > b ? a : b));
