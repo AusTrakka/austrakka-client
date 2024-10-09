@@ -30,7 +30,7 @@ function ExportTableData(props: ExportTableDataProps) {
 
     // Add data rows
     for (const row of data) {
-      const values = headerString.map(header => row[header]);
+      const values = headerString.map(header => `"${row[header]}"`);
       csvRows.push(values.join(','));
     }
 
