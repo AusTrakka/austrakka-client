@@ -101,9 +101,6 @@ export default function StCounts(props: ProjectWidgetProps) {
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-
-  // Get initial state from store
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigation = useNavigate();
