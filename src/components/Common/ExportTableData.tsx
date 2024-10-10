@@ -3,9 +3,7 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
-
-import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/renderUtils';
-import { formatCSVValues, formatDataAsCSV, generateCSV } from '../../utilities/exportUtils';
+import { generateCSV } from '../../utilities/exportUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed

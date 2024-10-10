@@ -181,6 +181,7 @@ describe('generateCSV', () => {
         {
           key1: '\'DDS-*&^%$#@![}[]po-=><<>',
           // all special characters next
+          // eslint-disable-next-line no-useless-escape
           key2: '\"\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^',
         },
       ];
