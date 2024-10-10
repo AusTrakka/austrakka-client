@@ -5,6 +5,7 @@ import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
 
 import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/renderUtils';
+import { formatCSVValues, formatDataAsCSV, generateCSV } from '../../utilities/exportUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -20,33 +21,6 @@ function ExportTableData(props: ExportTableDataProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
-  const formatDataAsCSV = (data: any[], headerString: string[]) => {
-    // Format data array as CSV string
-
-    const csvRows = [];
-
-    // Add headers
-    csvRows.push(headerString.join(','));
-
-    // Add data rows
-    for (const row of data) {
-      const values = headerString.map(header => {
-        const keys = header.split('.');
-        let value = row;
-        for (const key of keys) {
-          value = value[key];
-          if (value === undefined) {
-            return '';
-          }
-        }
-        return `"${value}"`;
-      });
-      csvRows.push(values.join(','));
-    }
-
-    return csvRows.join('\n');
-  };
-
   const generateFilename = () => {
     const dateObject = new Date();
     const year = dateObject.toLocaleString('default', { year: 'numeric' });
@@ -59,36 +33,7 @@ function ExportTableData(props: ExportTableDataProps) {
     setExportCSVStatus(LoadingState.LOADING);
     if (dataToExport.length > 0) {
       try {
-        // Processing data here
-        const formattedData = dataToExport.map((row: any) => {
-          const formattedRow: any = {};
-          for (const [key, value] of Object.entries(row)) {
-            const type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
-            switch (true) {
-              case (key in fieldRenderFunctions):
-                formattedRow[key] = fieldRenderFunctions[key](value);
-                break;
-              case (type in typeRenderFunctions):
-                formattedRow[key] = typeRenderFunctions[type](value);
-                break;
-              case typeof value === 'string':
-                formattedRow[key] = (value as string).replace(/"/g, '""');
-                break;
-              default:
-                formattedRow[key] = value;
-            }
-          }
-
-          return formattedRow;
-        });
-
-        // Set headers
-        const header = headers === undefined ?
-          Object.keys(formattedData[0]) :
-          headers.map(h => h.key);
-
-        // Set data for CSVLink
-        const csvData = formatDataAsCSV(formattedData, header);
+        const csvData = generateCSV(dataToExport, headers);
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
 
