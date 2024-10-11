@@ -257,3 +257,8 @@ export interface Feedback {
   feedbackPost: FeedbackPost,
   id: string,
 }
+
+export interface ProjectDashboardDetails {
+  projectDashboardId: number,
+  name: string,
+}

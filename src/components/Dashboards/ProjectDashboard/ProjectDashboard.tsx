@@ -26,6 +26,7 @@ import { ResponseType } from '../../../constants/responseType';
 import { Sample } from '../../../types/sample.interface';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import { ProjectDashboardDetails } from '../../../types/dtos';
 
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
@@ -82,7 +83,8 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     async function getDashboardName() {
       const response = await getProjectDashboard(projectAbbrev!, token);
       if (response.status === ResponseType.Success) {
-        setDashboardName(response.data);
+        const dashboard : ProjectDashboardDetails = response.data;
+        setDashboardName(dashboard.name);
       } else {
         setErrorMessage('Error retrieving project dashboard');
       }
