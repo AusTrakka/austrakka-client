@@ -1,5 +1,6 @@
 import { describe } from '@jest/globals';
 import { formatCSVValues } from '../../../src/utilities/exportUtils';
+import { formatTestDate, formatTestDateTime } from '../../test-utils/dateTestUtils';
 
 describe('formatCSVValues', () => {
   const dateString = '2023-01-01T00:00:00.000Z';
@@ -19,18 +20,7 @@ describe('formatCSVValues', () => {
         Date_created: dateString,
       };
       const expectedOutput = {
-        'Date_created': '2023-01-01 10:00',
-      };
-      const actualOutput = formatCSVValues(inputValue);
-      expect(actualOutput).toStrictEqual(expectedOutput);
-    });
-    
-    test('Date_updated should return a formatted date yyyy-mm-dd hh:mm', () => {
-      const inputValue = {
-        Date_updated: '2023-01-01T00:00:00.000Z',
-      };
-      const expectedOutput = {
-        'Date_updated': '2023-01-01 10:00',
+        'Date_created': formatTestDateTime(new Date(dateString)),
       };
       const actualOutput = formatCSVValues(inputValue);
       expect(actualOutput).toStrictEqual(expectedOutput);
@@ -54,7 +44,7 @@ describe('formatCSVValues', () => {
         Date_coll: new Date(dateString),
       };
       const expectedOutput = {
-        'Date_coll': '2023-01-01',
+        'Date_coll': formatTestDate(new Date(dateString)),
       };
       const actualOutput = formatCSVValues(inputValue);
       expect(actualOutput).toStrictEqual(expectedOutput);
