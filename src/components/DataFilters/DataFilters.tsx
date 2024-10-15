@@ -425,7 +425,7 @@ function DataFilters(props: DataFiltersProps) {
   return (
     <div style={{ paddingTop: 5 }}>
       {!dataLoaded ? (
-        <LinearProgress style={{ margin: 0, padding: 0, height: 5, borderRadius: 3 }} color="success" />
+        <LinearProgress style={{ margin: 0, padding: 0, height: 5, borderRadius: 3 }} color="secondary" />
       ) : null}
       <Box>
         <Box sx={{
