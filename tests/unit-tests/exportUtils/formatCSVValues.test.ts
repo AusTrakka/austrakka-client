@@ -2,14 +2,24 @@ import { describe } from '@jest/globals';
 import { formatCSVValues } from '../../../src/utilities/exportUtils';
 
 describe('formatCSVValues', () => {
+  const dateString = '2023-01-01T00:00:00.000Z';
+  
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(dateString));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
   describe('inputting a key that is expected for fieldRenderValue', () => {
     // not testing the inner working too much as there are tests for that elsewhere
     test('Date_created should return a formatted date yyyy-mm-dd hh:mm', () => {
       const inputValue = {
-        Date_created: '2023-01-01T00:00:00.000Z',
+        Date_created: dateString,
       };
       const expectedOutput = {
-        'Date_created': '2023-01-01 11:00',
+        'Date_created': '2023-01-01 10:00',
       };
       const actualOutput = formatCSVValues(inputValue);
       expect(actualOutput).toStrictEqual(expectedOutput);
@@ -20,7 +30,7 @@ describe('formatCSVValues', () => {
         Date_updated: '2023-01-01T00:00:00.000Z',
       };
       const expectedOutput = {
-        'Date_updated': '2023-01-01 11:00',
+        'Date_updated': '2023-01-01 10:00',
       };
       const actualOutput = formatCSVValues(inputValue);
       expect(actualOutput).toStrictEqual(expectedOutput);
@@ -41,7 +51,7 @@ describe('formatCSVValues', () => {
   describe('inputting a key that is expected for typeRenderValue', () => {
     test('value is of date type should return in format of yyyy-mm-dd', () => {
       const inputValue = {
-        Date_coll: new Date('2023-01-01T00:00:00.000Z'),
+        Date_coll: new Date(dateString),
       };
       const expectedOutput = {
         'Date_coll': '2023-01-01',
