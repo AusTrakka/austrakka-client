@@ -3,6 +3,8 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
+import { generateFilename } from '../../utilities/file';
+import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/renderUtils';
 import { generateCSV } from '../../utilities/exportUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
@@ -25,6 +27,22 @@ function ExportTableData(props: ExportTableDataProps) {
     const month = dateObject.toLocaleString('default', { month: '2-digit' });
     const day = dateObject.toLocaleString('default', { day: '2-digit' });
     return `austrakka_export_${year}${month}${day}`;
+}
+  const formatDataAsCSV = (data: any[], headerString: string[]) => {
+    // Format data array as CSV string
+
+    const csvRows = [];
+
+    // Add headers
+    csvRows.push(headerString.join(','));
+
+    // Add data rows
+    for (const row of data) {
+      const values = headerString.map(header => `"${row[header]}"`);
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
   };
 
   const exportData = () => {
@@ -36,7 +54,7 @@ function ExportTableData(props: ExportTableDataProps) {
         const url = URL.createObjectURL(blob);
 
         csvLink.current?.link.setAttribute('href', url);
-        csvLink.current?.link.setAttribute('download', generateFilename() || 'austrakka_export.csv');
+        csvLink.current?.link.setAttribute('download', generateFilename());
 
         // Trigger click to download
         csvLink.current?.link.click();
@@ -69,13 +87,17 @@ function ExportTableData(props: ExportTableDataProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact an AusTrakka admin.
+          Please try again later, or contact the
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          team.
         </Alert>
       </Dialog>
       <CSVLink
         data={[]}
         ref={csvLink}
-        filename={generateFilename() || 'austrakka_export.csv'}
+        filename={generateFilename()}
         headers={headers}
       />
       <Tooltip title="Export to CSV" placement="top" arrow>
