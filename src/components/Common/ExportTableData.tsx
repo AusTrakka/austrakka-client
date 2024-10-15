@@ -3,8 +3,6 @@ import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
-import { generateFilename } from '../../utilities/file';
-import { fieldRenderFunctions, typeRenderFunctions } from '../../utilities/renderUtils';
 import { generateCSV } from '../../utilities/exportUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
@@ -27,22 +25,6 @@ function ExportTableData(props: ExportTableDataProps) {
     const month = dateObject.toLocaleString('default', { month: '2-digit' });
     const day = dateObject.toLocaleString('default', { day: '2-digit' });
     return `austrakka_export_${year}${month}${day}`;
-}
-  const formatDataAsCSV = (data: any[], headerString: string[]) => {
-    // Format data array as CSV string
-
-    const csvRows = [];
-
-    // Add headers
-    csvRows.push(headerString.join(','));
-
-    // Add data rows
-    for (const row of data) {
-      const values = headerString.map(header => `"${row[header]}"`);
-      csvRows.push(values.join(','));
-    }
-
-    return csvRows.join('\n');
   };
 
   const exportData = () => {
