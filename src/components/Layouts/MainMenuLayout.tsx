@@ -15,13 +15,14 @@ import {
 } from '@mui/material';
 import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
-import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
+
+const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
+const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_SMALL_PATH}`, import.meta.url).href;
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -168,7 +169,7 @@ function MainMenuLayout() {
         >
           <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
-              {drawer ? (<img src={AusTrakkaLogo} alt="logo" className={styles.logo} />) : <img src={AusTrakkaLogoSmall} alt="logo" className={styles.logo} />}
+              {drawer ? (<img src={logoUrl} alt="logo" className={styles.logo} />) : <img src={logoOnlyUrl} alt="logo" className={styles.logo} />}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <IconButton
