@@ -8,12 +8,43 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 - Now fields that have been configured to be initially hidden will be hidden by default in the table view.
   This can be changed by access the column hide/show dropdown and selecting the field to be shown.
 
-## 2024-08-27
+## 2024-09-17
+
+### Added
+- Ability to submit support requests in the UI.
+
+## 2024-09-12
+
+### Fixed
+- Filtered sample counts now display correctly when the filters are loaded from the URL.
+
+## 2024-09-11
+
+### Added
+- Added new discrete colour schemes for plots and trees, includes a colourblind-friendly scheme.
 
 ### Changed
-- The condition `on and after` and `on and before` have been changed to just be 
-  `After` and `Before` respectively. This is due to in the change of TableComponent.
-  To have the same effect as before you must use the `On` condition in conjunction with the `After` or `Before` condition.
+- Colour Scheme Selector now groups colour schemes by type and has a more organised look.
+
+### Fixed
+- Fixed an issue where applying a date filter could cause a crash.
+- Fixed an issue where the "after" date filter filtered to timestamps after 00:00:00 on the selected date, rather than after 23:59:59.
+- Fixed an issue where boolean filters such as is-null-or-empty were not parsed correctly from the URL.
+- Improved reliability of sequence upload by requiring the client to send the file hash at the start of upload.
+
+## 2024-09-05
+
+### Added
+- A Fields page, listing all defined AusTrakka fields, is now available to all users.
+
+### Changed
+- Minor plot tweaks: update preferred fields, smaller cluster timeline point size
+- The condition `on and after` and `on and before` have been changed to just be `After` and `Before` respectively. 
+This is due to a change in available table component filters.
+- Table column layout and appearance improvements, including darker cell separator lines for accessibility.
+
+### Fixed
+- Plots in projects in show-all mode will select their preferred fields when they exist, independent of dataset analysis label.
 
 ## 2024-08-16
 

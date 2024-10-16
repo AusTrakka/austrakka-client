@@ -24,7 +24,7 @@ function TableDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ color: '#OA3546', fontWeight: 'bold', paddingLeft: '40px' }}>
+      <DialogTitle sx={{ color: 'var(--primary-main)', fontWeight: 'bold', paddingLeft: '40px' }}>
         {proformaTitle}
         {' '}
         pro forma validation details
@@ -37,19 +37,19 @@ function TableDialog({
                 <TableCell
                   component="th"
                   scope="row"
-                  style={{ backgroundColor: '#b0d997', fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Name
                 </TableCell>
                 <TableCell
                   align="right"
-                  style={{ backgroundColor: '#b0d997', fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Required
                 </TableCell>
                 <TableCell
                   align="right"
-                  style={{ backgroundColor: '#b0d997', fontWeight: 'bold' }}
+                  style={{ backgroundColor: 'var(--primary-200)', fontWeight: 'bold' }}
                 >
                   Type
                 </TableCell>

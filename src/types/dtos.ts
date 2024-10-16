@@ -238,6 +238,7 @@ export interface Group {
   createdBy: string,
   organisation: {
     abbreviation: string
+    name: string
   }
 }
 
@@ -255,4 +256,15 @@ export interface Role {
   roleId: number,
   name: string,
   description: string,
+}
+
+export interface FeedbackPost {
+  title: string,
+  description: string,
+  currentPage: string,
+}
+
+export interface Feedback {
+  feedbackPost: FeedbackPost,
+  id: string,
 }

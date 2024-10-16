@@ -23,7 +23,7 @@ function UserCard({ user }: { user: Member }) {
 
   const contentStyle = {
     padding: '8px', // Add some padding
-    borderBottom: '4px solid #90ca6d',
+    borderBottom: '4px solid var(--secondary-main)',
   };
 
   function handleCardClick() {

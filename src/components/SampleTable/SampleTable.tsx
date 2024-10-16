@@ -46,6 +46,7 @@ function SampleTable(props: SamplesProps) {
     'filters',
     defaultState,
   );
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
 
@@ -60,6 +61,7 @@ function SampleTable(props: SamplesProps) {
     if (groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE) {
+      setAllFieldsLoaded(false);
       dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
     }
   }, [groupContext, token, tokenLoading, dispatch]);
@@ -76,6 +78,10 @@ function SampleTable(props: SamplesProps) {
     if (!metadata?.fields || !metadata?.columnLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
+    if (Object.values(metadata.columnLoadingStates)
+      .every(field => field === LoadingState.SUCCESS)) {
+      setAllFieldsLoaded(true);
+    }
   }, [metadata?.columnLoadingStates, metadata?.fields]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
@@ -150,18 +156,19 @@ function SampleTable(props: SamplesProps) {
              CSV export will not be available. Refresh to reload.`
           : 'An error occurred loading organisation metadata. Refresh to reload.'}
         <br />
-        Please contact an AusTrakka admin if this error persists.
+        Please contact the
+        {' '}
+        {import.meta.env.VITE_BRANDING_NAME}
+        {' '}
+        team if this error persists.
       </Alert>
     </Dialog>
   );
 
-  if (isSamplesLoading) {
-    return renderErrorDialog();
-  }
   return (
     <>
       <Backdrop
-        sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
+        sx={{ color: 'var(--background-colour)', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />
@@ -181,7 +188,11 @@ function SampleTable(props: SamplesProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact an AusTrakka admin.
+          Please try again later, or contact the
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          team.
         </Alert>
       </Dialog>
       <DataFilters
@@ -194,6 +205,7 @@ function SampleTable(props: SamplesProps) {
         isOpen={isFiltersOpen}
         setIsOpen={setIsFiltersOpen}
         setLoadingState={setFiltering}
+        dataLoaded={allFieldsLoaded}
       />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
@@ -201,7 +213,7 @@ function SampleTable(props: SamplesProps) {
           onValueChange={(e) => {
             setFilteredSampleList(e);
           }}
-          filters={currentFilters}
+          filters={allFieldsLoaded ? currentFilters : defaultState}
           size="small"
           columnResizeMode="expand"
           resizableColumns
@@ -216,7 +228,7 @@ function SampleTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           rows={25}
-          loading={filtering}
+          loading={filtering || isSamplesLoading}
           rowsPerPageOptions={[25, 50, 100, 500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"

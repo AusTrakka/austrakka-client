@@ -1,5 +1,5 @@
 // TODO: Need to move this function else where as it is more than a utility
-import React, { SetStateAction, useMemo, useState } from 'react';
+import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import getQueryParamOrDefault from './navigationUtils';
@@ -15,6 +15,13 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
   const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
   const [state, setState] = useState<T>(stateSearchParams);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
+      setState(stateSearchParams);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateSearchParams]);
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setState(newState);
     const currentSearchParams = new URLSearchParams(window.location.search);
@@ -57,6 +64,15 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   });
   const [stateObject, setStateObject] = useState<T>(state);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Stringify and compare to avoid reference inequality in objects
+    if (JSON.stringify(state) !== JSON.stringify(stateObject)) {
+      setStateObject(state);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+  
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setStateObject(newState);
     const currentSearchParams = new URLSearchParams(window.location.search);
@@ -97,14 +113,25 @@ function resolveState(
   return newState;
 }
 
-// TODO: Need to move this function else where as it is more than a utillitiy
+// TODO: Need to move this function else where as it is more than a utility
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
   const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
+  // This default initialisation only happens on the first render
+  // Thus when the stateSearchParams changes, state here will not be updated
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
-
+  
+  // This is why we need to use useEffect
+  useEffect(() => {
+    // Stringify and compare to avoid reference inequality in objects
+    if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
+      setState(stateSearchParams);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateSearchParams]);
+  
   const navigate = useNavigate();
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {

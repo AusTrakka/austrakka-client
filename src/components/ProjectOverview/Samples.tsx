@@ -40,12 +40,12 @@ interface SamplesProps {
 
 interface BodyComponentProps {
   col: Sample,
-  readyFields: Record<string, LoadingState>,
+  readyFields: Record<string, LoadingState> | null,
 }
 
 function BodyComponent(props: BodyComponentProps) {
   const { col, readyFields } = props;
-  return readyFields[col.field] !== LoadingState.SUCCESS ? (
+  return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
     <Skeleton /> // Replace with your skeleton component
   ) : (
     col.body// Wrap your existing body content
@@ -67,23 +67,25 @@ function Samples(props: SamplesProps) {
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
 
-  const [readyFields, setReadyFields] = useState<Record<string, LoadingState>>({});
+  const [readyFields, setReadyFields] = useState<Record<string, LoadingState> | null>(null);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
-
+  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
-
+  
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const { maxHeight, getHeaderRef } =
     useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
-
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
     setReadyFields(metadata.fieldLoadingStates);
+    if (Object.values(metadata.fieldLoadingStates).every(field => field === LoadingState.SUCCESS)) {
+      setAllFieldsLoaded(true);
+    }
     setSampleTableColumns(columnBuilder);
     setFilteredDataLength(metadata.metadata?.length ?? 0);
   }, [metadata?.fields, metadata?.fieldLoadingStates, metadata?.metadata?.length]);
@@ -95,7 +97,7 @@ function Samples(props: SamplesProps) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
-
+  
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const selectedRow = event.data as Sample;
     if (SAMPLE_ID_FIELD in selectedRow) {
@@ -182,7 +184,11 @@ function Samples(props: SamplesProps) {
           CSV export will not be available. Refresh to reload.` :
             'An error occured loading project metadata. Refresh to reload.'}
           <br />
-          Please contact an AusTrakka admin if this error persists.
+          Please contact the
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          team if this error persists.
         </Alert>
       </Dialog>
       <DataFilters
@@ -193,7 +199,8 @@ function Samples(props: SamplesProps) {
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
-        setLoadingState={setLoadingState}
+        dataLoaded={allFieldsLoaded}
+        setLoadingState={setLoadingState} // TODO: This is a hack to get the filters to update
         primeReactFilters={currentFilters}
       />
       {
@@ -225,7 +232,9 @@ function Samples(props: SamplesProps) {
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
-            filters={currentFilters}
+            filters={allFieldsLoaded ?
+              currentFilters :
+              defaultState}
             reorderableColumns
             resizableColumns
             sortIcon={sortIcon}

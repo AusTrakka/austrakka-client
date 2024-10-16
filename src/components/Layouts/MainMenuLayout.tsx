@@ -15,28 +15,34 @@ import {
 } from '@mui/material';
 import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
-import AusTrakkaLogoSmall from '../../assets/logos/AusTrakka_Logo_only_cmyk.png';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import Feedback from '../Feedback/Feedback';
 
-const settings = [
-  {
-    title: 'Documentation',
-    icon: <Description fontSize="small" />,
-  },
-  {
-    title: 'Help',
-    icon: <Help fontSize="small" />,
-  },
-];
+const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
+const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_SMALL_PATH}`, import.meta.url).href;
 
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
+  const [help, setHelp] = useState(false);
+  const settings = [
+    {
+      title: 'Documentation',
+      icon: <Description fontSize="small" />,
+      disabled: true,
+      onClick: () => {},
+    },
+    {
+      title: 'Support',
+      icon: <Help fontSize="small" />,
+      disabled: false,
+      onClick: () => setHelp((prev) => !prev),
+    },
+  ];
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
     plots: 'Plots',
@@ -155,8 +161,7 @@ function MainMenuLayout() {
           variant="permanent"
           PaperProps={{
             sx: {
-              // backgroundImage: 'linear-gradient(#ffffff, #EEF2F6)',
-              boxShadow: '0px 0px 8px #D8D8D8',
+              boxShadow: '0px 0px 8px var(--primary-grey-300)',
               maxWidth: 190,
               minWidth: 70,
             },
@@ -164,7 +169,7 @@ function MainMenuLayout() {
         >
           <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
-              {drawer ? (<img src={AusTrakkaLogo} alt="logo" className={styles.logo} />) : <img src={AusTrakkaLogoSmall} alt="logo" className={styles.logo} />}
+              {drawer ? (<img src={logoUrl} alt="logo" className={styles.logo} />) : <img src={logoOnlyUrl} alt="logo" className={styles.logo} />}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <IconButton
@@ -184,8 +189,8 @@ function MainMenuLayout() {
                   to={page.link}
                   end={page.link === '/'}
                   style={({ isActive }) => ({
-                    backgroundColor: isActive ? '#dddddd' : '',
-                    borderRight: isActive ? 'solid 3px var(--primary-green)' : '',
+                    backgroundColor: isActive ? 'var(--primary-grey-300)' : '',
+                    borderRight: isActive ? 'solid 3px var(--secondary-main)' : '',
                     fontWeight: isActive ? 'bold' : '',
                   })}
                 >
@@ -198,7 +203,7 @@ function MainMenuLayout() {
                       key={page.title}
                       sx={{
                         '&:hover': {
-                          backgroundColor: '#dddddd',
+                          backgroundColor: 'var(--primary-grey-300)',
                         },
                         'width': '100%',
                       }}
@@ -239,12 +244,12 @@ function MainMenuLayout() {
           <Divider />
           <List>
             {settings.map((setting) => (
-              <MenuItem key={setting.title} disabled>
+              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
                 <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
                   {setting.icon}
                 </ListItemIcon>
                 { drawer ? (
-                  <ListItemText>
+                  <ListItemText sx={{ color: 'primary.main' }}>
                     {setting.title}
                   </ListItemText>
                 )
@@ -293,6 +298,7 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
+      <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
     </>
   );
 }
