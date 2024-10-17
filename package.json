@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "fix": "eslint . --fix",
     "test": "jest --watch",
-    "test-verbose": "jest --verbose"
+    "test-verbose": "jest --verbose",
+    "coverage": "jest --coverage"
   },
   "dependencies": {
     "@azure/msal-browser": "^2.30.0",

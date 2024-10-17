@@ -4,7 +4,7 @@
 }
 
 .h1, .h2, .h3 {
-    color: var(--primary-blue);
+    color: var(--primary-main);
     margin-bottom: 10px;
     line-height: 1.2;
 }
@@ -15,18 +15,18 @@
 }
 
 .tabs :global .Mui-selected {
-    color: var(--primary-blue);
+    color: var(--primary-main);
     font-weight: bold;
 }
 
 .tabs :global .MuiTabs-indicator {
-    background-color: var(--primary-blue);
+    background-color: var(--primary-main);
 }
 
 .squareTile {
     max-width: 400px;
-    color: #353333;
-    background-color: #F9F9F9;
+    color: var(--primary-grey-800);
+    background-color: var(--primary-grey-100);
 }
 
 .cardTitle {

@@ -393,7 +393,10 @@ function UploadMetadata() {
                   {' '}
                   This was a validation only.
                   Please uncheck the &quot;Validate only&quot; option
-                  and upload to load data into AusTrakka.
+                  and upload to load data into
+                  {' '}
+                  {import.meta.env.VITE_BRANDING_NAME}
+                  .
                 </Alert>
               </Grid>
               ) : null }
@@ -409,7 +412,10 @@ function UploadMetadata() {
         <UploadInstructions setDrawerOpen={setDrawerOpen} />
       </Drawer>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          color: 'var(--background-colour)',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
         open={submission.status === LoadingState.LOADING}
       >
         <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">
