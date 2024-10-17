@@ -1,15 +1,17 @@
 import { Box, Card, CardContent, Grid } from '@mui/material';
 import React from 'react';
-import SampleSummary from '../../Widgets/SampleSummary/SampleSummary';
-import Organisations from '../../Widgets/Organisations/Organisations';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
+import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 // TODO: Set a max card height and handle scroll voerflow
-function BasicDashboard(props: any) {
+function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
-    projectId,
-    groupId,
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
   } = props;
-
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
@@ -17,8 +19,9 @@ function BasicDashboard(props: any) {
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <SampleSummary
-                projectId={projectId}
-                groupId={groupId}
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
               />
             </CardContent>
           </Card>
@@ -27,8 +30,9 @@ function BasicDashboard(props: any) {
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <Organisations
-                projectId={projectId}
-                groupId={groupId}
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
               />
             </CardContent>
           </Card>
