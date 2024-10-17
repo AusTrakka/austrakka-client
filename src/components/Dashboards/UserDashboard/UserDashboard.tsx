@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
-import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
+import { DashboardTimeFilter, DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
 import PhessIdOverall from '../../Widgets/UserWidgets/PhessIdOverall/PhessIdOverall';
@@ -37,7 +37,7 @@ function DateSelector(props: any) {
 
     if (value !== undefined) {
       filterObject = {
-        field: 'Date_created',
+        field: DashboardTimeFilterField,
         fieldType: FieldTypes.DATE,
         condition: FilterMatchMode.DATE_AFTER,
         value,
@@ -57,7 +57,7 @@ function DateSelector(props: any) {
 
   return (
     <FormControl variant="standard">
-      <InputLabel>Date filter</InputLabel>
+      <InputLabel>Upload date filter</InputLabel>
       <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
         <MenuItem value={DashboardTimeFilter.ALL}>
           All time
