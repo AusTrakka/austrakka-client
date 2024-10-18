@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { IconButton, Menu, MenuItem, Dialog, Alert, AlertTitle } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
+import { generateFilename } from '../../utilities/file';
 
 export default function ExportVegaPlot(props: any) {
   const { vegaView } = props;
@@ -19,22 +20,13 @@ export default function ExportVegaPlot(props: any) {
   };
   const exportClickHandler = (format: string) => {
     handleMenuClose();
-    // Calc date time string to append to exported file name
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    const h = dateObject.getHours();
-    const m = dateObject.getMinutes();
-    const s = dateObject.getSeconds();
-    const datetime = `${year}${month}${day}_${h}${m}${s}`;
 
     if (vegaView) {
       vegaView.toImageURL(format).then((url: string) => {
         const link = document.createElement('a');
         link.setAttribute('href', url);
         link.setAttribute('target', '_blank');
-        link.setAttribute('download', `austrakka_plot_export_${datetime}.${format}`);
+        link.setAttribute('download', generateFilename());
         link.dispatchEvent(new MouseEvent('click'));
       }).catch((error: any) => {
         setExportError(true);
