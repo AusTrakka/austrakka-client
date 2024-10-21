@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import DashboardTemplates from '../../../config/dashboardTemplates';
-import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
+import { DashboardTimeFilter, DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
@@ -30,9 +30,6 @@ import { ProjectDashboardDetails } from '../../../types/dtos';
 
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
-
-// Field used to filter data by date
-const DATE_FIELD_NAME = 'Date_created';
 
 interface ProjectDashboardProps {
   projectDesc: string,
@@ -52,7 +49,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
 
   // this state variable will be passed as prop for line-list filters
   const timeFilterObject : DataTableFilterMeta = timeFilterThreshold ? {
-    [DATE_FIELD_NAME]: {
+    [DashboardTimeFilterField]: {
       operator: FilterOperator.AND,
       constraints: [
         {
@@ -114,7 +111,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED) {
       setFilteredData(
-        filterDataAfterDate(data!.metadata!, DATE_FIELD_NAME, timeFilterThreshold),
+        filterDataAfterDate(data!.metadata!, DashboardTimeFilterField, timeFilterThreshold),
       );
     }
   }, [data, timeFilterThreshold]);
@@ -134,12 +131,12 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   
   const renderDateSelector = () => {
     const enabled = (data?.projectFields &&
-      data.projectFields.some(field => field.fieldName === DATE_FIELD_NAME));
+      data.projectFields.some(field => field.fieldName === DashboardTimeFilterField));
     
     return (
-      <Tooltip title={enabled ? '' : `${DATE_FIELD_NAME} field not found`}>
+      <Tooltip title={enabled ? '' : `${DashboardTimeFilterField} field not found`}>
         <FormControl variant="standard" disabled={!enabled}>
-          <InputLabel>Date filter</InputLabel>
+          <InputLabel>Upload date filter</InputLabel>
           <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
             <MenuItem value={DashboardTimeFilter.ALL}>
               All time

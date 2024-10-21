@@ -122,7 +122,8 @@ export default function StCounts(props: ProjectWidgetProps) {
     } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${stFieldName} values`);
     }
-  }, [data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.fields, data?.loadingState]);
   
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;

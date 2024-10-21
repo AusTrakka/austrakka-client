@@ -59,5 +59,6 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
   ];
 }
 
-// Get max for any object kind that implements comparison
+// Get max or min for any object kind that implements comparison
 export const maxObj = (arr: any[]) => arr.reduce((a, b) => (a > b ? a : b));
+export const minObj = (arr: any[]) => arr.reduce((a, b) => (a < b ? a : b));
