@@ -212,15 +212,6 @@ export interface ProFormaVersion {
   createdBy: string,
 }
 
-export interface ThresholdAlertDTO {
-  alertLevelOrder: number;
-  alertLevel: string;
-  categoryField: string;
-  categoryValue: string;
-  ratio: number | null;
-  recentCount: number;
-}
-
 export interface GroupRole {
   role: {
     id: number,
@@ -267,4 +258,9 @@ export interface FeedbackPost {
 export interface Feedback {
   feedbackPost: FeedbackPost,
   id: string,
+}
+
+export interface ProjectDashboardDetails {
+  projectDashboardId: number,
+  name: string,
 }
