@@ -5,8 +5,7 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ## Unreleased
 
 ### Changed
-- Now fields that have been configured to be initially hidden will be hidden by default in the table view.
-  This can be changed by access the column hide/show dropdown and selecting the field to be shown.
+- Project fields can now be configured to be initially hidden, and will be hidden by default in the project sample table view.
 
 ## 2024-09-17
 
