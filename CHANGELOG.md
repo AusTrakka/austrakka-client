@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Changed
+- Project fields can now be configured to be initially hidden, and will be hidden by default in the project sample table view.
+
 ## 2024-09-17
 
 ### Added
