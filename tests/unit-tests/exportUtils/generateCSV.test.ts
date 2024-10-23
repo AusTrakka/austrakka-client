@@ -93,7 +93,7 @@ describe('generateCSV', () => {
       expect(actualOutput).toEqual(expectedOutput);
     });
 
-    test('given data contains quotes expect another quote to be added', () => {
+    test('given data contains quotes expect quotes to be escaped and the value to be quoted', () => {
       const data = [
         {
           key1: '"value1"',
