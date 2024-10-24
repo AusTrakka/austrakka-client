@@ -2,15 +2,22 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## Unreleased
+## 2024-10-24
+
+### Added
+- AusTrakka deployed instances now support configurable themes.
+- Project fields can now be configured to be initially hidden, and will be hidden by default in the project sample table view.
+- The default project dashboard now includes an epi curve chart. If ANZ jurisdictions or states are present in the project
+metadata, an appropriate colour scheme will be applied to this chart.
 
 ### Changed
-- Project fields can now be configured to be initially hidden, and will be hidden by default in the project sample table view.
 - The default colour scheme in plots is now Set3.
-- The default project dashboard now includes an epi curve chart.
+- Epi curve plots will now select a reasonable date bin size when first loaded. This bin size may still be adjusted by the user.
 
 ### Fixed
 - Project dashboards can no longer filter on upload date if Date_created is not included as a project field.
+- If a field with too many unique values is selected for the facets of a plot, resulting in the plot being too large to render, 
+the plot will now display an error message instead of crashing.
 
 ## 2024-09-17
 
