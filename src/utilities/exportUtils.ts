@@ -31,11 +31,7 @@ export const formatDataAsCSV = (data: any[], headerString: string[]) => {
 export const formatCSVValues = (row: any) => {
   const formattedRow: any = {};
   for (const [key, value] of Object.entries(row)) {
-    let type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
-    if (type === 'object' && value === null) {
-      // null values in object types are rendered as empty strings
-      type = 'boolean';
-    }
+    const type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
     switch (true) {
       case (key in fieldRenderFunctions):
         formattedRow[key] = fieldRenderFunctions[key](value);
