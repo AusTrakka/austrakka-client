@@ -27,6 +27,6 @@
 
 .pagelist a {
     text-decoration: none;
-    color: var(--primary-blue);
+    color: var(--primary-main);
     display: flex;
 }

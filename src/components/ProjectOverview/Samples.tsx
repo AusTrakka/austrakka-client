@@ -20,7 +20,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import { buildPrimeReactColumnDefinitionsPVF } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
@@ -81,7 +81,7 @@ function Samples(props: SamplesProps) {
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
-    const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
+    const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
     setReadyFields(metadata.fieldLoadingStates);
     if (Object.values(metadata.fieldLoadingStates).every(field => field === LoadingState.SUCCESS)) {
       setAllFieldsLoaded(true);
@@ -184,7 +184,11 @@ function Samples(props: SamplesProps) {
           CSV export will not be available. Refresh to reload.` :
             'An error occured loading project metadata. Refresh to reload.'}
           <br />
-          Please contact an AusTrakka admin if this error persists.
+          Please contact the
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          team if this error persists.
         </Alert>
       </Dialog>
       <DataFilters

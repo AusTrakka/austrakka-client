@@ -3,8 +3,9 @@ import { Button, Alert, Typography, Box, Grid } from '@mui/material';
 import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { LoginRounded } from '@mui/icons-material';
-import AusTrakkaLogo from '../../assets/logos/AusTrakka_Logo_cmyk.png';
 import { loginRequest } from '../../config/authConfig';
+
+const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
 
 // TODO: Add login loading and login failure features
 function LoginButton() {
@@ -32,7 +33,10 @@ function LoginButton() {
       { loginError
         ? (
           <Alert severity="error" sx={{ m: 2, textAlign: 'left' }}>
-            There has been an error logging you in to AusTrakka, please try again later.
+            There has been an error logging you in to
+            {' '}
+            {import.meta.env.VITE_BRANDING_NAME}
+            , please try again later.
           </Alert>
         ) : null }
     </>
@@ -50,24 +54,26 @@ function Login() {
       direction="row"
       alignItems="center"
       justifyContent="center"
-      sx={{ minHeight: '100vh', backgroundImage: 'linear-gradient(#ffffff, #EFEFEF)' }}
+      sx={{ minHeight: '100vh', backgroundImage: 'linear-gradient(var(--background-colour), var(--primary-grey-200))' }}
     >
       <Grid item>
         <Box sx={{ backgroundColor: 'white', padding: 6, borderRadius: 0, borderBottom: 4, borderColor: 'secondary.main' }}>
           <Grid container spacing={3} direction="column" justifyContent="center" alignItems="stretch" textAlign="center">
             <Grid item>
-              <img src={AusTrakkaLogo} alt="at-logo" width="280px" />
+              <img src={logoUrl} alt="at-logo" width="280px" />
             </Grid>
             <Grid item>
               <Typography variant="h2" color="primary">
-                Welcome to AusTrakka
+                Welcome to
+                {' '}
+                {import.meta.env.VITE_BRANDING_NAME}
               </Typography>
             </Grid>
             <Grid item>
-              From genomics to public health decisions for Australia
+              {import.meta.env.VITE_BRANDING_TAGLINE_1}
             </Grid>
             <Grid item>
-              Combining Genomics & Epidemiological Data
+              {import.meta.env.VITE_BRANDING_TAGLINE_2}
             </Grid>
             <Grid item>
               <LoginButton />

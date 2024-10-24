@@ -149,6 +149,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
   createdBy: string,
@@ -166,6 +167,7 @@ export interface ProjectViewField extends Field {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  hidden: boolean,
   metaDataColumnValidValues: string[] | null,
 }
 
@@ -208,15 +210,6 @@ export interface ProFormaVersion {
   assetId : number,
   created: Date,
   createdBy: string,
-}
-
-export interface ThresholdAlertDTO {
-  alertLevelOrder: number;
-  alertLevel: string;
-  categoryField: string;
-  categoryValue: string;
-  ratio: number | null;
-  recentCount: number;
 }
 
 export interface GroupRole {
@@ -265,4 +258,9 @@ export interface FeedbackPost {
 export interface Feedback {
   feedbackPost: FeedbackPost,
   id: string,
+}
+
+export interface ProjectDashboardDetails {
+  projectDashboardId: number,
+  name: string,
 }
