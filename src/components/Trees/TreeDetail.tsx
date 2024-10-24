@@ -443,7 +443,7 @@ function TreeDetail() {
                     bgcolor={color}
                     marginRight="10px"
                     border={1}
-                    borderColor="#dddddd"
+                    borderColor="var(--primary-grey-300)"
                   />
                   <Typography variant="caption">{label || 'null'}</Typography>
                 </Box>

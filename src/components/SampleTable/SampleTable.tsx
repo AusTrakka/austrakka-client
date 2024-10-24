@@ -156,7 +156,11 @@ function SampleTable(props: SamplesProps) {
              CSV export will not be available. Refresh to reload.`
           : 'An error occurred loading organisation metadata. Refresh to reload.'}
         <br />
-        Please contact an AusTrakka admin if this error persists.
+        Please contact the
+        {' '}
+        {import.meta.env.VITE_BRANDING_NAME}
+        {' '}
+        team if this error persists.
       </Alert>
     </Dialog>
   );
@@ -164,7 +168,7 @@ function SampleTable(props: SamplesProps) {
   return (
     <>
       <Backdrop
-        sx={{ color: '#fff', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
+        sx={{ color: 'var(--background-colour)', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />
@@ -184,7 +188,11 @@ function SampleTable(props: SamplesProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact an AusTrakka admin.
+          Please try again later, or contact the
+          {' '}
+          {import.meta.env.VITE_BRANDING_NAME}
+          {' '}
+          team.
         </Alert>
       </Dialog>
       <DataFilters

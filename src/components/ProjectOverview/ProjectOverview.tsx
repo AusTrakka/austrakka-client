@@ -43,7 +43,7 @@ function ProjectOverview() {
     totalSamplesError: false,
     totalSamplesErrorMessage: '',
     latestDateError: true,
-    latestDateErrorMessage: 'There was an error, please report this to an AusTrakka admin.',
+    latestDateErrorMessage: `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`,
   });
   // const [lastUpload] = useState('');
 
@@ -135,8 +135,7 @@ function ProjectOverview() {
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
-              projectId={projectDetails ? projectDetails!.projectId : null}
-              groupId={projectDetails ? projectDetails!.projectMembers.id : null}
+              projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
