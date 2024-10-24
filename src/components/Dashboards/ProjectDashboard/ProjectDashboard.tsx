@@ -1,52 +1,122 @@
-import React, { useEffect } from 'react';
-import { Alert, AlertTitle, Box, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import dayjs from 'dayjs';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import DashboardTemplateActions from '../../../config/dashboardActions';
 import DashboardTemplates from '../../../config/dashboardTemplates';
-import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { fetchProjectDashboard, updateTimeFilter, updateTimeFilterObject } from './projectDashboardSlice';
+import { DashboardTimeFilter, DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
+import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
+import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { getProjectDashboard } from '../../../utilities/resourceUtils';
+import { ResponseType } from '../../../constants/responseType';
+import { Sample } from '../../../types/sample.interface';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import { ProjectDashboardDetails } from '../../../types/dtos';
+
+// NB this is a tab; project metadata is requested in ProjectOverview page;
+// if we want to use this as a standalone page must dispatch request
 
 interface ProjectDashboardProps {
   projectDesc: string,
-  projectId: number | null,
-  groupId: number | null,
+  projectAbbrev: string | null,
 }
 
-function renderDashboard(
-  dashboardName: any,
-  projectId: any,
-  groupId: any,
-) {
-  if (typeof DashboardTemplates[dashboardName] !== 'undefined') {
+function ProjectDashboard(props: ProjectDashboardProps) {
+  const { projectDesc, projectAbbrev } = props;
+  const { token, tokenLoading } = useApi();
+  const [dashboardName, setDashboardName] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const [timeFilter, setTimeFilter] = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
+  const [timeFilterThreshold, setTimeFilterThreshold] = useState<Date | null>(null);
+  const [filteredData, setFilteredData] = useState<Sample[]>([]);
+
+  // this state variable will be passed as prop for line-list filters
+  const timeFilterObject : DataTableFilterMeta = timeFilterThreshold ? {
+    [DashboardTimeFilterField]: {
+      operator: FilterOperator.AND,
+      constraints: [
+        {
+          value: timeFilterThreshold,
+          matchMode: FilterMatchMode.DATE_AFTER,
+        }],
+    },
+  } : {};
+  
+  function renderDashboard() {
+    if (!dashboardName || !projectAbbrev) {
+      return React.createElement(() => null);
+    }
+    if (typeof DashboardTemplates[dashboardName] === 'undefined') {
+      setErrorMessage(`Dashboard type ${dashboardName} is not known`);
+      return React.createElement(() => null);
+    }
+    const dashboardProps: ProjectDashboardTemplateProps = {
+      projectAbbrev, filteredData, timeFilterObject,
+    };
     return React.createElement(
       DashboardTemplates[dashboardName],
-      { projectId, groupId },
+      dashboardProps,
     );
   }
-  // Returns nothing if a matching React dashboard template component doesn't exist
-  return React.createElement(
-    () => null,
-  );
-}
-
-function DateSelector(props: any) {
-  const { projectId, groupId } = props;
-  // Get initial date filter state from redux store
-  // Set new date filter state from redux store
-  const dispatch = useAppDispatch();
-  const { timeFilter, data } = useAppSelector((state) => state.projectDashboardState);
-  const { token } = useApi();
-
+  
+  useEffect(() => {
+    async function getDashboardName() {
+      const response = await getProjectDashboard(projectAbbrev!, token);
+      if (response.status === ResponseType.Success) {
+        const dashboard : ProjectDashboardDetails = response.data;
+        setDashboardName(dashboard.name);
+      } else {
+        setErrorMessage('Error retrieving project dashboard');
+      }
+    }
+    
+    if (projectAbbrev &&
+        tokenLoading !== LoadingState.LOADING &&
+        tokenLoading !== LoadingState.IDLE) {
+      getDashboardName();
+    }
+  }, [token, tokenLoading, projectAbbrev]);
+  
+  // Filter data by date
+  useEffect(() => {
+    // Could be moved to dataProcessingUtils
+    const filterDataAfterDate = (
+      inputdata: Sample[],
+      dateField: string,
+      threshold: Date | null,
+    ) => {
+      if (!threshold) {
+        return inputdata;
+      }
+      // This line only reached if dateField present; otherwise control to set threshold is disabled
+      return inputdata.filter((sample) => dayjs(sample[dateField]!).isAfter(dayjs(threshold)));
+    };
+    
+    if (data?.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setFilteredData(
+        filterDataAfterDate(data!.metadata!, DashboardTimeFilterField, timeFilterThreshold),
+      );
+    }
+  }, [data, timeFilterThreshold]);
+  
   const onTimeFilterChange = (event: SelectChangeEvent) => {
-    dispatch(updateTimeFilter(event.target.value as string));
-    const dateField = 'Date_created';
-    let primeTableFilterObject: DataTableFilterMeta = {};
-
     let value: Date | undefined;
 
     if (event.target.value === DashboardTimeFilter.LAST_WEEK) {
@@ -55,95 +125,58 @@ function DateSelector(props: any) {
       value = dayjs().subtract(1, 'month').toDate();
     }
 
-    if (value !== undefined) {
-      primeTableFilterObject = {
-        [dateField]: {
-          operator: FilterOperator.AND,
-          constraints: [
-            {
-              value,
-              matchMode: FilterMatchMode.DATE_AFTER,
-            }],
-        },
-      };
-    }
-    dispatch(updateTimeFilterObject(primeTableFilterObject));
-
-    const dispatchProps = {
-      projectId,
-      groupId,
-      token,
-      timeFilter: event.target.value as string,
-    };
-    DashboardTemplateActions[data.data].map(
-      (dispatchEvent: any) => dispatch(dispatchEvent(dispatchProps)),
+    setTimeFilterThreshold(value || null);
+    setTimeFilter(event.target.value as DashboardTimeFilter);
+  };
+  
+  const renderDateSelector = () => {
+    const enabled = (data?.projectFields &&
+      data.projectFields.some(field => field.fieldName === DashboardTimeFilterField));
+    
+    return (
+      <Tooltip title={enabled ? '' : `${DashboardTimeFilterField} field not found`}>
+        <FormControl variant="standard" disabled={!enabled}>
+          <InputLabel>Upload date filter</InputLabel>
+          <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
+            <MenuItem value={DashboardTimeFilter.ALL}>
+              All time
+            </MenuItem>
+            <MenuItem value={DashboardTimeFilter.LAST_WEEK}>
+              Last week
+            </MenuItem>
+            <MenuItem value={DashboardTimeFilter.LAST_MONTH}>
+              Last month
+            </MenuItem>
+          </Select>
+        </FormControl>
+      </Tooltip>
     );
   };
-
-  return (
-    <FormControl variant="standard">
-      <InputLabel>Date filter</InputLabel>
-      <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
-        <MenuItem value={DashboardTimeFilter.ALL}>
-          All time
-        </MenuItem>
-        <MenuItem value={DashboardTimeFilter.LAST_WEEK}>
-          Last week
-        </MenuItem>
-        <MenuItem value={DashboardTimeFilter.LAST_MONTH}>
-          Last month
-        </MenuItem>
-      </Select>
-    </FormControl>
-  );
-}
-
-function ProjectDashboard(props: ProjectDashboardProps) {
-  const { projectDesc, projectId, groupId } = props;
-  const { token, tokenLoading } = useApi();
-  const {
-    data,
-    loading,
-    projectIdInRedux,
-  } = useAppSelector((state) => state.projectDashboardState);
-
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (projectId !== null &&
-        projectId !== projectIdInRedux &&
-        tokenLoading !== LoadingState.IDLE &&
-        tokenLoading !== LoadingState.LOADING) {
-      const thunkObj = { projectId, groupId, token };
-      dispatch(fetchProjectDashboard(thunkObj));
-    }
-  }, [dispatch, projectId, groupId, projectIdInRedux, token, tokenLoading]);
-
+  
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        { loading === LoadingState.SUCCESS && (
+        { dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
           <>
             <Grid container item xs={12} justifyContent="space-between">
               <Typography>{projectDesc}</Typography>
-              { data.data.length !== 0 ? (
-                <DateSelector projectId={projectId} groupId={groupId} />
-              ) : null }
+              { renderDateSelector() }
             </Grid>
             <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-main-bg)' }}>
-              {renderDashboard(data.data, projectId, groupId)}
+              {renderDashboard()}
             </Grid>
           </>
         )}
-        { loading === LoadingState.ERROR && (
+        { errorMessage && (
           <Grid item xs={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
-              {`An error occurred while loading your dashboard - ${data.message}`}
+              {`An error occurred while loading your dashboard - ${errorMessage}`}
             </Alert>
           </Grid>
         )}
-        { loading === LoadingState.LOADING && (
+        { !(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED)
+          && !errorMessage && (
           <Grid item xs={12}>
             Loading...
           </Grid>

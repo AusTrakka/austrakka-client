@@ -21,7 +21,7 @@ interface ColumnVisibilityMenuProps {
 function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   const { columns, onColumnVisibilityChange } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedColumns, setSelectedColumns] = useState<any>([]);
+  const [selectedColumns, setSelectedColumns] = useState<any>(columns.filter((c) => c.hidden));
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {

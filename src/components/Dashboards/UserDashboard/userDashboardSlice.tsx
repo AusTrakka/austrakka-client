@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import DashboardTimeFilter from '../../../constants/dashboardTimeFilter';
+import { DashboardTimeFilter } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
 
 interface UserDashboardState {
