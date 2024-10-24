@@ -6,6 +6,11 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 
 ### Changed
 - Project fields can now be configured to be initially hidden, and will be hidden by default in the project sample table view.
+- The default colour scheme in plots is now Set3.
+- The default project dashboard now includes an epi curve chart.
+
+### Fixed
+- Project dashboards can no longer filter on upload date if Date_created is not included as a project field.
 
 ## 2024-09-17
 

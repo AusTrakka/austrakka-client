@@ -221,8 +221,9 @@ export const setTimeAggregationInSpecToValue = (
 // Need 15 or 20 columns to look ok; 60 looks good; 80 is ok; 120 is dense but still ok
 // Note we return 3 months rather than a quarter, since quarter does not work everywhere
 export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: number } => {
-  const maxDate = new Date(maxObj(dates));
-  const minDate = new Date(minObj(dates));
+  const nonNullDates = dates.filter((date) => date !== null);
+  const maxDate = new Date(maxObj(nonNullDates));
+  const minDate = new Date(minObj(nonNullDates));
   const diff = maxDate.getTime() - minDate.getTime();
   const daysInRange = Math.ceil(diff / (1000 * 3600 * 24));
   if (daysInRange < 20 * 7) return { unit: 'yearmonthdate', step: 1 }; // max 140 days which is min 20 weeks
