@@ -9,7 +9,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
-import { defaultColorSchemeName } from '../../../constants/schemes';
+import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -52,7 +52,7 @@ function BarChart(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    defaultColorSchemeName,
+    defaultDiscreteColorScheme,
     searchParams,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
