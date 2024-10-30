@@ -56,6 +56,24 @@ describe('generateCSV', () => {
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
+    test('given data to export contains a null date object', () => {
+      const data = [
+        {
+          key1: 'value1',
+          key2: null,
+        },
+        {
+          key1: 'value3',
+          key2: null,
+        },
+      ];
+      const expectedOutput = 'key1,key2\n' +
+                '"value1",""\n' +
+                '"value3",""';
+      const actualOutput = generateCSV(data);
+      expect(actualOutput).toEqual(expectedOutput);
+    });
+    
     test('given data to export contains date strings', () => {
       const data = [
         {

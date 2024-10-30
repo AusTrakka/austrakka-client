@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import LoadingState from '../../constants/loadingState';
 import { generateCSV } from '../../utilities/exportUtils';
+import { generateFilename } from '../../utilities/file';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
@@ -18,14 +19,6 @@ function ExportTableData(props: ExportTableDataProps) {
   const { dataToExport, disabled, headers } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
-
-  const generateFilename = () => {
-    const dateObject = new Date();
-    const year = dateObject.toLocaleString('default', { year: 'numeric' });
-    const month = dateObject.toLocaleString('default', { month: '2-digit' });
-    const day = dateObject.toLocaleString('default', { day: '2-digit' });
-    return `austrakka_export_${year}${month}${day}`;
-  };
 
   const exportData = () => {
     setExportCSVStatus(LoadingState.LOADING);

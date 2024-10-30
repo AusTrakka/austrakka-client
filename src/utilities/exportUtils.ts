@@ -40,6 +40,9 @@ export const formatCSVValues = (row: any) => {
         // this handles null values
         formattedRow[key] = typeRenderFunctions[type](value);
         break;
+      case (type === 'object' && value === null):
+        formattedRow[key] = '';
+        break;
       case typeof value === 'string':
         formattedRow[key] = (value as string).replace(/"/g, '""');
         break;
