@@ -8,6 +8,7 @@ import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
 import { ProjectViewField } from '../types/dtos';
 import { defaultColorSchemeName } from '../constants/schemes';
+import { maxObj, minObj } from './dataProcessingUtils';
 
 const ONE_SAMPLE_POINT_SIZE = 40;
 
@@ -213,4 +214,21 @@ export const setTimeAggregationInSpecToValue = (
   newSpec.encoding.size = size;
 
   return newSpec as TopLevelSpec;
+};
+
+// Set the time bin unit based on the range of dates
+// Depends on browser width but:
+// Need 15 or 20 columns to look ok; 60 looks good; 80 is ok; 120 is dense but still ok
+// Note we return 3 months rather than a quarter, since quarter does not work everywhere
+export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: number } => {
+  const nonNullDates = dates.filter((date) => date !== null);
+  const maxDate = new Date(maxObj(nonNullDates));
+  const minDate = new Date(minObj(nonNullDates));
+  const diff = maxDate.getTime() - minDate.getTime();
+  const daysInRange = Math.ceil(diff / (1000 * 3600 * 24));
+  if (daysInRange < 20 * 7) return { unit: 'yearmonthdate', step: 1 }; // max 140 days which is min 20 weeks
+  if (daysInRange < 20 * 30) return { unit: 'yearweek', step: 1 }; // 600 which is max 86 weeks, min 20 months
+  if (daysInRange < 30 * 91) return { unit: 'yearmonth', step: 1 }; // 2730 - max 90 months, min 30 quarters / 7.5 years
+  if (daysInRange < 20 * 365) return { unit: 'yearmonth', step: 3 }; // 7300 which is max 80 quarters, min 20 years
+  return { unit: 'year', step: 1 };
 };

@@ -1,11 +1,17 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
-import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
+import {
+  ProjectMetadataState,
+  selectProjectMetadata,
+  selectProjectMetadataFields,
+} from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import {
-  getStartingField, setAxisResolutionInSpecToValue, setColorInSpecToValue,
+  getStartingField, selectGoodTimeBinUnit,
+  setAxisResolutionInSpecToValue,
+  setColorInSpecToValue,
   setFieldInSpec,
   setRowInSpecToValue,
 } from '../../../utilities/plotUtils';
@@ -14,6 +20,8 @@ import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultColorSchemeName } from '../../../constants/schemes';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { Sample } from '../../../types/sample.interface';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -53,6 +61,9 @@ function EpiCurve(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
+  // This plot also accesses the data itself, to determine an initial date binning
+  const data: ProjectMetadataState | null =
+    useAppSelector(state => selectProjectMetadata(state, plot?.projectAbbreviation));
   const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -63,7 +74,7 @@ function EpiCurve(props: PlotTypeProps) {
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
-    'yearmonthdate',
+    '',
     searchParams,
   );
   const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
@@ -136,6 +147,23 @@ function EpiCurve(props: PlotTypeProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
+
+  useEffect(() => {
+    if (dateBinUnit === '' &&
+        dateField !== '' &&
+        data?.loadingState === MetadataLoadingState.DATA_LOADED &&
+        data!.fields!.some(field => field.columnName === dateField)) {
+      // dateBinUnit is not set; try to pick a good value
+      // should only occur on first load, otherwise dateBinUnit will already be set
+      const bin = selectGoodTimeBinUnit(
+        data!.metadata!.map((row: Sample) => row[dateField]),
+      );
+      setDateBinUnit(bin.unit!);
+      setDateBinStep(bin.step!);
+    }
+    // Do not want to trigger on dateBinUnit; relevant data changes are covered by loadingState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.loadingState, dateField, setDateBinUnit, setDateBinStep]);
 
   useEffect(() => {
     const addDateFieldToSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>

@@ -13,7 +13,7 @@ d3.ScaleOrdinal<string, string> |
 d3.ScaleSequential<string, never> |
 d3.ScaleDiverging<string, never>>;
 
-export const defaultColorSchemeName : string = 'tableau10';
+export const defaultColorSchemeName : string = 'set3';
 
 // Colorblind friendly color scheme
 const schemeColorBlindFriendly: string[] =
@@ -27,6 +27,41 @@ const schemeColorBlindFriendly: string[] =
       '#d55e00',
       '#cc79a7',
     ];
+
+// Special Jurisdiction colour scheme, used by convention
+// Maps hard-coded domain, so only works with Jurisdiction or State fields if configured correctly
+// For now, not included for selection in plots
+export const schemeJurisdiction : d3.ScaleOrdinal<string, string> = d3
+  .scaleOrdinal<string, string>().range([
+  '#5FA2EB',
+  '#363C99',
+  '#762063',
+  '#EF877A',
+  '#E4AF37',
+  '#206747',
+  '#C75B12',
+  '#BEC2CB',
+  '#000000',
+]).domain([
+  'NSW',
+  'VIC',
+  'QLD',
+  'SA',
+  'WA',
+  'TAS',
+  'NT',
+  'ACT',
+  'NZ',
+]);
+// Allow Jurisdiction to work for ISO State values by adding to the domain in the correct order
+schemeJurisdiction('AU-NSW');
+schemeJurisdiction('AU-VIC');
+schemeJurisdiction('AU-QLD');
+schemeJurisdiction('AU-SA');
+schemeJurisdiction('AU-WA');
+schemeJurisdiction('AU-TAS');
+schemeJurisdiction('AU-NT');
+schemeJurisdiction('AU-ACT');
 
 // Diverging Color Schemes
 export const diverging: ColorSchemeRange = {

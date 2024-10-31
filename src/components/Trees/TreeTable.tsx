@@ -9,7 +9,9 @@ import {
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { ProjectViewField } from '../../types/dtos';
-import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import {
+  buildPrimeReactColumnDefinitionsPVF,
+} from '../../utilities/tableUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
@@ -78,7 +80,7 @@ export default function TreeTable(props: TreeTableProps) {
   // Format display fields into column headers
   useEffect(() => {
     const formatTableHeaders = () => {
-      const columnBuilder = buildPrimeReactColumnDefinitions(displayFields);
+      const columnBuilder = buildPrimeReactColumnDefinitionsPVF(displayFields);
       setSampleTableColumns(columnBuilder);
       setColumnError(false);
     };
