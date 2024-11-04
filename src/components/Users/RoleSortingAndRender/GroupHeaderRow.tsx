@@ -36,11 +36,11 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   } = props;
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [selectedRole, setSelectedRole] = useState<Role[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
 
   useEffect(() => {
     setSelectedGroup(null);
-    setSelectedRole(null);
+    setSelectedRoles(null);
   }, [editing]);
 
   const getRoleOptions = () => {
@@ -76,7 +76,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   const groupOptions = editing ? getGroupOptions() : [];
 
   const addGroupRoles = () => {
-    const newGroupRoles: GroupRole[] = (selectedRole as Role[]).map((role) => ({
+    const newGroupRoles: GroupRole[] = (selectedRoles as Role[]).map((role) => ({
       group: selectedGroup!,
       role: {
         id: role.roleId,
@@ -99,16 +99,16 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     const updatedGroupRoles = [...existingGroupRoles, ...newGroupRoles];
     updateUserGroupRoles(updatedGroupRoles);
     setSelectedGroup(null);
-    setSelectedRole(null);
+    setSelectedRoles(null);
   };
 
   const handleAddGroupRole = () => {
-    if (selectedGroup && selectedRole) {
+    if (selectedGroup && selectedRoles) {
       addGroupRoles();
     }
   };
 
-  const isAddButtonEnabled = selectedGroup !== null && selectedRole !== null;
+  const isAddButtonEnabled = selectedGroup !== null && selectedRoles !== null;
 
   return (
     <TableRow key={groupType}>
@@ -139,6 +139,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
               <Autocomplete
                 options={groupOptions}
                 style={{ width: '18em' }}
+                value={selectedGroup}
                 getOptionLabel={(option) => option.name}
                 onChange={(e, v) => setSelectedGroup(v)}
                 renderOption={(_props, option) => (
@@ -170,8 +171,9 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 multiple
                 limitTags={1}
                 style={{ width: '18em' }}
+                value={selectedRoles || []}
                 getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedRole(v)}
+                onChange={(e, v) => setSelectedRoles(v)}
                 renderOption={(_props, option) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
                     {option.name}

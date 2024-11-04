@@ -8,7 +8,6 @@ import { generateFilename } from '../../utilities/file';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
-
 interface ExportTableDataProps {
   dataToExport: any[]
   disabled: boolean
