@@ -44,16 +44,16 @@ describe('formatDataAsCSV', () => {
   test('should handle header values with special characters and different alphanumeric combinations', () => {
     const data = [
       {
-        'key1!@#$%^&*()_+{}:"|/?><,.;': 'value1',
-        'key2!@#$%^&*()_+{}:"|/?><,.;': 'value2',
+        'key1!@#$%^-&*()_+{}:"|/?><,.;': 'value1',
+        'key2!@#$%^-&*()_+{}:"|/?><,.;': 'value2',
       },
       {
-        'key1!@#$%^&*()_+{}:"|/?><,.;': 'value3',
-        'key2!@#$%^&*()_+{}:"|/?><,.;': 'value4',
+        'key1!@#$%^-&*()_+{}:"|/?><,.;': 'value3',
+        'key2!@#$%^-&*()_+{}:"|/?><,.;': 'value4',
       },
     ];
-    const headerString = ['key1!@#$%^&*()_+{}:"|/?><,.;', 'key2!@#$%^&*()_+{}:"|/?><,.;'];
-    const expectedOutput = 'key1!@#$%^&*()_+{}:"|/?><,.;,key2!@#$%^&*()_+{}:"|/?><,.;\n' +
+    const headerString = ['key1!@#$%^-&*()_+{}:"|/?><,.;', 'key2!@#$%^&*()_+{}:"|/?><,.;'];
+    const expectedOutput = 'key1!@#$%^-&*()_+{}:"|/?><,.;,key2!@#$%^&*()_+{}:"|/?><,.;\n' +
           '"value1","value2"\n' +
           '"value3","value4"';
     const actualOutput = formatDataAsCSV(data, headerString);
