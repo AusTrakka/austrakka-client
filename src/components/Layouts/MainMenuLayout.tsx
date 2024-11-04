@@ -115,15 +115,21 @@ function MainMenuLayout() {
       icon: <Upload />,
     },
     {
+      title: 'Fields',
+      link: '/fields',
+      icon: <ViewColumn />,
+    },
+    {
       title: 'Users',
       link: '/users',
       icon: <People />,
       permissionDomain: 'users',
     },
     {
-      title: 'Fields',
-      link: '/fields',
-      icon: <ViewColumn />,
+      title: 'Users (V2)',
+      link: '/usersV2',
+      icon: <People color="warning" />,
+      permissionDomain: 'usersV2',
     },
   ];
   const visiblePages = pages.filter((page) =>

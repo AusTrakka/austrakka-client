@@ -32,6 +32,8 @@ import UserDetail from './components/Users/UserDetail';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
+import UsersV2 from './components/Admin/UsersV2';
+import UserDetailV2 from './components/UsersV2/UserDetailV2';
 
 function App() {
   const navigate = useNavigate();
@@ -54,6 +56,7 @@ function App() {
                 <Route path="org/:orgAbbrev/:tab" element={<OrganisationOverview />} />
                 <Route path="upload" element={<Upload />} />
                 <Route path="users" element={<Users />} />
+                <Route path="usersV2" element={<UsersV2 />} />
                 <Route path="upload/metadata" element={<UploadMetadata />} />
                 <Route path="upload/sequences" element={<UploadSequences />} />
                 <Route path="projects" element={<ProjectsList />} />
@@ -66,6 +69,7 @@ function App() {
                 <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                 <Route path="fields" element={<Fields />} />
                 <Route path="users/:userObjectId" element={<UserDetail />} />
+                <Route path="usersV2/:userGlobalId" element={<UserDetailV2 />} />
               </Route>
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

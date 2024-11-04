@@ -3,22 +3,29 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrganisations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
+import {
+  getGroupList,
+  getOrganisations,
+  getRoles,
+  getUserV2,
+  putUser,
+  replaceAssignments,
+} from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
+import RenderGroupedRolesAndGroupsV2 from './RoleSortingAndRender/RenderGroupedRolesAndGroupsV2';
 import renderIcon from '../Admin/UserIconRenderer';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
-import EditButtons from './EditButtons';
+import EditButtonsV2 from './EditButtonsV2';
 import EditableRow from './RowRender/EditableRow';
 import BasicRow from './RowRender/BasicRow';
 
-function UserDetail() {
-  const { userObjectId } = useParams();
+function UserDetailV2() {
+  const { userGlobalId } = useParams();
   const { token, tokenLoading } = useApi();
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -38,6 +45,7 @@ function UserDetail() {
   const {
     loading,
     admin,
+    defaultTenantGlobalId,
   } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
@@ -67,7 +75,12 @@ function UserDetail() {
 
   useEffect(() => {
     const updateUser = async () => {
-      const userResponse: ResponseObject = await getUser(userObjectId!, token);
+      console.log(userGlobalId);
+      const userResponse: ResponseObject = await getUserV2(
+        userGlobalId!,
+        defaultTenantGlobalId!,
+        token,
+      );
 
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as User;
@@ -80,10 +93,13 @@ function UserDetail() {
       }
     };
 
-    if (token && tokenLoading === LoadingState.SUCCESS) {
+    if (token && tokenLoading === LoadingState.SUCCESS &&
+        loading === LoadingState.SUCCESS &&
+        userGlobalId && defaultTenantGlobalId) {
+      console.log('Updating user');
       updateUser();
     }
-  }, [userObjectId, token, tokenLoading]);
+  }, [userGlobalId, defaultTenantGlobalId, token, tokenLoading, loading]);
 
   useEffect(() => {
     const getOrgData = async () => {
@@ -148,7 +164,8 @@ function UserDetail() {
     });
   };
 
-  const canSee = () => (loading === LoadingState.SUCCESS && admin);
+  // nobody can edit for now
+  const canSee = () => (loading === LoadingState.SUCCESS && false);
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -213,7 +230,7 @@ function UserDetail() {
       // Updating user details
       // Replacing group assignments
       const assignmentResponse: ResponseObject = await replaceAssignments(
-        userObjectId!,
+        userGlobalId!,
         token,
         groupAssignmentsFormat,
       );
@@ -223,7 +240,7 @@ function UserDetail() {
       }
 
       const userResponse: ResponseObject = await putUser(
-        userObjectId!,
+        userGlobalId!,
         token,
         editedValuesDtoFormat,
       );
@@ -276,7 +293,7 @@ function UserDetail() {
             {user.displayName}
           </Typography>
         </div>
-        <EditButtons
+        <EditButtonsV2
           editing={editing}
           setEditing={setEditing}
           onSave={onSave}
@@ -298,7 +315,7 @@ function UserDetail() {
               }
               if (field === 'groupRoles') {
                 return (
-                  <RenderGroupedRolesAndGroups
+                  <RenderGroupedRolesAndGroupsV2
                     key={field}
                     user={user}
                     setOpenDupSnackbar={setOpenDupSnackbar}
@@ -341,4 +358,4 @@ function UserDetail() {
   ) : null;
 }
 
-export default UserDetail;
+export default UserDetailV2;

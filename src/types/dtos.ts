@@ -89,7 +89,46 @@ export interface User {
   scopes: MinimalScope[],
 }
 
+export interface UserMe {
+  objectId: string,
+  displayName: string,
+  contactEmail: string,
+  orgId: number,
+  orgAbbrev: string,
+  orgName: string,
+  analysisServerUsername: string,
+  scopes: GroupedPrivilegesByRecordType[],
+}
+
+export interface GroupedPrivilegesByRecordType {
+  recordType: string,
+  recordRoles: PrivilegeWithRoles[],
+}
+
+export interface PrivilegeWithRoles {
+  recordName: string,
+  Roles: RoleWithScopes[],
+}
+
+export interface RoleWithScopes {
+  role: string,
+  scopes: string[],
+}
+
 export interface UserList {
+  name: string,
+  id: string,
+  organisation: string,
+  contactEmail: string,
+  isActive: boolean,
+  created: string,
+  createdBy: string,
+  isAusTrakkaAdmin: boolean,
+  isAusTrakkaProcess: boolean,
+  analysisServerUsername: string,
+}
+
+export interface UserListV2 {
   name: string,
   id: string,
   organisation: string,

@@ -59,7 +59,7 @@ export const getProjectViewData = (projectAbbrev: string, viewId: number, token:
 export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 
 // User dashboard endpoints
-export const getUserDashboardOveriew = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
+export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
 export const getUserDashboardProjects = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/projects-total?filters=${searchParams}`, token);
 export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
 
@@ -85,7 +85,7 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 export const getSampleGroups = (sampleName:string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
 
 // Organisation endpoints
-export const getOrgansations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
+export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
 
@@ -93,4 +93,15 @@ export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Prom
 // Tenant
 export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
 // User
-export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/UsersV2/Me?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/UserV2/Me?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+export const getUserListV2 = (
+  includeAll: boolean,
+  owningTenantGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/Users?includeall=${includeAll}`, token);
+
+export const getUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`, token);
