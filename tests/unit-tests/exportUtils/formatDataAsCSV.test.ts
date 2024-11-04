@@ -52,8 +52,8 @@ describe('formatDataAsCSV', () => {
         'key2!@#$%^-&*()_+{}:"|/?><,.;': 'value4',
       },
     ];
-    const headerString = ['key1!@#$%^-&*()_+{}:"|/?><,.;', 'key2!@#$%^&*()_+{}:"|/?><,.;'];
-    const expectedOutput = 'key1!@#$%^-&*()_+{}:"|/?><,.;,key2!@#$%^&*()_+{}:"|/?><,.;\n' +
+    const headerString = ['key1!@#$%^-&*()_+{}:"|/?><,.;', 'key2!@#$%^-&*()_+{}:"|/?><,.;'];
+    const expectedOutput = 'key1!@#$%^-&*()_+{}:"|/?><,.;,key2!@#$%^-&*()_+{}:"|/?><,.;\n' +
           '"value1","value2"\n' +
           '"value3","value4"';
     const actualOutput = formatDataAsCSV(data, headerString);
