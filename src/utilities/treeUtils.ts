@@ -15,6 +15,7 @@ export default function mapMetadataToPhylocanvas(
 ) {
   // Create categorical colour palettes based on unique values
   // Note that to create numeric schemes we would need to know the max and min values
+  // and some fields have a natural min and natural max regardless of data
   const fieldPalettes: PhylocanvasLegends = {};
 
   fieldInformation

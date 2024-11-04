@@ -111,6 +111,7 @@ function HeatMap(props: PlotTypeProps) {
   }, [xAxisField]);
 
   useEffect(() => {
+    // TODO this will not currently set a domain of 0-max
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setColorAggregateInSpecToValue(
         oldSpec,
