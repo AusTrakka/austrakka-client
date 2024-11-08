@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { GroupedPrivilegesByRecordType, GroupRole, MinimalScope, User, UserMe } from '../types/dtos';
+import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, MinimalScope, User, UserMe } from '../types/dtos';
 import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
@@ -17,13 +17,13 @@ export interface UserSliceState {
   errorMessage: string,
   loading: LoadingState,
   defaultTenantGlobalId: string,
-  scopes: GroupedPrivilegesByRecordType[],
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
 }
 
 interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
   defaultTenantGlobalId: string,
-  scopes: GroupedPrivilegesByRecordType[]
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[]
   defaultTenant: string,
   displayName: string,
   isAusTrakkaAdmin: boolean,

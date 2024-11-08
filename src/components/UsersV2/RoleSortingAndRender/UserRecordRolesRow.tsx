@@ -5,42 +5,37 @@ import { GroupRole } from '../../../types/dtos';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 
 interface UserGroupRolesRowProps {
-  groupName: string;
+  recordName: string;
   roleNames: string[];
   isOpen: boolean;
-  editing: boolean;
-  userGroupRoles: GroupRole[];
-  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
-  groupType: string;
 }
 
-function UserGroupRolesRowV2(props: UserGroupRolesRowProps) {
-  const { groupName,
+function UserRecordRolesRow(props: UserGroupRolesRowProps) {
+  const { recordName,
     roleNames,
-    isOpen,
-    editing,
-    userGroupRoles,
-    updateUserGroupRoles,
-    groupType } = props;
+    isOpen } = props;
 
   // locked now equals true if the type of group is personal orgs and its everything but
   // the owner group for the subset of groups in this type. which will be locked.
 
+  /*
   const isItLocked = () => {
-    switch (groupType) {
+    switch (recordType) {
       case GroupHeadings.HOME_ORG:
-        return !groupName.endsWith('-Owner');
+        return !recordName.endsWith('-Owner');
       default:
         return false;
     }
   };
+*/
 
-  const locked = isItLocked();
+  // const locked = isItLocked();
 
+  /*
   const handleRoleDelete = (roleName: string) => {
     const updatedRoles = userGroupRoles.filter(
       (groupRole) => {
-        if (groupRole.group.name === groupName) {
+        if (groupRole.group.name === recordName) {
           return !groupRole.role.name.includes(roleName);
         }
         return true;
@@ -48,13 +43,16 @@ function UserGroupRolesRowV2(props: UserGroupRolesRowProps) {
     );
     updateUserGroupRoles(updatedRoles);
   };
+*/
 
+  /*
   const handleColor = () => {
     if (editing && locked) {
       return 'default';
     }
     return editing ? 'error' : 'primary';
   };
+*/
 
   return (
     isOpen ? (
@@ -64,17 +62,14 @@ function UserGroupRolesRowV2(props: UserGroupRolesRowProps) {
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
                 <Typography variant="body2" width="15em">
-                  {groupName}
+                  {recordName}
                 </Typography>
                 {roleNames.map((roleName) => (
                   <Chip
-                    key={`${groupName}-${roleName}`}
+                    key={`${recordName}-${roleName}`}
                     label={roleName}
-                    color={handleColor()}
-                    variant={editing ? 'filled' : 'outlined'}
-                    onDelete={editing && !locked ? () => handleRoleDelete(roleName) : undefined}
-                    deleteIcon={<Cancel />}
-                    icon={editing && locked ? <Lock fontSize="small" /> : undefined}
+                    color="primary"
+                    variant="outlined"
                   />
                 ))}
               </Stack>
@@ -87,4 +82,4 @@ function UserGroupRolesRowV2(props: UserGroupRolesRowProps) {
   );
 }
 
-export default UserGroupRolesRowV2;
+export default UserRecordRolesRow;

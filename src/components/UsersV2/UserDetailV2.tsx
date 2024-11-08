@@ -16,7 +16,7 @@ import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import RenderGroupedRolesAndGroupsV2 from './RoleSortingAndRender/RenderGroupedRolesAndGroupsV2';
+import RenderGroupedPrivileges from './RoleSortingAndRender/RenderGroupedPrivileges';
 import renderIcon from '../Admin/UserIconRenderer';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
@@ -198,6 +198,7 @@ function UserDetailV2() {
         />
       );
     }
+    console.log('Rendering row', field, value);
     return (
       <BasicRow
         key={field}
@@ -313,19 +314,16 @@ function UserDetailV2() {
               if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
                 return renderRow(field as keyof User, value);
               }
-              if (field === 'groupRoles') {
+              console.log('Do I even get here buddy', field, value);
+              if (field === 'privileges') {
+                console.log('privileges', value, field);
                 return (
-                  <RenderGroupedRolesAndGroupsV2
-                    key={field}
+                // This will be visual only for now
+                  <RenderGroupedPrivileges
                     user={user}
-                    setOpenDupSnackbar={setOpenDupSnackbar}
-                    userGroupRoles={updatedGroupRoles} // Pass the updated group roles
-                    openGroupRoles={openGroupRoles}
-                    setOpenGroupRoles={setOpenGroupRoles}
-                    editing={editing}
-                    updateUserGroupRoles={updateUserGroupRoles}
-                    allGroups={allGroups}
-                    allRoles={allRoles}
+                    userGroupedPrivileges={user.privileges}
+                    openGroupRoles={openGroupRoles} // I will need this
+                    setOpenGroupRoles={setOpenGroupRoles} // I don't know what this means
                   />
                 );
               }

@@ -86,7 +86,7 @@ export interface User {
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
-  scopes: MinimalScope[],
+  privileges: GroupedPrivilegesByRecordType[],
 }
 
 export interface UserMe {
@@ -97,7 +97,12 @@ export interface UserMe {
   orgAbbrev: string,
   orgName: string,
   analysisServerUsername: string,
-  scopes: GroupedPrivilegesByRecordType[],
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
+}
+
+export interface GroupedPrivilegesByRecordTypeWithScopes {
+  recordType: string,
+  recordRoles: PrivilegeWithRolesWithScopes[],
 }
 
 export interface GroupedPrivilegesByRecordType {
@@ -106,6 +111,11 @@ export interface GroupedPrivilegesByRecordType {
 }
 
 export interface PrivilegeWithRoles {
+  recordName: string,
+  roleNames: string[],
+}
+
+export interface PrivilegeWithRolesWithScopes {
   recordName: string,
   Roles: RoleWithScopes[],
 }
