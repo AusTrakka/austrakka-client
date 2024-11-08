@@ -11,7 +11,7 @@ import {
   putUser,
   replaceAssignments,
 } from '../../utilities/resourceUtils';
-import { Group, GroupRole, Role, User } from '../../types/dtos';
+import { Group, GroupedPrivilegesByRecordType, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -316,10 +316,11 @@ function UserDetailV2() {
               }
               console.log('Do I even get here buddy', field, value);
               if (field === 'privileges') {
-                console.log('privileges', value, field);
+                console.log('privileges*****************', value, field);
                 return (
                 // This will be visual only for now
                   <RenderGroupedPrivileges
+                    key={user.objectId}
                     user={user}
                     userGroupedPrivileges={user.privileges}
                     openGroupRoles={openGroupRoles} // I will need this

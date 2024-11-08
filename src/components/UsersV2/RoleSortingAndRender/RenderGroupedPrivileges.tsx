@@ -42,9 +42,9 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         openGroupRoles={openGroupRoles}
         handleGroupRoleToggle={handleGroupRoleToggle}
       />
-      {recordRoles.map(({ recordName, roleNames }) => (
+      {recordRoles.map(({ recordName, roleNames }, id) => (
         <UserRecordRolesRow
-          key={`${recordType}-${recordName}-${roleNames}`}
+          key={`${recordType}-${roleNames.join('-')}`}
           recordName={recordName}
           roleNames={roleNames}
           isOpen={openGroupRoles.includes(recordType)}
@@ -56,7 +56,9 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   return (
     <>
       {userGroupedPrivileges.map((ugp: GroupedPrivilegesByRecordType) => (
-        renderGroupRoles(ugp.recordRoles, ugp.recordType)
+        <React.Fragment key={ugp.recordType}>
+          {renderGroupRoles(ugp.recordRoles, ugp.recordType)}
+        </React.Fragment>
       ))}
     </>
   );
