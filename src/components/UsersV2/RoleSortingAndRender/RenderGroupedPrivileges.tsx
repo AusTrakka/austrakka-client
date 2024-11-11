@@ -1,22 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
-import { forEach } from 'react-bootstrap/ElementChildren';
 import UserRecordRolesRow from './UserRecordRolesRow';
 import {
-  User,
-  GroupRole,
-  Group,
-  Role,
-  GroupedPrivilegesByRecordTypeWithScopes,
   GroupedPrivilegesByRecordType, PrivilegeWithRoles,
 } from '../../../types/dtos';
 import GroupHeaderRowV2 from './GroupHeaderRowV2';
-import { GroupHeadings } from '../Enums/GroupHeadings';
-import { sortGroupRoles } from '../groupSortingV2';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupedPrivileges: GroupedPrivilegesByRecordType[];
-  user: User;
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
 }
@@ -24,7 +15,6 @@ interface RenderGroupedRolesAndGroupsProps {
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const { userGroupedPrivileges,
     openGroupRoles,
-    user,
     setOpenGroupRoles } = props;
 
   const handleGroupRoleToggle = (groupName: string) => {
@@ -42,7 +32,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         openGroupRoles={openGroupRoles}
         handleGroupRoleToggle={handleGroupRoleToggle}
       />
-      {recordRoles.map(({ recordName, roleNames }, id) => (
+      {recordRoles.map(({ recordName, roleNames }) => (
         <UserRecordRolesRow
           key={`${recordType}-${roleNames.join('-')}`}
           recordName={recordName}

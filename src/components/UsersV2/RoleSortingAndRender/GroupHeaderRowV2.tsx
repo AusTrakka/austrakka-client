@@ -1,10 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, Stack } from '@mui/material';
-import { KeyboardArrowDown, AddCircle, KeyboardArrowRight } from '@mui/icons-material';
-import { Group, GroupRole, Role, User } from '../../../types/dtos';
-import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
-import { sortGroups } from '../groupSortingV2';
+import React from 'react';
+import { TableRow, TableCell, IconButton, Typography } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 
 interface GroupHeaderRowProps {
   recordType: string;

@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/jsx-props-no-spreading,@typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
@@ -75,7 +75,6 @@ function UserDetailV2() {
 
   useEffect(() => {
     const updateUser = async () => {
-      console.log(userGlobalId);
       const userResponse: ResponseObject = await getUserV2(
         userGlobalId!,
         defaultTenantGlobalId!,
@@ -96,7 +95,6 @@ function UserDetailV2() {
     if (token && tokenLoading === LoadingState.SUCCESS &&
         loading === LoadingState.SUCCESS &&
         userGlobalId && defaultTenantGlobalId) {
-      console.log('Updating user');
       updateUser();
     }
   }, [userGlobalId, defaultTenantGlobalId, token, tokenLoading, loading]);
@@ -198,7 +196,6 @@ function UserDetailV2() {
         />
       );
     }
-    console.log('Rendering row', field, value);
     return (
       <BasicRow
         key={field}
@@ -314,14 +311,11 @@ function UserDetailV2() {
               if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
                 return renderRow(field as keyof User, value);
               }
-              console.log('Do I even get here buddy', field, value);
               if (field === 'privileges') {
-                console.log('privileges*****************', value, field);
                 return (
                 // This will be visual only for now
                   <RenderGroupedPrivileges
                     key={user.objectId}
-                    user={user}
                     userGroupedPrivileges={user.privileges}
                     openGroupRoles={openGroupRoles} // I will need this
                     setOpenGroupRoles={setOpenGroupRoles} // I don't know what this means

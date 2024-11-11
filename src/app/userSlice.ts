@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
-import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, MinimalScope, User, UserMe } from '../types/dtos';
+import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
 import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';

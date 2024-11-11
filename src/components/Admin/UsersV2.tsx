@@ -10,7 +10,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import sortIcon from '../TableComponents/SortIcon';
 import { useApi } from '../../app/ApiContext';
 import { UserList } from '../../types/dtos';
-import { getUserList, getUserListV2 } from '../../utilities/resourceUtils';
+import { getUserListV2 } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
@@ -63,7 +63,6 @@ function UsersV2() {
 
   useEffect(() => {
     const getUsers = async () => {
-      console.log(user);
       const getUsersResponse: ResponseObject = await getUserListV2(
         includeAll,
         user.defaultTenantGlobalId,
