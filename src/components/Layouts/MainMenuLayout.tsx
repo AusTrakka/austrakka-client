@@ -27,6 +27,7 @@ const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_SMALL
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
+  const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
   const settings = [
@@ -149,8 +150,10 @@ function MainMenuLayout() {
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
+      updateWarningBanner('warningBannerPadded');
     } else {
       updatePageStyling('page');
+      updateWarningBanner('warningBanner');
     }
   };
 
@@ -266,6 +269,21 @@ function MainMenuLayout() {
           </List>
         </Drawer>
       </Box>
+      {pathnames.includes('usersV2') ? (
+        <div className={warningBanner}>
+          <Typography
+            variant="body2"
+            style={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              padding: '10px',
+            }}
+          >
+            This is the new user interface with an in-progress permissions system.
+            Not all new roles have been implemented.
+          </Typography>
+        </div>
+      ) : null}
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">

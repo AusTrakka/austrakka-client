@@ -30,6 +30,21 @@ html, body, span {
     /* width: calc(100vw - 240px);  */
 }
 
+.warningBannerPadded {
+    transition: all 330ms ease-in-out;
+    padding: 0px 35px 0px 35px;
+    margin-left: 190px;
+    background-color: #FFA500; 
+    /* width: calc(100vw - 240px);  */
+}
+
+.warningBanner {
+    margin-left: 70px;
+    padding: 0px 35px 0px 35px;
+    background-color: #FFA500; 
+    /* width: calc(100vw - 240px);  */
+}
+
 .pageHeader {
     margin-bottom: 20px;
     padding-top: 20px;
