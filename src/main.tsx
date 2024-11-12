@@ -23,9 +23,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <MsalProvider instance={msalInstance}>
           <ApiProvider>
             <GlobalStyles styles={globalStyles} />
-            <UserProvider>
-              <App />
-            </UserProvider>
+            <App />
           </ApiProvider>
         </MsalProvider>
       </StyledEngineProvider>

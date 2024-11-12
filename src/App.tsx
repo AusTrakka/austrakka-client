@@ -34,6 +34,7 @@ import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
 import UserDetailV2 from './components/UsersV2/UserDetailV2';
+import UserProvider from './app/UserProvider';
 
 function App() {
   const navigate = useNavigate();
@@ -43,42 +44,44 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <AuthenticatedTemplate>
-          <MsalAuthenticationTemplate
-            interactionType={InteractionType.Redirect}
-          >
+        <UserProvider>
+          <AuthenticatedTemplate>
+            <MsalAuthenticationTemplate
+              interactionType={InteractionType.Redirect}
+            >
+              <Routes>
+                {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+                <Route element={<MainMenuLayout />}>
+                  <Route path="/" element={<UserDashboard />} />
+                  <Route path="org/:orgAbbrev" element={<OrganisationOverview />} />
+                  <Route path="org/:orgAbbrev/:tab" element={<OrganisationOverview />} />
+                  <Route path="upload" element={<Upload />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="usersV2" element={<UsersV2 />} />
+                  <Route path="upload/metadata" element={<UploadMetadata />} />
+                  <Route path="upload/sequences" element={<UploadSequences />} />
+                  <Route path="projects" element={<ProjectsList />} />
+                  <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
+                  <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
+                  <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
+                  <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
+                  <Route path="records/:seqId" element={<OrgSampleDetail />} />
+                  <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
+                  <Route path="fields" element={<Fields />} />
+                  <Route path="users/:userObjectId" element={<UserDetail />} />
+                  <Route path="usersV2/:userGlobalId" element={<UserDetailV2 />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </MsalAuthenticationTemplate>
+          </AuthenticatedTemplate>
+          <UnauthenticatedTemplate>
             <Routes>
-              {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
-              <Route element={<MainMenuLayout />}>
-                <Route path="/" element={<UserDashboard />} />
-                <Route path="org/:orgAbbrev" element={<OrganisationOverview />} />
-                <Route path="org/:orgAbbrev/:tab" element={<OrganisationOverview />} />
-                <Route path="upload" element={<Upload />} />
-                <Route path="users" element={<Users />} />
-                <Route path="usersV2" element={<UsersV2 />} />
-                <Route path="upload/metadata" element={<UploadMetadata />} />
-                <Route path="upload/sequences" element={<UploadSequences />} />
-                <Route path="projects" element={<ProjectsList />} />
-                <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
-                <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
-                <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
-                <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
-                <Route path="records/:seqId" element={<OrgSampleDetail />} />
-                <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
-                <Route path="fields" element={<Fields />} />
-                <Route path="users/:userObjectId" element={<UserDetail />} />
-                <Route path="usersV2/:userGlobalId" element={<UserDetailV2 />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" />} />
+              <Route path="*" element={<Login />} />
             </Routes>
-          </MsalAuthenticationTemplate>
-        </AuthenticatedTemplate>
-        <UnauthenticatedTemplate>
-          <Routes>
-            <Route path="*" element={<Login />} />
-          </Routes>
-        </UnauthenticatedTemplate>
+          </UnauthenticatedTemplate>
+        </UserProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );
