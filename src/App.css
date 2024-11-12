@@ -35,6 +35,8 @@ html, body, span {
     padding: 0px 35px 0px 35px;
     margin-left: 190px;
     background-color: #FFA500; 
+    top : 0;
+    position: sticky;
     /* width: calc(100vw - 240px);  */
 }
 
@@ -42,6 +44,8 @@ html, body, span {
     margin-left: 70px;
     padding: 0px 35px 0px 35px;
     background-color: #FFA500; 
+    top : 0;
+    position: sticky;
     /* width: calc(100vw - 240px);  */
 }
 
