@@ -23,17 +23,17 @@ function UserProvider({ children }: UserProviderProps) {
       const fetchRoles = async () => {
         await dispatch(fetchUserRoles(token));
         setTransitioning(true);
-        // Start showing children while loading screen fades out
-        
         // Remove loading screen from DOM after transition
         setTimeout(() => {
           setRolesLoading(false);
           setShowChildren(true);
-        }, 500);
+        }, 300);
       };
-      fetchRoles();
+      if (rolesLoading) {
+        fetchRoles();
+      }
     }
-  }, [token, tokenLoading, dispatch]);
+  }, [token, tokenLoading, dispatch, rolesLoading]);
 
   return (
     <>
