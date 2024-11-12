@@ -27,7 +27,7 @@ function UserProvider({ children }: UserProviderProps) {
         setTimeout(() => {
           setRolesLoading(false);
           setShowChildren(true);
-        }, 300);
+        }, 400);
       };
       if (rolesLoading) {
         fetchRoles();

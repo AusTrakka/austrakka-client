@@ -34,7 +34,7 @@ html, body, span {
     transition: all 330ms ease-in-out;
     padding: 0px 35px 0px 35px;
     margin-left: 190px;
-    background-color: #FFA500; 
+    background-color: var(--secondary-yellow);
     top : 0;
     position: sticky;
     /* width: calc(100vw - 240px);  */
@@ -43,7 +43,7 @@ html, body, span {
 .warningBanner {
     margin-left: 70px;
     padding: 0px 35px 0px 35px;
-    background-color: #FFA500; 
+    background-color: var(--secondary-yellow); 
     top : 0;
     position: sticky;
     /* width: calc(100vw - 240px);  */
@@ -53,7 +53,7 @@ html, body, span {
     margin-bottom: 20px;
     padding-top: 20px;
 }
-
+ 
 .breadcrumbs a {
     color: var(--primary-main) ;
     text-decoration: none ;
