@@ -15,26 +15,36 @@ function UserProvider({ children }: UserProviderProps) {
   const dispatch = useAppDispatch();
   const { token, tokenLoading } = useApi();
   const [rolesLoading, setRolesLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false);
+  const [showChildren, setShowChildren] = useState(false);
 
   useEffect(() => {
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       const fetchRoles = async () => {
         await dispatch(fetchUserRoles(token));
-        setRolesLoading(false);
+        setTransitioning(true);
+        // Start showing children while loading screen fades out
+        setShowChildren(true);
+        // Remove loading screen from DOM after transition
+        setTimeout(() => {
+          setRolesLoading(false);
+        }, 500);
       };
       fetchRoles();
     }
   }, [token, tokenLoading, dispatch]);
-  if (rolesLoading) {
-    return (
-      <div className="loading-container">
-        <div className="ripple" />
-        <img src={logoOnlyUrl} alt="Loading" className="image" />
-      </div>
-    );
-  }
 
-  return <>{children}</>;
+  return (
+    <>
+      {rolesLoading && (
+        <div className={`loading-container fade ${transitioning ? 'fade-out' : ''}`}>
+          <div className="ripple" />
+          <img src={logoOnlyUrl} alt="Loading" className="image" />
+        </div>
+      )}
+      {showChildren && <div className="fade fade-in">{children}</div>}
+    </>
+  );
 }
 
 export default UserProvider;

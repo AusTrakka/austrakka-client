@@ -38,10 +38,21 @@ const theme: ThemeOptions = createTheme({
 });
 export default theme;
 
+function hexToRgb(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  // return {r, g, b} 
+  return `${r}, ${g}, ${b}`;
+}
+
 export const globalStyles = {
   ':root': {
     // material-ui
     '--primary-main': import.meta.env.VITE_THEME_PRIMARY_MAIN,
+    '--primary-main-rgb': hexToRgb(import.meta.env.VITE_THEME_PRIMARY_MAIN),
+    '--secondary-main-rgb': hexToRgb(import.meta.env.VITE_THEME_SECONDARY_MAIN),
     '--secondary-main': import.meta.env.VITE_THEME_SECONDARY_MAIN,
     '--primary-grey': import.meta.env.VITE_THEME_PRIMARY_GREY,
     '--secondary-dark-grey': import.meta.env.VITE_THEME_SECONDARY_DARK_GREY,

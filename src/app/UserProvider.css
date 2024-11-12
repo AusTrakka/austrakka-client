@@ -4,7 +4,7 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: var(--background-color);
+    background-color: var(--primary-main-bg);
     overflow: hidden;
 }
 
@@ -13,7 +13,7 @@
     border-radius: 100%;
     background: transparent;
     border: 2px solid transparent; /* Optional border around the ripple */
-    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.4); /* Initial green shadow */
+    box-shadow: 0 0 0 0 rgba(var(--secondary-main-rgb), 0.4); /* Initial green shadow */
     animation: pulse 2s infinite;
 }
 
@@ -26,13 +26,31 @@
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.4);
+        box-shadow: 0 0 0 0 rgba(var(--secondary-main-rgb), 0.4);
     }
     70% {
-        box-shadow: 0 0 0 100px rgba(0, 255, 0, 0); /* Expanding, fading shadow */
+        box-shadow: 0 0 0 100px rgba(var(--secondary-main-rgb), 0); /* Expanding, fading shadow */
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); /* Reset to initial */
+        box-shadow: 0 0 0 0 rgba(var(--secondary-main-rgb), 0); /* Reset to initial */
     }
+}
+
+.fade {
+    transition: opacity 0.5s ease-in-out;
+    opacity: 1;
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 

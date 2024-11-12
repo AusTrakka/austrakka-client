@@ -42,7 +42,6 @@ function App() {
   
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyles styles={globalStyles} />
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
         <AuthenticatedTemplate>
           <MsalAuthenticationTemplate
