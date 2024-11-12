@@ -8,7 +8,7 @@ import {
   AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate,
 } from '@azure/msal-react';
 import { InteractionType } from '@azure/msal-browser';
-import { ThemeProvider, GlobalStyles } from '@mui/material';
+import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
@@ -18,7 +18,7 @@ import ProjectsList from './components/ProjectsList/ProjectsList';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
 import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
-import theme, { globalStyles } from './assets/themes/theme';
+import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
