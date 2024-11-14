@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { InputLabel, ListSubheader, MenuItem, Stack, Tooltip } from '@mui/material';
 import {
-  ColorSchemeNames, cyclical, defaultColorSchemeName,
+  ColorSchemeNames, cyclical, defaultDiscreteColorScheme,
   discreteColorSchemes, diverging, sequential,
 } from '../../../constants/schemes';
 import { generateColorSchemeThumbnail } from '../../../utilities/colourUtils';
@@ -87,8 +87,8 @@ export default function ColorSchemeSelector({
         labelId="tree-select-colour-scheme"
         id="tree-colour-scheme"
         label={variant === 'outlined' ? 'Color Scheme' : undefined}
-        defaultValue={defaultColorSchemeName}
-        value={selectedScheme ?? defaultColorSchemeName}
+        defaultValue={defaultDiscreteColorScheme}
+        value={selectedScheme ?? defaultDiscreteColorScheme}
         onChange={handleSchemeChange}
         style={{ width: '180px' }}
         renderValue={(value: string) => (

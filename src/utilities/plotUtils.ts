@@ -7,7 +7,7 @@ import { TopLevelSpec } from 'vega-lite';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
 import { ProjectViewField } from '../types/dtos';
-import { defaultColorSchemeName } from '../constants/schemes';
+import { defaultDiscreteColorScheme, defaultContinuousColorScheme } from '../constants/schemes';
 import { maxObj, minObj } from './dataProcessingUtils';
 
 const ONE_SAMPLE_POINT_SIZE = 40;
@@ -64,7 +64,7 @@ export const setColorInSpecToValue = (
   oldSpec: TopLevelSpec | null,
   colourField: string,
   uniqueValues: string[],
-  colourScheme: string = defaultColorSchemeName,
+  colourScheme: string = defaultDiscreteColorScheme,
   opacity: number = 1,
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
@@ -108,7 +108,7 @@ export const setColorInSpecToValue = (
 
 export const setColorAggregateInSpecToValue = (
   oldSpec: TopLevelSpec | null,
-  colourScheme: string = defaultColorSchemeName,
+  colourScheme: string = defaultContinuousColorScheme,
 ): TopLevelSpec | null => {
   if (oldSpec == null) return null;
   const newSpec: any = { ...oldSpec };
