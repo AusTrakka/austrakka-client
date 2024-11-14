@@ -1,7 +1,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { TableRow, TableCell, IconButton, Typography, Autocomplete, TextField, Stack } from '@mui/material';
-import { KeyboardArrowDown, AddCircle, KeyboardArrowRight } from '@mui/icons-material';
+import {
+  TableRow,
+  TableCell,
+  IconButton,
+  Typography,
+  Autocomplete,
+  TextField,
+  Stack,
+  Checkbox,
+} from '@mui/material';
+import {
+  KeyboardArrowDown,
+  AddCircle,
+  KeyboardArrowRight,
+  CheckBoxOutlineBlank, CheckBox,
+} from '@mui/icons-material';
 import { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
 import { sortGroups } from '../groupSorting';
@@ -35,11 +49,11 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     updateUserGroupRoles,
   } = props;
 
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [selectedGroups, setSelectedGroups] = useState<Group[] | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
 
   useEffect(() => {
-    setSelectedGroup(null);
+    setSelectedGroups(null);
     setSelectedRoles(null);
   }, [editing]);
 
@@ -76,14 +90,15 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   const groupOptions = editing ? getGroupOptions() : [];
 
   const addGroupRoles = () => {
-    const newGroupRoles: GroupRole[] = (selectedRoles as Role[]).map((role) => ({
-      group: selectedGroup!,
-      role: {
-        id: role.roleId,
-        name: role.name,
-      },
-    }));
-
+    const newGroupRoles: GroupRole[] = (selectedGroups as Group[]).flatMap((group) =>
+      (selectedRoles as Role[]).map((role) => ({
+        group,
+        role: {
+          id: role.roleId,
+          name: role.name,
+        },
+      })));
+    
     const duplicateFound = newGroupRoles.some((newGroupRole) =>
       existingGroupRoles.some(
         (groupRole) =>
@@ -98,17 +113,17 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
 
     const updatedGroupRoles = [...existingGroupRoles, ...newGroupRoles];
     updateUserGroupRoles(updatedGroupRoles);
-    setSelectedGroup(null);
+    setSelectedGroups(null);
     setSelectedRoles(null);
   };
 
   const handleAddGroupRole = () => {
-    if (selectedGroup && selectedRoles) {
+    if (selectedGroups && selectedRoles) {
       addGroupRoles();
     }
   };
 
-  const isAddButtonEnabled = selectedGroup !== null && selectedRoles !== null;
+  const isAddButtonEnabled = selectedGroups !== null && selectedRoles !== null;
 
   return (
     <TableRow key={groupType}>
@@ -138,12 +153,21 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
             <>
               <Autocomplete
                 options={groupOptions}
-                style={{ width: '18em' }}
-                value={selectedGroup}
+                multiple
+                limitTags={1}
+                style={{ width: '19em' }}
+                value={selectedGroups || []}
+                disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedGroup(v)}
-                renderOption={(_props, option) => (
+                onChange={(e, v) => setSelectedGroups(v)}
+                renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
+                    <Checkbox
+                      style={{ marginRight: '8px' }}
+                      checked={selected}
+                      icon={<CheckBoxOutlineBlank />}
+                      checkedIcon={<CheckBox />}
+                    />
                     {option.name}
                   </li>
                 )}
@@ -151,7 +175,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                   <TextField
                     {...params}
                     hiddenLabel
-                    placeholder="Select Group"
+                    placeholder="Select Grou"
                     variant="filled"
                     size="small"
                     InputProps={{
@@ -170,12 +194,19 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 options={allRolesForGroup}
                 multiple
                 limitTags={1}
-                style={{ width: '18em' }}
+                style={{ width: '19em' }}
                 value={selectedRoles || []}
+                disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
                 onChange={(e, v) => setSelectedRoles(v)}
-                renderOption={(_props, option) => (
+                renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
+                    <Checkbox
+                      style={{ marginRight: '8px' }}
+                      checked={selected}
+                      icon={<CheckBoxOutlineBlank />}
+                      checkedIcon={<CheckBox />}
+                    />
                     {option.name}
                   </li>
                 )}
@@ -198,7 +229,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                   />
                 )}
               />
-              <div style={{ display: 'absolute' }}>
+              <div style={{ display: 'flex' }}>
                 <IconButton
                   aria-label="add"
                   size="small"

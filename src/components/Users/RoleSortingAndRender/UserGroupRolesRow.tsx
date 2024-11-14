@@ -41,7 +41,7 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
     const updatedRoles = userGroupRoles.filter(
       (groupRole) => {
         if (groupRole.group.name === groupName) {
-          return !groupRole.role.name.includes(roleName);
+          return roleName !== groupRole.role.name;
         }
         return true;
       },

@@ -29,21 +29,21 @@ export const sortGroupRoles = (userGroupRoles: GroupRole[], user:User) => {
   const personalOrgs = userGroupRoles.filter(
     (group) =>
       group.group.organisation?.abbreviation === user.orgAbbrev,
-  );
+  ).sort((a, b) => a.group.name.localeCompare(b.group.name));
 
-  const foriegnOrgs = userGroupRoles.filter(
+  const foreignOrgs = userGroupRoles.filter(
     (group) =>
       group.group.organisation?.abbreviation !== user.orgAbbrev &&
           group.group.organisation?.abbreviation !== undefined,
-  );
+  ).sort((a, b) => a.group.name.localeCompare(b.group.name));
 
   const otherGroups = userGroupRoles.filter(
     (group) =>
       !personalOrgs.includes(group) &&
-          !foriegnOrgs.includes(group) &&
+          !foreignOrgs.includes(group) &&
           (group.group.organisation?.abbreviation === undefined ||
             group.group.organisation === null),
-  );
+  ).sort((a, b) => a.group.name.localeCompare(b.group.name));
 
-  return [personalOrgs, foriegnOrgs, otherGroups];
+  return [personalOrgs, foreignOrgs, otherGroups];
 };
