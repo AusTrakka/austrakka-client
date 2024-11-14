@@ -181,6 +181,7 @@ function UserDetail() {
         />
       );
     }
+    if (field === 'globalId') return null;
     return (
       <BasicRow
         key={field}

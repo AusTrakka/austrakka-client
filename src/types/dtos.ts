@@ -75,6 +75,7 @@ export interface Member {
 
 export interface User {
   objectId: string,
+  globalId: string,
   isActive: boolean,
   orgId: number,
   orgAbbrev: string,
