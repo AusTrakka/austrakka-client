@@ -65,7 +65,7 @@ export const globalStyles = {
     '--secondary-orange': import.meta.env.VITE_THEME_SECONDARY_ORANGE,
     '--secondary-red': import.meta.env.VITE_THEME_SECONDARY_RED,
     '--secondary-yellow': import.meta.env.VITE_THEME_SECONDARY_YELLOW,
-    'color-scheme': 'light',
+    'colorScheme': 'light',
     // primereact
     '--primary-50': import.meta.env.VITE_THEME_SECONDARY_MAIN_50,
     '--primary-100': import.meta.env.VITE_THEME_SECONDARY_MAIN_100,
