@@ -1,7 +1,7 @@
 # Changelog
 
 All notable user-facing changes to AusTrakka will be documented in this file.
-
+ 
 ## 2024-10-24
 
 ### Added
