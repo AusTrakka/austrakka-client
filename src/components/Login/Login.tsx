@@ -39,6 +39,11 @@ function LoginButton() {
             , please try again later.
           </Alert>
         ) : null }
+      <Alert severity={"error"} sx={{ mt: 2 }}>
+        AusTrakka is currently down for scheduled maintenance; data will not be accessible. 
+        <br/>
+        The current downtime is expected to end by EOD 16th Nov 2024.
+      </Alert>
     </>
   );
 }
