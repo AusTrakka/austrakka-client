@@ -2,6 +2,21 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## Unreleased
+
+### Added
+- A new slice for managing users and their roles (ADMIN ONLY)
+- Warning to signify that it is a new work in progress system. (ADMIN ONLY)
+- Splash Loading Screen
+
+### Fixed
+- Now when deleting a users role in the user detail page, It will not reorder itself.
+  As this may cause unintended consequences.
+
+### Changed
+- An Admin will no longer be able to select multiple group targets for their role selections for a user.
+  (ADMIN ONLY)
+
 ## 2024-10-24
 
 ### Added
