@@ -118,7 +118,7 @@ export interface PrivilegeWithRoles {
 
 export interface PrivilegeWithRolesWithScopes {
   recordName: string,
-  Roles: RoleWithScopes[],
+  roles: RoleWithScopes[],
 }
 
 export interface RoleWithScopes {

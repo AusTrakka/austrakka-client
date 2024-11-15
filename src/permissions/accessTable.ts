@@ -1,6 +1,6 @@
 import { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
-import { GroupedPrivilegesByRecordTypeWithScopes } from '../types/dtos';
+import { hasScopeInRecord, hasSuperUserRoleInType } from '../utilities/accessTableUtils';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
@@ -39,7 +39,7 @@ export function hasPermission(
   permission: PermissionLevel,
 ): boolean {
   if (!user) return false;
-  if (user.admin) {
+  if (user.adminV2) {
     return true;
   }
   const userRoles = user.groupRolesByGroup[group] ?? [];
@@ -48,42 +48,6 @@ export function hasPermission(
 }
 
 // Hopefully this query isn't too cumbersome
-function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
-  const targetGroup = groups.find(group => group.recordType === 'Tenant');
-
-  if (!targetGroup) {
-    return false; // recordType not found
-  }
-
-  return targetGroup.recordRoles.some(recordRole =>
-    recordRole.Roles.some(roleWithScopes => roleWithScopes.role === 'SuperUser'));
-}
-
-function hasScopeInRecord(
-  groups: GroupedPrivilegesByRecordTypeWithScopes[],
-  recordId: string,
-  scope: string,
-): boolean {
-  // Find the record with the matching recordId
-  const targetGroup = groups.find(group =>
-    group.recordRoles.some(recordRole => recordRole.recordName === recordId));
-
-  if (!targetGroup) {
-    return false; // recordId not found
-  }
-
-  // Find the specific recordRole with the matching recordId
-  const targetRecordRole = targetGroup.recordRoles
-    .find(recordRole => recordRole.recordName === recordId);
-
-  if (!targetRecordRole) {
-    return false; // recordId not found within the specified group
-  }
-
-  // Check if any role within this recordRole contains the specified scope
-  return targetRecordRole.Roles.some(roleWithScopes =>
-    roleWithScopes.scopes.includes(scope));
-}
 
 // for the new system an example of a permission check lets say is the ability to edit a user
 // so for this new function I would provid the user state. Which holds the submitters privileges

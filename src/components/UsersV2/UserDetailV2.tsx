@@ -44,7 +44,7 @@ function UserDetailV2() {
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
   const {
     loading,
-    admin,
+    adminV2,
     defaultTenantGlobalId,
   } = useAppSelector(selectUserState);
 
@@ -69,7 +69,7 @@ function UserDetailV2() {
     'isAusTrakkaProcess',
   ];
 
-  if (loading === LoadingState.SUCCESS && admin) {
+  if (loading === LoadingState.SUCCESS && adminV2) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -163,7 +163,7 @@ function UserDetailV2() {
   };
 
   // nobody can edit for now
-  const canSee = () => (loading === LoadingState.SUCCESS && false);
+  const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {

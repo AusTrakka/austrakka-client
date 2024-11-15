@@ -37,7 +37,7 @@ function UserDetail() {
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
   const {
     loading,
-    admin,
+    adminV2,
   } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
@@ -61,7 +61,7 @@ function UserDetail() {
     'isAusTrakkaProcess',
   ];
 
-  if (loading === LoadingState.SUCCESS && admin) {
+  if (loading === LoadingState.SUCCESS && adminV2) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -148,7 +148,7 @@ function UserDetail() {
     });
   };
 
-  const canSee = () => (loading === LoadingState.SUCCESS && admin);
+  const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -167,6 +167,7 @@ function UserDetail() {
   };
 
   const renderRow = (field: keyof User, value: any) => {
+    if (field === 'globalId') return null;
     if (editing) {
       return (
         <EditableRow
@@ -181,7 +182,6 @@ function UserDetail() {
         />
       );
     }
-    if (field === 'globalId') return null;
     return (
       <BasicRow
         key={field}

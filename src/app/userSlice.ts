@@ -6,12 +6,14 @@ import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from
 import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
+import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
 
 export interface UserSliceState {
   groupRolesByGroup: Record<string, string[]>,
   groupRoles: GroupRole[],
   displayName: string,
   admin: boolean,
+  adminV2: boolean,
   orgAbbrev: string,
   orgName: string,
   errorMessage: string,
@@ -109,6 +111,7 @@ const userSlice = createSlice({
         state.groupRolesByGroup = data;
         state.groupRoles = holder.groupRoles;
         state.admin = holder.isAusTrakkaAdmin;
+        state.adminV2 = hasSuperUserRoleInType(holder.scopes);
         state.displayName = holder.displayName;
         state.orgAbbrev = holder.orgAbbrev;
         state.orgName = holder.orgName;
