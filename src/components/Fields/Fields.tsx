@@ -198,7 +198,6 @@ function Fields() {
   ];
 
   const columns = interactionPermission ? interactiveColumns : nonInteractiveColumns;
-  console.log(columns);
   return (
     <>
       <Typography className="pageTitle">Fields</Typography>
