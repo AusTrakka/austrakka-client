@@ -19,7 +19,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
-import { defaultColorSchemeName } from '../../../constants/schemes';
+import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { Sample } from '../../../types/sample.interface';
 
@@ -89,7 +89,7 @@ function EpiCurve(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    defaultColorSchemeName,
+    defaultDiscreteColorScheme,
     searchParams,
   );
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(

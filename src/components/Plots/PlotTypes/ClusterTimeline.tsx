@@ -11,7 +11,7 @@ import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
-import { defaultColorSchemeName } from '../../../constants/schemes';
+import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -52,7 +52,7 @@ const defaultSpec: TopLevelSpec = {
     yOffset: { field: 'jitter', type: 'quantitative' }, // Could control padding with eg scale: { range: [5,45] }
     color: {
       field: 'cgMLST',
-      scale: { scheme: defaultColorSchemeName as ColorScheme },
+      scale: { scheme: defaultDiscreteColorScheme as ColorScheme },
     },
     tooltip: { field: SAMPLE_ID_FIELD, type: 'nominal' },
   },
@@ -79,7 +79,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    defaultColorSchemeName,
+    defaultDiscreteColorScheme,
     urlSearchParams,
   );
   const [dateFields, setDateFields] = useState<string[]>([]);

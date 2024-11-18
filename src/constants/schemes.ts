@@ -13,7 +13,8 @@ d3.ScaleOrdinal<string, string> |
 d3.ScaleSequential<string, never> |
 d3.ScaleDiverging<string, never>>;
 
-export const defaultColorSchemeName : string = 'set3';
+export const defaultDiscreteColorScheme : string = 'set3';
+export const defaultContinuousColorScheme : string = 'greens';
 
 // Colorblind friendly color scheme
 const schemeColorBlindFriendly: string[] =
