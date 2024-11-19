@@ -60,10 +60,8 @@ function UploadInstructions({ setDrawerOpen }: any) {
       Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
       Files should have extensions
       <code>.csv </code>
-      ,
-      <code>.xlsx </code>
       or
-      <code>.xls </code>
+      <code>.xlsx </code>
       . If not using the proforma directly,
       ensure that column names in your CSV or Excel file match those in the proforma.
       <br />
@@ -226,10 +224,8 @@ function UploadMetadata() {
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
             Files should have extensions
             <code> .csv</code>
-            ,
-            <code> .xlsx </code>
             or
-            <code> .xls</code>
+            <code> .xlsx </code>
             . If not using the proforma directly,
             ensure that column names in your CSV or Excel file match those in the proforma.
           </Typography>
