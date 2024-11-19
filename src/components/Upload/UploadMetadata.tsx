@@ -222,7 +222,7 @@ function UploadMetadata() {
             Please use the supplied proforma to submit metadata for samples.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
             Files should have extensions
-            <code> .csv</code>
+            <code> .csv </code>
             or
             <code> .xlsx</code>
             . If not using the proforma directly,
