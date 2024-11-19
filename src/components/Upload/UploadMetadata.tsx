@@ -39,7 +39,6 @@ const uploadOptions = [
 const validFormats = {
   '.csv': 'text/csv',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  '.xls': 'application/vnd.ms-excel',
 };
 
 function UploadInstructions({ setDrawerOpen }: any) {
