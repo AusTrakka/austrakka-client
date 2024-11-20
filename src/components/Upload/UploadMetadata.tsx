@@ -39,7 +39,6 @@ const uploadOptions = [
 const validFormats = {
   '.csv': 'text/csv',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  '.xls': 'application/vnd.ms-excel',
 };
 
 function UploadInstructions({ setDrawerOpen }: any) {
@@ -59,11 +58,9 @@ function UploadInstructions({ setDrawerOpen }: any) {
       <br />
       Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
       Files should have extensions
-      <code>.csv </code>
-      ,
-      <code>.xlsx </code>
+      <code> .csv </code>
       or
-      <code>.xls </code>
+      <code> .xlsx</code>
       . If not using the proforma directly,
       ensure that column names in your CSV or Excel file match those in the proforma.
       <br />
@@ -225,11 +222,9 @@ function UploadMetadata() {
             Please use the supplied proforma to submit metadata for samples.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
             Files should have extensions
-            <code> .csv</code>
-            ,
-            <code> .xlsx </code>
+            <code> .csv </code>
             or
-            <code> .xls</code>
+            <code> .xlsx</code>
             . If not using the proforma directly,
             ensure that column names in your CSV or Excel file match those in the proforma.
           </Typography>
