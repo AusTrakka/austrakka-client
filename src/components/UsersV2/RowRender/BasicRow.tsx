@@ -20,6 +20,11 @@ function BasicRow(props: BasicRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
+  const immutableGuids = [
+    'objectId',
+    'globalId',
+  ];
+
   return (
     <TableRow key={field}>
       <TableCell width="200em">{readableNames[field] || field}</TableCell>
@@ -28,7 +33,7 @@ function BasicRow(props: BasicRowProps) {
           switch (true) {
             case field === 'created':
               return isoDateLocalDate(value);
-            case field === 'objectId':
+            case immutableGuids.includes(field):
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '8px' }}>{value}</span>

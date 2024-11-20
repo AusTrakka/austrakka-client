@@ -320,3 +320,11 @@ export interface ProjectDashboardDetails {
   projectDashboardId: number,
   name: string,
 }
+
+export interface UserPatch {
+  displayName: string,
+  contactEmail: string,
+  orgAbbrev: string,
+  isActive: boolean,
+  analysisServerUsername: string,
+}

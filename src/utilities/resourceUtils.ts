@@ -1,5 +1,5 @@
 import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
-import { Feedback, FeedbackPost } from '../types/dtos';
+import { Feedback, FeedbackPost, UserPatch } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -105,3 +105,13 @@ export const getUserV2 = (
   owningTenantGlobalId: string,
   token: string,
 ) => callGET(`/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+
+export const patchUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  userPatchDto: UserPatch,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+);

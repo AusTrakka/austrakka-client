@@ -8,7 +8,7 @@ import {
   getOrganisations,
   getRoles,
   getUserV2,
-  putUser,
+  patchUserV2, putUser,
   replaceAssignments,
 } from '../../utilities/resourceUtils';
 import { Group, GroupedPrivilegesByRecordType, GroupRole, Role, User } from '../../types/dtos';
@@ -50,6 +50,7 @@ function UserDetailV2() {
 
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
+    'globalId': 'Global ID',
     'displayName': 'Display Name',
     'orgName': 'Organisation',
     'orgAbbrev': 'Organisation Abbreviation',
@@ -70,6 +71,10 @@ function UserDetailV2() {
   ];
 
   if (loading === LoadingState.SUCCESS && adminV2) {
+    // maybe there should also be a check for the appropriate scopes for the user such as 
+    // method=patch, path=/v2/users/.. etc.
+    // for now only the superuser role will be allowed to edit the user. However, it should
+    // be the AusTrakkaAdmin role. This does not exist yet...
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -85,7 +90,7 @@ function UserDetailV2() {
         const userDto = userResponse.data as User;
         setUser(userDto);
         setEditedValues({ ...userDto });
-        setUpdatedGroupRoles(userDto.groupRoles);
+        // setUpdatedGroupRoles(userDto.groupRoles);
         // Initialize editedValues with the original user data
       } else {
         setErrMsg('User could not be accessed');
@@ -182,6 +187,7 @@ function UserDetailV2() {
   };
 
   const renderRow = (field: keyof User, value: any) => {
+    console.log(field);
     if (editing) {
       return (
         <EditableRow
@@ -241,6 +247,14 @@ function UserDetailV2() {
         userGlobalId!,
         token,
         editedValuesDtoFormat,
+      );
+      
+      // need to call patchUserV2 here
+      const userResponseV2: ResponseObject = await patchUserV2(
+        userGlobalId!,
+        owningTenantGlobalId!,
+        editedValuesDtoFormat,
+        token,
       );
 
       if (userResponse.status !== ResponseType.Success) {
