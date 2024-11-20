@@ -2,6 +2,11 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
+## 2024-11-20
+
+### Fixed
+- Removed reference to unsupported `.xls` files on the upload page.
+ 
 ## 2024-10-24
 
 ### Added
