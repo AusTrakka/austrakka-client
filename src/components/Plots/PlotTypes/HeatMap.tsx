@@ -10,7 +10,7 @@ import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { defaultColorSchemeName } from '../../../constants/schemes';
+import { defaultContinuousColorScheme } from '../../../constants/schemes';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -35,7 +35,7 @@ const defaultSpec: TopLevelSpec = {
       aggregate: 'count',
       type: 'nominal',
       scale: {
-        scheme: defaultColorSchemeName as ColorScheme,
+        scheme: defaultContinuousColorScheme as ColorScheme,
       },
     },
   },
@@ -61,7 +61,7 @@ function HeatMap(props: PlotTypeProps) {
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
-    defaultColorSchemeName,
+    defaultContinuousColorScheme,
     searchParams,
   );
 
@@ -111,6 +111,7 @@ function HeatMap(props: PlotTypeProps) {
   }, [xAxisField]);
 
   useEffect(() => {
+    // TODO this will not currently set a domain of 0-max
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setColorAggregateInSpecToValue(
         oldSpec,

@@ -158,6 +158,7 @@ function Fields() {
       field: 'description',
       header: 'Description',
       body: (rowData: any) => bodyValueWithEditIcon(rowData, 'description'),
+      editable: true,
     },
     {
       field: 'primitiveType',
@@ -167,6 +168,7 @@ function Fields() {
       field: 'columnOrder',
       header: 'Ordering',
       body: (rowData: any) => bodyValueWithEditIcon(rowData, 'columnOrder'),
+      editable: true,
     },
     {
       field: 'metaDataColumnValidValues',
@@ -196,7 +198,6 @@ function Fields() {
   ];
 
   const columns = interactionPermission ? interactiveColumns : nonInteractiveColumns;
-
   return (
     <>
       <Typography className="pageTitle">Fields</Typography>
@@ -225,22 +226,24 @@ function Fields() {
           editMode={hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick) ? 'cell' : undefined}
           filters={globalFilter}
         >
-          {columns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              editor={interactionPermission ? (options) => cellEditor(options) : undefined}
-              sortable
-              resizeable
-              headerClassName="custom-title"
-              style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
-              onCellEditComplete={onCellEditComplete}
-              onBeforeCellEditShow={(e) => (col.body === undefined ?
-                e.originalEvent.preventDefault() : undefined)}
-            />
-          ))}
+          {
+            columns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                editor={interactionPermission ? (options) => cellEditor(options) : undefined}
+                sortable
+                resizeable
+                headerClassName="custom-title"
+                style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
+                onCellEditComplete={onCellEditComplete}
+                onBeforeCellEditShow={(e) => (!col.editable ?
+                  e.originalEvent.preventDefault() : undefined)}
+              />
+            ))
+}
         </DataTable>
       </Paper>
     </>

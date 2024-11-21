@@ -5,7 +5,7 @@ import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
-import { defaultColorSchemeName } from '../constants/schemes';
+import { defaultDiscreteColorScheme } from '../constants/schemes';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
@@ -15,6 +15,7 @@ export default function mapMetadataToPhylocanvas(
 ) {
   // Create categorical colour palettes based on unique values
   // Note that to create numeric schemes we would need to know the max and min values
+  // and some fields have a natural min and natural max regardless of data
   const fieldPalettes: PhylocanvasLegends = {};
 
   fieldInformation
@@ -22,7 +23,7 @@ export default function mapMetadataToPhylocanvas(
     .forEach((fi) => {
       fieldPalettes[fi.columnName] = createColourMapping(
         fieldUniqueValues[fi.columnName] ?? [],
-        colorSchemeSelected[fi.columnName] ?? defaultColorSchemeName,
+        colorSchemeSelected[fi.columnName] ?? defaultDiscreteColorScheme,
       );
     });
 

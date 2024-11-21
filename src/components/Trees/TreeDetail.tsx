@@ -28,7 +28,7 @@ import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
-import { defaultColorSchemeName } from '../../constants/schemes';
+import { defaultDiscreteColorScheme } from '../../constants/schemes';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -137,7 +137,7 @@ function TreeDetail() {
         projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
           setColourSchemeMapping((oldScheme) => ({
             ...oldScheme,
-            [fi.columnName]: defaultColorSchemeName,
+            [fi.columnName]: defaultDiscreteColorScheme,
           }));
         });
       }
