@@ -2,10 +2,15 @@
 
 All notable user-facing changes to AusTrakka will be documented in this file.
 
-## 2024-11-20
+## 2024-11-21
 
 ### Fixed
 - Removed reference to unsupported `.xls` files on the upload page.
+- Fixed issue where clicking on a user would not navigate correctly to the user details page.
+- In the admin view for editing user roles, selections will now clear after changes are submitted.
+
+### Changed
+- The default colour scheme for heatmaps is now a sequential scheme (greens).
  
 ## 2024-10-24
 
