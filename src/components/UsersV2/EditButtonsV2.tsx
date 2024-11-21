@@ -1,5 +1,5 @@
 import { Cancel, Edit, Save } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { Button, IconButton, Tooltip } from '@mui/material';
 import React, { Dispatch, SetStateAction } from 'react';
 
 interface EditButtonsProps {
@@ -23,41 +23,40 @@ export default function EditButtonsV2(props : EditButtonsProps) {
   if (editing) {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-        <Button
-          startIcon={<Save />}
-          size="large"
-          variant="contained"
-          color="success"
-          disabled={!hasSavedChanges}
-          style={{ marginRight: '1rem' }}
-          onClick={() => {
-            setEditing(false);
-            onSave(); // Call the onSave function when saving
-          }}
-        >
-          Save
-        </Button>
-        <Button
-          startIcon={<Cancel />}
-          size="large"
-          variant="contained"
-          color="error"
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
+        <Tooltip title="Save" placement="top" arrow>
+          <IconButton
+            size="small"
+            color="success"
+            disabled={!hasSavedChanges}
+            onClick={() => {
+              setEditing(false);
+              onSave(); // Call the onSave function when saving
+            }}
+          >
+            <Save />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Cancel" placement="top" arrow>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={onCancel}
+          >
+            <Cancel />
+          </IconButton>
+        </Tooltip>
       </div>
     );
   }
   return canSee() ? (
-    <Button
-      startIcon={<Edit />}
-      size="large"
-      variant="contained"
-      color="primary"
-      onClick={() => setEditing(true)}
-    >
-      Edit
-    </Button>
+    <Tooltip title="Edit" placement="top" arrow>
+      <IconButton
+        size="small"
+        color="primary"
+        onClick={() => setEditing(true)}
+      >
+        <Edit />
+      </IconButton>
+    </Tooltip>
   ) : null;
 }

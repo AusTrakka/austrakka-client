@@ -1,8 +1,18 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
-import { Autocomplete, Switch, TableCell, TableRow, TextField } from '@mui/material';
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import {
+  Autocomplete,
+  IconButton,
+  Switch,
+  TableCell,
+  TableRow,
+  TextField,
+  Tooltip,
+} from '@mui/material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import './RowAndCell.css';
+import { ContentCopy } from '@mui/icons-material';
 
 interface EditableRowProps {
   field: keyof User;
@@ -24,8 +34,22 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+  };
+
   const nonEditableFields = [
     'created',
+    'objectId',
+    'globalId',
+  ];
+  
+  const immutableGuids = [
     'objectId',
     'globalId',
   ];
@@ -56,9 +80,30 @@ function EditableRow(props : EditableRowProps) {
       if (nonEditableFields.includes(field)) {
         return (
           <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              {field === 'created' ? isoDateLocalDate(detailValue) : detailValue}
+            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="value-cell-editing">
+              {(() => {
+                switch (true) {
+                  case field === 'created':
+                    return isoDateLocalDate(detailValue);
+                  case immutableGuids.includes(field):
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ marginRight: '8px' }}>{detailValue}</span>
+                        <Tooltip
+                          title={copied ? 'Copied!' : 'Copy to clipboard'}
+                          placement="top"
+                        >
+                          <IconButton size="small" onClick={() => handleCopy(detailValue)}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
+                    );
+                  default:
+                    return detailValue;
+                }
+              })()}
             </TableCell>
           </TableRow>
         );
@@ -66,8 +111,8 @@ function EditableRow(props : EditableRowProps) {
       if (field === 'orgName') {
         return (
           <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
+            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="value-cell-editing">
               <Autocomplete
                 options={allOrgs.map((org) => org.name)}
                 disableClearable
@@ -85,7 +130,7 @@ function EditableRow(props : EditableRowProps) {
                   });
                 }}
                 renderOption={(_props, option) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
+                  <li {..._props} style={{ fontSize: '0.8em' }}>
                     {option}
                   </li>
                 )}
@@ -105,6 +150,7 @@ function EditableRow(props : EditableRowProps) {
                         },
                       },
                     }}
+                    style={{ padding: '0px' }}
                   />
                 )}
               />
@@ -114,16 +160,17 @@ function EditableRow(props : EditableRowProps) {
       }
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>
+          <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+          <TableCell className="value-cell-editing">
             <TextField
+              style={{ padding: '0px' }}
               value={editedValues?.[field] || ''}
               onChange={handleChange}
               variant="filled"
               fullWidth
               size="small"
               hiddenLabel
-              inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
+              inputProps={{ style: { fontSize: '.9em' } }}
             />
           </TableCell>
         </TableRow>
@@ -131,8 +178,8 @@ function EditableRow(props : EditableRowProps) {
     case 'boolean':
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>
+          <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+          <TableCell className="value-cell-editing">
             <Switch
               size="small"
               checked={editedValues?.[field] as boolean || false}
@@ -145,8 +192,8 @@ function EditableRow(props : EditableRowProps) {
       if (detailValue === null) {
         return (
           <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
+            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="value-cell-editing">
               <TextField
                 value={editedValues?.[field] as string || ''}
                 onChange={handleChange}
@@ -163,8 +210,8 @@ function EditableRow(props : EditableRowProps) {
     default:
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>{detailValue}</TableCell>
+          <TableCell className="key-cell-editing" style={{ borderBottom: 'none' }}>{readableNames[field] || field}</TableCell>
+          <TableCell className="value-cell-editing">{detailValue}</TableCell>
         </TableRow>
       );
   }

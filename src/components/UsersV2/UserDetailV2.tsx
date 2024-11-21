@@ -1,28 +1,38 @@
 /* eslint-disable react/jsx-props-no-spreading,@typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertColor, Box,
+  Paper,
+  Snackbar,
+  Stack,
+  Table,
+  TableBody,
+  TableContainer,
+  Typography,
+} from '@mui/material';
 import { deepEqual } from 'vega-lite';
 import {
-  getGroupList,
   getOrganisations,
-  getRoles,
   getUserV2,
-  patchUserV2, putUser,
-  replaceAssignments,
+  patchUserV2,
 } from '../../utilities/resourceUtils';
-import { Group, GroupedPrivilegesByRecordType, GroupRole, Role, User } from '../../types/dtos';
+import {
+  User,
+  UserPatch,
+} from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import RenderGroupedPrivileges from './RoleSortingAndRender/RenderGroupedPrivileges';
 import renderIcon from '../Admin/UserIconRenderer';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
 import EditButtonsV2 from './EditButtonsV2';
 import EditableRow from './RowRender/EditableRow';
 import BasicRow from './RowRender/BasicRow';
+import './RowRender/RowAndCell.css';
 
 function UserDetailV2() {
   const { userGlobalId } = useParams();
@@ -32,13 +42,9 @@ function UserDetailV2() {
   const [editedValues, setEditedValues] = useState<User | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
-  const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
-  const [updatedGroupRoles, setUpdatedGroupRoles] = useState<GroupRole[]>([]);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openDupSnackbar, setOpenDupSnackbar] = useState(false);
-  const [allGroups, setAllGroups] = useState<Group[]>([]);
-  const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
@@ -59,7 +65,7 @@ function UserDetailV2() {
     'isAusTrakkaAdmin': 'Austrakka Admin',
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
-    'analysisServerUsername': 'Analysis Server Username',
+    'analysisServerUsername': 'Linux Username',
   };
 
   let nonDisplayFields = [
@@ -121,53 +127,6 @@ function UserDetailV2() {
     }
   }, [token, tokenLoading, editing]);
 
-  useEffect(() => {
-    const getAllGroups = async () => {
-      const userResponse: ResponseObject = await getGroupList(token);
-      if (userResponse.status === ResponseType.Success) {
-        const groupData = userResponse.data as Group[];
-        setAllGroups(groupData);
-      } else {
-        setDataError(true);
-        setErrMsg('Organisations could not be accessed');
-      }
-    };
-
-    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
-      getAllGroups();
-    }
-  }, [token, tokenLoading, editing]);
-
-  useEffect(() => {
-    const getRolesData = async () => {
-      const userResponse: ResponseObject = await getRoles(token);
-      if (userResponse.status === ResponseType.Success) {
-        let rolesData = userResponse.data as Role[];
-        rolesData = rolesData.filter((role) => role.name !== 'AusTrakkaAdmin');
-        setAllRoles(rolesData);
-      } else {
-        setDataError(true);
-        setErrMsg('Organisations could not be accessed');
-      }
-    };
-
-    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
-      getRolesData();
-    }
-  }, [token, tokenLoading, editing]);
-
-  const updateUserGroupRoles = (groupRoles: GroupRole[]) => {
-    setUpdatedGroupRoles(groupRoles);
-    setEditedValues((prevValues) => {
-      if (prevValues === null) return null;
-      return {
-        ...prevValues,
-        groupRoles,
-      };
-    });
-  };
-
-  // nobody can edit for now
   const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
@@ -187,7 +146,6 @@ function UserDetailV2() {
   };
 
   const renderRow = (field: keyof User, value: any) => {
-    console.log(field);
     if (editing) {
       return (
         <EditableRow
@@ -213,60 +171,47 @@ function UserDetailV2() {
   };
 
   const editUserDetails = async () => {
+    // I need to ignore the groupRoles field for this version of the page
+    // TODO: groupRoles is temporary and will ne removed later
     const { groupRoles, ...otherValues } = editedValues as User;
 
-    // Mapping groupRoles to the desired format
-    const groupAssignmentsFormat = groupRoles.map((groupRole: GroupRole) => ({
-      groupName: groupRole.group.name,
-      roleName: groupRole.role.name,
-    }));
-
     // Creating editedValuesDtoFormat object
-    const editedValuesDtoFormat = {
+    const editedValuesDtoFormat: UserPatch = {
       displayName: otherValues.displayName,
       contactEmail: otherValues.contactEmail,
       orgAbbrev: otherValues.orgAbbrev,
-      isActive: otherValues.isActive,
+      isActive: otherValues.isActive, // disable a user through a general patch?
       analysisServerUsername: otherValues.analysisServerUsername,
     };
 
     try {
-      // Updating user details
-      // Replacing group assignments
-      const assignmentResponse: ResponseObject = await replaceAssignments(
-        userGlobalId!,
-        token,
-        groupAssignmentsFormat,
-      );
-
-      if (assignmentResponse.status !== ResponseType.Success) {
-        throw new Error('Could not assign group roles');
-      }
-
-      const userResponse: ResponseObject = await putUser(
-        userGlobalId!,
-        token,
-        editedValuesDtoFormat,
-      );
-      
       // need to call patchUserV2 here
       const userResponseV2: ResponseObject = await patchUserV2(
         userGlobalId!,
-        owningTenantGlobalId!,
+        defaultTenantGlobalId,
         editedValuesDtoFormat,
         token,
       );
 
-      if (userResponse.status !== ResponseType.Success) {
+      if (userResponseV2.status !== ResponseType.Success) {
         throw new Error('User could not be accessed');
       }
+      
+      const userFetchResponse: ResponseObject = await getUserV2(
+        userGlobalId!,
+        defaultTenantGlobalId,
+        token,
+      );
+      
+      if (userFetchResponse.status !== ResponseType.Success) {
+        throw new Error('User could not be accessed');
+      }
+      
+      const userDto = userFetchResponse.data as User;
 
-      // Updating local state with the new user data
-      const userDto = userResponse.data as User;
       setUser(userDto);
       setEditedValues({ ...userDto });
-      setUpdatedGroupRoles(userDto.groupRoles);
-      setPatchMsg(userResponse.message);
+      setPatchMsg(userResponseV2.message);
       setPatchSeverity('success');
     } catch (error: any) {
       setPatchMsg(error.message);
@@ -284,7 +229,6 @@ function UserDetailV2() {
 
   const handleCancel = () => {
     setEditing(false);
-    setUpdatedGroupRoles(user!.groupRoles);
     setEditedValues({ ...user! });
     setOrgChanged(false);
   };
@@ -305,42 +249,47 @@ function UserDetailV2() {
             {user.displayName}
           </Typography>
         </div>
-        <EditButtonsV2
-          editing={editing}
-          setEditing={setEditing}
-          onSave={onSave}
-          onCancel={handleCancel}
-          hasSavedChanges={hasChanges}
-          canSee={canSee}
-        />
+    
       </Stack>
-      {orgChanged ?
-        <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
-        : null}
-      {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableBody>
-            {Object.entries(user).map(([field, value]) => {
-              if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
-                return renderRow(field as keyof User, value);
-              }
-              if (field === 'privileges') {
-                return (
-                // This will be visual only for now
-                  <RenderGroupedPrivileges
-                    key={user.objectId}
-                    userGroupedPrivileges={user.privileges}
-                    openGroupRoles={openGroupRoles} // I will need this
-                    setOpenGroupRoles={setOpenGroupRoles} // I don't know what this means
-                  />
-                );
-              }
-              return null;
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Paper elevation={1} className="basic-info-table">
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          display="flex"
+          style={{ padding: '10px' }}
+        >
+          <Typography variant="h4" color="primary">
+            User Details
+          </Typography>
+          <EditButtonsV2
+            editing={editing}
+            setEditing={setEditing}
+            onSave={onSave}
+            onCancel={handleCancel}
+            hasSavedChanges={hasChanges}
+            canSee={canSee}
+          />
+        </Stack>
+        {orgChanged ?
+          <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
+          : null}
+        {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
+        <TableContainer
+          component={Box}
+        >
+          <Table sx={{ borderBottom: 'none' }}>
+            <TableBody>
+              {Object.entries(user).map(([field, value]) => {
+                if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
+                  return renderRow(field as keyof User, value);
+                }
+                return null;
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}

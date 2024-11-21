@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
-import { ContentCopy } from '@mui/icons-material';
+import { Icon, IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
+import { ContentCopy, Info } from '@mui/icons-material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import './RowAndCell.css';
 
 interface BasicRowProps {
   field: keyof User;
@@ -26,13 +27,30 @@ function BasicRow(props: BasicRowProps) {
   ];
 
   return (
-    <TableRow key={field}>
-      <TableCell width="200em">{readableNames[field] || field}</TableCell>
-      <TableCell>
+    <TableRow key={field} style={{ borderBottom: 'none' }}>
+      <TableCell className="key-cell">
+        {field === 'analysisServerUsername' ? (
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            {readableNames[field] || field}
+            <Tooltip title="Analysis Server Username">
+              <IconButton
+                size="small"
+                style={{ padding: 0, marginLeft: '0.5rem' }}
+              >
+                <Info fontSize="small" style={{ color: 'var(--primary-grey-500)' }} />
+              </IconButton>
+            </Tooltip>
+          </span>
+        ) : (
+          readableNames[field] || field
+        )}
+      </TableCell>
+      <TableCell className="value-cell">
         {(() => {
           switch (true) {
             case field === 'created':
               return isoDateLocalDate(value);
+           
             case immutableGuids.includes(field):
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -42,7 +60,7 @@ function BasicRow(props: BasicRowProps) {
                     placement="top"
                   >
                     <IconButton size="small" onClick={() => handleCopy(value)}>
-                      <ContentCopy fontSize="small" />
+                      <ContentCopy style={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Tooltip>
                 </div>

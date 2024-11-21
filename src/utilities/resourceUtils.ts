@@ -114,4 +114,5 @@ export const patchUserV2 = (
 ) => callPATCH(
   `/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
   token,
+  userPatchDto,
 );
