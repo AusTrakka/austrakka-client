@@ -33,7 +33,7 @@ import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
-import UserDetailV2 from './components/UsersV2/UserDetailV2';
+import UserDetailV2 from './components/UsersV2/BasicDetails/UserDetailV2';
 import UserProvider from './app/UserProvider';
 
 function App() {

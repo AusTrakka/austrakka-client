@@ -7,7 +7,7 @@ import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
-} from '@mui/icons-material/';
+} from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
   MenuItem, Typography,

@@ -29,7 +29,7 @@ import BasicRow from '../RowRender/BasicRow';
 import EditableRow from '../RowRender/EditableRow';
 import renderIcon from '../../Admin/UserIconRenderer';
 import EditButtonsV2 from '../EditButtonsV2';
-import './RowRender/RowAndCell.css';
+import '../RowRender/RowAndCell.css';
 
 function UserDetailV2() {
   const { userGlobalId } = useParams();
