@@ -17,21 +17,18 @@ import {
   getOrganisations,
   getUserV2,
   patchUserV2,
-} from '../../utilities/resourceUtils';
-import {
-  User,
-  UserPatch,
-} from '../../types/dtos';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
-import renderIcon from '../Admin/UserIconRenderer';
-import { useAppSelector } from '../../app/store';
-import { selectUserState } from '../../app/userSlice';
-import EditButtonsV2 from './EditButtonsV2';
-import EditableRow from './RowRender/EditableRow';
-import BasicRow from './RowRender/BasicRow';
+} from '../../../utilities/resourceUtils';
+import { useAppSelector } from '../../../app/store';
+import { useApi } from '../../../app/ApiContext';
+import { User, UserPatch } from '../../../types/dtos';
+import { selectUserState } from '../../../app/userSlice';
+import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
+import BasicRow from '../RowRender/BasicRow';
+import EditableRow from '../RowRender/EditableRow';
+import renderIcon from '../../Admin/UserIconRenderer';
+import EditButtonsV2 from '../EditButtonsV2';
 import './RowRender/RowAndCell.css';
 
 function UserDetailV2() {
