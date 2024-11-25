@@ -9,10 +9,15 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
+import {
+  CancelOutlined,
+  CheckCircleOutlined,
+  ContentCopy,
+} from '@mui/icons-material';
+import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
-import { ContentCopy } from '@mui/icons-material';
 
 interface EditableRowProps {
   field: keyof User;
@@ -34,7 +39,6 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
-
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (text: string) => {
@@ -75,6 +79,7 @@ function EditableRow(props : EditableRowProps) {
       };
     });
   };
+  
   switch (typeof detailValue) {
     case 'string':
       if (nonEditableFields.includes(field)) {
@@ -95,7 +100,7 @@ function EditableRow(props : EditableRowProps) {
                           placement="top"
                         >
                           <IconButton size="small" onClick={() => handleCopy(detailValue)}>
-                            <ContentCopy fontSize="small" />
+                            <ContentCopy style={{ fontSize: '1rem' }} />
                           </IconButton>
                         </Tooltip>
                       </div>
@@ -160,7 +165,9 @@ function EditableRow(props : EditableRowProps) {
       }
       return (
         <TableRow key={field}>
-          <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+          <TableCell className="key-cell-editing">
+            <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+          </TableCell>
           <TableCell className="value-cell-editing">
             <TextField
               style={{ padding: '0px' }}
@@ -180,11 +187,19 @@ function EditableRow(props : EditableRowProps) {
         <TableRow key={field}>
           <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
           <TableCell className="value-cell-editing">
-            <Switch
-              size="small"
-              checked={editedValues?.[field] as boolean || false}
-              onChange={handleChangeBoolean}
-            />
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Switch checked={editedValues?.[field] as boolean || false} size="small" onChange={handleChangeBoolean} />
+              <Tooltip title={(editedValues?.[field] as boolean) ? 'Active' : 'Disabled'} arrow placement="top">
+                {(editedValues?.[field] as boolean || false) ? (
+                  <CheckCircleOutlined
+                    fontSize="small"
+                    style={{ color: 'var(--secondary-light-green)' }}
+                  />
+                )
+                  :
+                  <CancelOutlined fontSize="small" style={{ color: 'var(--secondary-orange)' }} />}
+              </Tooltip>
+            </div>
           </TableCell>
         </TableRow>
       );
@@ -192,7 +207,9 @@ function EditableRow(props : EditableRowProps) {
       if (detailValue === null) {
         return (
           <TableRow key={field}>
-            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="key-cell-editing">
+              <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+            </TableCell>
             <TableCell className="value-cell-editing">
               <TextField
                 value={editedValues?.[field] as string || ''}
@@ -210,7 +227,9 @@ function EditableRow(props : EditableRowProps) {
     default:
       return (
         <TableRow key={field}>
-          <TableCell className="key-cell-editing" style={{ borderBottom: 'none' }}>{readableNames[field] || field}</TableCell>
+          <TableCell className="key-cell-editing" style={{ borderBottom: 'none' }}>
+            <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+          </TableCell>
           <TableCell className="value-cell-editing">{detailValue}</TableCell>
         </TableRow>
       );

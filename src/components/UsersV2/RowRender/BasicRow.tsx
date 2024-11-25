@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Icon, IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
-import { ContentCopy, Info } from '@mui/icons-material';
+import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
+import {
+  Cancel,
+  CheckCircleOutlined,
+  ContentCopy,
+} from '@mui/icons-material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
+import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 
 interface BasicRowProps {
   field: keyof User;
@@ -29,21 +34,7 @@ function BasicRow(props: BasicRowProps) {
   return (
     <TableRow key={field} style={{ borderBottom: 'none' }}>
       <TableCell className="key-cell">
-        {field === 'analysisServerUsername' ? (
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {readableNames[field] || field}
-            <Tooltip title="Analysis Server Username">
-              <IconButton
-                size="small"
-                style={{ padding: 0, marginLeft: '0.5rem' }}
-              >
-                <Info fontSize="small" style={{ color: 'var(--primary-grey-500)' }} />
-              </IconButton>
-            </Tooltip>
-          </span>
-        ) : (
-          readableNames[field] || field
-        )}
+        <FieldLabelWithTooltip field={field} readableNames={readableNames} />
       </TableCell>
       <TableCell className="value-cell">
         {(() => {
@@ -66,7 +57,16 @@ function BasicRow(props: BasicRowProps) {
                 </div>
               );
             case typeof value === 'boolean':
-              return <Switch disabled checked={value} size="small" />;
+              return (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Switch disabled checked={value} size="small" />
+                  <Tooltip title={value ? 'Active' : 'Disabled'} arrow placement="top">
+                    {value ?
+                      <CheckCircleOutlined fontSize="small" style={{ color: 'var(--secondary-light-green)' }} /> :
+                      <Cancel style={{ fontSize: '1rem' }} />}
+                  </Tooltip>
+                </div>
+              );
             default:
               return value;
           }
