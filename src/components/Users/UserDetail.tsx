@@ -167,29 +167,31 @@ function UserDetail() {
   };
 
   const renderRow = (field: keyof User, value: any) => {
-    if (field === 'globalId') return null;
-    if (editing) {
+    if (field !== 'globalId') {
+      if (editing) {
+        return (
+          <EditableRow
+            key={field}
+            field={field}
+            detailValue={value}
+            editedValues={editedValues}
+            setEditedValues={setEditedValues}
+            readableNames={readableNames}
+            allOrgs={allOrgs}
+            setOrgChanged={setOrgChanged}
+          />
+        );
+      }
       return (
-        <EditableRow
+        <BasicRow
           key={field}
           field={field}
-          detailValue={value}
-          editedValues={editedValues}
-          setEditedValues={setEditedValues}
+          value={value}
           readableNames={readableNames}
-          allOrgs={allOrgs}
-          setOrgChanged={setOrgChanged}
         />
       );
     }
-    return (
-      <BasicRow
-        key={field}
-        field={field}
-        value={value}
-        readableNames={readableNames}
-      />
-    );
+    return null;
   };
 
   const editUserDetails = async () => {
