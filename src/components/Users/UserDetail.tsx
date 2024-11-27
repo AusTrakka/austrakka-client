@@ -292,7 +292,7 @@ function UserDetail() {
         <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
         : null}
       {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
+      <TableContainer component={Paper} sx={{ mt: 3, borderRadius: '10px' }}>
         <Table>
           <TableBody>
             {Object.entries(user).map(([field, value]) => {

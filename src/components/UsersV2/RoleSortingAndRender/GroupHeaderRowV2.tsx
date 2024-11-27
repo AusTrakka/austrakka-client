@@ -17,8 +17,8 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   } = props;
 
   return (
-    <TableRow key={recordType}>
-      <TableCell colSpan={2}>
+    <TableRow key={recordType} style={{ backgroundColor: 'var(--primary-grey)', borderRadius: '6px', border: 'none' }}>
+      <TableCell colSpan={2} style={{ border: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
             aria-label="expand row"

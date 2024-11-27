@@ -8,10 +8,11 @@ import {
   Snackbar,
   Stack,
   Table,
-  TableBody,
-  TableContainer,
+  TableBody, TableCell,
+  TableContainer, TableHead, TableRow,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
 import {
   getOrganisations,
@@ -30,6 +31,7 @@ import EditableRow from '../RowRender/EditableRow';
 import renderIcon from '../../Admin/UserIconRenderer';
 import EditButtonsV2 from '../EditButtonsV2';
 import '../RowRender/RowAndCell.css';
+import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
 
 function UserDetailV2() {
   const { userGlobalId } = useParams();
@@ -41,6 +43,7 @@ function UserDetailV2() {
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const [openDupSnackbar, setOpenDupSnackbar] = useState(false);
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
@@ -248,45 +251,86 @@ function UserDetailV2() {
         </div>
     
       </Stack>
-      <Paper elevation={1} className="basic-info-table">
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          display="flex"
-          style={{ padding: '10px' }}
-        >
-          <Typography variant="h4" color="primary">
-            User Details
-          </Typography>
-          <EditButtonsV2
-            editing={editing}
-            setEditing={setEditing}
-            onSave={onSave}
-            onCancel={handleCancel}
-            hasSavedChanges={hasChanges}
-            canSee={canSee}
-          />
-        </Stack>
-        {orgChanged ?
-          <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
-          : null}
-        {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
-        <TableContainer
-          component={Box}
-        >
-          <Table sx={{ borderBottom: 'none' }}>
-            <TableBody>
-              {Object.entries(user).map(([field, value]) => {
-                if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
-                  return renderRow(field as keyof User, value);
-                }
-                return null;
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <Grid
+        container
+        spacing={2}
+        flex="flexwrap"
+        width="100%"
+        alignItems="stretch"
+        columns={{ xs: 1, md: 1, lg: 1, xl: 1 }}
+      >
+        <Grid size="auto">
+          <Paper elevation={1} className="basic-info-table">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              display="flex"
+              style={{ padding: '10px' }}
+            >
+              <Typography variant="h4" color="primary">
+                User Details
+              </Typography>
+              <EditButtonsV2
+                editing={editing}
+                setEditing={setEditing}
+                onSave={onSave}
+                onCancel={handleCancel}
+                hasSavedChanges={hasChanges}
+                canSee={canSee}
+              />
+            </Stack>
+            {orgChanged ?
+              <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
+              : null}
+            {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
+            <TableContainer
+              component={Box}
+            >
+              <Table sx={{ borderBottom: 'none' }}>
+                
+                <TableBody>
+                  {Object.entries(user).map(([field, value]) => {
+                    if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
+                      return renderRow(field as keyof User, value);
+                    }
+                    return null;
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+        <Grid size="grow" minWidth="fit-content">
+          <Paper elevation={1} className="basic-info-table">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              display="flex"
+              style={{ padding: '10px' }}
+            >
+              <Typography variant="h4" color="primary">
+                Privileges
+              </Typography>
+            </Stack>
+            <TableContainer
+              component={Box}
+              sx={{ borderRadius: '6px' }}
+            >
+              <Table>
+                <TableBody>
+                  <RenderGroupedPrivileges
+                    userGroupedPrivileges={user.privileges}
+                    openGroupRoles={openGroupRoles}
+                    setOpenGroupRoles={setOpenGroupRoles}
+                  />
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+      </Grid>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}

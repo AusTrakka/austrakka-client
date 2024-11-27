@@ -53,8 +53,8 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
 
   return (
     isOpen ? (
-      <TableRow key={recordName} style={{ backgroundColor: 'var(--primary-grey)' }}>
-        <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
+      <TableRow key={recordName} style={{ borderRadius: '6px' }}>
+        <TableCell style={{ padding: 0, margin: 0, border: 'none' }} colSpan={2} hidden={!isOpen}>
           <Box sx={{ width: '100%' }}>
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
