@@ -175,7 +175,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                   <TextField
                     {...params}
                     hiddenLabel
-                    placeholder="Select Grou"
+                    placeholder="Select Group"
                     variant="filled"
                     size="small"
                     InputProps={{

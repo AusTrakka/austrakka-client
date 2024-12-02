@@ -10,12 +10,15 @@ interface RenderGroupedRolesAndGroupsProps {
   userGroupedPrivileges: GroupedPrivilegesByRecordType[];
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
+  editing: boolean;
 }
 
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const { userGroupedPrivileges,
     openGroupRoles,
-    setOpenGroupRoles } = props;
+    setOpenGroupRoles,
+    editing }
+      = props;
 
   const handleGroupRoleToggle = (groupName: string) => {
     setOpenGroupRoles((prevOpenGroupRoles) =>
@@ -31,6 +34,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         recordType={recordType}
         openGroupRoles={openGroupRoles}
         handleGroupRoleToggle={handleGroupRoleToggle}
+        editing={editing}
       />
       {recordRoles.map(({ recordName, roleNames }) => (
         <UserRecordRolesRow

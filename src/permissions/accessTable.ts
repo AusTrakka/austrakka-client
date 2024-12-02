@@ -60,6 +60,7 @@ export function hasPermissionV2(
   scope: string,
 ): boolean {
   if (!user) return false;
+  console.log(user);
   // This is if they are admin
   if (hasSuperUserRoleInType(user.scopes)) {
     return true;

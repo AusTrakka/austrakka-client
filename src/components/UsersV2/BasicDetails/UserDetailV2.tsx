@@ -36,9 +36,12 @@ import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivil
 function UserDetailV2() {
   const { userGlobalId } = useParams();
   const { token, tokenLoading } = useApi();
-  const [editing, setEditing] = useState(false);
+  const [editingBasic, setEditingBasic] = useState(false);
+  const [editingPrivileges, setEditingPrivileges] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [editedValues, setEditedValues] = useState<User | null>(null);
+  const [editedPrivileges, setEditedPrivileges] = useState<any | null>(null);
+  const [updatedPrivileges, setUpdatedPrivileges] = useState<any | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
@@ -122,10 +125,10 @@ function UserDetailV2() {
       }
     };
 
-    if (token && tokenLoading === LoadingState.SUCCESS && editing) {
+    if (token && tokenLoading === LoadingState.SUCCESS && editingBasic) {
       getOrgData();
     }
-  }, [token, tokenLoading, editing]);
+  }, [token, tokenLoading, editingBasic]);
 
   const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
 
@@ -146,7 +149,7 @@ function UserDetailV2() {
   };
 
   const renderRow = (field: keyof User, value: any) => {
-    if (editing) {
+    if (editingBasic) {
       return (
         <EditableRow
           key={field}
@@ -226,14 +229,24 @@ function UserDetailV2() {
     editUserDetails();
     setOrgChanged(false);
   };
+  
+  const onPrivSave = () => {
+    console.log('onPrivSave');
+  };
 
   const handleCancel = () => {
-    setEditing(false);
+    setEditingBasic(false);
     setEditedValues({ ...user! });
     setOrgChanged(false);
   };
+  
+  const handlePrivCancel = () => {
+    setEditingPrivileges(false);
+    setEditedPrivileges(user?.privileges);
+  };
 
   const hasChanges = !deepEqual(user, editedValues);
+  const privHasChanges = !deepEqual(user?.privileges!, editedPrivileges);
 
   return (user && !dataError) ? (
     <div>
@@ -272,8 +285,8 @@ function UserDetailV2() {
                 User Details
               </Typography>
               <EditButtonsV2
-                editing={editing}
-                setEditing={setEditing}
+                editing={editingBasic}
+                setEditing={setEditingBasic}
                 onSave={onSave}
                 onCancel={handleCancel}
                 hasSavedChanges={hasChanges}
@@ -313,6 +326,14 @@ function UserDetailV2() {
               <Typography variant="h4" color="primary">
                 Privileges
               </Typography>
+              <EditButtonsV2
+                editing={editingPrivileges}
+                setEditing={setEditingPrivileges}
+                onSave={onPrivSave}
+                onCancel={handlePrivCancel}
+                hasSavedChanges={privHasChanges}
+                canSee={canSee}
+              />
             </Stack>
             <TableContainer
               component={Box}
@@ -324,6 +345,7 @@ function UserDetailV2() {
                     userGroupedPrivileges={user.privileges}
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
+                    editing={editingPrivileges}
                   />
                 </TableBody>
               </Table>

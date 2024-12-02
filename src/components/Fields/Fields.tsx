@@ -10,7 +10,7 @@ import { getFields, patchField } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
@@ -25,7 +25,10 @@ function Fields() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick);
+  // The scope should be in scope constant file somewhere in the future.
+  // So it can be synced with the backend.
+  const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{columnGlobalId}';
+  const interactionPermission = hasPermissionV2(user, 'Default Tenant', scope);
 
   // get all AT fields
   useEffect(() => {
