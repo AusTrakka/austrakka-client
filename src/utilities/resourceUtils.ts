@@ -108,8 +108,8 @@ export const getUserV2 = (
 
 export const patchUserV2 = (
   userGlobalId: string,
-  owningTenantGlobalId: string,
   userPatchDto: UserPatch,
+  owningTenantGlobalId: string,
   token: string,
 ) => callPATCH(
   `/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,

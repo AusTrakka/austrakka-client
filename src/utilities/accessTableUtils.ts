@@ -6,14 +6,11 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
     return false; // recordType not found
   }
 
-  return targetGroup.recordRoles.some(recordRole =>
-    recordRole.roles?.some(roleWithScopes =>
-      roleWithScopes.role === 'SuperUser')) ||
-        targetGroup.recordRoles.some(
-          recordRole =>
-            recordRole.roles?.some(roleWithScopes =>
-              roleWithScopes.scopes.includes('method=*,/**')),
-        );
+  return targetGroup.recordRoles.some(
+    recordRole =>
+      recordRole.roles?.some(roleWithScopes =>
+        roleWithScopes.scopes.includes('method=*,/**')),
+  );
 }
 
 export function hasScopeInRecord(
@@ -22,19 +19,17 @@ export function hasScopeInRecord(
   scope: string,
 ): boolean {
   // Find the record with the matching recordId
-  console.log('groups', groups);
   const targetGroup = groups.find(group =>
     group.recordRoles.some(recordRole => recordRole.recordName === recordName));
-  console.log('targetGroup', targetGroup);
 
   if (!targetGroup) {
-    return false; // recordId not found
+    
   }
 
   // Find the specific recordRole with the matching recordId
   const targetRecordRole = targetGroup.recordRoles
     .find(recordRole => recordRole.recordName === recordName);
-  console.log('targetRecordRole', targetRecordRole);
+  
   if (!targetRecordRole) {
     return false; // recordId not found within the specified group
   }

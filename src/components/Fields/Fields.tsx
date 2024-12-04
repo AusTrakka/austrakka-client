@@ -28,7 +28,7 @@ function Fields() {
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
   const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{columnGlobalId}';
-  const interactionPermission = hasPermissionV2(user, 'Default Tenant', scope);
+  const interactionPermission = hasPermissionV2(user, 'AusTrakka', scope);
 
   // get all AT fields
   useEffect(() => {
