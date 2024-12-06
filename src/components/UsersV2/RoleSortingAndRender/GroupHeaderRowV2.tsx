@@ -153,7 +153,6 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                   size="small"
                   color={isAddButtonEnabled ? 'success' : 'default'}
                   onClick={() => {
-                    console.log('add');
                     /* handleAddGroupRole();
                     if (!openGroupRoles.includes(groupType)) {
                       handleGroupRoleToggle(groupType);

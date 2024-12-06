@@ -1,4 +1,4 @@
-import { GroupedPrivilegesByRecordTypeWithScopes } from '../types/dtos';
+import { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
   const targetGroup = groups.find(group => group.recordType === 'Tenant');
@@ -19,17 +19,19 @@ export function hasScopeInRecord(
   scope: string,
 ): boolean {
   // Find the record with the matching recordId
-  const targetGroup = groups.find(group =>
+  let targetGroup = groups.find(group =>
     group.recordRoles.some(recordRole => recordRole.recordName === recordName));
 
-  if (!targetGroup) {
-    
-  }
-
-  // Find the specific recordRole with the matching recordId
-  const targetRecordRole = targetGroup.recordRoles
-    .find(recordRole => recordRole.recordName === recordName);
+  let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
   
+  if (!targetGroup) {
+    targetGroup = groups.find(group => group.recordType === 'Tenant');
+    targetRecordRole = targetGroup!.recordRoles
+      .find(recordRole => recordRole.recordName === 'Default Tenant');
+  } else {
+    targetRecordRole = targetGroup.recordRoles
+      .find(recordRole => recordRole.recordName === recordName);
+  }
   if (!targetRecordRole) {
     return false; // recordId not found within the specified group
   }

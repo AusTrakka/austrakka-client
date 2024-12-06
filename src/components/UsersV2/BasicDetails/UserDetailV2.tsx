@@ -266,7 +266,7 @@ function UserDetailV2() {
   };
   
   const onPrivSave = () => {
-    console.log('onPrivSave');
+   
   };
 
   const handleCancel = () => {
@@ -363,14 +363,14 @@ function UserDetailV2() {
               <Typography variant="h4" color="primary">
                 Privileges
               </Typography>
-              <EditButtonsV2
+              {/* <EditButtonsV2
                 editing={editingPrivileges}
                 setEditing={setEditingPrivileges}
                 onSave={onPrivSave}
                 onCancel={handlePrivCancel}
                 hasSavedChanges={privHasChanges}
                 canSee={canSee}
-              />
+              /> */}
             </Stack>
             <TableContainer
               component={Box}

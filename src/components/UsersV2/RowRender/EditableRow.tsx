@@ -15,7 +15,7 @@ import {
   ContentCopy,
 } from '@mui/icons-material';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
-import { User, UserV2 } from '../../../types/dtos';
+import { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 

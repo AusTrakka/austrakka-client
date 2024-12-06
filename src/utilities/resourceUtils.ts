@@ -1,5 +1,5 @@
 import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
-import { Feedback, FeedbackPost, UserPatch, UserPatchV2 } from '../types/dtos';
+import { Feedback, FeedbackPost, UserPatchV2 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
