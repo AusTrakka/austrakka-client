@@ -15,15 +15,15 @@ import {
   ContentCopy,
 } from '@mui/icons-material';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
-import { User } from '../../../types/dtos';
+import { User, UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 
 interface EditableRowProps {
-  field: keyof User;
+  field: keyof UserV2;
   detailValue: any;
-  editedValues: User | null;
-  setEditedValues: Dispatch<SetStateAction<User | null>>;
+  editedValues: UserV2 | null;
+  setEditedValues: Dispatch<SetStateAction<UserV2 | null>>;
   readableNames: Record<string, string>;
   allOrgs: any[];
   setOrgChanged: React.Dispatch<React.SetStateAction<boolean>>;
@@ -130,7 +130,10 @@ function EditableRow(props : EditableRowProps) {
                     return {
                       ...prevValues,
                       [field]: newValue,
-                      'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation || prevValues.orgAbbrev,
+                      'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation ||
+                          prevValues.orgAbbrev,
+                      'orgGlobalId': allOrgs.find((org) => org.name === newValue)?.globalId ||
+                          prevValues.orgGlobalId,
                     };
                   });
                 }}

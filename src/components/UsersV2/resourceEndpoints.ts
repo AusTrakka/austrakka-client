@@ -48,8 +48,8 @@ export const resourceMap: Resource[] = [
   {
     name: 'Tenant',
     functions: {
-      get: () => { throw new Error('Tenant not implemented'); },
-      list: () => { throw new Error('Tenant not implemented'); },
+      get: () => { throw new Error('This already exists in the system'); },
+      list: () => { throw new Error('Tenant doesnt have a list'); },
       patch: () => { throw new Error('Tenant not implemented'); },
     },
   },

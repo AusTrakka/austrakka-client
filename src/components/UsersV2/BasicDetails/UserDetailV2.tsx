@@ -15,13 +15,14 @@ import {
 import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
 import {
+  disableUserV2, enableUserV2,
   getOrganisations,
-  getUserV2,
+  getUserV2, patchUserOrganisationV2,
   patchUserV2,
 } from '../../../utilities/resourceUtils';
 import { useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
-import { User, UserPatch } from '../../../types/dtos';
+import { User, UserPatch, UserPatchV2, UserV2 } from '../../../types/dtos';
 import { selectUserState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseObject } from '../../../types/responseObject.interface';
@@ -38,8 +39,8 @@ function UserDetailV2() {
   const { token, tokenLoading } = useApi();
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingPrivileges, setEditingPrivileges] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [editedValues, setEditedValues] = useState<User | null>(null);
+  const [user, setUser] = useState<UserV2 | null>(null);
+  const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
   const [editedPrivileges, setEditedPrivileges] = useState<any | null>(null);
   const [updatedPrivileges, setUpdatedPrivileges] = useState<any | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
@@ -74,7 +75,7 @@ function UserDetailV2() {
   let nonDisplayFields = [
     'objectId',
     'orgAbbrev',
-    'orgId',
+    'orgGlobalId',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
@@ -96,7 +97,7 @@ function UserDetailV2() {
       );
 
       if (userResponse.status === ResponseType.Success) {
-        const userDto = userResponse.data as User;
+        const userDto = userResponse.data as UserV2;
         setUser(userDto);
         setEditedValues({ ...userDto });
         // setUpdatedGroupRoles(userDto.groupRoles);
@@ -148,7 +149,7 @@ function UserDetailV2() {
     setOpenDupSnackbar(false);
   };
 
-  const renderRow = (field: keyof User, value: any) => {
+  const renderRow = (field: keyof UserV2, value: any) => {
     if (editingBasic) {
       return (
         <EditableRow
@@ -175,29 +176,63 @@ function UserDetailV2() {
 
   const editUserDetails = async () => {
     // I need to ignore the groupRoles field for this version of the page
-    // TODO: groupRoles is temporary and will ne removed later
-    const { groupRoles, ...otherValues } = editedValues as User;
+    const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
 
     // Creating editedValuesDtoFormat object
-    const editedValuesDtoFormat: UserPatch = {
+    const editedValuesDtoFormat: UserPatchV2 = {
       displayName: otherValues.displayName,
       contactEmail: otherValues.contactEmail,
-      orgAbbrev: otherValues.orgAbbrev,
-      isActive: otherValues.isActive, // disable a user through a general patch?
       analysisServerUsername: otherValues.analysisServerUsername,
     };
-
+    
+    const editedActiveState = user?.isActive !== isActive;
+    const editedOrganisation = user?.orgGlobalId !== orgGlobalId;
     try {
-      // need to call patchUserV2 here
-      const userResponseV2: ResponseObject = await patchUserV2(
+      // basic patch
+      const userResponse: ResponseObject = await patchUserV2(
         userGlobalId!,
-        defaultTenantGlobalId,
         editedValuesDtoFormat,
+        defaultTenantGlobalId,
         token,
       );
+      
+      // enable user
+      if (editedActiveState) {
+        let userActivateResponse: ResponseObject;
+        if (isActive) {
+          userActivateResponse = await enableUserV2(
+            userGlobalId!,
+            defaultTenantGlobalId,
+            token,
+          );
+        } else {
+          userActivateResponse = await disableUserV2(
+            userGlobalId!,
+            defaultTenantGlobalId,
+            token,
+          );
+        }
+        if (userActivateResponse.status !== ResponseType.Success) {
+          throw new Error('User could not be activated/deactivated');
+        }
+      }
+      
+      // patch organisation
+      if (editedOrganisation) {
+        const patchUserOrganisationResponse: ResponseObject = await patchUserOrganisationV2(
+          userGlobalId!,
+          user!.orgGlobalId,
+          orgGlobalId,
+          defaultTenantGlobalId,
+          token,
+        );
+        if (patchUserOrganisationResponse.status !== ResponseType.Success) {
+          throw new Error('User organisation could not be accessed/changed');
+        }
+      }
 
-      if (userResponseV2.status !== ResponseType.Success) {
-        throw new Error('User could not be accessed');
+      if (userResponse.status !== ResponseType.Success) {
+        throw new Error('User could not be accessed/changed');
       }
       
       const userFetchResponse: ResponseObject = await getUserV2(
@@ -210,12 +245,12 @@ function UserDetailV2() {
         throw new Error('User could not be accessed');
       }
       
-      const userDto = userFetchResponse.data as User;
-
+      const userDto = userFetchResponse.data as UserV2;
+      
+      setPatchMsg(userResponse.message);
+      setPatchSeverity('success');
       setUser(userDto);
       setEditedValues({ ...userDto });
-      setPatchMsg(userResponseV2.message);
-      setPatchSeverity('success');
     } catch (error: any) {
       setPatchMsg(error.message);
       setPatchSeverity('error');
@@ -251,18 +286,22 @@ function UserDetailV2() {
   return (user && !dataError) ? (
     <div>
       <Stack
-        direction="row"
+        direction="column"
         justifyContent="space-between"
-        alignItems="center"
-        display="flex"
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex' }}>
           {renderIcon(user, 'large')}
           <Typography className="pageTitle" style={{ paddingBottom: 0 }}>
             {user.displayName}
           </Typography>
         </div>
-    
+        {orgChanged ? (
+          <Alert style={{ marginTop: '15px' }} severity="warning">
+            Changing a user&apos;s organization is a significant action
+            and should be approached with caution. Proceed carefully.
+          </Alert>
+        )
+          : null}
       </Stack>
       <Grid
         container
@@ -293,9 +332,7 @@ function UserDetailV2() {
                 canSee={canSee}
               />
             </Stack>
-            {orgChanged ?
-              <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
-              : null}
+           
             {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
             <TableContainer
               component={Box}
@@ -305,7 +342,7 @@ function UserDetailV2() {
                 <TableBody>
                   {Object.entries(user).map(([field, value]) => {
                     if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
-                      return renderRow(field as keyof User, value);
+                      return renderRow(field as keyof UserV2, value);
                     }
                     return null;
                   })}

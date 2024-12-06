@@ -90,6 +90,22 @@ export interface User {
   privileges: GroupedPrivilegesByRecordType[],
 }
 
+export interface UserV2 {
+  objectId: string,
+  globalId: string,
+  isActive: boolean,
+  orgGlobalId:string,
+  orgAbbrev: string,
+  orgName: string,
+  isAusTrakkaAdmin: boolean,
+  displayName: string,
+  created: Date,
+  contactEmail: string,
+  IsAusTrakkaProcess: boolean,
+  analysisServerUsername: string,
+  privileges: GroupedPrivilegesByRecordType[],
+}
+
 export interface UserMe {
   objectId: string,
   displayName: string,
@@ -326,5 +342,11 @@ export interface UserPatch {
   contactEmail: string,
   orgAbbrev: string,
   isActive: boolean,
+  analysisServerUsername: string,
+}
+
+export interface UserPatchV2 {
+  displayName: string,
+  contactEmail: string,
   analysisServerUsername: string,
 }

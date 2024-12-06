@@ -1,5 +1,5 @@
 import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
-import { Feedback, FeedbackPost, UserPatch } from '../types/dtos';
+import { Feedback, FeedbackPost, UserPatch, UserPatchV2 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -108,11 +108,48 @@ export const getUserV2 = (
 
 export const patchUserV2 = (
   userGlobalId: string,
-  userPatchDto: UserPatch,
+  userPatchDto: UserPatchV2,
   owningTenantGlobalId: string,
   token: string,
 ) => callPATCH(
   `/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
   token,
   userPatchDto,
+);
+
+export const disableUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/disable/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+);
+
+export const enableUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/enable/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+);
+
+// OrganisationV2
+
+export const getOrganisationsV2 = (
+  organisationGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/OrganisationV2/${organisationGlobalId}`, token);
+
+export const patchUserOrganisationV2 = (
+  userGlobalId: string,
+  organisationGlobalId: string,
+  targetOrgGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/OrganisationV2/${organisationGlobalId}/User/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+  targetOrgGlobalId,
 );

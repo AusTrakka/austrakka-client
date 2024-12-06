@@ -5,13 +5,13 @@ import {
   CheckCircleOutlined,
   ContentCopy,
 } from '@mui/icons-material';
-import { User } from '../../../types/dtos';
+import { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 
 interface BasicRowProps {
-  field: keyof User;
+  field: keyof UserV2;
   value: any;
   readableNames: Record<string, string>;
 }
