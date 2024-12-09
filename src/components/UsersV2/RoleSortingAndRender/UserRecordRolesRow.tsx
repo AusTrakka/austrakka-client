@@ -11,7 +11,9 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
   const { recordName,
     roleNames,
     isOpen } = props;
-
+  
+  // TODO: come back to these functions as they relate to editing these chips
+  
   // locked now equals true if the type of group is personal orgs and its everything but
   // the owner group for the subset of groups in this type. which will be locked.
 

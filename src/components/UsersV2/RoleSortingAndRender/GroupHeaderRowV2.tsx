@@ -1,4 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
+
+// TODO: come back to this, as this page cannot be accessed at the moment
+// This is the V2 version of adding roles to a record/group
 import React, { useState } from 'react';
 import {
   TableRow,

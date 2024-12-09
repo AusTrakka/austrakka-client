@@ -1,6 +1,9 @@
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getUserListV2, getUserV2, patchUserV2 } from '../../utilities/resourceUtils';
 
+// TODO: come back to this, as this is a prototype structure for calling endpoints dynamically
+// depending on the resource types that user may have 
+
 interface ResourceFunctions {
   get: (...args: any[]) => Promise<ResponseObject>;
   list : (...args: any[]) => Promise<ResponseObject>;
