@@ -41,8 +41,8 @@ function EditableRow(props : EditableRowProps) {
   } = props;
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleCopy = async (text: string) => {
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
@@ -51,6 +51,7 @@ function EditableRow(props : EditableRowProps) {
     'created',
     'objectId',
     'globalId',
+    'orgName',
   ];
   
   const immutableGuids = [

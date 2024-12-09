@@ -26,7 +26,7 @@ export function hasScopeInRecord(
   
   if (!targetGroup) {
     targetGroup = groups.find(group => group.recordType === 'Tenant');
-    targetRecordRole = targetGroup!.recordRoles
+    targetRecordRole = targetGroup?.recordRoles
       .find(recordRole => recordRole.recordName === 'Default Tenant');
   } else {
     targetRecordRole = targetGroup.recordRoles

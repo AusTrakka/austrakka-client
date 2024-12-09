@@ -3,14 +3,14 @@ import { hasSuperUserRoleInType } from '../../../src/utilities/accessTableUtils'
 
 describe('hasSuperUserRoleInType', () => {
   describe('when given valid input with expected role types', () => {
-    test('return true when user has SuperUser role', () => {
+    test('return true when user has all scope access', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [{
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
           roles: [{
             role: 'SuperUser',
-            scopes: [],
+            scopes: ['method=*,/**'],
           }],
         }],
       }];
@@ -90,7 +90,7 @@ describe('hasSuperUserRoleInType', () => {
     });
   });
 
-  describe('when given edgecase input and usecases', () => {
+  describe('when given edge-case input and use-cases', () => {
     test('handle multiple recordRoles with one having SuperUser', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [{
         recordType: 'Tenant',
@@ -106,7 +106,7 @@ describe('hasSuperUserRoleInType', () => {
             recordName: 'Tenant2',
             roles: [{
               role: 'SuperUser',
-              scopes: [],
+              scopes: ['method=*,/**'],
             }],
           },
         ],
