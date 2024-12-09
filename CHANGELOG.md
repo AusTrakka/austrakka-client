@@ -5,8 +5,7 @@ All notable user-facing changes to AusTrakka will be documented in this file.
 ## Unreleased
 
 ### Added
-- A newly designed user management interface.
-- A new slice for managing users and their roles (ADMIN ONLY)
+- A new slice for viewing/managing users and their roles (ADMIN ONLY)
 - Warning to signify that it is a new work in progress system. (ADMIN ONLY)
 - Splash Loading Screen
 

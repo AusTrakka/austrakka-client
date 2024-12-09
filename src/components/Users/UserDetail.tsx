@@ -37,7 +37,7 @@ function UserDetail() {
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
   const {
     loading,
-    adminV2,
+    admin,
   } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
@@ -61,7 +61,7 @@ function UserDetail() {
     'isAusTrakkaProcess',
   ];
 
-  if (loading === LoadingState.SUCCESS && adminV2) {
+  if (loading === LoadingState.SUCCESS && admin) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -148,7 +148,7 @@ function UserDetail() {
     });
   };
 
-  const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
+  const canSee = () => (loading === LoadingState.SUCCESS && admin);
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
