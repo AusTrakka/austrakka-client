@@ -41,6 +41,7 @@ function UserDetailV2() {
   const [editingPrivileges, setEditingPrivileges] = useState(false);
   const [user, setUser] = useState<UserV2 | null>(null);
   const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
+  const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
   const [editedPrivileges, setEditedPrivileges] = useState<any | null>(null);
   const [updatedPrivileges, setUpdatedPrivileges] = useState<any | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
@@ -259,10 +260,13 @@ function UserDetailV2() {
     }
   };
 
-  const onSave = () => {
+  const onSave = async () => {
     if (editedValues === null) return;
-    editUserDetails();
+    setOnSaveLoading(true);
+    await editUserDetails();
     setOrgChanged(false);
+    setOnSaveLoading(false);
+    setEditingBasic(false);
   };
   
   const onPrivSave = () => {
@@ -330,15 +334,14 @@ function UserDetailV2() {
                 onCancel={handleCancel}
                 hasSavedChanges={hasChanges}
                 canSee={canSee}
+                onSaveLoading={onSaveLoading}
               />
             </Stack>
-           
             {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
             <TableContainer
               component={Box}
             >
               <Table sx={{ borderBottom: 'none' }}>
-                
                 <TableBody>
                   {Object.entries(user).map(([field, value]) => {
                     if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
