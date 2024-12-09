@@ -1,3 +1,5 @@
+// This V2 version also has smaller circular buttons and other minor stylistic and logical changes
+// i.e. loading indicators when patch requests are in progress
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import { CircularProgress, IconButton, Tooltip } from '@mui/material';
 import React, { Dispatch, SetStateAction } from 'react';
