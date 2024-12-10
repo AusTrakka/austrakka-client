@@ -48,6 +48,8 @@ interface ImportMetaEnv {
   readonly VITE_BRANDING_NAME: string
   readonly VITE_BRANDING_TAGLINE_1: string
   readonly VITE_BRANDING_TAGLINE_2: string
+  // Docs
+  readonly VITE_DOCS_URL: string
 }
 
 interface ImportMeta {

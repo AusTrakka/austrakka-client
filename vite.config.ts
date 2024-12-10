@@ -144,6 +144,9 @@ export default defineConfig({
       VITE_BRANDING_TAGLINE_2: (key, value) => {
         return defaultConfigValue(key, value, BrandingDefaultValues.Tagline2)
       },
+      VITE_DOCS_URL: (key, value) => {
+        return defaultConfigValue(key, value, DocsDefaultValues.Url)
+      },
 }),
     {
       apply: 'build',
@@ -219,4 +222,8 @@ enum BrandingDefaultValues {
   Name = "AusTrakka",
   Tagline1 = "From genomics to public health decisions for Australia",
   Tagline2 = "Combining Genomics & Epidemiological Data",
+}
+
+enum DocsDefaultValues {
+  Url = "https://docs.austrakka.net",
 }
