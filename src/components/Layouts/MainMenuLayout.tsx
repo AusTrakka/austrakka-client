@@ -33,8 +33,10 @@ function MainMenuLayout() {
     {
       title: 'Documentation',
       icon: <Description fontSize="small" />,
-      disabled: true,
-      onClick: () => {},
+      disabled: false,
+      onClick: () => {
+        window.open(import.meta.env.VITE_DOCS_URL, '_blank')?.focus();
+      },
     },
     {
       title: 'Support',
