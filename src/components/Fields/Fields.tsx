@@ -6,7 +6,7 @@ import { FilterMatchMode } from 'primereact/api';
 import { EditOutlined } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
-import { getFields, patchField } from '../../utilities/resourceUtils';
+import { getFields, getFieldsV2, patchField, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
@@ -27,8 +27,9 @@ function Fields() {
   const user: UserSliceState = useAppSelector(selectUserState);
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
-  const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{columnGlobalId}';
-  const interactionPermission = hasPermissionV2(user, 'AusTrakka', scope);
+  const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{metadataColumnName}';
+  console.log(user.defaultTenantName);
+  const interactionPermission = hasPermissionV2(user, user.defaultTenantName, scope);
 
   // get all AT fields
   useEffect(() => {
@@ -42,7 +43,7 @@ function Fields() {
 
     const retrieveFields = async () => {
       try {
-        const response: ResponseObject = await getFields(token);
+        const response: ResponseObject = await getFieldsV2(user.defaultTenantGlobalId, token);
         if (response.status === ResponseType.Success) {
           const responseFields: MetaDataColumn[] = response.data;
           responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
@@ -111,13 +112,13 @@ function Fields() {
 
   const updateField = async (data: ColumnEvent) => {
     const { rowData, field, newValue } = data;
-    const fieldId = rowData.metaDataColumnId;
+    const fieldName = rowData.columnName;
     const fieldData = { [field]: newValue };
 
-    const response = await patchField(fieldId, token, fieldData);
+    const response = await patchFieldV2(user.defaultTenantGlobalId, fieldName, token, fieldData);
     if (response.status === ResponseType.Success) {
       setFields(fields.map((fieldMetadata: MetaDataColumn) =>
-        (fieldMetadata.metaDataColumnId === fieldId ?
+        (fieldMetadata.columnName === fieldName ?
           { ...fieldMetadata, ...fieldData } :
           fieldMetadata)));
     } else {

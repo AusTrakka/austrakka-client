@@ -153,3 +153,18 @@ export const patchUserOrganisationV2 = (
   token,
   targetOrgGlobalId,
 );
+
+// Tenant
+
+export const getFieldsV2 = (
+  tenantGlobalId: string,
+  token: string,
+) =>
+  callGET(`/api/V2/Tenant/${tenantGlobalId}/MetaDataColumn`, token);
+export const patchFieldV2 = (
+  tenantGlobalId: string,
+  metaDataColumnName: string,
+  token: string,
+  field: any,
+) =>
+  callPATCH(`/api/V2/Tenant/${tenantGlobalId}/MetaDataColumn/${metaDataColumnName}`, token, field);
