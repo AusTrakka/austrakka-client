@@ -44,7 +44,6 @@ const fetchUserRoles = createAsyncThunk(
     try {
       // Fetch default tenant and group details
       const defaultTenantObject: ResponseObject = await getTenant(token);
-      console.log(defaultTenantObject);
       if (defaultTenantObject.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(defaultTenantObject.message);
       }
@@ -56,8 +55,6 @@ const fetchUserRoles = createAsyncThunk(
 
       // Fetch user scope using tenant globalId
       const { globalId, name } = defaultTenantObject.data;
-      console.log(globalId);
-      console.log(name);
       const scopeResponse: ResponseObject = await getMeV2(globalId, token);
       if (scopeResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(scopeResponse.message);

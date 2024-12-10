@@ -6,7 +6,7 @@ import { FilterMatchMode } from 'primereact/api';
 import { EditOutlined } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
-import { getFields, getFieldsV2, patchField, patchFieldV2 } from '../../utilities/resourceUtils';
+import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
@@ -28,7 +28,6 @@ function Fields() {
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
   const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{metadataColumnName}';
-  console.log(user.defaultTenantName);
   const interactionPermission = hasPermissionV2(user, user.defaultTenantName, scope);
 
   // get all AT fields
@@ -62,7 +61,7 @@ function Fields() {
         await retrieveFields(); // Await the promise to avoid unhandled rejection warnings
       })();
     }
-  }, [token, tokenLoading]);
+  }, [token, tokenLoading, user.defaultTenantGlobalId]);
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
