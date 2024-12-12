@@ -17,6 +17,7 @@ export function hasScopeInRecord(
   groups: GroupedPrivilegesByRecordTypeWithScopes[],
   recordName: string,
   scope: string,
+  defaultTenantName: string,
 ): boolean {
   // Find the record with the matching recordId
   let targetGroup = groups.find(group =>
@@ -27,7 +28,7 @@ export function hasScopeInRecord(
   if (!targetGroup) {
     targetGroup = groups.find(group => group.recordType === 'Tenant');
     targetRecordRole = targetGroup?.recordRoles
-      .find(recordRole => recordRole.recordName === 'Default Tenant');
+      .find(recordRole => recordRole.recordName === defaultTenantName);
   } else {
     targetRecordRole = targetGroup.recordRoles
       .find(recordRole => recordRole.recordName === recordName);

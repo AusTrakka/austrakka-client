@@ -16,6 +16,7 @@ import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { NumericEditable, TextEditable } from './EditableFields';
+import { ScopeDefinitions } from '../../constants/scopes';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -27,7 +28,7 @@ function Fields() {
   const user: UserSliceState = useAppSelector(selectUserState);
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
-  const scope = 'method=patch,api/V2/Tenant/{tenantGlobalId}/MetaDataColumn/{metadataColumnName}';
+  const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
   const interactionPermission = hasPermissionV2(user, user.defaultTenantName, scope);
 
   // get all AT fields

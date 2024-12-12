@@ -15,7 +15,7 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(true);
     });
 
@@ -37,7 +37,7 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(true);
     });
 
@@ -53,7 +53,7 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'write:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'write:users', 'Default Tenant');
       expect(result).toBe(false);
     });
   });
@@ -71,14 +71,14 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'non-existent-tenant', 'read:users');
+      const result = hasScopeInRecord(groups, 'non-existent-tenant', 'read:users', 'Default Tenant');
       expect(result).toBe(false);
     });
 
     test('return false when groups array is empty', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(false);
     });
 
@@ -91,7 +91,7 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(false);
     });
   });
@@ -118,7 +118,7 @@ describe('hasScopeInRecord', () => {
         ],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(true);
     });
 
@@ -146,7 +146,7 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(true);
     });
 
@@ -162,7 +162,7 @@ describe('hasScopeInRecord', () => {
         }],
       }];
 
-      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users');
+      const result = hasScopeInRecord(groups, 'tenant-123', 'read:users', 'Default Tenant');
       expect(result).toBe(false);
     });
   });

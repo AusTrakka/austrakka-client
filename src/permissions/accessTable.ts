@@ -13,9 +13,6 @@ interface ResourcePrivileges {
 }
 
 const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
-  'fields': {
-    [PermissionLevel.CanClick]: [RoleName.AusTrakkaAdmin],
-  },
   'users': {
     [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
   },
@@ -58,5 +55,5 @@ export function hasPermissionV2(
     return true;
   }
   
-  return hasScopeInRecord(user.scopes, recordId, scope);
+  return hasScopeInRecord(user.scopes, recordId, scope, user.defaultTenantName);
 }

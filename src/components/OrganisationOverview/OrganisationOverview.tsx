@@ -62,9 +62,9 @@ function OrganisationOverview() {
 
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
-      const { groupRoles, orgName, adminV2 } = user;
+      const { groupRoles, orgName, admin } = user;
       let foundOrgName = null;
-      if (!adminV2) {
+      if (!admin) {
         const orgViewerGroups = getCorrectGroups(groupRoles);
         setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
           groupRole.group.name === `${orgAbbrev}-Everyone`)?.group);
@@ -132,7 +132,7 @@ function OrganisationOverview() {
   }, [pathName, orgOverviewTabs]);
 
   return (
-    groupsStatus === LoadingState.ERROR || (!user.adminV2 && orgAbbrev !== user.orgAbbrev)
+    groupsStatus === LoadingState.ERROR || (!user.admin && orgAbbrev !== user.orgAbbrev)
       ? (
         <Alert severity="error">
           {groupsStatus === LoadingState.ERROR
