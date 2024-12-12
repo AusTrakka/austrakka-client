@@ -25,7 +25,7 @@ function SearchInput(props: SearchInputProps) {
         inputRef={inputRef}
         sx={{
           'marginBottom': 1,
-          'width': 0,
+          'width': value ? '200px' : '0',
           '&:focus-within': {
             width: 200,
           },
