@@ -4,8 +4,8 @@ import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
-import { ProFormaVersion, MetaDataColumnMapping, Project } from '../../types/dtos';
-import SimpleDialog from '../ProForma/TableDialog';
+import { useNavigate } from 'react-router-dom';
+import { ProFormaVersion, Project } from '../../types/dtos';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { handleProformaDownload } from '../ProForma/proformaUtils';
 import { useApi } from '../../app/ApiContext';
@@ -28,14 +28,11 @@ function ProFormaList(props: ProFormasListProps) {
   const [proformaList, setProformaList] = useState<ProFormaVersion[]>([]);
   const [proformaError, setProformaError] = useState(false);
   const [proformaErrorMessage, setProformaErrorMessage] = useState('');
-
-  const [open, setOpen] = useState(false);
-  const [proformaDialog, setProFormaDialog] = useState<MetaDataColumnMapping[]>([]);
-  const [proformaAbbrev, setProFormaAbbrev] = useState<string>('');
   const { token } = useApi();
+  const navigate = useNavigate();
 
   // Used by GenerateCards
-  const [loadingState, setLoadingState] = useState<boolean>(false);
+  const [loadingState, setLoadingState] = useState<number | null>(null);
 
   useEffect(() => {
     async function getProFormaList() {
@@ -60,6 +57,12 @@ function ProFormaList(props: ProFormasListProps) {
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
     handleProformaDownload(dAbbrev, version, token);
+  };
+
+  const handleRedirect = (version: ProFormaVersion) => {
+    const { abbreviation } = version;
+    const url = `/proformas/${abbreviation}`;
+    navigate(url);
   };
 
   const sortByCreated = (a: ProFormaVersion, b: ProFormaVersion) => {
@@ -120,14 +123,14 @@ function ProFormaList(props: ProFormasListProps) {
         {Object.keys(groupedObjects).map((index) => (
           <Paper
             key={groupedObjects[index][0].proFormaId}
-            sx={{ minWidth: '400px',
-              maxWidth: '400px',
-              minHeight: '372px',
+            sx={{ minWidth: '350px',
+              maxWidth: '350px',
+              minHeight: '352px',
               backgroundColor: 'var(--primary-grey-100)' }}
           >
             <StyledAccordion sx={{ pointerEvents: 'none', margin: '0px' }}>
               <AccordionSummary
-                sx={{ flexDirection: 'column', margin: 0 }}
+                sx={{ flexDirection: 'column', margin: 0, minHeight: '352px' }}
                 expandIcon={groupedObjects[index].length === 1
                   ?
                     <Icon />
@@ -141,13 +144,11 @@ function ProFormaList(props: ProFormasListProps) {
                   {groupedObjects[index] && // Check if groupedObjects[index] is defined
                     GenerateCards(
                       groupedObjects[index].slice(0, 1),
-                      setOpen,
-                      setProFormaDialog,
-                      setProFormaAbbrev,
                       handleFileDownload,
                       CardType.Summary,
                       loadingState,
                       setLoadingState,
+                      handleRedirect,
                     )}
                 </Box>
               </AccordionSummary>
@@ -157,18 +158,16 @@ function ProFormaList(props: ProFormasListProps) {
                 paddingTop: 3 }}
               >
                 <Stack spacing={3} sx={{ justifyContent: 'space-evenly' }}>
-                  <Typography variant="overline" sx={{}}>
+                  <Typography variant="overline">
                     Previous Versions
                   </Typography>
                   {GenerateCards(
                     groupedObjects[index].slice(1),
-                    setOpen,
-                    setProFormaDialog,
-                    setProFormaAbbrev,
                     handleFileDownload,
                     CardType.Details,
                     loadingState,
                     setLoadingState,
+                    handleRedirect,
                   )}
                 </Stack>
               </AccordionDetails>
@@ -186,13 +185,6 @@ function ProFormaList(props: ProFormasListProps) {
       { renderTitleOrError(proformaError, proformaErrorMessage) }
       { renderEmptyState(proformaList.length === 0, proformaError)}
       { renderContent() }
-      <SimpleDialog
-        proformaDialog={proformaDialog}
-        open={open}
-        setOpen={setOpen}
-        setProFormaDialog={setProFormaDialog}
-        proformaTitle={proformaAbbrev}
-      />
     </>
   );
 }
