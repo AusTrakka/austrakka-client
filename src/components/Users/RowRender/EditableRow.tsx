@@ -27,6 +27,7 @@ function EditableRow(props : EditableRowProps) {
   const nonEditableFields = [
     'created',
     'objectId',
+    'globalId',
   ];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

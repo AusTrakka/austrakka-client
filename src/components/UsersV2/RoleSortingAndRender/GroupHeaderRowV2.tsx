@@ -1,150 +1,71 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+
+// TODO: come back to this, as this page cannot be accessed at the moment
+// This is the V2 version of adding roles to a record/group
+import React, { useState } from 'react';
 import {
   TableRow,
   TableCell,
   IconButton,
   Typography,
-  Autocomplete,
-  TextField,
   Stack,
-  Checkbox,
+  Autocomplete,
+  Checkbox, TextField,
 } from '@mui/material';
 import {
-  KeyboardArrowDown,
   AddCircle,
+  CheckBox,
+  CheckBoxOutlineBlank,
+  KeyboardArrowDown,
   KeyboardArrowRight,
-  CheckBoxOutlineBlank, CheckBox,
 } from '@mui/icons-material';
-import { Group, GroupRole, Role, User } from '../../../types/dtos';
-import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
-import { sortGroups } from '../groupSorting';
 
 interface GroupHeaderRowProps {
-  groupType: string;
-  groupMapSize: number;
-  user: User;
-  allGroups: Group[];
-  allRoles: Role[];
-  editing: boolean;
-  setOpenDupSnackbar: Dispatch<SetStateAction<boolean>>;
+  recordType: string;
   openGroupRoles: string[];
   handleGroupRoleToggle: (groupName: string) => void;
-  existingGroupRoles: GroupRole[];
-  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
+  editing: boolean;
 }
 
-function GroupHeaderRow(props: GroupHeaderRowProps) {
+function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const {
-    groupType,
-    groupMapSize,
-    user,
-    allGroups,
-    allRoles,
-    editing,
+    recordType,
     openGroupRoles,
     handleGroupRoleToggle,
-    existingGroupRoles,
-    setOpenDupSnackbar,
-    updateUserGroupRoles,
+    editing,
   } = props;
+  const [selectedResources, setSelectedResources] = useState<any[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<any[] | null>(null);
+  
+  // need to fetch roles for said resource type
+  // will use temp list for now
+  const dummyRoles = [
+    { name: 'AustTrakkaAdmin', roleId: '1' },
+    { name: 'AustTrakkaProcess', roleId: '2' },
+    { name: 'AustTrakkaUser', roleId: '3' },
+  ];
+  
+  // then I will need fetch the resources under a resource type
+  const dummyResources = [
+    { name: 'tenant1', resourceId: '1' },
+    { name: 'tenant2', resourceId: '2' },
+    { name: 'tenant3', resourceId: '3' },
+  ];
 
-  const [selectedGroups, setSelectedGroups] = useState<Group[] | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
-
-  useEffect(() => {
-    setSelectedGroups(null);
-    setSelectedRoles(null);
-  }, [editing]);
-
-  const getRoleOptions = () => {
-    switch (groupType) {
-      case 'Home Organisation':
-        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
-      case 'Other Organisations':
-        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
-      case 'Projects and Other Groups':
-        return allRoles.filter((role) => projectRoles.includes(role.name as RoleName));
-      default:
-        return [];
-    }
-  };
-
-  const allRolesForGroup = getRoleOptions();
-
-  const getGroupOptions = () => {
-    const [personalOrgGroups, foriegnOrgGroups, restoftheGroups] = sortGroups(allGroups, user);
-
-    switch (groupType) {
-      case 'Home Organisation':
-        return personalOrgGroups;
-      case 'Other Organisations':
-        return foriegnOrgGroups;
-      case 'Projects and Other Groups':
-        return restoftheGroups;
-      default:
-        return [];
-    }
-  };
-
-  const groupOptions = editing ? getGroupOptions() : [];
-
-  const addGroupRoles = () => {
-    const newGroupRoles: GroupRole[] = (selectedGroups as Group[]).flatMap((group) =>
-      (selectedRoles as Role[]).map((role) => ({
-        group,
-        role: {
-          id: role.roleId,
-          name: role.name,
-        },
-      })));
-    
-    const duplicateFound = newGroupRoles.some((newGroupRole) =>
-      existingGroupRoles.some(
-        (groupRole) =>
-          groupRole.group.groupId === newGroupRole.group.groupId &&
-          groupRole.role.id === newGroupRole.role.id,
-      ));
-
-    if (duplicateFound) {
-      setOpenDupSnackbar(true);
-      return;
-    }
-
-    const updatedGroupRoles = [...existingGroupRoles, ...newGroupRoles];
-    updateUserGroupRoles(updatedGroupRoles);
-    setSelectedGroups(null);
-    setSelectedRoles(null);
-  };
-
-  const handleAddGroupRole = () => {
-    if (selectedGroups && selectedRoles) {
-      addGroupRoles();
-    }
-  };
-
-  const isAddButtonEnabled = selectedGroups !== null && selectedRoles !== null;
+  const isAddButtonEnabled = selectedResources !== null && selectedRoles !== null;
 
   return (
-    <TableRow key={groupType}>
-      <TableCell width="250em">
+    <TableRow key={recordType} style={{ backgroundColor: 'var(--primary-grey)', borderRadius: '6px', border: 'none' }}>
+      <TableCell>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
             aria-label="expand row"
             size="small"
-            onClick={() => handleGroupRoleToggle(groupType)}
-            disabled={!editing && groupMapSize === 0}
+            onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(groupType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
           </IconButton>
-          {groupMapSize === 0 ? (
-            <Typography variant="body2" sx={{ color: 'grey' }}>
-              {groupType}
-            </Typography>
-          ) : (
-            <Typography variant="body2">{groupType}</Typography>
-          )}
-
+          <Typography variant="body2">{recordType}</Typography>
         </div>
       </TableCell>
       <TableCell>
@@ -152,14 +73,14 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
           {editing ? (
             <>
               <Autocomplete
-                options={groupOptions}
+                options={dummyResources}
                 multiple
                 limitTags={1}
                 style={{ width: '19em' }}
-                value={selectedGroups || []}
+                value={selectedResources || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedGroups(v)}
+                onChange={(e, v) => setSelectedResources(v)}
                 renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
                     <Checkbox
@@ -191,7 +112,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 )}
               />
               <Autocomplete
-                options={allRolesForGroup}
+                options={dummyRoles}
                 multiple
                 limitTags={1}
                 style={{ width: '19em' }}
@@ -235,10 +156,10 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                   size="small"
                   color={isAddButtonEnabled ? 'success' : 'default'}
                   onClick={() => {
-                    handleAddGroupRole();
+                    /* handleAddGroupRole();
                     if (!openGroupRoles.includes(groupType)) {
                       handleGroupRoleToggle(groupType);
-                    }
+                    } */
                   }}
                   disabled={!isAddButtonEnabled}
                 >
@@ -253,4 +174,4 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   );
 }
 
-export default GroupHeaderRow;
+export default GroupHeaderRowV2;

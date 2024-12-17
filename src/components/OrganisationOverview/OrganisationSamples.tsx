@@ -31,7 +31,6 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
           </Tooltip>
         )
         : null }
-
       <FormControl
         variant="standard"
         sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
