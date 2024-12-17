@@ -87,9 +87,75 @@ export interface User {
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
+  privileges: GroupedPrivilegesByRecordType[],
+}
+
+export interface UserV2 {
+  objectId: string,
+  globalId: string,
+  isActive: boolean,
+  orgGlobalId:string,
+  orgAbbrev: string,
+  orgName: string,
+  isAusTrakkaAdmin: boolean,
+  displayName: string,
+  created: Date,
+  contactEmail: string,
+  IsAusTrakkaProcess: boolean,
+  analysisServerUsername: string,
+  privileges: GroupedPrivilegesByRecordType[],
+}
+
+export interface UserMe {
+  objectId: string,
+  displayName: string,
+  contactEmail: string,
+  orgId: number,
+  orgAbbrev: string,
+  orgName: string,
+  analysisServerUsername: string,
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
+}
+
+export interface GroupedPrivilegesByRecordTypeWithScopes {
+  recordType: string,
+  recordRoles: PrivilegeWithRolesWithScopes[],
+}
+
+export interface PrivilegeWithRolesWithScopes {
+  recordName: string,
+  roles: RoleWithScopes[],
+}
+
+export interface RoleWithScopes {
+  role: string,
+  scopes: string[],
+}
+
+export interface GroupedPrivilegesByRecordType {
+  recordType: string,
+  recordRoles: PrivilegeWithRoles[],
+}
+
+export interface PrivilegeWithRoles {
+  recordName: string,
+  roleNames: string[],
 }
 
 export interface UserList {
+  name: string,
+  id: string,
+  organisation: string,
+  contactEmail: string,
+  isActive: boolean,
+  created: string,
+  createdBy: string,
+  isAusTrakkaAdmin: boolean,
+  isAusTrakkaProcess: boolean,
+  analysisServerUsername: string,
+}
+
+export interface UserListV2 {
   name: string,
   id: string,
   organisation: string,
@@ -221,6 +287,11 @@ export interface GroupRole {
   group: Group
 }
 
+export interface MinimalScope {
+  scopePath: string,
+  shortDescription: string,
+}
+
 export interface Group {
   groupId: number,
   name: string,
@@ -264,4 +335,18 @@ export interface Feedback {
 export interface ProjectDashboardDetails {
   projectDashboardId: number,
   name: string,
+}
+
+export interface UserPatch {
+  displayName: string,
+  contactEmail: string,
+  orgAbbrev: string,
+  isActive: boolean,
+  analysisServerUsername: string,
+}
+
+export interface UserPatchV2 {
+  displayName: string,
+  contactEmail: string,
+  analysisServerUsername: string,
 }

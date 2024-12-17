@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrgansations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
+import { getGroupList, getOrganisations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
 import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -87,7 +87,7 @@ function UserDetail() {
 
   useEffect(() => {
     const getOrgData = async () => {
-      const userResponse: ResponseObject = await getOrgansations(false, token);
+      const userResponse: ResponseObject = await getOrganisations(false, token);
       if (userResponse.status === ResponseType.Success) {
         const orgData = userResponse.data;
         setAllOrgs(orgData);
@@ -292,7 +292,7 @@ function UserDetail() {
         <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
         : null}
       {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
+      <TableContainer component={Paper} sx={{ mt: 3, borderRadius: '10px' }}>
         <Table>
           <TableBody>
             {Object.entries(user).map(([field, value]) => {

@@ -1,20 +1,18 @@
 import { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
+import { hasScopeInRecord } from '../utilities/accessTableUtils';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
   CanShow = 'canShow',
 }
 
-interface ResourcePriviledges {
+interface ResourcePrivileges {
   [PermissionLevel.CanShow]?: string[];
   [PermissionLevel.CanClick]?: string[];
 }
 
-const componentPermissions: Readonly<Record<string, ResourcePriviledges>> = {
-  'fields': {
-    [PermissionLevel.CanClick]: [RoleName.AusTrakkaAdmin],
-  },
+const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
   'users': {
     [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
   },
@@ -44,4 +42,18 @@ export function hasPermission(
   const userRoles = user.groupRolesByGroup[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return userRoles.some(role => allowedRoles.includes(role));
+}
+
+export function hasPermissionV2(
+  user: UserSliceState,
+  recordId: string,
+  scope: string,
+): boolean {
+  if (!user) return false;
+  // This is if they are admin
+  if (user.adminV2) {
+    return true;
+  }
+  
+  return hasScopeInRecord(user.scopes, recordId, scope, user.defaultTenantName);
 }

@@ -1,5 +1,5 @@
 import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
-import { Feedback, FeedbackPost } from '../types/dtos';
+import { Feedback, FeedbackPost, UserPatchV2 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -37,6 +37,8 @@ export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma and field endpoints
+// if the condition is custom, then the value is going to be a string boolean
+// and we don't need to do anything
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
@@ -59,7 +61,7 @@ export const getProjectViewData = (projectAbbrev: string, viewId: number, token:
 export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 
 // User dashboard endpoints
-export const getUserDashboardOveriew = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
+export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
 export const getUserDashboardProjects = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/projects-total?filters=${searchParams}`, token);
 export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
 
@@ -85,6 +87,86 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 export const getSampleGroups = (sampleName:string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
 
 // Organisation endpoints
-export const getOrgansations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
+export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
+
+// PermissionV2 endpoints
+// Tenant
+export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
+// User
+export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/User/Me`, token);
+export const getUserListV2 = (
+  includeAll: boolean,
+  owningTenantGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/Users?includeall=${includeAll}`, token);
+
+export const getUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+
+export const patchUserV2 = (
+  userGlobalId: string,
+  userPatchDto: UserPatchV2,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+  userPatchDto,
+);
+
+export const disableUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/disable/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+);
+
+export const enableUserV2 = (
+  userGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/UserV2/enable/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+);
+
+// OrganisationV2
+
+export const getOrganisationsV2 = (
+  organisationGlobalId: string,
+  token: string,
+) => callGET(`/api/V2/OrganisationV2/${organisationGlobalId}`, token);
+
+export const patchUserOrganisationV2 = (
+  userGlobalId: string,
+  organisationGlobalId: string,
+  targetOrgGlobalId: string,
+  owningTenantGlobalId: string,
+  token: string,
+) => callPATCH(
+  `/api/V2/OrganisationV2/${organisationGlobalId}/User/${userGlobalId}?owningTenantGlobalId=${owningTenantGlobalId}`,
+  token,
+  targetOrgGlobalId,
+);
+
+// Tenant
+
+export const getFieldsV2 = (
+  tenantGlobalId: string,
+  token: string,
+) =>
+  callGET(`/api/V2/Tenant/${tenantGlobalId}/MetaDataColumn`, token);
+export const patchFieldV2 = (
+  tenantGlobalId: string,
+  metaDataColumnName: string,
+  token: string,
+  field: any,
+) =>
+  callPATCH(`/api/V2/Tenant/${tenantGlobalId}/MetaDataColumn/${metaDataColumnName}`, token, field);

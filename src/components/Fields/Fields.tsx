@@ -6,16 +6,17 @@ import { FilterMatchMode } from 'primereact/api';
 import { EditOutlined } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
-import { getFields, patchField } from '../../utilities/resourceUtils';
+import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { NumericEditable, TextEditable } from './EditableFields';
+import { ScopeDefinitions } from '../../constants/scopes';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -25,7 +26,10 @@ function Fields() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick);
+  // The scope should be in scope constant file somewhere in the future.
+  // So it can be synced with the backend.
+  const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
+  const interactionPermission = hasPermissionV2(user, user.defaultTenantName, scope);
 
   // get all AT fields
   useEffect(() => {
@@ -39,7 +43,7 @@ function Fields() {
 
     const retrieveFields = async () => {
       try {
-        const response: ResponseObject = await getFields(token);
+        const response: ResponseObject = await getFieldsV2(user.defaultTenantGlobalId, token);
         if (response.status === ResponseType.Success) {
           const responseFields: MetaDataColumn[] = response.data;
           responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
@@ -58,7 +62,7 @@ function Fields() {
         await retrieveFields(); // Await the promise to avoid unhandled rejection warnings
       })();
     }
-  }, [token, tokenLoading]);
+  }, [token, tokenLoading, user.defaultTenantGlobalId]);
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
@@ -108,13 +112,13 @@ function Fields() {
 
   const updateField = async (data: ColumnEvent) => {
     const { rowData, field, newValue } = data;
-    const fieldId = rowData.metaDataColumnId;
+    const fieldName = rowData.columnName;
     const fieldData = { [field]: newValue };
 
-    const response = await patchField(fieldId, token, fieldData);
+    const response = await patchFieldV2(user.defaultTenantGlobalId, fieldName, token, fieldData);
     if (response.status === ResponseType.Success) {
       setFields(fields.map((fieldMetadata: MetaDataColumn) =>
-        (fieldMetadata.metaDataColumnId === fieldId ?
+        (fieldMetadata.columnName === fieldName ?
           { ...fieldMetadata, ...fieldData } :
           fieldMetadata)));
     } else {
@@ -217,7 +221,7 @@ function Fields() {
           sortIcon={sortIcon}
           paginator
           rows={25}
-          rowsPerPageOptions={[25, 50, 100, 150]}
+          rowsPerPageOptions={[25, 50, 100, 150, 500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
