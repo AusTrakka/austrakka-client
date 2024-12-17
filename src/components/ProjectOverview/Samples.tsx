@@ -219,12 +219,12 @@ function Samples(props: SamplesProps) {
             removableSort
             showGridlines
             scrollable
-            scrollHeight="calc(100vh - 500px)"
+            scrollHeight="calc(100vh - 480px)"
             paginator
             loading={loadingState}
             rows={25}
             columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500]}
+            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"

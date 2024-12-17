@@ -229,7 +229,7 @@ function SampleTable(props: SamplesProps) {
           selectionMode="single"
           rows={25}
           loading={filtering || isSamplesLoading}
-          rowsPerPageOptions={[25, 50, 100, 500]}
+          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
