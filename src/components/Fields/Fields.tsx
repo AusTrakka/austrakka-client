@@ -221,7 +221,7 @@ function Fields() {
           sortIcon={sortIcon}
           paginator
           rows={25}
-          rowsPerPageOptions={[25, 50, 100, 150]}
+          rowsPerPageOptions={[25, 50, 100, 150, 500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
