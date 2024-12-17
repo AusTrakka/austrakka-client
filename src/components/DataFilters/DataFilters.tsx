@@ -6,7 +6,8 @@ import {
   FormControl,
   Grid,
   IconButton,
-  InputLabel, LinearProgress,
+  InputLabel,
+  LinearProgress,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -200,14 +201,19 @@ function DataFilters(props: DataFiltersProps) {
     }
   };
   
-  const handleDateDependingOnCondition = (condition: FilterMatchMode, date: Date) => {
+  const handleDateDependingOnCondition = (condition: FilterMatchMode, value: string) => {
+    // if the condition is custom, then the value is going to be a string boolean,
+    // and we don't need to do anything
+    if (condition === FilterMatchMode.CUSTOM) {
+      return value;
+    }
     if (condition === FilterMatchMode.DATE_AFTER) {
-      const endOfDay = new Date(date);
+      const endOfDay = new Date(value);
       endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
       return endOfDay;
     }
     
-    return date;
+    return new Date(value);
   };
 
   const handleFilterDateChange = (newDate: any) => {
@@ -253,7 +259,7 @@ function DataFilters(props: DataFiltersProps) {
             operator: FilterOperator.AND,
             constraints: [{
               value: filterFormValues.fieldType === FieldTypes.DATE
-                ? handleDateDependingOnCondition(filterMatchMode, new Date(filterFormValues.value))
+                ? handleDateDependingOnCondition(filterMatchMode, filterFormValues.value)
                 : filterFormValues.value,
               matchMode: filterMatchMode,
             }],
