@@ -148,7 +148,7 @@ function Fields() {
 
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
     <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-      {rowData[field] === null ? <div /> : rowData[field]}
+      {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
       <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
     </div>
   );

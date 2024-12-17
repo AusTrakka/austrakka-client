@@ -11,7 +11,7 @@ import { generateFilename } from '../../utilities/file';
 interface ExportTableDataProps {
   dataToExport: any[]
   disabled: boolean
-  headers?: any[]
+  headers?: string[]
 }
 
 function ExportTableData(props: ExportTableDataProps) {
