@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { UserOverview } from './user.overview.interface';
-import { getUserDashboardOveriew } from '../../../../utilities/resourceUtils';
+import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
 import LoadingState from '../../../../constants/loadingState';
 import type { RootState } from '../../../../app/store';
 import { ResponseObject } from '../../../../types/responseObject.interface';
@@ -25,7 +25,7 @@ export const fetchUserOverview = createAsyncThunk(
   ):Promise<ResponseObject | unknown> => {
     const state = getState() as RootState;
     const filterString = generateDateFilterString(state.userDashboardState.timeFilterObject);
-    const response = await getUserDashboardOveriew(token, filterString);
+    const response = await getUserDashboardOverview(token, filterString);
     if (response.status === ResponseType.Success) {
       return fulfillWithValue(response);
     }

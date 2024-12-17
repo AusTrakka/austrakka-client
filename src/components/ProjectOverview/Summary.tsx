@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import {
   Card, CardContent, Alert, Tooltip, Box,
 } from '@mui/material';
-import { ErrorOutline } from '@mui/icons-material/';
+import { ErrorOutline } from '@mui/icons-material';
 import styles from './ProjectOverview.module.css';
 
 interface SummaryProps {

@@ -7,7 +7,7 @@ import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
-} from '@mui/icons-material/';
+} from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
   MenuItem, Typography,
@@ -20,13 +20,12 @@ import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
-
-const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
-const logoOnlyUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_SMALL_PATH}`, import.meta.url).href;
+import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
+  const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
   const settings = [
@@ -117,15 +116,21 @@ function MainMenuLayout() {
       icon: <Upload />,
     },
     {
+      title: 'Fields',
+      link: '/fields',
+      icon: <ViewColumn />,
+    },
+    {
       title: 'Users',
       link: '/users',
       icon: <People />,
       permissionDomain: 'users',
     },
     {
-      title: 'Fields',
-      link: '/fields',
-      icon: <ViewColumn />,
+      title: 'Users (V2)',
+      link: '/usersV2',
+      icon: <People color="warning" />,
+      permissionDomain: 'usersV2',
     },
   ];
   const visiblePages = pages.filter((page) =>
@@ -145,8 +150,10 @@ function MainMenuLayout() {
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
+      updateWarningBanner('warningBannerPadded');
     } else {
       updatePageStyling('page');
+      updateWarningBanner('warningBanner');
     }
   };
 
@@ -262,6 +269,21 @@ function MainMenuLayout() {
           </List>
         </Drawer>
       </Box>
+      {pathnames.includes('usersV2') ? (
+        <div className={warningBanner}>
+          <Typography
+            variant="body2"
+            style={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              padding: '10px',
+            }}
+          >
+            This is the new user interface with an in-progress permissions system.
+            Not all new roles have been implemented.
+          </Typography>
+        </div>
+      ) : null}
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">

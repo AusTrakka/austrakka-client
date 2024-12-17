@@ -16,7 +16,7 @@ function renderIcon(rowData: any, size: any = 'small') {
             </Tooltip>
           ) : (
             <Tooltip title="Disabled-User" placement="top" arrow>
-              <PersonOff color="error" fontSize={size} style={{ margin: '0.5rem' }} />
+              <PersonOff fontSize={size} style={{ margin: '0.5rem', color: 'var(--secondary-red)' }} />
             </Tooltip>
           )
     }

@@ -1,0 +1,32 @@
+.key-cell {
+    width: 180px;
+    border-bottom: none;
+    padding-left: 10px;
+}
+
+.key-cell-editing {
+    width: 180px;
+    border-bottom: none;
+    padding-left: 10px;
+}
+
+.value-cell {
+    border-bottom: none;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.value-cell-editing {
+    border-bottom: none;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.basic-info-table {
+    margin-top: 1em;
+    border: none;
+    padding: 20px;
+    border-radius: 6px;
+    height: 530px;
+    min-width: 550px;
+    }
