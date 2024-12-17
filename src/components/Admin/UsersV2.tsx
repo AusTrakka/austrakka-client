@@ -119,7 +119,7 @@ function UsersV2() {
           <ExportTableData
             dataToExport={exportData}
             disabled={false}
-            headers={columns.map((col) => ({ label: col.header, key: col.field }))}
+            headers={columns.map((col) => (col.field))}
           />
         </div>
       </div>
