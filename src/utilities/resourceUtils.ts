@@ -37,6 +37,7 @@ export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma and field endpoints
+// if the condition is custom, then the value is going to be a string boolean// and we don't need to do anything
 export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
@@ -93,7 +94,7 @@ export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Prom
 // Tenant
 export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
 // User
-export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/UserV2/Me?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/User/Me`, token);
 export const getUserListV2 = (
   includeAll: boolean,
   owningTenantGlobalId: string,
