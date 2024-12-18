@@ -87,8 +87,8 @@ function UsersV2() {
   }, [includeAll, token, tokenLoading, user]);
 
   const rowClickHandler = (selectedRow: DataTableRowClickEvent) => {
-    const { id } = selectedRow.data;
-    const url = `/usersV2/${id}`;
+    const { globalId } = selectedRow.data;
+    const url = `/usersV2/${globalId}`;
     navigate(url);
   };
 
