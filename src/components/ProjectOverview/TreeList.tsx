@@ -44,11 +44,7 @@ function TreeList(props: TreesProps) {
         token,
       );
       if (treeListResponse.status === ResponseType.Success) {
-        const newData = treeListResponse.data.map((tree: any) => ({
-          ...tree,
-          latestTreeLastUpdated: new Date(tree.latestTreeLastUpdated),
-        }));
-        setTreeList(newData);
+        setTreeList(treeListResponse.data);
         setTreeListError(false);
         setIsTreesLoading(false);
       } else {

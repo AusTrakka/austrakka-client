@@ -59,6 +59,7 @@ function MainMenuLayout() {
     proformas: 'ProFormas',
     members: 'Members',
     users: 'Users',
+    usersV2: 'Users (V2)',
     fields: 'Fields',
     datasets: 'Datasets',
   };
