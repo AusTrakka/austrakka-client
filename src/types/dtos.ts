@@ -145,6 +145,7 @@ export interface PrivilegeWithRoles {
 export interface UserList {
   name: string,
   id: string,
+  globalId: string,
   organisation: string,
   contactEmail: string,
   isActive: boolean,
