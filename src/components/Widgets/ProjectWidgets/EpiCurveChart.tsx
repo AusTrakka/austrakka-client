@@ -3,7 +3,6 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { InlineData } from 'vega-lite/build/src/data';
 import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
@@ -132,7 +131,7 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
       const copy = filteredData!.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as InlineData).values = copy;
+      (compiledSpec.data![0] as any).values = copy;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
