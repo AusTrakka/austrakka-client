@@ -4,6 +4,7 @@ export interface Project {
   abbreviation: string,
   name: string,
   description: string,
+  type: string,
   projectMembers: {
     id: number,
     name: string

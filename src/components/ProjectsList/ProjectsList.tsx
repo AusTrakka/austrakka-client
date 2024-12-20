@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Paper, Typography } from '@mui/material';
+import { Alert, Chip, Paper, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
@@ -13,7 +13,36 @@ import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 
+function renderTagChip(cell: string): JSX.Element {
+  const tag = cell;
+  if (cell === null || cell === undefined || cell === '') {
+    return (
+      <Typography
+        variant="body2"
+        color="textDisabled"
+        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+      >
+        No Type Set
+      </Typography>
+    );
+  }
+  return (
+    <Chip
+      key={tag}
+      label={tag}
+      variant="outlined"
+      size="small"
+      style={{ margin: '3px',
+        display: 'flex',
+        justifyContent: 'center',
+        color: 'var(--secondary-dark-green)',
+        borderRadius: '0px' }}
+    />
+  );
+}
+
 const columns = [
+  { field: 'tag', header: 'Tag', body: (rowData: any) => renderTagChip(rowData.tag) },
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
