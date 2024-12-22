@@ -36,8 +36,9 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
 
 export function countPresentOrMissing(property: string, array: Array<any>) {
   if (!array || !Array.isArray(array)) {
+    // NB "Available" not "Present": some default behaviours work better with alphabetical ordering Available,Missing!
     return [
-      { status: 'Present', sampleCount: 0 },
+      { status: 'Available', sampleCount: 0 },
       { status: 'Missing', sampleCount: 0 },
     ];
   }
@@ -54,9 +55,45 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
   });
   
   return [
-    { status: 'Present', sampleCount: presentCount },
+    { status: 'Available', sampleCount: presentCount },
     { status: 'Missing', sampleCount: array.length - presentCount },
   ];
+}
+
+export function countPresentOrMissingByCategory(property: string, category: string, array: Array<any>) : Record<string, number>[] {
+  if (!array || !Array.isArray(array)) return [];
+  
+  const map = new Map();
+  array.forEach((item) => {
+    if (item && typeof item === 'object') {
+      // throw error if category or property missing
+      if (!Object.hasOwn(item, property)) {
+        throw new Error(`Property ${property} missing from object when counting present or missing`);
+      }
+      if (!Object.hasOwn(item, category)) {
+        throw new Error(`Category ${category} missing from object when counting present or missing`);
+      }
+      const value = item[property];
+      const cat = item[category];
+      if (map.has(cat)) {
+        if (!isNullOrEmpty(value)) {
+          map.set(cat, [map.get(cat)[0] + 1, map.get(cat)[1]]);
+        } else {
+          map.set(cat, [map.get(cat)[0], map.get(cat)[1] + 1]);
+        }
+      } else {
+        map.set(cat, [isNullOrEmpty(value) ? 0 : 1, isNullOrEmpty(value) ? 1 : 0]);
+      }
+    }
+  });
+  
+  const result = [];
+  for (const [key, value] of map) {
+    result.push(
+      { [category]: key, 'Available': value[0], 'Missing': value[1] },
+    );
+  }
+  return result;
 }
 
 // Get max or min for any object kind that implements comparison

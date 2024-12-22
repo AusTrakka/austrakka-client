@@ -1,12 +1,14 @@
 import { countPresentOrMissing } from '../../../src/utilities/dataProcessingUtils';
 
+// TODO check if we've broken e.g. PHESS widget
+
 describe('countPresentOrMissing', () => {
   test('given an empty input array, returns zero counts', () => {
     const input: any[] = [];
     const property = 'someProperty';
     const result = countPresentOrMissing(property, input);
     expect(result).toEqual([
-      { status: 'Present', sampleCount: 0 },
+      { status: 'Available', sampleCount: 0 },
       { status: 'Missing', sampleCount: 0 },
     ]);
   });
@@ -20,7 +22,7 @@ describe('countPresentOrMissing', () => {
     const property = 'someProperty';
     const result = countPresentOrMissing(property, input);
     expect(result).toEqual([
-      { status: 'Present', sampleCount: 3 },
+      { status: 'Available', sampleCount: 3 },
       { status: 'Missing', sampleCount: 0 },
     ]);
   });
@@ -34,7 +36,7 @@ describe('countPresentOrMissing', () => {
     const property = 'someProperty';
     const result = countPresentOrMissing(property, input);
     expect(result).toEqual([
-      { status: 'Present', sampleCount: 2 },
+      { status: 'Available', sampleCount: 2 },
       { status: 'Missing', sampleCount: 1 },
     ]);
   });
@@ -48,7 +50,7 @@ describe('countPresentOrMissing', () => {
     const property = 'someProperty';
     const result = countPresentOrMissing(property, input);
     expect(result).toEqual([
-      { status: 'Present', sampleCount: 2 },
+      { status: 'Available', sampleCount: 2 },
       { status: 'Missing', sampleCount: 1 },
     ]);
   });
