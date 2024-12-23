@@ -36,13 +36,14 @@ function renderTagChip(cell: string): JSX.Element {
         display: 'flex',
         justifyContent: 'center',
         color: 'var(--secondary-dark-green)',
+        width: '100%',
         borderRadius: '0px' }}
     />
   );
 }
 
 const columns = [
-  { field: 'tag', header: 'Tag', body: (rowData: any) => renderTagChip(rowData.tag) },
+  { field: 'type', header: 'Type', body: (rowData: any) => renderTagChip(rowData.type) },
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
