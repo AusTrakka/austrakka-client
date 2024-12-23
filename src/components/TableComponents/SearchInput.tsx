@@ -9,9 +9,7 @@ interface SearchInputProps {
   placeholder?: string;
 }
 
-function SearchInput(props: SearchInputProps) {
-  const { value, onChange, label, placeholder } = props;
-
+function SearchInput({ placeholder = '', label = 'Search', value, onChange }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (

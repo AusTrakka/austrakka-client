@@ -1,9 +1,25 @@
 import React, { useEffect, useState, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Chip, Paper, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import {
+  Alert,
+  Chip,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { DataTable,
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
+import { Clear } from '@mui/icons-material';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -56,10 +72,15 @@ function ProjectsList() {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
+  const [allTypes, setAllTypes] = useState<string[]>([]);
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const [filters, setFilters] = useState<DataTableFilterMeta>(
+    {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      type: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    },
   );
 
   useEffect(() => {
@@ -94,20 +115,80 @@ function ProjectsList() {
     const selectedProjectRow = row.data;
     setSelectedProject(selectedProjectRow);
   };
+  
+  useEffect(() => {
+    const distinctTypes = [...new Set(projectsList.map((project: any) => project.type))];
+    setAllTypes(distinctTypes);
+  }, [projectsList]);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    const filters = { ...globalFilter };
-    (filters.global as DataTableFilterMetaData).value = value;
-    setGlobalFilter(filters);
+    const filtersCopy = { ...filters };
+    (filtersCopy.global as DataTableFilterMetaData).value = value;
+    setFilters(filtersCopy);
+  };
+  
+  const onTypeFilterChange = (e : SelectChangeEvent<string | null>) => {
+    const { value } = e.target;
+    setSelectedValue(value || null);
+    const filtersCopy = { ...filters };
+    (filtersCopy.type as DataTableFilterMetaData).value = value;
+    setFilters(filtersCopy);
+  };
+  
+  const resetFilters = () => {
+    const filtersCopy = { ...filters };
+    (filtersCopy.global as DataTableFilterMetaData).value = null;
+    (filtersCopy.type as DataTableFilterMetaData).value = null;
+    setFilters(filtersCopy);
   };
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-      <SearchInput
-        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
-        onChange={onGlobalFilterChange}
-      />
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+        <SearchInput
+          value={(filters.global as DataTableFilterMetaData).value || ''}
+          onChange={onGlobalFilterChange}
+        />
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <Select
+            value={selectedValue || ''}
+            onChange={e => onTypeFilterChange(e)}
+            size="small"
+            variant="outlined"
+            displayEmpty
+            renderValue={(selected) =>
+              (selected ? (
+                <em style={{ fontSize: '.9em' }}>{selected}</em>
+              ) :
+                (
+                  <Typography color="textDisabled" variant="subtitle2">
+                    Filter by Type
+                  </Typography>
+                ))}
+            endAdornment={
+                selectedValue && (
+                <InputAdornment sx={{ marginRight: '15px' }} position="end">
+                  <IconButton
+                    onClick={() => {
+                      setSelectedValue(null);
+                      resetFilters();
+                    }}
+                  >
+                    <Clear fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+                )
+            }
+          >
+            {allTypes.map((option) => (
+              <MenuItem key={option} value={option} sx={{ fontSize: '0.9em' }}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
     </div>
   );
 
@@ -129,7 +210,7 @@ function ProjectsList() {
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
-              filters={globalFilter}
+              filters={filters}
               globalFilterFields={columns.map((col) => col.field)}
               size="small"
               removableSort
