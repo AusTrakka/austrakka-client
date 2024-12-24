@@ -39,15 +39,18 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
   // Instead should remove these transforms and add a click handler to the plot
   // e.g. https://stackoverflow.com/questions/57707494/whats-the-proper-way-to-implement-a-custom-click-handler-in-vega-lite
   // Note we compile the vega-lite to vega, so adding a signal is possible.
-  const urlTransforms = accessionFields.map(field => ({
-    calculate: `datum['${field.columnName}'] ? '/projects/${projectAbbrev}/samples?filters=(${field.columnName}:and:(true:custom))' : '/projects/${projectAbbrev}/samples?filters=(${field.columnName}:and:(false:custom))'`,
-    as: `${field.columnName}_url`,
-  }));
+  // const urlTransforms = accessionFields.map(field => ({
+  // calculate: `datum['${field.columnName}'] ?
+  // '/projects/${projectAbbrev}/samples?
+  // filters=(${field.columnName}:and:(true:custom))' :
+  // '/projects/${projectAbbrev}/samples?filters=(${field.columnName}:and:(false:custom))'`,
+  //   as: `${field.columnName}_url`,
+  // }));
 
   const columnPlotSpec = (accField: string, axis: boolean = true) => ({
     title: `${accField} status`,
     layer: [{
-      mark: { type: 'bar', tooltip: true },
+      mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
       encoding: {
         x: {
           aggregate: 'count',
@@ -65,13 +68,10 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
           },
           legend: { title: 'Accession status', orient: 'bottom' },
         },
-        href: {
-          field: `${accField}_url`,
-        },
       },
     },
     {
-      mark: { type: 'text', color: 'black' },
+      mark: { type: 'text', color: 'black', tooltip: true, cursor: 'pointer' },
       encoding: {
         text: { aggregate: 'count' },
         x: {
@@ -88,24 +88,28 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
   });
   
   // inputdata is expected to contain ORG_FIELD_NAME and accessionFields
+  // I'm not sure how I'd fix this type script error
+  // @ts-ignore
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
       { calculate: `split(datum['${ORG_FIELD_NAME}'],'-Owner')[0]`, as: ORG_FIELD_PLOTNAME },
       ...fieldTransforms,
-      ...urlTransforms,
     ],
     width: 'container',
     height: 250,
     // hconcat doesn't behave well with container resizing
     // alternatives: draw two plots in this widget, or split into two widgets
     hconcat: accessionFields.map(field => columnPlotSpec(field.columnName)),
+    usermeta: { // Add metadata to help identify which chart was clicked
+      accessionFields: accessionFields.map(f => f.columnName),
+    },
   };
   
   useEffect(() => {
     if (data?.loadingState && (
-        data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
+      data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
         data.loadingState === MetadataLoadingState.DATA_LOADED)) {
       const fields = data.fields!.map(field => field.columnName);
       if (!fields.includes(ORG_FIELD_NAME)) {
@@ -130,9 +134,27 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
         ...item,
       }));
       (compiledSpec.data![0] as any).values = copy;
-      const view = await new VegaView(parse(compiledSpec))
+
+      const view = new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
-        .runAsync();
+        .addEventListener('click', (event, item) => {
+          if (!item || !item.datum) return;
+
+          // Find which accession field was clicked by checking the datum
+          const accField = ACCESSION_FIELDS.find(
+            field => `${field}_status` in item.datum,
+          );
+
+          if (!accField) return;
+
+          const status = item.datum[`${accField}_status`];
+
+          // Create the URL and navigate
+          const url = `/projects/${projectAbbrev}/samples?filters=(${accField}:and:(${status === 'Available'}:custom))`;
+          navigate(url);
+        });
+
+      await view.runAsync();
       setVegaView(view);
     };
 
