@@ -1,27 +1,37 @@
-import { Box, Card, CardContent, Grid } from '@mui/material';
+import { Box, Card, CardContent } from '@mui/material';
 import React from 'react';
+import Grid from '@mui/material/Grid2';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import AccessionCounts from '../../Widgets/ProjectWidgets/AccessionCounts';
+import DateCollCounts from '../../Widgets/ProjectWidgets/DateCollCount';
 
-// TODO: Set a max card height and handle scroll voerflow
 function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
     timeFilterObject,
   } = props;
-  
-  // Simplified layout: summary widget and epi curve widget always full width,
-  // with organisations and accession counts widgets side by side below
-  
+
+  const cardStyle = {
+    padding: 1,
+    border: 'none',
+    boxShadow: 'none',
+  };
+
+  const tallCardStyle = {
+    ...cardStyle,
+    minHeight: 300,
+  };
+
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box>
       <Grid container spacing={2}>
-        <Grid item lg={12}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+        {/* First Row: Single Grid spanning the entire row */}
+        <Grid size={12}>
+          <Card sx={cardStyle}>
             <CardContent>
               <SampleSummary
                 projectAbbrev={projectAbbrev}
@@ -30,7 +40,11 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
               />
             </CardContent>
           </Card>
-          <Card sx={{ padding: 1, border: 'none', marginTop: 2, boxShadow: 'none' }}>
+        </Grid>
+
+        {/* Second Row: Two Grids sharing 70% and 25% */}
+        <Grid size={9}>
+          <Card sx={tallCardStyle}>
             <CardContent>
               <EpiCurveChart
                 projectAbbrev={projectAbbrev}
@@ -40,8 +54,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item lg={4} md={4} xs={12}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', minHeight: 300 }}>
+        <Grid size={3}>
+          <Card sx={{ ...tallCardStyle, height: '100%' }}>
             <CardContent>
               <Organisations
                 projectAbbrev={projectAbbrev}
@@ -51,8 +65,21 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item lg={8} md={8} xs={12}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', minHeight: 300 }}>
+
+        {/* Third Row: Two Grids sharing approximately 1/3 and 2/3 */}
+        <Grid size={4}>
+          <Card sx={tallCardStyle}>
+            <CardContent>
+              <DateCollCounts
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={8}>
+          <Card sx={tallCardStyle}>
             <CardContent>
               <AccessionCounts
                 projectAbbrev={projectAbbrev}
@@ -64,6 +91,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
       </Grid>
     </Box>
+
   );
 }
+
 export default BasicDashboard;

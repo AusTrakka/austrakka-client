@@ -6,27 +6,26 @@ import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { InlineData } from 'vega-lite/build/src/data';
 import { useAppSelector } from '../../../app/store';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
-import { Field } from '../../../types/dtos';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import getComputedColor from '../../../utilities/vegaColourUtils';
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';
-const ACCESSION_FIELDS = ['Reads_accession', 'Assembly_accession'];
+const DATE_COLUMN = 'Date_coll';
 
-export default function AccessionCounts(props: ProjectWidgetProps) {
+export default function DateCollCounts(props: ProjectWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject } = props;
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
-  const plotRefs = useRef<(HTMLDivElement | null)[]>([null, null]);
-  const [vegaViews, setVegaViews] = useState<(VegaView | null)[]>([null, null]);
-  const [accessionFields, setAccessionFields] = useState<Field[]>([]);
+  const plotDiv = useRef<HTMLDivElement>(null);
+  const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -34,18 +33,18 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
     AVAILABLE: getComputedColor('--secondary-main'),
     MISSING: getComputedColor('--primary-grey-300'),
   } as const;
-
-  const fieldTransforms = accessionFields.map(field => ({
-    calculate: `datum['${field.columnName}'] ? 'Available' : 'Missing'`,
-    as: `${field.columnName}_status`,
-  }));
-
-  const createSpec = (accField: string, legend: boolean = true) => ({
+  
+  const dateStatusTransform = {
+    calculate: `datum['${DATE_COLUMN}'] ? 'Available' : 'Missing'`,
+    as: `${DATE_COLUMN}_status`,
+  };
+  
+  const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
       { calculate: `split(datum['${ORG_FIELD_NAME}'],'-Owner')[0]`, as: ORG_FIELD_PLOTNAME },
-      ...fieldTransforms,
+      dateStatusTransform,
     ],
     width: 'container',
     height: 250,
@@ -54,6 +53,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
       encoding: {
         x: {
           aggregate: 'count',
+          stack: 'zero',
           axis: { title: 'Count' },
         },
         y: {
@@ -61,12 +61,12 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
           axis: { title: 'Organisation' },
         },
         color: {
-          field: `${accField}_status`,
+          field: `${DATE_COLUMN}_status`,
           scale: {
             domain: ['Available', 'Missing'],
             range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
           },
-          legend: legend ? { title: 'Accession status', orient: 'bottom' } : null,
+          legend: { title: 'Date collection status', orient: 'bottom' },
         },
       },
     },
@@ -81,34 +81,30 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
         },
         y: { field: ORG_FIELD_PLOTNAME },
         detail: {
-          field: `${accField}_status`,
+          field: `${DATE_COLUMN}_status`,
         },
       },
     }],
     title: {
-      text: `${accField} counts`,
+      text: `${DATE_COLUMN} counts`,
       anchor: 'middle',
       fontSize: 12,
     },
     usermeta: {
-      accessionField: accField,
+      dateCollField: DATE_COLUMN,
     },
   });
 
   useEffect(() => {
     if (data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-        data.loadingState === MetadataLoadingState.DATA_LOADED
+            data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
       const fields = data.fields!.map(field => field.columnName);
       if (!fields.includes(ORG_FIELD_NAME)) {
         setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
-      } else if (!fields.some(field => ACCESSION_FIELDS.includes(field))) {
-        setErrorMessage('No accession fields found in project');
-      } else {
-        setAccessionFields(
-          data!.fields!.filter(field => ACCESSION_FIELDS.includes(field.columnName)),
-        );
+      } else if (!fields.includes(DATE_COLUMN)) {
+        setErrorMessage('No date collection field found in project');
       }
     }
   }, [data]);
@@ -116,59 +112,52 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
-      vegaViews.forEach(view => view?.finalize());
+      if (vegaView) {
+        vegaView.finalize();
+      }
 
-      const newViews = await Promise.all(accessionFields.map(async (field, index) => {
-        if (!plotRefs.current[index]) return null;
-        
-        const spec = createSpec(field.columnName, index === 0);
-        const compiledSpec = compile(spec as TopLevelSpec).spec;
-        const copy = filteredData!.map((item: any) => ({ ...item }));
-        (compiledSpec.data![0] as any).values = copy;
+      const spec = createSpec();
+      console.log(spec);
+      const compiledSpec = compile(spec as TopLevelSpec).spec;
+      const copy = filteredData!.map((item: any) => ({ ...item }));
+      (compiledSpec.data![0] as InlineData).values = copy;
+      console.log(compiledSpec);
 
-        const view = new VegaView(parse(compiledSpec))
-          .initialize(plotRefs.current[index]!)
-          .addEventListener('click', (event, item) => {
-            if (!item || !item.datum) return;
-            const status = item.datum[`${field.columnName}_status`];
-            const drillDownTableMetaFilters: DataTableFilterMeta = {
-              [field.columnName]: {
-                operator: FilterOperator.AND,
-                constraints: [
-                  {
-                    matchMode: FilterMatchMode.CUSTOM,
-                    value: status !== 'Available',
-                  },
-                ],
-              },
+      const view = await new VegaView(parse(compiledSpec))
+        .initialize(plotDiv.current!)
+        .addEventListener('click', (_, item) => {
+          if (!item || !item.datum) return;
+          const status = item.datum[`${DATE_COLUMN}_status`];
+          const drillDownTableMetaFilters: DataTableFilterMeta = {
+            [DATE_COLUMN]: {
+              operator: FilterOperator.AND,
+              constraints: [
+                {
+                  matchMode: FilterMatchMode.CUSTOM,
+                  value: status !== 'Available',
+                },
+              ],
+            },
+          };
+          if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
+            const combinedFilters: DataTableFilterMeta = {
+              ...drillDownTableMetaFilters,
+              ...timeFilterObject,
             };
-            if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-              const combinedFilters: DataTableFilterMeta = {
-                ...drillDownTableMetaFilters,
-                ...timeFilterObject,
-              };
-              updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
-            } else {
-              updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
-            }
-          });
-
-        await view.runAsync();
-        return view;
-      }));
-
-      setVegaViews(newViews);
+            updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
+          } else {
+            updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
+          }
+        }).runAsync();
+      setVegaView(view);
     };
 
-    if (filteredData && plotRefs.current[0] && accessionFields.length > 0) {
+    if (filteredData && plotDiv?.current) {
       createVegaViews();
     }
 
-    return () => {
-      vegaViews.forEach(view => view?.finalize());
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, accessionFields, projectAbbrev, navigate]);
+  }, [filteredData, plotDiv, projectAbbrev, navigate]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
@@ -183,7 +172,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Accession counts
+        Date collection counts
       </Typography>
       {errorMessage ? (
         <Alert severity="error">
@@ -192,27 +181,24 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
         </Alert>
       ) :
         (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
-          <Grid container spacing={2}>
-            {accessionFields.map((field, index) => (
-              <Grid key={field.columnName} container size={6}>
-                <Grid size={11}>
-                  <div
-                    ref={el => { plotRefs.current[index] = el; }}
-                    style={{ width: '100%' }}
-                  />
-                </Grid>
-                <Grid size={1}>
-                  <ExportVegaPlot vegaView={vegaViews[index]} />
-                </Grid>
-              </Grid>
-            ))}
+        <Grid container spacing={2}>
+          <Grid size={11}>
+            <div
+              id="#plot-container"
+              ref={plotDiv}
+              style={{ width: '100%' }}
+            />
           </Grid>
+          <Grid size={1}>
+            <ExportVegaPlot vegaView={vegaView} />
+          </Grid>
+        </Grid>
         ))}
       {(!(data?.loadingState) ||
-            !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-                data.loadingState === MetadataLoadingState.ERROR ||
-                data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-                <div>Loading...</div>
+                !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+                    data.loadingState === MetadataLoadingState.ERROR ||
+                    data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+                    <div>Loading...</div>
       )}
     </Box>
   );
