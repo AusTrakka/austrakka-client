@@ -117,11 +117,9 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       }
 
       const spec = createSpec();
-      console.log(spec);
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      console.log(compiledSpec);
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
