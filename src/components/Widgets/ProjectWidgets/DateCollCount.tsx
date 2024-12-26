@@ -127,14 +127,24 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => {
           if (!item || !item.datum) return;
-          const status = item.datum[`${DATE_COLUMN}_status`];
+          const status = item.datum[`${field.columnName}_status`];
+          const org = item.datum[ORG_FIELD_PLOTNAME];
           const drillDownTableMetaFilters: DataTableFilterMeta = {
-            [DATE_COLUMN]: {
+            [field.columnName]: {
               operator: FilterOperator.AND,
               constraints: [
                 {
                   matchMode: FilterMatchMode.CUSTOM,
                   value: status !== 'Available',
+                },
+              ],
+            },
+            [ORG_FIELD_NAME]: {
+              operator: FilterOperator.AND,
+              constraints: [
+                {
+                  matchMode: FilterMatchMode.EQUALS,
+                  value: `${org}-Owner`,
                 },
               ],
             },

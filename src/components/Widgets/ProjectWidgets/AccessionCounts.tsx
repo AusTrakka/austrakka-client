@@ -131,6 +131,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
           .addEventListener('click', (event, item) => {
             if (!item || !item.datum) return;
             const status = item.datum[`${field.columnName}_status`];
+            const org = item.datum[ORG_FIELD_PLOTNAME];
             const drillDownTableMetaFilters: DataTableFilterMeta = {
               [field.columnName]: {
                 operator: FilterOperator.AND,
@@ -138,6 +139,15 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
                   {
                     matchMode: FilterMatchMode.CUSTOM,
                     value: status !== 'Available',
+                  },
+                ],
+              },
+              [ORG_FIELD_NAME]: {
+                operator: FilterOperator.AND,
+                constraints: [
+                  {
+                    matchMode: FilterMatchMode.EQUALS,
+                    value: `${org}-Owner`,
                   },
                 ],
               },
