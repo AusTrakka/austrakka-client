@@ -120,15 +120,15 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
-
+      
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => {
           if (!item || !item.datum) return;
-          const status = item.datum[`${field.columnName}_status`];
+          const status = item.datum[`${DATE_COLUMN}_status`];
           const org = item.datum[ORG_FIELD_PLOTNAME];
           const drillDownTableMetaFilters: DataTableFilterMeta = {
-            [field.columnName]: {
+            [DATE_COLUMN]: {
               operator: FilterOperator.AND,
               constraints: [
                 {
