@@ -49,7 +49,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
     width: 'container',
     height: 250,
     layer: [{
-      mark: { type: 'bar', tooltip: true, cursor: 'pointer', size: 35 },
+      mark: { type: 'bar', tooltip: true, cursor: 'pointer', size: 40 },
       encoding: {
         x: {
           aggregate: 'count',
