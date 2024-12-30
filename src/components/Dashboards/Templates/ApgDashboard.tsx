@@ -7,6 +7,7 @@ import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import AccessionCounts from '../../Widgets/ProjectWidgets/AccessionCounts';
 import DateCollCounts from '../../Widgets/ProjectWidgets/DateCollCount';
+import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
 
 function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
@@ -43,7 +44,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
 
         {/* Second Row: Two Grids sharing 70% and 25% */}
-        <Grid size={9}>
+        <Grid size={{ xs: 12, md: 12, lg: 9 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
               <EpiCurveChart
@@ -54,7 +55,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={3}>
+        <Grid size={{ xs: 12, md: 12, lg: 3 }}>
           <Card sx={{ ...tallCardStyle, height: '100%' }}>
             <CardContent>
               <Organisations
@@ -65,9 +66,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-
         {/* Third Row: Two Grids sharing approximately 1/3 and 2/3 */}
-        <Grid size={4}>
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
               <DateCollCounts
@@ -78,7 +78,20 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={8}>
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+          <Card sx={tallCardStyle}>
+            <CardContent>
+              <OrgHasSeq
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* Fourth Row: One Grid spanning the entire row */}
+        <Grid size={12}>
           <Card sx={tallCardStyle}>
             <CardContent>
               <AccessionCounts

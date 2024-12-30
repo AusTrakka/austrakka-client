@@ -18,9 +18,9 @@ import getComputedColor from '../../../utilities/vegaColourUtils';
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';
-const DATE_COLUMN = 'Date_coll';
+const HAS_SEQ = 'Has_sequences';
 
-export default function DateCollCounts(props: ProjectWidgetProps) {
+export default function OrgHasSeq(props: ProjectWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject } = props;
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
@@ -33,12 +33,12 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
     AVAILABLE: getComputedColor('--secondary-main'),
     MISSING: getComputedColor('--primary-grey-300'),
   } as const;
-  
+
   const dateStatusTransform = {
-    calculate: `datum['${DATE_COLUMN}'] ? 'Available' : 'Missing'`,
-    as: `${DATE_COLUMN}_status`,
+    calculate: `datum['${HAS_SEQ}'] === true ? 'Available' : 'Missing'`,
+    as: `${HAS_SEQ}_status`,
   };
-  
+
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
@@ -61,12 +61,12 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
           axis: { title: 'Organisation' },
         },
         color: {
-          field: `${DATE_COLUMN}_status`,
+          field: `${HAS_SEQ}_status`,
           scale: {
             domain: ['Available', 'Missing'],
             range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
           },
-          legend: { title: 'Date collection status', orient: 'bottom' },
+          legend: { title: 'Has sequence status', orient: 'bottom' },
         },
       },
     },
@@ -81,17 +81,17 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
         },
         y: { field: ORG_FIELD_PLOTNAME },
         detail: {
-          field: `${DATE_COLUMN}_status`,
+          field: `${HAS_SEQ}_status`,
         },
       },
     }],
     title: {
-      text: `${DATE_COLUMN} counts`,
+      text: `${HAS_SEQ} counts`,
       anchor: 'middle',
       fontSize: 12,
     },
     usermeta: {
-      dateCollField: DATE_COLUMN,
+      hasSeqField: HAS_SEQ,
     },
   });
 
@@ -103,7 +103,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       const fields = data.fields!.map(field => field.columnName);
       if (!fields.includes(ORG_FIELD_NAME)) {
         setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
-      } else if (!fields.includes(DATE_COLUMN)) {
+      } else if (!fields.includes(HAS_SEQ)) {
         setErrorMessage('No date collection field found in project');
       }
     }
@@ -120,20 +120,20 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      
+
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => {
           if (!item || !item.datum) return;
-          const status = item.datum[`${DATE_COLUMN}_status`];
+          const status = item.datum[`${HAS_SEQ}_status`];
           const org = item.datum[ORG_FIELD_PLOTNAME];
           const drillDownTableMetaFilters: DataTableFilterMeta = {
-            [DATE_COLUMN]: {
+            [HAS_SEQ]: {
               operator: FilterOperator.AND,
               constraints: [
                 {
-                  matchMode: FilterMatchMode.CUSTOM,
-                  value: status !== 'Available',
+                  matchMode: FilterMatchMode.EQUALS,
+                  value: status === 'Available',
                 },
               ],
             },
@@ -159,12 +159,11 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
         }).runAsync();
       setVegaView(view);
     };
+    console.log('createVegaViews');
 
     if (filteredData && plotDiv?.current) {
       createVegaViews();
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
   useEffect(() => {
@@ -180,7 +179,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Date collection counts
+        Sequence counts
       </Typography>
       {errorMessage ? (
         <Alert severity="error">
@@ -194,7 +193,6 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
             <div
               id="#plot-container"
               ref={plotDiv}
-              style={{ width: '100%' }}
             />
           </Grid>
           <Grid size={1}>

@@ -178,7 +178,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
       vegaViews.forEach(view => view?.finalize());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, accessionFields, projectAbbrev, navigate]);
+  }, [filteredData, accessionFields, projectAbbrev, navigate, timeFilterObject]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
