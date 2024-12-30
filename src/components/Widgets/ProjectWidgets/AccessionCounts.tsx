@@ -204,7 +204,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
         (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
           <Grid container spacing={2}>
             {accessionFields.map((field, index) => (
-              <Grid key={field.columnName} container size={6}>
+              <Grid key={field.columnName} container size={{ xs: 12, md: 12, lg: 6 }}>
                 <Grid size={11}>
                   <div
                     ref={el => { plotRefs.current[index] = el; }}
