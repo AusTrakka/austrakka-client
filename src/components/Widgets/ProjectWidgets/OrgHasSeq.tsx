@@ -159,11 +159,11 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
         }).runAsync();
       setVegaView(view);
     };
-    console.log('createVegaViews');
 
     if (filteredData && plotDiv?.current) {
       createVegaViews();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
   useEffect(() => {
