@@ -1,6 +1,18 @@
-import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
+import {fieldRenderFunctions, typeRenderFunctions} from './renderUtils';
+import FriendlyHeader from "../types/friendlyHeader.interface";
 
-export const formatDataAsCSV = (data: any[], headerString: string[]) => {
+export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const csvHeader = headers.map(header => header.displayName).join(',');
+  const dataHeaders = headers.map(header => header.name);
+  const csvContent = formatDataAsCSV(data, dataHeaders, true);
+  return `${csvHeader}\n${csvContent}`;
+}
+
+export const formatDataAsCSV = (
+    data: any[], 
+    headerString: string[],
+    excludeHeader: boolean = false
+) => {
   // Format data array as CSV string
 
   const csvRows = [];
@@ -11,7 +23,9 @@ export const formatDataAsCSV = (data: any[], headerString: string[]) => {
   // that means it is selecting a subset of the data
 
   // Add headers
-  csvRows.push(headerString.join(','));
+  if (!excludeHeader) {
+    csvRows.push(headerString.join(','));
+  }
 
   // Add data rows
   for (const row of data) {
@@ -52,6 +66,11 @@ export const formatCSVValues = (row: any) => {
   }
   return formattedRow;
 };
+
+export const generateCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const formattedData = data.map((row: any) => formatCSVValues(row));
+  return formatDataAsCSV2(formattedData, headers);
+}
 
 export const generateCSV = (data: any[], headers?:string[]) => {
   // Processing data here

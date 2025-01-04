@@ -4,12 +4,12 @@ import {DataTable, DataTableOperatorFilterMetaData, DataTableRowClickEvent} from
 import sortIcon from "../TableComponents/SortIcon";
 import {Paper, Typography} from "@mui/material";
 import {Column} from "primereact/column";
-import {RowData} from "../../types/RowData.interface";
 import TableToolbar from "./TableToolbar";
 import ReduxLoadingState from "./ReduxLoadingState";
 import useActivityLogs from "../../hooks/useActivityLogs";
 import {buildPrimeReactColumnDefinitions} from "../../utilities/tableUtils";
 import {ActivityField} from "../../types/dtos";
+import FriendlyHeader from "../../types/friendlyHeader.interface";
 
 interface AcivityProps {
     recordType: string,
@@ -63,7 +63,6 @@ const supportedColumns: ActivityField[] = [
 ]
 
 const Activity: FC<AcivityProps> = (props) => {
-    const [filteredData, setFilteredData] = useState<RowData[]>([]);
     const [columns, setColumns] = useState<any[]>([]);
 
     const { refinedLogs } = useActivityLogs(props.recordType, props.rguid, props.owningTenantGlobalId);
@@ -79,12 +78,16 @@ const Activity: FC<AcivityProps> = (props) => {
         throw new Error("Function not implemented.");
     };
     
+    const friendlyHeaders: FriendlyHeader[] = supportedColumns
+        .sort((a, b) => a.columnOrder - b.columnOrder)
+        .map((col) => ({name: col.columnName, displayName: col.columnDisplayName || col.columnName}));
+    
     const header = (
         <TableToolbar 
             loadingState={ReduxLoadingState.IDLE}
-            columns={columns}
-            setColumns={setColumns}
-            filteredData={filteredData}
+            filteredData={refinedLogs}
+            rowDataHeaders={friendlyHeaders}
+            showDisplayHeader={true}
             // TODO: change this hard coding
             showExportButton={true}
         ></TableToolbar>
@@ -96,7 +99,6 @@ const Activity: FC<AcivityProps> = (props) => {
                 <div>
                     <DataTable
                         value={refinedLogs}
-                        onValueChange={(e) => {setFilteredData(e);}}
                         filters={defaultState}
                         size="small"
                         columnResizeMode="expand"
