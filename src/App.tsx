@@ -35,6 +35,7 @@ import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
 import UserDetailV2 from './components/UsersV2/BasicDetails/UserDetailV2';
 import UserProvider from './app/UserProvider';
+import Platform from './components/Platform/Platform';
 
 function App() {
   const navigate = useNavigate();
@@ -55,6 +56,8 @@ function App() {
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="org/:orgAbbrev" element={<OrganisationOverview />} />
                   <Route path="org/:orgAbbrev/:tab" element={<OrganisationOverview />} />
+                  <Route path="platform" element={<Platform />} />
+                  <Route path="platform/:tab" element={<Platform />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
                   <Route path="usersV2" element={<UsersV2 />} />

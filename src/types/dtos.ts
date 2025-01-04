@@ -169,6 +169,17 @@ export interface UserListV2 {
   analysisServerUsername: string,
 }
 
+export interface PrimeReactField {
+  columnName: string,
+  columnDisplayName?: string;
+  primitiveType: string | null,
+}
+
+export interface ActivityField extends PrimeReactField {
+  columnOrder: number,
+  hidden: boolean,
+}
+
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -182,9 +193,7 @@ export interface MetaDataColumnMapping {
 
 // this is a common interface representing metadata fields,
 // with information about types and display order
-export interface Field {
-  columnName: string,
-  primitiveType: string | null,
+export interface Field extends PrimeReactField {
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
@@ -350,4 +359,18 @@ export interface UserPatchV2 {
   displayName: string,
   contactEmail: string,
   analysisServerUsername: string,
+}
+
+export interface RefinedLog {
+  eventGlobalId: string,
+  eventSpecGlobalId: string,
+  eventShortDescription: string,
+  resourceGlobalId: string,
+  resourceUniqueString: string,
+  resourceType: string,
+  submitterGlobalId: string,
+  submitterDisplayName: string,
+  eventStatus: string,
+  eventTime: string,
+  tenantGlobalId: string
 }

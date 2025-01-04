@@ -6,7 +6,7 @@ import {
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn, Domain,
 } from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
@@ -21,6 +21,7 @@ import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
+import useUsername from "../../hooks/useUsername";
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ function MainMenuLayout() {
     members: 'Members',
     users: 'Users',
     usersV2: 'Users (V2)',
+    platform: 'Platform',
     fields: 'Fields',
     datasets: 'Datasets',
   };
@@ -90,10 +92,10 @@ function MainMenuLayout() {
     pathnames.pop();
   }
 
-  const [username, setUsername] = useState('');
   const { accounts } = useMsal();
 
   const account = useAccount(accounts[0] || {});
+  const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages = [
     {
@@ -122,6 +124,12 @@ function MainMenuLayout() {
       icon: <ViewColumn />,
     },
     {
+      // TODO: Drive content pane visibility based on V2 permission.
+      title: 'Platform',
+      link: '/platform',
+      icon: <Domain />,
+    },
+    {
       title: 'Users',
       link: '/users',
       icon: <People />,
@@ -141,13 +149,7 @@ function MainMenuLayout() {
       page.permissionDomain,
       PermissionLevel.CanShow,
     ));
-
-  useEffect(() => {
-    if (account && account.username) {
-      setUsername(account.username); // seems to be login email
-    }
-  }, [account]);
-
+  
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
@@ -162,7 +164,6 @@ function MainMenuLayout() {
     setDrawer(!drawer);
     handlePadding(!drawer);
   };
-
   return (
     <>
       <Box sx={{ display: 'flex' }}>
