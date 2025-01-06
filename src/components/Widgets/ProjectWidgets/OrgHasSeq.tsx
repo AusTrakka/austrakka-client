@@ -14,7 +14,6 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import getComputedColor from '../../../utilities/vegaColourUtils';
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';

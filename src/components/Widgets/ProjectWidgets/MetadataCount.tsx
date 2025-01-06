@@ -27,6 +27,7 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const tooltipTitle = `Samples with populated ${DATE_COLUMN} values`;
 
   const CHART_COLORS = {
     AVAILABLE: { value: import.meta.env.VITE_THEME_SECONDARY_MAIN },
@@ -181,7 +182,7 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
 
   return (
     <Box>
-      <Tooltip title="Samples with populated ${DATE_COLUMN} values">
+      <Tooltip title={tooltipTitle} arrow placement="top">
         <Typography variant="h5" paddingBottom={3} color="primary">
           Metadata counts
         </Typography>

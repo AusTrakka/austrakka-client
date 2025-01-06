@@ -6,8 +6,8 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import AccessionCounts from '../../Widgets/ProjectWidgets/AccessionCounts';
-import MetadataCounts from '../../Widgets/ProjectWidgets/DateCollCount';
 import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
+import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCount';
 
 function ApgDashboard(props: ProjectDashboardTemplateProps) {
   const {
