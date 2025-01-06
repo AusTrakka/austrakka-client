@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, AlertTitle, Box, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { compile, TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
@@ -14,13 +14,12 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import getComputedColor from '../../../utilities/vegaColourUtils';
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';
 const DATE_COLUMN = 'Date_coll';
 
-export default function DateCollCounts(props: ProjectWidgetProps) {
+export default function MetadataCounts(props: ProjectWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject } = props;
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
@@ -30,14 +29,49 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
   const navigate = useNavigate();
 
   const CHART_COLORS = {
-    AVAILABLE: getComputedColor('--secondary-main'),
-    MISSING: getComputedColor('--primary-grey-300'),
+    AVAILABLE: { value: import.meta.env.VITE_THEME_SECONDARY_MAIN },
+    MISSING: { value: import.meta.env.VITE_THEME_PRIMARY_GREY_300 },
   } as const;
   
   const dateStatusTransform = {
     calculate: `datum['${DATE_COLUMN}'] ? 'Available' : 'Missing'`,
     as: `${DATE_COLUMN}_status`,
   };
+
+  function handleItemClick(item: any) {
+    if (!item || !item.datum) return;
+
+    const status = item.datum[`${DATE_COLUMN}_status`];
+    const org = item.datum[ORG_FIELD_PLOTNAME];
+
+    const drillDownTableMetaFilters: DataTableFilterMeta = {
+      [DATE_COLUMN]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.CUSTOM,
+            value: status !== 'Available',
+          },
+        ],
+      },
+      [ORG_FIELD_NAME]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: `${org}-Owner`,
+          },
+        ],
+      },
+    };
+
+    const combinedFilters: DataTableFilterMeta =
+        timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
+          { ...drillDownTableMetaFilters, ...timeFilterObject }
+          : drillDownTableMetaFilters;
+
+    updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
+  }
   
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -49,7 +83,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
     width: 'container',
     height: 250,
     layer: [{
-      mark: { type: 'bar', tooltip: true, cursor: 'pointer', size: 40 },
+      mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
       encoding: {
         x: {
           aggregate: 'count',
@@ -66,7 +100,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
             domain: ['Available', 'Missing'],
             range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
           },
-          legend: { title: 'Date collection status', orient: 'bottom' },
+          legend: { title: 'Date_coll status', orient: 'bottom' },
         },
       },
     },
@@ -104,7 +138,7 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       if (!fields.includes(ORG_FIELD_NAME)) {
         setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
       } else if (!fields.includes(DATE_COLUMN)) {
-        setErrorMessage('No date collection field found in project');
+        setErrorMessage(`Field ${DATE_COLUMN} not found in project`);
       }
     }
   }, [data]);
@@ -123,40 +157,8 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
       
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
-        .addEventListener('click', (_, item) => {
-          if (!item || !item.datum) return;
-          const status = item.datum[`${DATE_COLUMN}_status`];
-          const org = item.datum[ORG_FIELD_PLOTNAME];
-          const drillDownTableMetaFilters: DataTableFilterMeta = {
-            [DATE_COLUMN]: {
-              operator: FilterOperator.AND,
-              constraints: [
-                {
-                  matchMode: FilterMatchMode.CUSTOM,
-                  value: status !== 'Available',
-                },
-              ],
-            },
-            [ORG_FIELD_NAME]: {
-              operator: FilterOperator.AND,
-              constraints: [
-                {
-                  matchMode: FilterMatchMode.EQUALS,
-                  value: `${org}-Owner`,
-                },
-              ],
-            },
-          };
-          if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-            const combinedFilters: DataTableFilterMeta = {
-              ...drillDownTableMetaFilters,
-              ...timeFilterObject,
-            };
-            updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
-          } else {
-            updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
-          }
-        }).runAsync();
+        .addEventListener('click', (_, item) => handleItemClick(item))
+        .runAsync();
       setVegaView(view);
     };
 
@@ -179,9 +181,11 @@ export default function DateCollCounts(props: ProjectWidgetProps) {
 
   return (
     <Box>
-      <Typography variant="h5" paddingBottom={3} color="primary">
-        Date collection counts
-      </Typography>
+      <Tooltip title="Samples with populated ${DATE_COLUMN} values">
+        <Typography variant="h5" paddingBottom={3} color="primary">
+          Metadata counts
+        </Typography>
+      </Tooltip>
       {errorMessage ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>

@@ -30,14 +30,49 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
   const navigate = useNavigate();
 
   const CHART_COLORS = {
-    AVAILABLE: getComputedColor('--secondary-main'),
-    MISSING: getComputedColor('--primary-grey-300'),
+    AVAILABLE: { value: import.meta.env.VITE_THEME_SECONDARY_MAIN },
+    MISSING: { value: import.meta.env.VITE_THEME_PRIMARY_GREY_300 },
   } as const;
 
   const dateStatusTransform = {
     calculate: `datum['${HAS_SEQ}'] === true ? 'Available' : 'Missing'`,
     as: `${HAS_SEQ}_status`,
   };
+  
+  function handleItemClick(item: any) {
+    if (!item || !item.datum) return;
+    const status = item.datum[`${HAS_SEQ}_status`];
+    const org = item.datum[ORG_FIELD_PLOTNAME];
+    const drillDownTableMetaFilters: DataTableFilterMeta = {
+      [HAS_SEQ]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: status === 'Available',
+          },
+        ],
+      },
+      [ORG_FIELD_NAME]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: `${org}-Owner`,
+          },
+        ],
+      },
+    };
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
+      const combinedFilters: DataTableFilterMeta = {
+        ...drillDownTableMetaFilters,
+        ...timeFilterObject,
+      };
+      updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
+    } else {
+      updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
+    }
+  }
 
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -49,7 +84,7 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
     width: 'container',
     height: 250,
     layer: [{
-      mark: { type: 'bar', tooltip: true, cursor: 'pointer', size: 40 },
+      mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
       encoding: {
         x: {
           aggregate: 'count',
@@ -123,40 +158,8 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
-        .addEventListener('click', (_, item) => {
-          if (!item || !item.datum) return;
-          const status = item.datum[`${HAS_SEQ}_status`];
-          const org = item.datum[ORG_FIELD_PLOTNAME];
-          const drillDownTableMetaFilters: DataTableFilterMeta = {
-            [HAS_SEQ]: {
-              operator: FilterOperator.AND,
-              constraints: [
-                {
-                  matchMode: FilterMatchMode.EQUALS,
-                  value: status === 'Available',
-                },
-              ],
-            },
-            [ORG_FIELD_NAME]: {
-              operator: FilterOperator.AND,
-              constraints: [
-                {
-                  matchMode: FilterMatchMode.EQUALS,
-                  value: `${org}-Owner`,
-                },
-              ],
-            },
-          };
-          if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-            const combinedFilters: DataTableFilterMeta = {
-              ...drillDownTableMetaFilters,
-              ...timeFilterObject,
-            };
-            updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
-          } else {
-            updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
-          }
-        }).runAsync();
+        .addEventListener('click', (_, item) => handleItemClick(item))
+        .runAsync();
       setVegaView(view);
     };
 

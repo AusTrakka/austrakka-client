@@ -6,10 +6,10 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import AccessionCounts from '../../Widgets/ProjectWidgets/AccessionCounts';
-import DateCollCounts from '../../Widgets/ProjectWidgets/DateCollCount';
+import MetadataCounts from '../../Widgets/ProjectWidgets/DateCollCount';
 import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
 
-function BasicDashboard(props: ProjectDashboardTemplateProps) {
+function ApgDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
@@ -70,7 +70,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
         <Grid size={{ xs: 12, md: 12, lg: 6 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
-              <DateCollCounts
+              <MetadataCounts
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
@@ -108,4 +108,4 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
   );
 }
 
-export default BasicDashboard;
+export default ApgDashboard;

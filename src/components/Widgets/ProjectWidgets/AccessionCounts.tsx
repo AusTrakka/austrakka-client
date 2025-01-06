@@ -14,7 +14,6 @@ import ProjectWidgetProps from '../../../types/projectwidget.props';
 import { Field } from '../../../types/dtos';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import getComputedColor from '../../../utilities/vegaColourUtils';
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';
@@ -31,14 +30,49 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
   const navigate = useNavigate();
 
   const CHART_COLORS = {
-    AVAILABLE: getComputedColor('--secondary-main'),
-    MISSING: getComputedColor('--primary-grey-300'),
+    AVAILABLE: { value: import.meta.env.VITE_THEME_SECONDARY_MAIN },
+    MISSING: { value: import.meta.env.VITE_THEME_PRIMARY_GREY_300 },
   } as const;
 
   const fieldTransforms = accessionFields.map(field => ({
     calculate: `datum['${field.columnName}'] ? 'Available' : 'Missing'`,
     as: `${field.columnName}_status`,
   }));
+  
+  function handleItemClick(item: any, field: Field) {
+    if (!item || !item.datum) return;
+    const status = item.datum[`${field.columnName}_status`];
+    const org = item.datum[ORG_FIELD_PLOTNAME];
+    const drillDownTableMetaFilters: DataTableFilterMeta = {
+      [field.columnName]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.CUSTOM,
+            value: status !== 'Available',
+          },
+        ],
+      },
+      [ORG_FIELD_NAME]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: FilterMatchMode.EQUALS,
+            value: `${org}-Owner`,
+          },
+        ],
+      },
+    };
+    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
+      const combinedFilters: DataTableFilterMeta = {
+        ...drillDownTableMetaFilters,
+        ...timeFilterObject,
+      };
+      updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
+    } else {
+      updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
+    }
+  }
 
   const createSpec = (accField: string, legend: boolean = true) => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -50,7 +84,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
     width: 'container',
     height: 250,
     layer: [{
-      mark: { type: 'bar', tooltip: true, cursor: 'pointer', size: 40 },
+      mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
       encoding: {
         x: {
           aggregate: 'count',
@@ -128,40 +162,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
 
         const view = new VegaView(parse(compiledSpec))
           .initialize(plotRefs.current[index]!)
-          .addEventListener('click', (event, item) => {
-            if (!item || !item.datum) return;
-            const status = item.datum[`${field.columnName}_status`];
-            const org = item.datum[ORG_FIELD_PLOTNAME];
-            const drillDownTableMetaFilters: DataTableFilterMeta = {
-              [field.columnName]: {
-                operator: FilterOperator.AND,
-                constraints: [
-                  {
-                    matchMode: FilterMatchMode.CUSTOM,
-                    value: status !== 'Available',
-                  },
-                ],
-              },
-              [ORG_FIELD_NAME]: {
-                operator: FilterOperator.AND,
-                constraints: [
-                  {
-                    matchMode: FilterMatchMode.EQUALS,
-                    value: `${org}-Owner`,
-                  },
-                ],
-              },
-            };
-            if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-              const combinedFilters: DataTableFilterMeta = {
-                ...drillDownTableMetaFilters,
-                ...timeFilterObject,
-              };
-              updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
-            } else {
-              updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
-            }
-          });
+          .addEventListener('click', (_, item) => handleItemClick(item, field));
 
         await view.runAsync();
         return view;
