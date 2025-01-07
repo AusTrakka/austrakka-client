@@ -139,10 +139,7 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
-            <Samples
-              projectAbbrev={projectAbbrev!}
-              isSamplesLoading={isSamplesLoading}
-            />
+            {!isSamplesLoading && <Samples projectAbbrev={projectAbbrev!}/>}
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
             <TreeList

@@ -35,7 +35,6 @@ import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUt
 
 interface SamplesProps {
   projectAbbrev: string,
-  isSamplesLoading: boolean,
 }
 
 interface BodyComponentProps {
@@ -55,7 +54,6 @@ function BodyComponent(props: BodyComponentProps) {
 function Samples(props: SamplesProps) {
   const {
     projectAbbrev,
-    isSamplesLoading,
   } = props;
   const navigate = useNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
@@ -160,7 +158,6 @@ function Samples(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading) return null;
   return (
     <>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
