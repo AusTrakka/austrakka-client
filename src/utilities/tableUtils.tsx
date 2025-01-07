@@ -13,7 +13,7 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) {
     hidden?: boolean,
     body?: (rowData: any) => React.ReactNode, }[] = [];
 
-  const merge = (original: any, newPart: any) : any => {
+  const assign = (original: any, newPart: any) : any => {
     return Object.assign({}, original, newPart);
   }
   
@@ -24,12 +24,12 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) {
     };
     
     if (field.columnName in fieldRenderFunctions) {
-      c = merge(c, { body: (rowData: any) => 
-            fieldRenderFunctions[field.columnName](rowData[field.columnName]) });
+      let body = { body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]) }
+      c = assign(c, body);
     } 
     else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
-      c = merge(c, { body: (rowData: any) => 
-            typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) });
+      let body = { body: (rowData: any) => typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) }
+      c = assign(c, body);
     }
     columnBuilder.push(c);
   });

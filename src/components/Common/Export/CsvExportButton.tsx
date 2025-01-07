@@ -7,8 +7,6 @@ import ExportToolTip from "./ExportToolTip";
 import {generateCSV2} from "../../../utilities/exportUtils";
 import FriendlyHeader from "../../../types/friendlyHeader.interface";
 
-
-
 interface CsvExportButtonProps {
     dataToExport: any[],
     disabled: boolean,
@@ -78,5 +76,7 @@ function CsvExportButton(props: CsvExportButtonProps) {
         </>
     );
 }
+
+
 
 export default CsvExportButton;
