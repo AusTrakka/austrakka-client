@@ -401,8 +401,6 @@ export const selectAwaitingProjectMetadata =
   (state: RootState, projectAbbrev: string | undefined) => {
     if (!projectAbbrev) return true;
     const loadingState = state.projectMetadataSliceState.data[projectAbbrev]?.loadingState;
-    // TODO: what if loadingState is undefined?
-    // Need to be included in the return statement
     return loadingState === MetadataLoadingState.IDLE ||
           loadingState === MetadataLoadingState.FETCH_REQUESTED ||
           loadingState === MetadataLoadingState.AWAITING_FIELDS ||
