@@ -2,43 +2,24 @@ import {fieldRenderFunctions, typeRenderFunctions} from './renderUtils';
 import FriendlyHeader from "../types/friendlyHeader.interface";
 
 export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const csvRows = [];
   const csvHeader = headers.map(header => header.displayName).join(',');
   const dataHeaders = headers.map(header => header.name);
-  const csvContent = formatDataAsCSV(data, dataHeaders, true);
-  return `${csvHeader}\n${csvContent}`;
+  const csvContent = formatCsvBody(data, dataHeaders);
+  csvRows.push(...csvHeader);
+  csvRows.push(...csvContent);
+  return csvRows.join('\n');
 }
 
 export const formatDataAsCSV = (
     data: any[], 
-    headerString: string[],
-    excludeHeader: boolean = false
+    headerString: string[]
 ) => {
-  // Format data array as CSV string
-
-  const csvRows = [];
-  // if there are more headers than data,
-  // it will throw an error when it tries to query the data below
   
-  // if there are fewer headers than data,
-  // that means it is selecting a subset of the data
-
-  // Add headers
-  if (!excludeHeader) {
-    csvRows.push(headerString.join(','));
-  }
-
-  // Add data rows
-  for (const row of data) {
-    const values = headerString.map(header => {
-      const value = row[header];
-      if (value === undefined) {
-        throw new Error(`Could not find value for header ${header}`);
-      }
-      return `"${value}"`;
-    });
-    csvRows.push(values.join(','));
-  }
-
+  const csvRows = [];
+  csvRows.push(headerString.join(','));
+  const csvContent = formatCsvBody(data, headerString);
+  csvRows.push(...csvContent);
   return csvRows.join('\n');
 };
 
@@ -82,3 +63,19 @@ export const generateCSV = (data: any[], headers?:string[]) => {
   // Set data for CSVLink
   return formatDataAsCSV(formattedData, header);
 };
+
+const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
+  const csvRows = [];
+
+  for (const row of data) {
+    const values = headerString.map(header => {
+      const value = row[header];
+      if (value === undefined) {
+        throw new Error(`Could not find value for header ${header}`);
+      }
+      return `"${value}"`;
+    });
+    csvRows.push(values.join(','));
+  }
+  return csvRows;
+}
