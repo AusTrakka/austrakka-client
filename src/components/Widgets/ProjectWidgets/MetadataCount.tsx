@@ -30,8 +30,8 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
   const tooltipTitle = `Samples with populated ${DATE_COLUMN} values`;
 
   const CHART_COLORS = {
-    AVAILABLE: { value: import.meta.env.VITE_THEME_SECONDARY_MAIN },
-    MISSING: { value: import.meta.env.VITE_THEME_PRIMARY_GREY_300 },
+    AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
+    MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
   } as const;
   
   const dateStatusTransform = {
