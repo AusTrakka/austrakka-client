@@ -73,4 +73,21 @@
   .p-datatable-header {
     height: 60px;
   }
-    
+  
+  #activity-table .p-datatable-tbody > tr {
+      line-height: 40px;
+  }
+
+  /*#activity-table .p-datatable th,*/
+  #activity-table .p-datatable-tbody td
+  {
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
+  }
+  
+  #activity-table .p-datatable-thead th {
+      border-left: none !important;
+      border-right: none !important;
+      height: 56px;
+  }

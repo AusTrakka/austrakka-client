@@ -17,6 +17,7 @@ import {ActivityField, RefinedLog} from "../../types/dtos";
 import FriendlyHeader from "../../types/friendlyHeader.interface";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
 import ActivityDetails from "./ActivityDetails";
+import {Info} from "@mui/icons-material";
 
 interface ActivityProps {
     recordType: string,
@@ -87,8 +88,17 @@ const Activity: FC<ActivityProps> = (props) => {
 
     useEffect(() => {
         if (columns.length > 0) return;
-        const columnBuilder = buildPrimeReactColumnDefinitions(supportedColumns);
-        // TODO: set loading state.
+
+        const firstCol = supportedColumns.filter(c => c.columnName === 'eventShortDescription')[0];
+        const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
+        firstColBuilder.isDecorated = true;
+        firstColBuilder.body = firstColumnTemplate;
+        
+        const remainingCols = supportedColumns.filter(c => c.columnName !== 'eventShortDescription');
+        const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
+        
+        const columnBuilder = [firstColBuilder];
+        columnBuilder.push(...remainingColsBuilder);
         setColumns(columnBuilder);
     }, [props.recordType, props.rguid, props.owningTenantGlobalId]);
 
@@ -129,6 +139,15 @@ const Activity: FC<ActivityProps> = (props) => {
             showExportButton={refinedLogs.length > 0}
         ></TableToolbar>
     );
+
+    const firstColumnTemplate = (rowData: any) => {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '15px' }}>
+                <Info sx={{color: 'rgb(21,101,192)', fontSize: '16px', marginRight: '10px'}}/>
+                {rowData['eventShortDescription']}
+            </div>
+        );
+    };
     
     return(
         <>
@@ -142,6 +161,7 @@ const Activity: FC<ActivityProps> = (props) => {
             <Paper elevation={2} sx={{ marginBottom: 10 }}>
                 <div>
                     <DataTable
+                        id="activity-table"
                         dataKey="eventGlobalId"
                         value={refinedLogs}
                         filters={defaultState}
@@ -154,7 +174,6 @@ const Activity: FC<ActivityProps> = (props) => {
                         header={header}
                         scrollable
                         scrollHeight="calc(100vh - 300px)"
-                        sortIcon={sortIcon}
                         paginator
                         onRowClick={rowClickHandler}
                         selection={selectedRow}
@@ -181,9 +200,9 @@ const Activity: FC<ActivityProps> = (props) => {
                                 header={col.header}
                                 hidden={false}
                                 body={col.body}
-                                sortable
+                                sortable={false}
                                 resizeable
-                                style={{ minWidth: '150px' }}
+                                style={{ minWidth: '150px', paddingLeft: '16px' }}
                                 headerClassName="custom-title"
                             />
                         )) : null}

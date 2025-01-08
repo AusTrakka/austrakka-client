@@ -5,13 +5,17 @@ import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 export const compareFields = (field1: Field, field2: Field) =>
   field1.columnOrder - field2.columnOrder;
 
-export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) {
-  const columnBuilder: {
-    field: string,
-    header: string,
-    dataType?: string,
-    hidden?: boolean,
-    body?: (rowData: any) => React.ReactNode, }[] = [];
+interface ColumnBuilder {
+  field: string;
+  header: string;
+  dataType?: string;
+  hidden?: boolean;
+  body?: (rowData: any) => React.ReactNode;
+  isDecorated?: boolean;
+}
+
+export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) : ColumnBuilder[] {
+  const columnBuilders: ColumnBuilder[] = [];
 
   const assign = (original: any, newPart: any) : any => {
     return Object.assign({}, original, newPart);
@@ -21,6 +25,7 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) {
     let c = {
       field: field.columnName,
       header: field.columnDisplayName || field.columnName,
+      isDecorated: false,
     };
     
     if (field.columnName in fieldRenderFunctions) {
@@ -31,9 +36,9 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) {
       let body = { body: (rowData: any) => typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) }
       c = assign(c, body);
     }
-    columnBuilder.push(c);
+    columnBuilders.push(c);
   });
-  return columnBuilder;
+  return columnBuilders;
 }
 
 export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) {
