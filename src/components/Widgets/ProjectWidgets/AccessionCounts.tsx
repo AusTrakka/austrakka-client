@@ -82,7 +82,7 @@ export default function AccessionCounts(props: ProjectWidgetProps) {
       ...fieldTransforms,
     ],
     width: 'container',
-    height: 250,
+    height: { step: 40 },
     layer: [{
       mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
       encoding: {
