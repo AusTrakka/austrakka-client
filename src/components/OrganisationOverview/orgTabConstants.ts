@@ -9,4 +9,8 @@ export const ORG_OVERVIEW_TABS: TabContentProps[] = [
     index: 1,
     title: 'Members',
   },
+  {
+    index: 2,
+    title: 'Activity',
+  },
 ];

@@ -16,6 +16,7 @@ export interface UserSliceState {
   adminV2: boolean,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
   errorMessage: string,
   loading: LoadingState,
   defaultTenantGlobalId: string,
@@ -33,6 +34,7 @@ interface FetchUserRolesResponse {
   isAusTrakkaAdmin: boolean,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
 }
 
 const fetchUserRoles = createAsyncThunk(
@@ -67,6 +69,7 @@ const fetchUserRoles = createAsyncThunk(
         displayName,
         orgAbbrev,
         orgName,
+        orgGlobalId,
       } = groupResponse.data as User;
       const { scopes } = scopeResponse.data as UserMe;
 
@@ -80,6 +83,7 @@ const fetchUserRoles = createAsyncThunk(
         scopes,
         defaultTenantGlobalId: globalId,
         defaultTenantName: name,
+        orgGlobalId,
       } as FetchUserRolesResponse);
     } catch (error) {
       return thunkAPI.rejectWithValue('An unexpected error occurred');
@@ -118,6 +122,7 @@ const userSlice = createSlice({
         state.displayName = holder.displayName;
         state.orgAbbrev = holder.orgAbbrev;
         state.orgName = holder.orgName;
+        state.orgGlobalId = holder.orgGlobalId;
         state.scopes = holder.scopes;
         state.defaultTenantGlobalId = holder.defaultTenantGlobalId;
         state.defaultTenantName = holder.defaultTenantName;

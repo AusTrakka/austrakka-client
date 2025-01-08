@@ -80,6 +80,7 @@ export interface User {
   orgId: number,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
   isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,

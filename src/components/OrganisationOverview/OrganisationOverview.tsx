@@ -1,6 +1,6 @@
 // first lets make the get organisation information
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Typography } from '@mui/material';
+import {Alert, Box, Typography} from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { getGroupList, getGroupMembers } from '../../utilities/resourceUtils';
@@ -14,6 +14,7 @@ import { ResponseType } from '../../constants/responseType';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import { ORG_OVERVIEW_TABS } from './orgTabConstants';
+import Activity from "../Common/Activity/Activity";
 
 function OrganisationOverview() {
   const { orgAbbrev } = useParams();
@@ -166,6 +167,16 @@ function OrganisationOverview() {
               memberListErrorMessage={memberListErrorMessage}
             />
           </TabPanel>
+          {
+            tabValue === 2 && 
+              <TabPanel value={tabValue} index={2} tabLoader={false}>
+                <Activity
+                    recordType={"organisation"}
+                    rguid={user.orgGlobalId}
+                    owningTenantGlobalId={user.defaultTenantGlobalId}
+                />
+              </TabPanel>
+          }
         </>
       )
   );

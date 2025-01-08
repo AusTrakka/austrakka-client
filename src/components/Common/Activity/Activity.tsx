@@ -83,7 +83,12 @@ const Activity: FC<ActivityProps> = (props) => {
     const [openDetails, setOpenDetails] = useState(false);
     const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
     const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
-    const { refinedLogs } = useActivityLogs(props.recordType, props.rguid, props.owningTenantGlobalId);
+    
+    const routeSegment = props.recordType === 'tenant' 
+        ? props.recordType
+        : `${props.recordType}V2`;
+    
+    const { refinedLogs } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
 
     useEffect(() => {
         if (columns.length > 0) return;
