@@ -81,3 +81,7 @@ html, body, span {
     font-size: 2rem;
     padding-bottom: 10px;
 }
+
+.detailed-text {
+    color: rgb(0,0,0,87);
+}

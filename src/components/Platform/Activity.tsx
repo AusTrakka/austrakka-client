@@ -1,6 +1,11 @@
 import React, {FC, useEffect, useState} from "react";
 import {FilterMatchMode} from "primereact/api";
-import {DataTable, DataTableOperatorFilterMetaData, DataTableRowClickEvent} from "primereact/datatable";
+import {
+    DataTable,
+    DataTableOperatorFilterMetaData,
+    DataTableRowClickEvent,
+    DataTableSelectEvent
+} from "primereact/datatable";
 import sortIcon from "../TableComponents/SortIcon";
 import {Paper, Typography} from "@mui/material";
 import {Column} from "primereact/column";
@@ -8,16 +13,27 @@ import TableToolbar from "./TableToolbar";
 import ReduxLoadingState from "./ReduxLoadingState";
 import useActivityLogs from "../../hooks/useActivityLogs";
 import {buildPrimeReactColumnDefinitions} from "../../utilities/tableUtils";
-import {ActivityField} from "../../types/dtos";
+import {ActivityField, RefinedLog} from "../../types/dtos";
 import FriendlyHeader from "../../types/friendlyHeader.interface";
+import {ActivityDetailInfo} from "./activityViewModels.interface";
+import ActivityDetails from "./ActivityDetails";
 
-interface AcivityProps {
+interface ActivityProps {
     recordType: string,
     rguid: string,
     owningTenantGlobalId: string,
 }
 
-const supportedColumns: ActivityField[] = [
+const emptyDetailInfo: ActivityDetailInfo = {
+    "Operation name": "",
+    "Time stamp": "",
+    "Event initiated by": "",
+    resource: "",
+    resourceType: "",
+    details: {}
+}
+
+export const supportedColumns: ActivityField[] = [
     {
         columnName: 'eventShortDescription',
         columnDisplayName: 'Operation name',
@@ -62,9 +78,11 @@ const supportedColumns: ActivityField[] = [
     },
 ]
 
-const Activity: FC<AcivityProps> = (props) => {
+const Activity: FC<ActivityProps> = (props) => {
     const [columns, setColumns] = useState<any[]>([]);
-
+    const [openDetails, setOpenDetails] = useState(false);
+    const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
+    const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
     const { refinedLogs } = useActivityLogs(props.recordType, props.rguid, props.owningTenantGlobalId);
 
     useEffect(() => {
@@ -74,8 +92,28 @@ const Activity: FC<AcivityProps> = (props) => {
         setColumns(columnBuilder);
     }, [props.recordType, props.rguid, props.owningTenantGlobalId]);
 
-    const rowClickHandler = (row: DataTableRowClickEvent) => {
-        throw new Error("Function not implemented.");
+    const rowClickHandler = (event: DataTableRowClickEvent) => {
+        const row = event.data; 
+        
+        const info: ActivityDetailInfo = {
+            "Operation name": row['eventShortDescription'],
+            "Time stamp": row['eventTime'],
+            "Event initiated by": row['submitterDisplayName'],
+            resource: row['resourceUniqueString'],
+            resourceType: row['resourceType'],
+            details: row['jsonData'] || {},
+        }
+        setDetailInfo(info);
+        setOpenDetails(true);
+    };
+    
+    const closeDetailsHandler = () => {
+        setOpenDetails(false);
+        setSelectedRow(null);
+    }
+
+    const onRowSelect = (e: DataTableSelectEvent) => {
+        setSelectedRow(e.data);
     };
     
     const friendlyHeaders: FriendlyHeader[] = supportedColumns
@@ -88,16 +126,23 @@ const Activity: FC<AcivityProps> = (props) => {
             filteredData={refinedLogs}
             rowDataHeaders={friendlyHeaders}
             showDisplayHeader={true}
-            // TODO: change this hard coding
-            showExportButton={true}
+            showExportButton={refinedLogs.length > 0}
         ></TableToolbar>
     );
     
     return(
         <>
+            { 
+                openDetails && 
+                <ActivityDetails 
+                    onClose={closeDetailsHandler}
+                    detailInfo={detailInfo}
+                /> 
+            }
             <Paper elevation={2} sx={{ marginBottom: 10 }}>
                 <div>
                     <DataTable
+                        dataKey="eventGlobalId"
                         value={refinedLogs}
                         filters={defaultState}
                         size="small"
@@ -112,9 +157,11 @@ const Activity: FC<AcivityProps> = (props) => {
                         sortIcon={sortIcon}
                         paginator
                         onRowClick={rowClickHandler}
+                        selection={selectedRow}
+                        onRowSelect={onRowSelect}
+                        rowClassName={(r) => r.eventGlobalId === selectedRow?.eventGlobalId ? 'highlighted-row' : ''}
                         selectionMode="single"
                         rows={25}
-                        // TODO: change this hard coding
                         loading={false}
                         rowsPerPageOptions={[25, 50, 100, 500, 2000]}
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
@@ -143,6 +190,7 @@ const Activity: FC<AcivityProps> = (props) => {
                     </DataTable>
                 </div>
             </Paper>
+            <div style={{height: '10px'}} />
         </>
     );
 }
