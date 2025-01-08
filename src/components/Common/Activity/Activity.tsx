@@ -17,6 +17,7 @@ import {buildPrimeReactColumnDefinitions} from "../../../utilities/tableUtils";
 import FriendlyHeader from "../../../types/friendlyHeader.interface";
 import TableToolbar from "./TableToolbar";
 import ReduxLoadingState from "../../Platform/ReduxLoadingState";
+import EmptyContentPane from "../EmptyContentPane";
 
 interface ActivityProps {
     recordType: string,
@@ -153,14 +154,14 @@ const Activity: FC<ActivityProps> = (props) => {
         );
     };
     
-    return(
+    const tableContent = (
         <>
-            { 
-                openDetails && 
-                <ActivityDetails 
+            {
+                openDetails &&
+                <ActivityDetails
                     onClose={closeDetailsHandler}
                     detailInfo={detailInfo}
-                /> 
+                />
             }
             <Paper elevation={2} sx={{ marginBottom: 10 }}>
                 <div>
@@ -182,7 +183,6 @@ const Activity: FC<ActivityProps> = (props) => {
                         onRowClick={rowClickHandler}
                         selection={selectedRow}
                         onRowSelect={onRowSelect}
-                        rowClassName={(r) => r.eventGlobalId === selectedRow?.eventGlobalId ? 'highlighted-row' : ''}
                         selectionMode="single"
                         rows={25}
                         loading={false}
@@ -214,6 +214,14 @@ const Activity: FC<ActivityProps> = (props) => {
                 </div>
             </Paper>
             <div style={{height: '10px'}} />
+        </>
+    );
+    
+    return(
+        <>
+            {
+                refinedLogs.length > 0 ? tableContent : EmptyContentPane({ message: 'No activity to show.' })
+            }
         </>
     );
 }
