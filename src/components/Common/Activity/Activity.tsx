@@ -220,7 +220,7 @@ const Activity: FC<ActivityProps> = (props) => {
     return(
         <>
             {
-                refinedLogs.length > 0 ? tableContent : EmptyContentPane({ message: 'No activity to show.' })
+                refinedLogs.length > 0 ? tableContent : EmptyContentPane({ message: 'There is no activity to show.' })
             }
         </>
     );

@@ -41,14 +41,15 @@ export function TabPanel(props: TabPanelProps) {
     }
   }, [value, index]);
 
-  const outerContainerStyles: React.CSSProperties = {
+  const containerStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
     margin: 0,
     padding: 0,
-    backgroundColor: 'rgb(238,242,246)',
+    backgroundColor: 'var(--primary-main-bg)',
+    marginTop: '16px'
   };
   
   return (
@@ -57,7 +58,7 @@ export function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      style={greedyHeight ? outerContainerStyles : {}}
+      style={greedyHeight ? containerStyle : {}}
     >
       {
         tabLoader && <LinearProgress color="secondary" />
