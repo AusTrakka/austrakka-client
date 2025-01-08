@@ -6,18 +6,17 @@ import {
     DataTableRowClickEvent,
     DataTableSelectEvent
 } from "primereact/datatable";
-import sortIcon from "../TableComponents/SortIcon";
 import {Paper, Typography} from "@mui/material";
 import {Column} from "primereact/column";
-import TableToolbar from "./TableToolbar";
-import ReduxLoadingState from "./ReduxLoadingState";
-import useActivityLogs from "../../hooks/useActivityLogs";
-import {buildPrimeReactColumnDefinitions} from "../../utilities/tableUtils";
-import {ActivityField, RefinedLog} from "../../types/dtos";
-import FriendlyHeader from "../../types/friendlyHeader.interface";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
 import ActivityDetails from "./ActivityDetails";
 import {Info} from "@mui/icons-material";
+import {ActivityField, RefinedLog} from "../../../types/dtos";
+import useActivityLogs from "../../../hooks/useActivityLogs";
+import {buildPrimeReactColumnDefinitions} from "../../../utilities/tableUtils";
+import FriendlyHeader from "../../../types/friendlyHeader.interface";
+import TableToolbar from "./TableToolbar";
+import ReduxLoadingState from "../../Platform/ReduxLoadingState";
 
 interface ActivityProps {
     recordType: string,

@@ -1,12 +1,12 @@
 import React, {FC} from 'react';
 import {IconButton, Box} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ATDrawer from "../Common/ATDrawer";
-import PageTitle from "../Common/PageTitle";
-import DetailedText from "../Common/Page/DetailedText";
 import ActivityContentBox from "./ActivityContentBox";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
-import {formatDate} from "../../utilities/dateUtils";
+import {formatDate} from "../../../utilities/dateUtils";
+import PageTitle from "../PageTitle";
+import DetailedText from "../Page/DetailedText";
+import ATDrawer from "../ATDrawer";
 
 interface ActivityDetailProps {
     onClose: () => void,

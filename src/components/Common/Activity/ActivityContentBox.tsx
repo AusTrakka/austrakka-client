@@ -1,8 +1,8 @@
 import React, {FC, useState} from 'react';
 import {Tab, Tabs} from "@mui/material";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
-import DetailedText from "../Common/Page/DetailedText";
-import {formatDate} from "../../utilities/dateUtils";
+import DetailedText from "../Page/DetailedText";
+import {formatDate} from "../../../utilities/dateUtils";
 
 interface ContentBoxProps {
     entry: ActivityDetailInfo,

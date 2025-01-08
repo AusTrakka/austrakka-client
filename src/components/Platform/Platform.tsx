@@ -2,9 +2,9 @@ import React, {useState} from "react";
 import TabbedPage from "../Common/Page/TabbedPage";
 import {PLATFORM_TABS} from "./platformTabConstants";
 import {TabPanel} from "../Common/CustomTabs";
-import Activity from "./Activity";
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import {useAppSelector} from "../../app/store";
+import Activity from "../Common/Activity/Activity";
 
 const Platform = () => {
     const [tabValue, setTabValue] = useState(0);
