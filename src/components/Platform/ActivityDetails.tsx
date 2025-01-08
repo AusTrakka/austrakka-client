@@ -6,6 +6,7 @@ import PageTitle from "../Common/PageTitle";
 import DetailedText from "../Common/Page/DetailedText";
 import ActivityContentBox from "./ActivityContentBox";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
+import {formatDate} from "../../utilities/dateUtils";
 
 interface ActivityDetailProps {
     onClose: () => void,
@@ -13,17 +14,7 @@ interface ActivityDetailProps {
 }
 
 const ActivityDetails: FC<ActivityDetailProps> = ({onClose, detailInfo}) => {
-    const date = new Date(detailInfo["Time stamp"]);
-    const friendlyEventDate = date.toLocaleString('en-GB', {
-        weekday: 'short', // 'Fri'
-        year: 'numeric', // '2024'
-        month: 'short', // 'Nov'
-        day: 'numeric', // '15'
-        hour: '2-digit', // '11'
-        minute: '2-digit', // '55'
-        second: '2-digit', // '00'
-        timeZoneName: 'longOffset',
-    });
+    const friendlyEventDate = formatDate(detailInfo["Time stamp"]);
     
     const banner = (
         <Box
@@ -37,17 +28,17 @@ const ActivityDetails: FC<ActivityDetailProps> = ({onClose, detailInfo}) => {
             {/* Title and Date (on the left) */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <PageTitle title={detailInfo["Operation name"]} />
-                <DetailedText text={friendlyEventDate} />
+                <DetailedText text={friendlyEventDate} isSubHeading={true} />
                 <ActivityContentBox entry={detailInfo} marginTop="45px"/>
             </Box>
 
             {/* Close button (top-aligned, on the right) */}
             <IconButton
                 edge="end"
-                color="inherit"
                 onClick={onClose}
                 sx={{
                     alignSelf: 'flex-start', // Align the close button to the top
+                    color: 'rgb(0,0,0,0.54)'
                 }}
             >
                 <CloseIcon />

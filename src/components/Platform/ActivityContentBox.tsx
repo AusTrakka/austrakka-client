@@ -2,6 +2,7 @@ import React, {FC, useState} from 'react';
 import {Tab, Tabs} from "@mui/material";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
 import DetailedText from "../Common/Page/DetailedText";
+import {formatDate} from "../../utilities/dateUtils";
 
 interface ContentBoxProps {
     entry: ActivityDetailInfo,
@@ -19,10 +20,12 @@ const ContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                 <tbody>
                 {fieldOrder.map( f => (
                     <tr key={f}>
-                        <td style={{padding: '8px'}}>
+                        <td style={{padding: '8px 0px'}}>
                             <DetailedText text={f} />
                         </td>
-                        <td style={{padding: '8px 8px 8px 100px'}}><DetailedText text={entry[f]} /></td>
+                        <td style={{padding: '8px 8px 8px 100px'}}>
+                            <DetailedText text={f === "Time stamp" ? formatDate(entry[f]) :entry[f]} />
+                        </td>
                     </tr>
                 ))}
                 </tbody>
