@@ -14,7 +14,6 @@ interface TabPanelProps {
   tabLoader : boolean,
   index: number;
   value: number;
-  greedyHeight?: boolean,
 }
 interface CustomTabsProps {
   tabContent: TabContentProps[],
@@ -28,7 +27,6 @@ export function TabPanel(props: TabPanelProps) {
     tabLoader, 
     value, 
     index,
-    greedyHeight,
   } = props;
 
   // Mount the panel when it is first selected, and do not unmount it when it is deselected
@@ -40,17 +38,6 @@ export function TabPanel(props: TabPanelProps) {
       setVisited(true);
     }
   }, [value, index]);
-
-  const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    margin: 0,
-    padding: 0,
-    backgroundColor: 'var(--primary-main-bg)',
-    marginTop: '16px'
-  };
   
   return (
     <div
@@ -58,7 +45,6 @@ export function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      style={greedyHeight ? containerStyle : {}}
     >
       {
         tabLoader && <LinearProgress color="secondary" />

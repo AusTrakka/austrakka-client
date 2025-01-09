@@ -169,7 +169,7 @@ function OrganisationOverview() {
           </TabPanel>
           {
             tabValue === 2 && 
-              <TabPanel value={tabValue} index={2} tabLoader={false} greedyHeight={true}>
+              <TabPanel value={tabValue} index={2} tabLoader={false}>
                 <Activity
                     recordType={"organisation"}
                     rguid={user.orgGlobalId}

@@ -175,7 +175,7 @@ function ProjectOverview() {
           </TabPanel>
           {
             tabValue === 7 &&
-            <TabPanel value={tabValue} index={7} tabLoader={false} greedyHeight={true}>
+            <TabPanel value={tabValue} index={7} tabLoader={false}>
               <Activity
                   recordType={"project"}
                   rguid={projectDetails?.globalId ?? ''}

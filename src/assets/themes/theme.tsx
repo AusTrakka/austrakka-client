@@ -90,5 +90,7 @@ export const globalStyles = {
     '--primary-grey-800': import.meta.env.VITE_THEME_PRIMARY_GREY_800,
     '--primary-grey-900': import.meta.env.VITE_THEME_PRIMARY_GREY_900,
     '--primary-main-bg': import.meta.env.VITE_THEME_PRIMARY_MAIN_BG,
+    // shape
+    '--primary-radius': import.meta.env.VITE_THEME_PRIMARY_RADIUS,
   },
 };

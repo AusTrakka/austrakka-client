@@ -26,9 +26,10 @@ const containerStyles: React.CSSProperties = {
     justifyContent: 'center',
     height: '100%',
     textAlign: 'center',
-    padding: '20px',
+    padding: '200px 20px',
     boxSizing: 'border-box',
     backgroundColor: 'var(--primary-main-bg)',
+    borderRadius: 'var(--primary-radius)',
 };
 
 const iconStyles: React.CSSProperties = {
