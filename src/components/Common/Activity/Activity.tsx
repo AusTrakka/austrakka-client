@@ -146,9 +146,10 @@ const Activity: FC<ActivityProps> = (props) => {
     );
 
     const firstColumnTemplate = (rowData: any) => {
+        const iconColour = rowData['eventStatus'] === 'Success' ? 'rgb(21,101,192)' : 'rgb(198, 40, 40)';
         return (
             <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '15px' }}>
-                <Info sx={{color: 'rgb(21,101,192)', fontSize: '16px', marginRight: '10px'}}/>
+                <Info sx={{color: iconColour, fontSize: '16px', marginRight: '10px'}}/>
                 {rowData['eventShortDescription']}
             </div>
         );
