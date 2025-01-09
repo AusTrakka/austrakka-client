@@ -27,6 +27,7 @@ import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
+import Activity from "../Common/Activity/Activity";
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
@@ -172,6 +173,16 @@ function ProjectOverview() {
           <TabPanel value={tabValue} index={6} tabLoader={false}>
             <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
           </TabPanel>
+          {
+            tabValue === 7 &&
+            <TabPanel value={tabValue} index={7} tabLoader={false} greedyHeight={true}>
+              <Activity
+                  recordType={"project"}
+                  rguid={projectDetails?.globalId ?? ''}
+                  owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
+              />
+            </TabPanel>
+          }
         </>
       )
 

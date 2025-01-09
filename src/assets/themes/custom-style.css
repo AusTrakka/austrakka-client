@@ -91,7 +91,4 @@
       border-right: none !important;
       height: 56px;
   }
-
-  .p-datatable .p-datatable-tbody > tr:hover {
-      background-color: var(--primary-grey-600) !important;  /* Custom hover color */
-  }
+  

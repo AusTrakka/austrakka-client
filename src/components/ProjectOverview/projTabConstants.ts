@@ -29,4 +29,8 @@ export const PROJECT_OVERVIEW_TABS: TabContentProps[] = [
     index: 6,
     title: 'Datasets',
   },
+  {
+    index: 7,
+    title: 'Activity',
+  },
 ];

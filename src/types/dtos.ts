@@ -2,6 +2,8 @@
 export interface Project {
   projectId: number,
   abbreviation: string,
+  globalId: string,
+  owningTenantGlobalId: string,
   name: string,
   description: string,
   projectMembers: {
