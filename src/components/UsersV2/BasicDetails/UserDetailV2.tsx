@@ -309,13 +309,12 @@ function UserDetailV2() {
       </Stack>
       <Grid
         container
-        spacing={2}
+        spacing={4}
         flex="flexwrap"
         width="100%"
         alignItems="stretch"
-        columns={{ xs: 1, md: 1, lg: 1, xl: 1 }}
       >
-        <Grid size="auto">
+        <Grid size={{ xs: 12, md: 12, lg: 4.5 }}>
           <Paper elevation={1} className="basic-info-table">
             <Stack
               direction="row"
@@ -354,7 +353,7 @@ function UserDetailV2() {
             </TableContainer>
           </Paper>
         </Grid>
-        <Grid size="grow" minWidth="fit-content">
+        <Grid size={{ xs: 12, md: 12, lg: 7.5 }}>
           <Paper elevation={1} className="basic-info-table">
             <Stack
               direction="row"

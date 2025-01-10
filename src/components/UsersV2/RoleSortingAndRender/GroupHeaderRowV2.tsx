@@ -10,7 +10,7 @@ import {
   Typography,
   Stack,
   Autocomplete,
-  Checkbox, TextField,
+  Checkbox, TextField, Chip,
 } from '@mui/material';
 import {
   AddCircle,
@@ -34,19 +34,29 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     handleGroupRoleToggle,
     editing,
   } = props;
-  const [selectedResources, setSelectedResources] = useState<any[] | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<any[] | null>(null);
-  
+  const [selectedResources, setSelectedResources] = useState<Resource[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<DummyRole[] | null>(null);
+
   // need to fetch roles for said resource type
   // will use temp list for now
-  const dummyRoles = [
+  interface DummyRole {
+    name: string;
+    roleId: string;
+  }
+  
+  interface Resource {
+    name: string;
+    resourceId: string;
+  }
+  
+  const dummyRoles: DummyRole[] = [
     { name: 'AustTrakkaAdmin', roleId: '1' },
     { name: 'AustTrakkaProcess', roleId: '2' },
     { name: 'AustTrakkaUser', roleId: '3' },
   ];
-  
+
   // then I will need fetch the resources under a resource type
-  const dummyResources = [
+  const dummyResources: Resource[] = [
     { name: 'tenant1', resourceId: '1' },
     { name: 'tenant2', resourceId: '2' },
     { name: 'tenant3', resourceId: '3' },
@@ -55,15 +65,23 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const isAddButtonEnabled = selectedResources !== null && selectedRoles !== null;
 
   return (
-    <TableRow key={recordType} style={{ backgroundColor: 'var(--primary-grey)', borderRadius: '6px', border: 'none' }}>
-      <TableCell>
+    <TableRow
+      key={recordType}
+      style={{
+        backgroundColor: 'var(--primary-grey)',
+        borderRadius: '6px',
+        border: 'none',
+      }}
+    >
+      <TableCell width="250em">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
             aria-label="expand row"
             size="small"
             onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :
+            <KeyboardArrowRight />}
           </IconButton>
           <Typography variant="body2">{recordType}</Typography>
         </div>
@@ -79,6 +97,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 style={{ width: '19em' }}
                 value={selectedResources || []}
                 disableCloseOnSelect
+                isOptionEqualToValue={(option, value) => option.resourceId === value.resourceId}
                 getOptionLabel={(option) => option.name}
                 onChange={(e, v) => setSelectedResources(v)}
                 renderOption={(_props, option, { selected }) => (
@@ -119,6 +138,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 value={selectedRoles || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.roleId === value.roleId}
                 onChange={(e, v) => setSelectedRoles(v)}
                 renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
@@ -131,6 +151,19 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                     {option.name}
                   </li>
                 )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={option.name}
+                      {...getTagProps({ index })}
+                      style={{
+                        maxWidth: '8em', // Limit chip width
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    />
+                  ))}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -157,9 +190,9 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                   color={isAddButtonEnabled ? 'success' : 'default'}
                   onClick={() => {
                     /* handleAddGroupRole();
-                    if (!openGroupRoles.includes(groupType)) {
-                      handleGroupRoleToggle(groupType);
-                    } */
+                                        if (!openGroupRoles.includes(groupType)) {
+                                          handleGroupRoleToggle(groupType);
+                                        } */
                   }}
                   disabled={!isAddButtonEnabled}
                 >
