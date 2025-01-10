@@ -366,14 +366,15 @@ function UserDetailV2() {
               <Typography variant="h4" color="primary">
                 Privileges
               </Typography>
-              {/* <EditButtonsV2
+              <EditButtonsV2
                 editing={editingPrivileges}
                 setEditing={setEditingPrivileges}
                 onSave={onPrivSave}
                 onCancel={handlePrivCancel}
                 hasSavedChanges={privHasChanges}
                 canSee={canSee}
-              /> */}
+                onSaveLoading={onSaveLoading}
+              />
             </Stack>
             <TableContainer
               component={Box}
