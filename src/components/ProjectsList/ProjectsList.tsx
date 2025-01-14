@@ -1,14 +1,8 @@
-import React, { useEffect, useState, JSX } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
-  Chip,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  MenuItem,
   Paper,
-  Select,
   SelectChangeEvent,
   Stack,
   Typography,
@@ -19,7 +13,6 @@ import { DataTable,
   DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { Clear } from '@mui/icons-material';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -28,40 +21,42 @@ import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
 
-function renderTagChip(cell: string): JSX.Element {
-  const tag = cell;
-  if (cell === null || cell === undefined || cell === '') {
-    return (
-      <Typography
-        variant="body2"
-        color="textDisabled"
-        sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-      >
-        No Type Set
-      </Typography>
-    );
-  }
-  return (
-    <Chip
-      key={tag}
-      label={tag}
-      variant="outlined"
-      size="small"
-      style={{ margin: '3px',
-        display: 'flex',
-        justifyContent: 'center',
-        color: 'var(--secondary-dark-green)',
-        width: '100%',
-        borderRadius: '0px' }}
-    />
-  );
-}
+//* * will not be used for now **//
+// function renderTagChip(cell: string): JSX.Element {
+//   const tag = cell;
+//   if (cell === null || cell === undefined || cell === '') {
+//     return (
+//       <Typography
+//         variant="body2"
+//         color="textDisabled"
+//         sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+//       >
+//         No Type Set
+//       </Typography>
+//     );
+//   }
+//   return (
+//     <Chip
+//       key={tag}
+//       label={tag}
+//       variant="outlined"
+//       size="small"
+//       style={{ margin: '3px',
+//         display: 'flex',
+//         justifyContent: 'center',
+//         color: 'var(--secondary-dark-green)',
+//         width: '100%',
+//         borderRadius: '0px' }}
+//     />
+//   );
+// }
 
 const columns = [
-  { field: 'type', header: 'Type', body: (rowData: any) => renderTagChip(rowData.type) },
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
+  { field: 'type', header: 'Type' },
   { field: 'description', header: 'Description' },
   { field: 'created', header: 'Created', body: (rowData: any) => isoDateLocalDate(rowData.created) },
 ];
@@ -142,6 +137,11 @@ function ProjectsList() {
     (filtersCopy.type as DataTableFilterMetaData).value = null;
     setFilters(filtersCopy);
   };
+  
+  const onTypeFilterClear = () => {
+    setSelectedValue(null);
+    resetFilters();
+  };
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
@@ -150,44 +150,12 @@ function ProjectsList() {
           value={(filters.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <Select
-            value={selectedValue || ''}
-            onChange={e => onTypeFilterChange(e)}
-            size="small"
-            variant="outlined"
-            displayEmpty
-            renderValue={(selected) =>
-              (selected ? (
-                <em style={{ fontSize: '.9em' }}>{selected}</em>
-              ) :
-                (
-                  <Typography color="textDisabled" variant="subtitle2">
-                    Filter by Type
-                  </Typography>
-                ))}
-            endAdornment={
-                selectedValue && (
-                <InputAdornment sx={{ marginRight: '15px' }} position="end">
-                  <IconButton
-                    onClick={() => {
-                      setSelectedValue(null);
-                      resetFilters();
-                    }}
-                  >
-                    <Clear fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-                )
-            }
-          >
-            {allTypes.map((option) => (
-              <MenuItem key={option} value={option} sx={{ fontSize: '0.9em' }}>
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <TypeFilterSelect
+          selectedValue={selectedValue}
+          onTypeFilterChange={onTypeFilterChange}
+          onTypeFilterClear={onTypeFilterClear}
+          allTypes={allTypes}
+        />
       </Stack>
     </div>
   );
