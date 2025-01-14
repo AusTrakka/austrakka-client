@@ -46,6 +46,7 @@ export default function Organisations(props: ProjectWidgetProps) {
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)) {
       const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
+      counts.sort((a, b) => b.sampleCount - a.sampleCount);
       setAggregatedCounts(counts);
     }
   }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
