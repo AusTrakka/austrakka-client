@@ -17,6 +17,7 @@ import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { NumericEditable, TextEditable } from './EditableFields';
 import { ScopeDefinitions } from '../../constants/scopes';
+import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -26,10 +27,16 @@ function Fields() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const user: UserSliceState = useAppSelector(selectUserState);
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
   const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
-  const interactionPermission = hasPermissionV2(user, user.defaultTenantName, scope);
+  const interactionPermission = hasPermissionV2(
+    user,
+    tenant.defaultTenantGlobalId,
+    tenant.defaultTenantName,
+    scope,
+  );
 
   // get all AT fields
   useEffect(() => {
@@ -43,7 +50,8 @@ function Fields() {
 
     const retrieveFields = async () => {
       try {
-        const response: ResponseObject = await getFieldsV2(user.defaultTenantGlobalId, token);
+        console.log('This shoudl exist', tenant.defaultTenantGlobalId);
+        const response: ResponseObject = await getFieldsV2(tenant.defaultTenantGlobalId, token);
         if (response.status === ResponseType.Success) {
           const responseFields: MetaDataColumn[] = response.data;
           responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
@@ -62,7 +70,7 @@ function Fields() {
         await retrieveFields(); // Await the promise to avoid unhandled rejection warnings
       })();
     }
-  }, [token, tokenLoading, user.defaultTenantGlobalId]);
+  }, [token, tokenLoading, tenant.defaultTenantGlobalId]);
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
@@ -115,7 +123,7 @@ function Fields() {
     const fieldName = rowData.columnName;
     const fieldData = { [field]: newValue };
 
-    const response = await patchFieldV2(user.defaultTenantGlobalId, fieldName, token, fieldData);
+    const response = await patchFieldV2(tenant.defaultTenantGlobalId, fieldName, token, fieldData);
     if (response.status === ResponseType.Success) {
       setFields(fields.map((fieldMetadata: MetaDataColumn) =>
         (fieldMetadata.columnName === fieldName ?

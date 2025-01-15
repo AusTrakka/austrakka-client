@@ -8,6 +8,7 @@ import phessIdOverallReducer from '../components/Widgets/UserWidgets/PhessIdOver
 import projectMetadataReducer from './projectMetadataSlice';
 import groupMetadataReducer from './groupMetadataSlice';
 import userReducer from './userSlice';
+import tenantReducer from './tenantSlice';
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     projectMetadataState: projectMetadataReducer,
     groupMetadataState: groupMetadataReducer,
     userState: userReducer,
+    tenantState: tenantReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })

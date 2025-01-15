@@ -5,8 +5,9 @@ import { ResponseType } from '../constants/responseType';
 import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
 import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import type { RootState } from './store';
+import store, { RootState, useAppSelector } from './store';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
+import { selectTenantState, TenantSliceState } from './tenantSlice';
 
 export interface UserSliceState {
   groupRolesByGroup: Record<string, string[]>,
@@ -18,15 +19,11 @@ export interface UserSliceState {
   orgName: string,
   errorMessage: string,
   loading: LoadingState,
-  defaultTenantGlobalId: string,
-  defaultTenantName: string,
   scopes: GroupedPrivilegesByRecordTypeWithScopes[],
 }
 
 interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
-  defaultTenantGlobalId: string,
-  defaultTenantName: string,
   scopes: GroupedPrivilegesByRecordTypeWithScopes[]
   defaultTenant: string,
   displayName: string,
@@ -42,20 +39,15 @@ const fetchUserRoles = createAsyncThunk(
     thunkAPI,
   ): Promise<GroupRole[] | unknown> => {
     try {
-      // Fetch default tenant and group details
-      const defaultTenantObject: ResponseObject = await getTenant(token);
-      if (defaultTenantObject.status !== ResponseType.Success) {
-        return thunkAPI.rejectWithValue(defaultTenantObject.message);
-      }
-
+      const tenant: TenantSliceState = useAppSelector(selectTenantState);
       const groupResponse: ResponseObject = await getMe(token);
       if (groupResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(groupResponse.message);
       }
 
       // Fetch user scope using tenant globalId
-      const { globalId, name } = defaultTenantObject.data;
-      const scopeResponse: ResponseObject = await getMeV2(globalId, token);
+      const { defaultTenantGlobalId } = tenant;
+      const scopeResponse: ResponseObject = await getMeV2(defaultTenantGlobalId, token);
       if (scopeResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(scopeResponse.message);
       }
@@ -78,8 +70,6 @@ const fetchUserRoles = createAsyncThunk(
         orgAbbrev,
         orgName,
         scopes,
-        defaultTenantGlobalId: globalId,
-        defaultTenantName: name,
       } as FetchUserRolesResponse);
     } catch (error) {
       return thunkAPI.rejectWithValue('An unexpected error occurred');
@@ -119,8 +109,6 @@ const userSlice = createSlice({
         state.orgAbbrev = holder.orgAbbrev;
         state.orgName = holder.orgName;
         state.scopes = holder.scopes;
-        state.defaultTenantGlobalId = holder.defaultTenantGlobalId;
-        state.defaultTenantName = holder.defaultTenantName;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;

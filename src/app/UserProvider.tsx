@@ -6,6 +6,7 @@ import LoadingState from '../constants/loadingState';
 import { useApi } from './ApiContext';
 import { logoOnlyUrl } from '../constants/logoPaths';
 import './UserProvider.css';
+import { fetchDefaultTenant } from './tenantSlice';
 
 interface UserProviderProps {
   children: ReactNode;
@@ -29,7 +30,12 @@ function UserProvider({ children }: UserProviderProps) {
           setShowChildren(true);
         }, 400);
       };
+      const fetchTenant = async () => {
+        await dispatch(fetchDefaultTenant(token));
+      };
+      
       if (rolesLoading) {
+        fetchTenant();
         fetchRoles();
       }
     }
