@@ -50,7 +50,6 @@ function Fields() {
 
     const retrieveFields = async () => {
       try {
-        console.log('This shoudl exist', tenant.defaultTenantGlobalId);
         const response: ResponseObject = await getFieldsV2(tenant.defaultTenantGlobalId, token);
         if (response.status === ResponseType.Success) {
           const responseFields: MetaDataColumn[] = response.data;

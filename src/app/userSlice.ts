@@ -3,9 +3,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { ResponseObject } from '../types/responseObject.interface';
 import { ResponseType } from '../constants/responseType';
 import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
-import { getMe, getMeV2, getTenant } from '../utilities/resourceUtils';
+import { getMe, getMeV2 } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import store, { RootState, useAppSelector } from './store';
+import type { RootState } from './store';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
 import { selectTenantState, TenantSliceState } from './tenantSlice';
 
@@ -34,20 +34,27 @@ interface FetchUserRolesResponse {
 
 const fetchUserRoles = createAsyncThunk(
   'user/fetchUserRoles',
-  async (
-    token: string,
-    thunkAPI,
-  ): Promise<GroupRole[] | unknown> => {
+  async (token: string, thunkAPI): Promise<GroupRole[] | unknown> => {
     try {
-      const tenant: TenantSliceState = useAppSelector(selectTenantState);
+      // Use getState to access the Redux state
+      const state = thunkAPI.getState() as RootState;
+      const tenant: TenantSliceState = selectTenantState(state);
+
+      if (!tenant.defaultTenantGlobalId) {
+        return thunkAPI.rejectWithValue('No default tenant global ID found');
+      }
+
+      // Fetch group roles
       const groupResponse: ResponseObject = await getMe(token);
       if (groupResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(groupResponse.message);
       }
 
       // Fetch user scope using tenant globalId
-      const { defaultTenantGlobalId } = tenant;
-      const scopeResponse: ResponseObject = await getMeV2(defaultTenantGlobalId, token);
+      const scopeResponse: ResponseObject = await getMeV2(
+        tenant.defaultTenantGlobalId,
+        token,
+      );
       if (scopeResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(scopeResponse.message);
       }
@@ -63,14 +70,14 @@ const fetchUserRoles = createAsyncThunk(
       const { scopes } = scopeResponse.data as UserMe;
 
       // Fulfill with user role data
-      return thunkAPI.fulfillWithValue({
+      return {
         groupRoles,
         displayName,
         isAusTrakkaAdmin,
         orgAbbrev,
         orgName,
         scopes,
-      } as FetchUserRolesResponse);
+      } as FetchUserRolesResponse;
     } catch (error) {
       return thunkAPI.rejectWithValue('An unexpected error occurred');
     }

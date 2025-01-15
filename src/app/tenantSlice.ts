@@ -3,7 +3,7 @@ import { ResponseObject } from '../types/responseObject.interface';
 import { getTenant } from '../utilities/resourceUtils';
 import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
-import { RootState } from './store';
+import type { RootState } from './store';
 
 export interface TenantSliceState {
   defaultTenantGlobalId: string,
