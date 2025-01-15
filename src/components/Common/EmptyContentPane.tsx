@@ -69,7 +69,7 @@ const textStyles: React.CSSProperties = {
 };
 
 const subTextStyles: React.CSSProperties = {
-    fontSize: '14px',
+    fontSize: '13px',
     color: 'rgb(10,53,70,0.7)',
     margin: 0,
 };
