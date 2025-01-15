@@ -1,17 +1,30 @@
 import React from 'react';
-import { Inbox } from '@mui/icons-material';
+import {Cancel, Https, Inbox} from '@mui/icons-material';
+
+export enum ContentIcon {
+    Inbox = 'Inbox',
+    Forbidden = 'Forbidden',
+    Error = 'Error',
+}
 
 interface EmptyContentProps {
     message?: string;
+    subText?: string;
+    icon?: ContentIcon;
 }
 
-const EmptyContentPane: React.FC<EmptyContentProps> = ({ message }) => {
+const EmptyContentPane: React.FC<EmptyContentProps> = ({ message, icon, subText }) => {
+    let iconComponent = <Inbox sx={iconStyles} />;
+    if (icon === ContentIcon.Forbidden) {iconComponent = <Https sx={iconStyles} />;}
+    else if (icon === ContentIcon.Error) { iconComponent = <Cancel sx={iconStyles} />}
+    
     return (
         <div style={containerStyles}>
             <div style={iconBackgroundStyles}>
-                <Inbox sx={iconStyles} />
+                { iconComponent }
             </div>
             <p style={textStyles}>{message || 'No content to show'}</p>
+            {subText && <p style={subTextStyles}>{subText}</p>}
         </div>
     );
 };
@@ -51,6 +64,14 @@ const iconBackgroundStyles: React.CSSProperties = {
 const textStyles: React.CSSProperties = {
     fontSize: '19px',
     color: 'rgb(10,53,70,0.8)',
+    marginBottom: '10px',
+    marginTop: '1em',
+};
+
+const subTextStyles: React.CSSProperties = {
+    fontSize: '14px',
+    color: 'rgb(10,53,70,0.7)',
+    margin: 0,
 };
 
 export default EmptyContentPane;

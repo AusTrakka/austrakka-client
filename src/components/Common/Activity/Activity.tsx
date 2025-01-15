@@ -17,7 +17,7 @@ import {buildPrimeReactColumnDefinitions} from "../../../utilities/tableUtils";
 import FriendlyHeader from "../../../types/friendlyHeader.interface";
 import TableToolbar from "./TableToolbar";
 import ReduxLoadingState from "../../Platform/ReduxLoadingState";
-import EmptyContentPane from "../EmptyContentPane";
+import EmptyContentPane, {ContentIcon} from "../EmptyContentPane";
 
 interface ActivityProps {
     recordType: string,
@@ -89,7 +89,7 @@ const Activity: FC<ActivityProps> = (props) => {
         ? props.recordType
         : `${props.recordType}V2`;
     
-    const { refinedLogs } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
+    const { refinedLogs, httpStatusCode } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
 
     useEffect(() => {
         if (columns.length > 0) return;
@@ -218,11 +218,32 @@ const Activity: FC<ActivityProps> = (props) => {
         </>
     );
     
+
+    
+    let contentPane = <></>
+    if(httpStatusCode === 401 || httpStatusCode === 403)
+    {
+        contentPane = <EmptyContentPane 
+            message="You do not have permission to view activity logs." 
+            icon={ContentIcon.Forbidden} />
+    }
+    else if(!props.rguid || !props.owningTenantGlobalId)
+    {
+        contentPane = <EmptyContentPane
+            message="Cannot fetch activity log."
+            subText="Missing record information."
+            icon={ContentIcon.Error} />
+    }
+    else
+    {
+        contentPane = refinedLogs.length > 0 
+            ? tableContent 
+            : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.Inbox} />
+    }
+    
     return(
         <>
-            {
-                refinedLogs.length > 0 ? tableContent : EmptyContentPane({ message: 'There is no activity to show.' })
-            }
+            {contentPane}
         </>
     );
 }

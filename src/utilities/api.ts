@@ -75,6 +75,7 @@ function tokenExpired(response: Response) {
 function tokenExpiredResponse(response: Response): ResponseObject {
   return {
     status: ResponseType.Error,
+    httpStatusCode: response.status,
     type: response.statusText,
     message: expiredTokenErrorMessage,
   };
@@ -83,6 +84,7 @@ function tokenExpiredResponse(response: Response): ResponseObject {
 function successResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Success,
+    httpStatusCode: response.status,
     message: apiResp.messages[0]?.ResponseMessage,
     data: apiResp.data,
     headers: response.headers,
@@ -93,6 +95,7 @@ function successResponse<T = any>(response: Response, apiResp: ApiResponse<T>): 
 function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Error,
+    httpStatusCode: response.status,
     type: response.statusText,
     message: apiResp.messages[0]?.ResponseMessage || genericErrorMessage,
     messages: apiResp.messages || [genericErrorMessage],

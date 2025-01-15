@@ -14,7 +14,7 @@ export default function useActivityLogs(
     const [refinedLogs, setRefinedLogs] = useState<RefinedLog[]>([]);
     const { token, tokenLoading } = useApi();
     const [exportData, setExportData] = useState<RefinedLog[]>([]);
-    const [isLoadingError, setIsLoadingError] = useState<boolean>(false);
+    const [httpStatusCode, setHttpStatusCode] = useState<number>(-1);
     const [isLoadingErrorMsg, setIsLoadingErrorMsg] = useState<string>('');
     const [dataLoading, setDataLoading] = useState<boolean>(true);
 
@@ -31,7 +31,7 @@ export default function useActivityLogs(
                 setRefinedLogs(resp.data as RefinedLog[]);
                 setExportData(resp.data as RefinedLog[]);
             } else {
-                setIsLoadingError(true);
+                setHttpStatusCode(resp.httpStatusCode || -1);
                 setIsLoadingErrorMsg(resp.message);
             }
             setDataLoading(false);
@@ -43,5 +43,5 @@ export default function useActivityLogs(
         }
     }, [recordType, rguid, token, tokenLoading]);
 
-    return {refinedLogs, exportData, dataLoading, isLoadingError, isLoadingErrorMsg};
+    return {refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg};
 }
