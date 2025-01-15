@@ -18,10 +18,11 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasScopes } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from "../../hooks/useUsername";
+import {ScopeDefinitions} from "../../constants/scopes";
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -128,27 +129,55 @@ function MainMenuLayout() {
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
+      requirePermission: true,
+      permissionDomain: null,
+      requiredTenantScopes: [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG]
     },
     {
       title: 'Users',
       link: '/users',
       icon: <People />,
+      requirePermission: true,
       permissionDomain: 'users',
     },
     {
       title: 'Users (V2)',
       link: '/usersV2',
       icon: <People color="warning" />,
+      requirePermission: true,
       permissionDomain: 'usersV2',
     },
   ];
+  
   const visiblePages = pages.filter((page) =>
-    !page.permissionDomain || hasPermission(
-      user,
-      'AusTrakka-Owner',
-      page.permissionDomain,
-      PermissionLevel.CanShow,
-    ));
+    !page.requirePermission 
+      || hasV1Perm(page.permissionDomain) 
+      || hasTenantPerm()
+  );
+
+  // Declared as function so that it is hoisted above the
+  // declaration of "visiblePages". We can also declare
+  // this function before declaring "visiblePages" but this
+  // is a more permanent solution.
+  function hasV1Perm(domain: string | null) : boolean {
+    return hasPermission(
+        user,
+        'AusTrakka-Owner',
+        domain,
+        PermissionLevel.CanShow,
+    );
+  }
+
+  // Declared as function so that it is hoisted above the
+  // declaration of "visiblePages". We can also declare
+  // this function before declaring "visiblePages" but this
+  // is a more permanent solution.
+  function hasTenantPerm() : boolean {
+    return hasScopes(
+        user,
+        user.defaultTenantGlobalId,
+        [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS]);
+  }
   
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
