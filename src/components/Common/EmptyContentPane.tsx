@@ -1,5 +1,5 @@
 import React from 'react';
-import {Cancel, Https, Inbox} from '@mui/icons-material';
+import {Cancel, ErrorOutline, Https, Inbox} from '@mui/icons-material';
 
 export enum ContentIcon {
     Inbox = 'Inbox',
@@ -16,7 +16,7 @@ interface EmptyContentProps {
 const EmptyContentPane: React.FC<EmptyContentProps> = ({ message, icon, subText }) => {
     let iconComponent = <Inbox sx={iconStyles} />;
     if (icon === ContentIcon.Forbidden) {iconComponent = <Https sx={iconStyles} />;}
-    else if (icon === ContentIcon.Error) { iconComponent = <Cancel sx={iconStyles} />}
+    else if (icon === ContentIcon.Error) { iconComponent = <ErrorOutline sx={iconStyles} />}
     
     return (
         <div style={containerStyles}>
