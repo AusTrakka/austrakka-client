@@ -36,7 +36,6 @@ const fetchUserRoles = createAsyncThunk(
   'user/fetchUserRoles',
   async (token: string, thunkAPI): Promise<GroupRole[] | unknown> => {
     try {
-      // Use getState to access the Redux state
       const state = thunkAPI.getState() as RootState;
       const tenant: TenantSliceState = selectTenantState(state);
 
