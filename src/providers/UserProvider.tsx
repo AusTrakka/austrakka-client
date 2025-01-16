@@ -1,11 +1,11 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from './store';
-import { fetchUserRoles } from './userSlice';
 import LoadingState from '../constants/loadingState';
-import { useApi } from './ApiContext';
 import { logoOnlyUrl } from '../constants/logoPaths';
 import './UserProvider.css';
-import { selectTenantState, TenantSliceState } from './tenantSlice';
+import { useApi } from '../app/ApiContext';
+import { useAppDispatch, useAppSelector } from '../app/store';
+import { selectTenantState, TenantSliceState } from '../app/tenantSlice';
+import { fetchUserRoles } from '../app/userSlice';
 
 interface UserProviderProps {
   children: ReactNode;

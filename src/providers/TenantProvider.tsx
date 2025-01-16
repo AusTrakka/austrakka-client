@@ -1,9 +1,9 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { useAppDispatch } from './store';
 import LoadingState from '../constants/loadingState';
-import { useApi } from './ApiContext';
 import './UserProvider.css';
-import { fetchDefaultTenant } from './tenantSlice';
+import { useApi } from '../app/ApiContext';
+import { useAppDispatch } from '../app/store';
+import { fetchDefaultTenant } from '../app/tenantSlice';
 
 interface TenantProviderProps {
   children: ReactNode;

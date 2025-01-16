@@ -19,7 +19,7 @@ const store = configureStore({
     projectMetadataState: projectMetadataReducer,
     groupMetadataState: groupMetadataReducer,
     userState: userReducer,
-    tenantState: tenantReducer,
+    tenantSliceState: tenantReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })
