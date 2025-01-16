@@ -34,8 +34,8 @@ import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
 import UserDetailV2 from './components/UsersV2/BasicDetails/UserDetailV2';
-import UserProvider from './app/UserProvider';
-import TenantProvider from './app/TenantProvider';
+import TenantProvider from './providers/TenantProvider';
+import UserProvider from './providers/UserProvider';
 
 function App() {
   const navigate = useNavigate();
