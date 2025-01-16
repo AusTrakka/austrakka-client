@@ -65,6 +65,6 @@ const tenantSlice = createSlice({
 });
 
 export default tenantSlice.reducer;
-export const selectTenantState = (state: RootState) : TenantSliceState => state.tenantState;
+export const selectTenantState = (state: RootState) : TenantSliceState => state.tenantSliceState;
 
 export { fetchDefaultTenant };
