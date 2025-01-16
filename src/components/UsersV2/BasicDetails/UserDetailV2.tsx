@@ -314,7 +314,7 @@ function UserDetailV2() {
         width="100%"
         alignItems="stretch"
       >
-        <Grid size={{ xs: 12, md: 12, lg: 4.5 }}>
+        <Grid size={{ xs: 12, md: 12, lg: 12, xl: 4.5 }}>
           <Paper elevation={1} className="basic-info-table">
             <Stack
               direction="row"
@@ -353,7 +353,7 @@ function UserDetailV2() {
             </TableContainer>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, md: 12, lg: 7.5 }}>
+        <Grid size={{ xs: 12, md: 12, lg: 12, xl: 7.5 }}>
           <Paper elevation={1} className="basic-info-table">
             <Stack
               direction="row"

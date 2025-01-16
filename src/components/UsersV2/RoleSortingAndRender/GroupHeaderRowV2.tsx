@@ -94,7 +94,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 options={dummyResources}
                 multiple
                 limitTags={1}
-                style={{ width: '19em' }}
+                style={{ width: '22em' }}
                 value={selectedResources || []}
                 disableCloseOnSelect
                 isOptionEqualToValue={(option, value) => option.resourceId === value.resourceId}
@@ -111,6 +111,19 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                     {option.name}
                   </li>
                 )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => (
+                    <Chip
+                      label={option.name}
+                      {...getTagProps({ index })}
+                      style={{
+                        maxWidth: '9em', // Limit chip width
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    />
+                  ))}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -134,7 +147,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 options={dummyRoles}
                 multiple
                 limitTags={1}
-                style={{ width: '19em' }}
+                style={{ width: '22em' }}
                 value={selectedRoles || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
@@ -157,7 +170,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                       label={option.name}
                       {...getTagProps({ index })}
                       style={{
-                        maxWidth: '8em', // Limit chip width
+                        maxWidth: '12em', // Limit chip width
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
