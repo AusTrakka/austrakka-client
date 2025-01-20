@@ -10,7 +10,7 @@ import {
   Typography,
   Stack,
   Autocomplete,
-  Checkbox, TextField, Chip,
+  Checkbox, TextField, Chip, Tooltip,
 } from '@mui/material';
 import {
   AddCircle,
@@ -94,7 +94,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 options={dummyResources}
                 multiple
                 limitTags={1}
-                style={{ width: '22em' }}
+                style={{ width: '19em' }}
                 value={selectedResources || []}
                 disableCloseOnSelect
                 isOptionEqualToValue={(option, value) => option.resourceId === value.resourceId}
@@ -113,22 +113,24 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 )}
                 renderTags={(tagValue, getTagProps) =>
                   tagValue.map((option, index) => (
-                    <Chip
-                      label={option.name}
-                      {...getTagProps({ index })}
-                      style={{
-                        maxWidth: '9em', // Limit chip width
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    />
+                    <Tooltip title={option.name}>
+                      <Chip
+                        label={option.name}
+                        {...getTagProps({ index })}
+                        style={{
+                          maxWidth: '9em', // Limit chip width
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      />
+                    </Tooltip>
                   ))}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     hiddenLabel
-                    placeholder="Select Group"
+                    placeholder={selectedResources?.length ? '' : 'Select Group'}
                     variant="filled"
                     size="small"
                     InputProps={{
@@ -143,11 +145,12 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                   />
                 )}
               />
+
               <Autocomplete
                 options={dummyRoles}
                 multiple
                 limitTags={1}
-                style={{ width: '22em' }}
+                style={{ width: '19em' }}
                 value={selectedRoles || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
@@ -166,16 +169,18 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                 )}
                 renderTags={(tagValue, getTagProps) =>
                   tagValue.map((option, index) => (
-                    <Chip
-                      label={option.name}
-                      {...getTagProps({ index })}
-                      style={{
-                        maxWidth: '12em', // Limit chip width
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    />
+                    <Tooltip title={option.name}>
+                      <Chip
+                        label={option.name}
+                        {...getTagProps({ index })}
+                        style={{
+                          maxWidth: '9em', // Limit chip width
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      />
+                    </Tooltip>
                   ))}
                 renderInput={(params) => (
                   <TextField
@@ -183,7 +188,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                     size="small"
                     hiddenLabel
                     variant="filled"
-                    placeholder="Select Role"
+                    placeholder={selectedRoles?.length ? '' : 'Select Role'}
                     InputProps={{
                       ...params.InputProps,
                       inputProps: {
