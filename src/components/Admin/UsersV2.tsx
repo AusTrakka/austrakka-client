@@ -17,6 +17,7 @@ import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import renderIcon from './UserIconRenderer';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 
 function renderDisplayName(rowData: UserList) {
   return (
@@ -40,6 +41,7 @@ function UsersV2() {
   });
   const [dataLoading, setDataLoading] = useState<boolean>(true);
   const user: UserSliceState = useAppSelector(selectUserState);
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
 
   const emailBodyTemplate = (rowData: UserList) => (
     (!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ?
@@ -65,7 +67,7 @@ function UsersV2() {
     const getUsers = async () => {
       const getUsersResponse: ResponseObject = await getUserListV2(
         includeAll,
-        user.defaultTenantGlobalId,
+        tenant.defaultTenantGlobalId,
         token,
       );
       if (getUsersResponse.status === ResponseType.Success) {
@@ -80,11 +82,11 @@ function UsersV2() {
 
     if (tokenLoading !== LoadingState.LOADING &&
         tokenLoading !== LoadingState.IDLE &&
-        user.loading === LoadingState.SUCCESS) {
+        tenant.loading === LoadingState.SUCCESS) {
       setDataLoading(true);
       getUsers();
     }
-  }, [includeAll, token, tokenLoading, user]);
+  }, [includeAll, token, tokenLoading, tenant]);
 
   const rowClickHandler = (selectedRow: DataTableRowClickEvent) => {
     const { globalId } = selectedRow.data;

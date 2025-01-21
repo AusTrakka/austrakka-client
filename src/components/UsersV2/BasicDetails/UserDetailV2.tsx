@@ -33,6 +33,7 @@ import renderIcon from '../../Admin/UserIconRenderer';
 import EditButtonsV2 from '../EditButtonsV2';
 import '../RowRender/RowAndCell.css';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
+import { selectTenantState } from '../../../app/tenantSlice';
 
 function UserDetailV2() {
   const { userGlobalId } = useParams();
@@ -56,8 +57,8 @@ function UserDetailV2() {
   const {
     loading,
     adminV2,
-    defaultTenantGlobalId,
   } = useAppSelector(selectUserState);
+  const { defaultTenantGlobalId } = useAppSelector(selectTenantState);
 
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
