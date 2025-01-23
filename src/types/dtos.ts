@@ -1,6 +1,7 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
+  globalId: string,
   abbreviation: string,
   name: string,
   description: string,
@@ -320,6 +321,19 @@ export interface Role {
   roleId: number,
   name: string,
   description: string,
+}
+
+export interface RolesV2 {
+  name: string,
+  globalId: string,
+  allowedRootResourceTypes: AllowedResourceTypes[]
+  privilegeLevel: number,
+}
+
+export interface AllowedResourceTypes {
+  globalId: string
+  name: string,
+  isAggregateRoot: boolean,
 }
 
 export interface FeedbackPost {
