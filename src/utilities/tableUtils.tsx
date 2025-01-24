@@ -5,7 +5,7 @@ import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 export const compareFields = (field1: Field, field2: Field) =>
   field1.columnOrder - field2.columnOrder;
 
-interface ColumnBuilder {
+export interface ColumnBuilder {
   field: string;
   header: string;
   dataType?: string;

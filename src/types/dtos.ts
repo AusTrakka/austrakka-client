@@ -366,7 +366,8 @@ export interface UserPatchV2 {
 }
 
 export interface RefinedLog {
-  eventGlobalId: string,
+  // Server fields
+  refinedLogGlobalId: string,
   eventSpecGlobalId: string,
   eventShortDescription: string,
   resourceGlobalId: string,
@@ -376,5 +377,11 @@ export interface RefinedLog {
   submitterDisplayName: string,
   eventStatus: string,
   eventTime: string,
-  tenantGlobalId: string
+  tenantGlobalId: string,
+  aggregationKey: string | null,
+  aggregationMemberKey: string | null,
+
+  // UI-specific fields
+  children: RefinedLog[] | null,
+  level: number | null,
 }

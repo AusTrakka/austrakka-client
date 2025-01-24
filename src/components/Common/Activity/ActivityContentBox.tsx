@@ -38,28 +38,24 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
 
     const details = () => {
         return (
-            <tr key="details">
+            <tr key={"details"}>
                 <td style={styles.tableCell}>
-                    <DetailedText text="Details" />
+                    <DetailedText text="Details" isSubHeading={true}/>
                 </td>
                 <td style={{ ...styles.tableCell, paddingLeft: '100px' }}>
                     <ul style={styles.ul}>
-                        <li key="EventStartDate" style={styles.li}>
-                                <DetailedText text="Event start date" />
+                        <li style={styles.li}>
+                                <DetailedText text="Event start date" isSubHeading={true} />
                                 <DetailedText text={formatDate(genericDetails!.EventStartDate)} />
                         </li>
-                        <li key="RecentEventDate" style={styles.li}>
-                                <DetailedText text="Recent event date" />
+                        <li style={styles.li}>
+                                <DetailedText text="Recent event date" isSubHeading={true}/>
                                 <DetailedText text={formatDate(genericDetails!.RecentEventDate)} />
                         </li>
-                        <li key="ResourceIds" style={styles.li}>
-                                <DetailedText text="ResourceIds" />
+                        <li style={styles.li}>
+                                <DetailedText text="ResourceIds" isSubHeading={true}/>
                             {genericDetails!.ResourceIds.map((id: string, index: number) => (
-                                <>
-                                    <DetailedText text={id} display="inline-block"/>
-                                    {index < genericDetails!.ResourceIds.length - 1 
-                                        && <DetailedText text=", " display="inline-block"/>}
-                                </>
+                                    <DetailedText key={id} text={id}/>
                             ))}
                         </li>
                     </ul>
@@ -75,7 +71,7 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                 {fieldOrder.map( f => (
                     <tr key={f}>
                         <td style={{padding: '8px 0px'}}>
-                            <DetailedText text={f} />
+                            <DetailedText text={f} isSubHeading={true}/>
                         </td>
                         <td style={{padding: '8px 8px 8px 100px'}}>
                             <DetailedText text={f === "Time stamp" ? formatDate(entry[f]) :entry[f]} />

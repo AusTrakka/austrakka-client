@@ -3,7 +3,8 @@ import {FilterMatchMode} from "primereact/api";
 import {
     DataTable,
     DataTableOperatorFilterMetaData,
-    DataTableRowClickEvent,
+    DataTableRowClickEvent, 
+    DataTableRowToggleEvent,
     DataTableSelectEvent
 } from "primereact/datatable";
 import {Paper, Typography} from "@mui/material";
@@ -13,7 +14,7 @@ import ActivityDetails from "./ActivityDetails";
 import {Info} from "@mui/icons-material";
 import {ActivityField, RefinedLog} from "../../../types/dtos";
 import useActivityLogs from "../../../hooks/useActivityLogs";
-import {buildPrimeReactColumnDefinitions} from "../../../utilities/tableUtils";
+import {buildPrimeReactColumnDefinitions, ColumnBuilder} from "../../../utilities/tableUtils";
 import FriendlyHeader from "../../../types/friendlyHeader.interface";
 import TableToolbar from "./TableToolbar";
 import ReduxLoadingState from "../../Platform/ReduxLoadingState";
@@ -84,12 +85,22 @@ const Activity: FC<ActivityProps> = (props) => {
     const [openDetails, setOpenDetails] = useState(false);
     const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
     const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
+    const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
     
     const routeSegment = props.recordType === 'tenant' 
         ? props.recordType
         : `${props.recordType}V2`;
     
-    const { refinedLogs, httpStatusCode } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
+    const { 
+        refinedLogs,
+        httpStatusCode } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
+
+    useEffect(() => {
+        if (refinedLogs.length > 0) {
+            const transformedData = transformData(refinedLogs);
+            setLocalLogs(transformedData);
+        }
+    }, [refinedLogs]);
 
     useEffect(() => {
         if (columns.length > 0) return;
@@ -130,6 +141,81 @@ const Activity: FC<ActivityProps> = (props) => {
     const onRowSelect = (e: DataTableSelectEvent) => {
         setSelectedRow(e.data);
     };
+
+    const transformData = (data: RefinedLog[]): RefinedLog[] => {
+        const nodesByKey: { [key: string]: RefinedLog } = {};
+        const rootNodes: RefinedLog[] = [];
+
+        data.forEach((item) => {
+            if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
+        });
+
+        const addChildren = (node: RefinedLog, parentLevel: number): void => {
+            node.level = parentLevel; // Set the level of the current node
+            node.children?.forEach((child) => {
+                addChildren(child, parentLevel + 1); // Recursively assign level to children
+            });
+        };
+
+        data.forEach((item) => {
+            if (item.aggregationMemberKey) {
+                const parentNode = nodesByKey[item.aggregationMemberKey];
+                if (parentNode) {
+                    if (!parentNode.children) parentNode.children = [];
+                    parentNode.children?.push(item); // Add child to parent node
+                }
+            } else {
+                rootNodes.push(item); // Root node has no parent
+            }
+        });
+
+        rootNodes.forEach((node) => addChildren(node, 0));
+        return rootNodes;
+    };
+
+    const toggleRow = (e: DataTableRowToggleEvent) => {
+        const row = e.data[0] as RefinedLog;
+
+        const firstChildIdx = localLogs.findIndex((node) =>
+            node.aggregationMemberKey
+            && row.aggregationKey
+            && node.aggregationMemberKey === row.aggregationKey);
+
+        const clonedRows = [...localLogs];
+
+        if(firstChildIdx === -1) {
+            // Add
+            const rowIdx = localLogs.indexOf(row);
+            clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
+        }
+        else {
+            // Remove
+            // Traverse the tree of row recursively to fine all the descendants.
+            // Compile the nodes into a flat array. Using this information, remove
+            // each member of the array from currentRows.
+            const targets: RefinedLog[] = [];
+
+            const findDescendants = (node: RefinedLog) => {
+                targets.push(node);
+                node.children?.forEach((child) => findDescendants(child));
+            };
+
+            if(row.children){
+                for (let i = 0; i < row.children.length; i++) {
+                    findDescendants(row.children[i]);
+                }
+            }
+
+            // Remove the targets from the currentRows
+            targets.forEach((target) => {
+                const idx = clonedRows.indexOf(target);
+                if (idx !== -1) {
+                    clonedRows.splice(idx, 1);
+                }
+            });
+        }
+        setLocalLogs(clonedRows);
+    }
     
     const friendlyHeaders: FriendlyHeader[] = supportedColumns
         .sort((a, b) => a.columnOrder - b.columnOrder)
@@ -154,6 +240,14 @@ const Activity: FC<ActivityProps> = (props) => {
             </div>
         );
     };
+
+    const getIndentStyle = (level: number) => {
+        return {
+            paddingLeft: `${level * 25}px`,  // Indent by 20px per level
+            display: 'inline-flex',  // Use inline-flex to align both the icon and the ID in a row
+            alignItems: 'center',
+        };
+    };
     
     const tableContent = (
         <>
@@ -168,8 +262,7 @@ const Activity: FC<ActivityProps> = (props) => {
                 <div>
                     <DataTable
                         id="activity-table"
-                        dataKey="eventGlobalId"
-                        value={refinedLogs}
+                        value={localLogs}
                         filters={defaultState}
                         size="small"
                         columnResizeMode="expand"
@@ -184,6 +277,7 @@ const Activity: FC<ActivityProps> = (props) => {
                         onRowClick={rowClickHandler}
                         selection={selectedRow}
                         onRowSelect={onRowSelect}
+                        onRowToggle={toggleRow}
                         selectionMode="single"
                         rows={25}
                         loading={false}
@@ -198,18 +292,46 @@ const Activity: FC<ActivityProps> = (props) => {
                             </Typography>
                         )}
                     >
-                        {columns ? columns.map((col: any, index: any) => (
-                            <Column
-                                key={col.field}
-                                field={col.field}
-                                header={col.header}
-                                hidden={false}
-                                body={col.body}
-                                sortable={false}
-                                resizeable
-                                style={{ minWidth: '150px', paddingLeft: '16px' }}
-                                headerClassName="custom-title"
-                            />
+                        <Column
+                            expander={(rowData: RefinedLog) => rowData.children?.length ?? 0 > 0}
+                            style={{ width: '3em' }}
+                        />
+                        <Column
+                            key="eventShortDescription"
+                            field="eventShortDescription"
+                            header="Operation name"
+                            hidden={false}
+                            body={(rowData: RefinedLog) =>
+                                <span style={getIndentStyle(rowData.level ?? 0)}>
+                                    <Info style={{
+                                        marginRight: '10px',
+                                        cursor: 'pointer',
+                                        color: 'rgb(21,101,192)',
+                                        fontSize: '14px',
+                                        verticalAlign: 'middle'
+                                    }}/>
+                                    {/*{col.body ? col.body(rowData) : rowData[col.field]}*/}
+                                    {rowData["eventShortDescription"]}
+                                </span>
+                            }
+                            sortable={false}
+                            resizeable
+                            style={{ minWidth: '150px', paddingLeft: '16px' }}
+                            headerClassName="custom-title"
+                        />
+                        {columns ? columns.filter((col: ColumnBuilder) => col.field !== 'eventShortDescription')
+                            .map((col: any, index: any) => (
+                                <Column
+                                    key={col.field}
+                                    field={col.field}
+                                    header={col.header}
+                                    hidden={false}
+                                    body={col.body}
+                                    sortable={false}
+                                    resizeable
+                                    style={{ minWidth: '150px', paddingLeft: '16px' }}
+                                    headerClassName="custom-title"
+                                />
                         )) : null}
                     </DataTable>
                 </div>

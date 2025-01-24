@@ -91,4 +91,12 @@
       border-right: none !important;
       height: 56px;
   }
-  
+/* Indent only the ID column for child rows */
+.child-table-container .p-datatable .p-column-id {
+    padding-left: 20px; /* Indentation for the ID column */
+}
+
+/* Remove the header for the child table */
+.child-table-container .p-datatable .p-datatable-thead {
+    display: none;
+}
