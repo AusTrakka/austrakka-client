@@ -34,10 +34,6 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
         li: {
             marginBottom: '15px',  // Space out the list items by 15px
         },
-        liContent: {
-            display: 'inline-block',  // Make each entry inline with the text
-            marginRight: '10px',  // Optionally add spacing between the label and value
-        },
     };
 
     const details = () => {
@@ -59,7 +55,10 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                         <li key="ResourceIds" style={styles.li}>
                                 <DetailedText text="ResourceIds" />
                             {genericDetails.ResourceIds.map((id: string, index: number) => (
-                                    <DetailedText text={id} />
+                                <>
+                                    <DetailedText text={id} display="inline-block"/>
+                                    {index < genericDetails.ResourceIds.length - 1 && <DetailedText text=", " display="inline-block"/>}
+                                </>
                             ))}
                         </li>
                     </ul>
