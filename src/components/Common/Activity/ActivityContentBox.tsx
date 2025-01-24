@@ -15,11 +15,11 @@ interface GenericDetails {
     ResourceIds: string[],
 }
 
-const fieldOrder : string[] = ['Operation name', 'Time stamp', 'Event initiated by', 'resource', 'resourceType'];
+const fieldOrder : string[] = ['Operation name', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
 
 const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
     const mgt = marginTop ? marginTop : '0px';
-    const genericDetails: GenericDetails = JSON.parse(entry.Details);
+    const genericDetails: GenericDetails | null = entry.Details ? JSON.parse(entry.Details) : null;
     
     const styles = {
         tableCell: {
@@ -46,18 +46,19 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                     <ul style={styles.ul}>
                         <li key="EventStartDate" style={styles.li}>
                                 <DetailedText text="Event start date" />
-                                <DetailedText text={formatDate(genericDetails.EventStartDate)} />
+                                <DetailedText text={formatDate(genericDetails!.EventStartDate)} />
                         </li>
                         <li key="RecentEventDate" style={styles.li}>
                                 <DetailedText text="Recent event date" />
-                                <DetailedText text={formatDate(genericDetails.RecentEventDate)} />
+                                <DetailedText text={formatDate(genericDetails!.RecentEventDate)} />
                         </li>
                         <li key="ResourceIds" style={styles.li}>
                                 <DetailedText text="ResourceIds" />
-                            {genericDetails.ResourceIds.map((id: string, index: number) => (
+                            {genericDetails!.ResourceIds.map((id: string, index: number) => (
                                 <>
                                     <DetailedText text={id} display="inline-block"/>
-                                    {index < genericDetails.ResourceIds.length - 1 && <DetailedText text=", " display="inline-block"/>}
+                                    {index < genericDetails!.ResourceIds.length - 1 
+                                        && <DetailedText text=", " display="inline-block"/>}
                                 </>
                             ))}
                         </li>
@@ -81,7 +82,7 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                         </td>
                     </tr>
                 ))}
-                {entry.Details && details()}
+                {genericDetails && details()}
                 </tbody>
             </table>
         );

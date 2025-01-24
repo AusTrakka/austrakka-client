@@ -31,7 +31,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
     "Event initiated by": "",
     Resource: "",
     "Resource Type": "",
-    Details: {}
+    Details: null
 }
 
 export const supportedColumns: ActivityField[] = [
@@ -116,7 +116,7 @@ const Activity: FC<ActivityProps> = (props) => {
             "Event initiated by": row['submitterDisplayName'],
             Resource: row['resourceUniqueString'],
             "Resource Type": row['resourceType'],
-            Details: row['displayJsonData'] || {},
+            Details: row['displayJsonData'] || null,
         }
         setDetailInfo(info);
         setOpenDetails(true);
