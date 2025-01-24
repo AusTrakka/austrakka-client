@@ -29,9 +29,9 @@ const emptyDetailInfo: ActivityDetailInfo = {
     "Operation name": "",
     "Time stamp": "",
     "Event initiated by": "",
-    resource: "",
-    resourceType: "",
-    details: {}
+    Resource: "",
+    "Resource Type": "",
+    Details: {}
 }
 
 export const supportedColumns: ActivityField[] = [
@@ -114,9 +114,9 @@ const Activity: FC<ActivityProps> = (props) => {
             "Operation name": row['eventShortDescription'],
             "Time stamp": row['eventTime'],
             "Event initiated by": row['submitterDisplayName'],
-            resource: row['resourceUniqueString'],
-            resourceType: row['resourceType'],
-            details: row['jsonData'] || {},
+            Resource: row['resourceUniqueString'],
+            "Resource Type": row['resourceType'],
+            Details: row['displayJsonData'] || {},
         }
         setDetailInfo(info);
         setOpenDetails(true);
