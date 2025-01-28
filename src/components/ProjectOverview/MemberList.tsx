@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState, JSX } from 'react';
 import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
