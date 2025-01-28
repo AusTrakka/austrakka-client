@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Paper, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import {
+  Alert,
+  Paper,
+  SelectChangeEvent,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { DataTable,
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { getProjectList } from '../../utilities/resourceUtils';
@@ -12,10 +21,42 @@ import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
+
+//* * will not be used for now **//
+// function renderTagChip(cell: string): JSX.Element {
+//   const tag = cell;
+//   if (cell === null || cell === undefined || cell === '') {
+//     return (
+//       <Typography
+//         variant="body2"
+//         color="textDisabled"
+//         sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+//       >
+//         No Type Set
+//       </Typography>
+//     );
+//   }
+//   return (
+//     <Chip
+//       key={tag}
+//       label={tag}
+//       variant="outlined"
+//       size="small"
+//       style={{ margin: '3px',
+//         display: 'flex',
+//         justifyContent: 'center',
+//         color: 'var(--secondary-dark-green)',
+//         width: '100%',
+//         borderRadius: '0px' }}
+//     />
+//   );
+// }
 
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
+  { field: 'type', header: 'Type' },
   { field: 'description', header: 'Description' },
   { field: 'created', header: 'Created', body: (rowData: any) => isoDateLocalDate(rowData.created) },
 ];
@@ -26,10 +67,15 @@ function ProjectsList() {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
+  const [allTypes, setAllTypes] = useState<string[]>([]);
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+  const [filters, setFilters] = useState<DataTableFilterMeta>(
+    {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      type: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    },
   );
 
   useEffect(() => {
@@ -64,20 +110,53 @@ function ProjectsList() {
     const selectedProjectRow = row.data;
     setSelectedProject(selectedProjectRow);
   };
+  
+  useEffect(() => {
+    const distinctTypes = [...new Set(projectsList.map((project: any) => project.type))];
+    setAllTypes(distinctTypes);
+  }, [projectsList]);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    const filters = { ...globalFilter };
-    (filters.global as DataTableFilterMetaData).value = value;
-    setGlobalFilter(filters);
+    const filtersCopy = { ...filters };
+    (filtersCopy.global as DataTableFilterMetaData).value = value;
+    setFilters(filtersCopy);
+  };
+  
+  const onTypeFilterChange = (e : SelectChangeEvent<string | null>) => {
+    const { value } = e.target;
+    setSelectedValue(value || null);
+    const filtersCopy = { ...filters };
+    (filtersCopy.type as DataTableFilterMetaData).value = value;
+    setFilters(filtersCopy);
+  };
+  
+  const resetFilters = () => {
+    const filtersCopy = { ...filters };
+    (filtersCopy.global as DataTableFilterMetaData).value = null;
+    (filtersCopy.type as DataTableFilterMetaData).value = null;
+    setFilters(filtersCopy);
+  };
+  
+  const onTypeFilterClear = () => {
+    setSelectedValue(null);
+    resetFilters();
   };
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-      <SearchInput
-        value={(globalFilter.global as DataTableFilterMetaData).value || ''}
-        onChange={onGlobalFilterChange}
-      />
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+        <SearchInput
+          value={(filters.global as DataTableFilterMetaData).value || ''}
+          onChange={onGlobalFilterChange}
+        />
+        <TypeFilterSelect
+          selectedValue={selectedValue}
+          onTypeFilterChange={onTypeFilterChange}
+          onTypeFilterClear={onTypeFilterClear}
+          allTypes={allTypes}
+        />
+      </Stack>
     </div>
   );
 
@@ -99,7 +178,7 @@ function ProjectsList() {
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
-              filters={globalFilter}
+              filters={filters}
               globalFilterFields={columns.map((col) => col.field)}
               size="small"
               removableSort
