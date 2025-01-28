@@ -95,10 +95,13 @@ export default function SampleSummary(props: ProjectWidgetProps) {
             { (data!.fields!.some((field) => field.columnName === 'Date_created') ? (
               <>
                 <Typography variant="h2" paddingBottom={1} color="primary">
-                  { formatDate(maxObj(data!.metadata!.map((sample) => sample.Date_created))) }
+                  { data!.metadata!.length === 0 ?
+                    'None' :
+                    formatDate(maxObj(data!.metadata!.map((sample) => sample.Date_created))) }
                 </Typography>
                 <DrilldownButton
                   title="View Samples"
+                  enabled={data!.metadata!.length > 0}
                   onClick={() => handleDrilldownFilters(
                     'latest_upload',
                     getLastUploadFilter(
