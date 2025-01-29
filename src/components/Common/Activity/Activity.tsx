@@ -35,9 +35,11 @@ const emptyDetailInfo: ActivityDetailInfo = {
     Details: null
 }
 
+const OPERATION_NAME_COLUMN: string = 'operationName';
+
 export const supportedColumns: ActivityField[] = [
     {
-        columnName: 'eventShortDescription',
+        columnName: OPERATION_NAME_COLUMN,
         columnDisplayName: 'Operation name',
         primitiveType: 'string',
         columnOrder: 1,
@@ -105,12 +107,12 @@ const Activity: FC<ActivityProps> = (props) => {
     useEffect(() => {
         if (columns.length > 0) return;
 
-        const firstCol = supportedColumns.filter(c => c.columnName === 'eventShortDescription')[0];
+        const firstCol = supportedColumns.filter(c => c.columnName === OPERATION_NAME_COLUMN)[0];
         const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
         firstColBuilder.isDecorated = true;
         firstColBuilder.body = firstColumnTemplate;
         
-        const remainingCols = supportedColumns.filter(c => c.columnName !== 'eventShortDescription');
+        const remainingCols = supportedColumns.filter(c => c.columnName !== OPERATION_NAME_COLUMN);
         const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
         
         const columnBuilder = [firstColBuilder];
@@ -122,7 +124,7 @@ const Activity: FC<ActivityProps> = (props) => {
         const row = event.data; 
         
         const info: ActivityDetailInfo = {
-            "Operation name": row['eventShortDescription'],
+            "Operation name": row[OPERATION_NAME_COLUMN],
             "Time stamp": row['eventTime'],
             "Event initiated by": row['submitterDisplayName'],
             Resource: row['resourceUniqueString'],
