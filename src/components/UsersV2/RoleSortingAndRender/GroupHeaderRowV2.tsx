@@ -28,6 +28,7 @@ import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import './autocompleteStyleOverride.css';
 import { RolesV2 } from '../../../types/dtos';
+import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 
 interface GroupHeaderRowProps {
   recordType: string;
@@ -36,6 +37,10 @@ interface GroupHeaderRowProps {
   editing: boolean;
   rolesErrorMessage: string | null;
   roles: RolesV2[];
+  onSelectionChange: (
+    recordType: string,
+    assignments: RoleAssignments[],
+  ) => void;
 }
 
 function GroupHeaderRowV2(props: GroupHeaderRowProps) {
@@ -46,18 +51,13 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     editing,
     roles,
     rolesErrorMessage,
+    onSelectionChange,
   } = props;
- 
-  interface MinifiedRecord {
-    id: string;
-    name: string;
-    abbrev: string;
-  }
   
   const tenant: TenantSliceState = useAppSelector(selectTenantState);
-  const [selectedRoles, setSelectedRoles] = useState<any[] | null>(null);
-  const [selectedResources, setSelectedResources] = useState<MinifiedRecord[] | null>(null);
-  const [resources, setResources] = useState<MinifiedRecord[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
+  const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
+  const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
   const [recordFetchError, setRecordFetchError] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
@@ -65,7 +65,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   // need to fetch roles for said resource type
   // will use temp list for now
   
-  const isAddButtonEnabled = selectedResources !== null && selectedRoles !== null;
+  const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
 
   useEffect(() => {
     async function fetchRecords() {
@@ -88,7 +88,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
           return;
         }
 
-        setResources(response.data.map((item: any) => ({
+        setRecords(response.data.map((item: any) => ({
           id: item.globalId,
           abbrev: item.abbreviation,
           name: item.name,
@@ -102,8 +102,8 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       if (recordType !== 'Tenant') {
         fetchRecords();
       } else {
-        setResources(null);
-        setSelectedResources([{
+        setRecords(null);
+        setSelectedRecords([{
           id: tenant.defaultTenantGlobalId,
           abbrev: tenant.defaultTenantName,
           name: tenant.defaultTenantName,
@@ -117,6 +117,39 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       setFetchError(rolesErrorMessage || recordFetchError);
     }
   }, [rolesErrorMessage, recordFetchError]);
+  
+  useEffect(() => {
+    // if editing is false and selectedRoles and selectedRecords are not null then clear states
+    if (!editing) {
+      setSelectedRoles(null);
+      setSelectedRecords(null);
+    }
+  }, [editing]);
+    
+  const handleAddPrivilege = () => {
+    if (selectedRecords && selectedRoles) {
+      const assignedRoles: RoleAssignments[] = [];
+
+      for (const record of selectedRecords) {
+        const existingAssignment =
+            assignedRoles.find((assignment) => assignment.record.id === record.id);
+
+        if (existingAssignment) {
+          existingAssignment.roles.push(...selectedRoles.filter(
+            (role) => !existingAssignment.roles.some((r) => r.globalId === role.globalId),
+          ));
+        } else {
+          assignedRoles.push({
+            record,
+            roles: [...selectedRoles],
+          });
+        }
+      }
+      onSelectionChange(recordType, assignedRoles);
+      setSelectedRoles(null);
+      setSelectedRecords(null);
+    }
+  };
 
   return (
     <TableRow
@@ -148,19 +181,22 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
         ) :
           (
             <Stack direction="row" spacing={1}>
-              {editing ? (
+              {editing && records ? (
                 <>
                   <Autocomplete
-                    options={resources || []}
+                    options={records
+                      ?.filter(r => !selectedRecords
+                        ?.some(sr => sr.id === r.id))
+                      || []}
                     multiple
                     disabled={recordType === 'Tenant'}
                     limitTags={1}
                     style={{ width: '19em' }}
-                    value={selectedResources || []}
+                    value={selectedRecords || []}
                     disableCloseOnSelect
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     getOptionLabel={(option) => option.name}
-                    onChange={(e, v) => setSelectedResources(v)}
+                    onChange={(e, v) => setSelectedRecords(v)}
                     renderOption={(_props, option, { selected }) => (
                       <li {..._props} style={{ fontSize: '0.9em' }} key={option.id}>
                         <Checkbox
@@ -195,7 +231,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                       <TextField
                         {...params}
                         hiddenLabel
-                        placeholder={selectedResources?.length ? '' : 'Select Group'}
+                        placeholder={selectedRecords?.length ? '' : 'Select Group'}
                         variant="filled"
                         size="small"
                         InputProps={{
@@ -211,17 +247,20 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                     )}
                   />
                   <Autocomplete
-                    options={roles || []}
+                    options={roles
+                      ?.filter(r => !selectedRoles
+                        ?.some(sr => sr.globalId === r.globalId))
+                        || []}
                     multiple
                     limitTags={1}
                     style={{ width: '19em' }}
                     value={selectedRoles || []}
                     disableCloseOnSelect
                     getOptionLabel={(option) => option.name}
-                    isOptionEqualToValue={(option, value) => option.roleId === value.roleId}
+                    isOptionEqualToValue={(option, value) => option.globalId === value.globalId}
                     onChange={(e, v) => setSelectedRoles(v)}
                     renderOption={(_props, option, { selected }) => (
-                      <li {..._props} style={{ fontSize: '0.9em' }} key={option.roleId}>
+                      <li {..._props} style={{ fontSize: '0.9em' }} key={option.globalId}>
                         <Checkbox
                           style={{ marginRight: '8px' }}
                           checked={selected}
@@ -275,10 +314,10 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                       size="small"
                       color={isAddButtonEnabled ? 'success' : 'default'}
                       onClick={() => {
-                        /* handleAddGroupRole();
-                                        if (!openGroupRoles.includes(groupType)) {
-                                          handleGroupRoleToggle(groupType);
-                                        } */
+                        handleAddPrivilege();
+                        if (!openGroupRoles.includes(recordType)) {
+                          handleGroupRoleToggle(recordType);
+                        }
                       }}
                       disabled={!isAddButtonEnabled}
                     >

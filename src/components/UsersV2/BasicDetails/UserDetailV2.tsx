@@ -8,8 +8,8 @@ import {
   Snackbar,
   Stack,
   Table,
-  TableBody, TableCell,
-  TableContainer, TableHead, TableRow,
+  TableBody,
+  TableContainer,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -34,7 +34,8 @@ import EditButtonsV2 from '../EditButtonsV2';
 import '../RowRender/RowAndCell.css';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
 import { selectTenantState } from '../../../app/tenantSlice';
-
+import { RoleAssignments } from '../../../types/userDetailEdit.interface';
+  
 function UserDetailV2() {
   const { userGlobalId } = useParams();
   const { token, tokenLoading } = useApi();
@@ -81,7 +82,6 @@ function UserDetailV2() {
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
-
   if (loading === LoadingState.SUCCESS && adminV2) {
     // maybe there should also be a check for the appropriate scopes for the user such as 
     // method=patch, path=/v2/users/.. etc.
@@ -270,6 +270,13 @@ function UserDetailV2() {
     setEditingBasic(false);
   };
   
+  const onSelectionChange = (
+    recordType: string,
+    AssignedRoles: RoleAssignments[],
+  ) => {
+    // TODO: implement - this is a stub
+  };
+  
   const onPrivSave = () => {
    
   };
@@ -387,6 +394,7 @@ function UserDetailV2() {
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editingPrivileges}
+                    onSelectionChange={onSelectionChange}
                   />
                 </TableBody>
               </Table>

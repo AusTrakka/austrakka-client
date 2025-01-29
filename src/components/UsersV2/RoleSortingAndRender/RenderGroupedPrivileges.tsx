@@ -8,12 +8,17 @@ import { getRoles } from '../../../utilities/resourceUtils';
 import { ResponseType } from '../../../constants/responseType';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
+import { RoleAssignments } from '../../../types/userDetailEdit.interface';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupedPrivileges: GroupedPrivilegesByRecordType[];
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
+  onSelectionChange: (
+    recordType: string,
+    AssignedRoles: RoleAssignments[],
+  ) => void;
 }
 
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
@@ -22,6 +27,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     openGroupRoles,
     setOpenGroupRoles,
     editing,
+    onSelectionChange,
   }
       = props;
 
@@ -77,6 +83,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
           editing={editing}
           rolesErrorMessage={errorMessage}
           roles={allowedRoles}
+          onSelectionChange={onSelectionChange}
         />
         {recordRoles.map(({ recordName, roleNames }) => (
           <UserRecordRolesRow
