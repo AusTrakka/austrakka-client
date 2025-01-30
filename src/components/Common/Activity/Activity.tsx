@@ -238,7 +238,7 @@ const Activity: FC<ActivityProps> = (props) => {
         return (
             <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '15px' }}>
                 <Info sx={{color: iconColour, fontSize: '16px', marginRight: '10px'}}/>
-                {rowData['eventShortDescription']}
+                {rowData[OPERATION_NAME_COLUMN]}
             </div>
         );
     };
@@ -299,8 +299,8 @@ const Activity: FC<ActivityProps> = (props) => {
                             style={{ width: '3em' }}
                         />
                         <Column
-                            key="eventShortDescription"
-                            field="eventShortDescription"
+                            key={OPERATION_NAME_COLUMN}
+                            field={OPERATION_NAME_COLUMN}
                             header="Operation name"
                             hidden={false}
                             body={(rowData: RefinedLog) =>
@@ -313,7 +313,7 @@ const Activity: FC<ActivityProps> = (props) => {
                                         verticalAlign: 'middle'
                                     }}/>
                                     {/*{col.body ? col.body(rowData) : rowData[col.field]}*/}
-                                    {rowData["eventShortDescription"]}
+                                    {rowData[OPERATION_NAME_COLUMN]}
                                 </span>
                             }
                             sortable={false}
@@ -321,7 +321,7 @@ const Activity: FC<ActivityProps> = (props) => {
                             style={{ minWidth: '150px', paddingLeft: '16px' }}
                             headerClassName="custom-title"
                         />
-                        {columns ? columns.filter((col: ColumnBuilder) => col.field !== 'eventShortDescription')
+                        {columns ? columns.filter((col: ColumnBuilder) => col.field !== OPERATION_NAME_COLUMN)
                             .map((col: any, index: any) => (
                                 <Column
                                     key={col.field}

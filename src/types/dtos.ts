@@ -369,7 +369,7 @@ export interface RefinedLog {
   // Server fields
   refinedLogGlobalId: string,
   eventSpecGlobalId: string,
-  eventShortDescription: string,
+  operationName: string,
   resourceGlobalId: string,
   resourceUniqueString: string,
   resourceType: string,
