@@ -4,6 +4,12 @@ import { useParams } from 'react-router-dom';
 import {
   Alert,
   AlertColor, Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent, DialogTitle,
+  List,
+  ListItem, ListItemIcon, ListItemText,
   Paper,
   Snackbar,
   Stack,
@@ -14,6 +20,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
+import { CheckCircle, RemoveCircle, Save } from '@mui/icons-material';
 import {
   disableUserV2, enableUserV2,
   getOrganisations,
@@ -22,7 +29,11 @@ import {
 } from '../../../utilities/resourceUtils';
 import { useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
-import { User, UserPatch, UserPatchV2, UserV2 } from '../../../types/dtos';
+import {
+  GroupedPrivilegesByRecordType, PrivilegeWithRoles,
+  UserPatchV2,
+  UserV2,
+} from '../../../types/dtos';
 import { selectUserState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseObject } from '../../../types/responseObject.interface';
@@ -34,7 +45,7 @@ import EditButtonsV2 from '../EditButtonsV2';
 import '../RowRender/RowAndCell.css';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
 import { selectTenantState } from '../../../app/tenantSlice';
-import { RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { PendingChanges, RoleAssignments } from '../../../types/userDetailEdit.interface';
   
 function UserDetailV2() {
   const { userGlobalId } = useParams();
@@ -44,8 +55,7 @@ function UserDetailV2() {
   const [user, setUser] = useState<UserV2 | null>(null);
   const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
-  const [editedPrivileges, setEditedPrivileges] = useState<any | null>(null);
-  const [updatedPrivileges, setUpdatedPrivileges] = useState<any | null>(null);
+  const [editedPrivileges, setEditedPrivileges] = useState<GroupedPrivilegesByRecordType[] | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
@@ -55,6 +65,8 @@ function UserDetailV2() {
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<PendingChanges[]>([]);
   const {
     loading,
     adminV2,
@@ -101,6 +113,7 @@ function UserDetailV2() {
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserV2;
         setUser(userDto);
+        setEditedPrivileges(user?.privileges ?? []);
         setEditedValues({ ...userDto });
         // setUpdatedGroupRoles(userDto.groupRoles);
         // Initialize editedValues with the original user data
@@ -115,7 +128,7 @@ function UserDetailV2() {
       updateUser();
     }
   }, [userGlobalId, defaultTenantGlobalId, token, tokenLoading, loading]);
-
+  
   useEffect(() => {
     const getOrgData = async () => {
       const userResponse: ResponseObject = await getOrganisations(false, token);
@@ -150,7 +163,14 @@ function UserDetailV2() {
 
     setOpenDupSnackbar(false);
   };
-
+  
+  const handleConfirmPrivileges = () => {
+    setPendingChanges([]);
+    setEditingPrivileges(false);
+    setEditedPrivileges(user?.privileges ?? []);
+    setShowConfirmationDialog(false);
+  };
+  
   const renderRow = (field: keyof UserV2, value: any) => {
     if (editingBasic) {
       return (
@@ -269,16 +289,78 @@ function UserDetailV2() {
     setOnSaveLoading(false);
     setEditingBasic(false);
   };
-  
+
   const onSelectionChange = (
     recordType: string,
     AssignedRoles: RoleAssignments[],
   ) => {
-    // TODO: implement - this is a stub
+    // Update the editedPrivileges state for UI rendering
+    setEditedPrivileges(prev => {
+      const safePrev = prev ?? [];
+      console.log(safePrev);
+      const existingPrivileges = new Map(
+        safePrev.map(priv => [priv.recordType, priv]),
+      );
+      console.log(existingPrivileges);
+
+      const newRecordRoles: PrivilegeWithRoles[] = AssignedRoles.map(assigned => ({
+        recordName: assigned.record.abbrev,
+        roleNames: assigned.roles.map(role => role.name),
+      }));
+
+      // If recordType exists, merge roles; otherwise add new entry
+      return existingPrivileges.has(recordType)
+        ? safePrev.map(priv => {
+          if (priv.recordType === recordType) {
+            // Find existing roles for each record
+            const existingRolesByRecord = new Map(
+              priv.recordRoles.map(record => [record.recordName, record]),
+            );
+
+            // Merge or add new roles for each record
+            newRecordRoles.forEach(newRecord => {
+              const existing = existingRolesByRecord.get(newRecord.recordName);
+              if (existing) {
+                // Merge roles, removing duplicates
+                existing.roleNames = [...new Set([...existing.roleNames, ...newRecord.roleNames])];
+              } else {
+                // Add new record
+                priv.recordRoles.push(newRecord);
+              }
+            });
+
+            return priv;
+          }
+          return priv;
+        })
+        : [...safePrev, { recordType, recordRoles: newRecordRoles }];
+    });
+
+    // Generate payload for additions only
+    const payloadBuilder: PendingChanges[] = AssignedRoles.flatMap(assignedRole =>
+      assignedRole.roles.map(role => ({
+        type: 'POST',
+        recordType,
+        payload: {
+          recordGlobalId: assignedRole.record.id,
+          roleGlobalId: role.globalId,
+          recordName: assignedRole.record.name,
+          roleName: role.name,
+        },
+      })));
+
+    setPendingChanges(payloadBuilder);
   };
-  
+
+  const handleCloseDialog = () => {
+    setShowConfirmationDialog(false);
+  };
+
+  // Modified onPrivSave
   const onPrivSave = () => {
-   
+    if (pendingChanges.length > 0) {
+      setShowConfirmationDialog(true);
+    }
   };
 
   const handleCancel = () => {
@@ -289,11 +371,12 @@ function UserDetailV2() {
   
   const handlePrivCancel = () => {
     setEditingPrivileges(false);
-    setEditedPrivileges(user?.privileges);
+    setEditedPrivileges(user?.privileges ?? []);
+    setPendingChanges([]);
   };
 
   const hasChanges = !deepEqual(user, editedValues);
-  const privHasChanges = !deepEqual(user?.privileges!, editedPrivileges);
+  const privHasChanges = pendingChanges.length > 0;
 
   return (user && !dataError) ? (
     <div>
@@ -390,7 +473,7 @@ function UserDetailV2() {
               <Table>
                 <TableBody>
                   <RenderGroupedPrivileges
-                    userGroupedPrivileges={user.privileges}
+                    userGroupedPrivileges={editedPrivileges ?? user.privileges}
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editingPrivileges}
@@ -402,6 +485,43 @@ function UserDetailV2() {
           </Paper>
         </Grid>
       </Grid>
+      <Dialog
+        open={showConfirmationDialog}
+        onClose={handleCloseDialog}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Confirm Privilege Changes</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" gutterBottom>
+            You are about to make the following changes:
+          </Typography>
+          <List dense>
+            {pendingChanges.map((change) => (
+              <ListItem key={change.payload.recordGlobalId}>
+                <ListItemIcon>
+                  {change.type === 'POST' ? <CheckCircle color="success" /> : <RemoveCircle color="error" />}
+                </ListItemIcon>
+                <ListItemText
+                  primary={`${change.type === 'POST' ? 'ADD' : 'REMOVE'} ${change.recordType}`}
+                  secondary={`Record: ${change.payload.recordName}, Role: ${change.payload.roleName}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            onClick={handleConfirmPrivileges}
+            variant="contained"
+            color="primary"
+            startIcon={<Save />}
+          >
+            Confirm Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}

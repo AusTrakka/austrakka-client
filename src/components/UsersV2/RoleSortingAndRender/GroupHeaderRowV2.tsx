@@ -195,7 +195,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                     value={selectedRecords || []}
                     disableCloseOnSelect
                     isOptionEqualToValue={(option, value) => option.id === value.id}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) => option.abbrev}
                     onChange={(e, v) => setSelectedRecords(v)}
                     renderOption={(_props, option, { selected }) => (
                       <li {..._props} style={{ fontSize: '0.9em' }} key={option.id}>
@@ -205,7 +205,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                           icon={<CheckBoxOutlineBlank />}
                           checkedIcon={<CheckBox />}
                         />
-                        {option.name}
+                        {option.abbrev}
                       </li>
                     )}
                     renderTags={(tagValue, getTagProps) =>
@@ -213,9 +213,9 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
                         const tagProps = getTagProps({ index });
                         const { key, ...propsButKeyRemoved } = tagProps;
                         return (
-                          <Tooltip title={option.name} key={key}>
+                          <Tooltip title={option.abbrev} key={key}>
                             <Chip
-                              label={option.name}
+                              label={option.abbrev}
                               {...propsButKeyRemoved}
                               style={{
                                 maxWidth: '11em', // Limit chip width
