@@ -17,6 +17,12 @@ const noToken = {
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
 
+export function buildOwnerOrgHeader(ownerOrgAbbrev: string): any {
+  return {
+    "X-Metadata-Owner-Org-Abbrev": ownerOrgAbbrev,
+  };
+}
+
 function getHeaders(token: string): any {
   return {
     'Accept': 'application/json',
@@ -191,16 +197,23 @@ Promise<ResponseObject> {
   });
 }
 
-export async function callPOSTForm(url: string, formData: FormData, token: string)
+export async function callPOSTForm(
+    url: string, 
+    formData: FormData, 
+    token: string,
+    customHeaders: any = {}
+)
   : Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
 
+  const tokenHeaders = getHeaders(token);
+  const headers = Object.assign(tokenHeaders, customHeaders);
   return callApi(url, {
     method: 'POST',
     body: formData,
-    headers: getHeaders(token),
+    headers: headers,
   });
 }
 

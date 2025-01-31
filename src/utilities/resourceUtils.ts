@@ -1,4 +1,13 @@
-import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
+import {
+  buildOwnerOrgHeader,
+  callGET,
+  callPATCH,
+  callPost,
+  callPOSTForm,
+  callPUT,
+  callSimpleGET,
+  downloadFile
+} from './api';
 import { Feedback, FeedbackPost, UserPatchV2 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
@@ -66,8 +75,14 @@ export const getUserDashboardProjects = (token: string, searchParams?: string) =
 export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
 
 // Submission endpoints
-export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
-export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
+export const validateSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
+  const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
+  return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
+}
+export const uploadSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
+  const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
+  return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
+}
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);

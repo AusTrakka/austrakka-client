@@ -1,7 +1,9 @@
 import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
+import {
+  Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
   FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
-  Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
+  Backdrop, CircularProgress, AlertColor, Link, TextField
+} from '@mui/material';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
 import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
@@ -119,6 +121,7 @@ function UploadMetadata() {
   const [file, setFile] = useState<File>();
   const [invalidFile, setInvalidFile] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ownerOrgAbbrev, setOwnerOrgAbbrev] = useState('');
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
 
@@ -185,9 +188,9 @@ function UploadMetadata() {
     formData.append('file', file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
-    const submissionResponse : ResponseObject = options.validate ?
-      await validateSubmissions(formData, optionString, token)
-      : await uploadSubmissions(formData, optionString, token);
+    const submissionResponse : ResponseObject = options.validate 
+        ? await validateSubmissions(formData, optionString, token, ownerOrgAbbrev)
+        : await uploadSubmissions(formData, optionString, token, ownerOrgAbbrev);
 
     if (submissionResponse.status === ResponseType.Success) {
       setSubmission({
@@ -294,6 +297,21 @@ function UploadMetadata() {
               />
             </List>
           ) : null}
+          <Grid item>
+            <Typography variant="h4" color="primary" marginTop="50px">Owner Organisation</Typography>
+            <Tooltip title="The owner organisation of every metadata record 
+            in the csv. There can be only one owner. If multiple owners are 
+            involved, the records need to be grouped into a file per owner 
+            and uploaded separately." placement="bottom">
+              <TextField 
+                  id="standard-basic" 
+                  label="Abbreviation" 
+                  variant="standard" 
+                  required={true}
+                  onChange={(e) => setOwnerOrgAbbrev(e.target.value)}
+              />
+            </Tooltip>
+          </Grid>
         </Grid>
         <Grid item lg={4} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
