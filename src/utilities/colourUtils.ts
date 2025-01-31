@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { allColorSchemes, discrete, rangeColorSchemes } from '../constants/schemes';
+import { allColorSchemes, discreteColorSchemes, rangeColorSchemes, valueMappedColorSchemes } from '../constants/schemes';
 import { Legend } from '../types/phylocanvas.interface';
 
 export const NULL_COLOUR = import.meta.env.VITE_THEME_PRIMARY_GREY_500;
@@ -19,12 +19,16 @@ function getPaletteForRangeColorScheme(schemeName: string, values: string[]): Le
 }
 
 function getPaletteForDiscreteColorScheme(schemeName: string, values: string[]): Legend {
-  if (discrete[schemeName]) {
-    const colorsScheme = discrete[schemeName];
-    const coloursScale = colorsScheme.domain(values);
+  if (discreteColorSchemes[schemeName]) {
+    const colorsScheme = discreteColorSchemes[schemeName];
+    if (!valueMappedColorSchemes.has(schemeName)) {
+      // This is not a colour scheme with pre-defined values; reset the domain
+      colorsScheme.domain(values);
+    }
+    
     const mapping: Legend = {};
     values.forEach((val) => {
-      mapping[val] = coloursScale(val);
+      mapping[val] = colorsScheme(val);
     });
     return mapping;
   }
