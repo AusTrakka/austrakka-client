@@ -55,7 +55,8 @@ function UserDetailV2() {
   const [user, setUser] = useState<UserV2 | null>(null);
   const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
-  const [editedPrivileges, setEditedPrivileges] = useState<GroupedPrivilegesByRecordType[] | null>(null);
+  const [editedPrivileges, setEditedPrivileges] =
+      useState<GroupedPrivilegesByRecordType[] | null>(null);
   const [dataError, setDataError] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
@@ -113,7 +114,7 @@ function UserDetailV2() {
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserV2;
         setUser(userDto);
-        setEditedPrivileges(user?.privileges ?? []);
+        setEditedPrivileges(userDto.privileges ?? []);
         setEditedValues({ ...userDto });
         // setUpdatedGroupRoles(userDto.groupRoles);
         // Initialize editedValues with the original user data
@@ -122,12 +123,13 @@ function UserDetailV2() {
       }
     };
 
-    if (token && tokenLoading === LoadingState.SUCCESS &&
+    if (tokenLoading !== LoadingState.IDLE &&
+        tokenLoading !== LoadingState.LOADING &&
         loading === LoadingState.SUCCESS &&
         userGlobalId && defaultTenantGlobalId) {
       updateUser();
     }
-  }, [userGlobalId, defaultTenantGlobalId, token, tokenLoading, loading]);
+  }, [defaultTenantGlobalId, loading, token, tokenLoading, userGlobalId]);
   
   useEffect(() => {
     const getOrgData = async () => {
@@ -166,8 +168,8 @@ function UserDetailV2() {
   
   const handleConfirmPrivileges = () => {
     setPendingChanges([]);
+    setEditedPrivileges(JSON.parse(JSON.stringify(user?.privileges)));
     setEditingPrivileges(false);
-    setEditedPrivileges(user?.privileges ?? []);
     setShowConfirmationDialog(false);
   };
   
@@ -297,11 +299,9 @@ function UserDetailV2() {
     // Update the editedPrivileges state for UI rendering
     setEditedPrivileges(prev => {
       const safePrev = prev ?? [];
-      console.log(safePrev);
       const existingPrivileges = new Map(
         safePrev.map(priv => [priv.recordType, priv]),
       );
-      console.log(existingPrivileges);
 
       const newRecordRoles: PrivilegeWithRoles[] = AssignedRoles.map(assigned => ({
         recordName: assigned.record.abbrev,
@@ -371,13 +371,13 @@ function UserDetailV2() {
   
   const handlePrivCancel = () => {
     setEditingPrivileges(false);
-    setEditedPrivileges(user?.privileges ?? []);
+    setEditedPrivileges(JSON.parse(JSON.stringify(user?.privileges)));
     setPendingChanges([]);
   };
 
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
-
+  
   return (user && !dataError) ? (
     <div>
       <Stack
@@ -498,7 +498,7 @@ function UserDetailV2() {
           </Typography>
           <List dense>
             {pendingChanges.map((change) => (
-              <ListItem key={change.payload.recordGlobalId}>
+              <ListItem key={change.payload.recordGlobalId + change.payload.roleGlobalId}>
                 <ListItemIcon>
                   {change.type === 'POST' ? <CheckCircle color="success" /> : <RemoveCircle color="error" />}
                 </ListItemIcon>
