@@ -67,7 +67,10 @@ function UserDetailV2() {
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [failedChanges, setFailedChanges] = useState<PendingChanges[]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChanges[]>([]);
+  const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
+  const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
   const {
     loading,
     adminV2,
@@ -166,11 +169,69 @@ function UserDetailV2() {
     setOpenDupSnackbar(false);
   };
   
-  const handleConfirmPrivileges = () => {
+  const handleSuccessPrivAssignmentSnackbarClose =
+      (event: React.SyntheticEvent |
+      Event, reason?: string) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+
+        setOpenSuccessPrivAssignmentSnackbar(false);
+      };
+
+  const processPendingChanges = async () => {
+    const failedRequests: PendingChanges[] = [];
+
+    // Map recordType to the appropriate API function
+    const apiMap: Record<string,
+    (recordGlobalId: string,
+      body: UserRoleRecordPrivilegePost,
+      token: string) => Promise<ResponseObject<any>>> = {
+      'Organisation': postOrgPrivilege,
+      'Tenant': postTenantPrivilege,
+    };
+
+    // Collect all async operations
+    const promises = pendingChanges
+      .filter(change => change.type === 'POST' && apiMap[change.recordType])
+      .map(async (change) => {
+        const postFunction = apiMap[change.recordType];
+
+        if (!postFunction) return; // Shouldn't happen due to .filter()
+
+        const postBody: UserRoleRecordPrivilegePost = {
+          owningTenantGlobalId: defaultTenantGlobalId,
+          assigneeGlobalId: userGlobalId!,
+          roleGlobalId: change.payload.roleGlobalId!,
+        };
+
+        try {
+          await postFunction(change.payload.recordGlobalId!, postBody, token);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(`Failed to process ${change.recordType} privilege for ${change.payload.recordName}:`, error);
+          failedRequests.push(change);
+        }
+      });
+
+    // Execute all API calls in parallel
+    await Promise.all(promises);
+
+    // Notify user about success/failure
+    if (failedRequests.length > 0) {
+      setFailedChanges(failedRequests);
+      setFailedChangesDialogOpen(true);
+    } else {
+      setOpenSuccessPrivAssignmentSnackbar(true);
+    }
     setPendingChanges([]);
     setEditedPrivileges(JSON.parse(JSON.stringify(user?.privileges)));
     setEditingPrivileges(false);
     setShowConfirmationDialog(false);
+  };
+
+  const handleConfirmPrivileges = async () => {
+    await processPendingChanges();
   };
   
   const renderRow = (field: keyof UserV2, value: any) => {
@@ -498,7 +559,7 @@ function UserDetailV2() {
           </Typography>
           <List dense>
             {pendingChanges.map((change) => (
-              <ListItem key={change.payload.recordGlobalId + change.payload.roleGlobalId}>
+              <ListItem key={change.payload.recordName + change.payload.roleName}>
                 <ListItemIcon>
                   {change.type === 'POST' ? <CheckCircle color="success" /> : <RemoveCircle color="error" />}
                 </ListItemIcon>
@@ -522,6 +583,37 @@ function UserDetailV2() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={failedChangesDialogOpen}
+        onClose={() => setFailedChangesDialogOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Failed Privilege Updates</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" gutterBottom>
+            The following privilege updates failed:
+          </Typography>
+          <List dense>
+            {failedChanges.map((change) => (
+              <ListItem key={change.payload.recordName + change.payload.roleName}>
+                <ListItemIcon>
+                  <ErrorOutline color="error" fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={`Failed to ${change.type === 'POST' ? 'ADD' : 'REMOVE'} ${change.recordType}`}
+                  secondary={`Record: ${change.payload.recordName}, Role: ${change.payload.roleName}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFailedChangesDialogOpen(false)} variant="contained" color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
@@ -540,6 +632,16 @@ function UserDetailV2() {
       >
         <Alert onClose={handleDupClose} severity="error">
           Group Role already exists
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSuccessPrivAssignmentSnackbar}
+        autoHideDuration={4000}
+        onClose={handleSuccessPrivAssignmentSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSuccessPrivAssignmentSnackbarClose} severity="success">
+          Privileges assigned successfully
         </Alert>
       </Snackbar>
     </div>
