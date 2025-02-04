@@ -125,14 +125,8 @@ export interface GroupedPrivilegesByRecordTypeWithScopes {
 
 export interface PrivilegeWithRolesWithScopes {
   recordName: string,
-  roles: RoleWithScopes[],
+  roles: RecordRoleWithScopes[],
 }
-
-export interface RoleWithScopes {
-  role: string,
-  scopes: string[],
-}
-
 export interface GroupedPrivilegesByRecordType {
   recordType: string,
   recordRoles: PrivilegeWithRoles[],
@@ -140,7 +134,20 @@ export interface GroupedPrivilegesByRecordType {
 
 export interface PrivilegeWithRoles {
   recordName: string,
-  roleNames: string[],
+  roles: RecordRole[],
+}
+
+export interface RecordRole {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId?: string,
+}
+
+export interface RecordRoleWithScopes {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId: string,
+  scopes: string[],
 }
 
 export interface UserList {
