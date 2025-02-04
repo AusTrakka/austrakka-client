@@ -365,3 +365,9 @@ export interface UserPatchV2 {
   contactEmail: string,
   analysisServerUsername: string,
 }
+
+export interface UserRoleRecordPrivilegePost {
+  owningTenantGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+}
