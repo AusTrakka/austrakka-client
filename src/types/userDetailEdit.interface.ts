@@ -8,9 +8,10 @@ export interface PendingChanges {
 
 export interface Payload {
   recordName: string;
-  recordGlobalId: string;
+  recordGlobalId?: string;
   roleName: string;
-  roleGlobalId: string;
+  roleGlobalId?: string;
+  privilegeGlobalId?: string;
 }
 
 export interface RoleAssignments {
