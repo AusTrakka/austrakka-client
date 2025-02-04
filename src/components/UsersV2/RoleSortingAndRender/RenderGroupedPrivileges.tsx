@@ -1,7 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import UserRecordRolesRow from './UserRecordRolesRow';
-import { GroupedPrivilegesByRecordType, PrivilegeWithRoles, RolesV2 } from '../../../types/dtos';
+import {
+  GroupedPrivilegesByRecordType,
+  PrivilegeWithRoles,
+  RecordRole,
+  RolesV2,
+} from '../../../types/dtos';
 import GroupHeaderRowV2 from './GroupHeaderRowV2';
 import { useApi } from '../../../app/ApiContext';
 import { getRoles } from '../../../utilities/resourceUtils';
@@ -15,9 +20,14 @@ interface RenderGroupedRolesAndGroupsProps {
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
-  onSelectionChange: (
+  onSelectionAdd: (
     recordType: string,
     AssignedRoles: RoleAssignments[],
+  ) => void;
+  onSelectionRemove: (
+    role: RecordRole,
+    recordType: string,
+    recordName: string
   ) => void;
 }
 
@@ -27,7 +37,8 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     openGroupRoles,
     setOpenGroupRoles,
     editing,
-    onSelectionChange,
+    onSelectionAdd,
+    onSelectionRemove,
   }
       = props;
 
@@ -83,20 +94,25 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
           editing={editing}
           rolesErrorMessage={errorMessage}
           roles={allowedRoles}
-          onSelectionChange={onSelectionChange}
+          onSelectionChange={onSelectionAdd}
         />
-        {recordRoles.map(({ recordName, roleNames }) => (
+        {recordRoles.map(({ recordName, roles }) => (
           <UserRecordRolesRow
-            key={`${recordName}-${roleNames.join('-')}`}
+            recordType={recordType}
+            key={`${recordName}-${roles.join('-')}`}
             recordName={recordName}
-            roleNames={roleNames}
+            recordRoles={roles}
             isOpen={openGroupRoles.includes(recordType)}
+            editing={editing}
+            onSelectionRemove={onSelectionRemove}
           />
         ))}
       </>
     );
   };
 
+  // TODO: Need to enforce an order on which recordTypes are rendered 
+  //  cause the reverse order fix is not guaranteed
   return (
     <>
       {userGroupedPrivileges

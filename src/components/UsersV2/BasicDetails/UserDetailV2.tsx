@@ -20,18 +20,18 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
-import { CheckCircle, RemoveCircle, Save } from '@mui/icons-material';
+import { CheckCircle, ErrorOutline, RemoveCircle, Save } from '@mui/icons-material';
 import {
   disableUserV2, enableUserV2,
   getOrganisations,
   getUserV2, patchUserOrganisationV2,
-  patchUserV2,
+  patchUserV2, postOrgPrivilege, postTenantPrivilege,
 } from '../../../utilities/resourceUtils';
 import { useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
 import {
-  GroupedPrivilegesByRecordType, PrivilegeWithRoles,
-  UserPatchV2,
+  GroupedPrivilegesByRecordType, PrivilegeWithRoles, RecordRole,
+  UserPatchV2, UserRoleRecordPrivilegePost,
   UserV2,
 } from '../../../types/dtos';
 import { selectUserState } from '../../../app/userSlice';
@@ -353,7 +353,7 @@ function UserDetailV2() {
     setEditingBasic(false);
   };
 
-  const onSelectionChange = (
+  const onSelectionAdd = (
     recordType: string,
     AssignedRoles: RoleAssignments[],
   ) => {
@@ -366,7 +366,9 @@ function UserDetailV2() {
 
       const newRecordRoles: PrivilegeWithRoles[] = AssignedRoles.map(assigned => ({
         recordName: assigned.record.abbrev,
-        roleNames: assigned.roles.map(role => role.name),
+        roles: assigned.roles.map(role => ({ roleName: role.name,
+          privilegeLevel: role.privilegeLevel,
+          privilegeGlobalId: undefined })),
       }));
 
       // If recordType exists, merge roles; otherwise add new entry
@@ -383,7 +385,7 @@ function UserDetailV2() {
               const existing = existingRolesByRecord.get(newRecord.recordName);
               if (existing) {
                 // Merge roles, removing duplicates
-                existing.roleNames = [...new Set([...existing.roleNames, ...newRecord.roleNames])];
+                existing.roles = [...new Set([...existing.roles, ...newRecord.roles])];
               } else {
                 // Add new record
                 priv.recordRoles.push(newRecord);
@@ -411,6 +413,59 @@ function UserDetailV2() {
       })));
 
     setPendingChanges(payloadBuilder);
+  };
+
+  const onSelectionRemove = (role: RecordRole, recordType: string, recordName: string) => {
+    setEditedPrivileges(prev => {
+      if (!prev) return [];
+
+      return prev.reduce((acc, privilege) => {
+        if (privilege.recordType !== recordType) {
+          acc.push(privilege);
+          return acc;
+        }
+
+        const updatedRecordRoles = privilege.recordRoles.reduce((records, record) => {
+          if (record.recordName !== recordName) {
+            records.push(record);
+            return records;
+          }
+
+          // Remove the role based solely on roleName
+          const filteredRoles = record.roles.filter(r => r.roleName !== role.roleName);
+
+          // Only keep the record if it still has roles
+          if (filteredRoles.length > 0) {
+            records.push({ ...record, roles: filteredRoles });
+          }
+
+          return records;
+        }, [] as PrivilegeWithRoles[]);
+
+        // Only keep the privilege if it still has records
+        if (updatedRecordRoles.length > 0) {
+          acc.push({ ...privilege, recordRoles: updatedRecordRoles });
+        }
+
+        return acc;
+      }, [] as typeof prev);
+    });
+
+    // Add to pending changes if it's an existing role
+    if (role.privilegeGlobalId) {
+      setPendingChanges(prev => [
+        ...prev,
+        {
+          type: 'DELETE',
+          recordType,
+          payload: {
+            recordName,
+            roleName: role.roleName,
+            privilegeGlobalId: role.privilegeGlobalId,
+          },
+        },
+      ]);
+    }
   };
 
   const handleCloseDialog = () => {
@@ -538,7 +593,8 @@ function UserDetailV2() {
                     openGroupRoles={openGroupRoles}
                     setOpenGroupRoles={setOpenGroupRoles}
                     editing={editingPrivileges}
-                    onSelectionChange={onSelectionChange}
+                    onSelectionRemove={onSelectionRemove}
+                    onSelectionAdd={onSelectionAdd}
                   />
                 </TableBody>
               </Table>
