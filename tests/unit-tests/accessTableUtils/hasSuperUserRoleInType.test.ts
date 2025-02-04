@@ -9,7 +9,9 @@ describe('hasSuperUserRoleInType', () => {
         recordRoles: [{
           recordName: 'SomeTenant',
           roles: [{
-            role: 'SuperUser',
+            roleName: 'SuperUser',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['method=*,/**'],
           }],
         }],
@@ -24,7 +26,9 @@ describe('hasSuperUserRoleInType', () => {
         recordRoles: [{
           recordName: 'SomeTenant',
           roles: [{
-            role: 'RegularUser',
+            roleName: 'RegularUser',
+            privilegeLevel: 30000,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['method=*,/**'],
           }],
         }],
@@ -39,7 +43,9 @@ describe('hasSuperUserRoleInType', () => {
         recordRoles: [{
           recordName: 'SomeTenant',
           roles: [{
-            role: 'RegularUser',
+            roleName: 'RegularUser',
+            privilegeLevel: 30000,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['some-other-scope'],
           }],
         }],
@@ -56,7 +62,9 @@ describe('hasSuperUserRoleInType', () => {
         recordRoles: [{
           recordName: 'SomeTenant',
           roles: [{
-            role: 'SuperUser',
+            roleName: 'SuperUser',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: [],
           }],
         }],
@@ -98,14 +106,18 @@ describe('hasSuperUserRoleInType', () => {
           {
             recordName: 'Tenant1',
             roles: [{
-              role: 'RegularUser',
+              roleName: 'RegularUser',
+              privilegeLevel: 30000,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['some-scope'],
             }],
           },
           {
             recordName: 'Tenant2',
             roles: [{
-              role: 'SuperUser',
+              roleName: 'SuperUser',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['method=*,/**'],
             }],
           },

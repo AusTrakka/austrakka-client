@@ -9,7 +9,9 @@ describe('hasScopeInRecord', () => {
         recordRoles: [{
           recordName: 'tenant-123',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:users', 'write:users'],
           }],
         }],
@@ -26,11 +28,15 @@ describe('hasScopeInRecord', () => {
           recordName: 'tenant-123',
           roles: [
             {
-              role: 'Viewer',
+              roleName: 'Viewer',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             },
             {
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             },
           ],
@@ -47,7 +53,9 @@ describe('hasScopeInRecord', () => {
         recordRoles: [{
           recordName: 'tenant-123',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:basic'],
           }],
         }],
@@ -65,7 +73,9 @@ describe('hasScopeInRecord', () => {
         recordRoles: [{
           recordName: 'tenant-123',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:users'],
           }],
         }],
@@ -104,14 +114,18 @@ describe('hasScopeInRecord', () => {
           {
             recordName: 'tenant-456',
             roles: [{
-              role: 'User',
+              roleName: 'User',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
           },
           {
             recordName: 'tenant-123',
             roles: [{
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
           },
@@ -129,7 +143,9 @@ describe('hasScopeInRecord', () => {
           recordRoles: [{
             recordName: 'org-123',
             roles: [{
-              role: 'User',
+              roleName: 'User',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
           }],
@@ -139,7 +155,9 @@ describe('hasScopeInRecord', () => {
           recordRoles: [{
             recordName: 'tenant-123',
             roles: [{
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
           }],
@@ -156,7 +174,9 @@ describe('hasScopeInRecord', () => {
         recordRoles: [{
           recordName: 'tenant-123',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: [],
           }],
         }],
