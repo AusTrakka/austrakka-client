@@ -1,5 +1,14 @@
-import { callGET, callPATCH, callPost, callPOSTForm, callPUT, callSimpleGET, downloadFile } from './api';
-import { Feedback, FeedbackPost, UserPatchV2 } from '../types/dtos';
+import {
+  callDELETE,
+  callGET,
+  callPATCH,
+  callPost,
+  callPOSTForm,
+  callPUT,
+  callSimpleGET,
+  downloadFile,
+} from './api';
+import { Feedback, FeedbackPost, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -94,6 +103,19 @@ export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Prom
 // PermissionV2 endpoints
 // Tenant
 export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
+
+export const postTenantPrivilege = (
+  tenantGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+) => callPost(`/api/V2/Tenant/${tenantGlobalId}/Privilege`, token, privilegeBody);
+
+export const deleteTenantPrivilege = (
+  tenantGlobalId: string,
+  privilegeGlobalId: string,
+  token:string,
+) => callDELETE(`/api/V2/Tenant/${tenantGlobalId}/Privilege/${privilegeGlobalId}`, token);
+
 // User
 export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/User/Me`, token);
 export const getUserListV2 = (
@@ -155,6 +177,18 @@ export const patchUserOrganisationV2 = (
   token,
   targetOrgGlobalId,
 );
+
+export const postOrgPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token:string,
+) => callPost(`/api/V2/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
+
+export const deleteOrgPrivilege = (
+  recordGlobalId: string,
+  privilegeGlobalId: string,
+  token:string,
+) => callDELETE(`/api/V2/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}`, token);
 
 // Tenant
 export const getFieldsV2 = (
