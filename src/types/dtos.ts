@@ -125,6 +125,7 @@ export interface GroupedPrivilegesByRecordTypeWithScopes {
 
 export interface PrivilegeWithRolesWithScopes {
   recordName: string,
+  recordGlobalId: string,
   roles: RecordRoleWithScopes[],
 }
 export interface GroupedPrivilegesByRecordType {
@@ -134,6 +135,7 @@ export interface GroupedPrivilegesByRecordType {
 
 export interface PrivilegeWithRoles {
   recordName: string,
+  recordGlobalId: string,
   roles: RecordRole[],
 }
 
