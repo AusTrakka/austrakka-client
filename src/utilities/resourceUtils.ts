@@ -113,8 +113,13 @@ export const postTenantPrivilege = (
 export const deleteTenantPrivilege = (
   tenantGlobalId: string,
   privilegeGlobalId: string,
+  defaultTenantGlobalId: string,
   token:string,
-) => callDELETE(`/api/V2/Tenant/${tenantGlobalId}/Privilege/${privilegeGlobalId}`, token);
+) =>
+  callDELETE(
+    `/api/V2/Tenant/${tenantGlobalId}/Privilege/${privilegeGlobalId}?owningTenantGlobalId=${defaultTenantGlobalId}`,
+    token,
+  );
 
 // User
 export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/User/Me`, token);
@@ -187,8 +192,12 @@ export const postOrgPrivilege = (
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
   privilegeGlobalId: string,
+  defaultTenantGlobalId: string,
   token:string,
-) => callDELETE(`/api/V2/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}`, token);
+) => callDELETE(
+  `/api/V2/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}/?owningTenantGlobalId=${defaultTenantGlobalId}`,
+  token,
+);
 
 // Tenant
 export const getFieldsV2 = (

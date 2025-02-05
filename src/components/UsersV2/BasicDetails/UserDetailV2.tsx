@@ -22,6 +22,8 @@ import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
 import { CheckCircle, ErrorOutline, RemoveCircle, Save } from '@mui/icons-material';
 import {
+  deleteOrgPrivilege,
+  deleteTenantPrivilege,
   disableUserV2, enableUserV2,
   getOrganisations,
   getUserV2, patchUserOrganisationV2,
@@ -168,6 +170,20 @@ function UserDetailV2() {
 
     setOpenDupSnackbar(false);
   };
+
+  async function fetchUserDto(): Promise<UserV2> {
+    const userFetchResponse: ResponseObject = await getUserV2(
+      userGlobalId!,
+      defaultTenantGlobalId,
+      token,
+    );
+
+    if (userFetchResponse.status !== ResponseType.Success) {
+      throw new Error('User could not be accessed');
+    }
+
+    return userFetchResponse.data as UserV2;
+  }
   
   const handleSuccessPrivAssignmentSnackbarClose =
       (event: React.SyntheticEvent |
@@ -182,8 +198,8 @@ function UserDetailV2() {
   const processPendingChanges = async () => {
     const failedRequests: PendingChanges[] = [];
 
-    // Map recordType to the appropriate API function
-    const apiMap: Record<string,
+    // Map recordType to the appropriate API function for POST and DELETE
+    const postApiMap: Record<string,
     (recordGlobalId: string,
       body: UserRoleRecordPrivilegePost,
       token: string) => Promise<ResponseObject<any>>> = {
@@ -191,28 +207,55 @@ function UserDetailV2() {
       'Tenant': postTenantPrivilege,
     };
 
-    // Collect all async operations
-    const promises = pendingChanges
-      .filter(change => change.type === 'POST' && apiMap[change.recordType])
-      .map(async (change) => {
-        const postFunction = apiMap[change.recordType];
+    const deleteApiMap: Record<string,
+    (recordGlobalId: string,
+      privilegeGlobalId: string,
+      defaultTenantGlobalId: string,
+      token: string) => Promise<ResponseObject<any>>> = {
+      'Organisation': deleteOrgPrivilege,
+      'Tenant': deleteTenantPrivilege,
+    };
 
-        if (!postFunction) return; // Shouldn't happen due to .filter()
-
-        const postBody: UserRoleRecordPrivilegePost = {
-          owningTenantGlobalId: defaultTenantGlobalId,
-          assigneeGlobalId: userGlobalId!,
-          roleGlobalId: change.payload.roleGlobalId!,
-        };
-
-        try {
-          await postFunction(change.payload.recordGlobalId!, postBody, token);
-        } catch (error) {
+    // Collect all async operations for both POST and DELETE
+    const promises = pendingChanges.map(async (change) => {
+      try {
+        if (change.type === 'POST' && postApiMap[change.recordType]) {
+          const postFunction = postApiMap[change.recordType];
+          const postBody: UserRoleRecordPrivilegePost = {
+            owningTenantGlobalId: defaultTenantGlobalId,
+            assigneeGlobalId: userGlobalId!,
+            roleGlobalId: change.payload.roleGlobalId!,
+          };
+          const response: ResponseObject = await postFunction(
+            change.payload.recordGlobalId!,
+            postBody,
+            token,
+          );
+          if (response.status !== ResponseType.Success) {
+            failedRequests.push(change);
+          }
+        } else if (change.type === 'DELETE' && deleteApiMap[change.recordType]) {
+          const deleteFunction = deleteApiMap[change.recordType];
+          const response: ResponseObject = await deleteFunction(
+            change.payload.recordGlobalId!,
+            change.payload.privilegeGlobalId!,
+            defaultTenantGlobalId,
+            token,
+          );
+          if (response.status !== ResponseType.Success) {
+            failedRequests.push(change);
+          }
+        } else {
           // eslint-disable-next-line no-console
-          console.error(`Failed to process ${change.recordType} privilege for ${change.payload.recordName}:`, error);
+          console.error(`Unsupported change type: ${change.type} for record type: ${change.recordType}`);
           failedRequests.push(change);
         }
-      });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to process ${change.recordType} privilege for ${change.payload.recordName}:`, error);
+        failedRequests.push(change);
+      }
+    });
 
     // Execute all API calls in parallel
     await Promise.all(promises);
@@ -225,7 +268,9 @@ function UserDetailV2() {
       setOpenSuccessPrivAssignmentSnackbar(true);
     }
     setPendingChanges([]);
-    setEditedPrivileges(JSON.parse(JSON.stringify(user?.privileges)));
+    const userDto = await fetchUserDto();
+    setUser(userDto);
+    setEditedValues(JSON.parse(JSON.stringify(userDto)));
     setEditingPrivileges(false);
     setShowConfirmationDialog(false);
   };
@@ -320,17 +365,7 @@ function UserDetailV2() {
         throw new Error('User could not be accessed/changed');
       }
       
-      const userFetchResponse: ResponseObject = await getUserV2(
-        userGlobalId!,
-        defaultTenantGlobalId,
-        token,
-      );
-      
-      if (userFetchResponse.status !== ResponseType.Success) {
-        throw new Error('User could not be accessed');
-      }
-      
-      const userDto = userFetchResponse.data as UserV2;
+      const userDto = await fetchUserDto();
       
       setPatchMsg(userResponse.message);
       setPatchSeverity('success');
@@ -366,6 +401,7 @@ function UserDetailV2() {
 
       const newRecordRoles: PrivilegeWithRoles[] = AssignedRoles.map(assigned => ({
         recordName: assigned.record.abbrev,
+        recordGlobalId: assigned.record.id,
         roles: assigned.roles.map(role => ({ roleName: role.name,
           privilegeLevel: role.privilegeLevel,
           privilegeGlobalId: undefined })),
@@ -400,22 +436,48 @@ function UserDetailV2() {
     });
 
     // Generate payload for additions only
-    const payloadBuilder: PendingChanges[] = AssignedRoles.flatMap(assignedRole =>
-      assignedRole.roles.map(role => ({
-        type: 'POST',
-        recordType,
-        payload: {
-          recordGlobalId: assignedRole.record.id,
-          roleGlobalId: role.globalId,
-          recordName: assignedRole.record.name,
-          roleName: role.name,
-        },
-      })));
 
-    setPendingChanges(payloadBuilder);
+    const newChanges: PendingChanges[] = AssignedRoles.flatMap(assignedRole =>
+      assignedRole.roles.map(role => {
+        // Check if a DELETE type with the same recordGlobalId and roleName exists in pendingChanges
+        const deleteIndex = pendingChanges.findIndex(
+          change =>
+            change.type === 'DELETE' &&
+                    change.payload.recordGlobalId === assignedRole.record.id &&
+                    change.payload.roleName === role.name,
+        );
+
+        if (deleteIndex !== -1) {
+          // Remove the DELETE entry from pendingChanges
+          const updatedChanges = [...pendingChanges];
+          updatedChanges.splice(deleteIndex, 1);
+          setPendingChanges(updatedChanges); // Update the state
+          return []; // Skip adding the POST entry
+        }
+
+        // Add the POST entry if no DELETE entry exists
+        return {
+          type: 'POST',
+          recordType,
+          payload: {
+            recordGlobalId: assignedRole.record.id,
+            roleGlobalId: role.globalId,
+            recordName: assignedRole.record.name,
+            roleName: role.name,
+          },
+        } as PendingChanges;
+      })).flat(); // Flatten the array to remove empty arrays from skipped entries
+
+    // Add the new POST entries to pendingChanges
+    setPendingChanges(prevChanges => [...prevChanges, ...newChanges]);
   };
 
-  const onSelectionRemove = (role: RecordRole, recordType: string, recordName: string) => {
+  const onSelectionRemove = (
+    role: RecordRole,
+    recordType: string,
+    recordName: string,
+    recordGlobalId: string,
+  ) => {
     setEditedPrivileges(prev => {
       if (!prev) return [];
 
@@ -453,18 +515,37 @@ function UserDetailV2() {
 
     // Add to pending changes if it's an existing role
     if (role.privilegeGlobalId) {
-      setPendingChanges(prev => [
-        ...prev,
-        {
-          type: 'DELETE',
-          recordType,
-          payload: {
-            recordName,
-            roleName: role.roleName,
-            privilegeGlobalId: role.privilegeGlobalId,
+      setPendingChanges(prev => {
+        // Check if a POST type with the same recordGlobalId and roleName exists
+        const postIndex = prev.findIndex(
+          change =>
+            change.type === 'POST' &&
+                change.payload.recordGlobalId === recordGlobalId &&
+                change.payload.roleName === role.roleName,
+        );
+
+        // If a POST entry exists, remove it
+        if (postIndex !== -1) {
+          const updatedChanges = [...prev];
+          updatedChanges.splice(postIndex, 1); // Remove the POST entry
+          return updatedChanges;
+        }
+
+        // If no POST entry exists, add the DELETE entry
+        return [
+          ...prev,
+          {
+            type: 'DELETE',
+            recordType,
+            payload: {
+              recordName,
+              recordGlobalId,
+              roleName: role.roleName,
+              privilegeGlobalId: role.privilegeGlobalId,
+            },
           },
-        },
-      ]);
+        ];
+      });
     }
   };
 
@@ -665,7 +746,14 @@ function UserDetailV2() {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setFailedChangesDialogOpen(false)} variant="contained" color="primary">
+          <Button
+            onClick={() => {
+              setFailedChangesDialogOpen(false);
+              setFailedChanges([]);
+            }}
+            variant="contained"
+            color="primary"
+          >
             OK
           </Button>
         </DialogActions>

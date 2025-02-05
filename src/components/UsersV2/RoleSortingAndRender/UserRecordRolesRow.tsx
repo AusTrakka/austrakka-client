@@ -1,16 +1,18 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
-import { Cancel, Lock } from '@mui/icons-material';
+import { Cancel } from '@mui/icons-material';
 import { RecordRole } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
   recordType: string;
   recordName: string;
+  recordGlobalId: string;
   recordRoles: RecordRole[];
   onSelectionRemove: (
     role: RecordRole,
     recordType: string,
-    recordName: string
+    recordName: string,
+    recordGlobalId: string,
   ) => void;
   isOpen: boolean;
   editing: boolean;
@@ -20,6 +22,7 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
   const { recordType,
     recordName,
     recordRoles,
+    recordGlobalId,
     onSelectionRemove,
     isOpen,
     editing } = props;
@@ -49,7 +52,7 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
                     color={editing ? 'error' : 'primary'}
                     variant={editing ? 'filled' : 'outlined'}
                     onDelete={editing ?
-                      () => onSelectionRemove(role, recordType, recordName) :
+                      () => onSelectionRemove(role, recordType, recordName, recordGlobalId) :
                       undefined}
                     deleteIcon={<Cancel />}
                   />

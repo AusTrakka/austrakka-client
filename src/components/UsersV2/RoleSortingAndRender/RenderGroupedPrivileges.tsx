@@ -27,7 +27,8 @@ interface RenderGroupedRolesAndGroupsProps {
   onSelectionRemove: (
     role: RecordRole,
     recordType: string,
-    recordName: string
+    recordName: string,
+    recordGlobalId: string,
   ) => void;
 }
 
@@ -96,11 +97,12 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
           roles={allowedRoles}
           onSelectionChange={onSelectionAdd}
         />
-        {recordRoles.map(({ recordName, roles }) => (
+        {recordRoles.map(({ recordName, recordGlobalId, roles }) => (
           <UserRecordRolesRow
             recordType={recordType}
             key={`${recordName}-${roles.join('-')}`}
             recordName={recordName}
+            recordGlobalId={recordGlobalId}
             recordRoles={roles}
             isOpen={openGroupRoles.includes(recordType)}
             editing={editing}
