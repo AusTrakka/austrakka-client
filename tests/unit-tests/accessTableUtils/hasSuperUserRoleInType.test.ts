@@ -8,6 +8,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'SuperUser',
             privilegeLevel: 0,
@@ -25,6 +26,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'RegularUser',
             privilegeLevel: 30000,
@@ -42,6 +44,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'RegularUser',
             privilegeLevel: 30000,
@@ -61,6 +64,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'NotTenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'SuperUser',
             privilegeLevel: 0,
@@ -78,6 +82,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: [],
         }],
       }];
@@ -90,6 +95,7 @@ describe('hasSuperUserRoleInType', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'SomeTenant',
+          recordGlobalId: 'record-global-id-1',
           roles: undefined!,
         }],
       }];
@@ -105,6 +111,7 @@ describe('hasSuperUserRoleInType', () => {
         recordRoles: [
           {
             recordName: 'Tenant1',
+            recordGlobalId: 'record-global-id-1',
             roles: [{
               roleName: 'RegularUser',
               privilegeLevel: 30000,
@@ -114,6 +121,7 @@ describe('hasSuperUserRoleInType', () => {
           },
           {
             recordName: 'Tenant2',
+            recordGlobalId: 'record-global-id-2',
             roles: [{
               roleName: 'SuperUser',
               privilegeLevel: 0,

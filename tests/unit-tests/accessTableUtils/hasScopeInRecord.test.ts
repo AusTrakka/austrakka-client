@@ -8,6 +8,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
             privilegeLevel: 0,
@@ -26,6 +27,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [
             {
               roleName: 'Viewer',
@@ -52,6 +54,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
             privilegeLevel: 0,
@@ -72,6 +75,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
             privilegeLevel: 0,
@@ -97,6 +101,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [],
         }],
       }];
@@ -113,6 +118,7 @@ describe('hasScopeInRecord', () => {
         recordRoles: [
           {
             recordName: 'tenant-456',
+            recordGlobalId: 'record-id-1',
             roles: [{
               roleName: 'User',
               privilegeLevel: 0,
@@ -122,6 +128,7 @@ describe('hasScopeInRecord', () => {
           },
           {
             recordName: 'tenant-123',
+            recordGlobalId: 'record-id-2',
             roles: [{
               roleName: 'Admin',
               privilegeLevel: 0,
@@ -139,9 +146,10 @@ describe('hasScopeInRecord', () => {
     test('return true when record exists in one of multiple groups', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Organization',
+          recordType: 'Organisation',
           recordRoles: [{
             recordName: 'org-123',
+            recordGlobalId: 'record-id-1',
             roles: [{
               roleName: 'User',
               privilegeLevel: 0,
@@ -154,6 +162,7 @@ describe('hasScopeInRecord', () => {
           recordType: 'Tenant',
           recordRoles: [{
             recordName: 'tenant-123',
+            recordGlobalId: 'record-id-2',
             roles: [{
               roleName: 'Admin',
               privilegeLevel: 0,
@@ -173,6 +182,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
             privilegeLevel: 0,
