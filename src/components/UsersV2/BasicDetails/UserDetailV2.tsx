@@ -665,6 +665,7 @@ function UserDetailV2() {
             </Stack>
             <TableContainer
               component={Box}
+              className="table-container"
               sx={{ borderRadius: '6px' }}
             >
               <Table>

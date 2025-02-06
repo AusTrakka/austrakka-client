@@ -28,4 +28,12 @@
     padding: 20px;
     border-radius: 6px;
     height: 530px;
-    }
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.basic-info-table .table-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}

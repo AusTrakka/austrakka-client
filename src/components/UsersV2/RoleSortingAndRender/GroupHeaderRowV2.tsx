@@ -37,6 +37,7 @@ interface GroupHeaderRowProps {
   editing: boolean;
   rolesErrorMessage: string | null;
   roles: RolesV2[];
+  empty: boolean;
   onSelectionChange: (
     recordType: string,
     assignments: RoleAssignments[],
@@ -46,6 +47,7 @@ interface GroupHeaderRowProps {
 function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const {
     recordType,
+    empty,
     openGroupRoles,
     handleGroupRoleToggle,
     editing,
@@ -73,13 +75,11 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
         let response: ResponseObject | null = null;
 
         switch (recordType) {
-          case 'Project':
-            response = await getProjectList(token);
-            break;
           case 'Organisation':
             response = await getOrganisations(false, token);
             break;
           default:
+            // Will need to add more calls once endpoints have been added
             return;
         }
 
@@ -163,8 +163,10 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       <TableCell width="250em">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
+            disabled={empty}
             aria-label="expand row"
             size="small"
+            
             onClick={() => handleGroupRoleToggle(recordType)}
           >
             {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :

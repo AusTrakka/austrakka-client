@@ -32,6 +32,8 @@ interface RenderGroupedRolesAndGroupsProps {
   ) => void;
 }
 
+const REQUIRED_RECORD_TYPES = ['Tenant', 'Organisation', 'Project', 'ProForma'];
+
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const {
     userGroupedPrivileges,
@@ -44,6 +46,8 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
       = props;
 
   const [rolesForV2, setRolesForV2] = useState<RolesV2[] | null>(null);
+  const [ugpFilledAndSorted, setUgpFilledAndSorted] =
+      useState<GroupedPrivilegesByRecordType[]>(userGroupedPrivileges ?? []);
   const { token, tokenLoading } = useApi();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -68,6 +72,45 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     }
   }, [token, tokenLoading]);
 
+  useEffect(() => {
+    if (!userGroupedPrivileges) return;
+
+    // Filter out 'User' record type and track existing record types
+    const existingTypes = new Set<string>();
+    const processedPrivileges = userGroupedPrivileges
+      .filter((group) => {
+        if (group.recordType === 'User') return false;
+        existingTypes.add(group.recordType);
+        return true;
+      })
+      .map((group) => ({
+        ...group,
+        recordRoles: group.recordRoles
+          .map((role) => ({
+            ...role,
+            // Could sort by privLevel I think maybe?
+            roles: [...role.roles].sort((a, b) => a.roleName.localeCompare(b.roleName)),
+          }))
+          .sort((a, b) => a.recordName.localeCompare(b.recordName)),
+      }));
+
+    // Add missing record types with empty roles
+    REQUIRED_RECORD_TYPES.forEach((type) => {
+      if (!existingTypes.has(type)) {
+        processedPrivileges.push({ recordType: type, recordRoles: [] });
+      }
+    });
+
+    // Sort final list according to REQUIRED_RECORD_TYPES order
+    processedPrivileges.sort(
+      (a, b) =>
+        REQUIRED_RECORD_TYPES.indexOf(a.recordType)
+          - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
+    );
+
+    setUgpFilledAndSorted(processedPrivileges);
+  }, [userGroupedPrivileges]);
+
   const handleGroupRoleToggle = (groupName: string) => {
     setOpenGroupRoles((prevOpenGroupRoles) =>
       (prevOpenGroupRoles.includes(groupName)
@@ -89,6 +132,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
       <>
         <GroupHeaderRowV2
           key={recordType}
+          empty={recordRoles.length === 0}
           recordType={recordType}
           openGroupRoles={openGroupRoles}
           handleGroupRoleToggle={handleGroupRoleToggle}
@@ -117,14 +161,11 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   //  cause the reverse order fix is not guaranteed
   return (
     <>
-      {userGroupedPrivileges
-        .slice() // Create a shallow copy to avoid mutating the original array
-        .reverse()
-        .map((ugp: GroupedPrivilegesByRecordType) => (
-          <React.Fragment key={ugp.recordType}>
-            {renderGroupRoles(ugp.recordRoles, ugp.recordType)}
-          </React.Fragment>
-        ))}
+      {ugpFilledAndSorted.map((ugp: GroupedPrivilegesByRecordType) => (
+        <React.Fragment key={ugp.recordType}>
+          {renderGroupRoles(ugp.recordRoles, ugp.recordType)}
+        </React.Fragment>
+      ))}
     </>
   );
 }
