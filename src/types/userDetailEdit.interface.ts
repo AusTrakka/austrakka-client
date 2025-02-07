@@ -1,6 +1,6 @@
 import { RolesV2 } from './dtos';
 
-export interface PendingChanges {
+export interface PendingChange {
   type: 'POST' | 'DELETE';
   recordType: string;
   payload: Payload;

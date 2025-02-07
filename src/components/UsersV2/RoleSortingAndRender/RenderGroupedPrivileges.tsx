@@ -61,7 +61,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
       const allRoles: RolesV2[] = response?.data ?? [];
 
       const rolesV2: RolesV2[] = allRoles.filter((role) =>
-        role.allowedRootResourceTypes?.length);
+        role.allowedRootResourceTypes?.length).sort((a, b) => a.name.localeCompare(b.name));
 
       setRolesForV2(rolesV2);
     }

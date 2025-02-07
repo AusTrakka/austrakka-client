@@ -1,7 +1,4 @@
 /* eslint-disable react/jsx-props-no-spreading */
-
-// TODO: come back to this, as this page cannot be accessed at the moment
-// This is the V2 version of adding roles to a record/group
 import React, { useEffect, useState } from 'react';
 import {
   TableRow,
@@ -9,19 +6,16 @@ import {
   IconButton,
   Typography,
   Stack,
-  Autocomplete,
-  Checkbox, TextField, Chip, Tooltip, Alert,
+  Alert,
 } from '@mui/material';
 import {
   AddCircle,
-  CheckBox,
-  CheckBoxOutlineBlank,
   KeyboardArrowDown,
   KeyboardArrowRight,
 } from '@mui/icons-material';
 import { selectTenantState, TenantSliceState } from '../../../app/tenantSlice';
 import { useAppSelector } from '../../../app/store';
-import { getOrganisations, getProjectList } from '../../../utilities/resourceUtils';
+import { getOrganisations } from '../../../utilities/resourceUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
 import { useApi } from '../../../app/ApiContext';
@@ -29,6 +23,8 @@ import LoadingState from '../../../constants/loadingState';
 import './autocompleteStyleOverride.css';
 import { RolesV2 } from '../../../types/dtos';
 import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { RecordAutocomplete } from './RecordAutocomplete';
+import { RoleAutocomplete } from './RoleAutocomplete';
 
 interface GroupHeaderRowProps {
   recordType: string;
@@ -64,16 +60,12 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
 
-  // need to fetch roles for said resource type
-  // will use temp list for now
-  
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
 
   useEffect(() => {
     async function fetchRecords() {
       try {
         let response: ResponseObject | null = null;
-
         switch (recordType) {
           case 'Organisation':
             response = await getOrganisations(false, token);
@@ -87,12 +79,15 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
           setRecordFetchError(response.message);
           return;
         }
+        
+        const rolesV2: any[] = response.data;
 
-        setRecords(response.data.map((item: any) => ({
-          id: item.globalId,
-          abbrev: item.abbreviation,
-          name: item.name,
-        })));
+        setRecords(rolesV2.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+          .map((item: any) => ({
+            id: item.globalId,
+            abbrev: item.abbreviation,
+            name: item.name,
+          })));
       } catch (error) {
         setRecordFetchError('An error occurred while fetching records.');
       }
@@ -102,8 +97,12 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       if (recordType !== 'Tenant') {
         fetchRecords();
       } else {
-        setRecords(null);
         setSelectedRecords([{
+          id: tenant.defaultTenantGlobalId,
+          abbrev: tenant.defaultTenantName,
+          name: tenant.defaultTenantName,
+        }]);
+        setRecords([{
           id: tenant.defaultTenantGlobalId,
           abbrev: tenant.defaultTenantName,
           name: tenant.defaultTenantName,
@@ -121,10 +120,14 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   useEffect(() => {
     // if editing is false and selectedRoles and selectedRecords are not null then clear states
     if (!editing) {
-      setSelectedRoles(null);
-      setSelectedRecords(null);
+      if (recordType !== 'Tenant') {
+        setSelectedRoles(null);
+        setSelectedRecords(null);
+      } else {
+        setSelectedRoles(null);
+      }
     }
-  }, [editing]);
+  }, [editing, recordType]);
     
   const handleAddPrivilege = () => {
     if (selectedRecords && selectedRoles) {
@@ -147,7 +150,9 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       }
       onSelectionChange(recordType, assignedRoles);
       setSelectedRoles(null);
-      setSelectedRecords(null);
+      if (recordType !== 'Tenant') {
+        setSelectedRecords(null);
+      }
     }
   };
 
@@ -166,7 +171,6 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             disabled={empty}
             aria-label="expand row"
             size="small"
-            
             onClick={() => handleGroupRoleToggle(recordType)}
           >
             {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :
@@ -185,130 +189,16 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             <Stack direction="row" spacing={1}>
               {editing && records ? (
                 <>
-                  <Autocomplete
-                    options={records
-                      ?.filter(r => !selectedRecords
-                        ?.some(sr => sr.id === r.id))
-                      || []}
-                    multiple
-                    disabled={recordType === 'Tenant'}
-                    limitTags={1}
-                    style={{ width: '19em' }}
-                    value={selectedRecords || []}
-                    disableCloseOnSelect
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    getOptionLabel={(option) => option.abbrev}
-                    onChange={(e, v) => setSelectedRecords(v)}
-                    renderOption={(_props, option, { selected }) => (
-                      <li {..._props} style={{ fontSize: '0.9em' }} key={option.id}>
-                        <Checkbox
-                          style={{ marginRight: '8px' }}
-                          checked={selected}
-                          icon={<CheckBoxOutlineBlank />}
-                          checkedIcon={<CheckBox />}
-                        />
-                        {option.abbrev}
-                      </li>
-                    )}
-                    renderTags={(tagValue, getTagProps) =>
-                      tagValue.map((option, index) => {
-                        const tagProps = getTagProps({ index });
-                        const { key, ...propsButKeyRemoved } = tagProps;
-                        return (
-                          <Tooltip title={option.abbrev} key={key}>
-                            <Chip
-                              label={option.abbrev}
-                              {...propsButKeyRemoved}
-                              style={{
-                                maxWidth: '11em', // Limit chip width
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            />
-                          </Tooltip>
-                        );
-                      })}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        hiddenLabel
-                        placeholder={selectedRecords?.length ? '' : 'Select Group'}
-                        variant="filled"
-                        size="small"
-                        InputProps={{
-                          ...params.InputProps,
-                          inputProps: {
-                            ...params.inputProps,
-                            style: {
-                              fontSize: '0.9em',
-                            },
-                          },
-                        }}
-                      />
-                    )}
+                  <RecordAutocomplete
+                    records={records}
+                    selectedRecords={selectedRecords}
+                    setSelectedRecords={setSelectedRecords}
+                    recordType={recordType}
                   />
-                  <Autocomplete
-                    options={roles
-                      ?.filter(r => !selectedRoles
-                        ?.some(sr => sr.globalId === r.globalId))
-                        || []}
-                    multiple
-                    limitTags={1}
-                    style={{ width: '19em' }}
-                    value={selectedRoles || []}
-                    disableCloseOnSelect
-                    getOptionLabel={(option) => option.name}
-                    isOptionEqualToValue={(option, value) => option.globalId === value.globalId}
-                    onChange={(e, v) => setSelectedRoles(v)}
-                    renderOption={(_props, option, { selected }) => (
-                      <li {..._props} style={{ fontSize: '0.9em' }} key={option.globalId}>
-                        <Checkbox
-                          style={{ marginRight: '8px' }}
-                          checked={selected}
-                          icon={<CheckBoxOutlineBlank />}
-                          checkedIcon={<CheckBox />}
-                        />
-                        {option.name}
-                      </li>
-                    )}
-                    renderTags={(tagValue, getTagProps) =>
-                      tagValue.map((option, index) => {
-                        const tagProps = getTagProps({ index });
-                        const { key, ...propsButKeyRemoved } = tagProps;
-                        return (
-                          <Tooltip title={option.name} key={key}>
-                            <Chip
-                              label={option.name}
-                              {...propsButKeyRemoved}
-                              style={{
-                                maxWidth: '11em', // Limit chip width
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            />
-                          </Tooltip>
-                        );
-                      })}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        hiddenLabel
-                        variant="filled"
-                        placeholder={selectedRoles?.length ? '' : 'Select Role'}
-                        InputProps={{
-                          ...params.InputProps,
-                          inputProps: {
-                            ...params.inputProps,
-                            style: {
-                              fontSize: '0.9em',
-                            },
-                          },
-                        }}
-                      />
-                    )}
+                  <RoleAutocomplete
+                    roles={roles}
+                    selectedRoles={selectedRoles}
+                    setSelectedRoles={setSelectedRoles}
                   />
                   <div style={{ display: 'flex' }}>
                     <IconButton
