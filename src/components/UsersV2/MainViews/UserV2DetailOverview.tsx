@@ -96,7 +96,6 @@ function UserV2DetailOverview() {
     setShowConfirmationDialog(false);
   };
 
-  // Modified onPrivSave
   const onPrivSave = () => {
     if (pendingChanges.length > 0) {
       setShowConfirmationDialog(true);
@@ -154,8 +153,6 @@ function UserV2DetailOverview() {
         setUser(userDto);
         setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
         setEditedValues({ ...userDto });
-        // setUpdatedGroupRoles(userDto.groupRoles);
-        // Initialize editedValues with the original user data
       } else {
         setErrMsg('User could not be accessed');
       }
@@ -211,7 +208,6 @@ function UserV2DetailOverview() {
   };
   
   const editUserDetails = async () => {
-    // I need to ignore the groupRoles field for this version of the page
     const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
 
     // Creating editedValuesDtoFormat object
@@ -222,7 +218,6 @@ function UserV2DetailOverview() {
     };
     
     const editedActiveState = user?.isActive !== isActive;
-    const editedOrganisation = user?.orgGlobalId !== orgGlobalId;
     try {
       // basic patch
       const userResponse: ResponseObject = await patchUserV2(
@@ -253,20 +248,6 @@ function UserV2DetailOverview() {
         }
       }
       
-      // patch organisation
-      if (editedOrganisation) {
-        const patchUserOrganisationResponse: ResponseObject = await patchUserOrganisationV2(
-          userGlobalId!,
-          user!.orgGlobalId,
-          orgGlobalId,
-          defaultTenantGlobalId,
-          token,
-        );
-        if (patchUserOrganisationResponse.status !== ResponseType.Success) {
-          throw new Error('User organisation could not be accessed/changed');
-        }
-      }
-
       if (userResponse.status !== ResponseType.Success) {
         throw new Error('User could not be accessed/changed');
       }
@@ -342,9 +323,6 @@ function UserV2DetailOverview() {
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
   const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
-  console.log('editedPrivileges', editedPrivileges);
-  console.log('user stuff', user?.privileges);
-  console.log('PENDING CHANGES', pendingChanges);
   return (user) ? (
     <div>
       <Stack

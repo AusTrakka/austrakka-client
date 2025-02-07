@@ -72,6 +72,8 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             break;
           default:
             // Will need to add more calls once endpoints have been added
+            // I think project is technically there but I dont think roles can be added for it.
+            // for the cli
             return;
         }
 
@@ -118,7 +120,6 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   }, [rolesErrorMessage, recordFetchError]);
   
   useEffect(() => {
-    // if editing is false and selectedRoles and selectedRecords are not null then clear states
     if (!editing) {
       if (recordType !== 'Tenant') {
         setSelectedRoles(null);

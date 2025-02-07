@@ -157,8 +157,6 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     );
   };
 
-  // TODO: Need to enforce an order on which recordTypes are rendered 
-  //  cause the reverse order fix is not guaranteed
   return (
     <>
       {ugpFilledAndSorted.map((ugp: GroupedPrivilegesByRecordType) => (

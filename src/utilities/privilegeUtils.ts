@@ -77,7 +77,7 @@ export async function processPrivilegeChanges(
         }
       } else {
         // Maybe these errors can be stored and shown in the Dialog instead of just telling the user
-        // what went wrong? Maybe why is useful to know what went wrong?
+        // what went wrong? Maybe the 'why' is useful?
         // eslint-disable-next-line no-console
         console.error(`Unsupported change type: ${change.type} for record type: ${change.recordType}`);
         failedChanges.push(change);
@@ -245,6 +245,8 @@ export const updatePendingChangesForRemoval = (
   recordName: string,
   role: RecordRole,
 ): PendingChange[] => {
+  // If a user adds a role and then removes it, the POST change will be in the pendingChanges
+  // array and instead of adding a DELETE change, POST will be removed from the pendingChanges
   const postIndex = pendingChanges.findIndex(
     change =>
       change.type === 'POST' &&
