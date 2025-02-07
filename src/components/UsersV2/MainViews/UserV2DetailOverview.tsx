@@ -10,8 +10,9 @@ import {
 import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
 import {
-  disableUserV2, enableUserV2,
-  getUserV2, patchUserOrganisationV2,
+  disableUserV2,
+  enableUserV2,
+  getUserV2,
   patchUserV2,
 } from '../../../utilities/resourceUtils';
 import { useAppSelector } from '../../../app/store';
