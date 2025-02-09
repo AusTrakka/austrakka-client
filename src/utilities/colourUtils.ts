@@ -60,8 +60,8 @@ export function createColourMapping(uniqueValues: string[], colorScheme: string)
 export function generateColorSchemeThumbnail(schemeName: string): string[] {
   if (!allColorSchemes[schemeName]) return [];
   
-  if (discrete[schemeName]) {
-    const domain = discrete[schemeName].range();
+  if (discreteColorSchemes[schemeName]) {
+    const domain = discreteColorSchemes[schemeName].range();
     return domain.slice(0, 5);
   }
   
