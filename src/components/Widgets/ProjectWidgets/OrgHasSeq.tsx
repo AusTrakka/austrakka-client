@@ -138,7 +138,7 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
       if (!fields.includes(ORG_FIELD_NAME)) {
         setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
       } else if (!fields.includes(HAS_SEQ)) {
-        setErrorMessage('No date collection field found in project');
+        setErrorMessage(`Field ${HAS_SEQ} not found in project`);
       }
     }
   }, [data]);
