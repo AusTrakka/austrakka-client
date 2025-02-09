@@ -112,7 +112,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
             domain: ['Available', 'Missing'],
             range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
           },
-          legend: { title: 'Date_coll status', orient: 'bottom' },
+          legend: { title: `${field} status`, orient: 'bottom' },
         },
       },
     },
