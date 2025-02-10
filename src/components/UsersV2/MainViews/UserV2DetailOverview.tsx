@@ -35,10 +35,10 @@ import { FailedChangesDialog } from './FailedChangesDialog';
 import UserProperties from './UserProperties';
 import UserPrivileges from './UserPrivileges';
 import {
-  filterAssignedRoles,
-  processPrivilegeChanges, removeSelectionFromPrivileges,
+  filterAssignedRoles, removeSelectionFromPrivileges,
   updateEditedPrivileges, updatePendingChanges, updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
+import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
   
 function UserV2DetailOverview() {
   const { userGlobalId } = useParams();
