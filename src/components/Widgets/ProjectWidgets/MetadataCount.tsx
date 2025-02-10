@@ -14,20 +14,31 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { Sample } from '../../../types/sample.interface';
+
+// Parameterised widget; field must be specified
+
+interface MetadataCountWidgetProps extends ProjectWidgetProps {
+  projectAbbrev: string;
+  filteredData: Sample[];
+  timeFilterObject: DataTableFilterMeta;
+  field: string; // This is the field parameter the widget will report on
+  // eslint-disable-next-line react/require-default-props
+  title?: string | undefined; // Optionally, a different title for the widget
+}
 
 const ORG_FIELD_NAME = 'Owner_group';
 const ORG_FIELD_PLOTNAME = 'Owner_organisation';
-const DATE_COLUMN = 'Date_coll';
 
-export default function MetadataCounts(props: ProjectWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+export default function MetadataCounts(props: MetadataCountWidgetProps) {
+  const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
-  const tooltipTitle = `Samples with populated ${DATE_COLUMN} values`;
+  const tooltipTitle = `Samples with populated ${field} values`;
 
   const CHART_COLORS = {
     AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
@@ -35,18 +46,18 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
   } as const;
   
   const dateStatusTransform = {
-    calculate: `datum['${DATE_COLUMN}'] ? 'Available' : 'Missing'`,
-    as: `${DATE_COLUMN}_status`,
+    calculate: `datum['${field}'] ? 'Available' : 'Missing'`,
+    as: `${field}_status`,
   };
 
   function handleItemClick(item: any) {
     if (!item || !item.datum) return;
 
-    const status = item.datum[`${DATE_COLUMN}_status`];
+    const status = item.datum[`${field}_status`];
     const org = item.datum[ORG_FIELD_PLOTNAME];
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
-      [DATE_COLUMN]: {
+      [field]: {
         operator: FilterOperator.AND,
         constraints: [
           {
@@ -96,12 +107,12 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
           axis: { title: 'Organisation' },
         },
         color: {
-          field: `${DATE_COLUMN}_status`,
+          field: `${field}_status`,
           scale: {
             domain: ['Available', 'Missing'],
             range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
           },
-          legend: { title: 'Date_coll status', orient: 'bottom' },
+          legend: { title: `${field} status`, orient: 'bottom' },
         },
       },
     },
@@ -116,17 +127,17 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
         },
         y: { field: ORG_FIELD_PLOTNAME },
         detail: {
-          field: `${DATE_COLUMN}_status`,
+          field: `${field}_status`,
         },
       },
     }],
     title: {
-      text: `${DATE_COLUMN} counts`,
+      text: `${field} counts`,
       anchor: 'middle',
       fontSize: 12,
     },
     usermeta: {
-      dateCollField: DATE_COLUMN,
+      dateCollField: field,
     },
   });
 
@@ -135,14 +146,14 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
             data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
-      const fields = data.fields!.map(field => field.columnName);
+      const fields = data.fields!.map(fld => fld.columnName);
       if (!fields.includes(ORG_FIELD_NAME)) {
         setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
-      } else if (!fields.includes(DATE_COLUMN)) {
-        setErrorMessage(`Field ${DATE_COLUMN} not found in project`);
+      } else if (!fields.includes(field)) {
+        setErrorMessage(`Field ${field} not found in project`);
       }
     }
-  }, [data]);
+  }, [data, field]);
 
   useEffect(() => {
     const createVegaViews = async () => {
@@ -184,7 +195,7 @@ export default function MetadataCounts(props: ProjectWidgetProps) {
     <Box>
       <Tooltip title={tooltipTitle} arrow placement="top">
         <Typography variant="h5" paddingBottom={3} color="primary">
-          Metadata counts
+          { title ?? `${field} counts` }
         </Typography>
       </Tooltip>
       {errorMessage ? (
