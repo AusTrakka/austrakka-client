@@ -5,9 +5,9 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import AccessionCounts from '../../Widgets/ProjectWidgets/AccessionCounts';
 import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCount';
+import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
 function ApgDashboard(props: ProjectDashboardTemplateProps) {
   const {
@@ -15,17 +15,6 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
     filteredData,
     timeFilterObject,
   } = props;
-
-  const cardStyle = {
-    padding: 1,
-    border: 'none',
-    boxShadow: 'none',
-  };
-
-  const tallCardStyle = {
-    ...cardStyle,
-    minHeight: 300,
-  };
 
   return (
     <Box>
@@ -66,7 +55,7 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        {/* Third Row: Two Grids sharing approximately 1/3 and 2/3 */}
+        {/* Third Row: Two cells sharing 50/50 */}
         <Grid size={{ xs: 12, md: 12, lg: 6 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
@@ -74,6 +63,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
+                field="Date_coll"
+                title="Metadata counts"
               />
             </CardContent>
           </Card>
@@ -90,14 +81,27 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           </Card>
         </Grid>
         
-        {/* Fourth Row: One Grid spanning the entire row */}
-        <Grid size={12}>
+        {/* Fourth Row: Two cells */}
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
-              <AccessionCounts
+              <MetadataCounts
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
+                field="Reads_accession"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+          <Card sx={tallCardStyle}>
+            <CardContent>
+              <MetadataCounts
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+                field="Assembly_accession"
               />
             </CardContent>
           </Card>

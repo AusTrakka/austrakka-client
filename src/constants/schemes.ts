@@ -124,11 +124,15 @@ export const discrete: ColorSchemeDiscrete = {
   set2: d3.scaleOrdinal(d3.schemeSet2),
   set3: d3.scaleOrdinal(d3.schemeSet3),
   colorBlindSet8: d3.scaleOrdinal(schemeColorBlindFriendly),
+  jurisdiction: schemeJurisdiction,
 };
 
 export const rangeColorSchemes: ColorSchemeRange = { ...sequential, ...diverging, ...cyclical };
 export const discreteColorSchemes: ColorSchemeDiscrete = { ...discrete };
 export const allColorSchemes: ColorSchemeAll = { ...rangeColorSchemes, ...discreteColorSchemes };
+
+// These are schemes where we have pre-assigned specific colours to specific values
+export const valueMappedColorSchemes = new Set(['jurisdiction']);
 
 // Enum to map color variables to color schemes names in readable format
 export enum ColorSchemeNames {
@@ -181,6 +185,6 @@ export enum ColorSchemeNames {
   set1 = 'Set1 [9]',
   set2 = 'Set2 [8]',
   set3 = 'Set3 [12]',
-  // CUSTOM
-  colorBlindSet8 = 'Color-Blind Set [8]',
+  jurisdiction = 'Jurisdiction [9]', // custom
+  colorBlindSet8 = 'Color-Blind Set [8]', // custom
 }
