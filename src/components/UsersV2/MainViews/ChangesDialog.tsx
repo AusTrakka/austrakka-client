@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { CheckCircle, RemoveCircle, Save } from '@mui/icons-material';
 import { PendingChange } from '../../../types/userDetailEdit.interface';
-import { groupChangesByType } from '../../../utilities/privilegeUtils';
+import { groupPendingChangesByType } from '../../../utilities/privilegeUtils';
 
 interface ChangesDialogProps {
   open: boolean;
@@ -26,7 +26,7 @@ export function ChangesDialog({
   pendingChanges,
   onConfirm,
 }: ChangesDialogProps) {
-  const groupedChanges = groupChangesByType(pendingChanges);
+  const groupedChanges = groupPendingChangesByType(pendingChanges);
 
   return (
     <Dialog

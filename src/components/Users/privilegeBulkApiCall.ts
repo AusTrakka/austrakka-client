@@ -30,8 +30,8 @@ export async function processPrivilegeChanges(
   defaultTenantGlobalId: string,
   userGlobalId: string,
   token: string,
-): Promise<PendingChange[]> {
-  const failedChanges: PendingChange[] = [];
+): Promise<[ string | null, PendingChange][]> {
+  const failedChanges: [string | null, PendingChange][] = [];
 
   const processChange = async (change: PendingChange) => {
     try {
@@ -47,7 +47,7 @@ export async function processPrivilegeChanges(
           token,
         );
         if (response.status !== ResponseType.Success) {
-          failedChanges.push(change);
+          failedChanges.push([response.message, change]);
         }
       } else if (change.type === 'DELETE' && deleteApiMap[change.recordType]) {
         const response = await deleteApiMap[change.recordType](
@@ -57,22 +57,17 @@ export async function processPrivilegeChanges(
           token,
         );
         if (response.status !== ResponseType.Success) {
-          failedChanges.push(change);
+          failedChanges.push([response.message, change]);
         }
       } else {
-        // Maybe these errors can be stored and shown in the Dialog instead of just telling the user
-        // what went wrong? Maybe the 'why' is useful?
-        // eslint-disable-next-line no-console
-        console.error(`Unsupported change type: ${change.type} for record type: ${change.recordType}`);
-        failedChanges.push(change);
+        const errorMessage = `Unsupported change type: ${change.type} for record type: ${change.recordType}`;
+        console.error(errorMessage); // eslint-disable-line no-console
+        failedChanges.push([errorMessage, change]);
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `Failed to process ${change.recordType} privilege for ${change.payload.recordName}:`,
-        error,
-      );
-      failedChanges.push(change);
+      const errorMessage = `Failed to process ${change.recordType} privilege for ${change.payload.recordName}: ${error}`;
+      console.error(errorMessage); // eslint-disable-line no-console
+      failedChanges.push([errorMessage, change]);
     }
   };
 

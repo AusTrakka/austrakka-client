@@ -4,16 +4,31 @@ import {
   RecordRole,
 } from '../types/dtos';
 
-export const groupChangesByType = (changes: PendingChange[]) => changes.reduce((acc, change) => {
-  const { type } = change;
-  const { recordType } = change;
+export const groupPendingChangesByType = (changes: PendingChange[]) =>
+  changes.reduce((acc, change) => {
+    const { type } = change;
+    const { recordType } = change;
 
-  if (!acc[type]) acc[type] = {};
-  if (!acc[type][recordType]) acc[type][recordType] = [];
+    if (!acc[type]) acc[type] = {};
+    if (!acc[type][recordType]) acc[type][recordType] = [];
 
-  acc[type][recordType].push(change);
-  return acc;
-}, {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>);
+    acc[type][recordType].push(change);
+    return acc;
+  }, {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>);
+
+export const groupFailedChangesByType = (changes: [string | null, PendingChange][]) =>
+  changes.reduce((acc, [errorMessage, change]) => {
+    const { type } = change;
+    const { recordType } = change;
+
+    // Initialize the nested structure if it doesn't exist
+    if (!acc[type]) acc[type] = {};
+    if (!acc[type][recordType]) acc[type][recordType] = [];
+
+    // Push the tuple [errorMessage, change] into the appropriate group
+    acc[type][recordType].push([errorMessage ?? 'System Error', change]);
+    return acc;
+  }, {} as Record<'POST' | 'DELETE', Record<string, [string, PendingChange][]>>);
 
 export const filterAssignedRoles = (
   recordType: string,

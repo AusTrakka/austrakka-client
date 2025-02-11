@@ -1,7 +1,7 @@
 import { PendingChange } from '../../../src/types/userDetailEdit.interface';
-import { groupChangesByType } from '../../../src/utilities/privilegeUtils';
+import { groupPendingChangesByType } from '../../../src/utilities/privilegeUtils';
 
-describe('groupChangesByType', () => {
+describe('groupPendingChangesByType', () => {
   test('should group changes by type and recordType', () => {
     const changes: PendingChange[] = [
       {
@@ -42,7 +42,7 @@ describe('groupChangesByType', () => {
       },
     ];
 
-    const result = groupChangesByType(changes);
+    const result = groupPendingChangesByType(changes);
 
     expect(result).toEqual({
       POST: {
@@ -96,7 +96,7 @@ describe('groupChangesByType', () => {
 
   test('should handle empty changes array', () => {
     const changes: PendingChange[] = [];
-    const result = groupChangesByType(changes);
+    const result = groupPendingChangesByType(changes);
 
     expect(result).toEqual({});
   });
@@ -123,7 +123,7 @@ describe('groupChangesByType', () => {
       },
     ];
 
-    const result = groupChangesByType(changes);
+    const result = groupPendingChangesByType(changes);
 
     expect(result).toEqual({
       POST: {
@@ -173,7 +173,7 @@ describe('groupChangesByType', () => {
       },
     ];
 
-    const result = groupChangesByType(changes);
+    const result = groupPendingChangesByType(changes);
 
     expect(result).toEqual({
       POST: {

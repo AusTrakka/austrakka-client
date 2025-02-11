@@ -57,7 +57,7 @@ function UserV2DetailOverview() {
   const [openDupSnackbar, setOpenDupSnackbar] = useState(false);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
-  const [failedChanges, setFailedChanges] = useState<PendingChange[]>([]);
+  const [failedChanges, setFailedChanges] = useState<[string | null, PendingChange][]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
   const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
