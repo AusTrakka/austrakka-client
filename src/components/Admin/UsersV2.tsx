@@ -128,7 +128,6 @@ function UsersV2() {
     </div>
   );
 
-  // need a ternary that opens a alert if the user is not allow here
   return (
     !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
       <Alert severity="error">
