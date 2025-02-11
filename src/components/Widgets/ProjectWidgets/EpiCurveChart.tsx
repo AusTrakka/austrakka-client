@@ -4,6 +4,7 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { ScaleOrdinal } from 'd3';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -13,17 +14,21 @@ import ProjectWidgetProps from '../../../types/projectwidget.props';
 import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { schemeJurisdiction } from '../../../constants/schemes';
+import { schemeJurisdiction, discreteColorSchemes } from '../../../constants/schemes';
 import { legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 
 // Widget displaying a basic Epi Curve
 // Requires Date_coll for x-axis
-// Colour by Jurisdiction if field present, or State if field present; otherwise dark green
+// Colour by Jurisdiction, State, or Owner_group if a field present; otherwise dark green
 
 const TIME_AXIS_FIELD = 'Date_coll';
 const JURISDICTION_FIELD = 'Jurisdiction';
 const STATE_FIELD = 'State';
+const OWNER_FIELD = 'Owner_group';
+// Jurisdiction and state use the jurisdictional colour scheme, but owner organisations may 
+// have multiple orgs per jurisdiction, so use a different scheme
+const OWNER_COLOUR_SCHEME = 'set3';
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
@@ -62,7 +67,7 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
   };
   
   useEffect(() => {
-    const setJurisdictionalColourFromField = (field: string) => {
+    const setColourSpecFromField = (field: string, colourScheme: ScaleOrdinal<string, string>) => {
       // Works if field is configured with ANZ Jurisdiction or ISO State values 
       const values: string[] = data!.fieldUniqueValues![field]!;
       const colSpec = {
@@ -70,7 +75,8 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
         field: field,
         scale: {
           domain: values,
-          range: values.map((val) => (val ? schemeJurisdiction(val) : NULL_COLOUR)),
+          // NB val ? assumes these values are strings, and therefore falsy values are null or empty
+          range: values.map((val) => (val ? colourScheme(val) : NULL_COLOUR)),
         },
         legend: legendSpec,
       };
@@ -81,9 +87,11 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
       return;
     }
     if (data.fields.map(fld => fld.columnName).includes(JURISDICTION_FIELD)) {
-      setJurisdictionalColourFromField(JURISDICTION_FIELD);
+      setColourSpecFromField(JURISDICTION_FIELD, schemeJurisdiction);
     } else if (data.fields.map(fld => fld.columnName).includes(STATE_FIELD)) {
-      setJurisdictionalColourFromField(STATE_FIELD);
+      setColourSpecFromField(STATE_FIELD, schemeJurisdiction);
+    } else if (data.fields.map(fld => fld.columnName).includes(OWNER_FIELD)) {
+      setColourSpecFromField(OWNER_FIELD, discreteColorSchemes[OWNER_COLOUR_SCHEME]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);

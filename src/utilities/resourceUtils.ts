@@ -157,7 +157,6 @@ export const patchUserOrganisationV2 = (
 );
 
 // Tenant
-
 export const getFieldsV2 = (
   tenantGlobalId: string,
   token: string,

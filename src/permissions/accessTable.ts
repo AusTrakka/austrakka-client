@@ -46,6 +46,7 @@ export function hasPermission(
 
 export function hasPermissionV2(
   user: UserSliceState,
+  defaultTenantGlobalId: string,
   recordId: string,
   scope: string,
 ): boolean {
@@ -55,5 +56,9 @@ export function hasPermissionV2(
     return true;
   }
   
-  return hasScopeInRecord(user.scopes, recordId, scope, user.defaultTenantName);
+  if (!user.scopes || user.scopes.length === 0) {
+    return false;
+  }
+  
+  return hasScopeInRecord(user.scopes, recordId, scope, defaultTenantGlobalId);
 }
