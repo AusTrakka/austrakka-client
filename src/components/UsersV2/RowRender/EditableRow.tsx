@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
-  Autocomplete,
   IconButton,
   Switch,
   TableCell,
@@ -25,8 +24,6 @@ interface EditableRowProps {
   editedValues: UserV2 | null;
   setEditedValues: Dispatch<SetStateAction<UserV2 | null>>;
   readableNames: Record<string, string>;
-  allOrgs: any[];
-  setOrgChanged: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function EditableRow(props : EditableRowProps) {
@@ -36,8 +33,6 @@ function EditableRow(props : EditableRowProps) {
     editedValues,
     setEditedValues,
     readableNames,
-    allOrgs,
-    setOrgChanged,
   } = props;
   const [copied, setCopied] = useState(false);
 
@@ -110,59 +105,6 @@ function EditableRow(props : EditableRowProps) {
                     return detailValue;
                 }
               })()}
-            </TableCell>
-          </TableRow>
-        );
-      }
-      if (field === 'orgName') {
-        return (
-          <TableRow key={field}>
-            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
-            <TableCell className="value-cell-editing">
-              <Autocomplete
-                options={allOrgs.map((org) => org.name)}
-                disableClearable
-                getOptionLabel={(option) => option.name ?? option}
-                value={editedValues?.orgName || null}
-                onChange={(event, newValue) => {
-                  setOrgChanged(true);
-                  setEditedValues((prevValues) => {
-                    if (prevValues === null) return null;
-                    return {
-                      ...prevValues,
-                      [field]: newValue,
-                      'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation ||
-                          prevValues.orgAbbrev,
-                      'orgGlobalId': allOrgs.find((org) => org.name === newValue)?.globalId ||
-                          prevValues.orgGlobalId,
-                    };
-                  });
-                }}
-                renderOption={(_props, option) => (
-                  <li {..._props} style={{ fontSize: '0.8em' }}>
-                    {option}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    fullWidth
-                    hiddenLabel
-                    variant="filled"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
-                    }}
-                    style={{ padding: '0px' }}
-                  />
-                )}
-              />
             </TableCell>
           </TableRow>
         );

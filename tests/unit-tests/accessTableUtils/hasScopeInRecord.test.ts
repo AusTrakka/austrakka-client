@@ -8,8 +8,11 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:users', 'write:users'],
           }],
         }],
@@ -24,13 +27,18 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [
             {
-              role: 'Viewer',
+              roleName: 'Viewer',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             },
             {
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             },
           ],
@@ -46,8 +54,11 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:basic'],
           }],
         }],
@@ -64,8 +75,11 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: ['read:users'],
           }],
         }],
@@ -87,6 +101,7 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [],
         }],
       }];
@@ -103,15 +118,21 @@ describe('hasScopeInRecord', () => {
         recordRoles: [
           {
             recordName: 'tenant-456',
+            recordGlobalId: 'record-id-1',
             roles: [{
-              role: 'User',
+              roleName: 'User',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
           },
           {
             recordName: 'tenant-123',
+            recordGlobalId: 'record-id-2',
             roles: [{
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
           },
@@ -125,11 +146,14 @@ describe('hasScopeInRecord', () => {
     test('return true when record exists in one of multiple groups', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Organization',
+          recordType: 'Organisation',
           recordRoles: [{
             recordName: 'org-123',
+            recordGlobalId: 'record-id-1',
             roles: [{
-              role: 'User',
+              roleName: 'User',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
           }],
@@ -138,8 +162,11 @@ describe('hasScopeInRecord', () => {
           recordType: 'Tenant',
           recordRoles: [{
             recordName: 'tenant-123',
+            recordGlobalId: 'record-id-2',
             roles: [{
-              role: 'Admin',
+              roleName: 'Admin',
+              privilegeLevel: 0,
+              privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
           }],
@@ -155,8 +182,11 @@ describe('hasScopeInRecord', () => {
         recordType: 'Tenant',
         recordRoles: [{
           recordName: 'tenant-123',
+          recordGlobalId: 'record-id-1',
           roles: [{
-            role: 'User',
+            roleName: 'User',
+            privilegeLevel: 0,
+            privilegeGlobalId: 'global-id-1',
             scopes: [],
           }],
         }],

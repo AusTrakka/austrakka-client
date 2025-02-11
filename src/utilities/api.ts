@@ -201,6 +201,27 @@ export async function callPOSTForm(url: string, formData: FormData, token: strin
   });
 }
 
+export async function callDELETE(url: string, token: string, body?: any):
+Promise<ResponseObject> {
+  // Check if token is null/undefined before making API call
+  if (!token) {
+    return noToken;
+  }
+
+  if (!body) {
+    return callApi(url, {
+      method: 'DELETE',
+      headers: getHeaders(token),
+    });
+  }
+
+  return callApi(url, {
+    method: 'DELETE',
+    body: JSON.stringify(body),
+    headers: getHeadersPatch(token),
+  });
+}
+
 export async function downloadFile(url: string, token: string) {
   if (!token) {
     throw new Error('Authentication error: Unable to retrieve access token.');
