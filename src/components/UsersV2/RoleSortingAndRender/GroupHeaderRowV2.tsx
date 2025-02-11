@@ -1,174 +1,226 @@
 /* eslint-disable react/jsx-props-no-spreading */
-
-// TODO: come back to this, as this page cannot be accessed at the moment
-// This is the V2 version of adding roles to a record/group
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TableRow,
   TableCell,
   IconButton,
   Typography,
   Stack,
-  Autocomplete,
-  Checkbox, TextField,
+  Alert,
 } from '@mui/material';
 import {
   AddCircle,
-  CheckBox,
-  CheckBoxOutlineBlank,
   KeyboardArrowDown,
   KeyboardArrowRight,
 } from '@mui/icons-material';
+import { selectTenantState, TenantSliceState } from '../../../app/tenantSlice';
+import { useAppSelector } from '../../../app/store';
+import { getOrganisations } from '../../../utilities/resourceUtils';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
+import './autocompleteStyleOverride.css';
+import { RolesV2 } from '../../../types/dtos';
+import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { RecordAutocomplete } from './RecordAutocomplete';
+import { RoleAutocomplete } from './RoleAutocomplete';
 
 interface GroupHeaderRowProps {
   recordType: string;
   openGroupRoles: string[];
   handleGroupRoleToggle: (groupName: string) => void;
   editing: boolean;
+  rolesErrorMessage: string | null;
+  roles: RolesV2[];
+  empty: boolean;
+  onSelectionChange: (
+    recordType: string,
+    assignments: RoleAssignments[],
+  ) => void;
 }
 
 function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const {
     recordType,
+    empty,
     openGroupRoles,
     handleGroupRoleToggle,
     editing,
+    roles,
+    rolesErrorMessage,
+    onSelectionChange,
   } = props;
-  const [selectedResources, setSelectedResources] = useState<any[] | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<any[] | null>(null);
   
-  // need to fetch roles for said resource type
-  // will use temp list for now
-  const dummyRoles = [
-    { name: 'AustTrakkaAdmin', roleId: '1' },
-    { name: 'AustTrakkaProcess', roleId: '2' },
-    { name: 'AustTrakkaUser', roleId: '3' },
-  ];
-  
-  // then I will need fetch the resources under a resource type
-  const dummyResources = [
-    { name: 'tenant1', resourceId: '1' },
-    { name: 'tenant2', resourceId: '2' },
-    { name: 'tenant3', resourceId: '3' },
-  ];
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
+  const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
+  const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
+  const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
+  const [recordFetchError, setRecordFetchError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
-  const isAddButtonEnabled = selectedResources !== null && selectedRoles !== null;
+  const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
+
+  useEffect(() => {
+    async function fetchRecords() {
+      try {
+        let response: ResponseObject | null = null;
+        switch (recordType) {
+          case 'Organisation':
+            response = await getOrganisations(false, token);
+            break;
+          default:
+            // Will need to add more calls once endpoints have been added
+            // I think project is technically there but I dont think roles can be added for it.
+            // for the cli
+            return;
+        }
+
+        if (response.status !== ResponseType.Success) {
+          setRecordFetchError(response.message);
+          return;
+        }
+        
+        const rolesV2: any[] = response.data;
+
+        setRecords(rolesV2.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+          .map((item: any) => ({
+            id: item.globalId,
+            abbrev: item.abbreviation,
+            name: item.name,
+          })));
+      } catch (error) {
+        setRecordFetchError('An error occurred while fetching records.');
+      }
+    }
+
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+      if (recordType !== 'Tenant') {
+        fetchRecords();
+      } else {
+        setSelectedRecords([{
+          id: tenant.defaultTenantGlobalId,
+          abbrev: tenant.defaultTenantName,
+          name: tenant.defaultTenantName,
+        }]);
+        setRecords([{
+          id: tenant.defaultTenantGlobalId,
+          abbrev: tenant.defaultTenantName,
+          name: tenant.defaultTenantName,
+        }]);
+      }
+    }
+  }, [recordType, tenant, token, tokenLoading]);
+
+  useEffect(() => {
+    if (rolesErrorMessage || recordFetchError) {
+      setFetchError(rolesErrorMessage || recordFetchError);
+    }
+  }, [rolesErrorMessage, recordFetchError]);
+  
+  useEffect(() => {
+    if (!editing) {
+      if (recordType !== 'Tenant') {
+        setSelectedRoles(null);
+        setSelectedRecords(null);
+      } else {
+        setSelectedRoles(null);
+      }
+    }
+  }, [editing, recordType]);
+    
+  const handleAddPrivilege = () => {
+    if (selectedRecords && selectedRoles) {
+      const assignedRoles: RoleAssignments[] = [];
+
+      for (const record of selectedRecords) {
+        const existingAssignment =
+            assignedRoles.find((assignment) => assignment.record.id === record.id);
+
+        if (existingAssignment) {
+          existingAssignment.roles.push(...selectedRoles.filter(
+            (role) => !existingAssignment.roles.some((r) => r.globalId === role.globalId),
+          ));
+        } else {
+          assignedRoles.push({
+            record,
+            roles: [...selectedRoles],
+          });
+        }
+      }
+      onSelectionChange(recordType, assignedRoles);
+      setSelectedRoles(null);
+      if (recordType !== 'Tenant') {
+        setSelectedRecords(null);
+      }
+    }
+  };
 
   return (
-    <TableRow key={recordType} style={{ backgroundColor: 'var(--primary-grey)', borderRadius: '6px', border: 'none' }}>
-      <TableCell>
+    <TableRow
+      key={recordType}
+      style={{
+        backgroundColor: 'var(--primary-grey)',
+        borderRadius: '6px',
+        border: 'none',
+      }}
+    >
+      <TableCell width="250em">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
+            disabled={empty}
             aria-label="expand row"
             size="small"
             onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :
+            <KeyboardArrowRight />}
           </IconButton>
           <Typography variant="body2">{recordType}</Typography>
         </div>
       </TableCell>
       <TableCell>
-        <Stack direction="row" spacing={1}>
-          {editing ? (
-            <>
-              <Autocomplete
-                options={dummyResources}
-                multiple
-                limitTags={1}
-                style={{ width: '19em' }}
-                value={selectedResources || []}
-                disableCloseOnSelect
-                getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedResources(v)}
-                renderOption={(_props, option, { selected }) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
-                    <Checkbox
-                      style={{ marginRight: '8px' }}
-                      checked={selected}
-                      icon={<CheckBoxOutlineBlank />}
-                      checkedIcon={<CheckBox />}
-                    />
-                    {option.name}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    hiddenLabel
-                    placeholder="Select Group"
-                    variant="filled"
-                    size="small"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
-                    }}
+        { fetchError && editing ? (
+          <Alert severity="error" variant="standard">
+            {rolesErrorMessage}
+          </Alert>
+        ) :
+          (
+            <Stack direction="row" spacing={1}>
+              {editing && records ? (
+                <>
+                  <RecordAutocomplete
+                    records={records}
+                    selectedRecords={selectedRecords}
+                    setSelectedRecords={setSelectedRecords}
+                    recordType={recordType}
                   />
-                )}
-              />
-              <Autocomplete
-                options={dummyRoles}
-                multiple
-                limitTags={1}
-                style={{ width: '19em' }}
-                value={selectedRoles || []}
-                disableCloseOnSelect
-                getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedRoles(v)}
-                renderOption={(_props, option, { selected }) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
-                    <Checkbox
-                      style={{ marginRight: '8px' }}
-                      checked={selected}
-                      icon={<CheckBoxOutlineBlank />}
-                      checkedIcon={<CheckBox />}
-                    />
-                    {option.name}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    hiddenLabel
-                    variant="filled"
-                    placeholder="Select Role"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
-                    }}
+                  <RoleAutocomplete
+                    roles={roles}
+                    selectedRoles={selectedRoles}
+                    setSelectedRoles={setSelectedRoles}
                   />
-                )}
-              />
-              <div style={{ display: 'flex' }}>
-                <IconButton
-                  aria-label="add"
-                  size="small"
-                  color={isAddButtonEnabled ? 'success' : 'default'}
-                  onClick={() => {
-                    /* handleAddGroupRole();
-                    if (!openGroupRoles.includes(groupType)) {
-                      handleGroupRoleToggle(groupType);
-                    } */
-                  }}
-                  disabled={!isAddButtonEnabled}
-                >
-                  <AddCircle />
-                </IconButton>
-              </div>
-            </>
-          ) : null}
-        </Stack>
+                  <div style={{ display: 'flex' }}>
+                    <IconButton
+                      aria-label="add"
+                      size="small"
+                      color={isAddButtonEnabled ? 'success' : 'default'}
+                      onClick={() => {
+                        handleAddPrivilege();
+                        if (!openGroupRoles.includes(recordType)) {
+                          handleGroupRoleToggle(recordType);
+                        }
+                      }}
+                      disabled={!isAddButtonEnabled}
+                    >
+                      <AddCircle />
+                    </IconButton>
+                  </div>
+                </>
+              ) : null}
+            </Stack>
+          )}
       </TableCell>
     </TableRow>
   );

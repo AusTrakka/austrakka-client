@@ -1,6 +1,7 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
+  globalId: string,
   abbreviation: string,
   name: string,
   description: string,
@@ -125,14 +126,9 @@ export interface GroupedPrivilegesByRecordTypeWithScopes {
 
 export interface PrivilegeWithRolesWithScopes {
   recordName: string,
-  roles: RoleWithScopes[],
+  recordGlobalId: string,
+  roles: RecordRoleWithScopes[],
 }
-
-export interface RoleWithScopes {
-  role: string,
-  scopes: string[],
-}
-
 export interface GroupedPrivilegesByRecordType {
   recordType: string,
   recordRoles: PrivilegeWithRoles[],
@@ -140,7 +136,21 @@ export interface GroupedPrivilegesByRecordType {
 
 export interface PrivilegeWithRoles {
   recordName: string,
-  roleNames: string[],
+  recordGlobalId: string,
+  roles: RecordRole[],
+}
+
+export interface RecordRole {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId?: string,
+}
+
+export interface RecordRoleWithScopes {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId: string,
+  scopes: string[],
 }
 
 export interface UserList {
@@ -323,6 +333,19 @@ export interface Role {
   description: string,
 }
 
+export interface RolesV2 {
+  name: string,
+  globalId: string,
+  allowedRootResourceTypes: AllowedResourceTypes[]
+  privilegeLevel: number,
+}
+
+export interface AllowedResourceTypes {
+  globalId: string
+  name: string,
+  isAggregateRoot: boolean,
+}
+
 export interface FeedbackPost {
   title: string,
   description: string,
@@ -351,4 +374,10 @@ export interface UserPatchV2 {
   displayName: string,
   contactEmail: string,
   analysisServerUsername: string,
+}
+
+export interface UserRoleRecordPrivilegePost {
+  owningTenantGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
 }
