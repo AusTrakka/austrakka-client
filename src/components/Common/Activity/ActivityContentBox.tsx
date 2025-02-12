@@ -9,10 +9,17 @@ interface ContentBoxProps {
     marginTop?: string,
 }
 
+interface SummarySection {
+    Title: string,
+    Description: string,
+    Values: string[] | null,
+    DynamicProperties: any | null
+}
+
 interface GenericDetails {
-    EventStartDate: string,
-    RecentEventDate: string,
-    ResourceIds: string[],
+    InitialEventDateTime: string,
+    RecentEventDateTime: string,
+    Sections: SummarySection[] | null,
 }
 
 const fieldOrder : string[] = ['Operation name', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
@@ -46,18 +53,32 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                     <ul style={styles.ul}>
                         <li style={styles.li}>
                                 <DetailedText text="Event start date" isSubHeading={true} />
-                                <DetailedText text={formatDate(genericDetails!.EventStartDate)} />
+                                <DetailedText text={formatDate(genericDetails!.InitialEventDateTime)} />
                         </li>
                         <li style={styles.li}>
                                 <DetailedText text="Recent event date" isSubHeading={true}/>
-                                <DetailedText text={formatDate(genericDetails!.RecentEventDate)} />
+                                <DetailedText text={formatDate(genericDetails!.RecentEventDateTime)} />
                         </li>
-                        <li style={styles.li}>
-                                <DetailedText text="ResourceIds" isSubHeading={true}/>
-                            {genericDetails!.ResourceIds.map((id: string, index: number) => (
-                                    <DetailedText key={id} text={id}/>
-                            ))}
-                        </li>
+                        {
+                            genericDetails?.Sections?.map(
+                                (section: SummarySection, index: number) => (
+                                    <li key={index} style={styles.li}>
+                                        <DetailedText text={section.Title} isSubHeading={true}/>
+                                        <DetailedText text={section.Description}/>
+                                        <span />
+                                        {section?.Values && section.Values.map((value: string, index: number) => (
+                                            <DetailedText key={index} text={value}/>
+                                        ))}
+                                        {section?.DynamicProperties && Object.keys(section.DynamicProperties).map(
+                                            (key: string, index: number) => (
+                                                <DetailedText
+                                                    key={key + index.toString()}
+                                                    text={`${key}: ${section.DynamicProperties[key]}`}
+                                                />
+                                            ))}
+                                    </li>
+                                ))
+                        }
                     </ul>
                 </td>
             </tr>

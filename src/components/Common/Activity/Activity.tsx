@@ -148,16 +148,16 @@ const Activity: FC<ActivityProps> = (props) => {
         const nodesByKey: { [key: string]: RefinedLog } = {};
         const rootNodes: RefinedLog[] = [];
 
-        data.forEach((item) => {
-            if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
-        });
-
         const addChildren = (node: RefinedLog, parentLevel: number): void => {
             node.level = parentLevel; // Set the level of the current node
             node.children?.forEach((child) => {
                 addChildren(child, parentLevel + 1); // Recursively assign level to children
             });
         };
+        
+        data.forEach((item) => {
+            if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
+        });
 
         data.forEach((item) => {
             if (item.aggregationMemberKey) {
@@ -188,6 +188,7 @@ const Activity: FC<ActivityProps> = (props) => {
         if(firstChildIdx === -1) {
             // Add
             const rowIdx = localLogs.indexOf(row);
+            // Insert row.children at position rowIdx + 1
             clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
         }
         else {
@@ -312,7 +313,6 @@ const Activity: FC<ActivityProps> = (props) => {
                                         fontSize: '14px',
                                         verticalAlign: 'middle'
                                     }}/>
-                                    {/*{col.body ? col.body(rowData) : rowData[col.field]}*/}
                                     {rowData[OPERATION_NAME_COLUMN]}
                                 </span>
                             }
