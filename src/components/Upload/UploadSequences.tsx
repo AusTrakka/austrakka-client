@@ -9,6 +9,11 @@ enum SeqType {
     FastqOnt = 'fastq-ont',
 }
 
+enum SkipForce {
+    Skip = 'skip',
+    Force = 'force',
+}
+
 function UploadSequences() {
   useEffect(() => {
   }, []);
@@ -22,6 +27,15 @@ function UploadSequences() {
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType
     setSelectedSeqType(seqType);
+  };
+  const [skipForceValues, setSkipForceValues] = useState<SkipForce[]>([
+    SkipForce.Skip,
+    SkipForce.Force,
+  ])
+  const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.Skip);
+  const handleSelectSkipForce = (skipForceStr: string) => {
+    const skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce
+    setSelectedSkipForce(skipForce);
   };
 
   return (
@@ -48,6 +62,30 @@ function UploadSequences() {
               key={seqType}
             >
               {`${seqType}`}
+            </MenuItem>
+          )) }
+        </Select>
+      </FormControl>
+      <FormControl
+        size="small"
+        sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+        variant="standard"
+      >
+        <InputLabel id="skip-force-simple-select-label">Skip / Force</InputLabel>
+        <Select
+          labelId="skip-force-simple-select-label"
+          id="skip-force-simple-select-label"
+          label="Skip / Force"
+          name="skip-force"
+          value={selectedSkipForce}
+          onChange={(e) => handleSelectSkipForce(e.target.value)}
+        >
+          { skipForceValues.map((skipForce: SkipForce) => (
+            <MenuItem
+              value={skipForce}
+              key={skipForce}
+            >
+              {`${skipForce}`}
             </MenuItem>
           )) }
         </Select>
