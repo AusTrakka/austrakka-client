@@ -1,7 +1,24 @@
-import React, { Box, Typography, FormControl, InputLabel, Select, MenuItem, LinearProgress } from '@mui/material';
+import React, {
+  Box,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  Button,
+  TextField
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import LoadingState from '../../constants/loadingState';
 import {getEnumByValue} from '../../utilities/enumUtils';
+import FileDragDrop2 from "./FileDragDrop2";
+import {DropFileUpload} from "../../types/DropFileUpload";
+import {ResponseObject} from "../../types/responseObject.interface";
+import {uploadFastqSequence} from "../../utilities/resourceUtils";
+import {ResponseType} from "../../constants/responseType";
+import {ResponseMessage} from "../../types/apiResponse.interface";
+import {useApi} from "../../app/ApiContext";
 
 enum SeqType {
     FastqIllPe = 'fastq-ill-pe',
@@ -11,12 +28,38 @@ enum SeqType {
 
 enum SkipForce {
     Skip = 'skip',
-    Force = 'force',
+    Force = 'overwrite',
+}
+
+const validFormats = {
+  ".fq": "",
+  ".fastq": "",
+  ".fq.gz": "",
+  ".fastq.gz": "",
 }
 
 function UploadSequences() {
   useEffect(() => {
   }, []);
+  const [files, setFiles] = useState<DropFileUpload[]>([]);
+  // The actual upload object should be managed in the state
+  const [read1, setRead1] = useState<DropFileUpload>();
+  const [read2, setRead2] = useState<DropFileUpload>();
+  const [seqId, setSeqId] = useState<string | undefined>();
+  const handleSelectRead1 = (read1File: string) => {
+    const file = files.filter(f => f.file.name == read1File)[0];
+    setRead1(file)
+  };
+  const handleSelectRead2 = (read2File: string) => {
+    const file = files.filter(f => f.file.name == read2File)[0];
+    setRead2(file)
+  };
+  const [seqSubmission, setSeqSubmission] = useState({
+    status: LoadingState.IDLE,
+    messages: [] as ResponseMessage[] | undefined,
+  });
+  const { token, tokenLoading } = useApi();
+
 
   const [sequenceTypes, setSequenceTypes] = useState<SeqType[]>([
     SeqType.FastqIllPe,
@@ -36,6 +79,48 @@ function UploadSequences() {
   const handleSelectSkipForce = (skipForceStr: string) => {
     const skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce
     setSelectedSkipForce(skipForce);
+  };
+  
+  const handleSubmit = async () => {
+    if (!read1 || !read2) {
+      // TODO: need an error message here
+      return
+    }
+    console.log("submitting")
+    setSeqSubmission({
+      ...seqSubmission,
+      status: LoadingState.LOADING,
+    });
+    const optionString = ``;
+    const formData = new FormData();
+    formData.append('file', read1.file);
+    formData.append('file', read2.file);
+    
+    const headers = {
+      'mode': selectedSkipForce,
+      'seq-type': selectedSeqType,
+      'seq-id': seqId,
+      'filename1': read1.file.name,
+      'filename1-hash': read1.hash,
+      'filename2': read2.file.name,
+      'filename2-hash': read2.hash,
+    }
+
+    const sequenceResponse: ResponseObject = await uploadFastqSequence(formData, optionString, token, headers);
+
+    if (sequenceResponse.status === ResponseType.Success) {
+      setSeqSubmission({
+        ...seqSubmission,
+        status: LoadingState.SUCCESS,
+        messages: sequenceResponse.messages,
+      });
+    } else {
+      setSeqSubmission({
+        ...seqSubmission,
+        status: LoadingState.ERROR,
+        messages: sequenceResponse.messages,
+      });
+    }
   };
 
   return (
@@ -90,6 +175,83 @@ function UploadSequences() {
           )) }
         </Select>
       </FormControl>
+      <Typography variant="h4" color="primary">Select sequence files</Typography>
+      <Stack direction="row" spacing={2}>
+        <FileDragDrop2 
+          files={files} 
+          setFiles={setFiles} 
+          validFormats={validFormats} 
+          multiple={true} 
+          maxFiles={2}
+        />
+        {files.length === 0 ? (<></>) : (
+          <>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+              variant="standard"
+            >
+              <TextField
+                label="Seq ID"
+                id="seqid-simple-select-label"
+                name="seqid"
+                variant="standard"
+                value={seqId}
+                onChange={e => setSeqId(e.target.value)}
+              />
+            </FormControl>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+              variant="standard"
+            >
+              <InputLabel id="read1-simple-select-label">Read 1</InputLabel>
+              <Select
+                labelId="read1-simple-select-label"
+                id="read1-simple-select-label"
+                label="Read 1"
+                name="read1"
+                value={read1?.file.name}
+                onChange={(e) => handleSelectRead1(e.target.value)}
+              >
+                { files.map((file: DropFileUpload) => (
+                  <MenuItem
+                    value={file.file.name}
+                    key={file.file.name}
+                  >
+                    {`${file.file.name}`}
+                  </MenuItem>
+                )) }
+              </Select>
+            </FormControl>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+              variant="standard"
+            >
+              <InputLabel id="read2-simple-select-label">Read 2</InputLabel>
+              <Select
+                labelId="read2-simple-select-label"
+                id="read2-simple-select-label"
+                label="Read 2"
+                name="read2"
+                value={read2?.file.name}
+                onChange={(e) => handleSelectRead2(e.target.value)}
+              >
+                { files.map((file: DropFileUpload) => (
+                  <MenuItem
+                    value={file.file.name}
+                    key={file.file.name}
+                  >
+                    {`${file.file.name}`}
+                  </MenuItem>
+                )) }
+              </Select>
+            </FormControl>
+          </>
+          )}
+      </Stack>
+      <Button onClick={handleSubmit}>Upload</Button>
     </Box>
   );
 }
