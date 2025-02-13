@@ -20,6 +20,12 @@ import {ResponseType} from "../../constants/responseType";
 import {ResponseMessage} from "../../types/apiResponse.interface";
 import {useApi} from "../../app/ApiContext";
 
+interface SeqUploadRow {
+  seqId: string | undefined
+  read1: DropFileUpload | undefined
+  read2: DropFileUpload | undefined
+}
+
 enum SeqType {
     FastqIllPe = 'fastq-ill-pe',
     FastqIllSe = 'fastq-ill-se',
@@ -42,17 +48,31 @@ function UploadSequences() {
   useEffect(() => {
   }, []);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  // The actual upload object should be managed in the state
-  const [read1, setRead1] = useState<DropFileUpload>();
-  const [read2, setRead2] = useState<DropFileUpload>();
-  const [seqId, setSeqId] = useState<string | undefined>();
+  const [seqUploadRow, setSeqUploadRow] = useState<SeqUploadRow>();
+  
+  const handleSeqId = (seqId: string) => {
+    setSeqUploadRow({
+      seqId: seqId,
+      read1: seqUploadRow?.read1,
+      read2: seqUploadRow?.read2,
+    })
+  }
+  
   const handleSelectRead1 = (read1File: string) => {
     const file = files.filter(f => f.file.name == read1File)[0];
-    setRead1(file)
+    setSeqUploadRow({
+      seqId: seqUploadRow?.seqId,
+      read1: file,
+      read2: seqUploadRow?.read2,
+    })
   };
   const handleSelectRead2 = (read2File: string) => {
     const file = files.filter(f => f.file.name == read2File)[0];
-    setRead2(file)
+    setSeqUploadRow({
+      seqId: seqUploadRow?.seqId,
+      read1: seqUploadRow?.read1,
+      read2: file,
+    })
   };
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
@@ -82,7 +102,10 @@ function UploadSequences() {
   };
   
   const handleSubmit = async () => {
-    if (!read1 || !read2) {
+    if (!seqUploadRow) {
+      return
+    }
+    if (!seqUploadRow.read1 || !seqUploadRow.read2) {
       // TODO: need an error message here
       return
     }
@@ -93,17 +116,17 @@ function UploadSequences() {
     });
     const optionString = ``;
     const formData = new FormData();
-    formData.append('file', read1.file);
-    formData.append('file', read2.file);
+    formData.append('file', seqUploadRow.read1.file);
+    formData.append('file', seqUploadRow.read2.file);
     
     const headers = {
       'mode': selectedSkipForce,
       'seq-type': selectedSeqType,
-      'seq-id': seqId,
-      'filename1': read1.file.name,
-      'filename1-hash': read1.hash,
-      'filename2': read2.file.name,
-      'filename2-hash': read2.hash,
+      'seq-id': seqUploadRow.seqId,
+      'filename1': seqUploadRow.read1.file.name,
+      'filename1-hash': seqUploadRow.read1.hash,
+      'filename2': seqUploadRow.read2.file.name,
+      'filename2-hash': seqUploadRow.read2.hash,
     }
 
     const sequenceResponse: ResponseObject = await uploadFastqSequence(formData, optionString, token, headers);
@@ -183,6 +206,8 @@ function UploadSequences() {
           validFormats={validFormats} 
           multiple={true} 
           maxFiles={2}
+          minFiles={2}
+          calculateHash={true}
         />
         {files.length === 0 ? (<></>) : (
           <>
@@ -196,8 +221,8 @@ function UploadSequences() {
                 id="seqid-simple-select-label"
                 name="seqid"
                 variant="standard"
-                value={seqId}
-                onChange={e => setSeqId(e.target.value)}
+                value={seqUploadRow?.seqId}
+                onChange={e => handleSeqId(e.target.value)}
               />
             </FormControl>
             <FormControl
@@ -211,7 +236,7 @@ function UploadSequences() {
                 id="read1-simple-select-label"
                 label="Read 1"
                 name="read1"
-                value={read1?.file.name}
+                value={seqUploadRow?.read1?.file.name}
                 onChange={(e) => handleSelectRead1(e.target.value)}
               >
                 { files.map((file: DropFileUpload) => (
@@ -235,7 +260,7 @@ function UploadSequences() {
                 id="read2-simple-select-label"
                 label="Read 2"
                 name="read2"
-                value={read2?.file.name}
+                value={seqUploadRow?.read2?.file.name}
                 onChange={(e) => handleSelectRead2(e.target.value)}
               >
                 { files.map((file: DropFileUpload) => (

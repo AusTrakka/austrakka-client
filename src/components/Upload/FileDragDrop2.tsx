@@ -11,23 +11,34 @@ interface FileDragDropProps {
   validFormats: object,
   multiple: boolean,
   maxFiles: number,
+  minFiles: number,
+  calculateHash: boolean,
 }
 
 // TODO: merge this with FileDragDrop if possible
 // @ts-ignore
 const FileDragDrop2: React.FC<FileDragDropProps> = (
-  {files, setFiles, validFormats, multiple = false, maxFiles = 0}
+  {files, setFiles, validFormats, multiple = false, maxFiles = 0, minFiles = 0, calculateHash = false}
 ) => {
+  // TODO: validate min and max files
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
   const maxFilesReached = (filesDropped: number): boolean => {
-    // This does not need to handle the case where multiple is false.
-    if (multiple && maxFiles == 0) {
+    // Singular file upload is handled by the UI already.
+    if (!multiple) {
       return false;
-    } else if (filesDropped > maxFiles) {
+    }
+    if (maxFiles === 0 && minFiles === 0) {
+      return false;
+    }
+    if (filesDropped > maxFiles) {
       return true;
     }
+    if (filesDropped < minFiles) {
+      return true;
+    }
+    
     return false;
   }
 
@@ -36,7 +47,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       return {
         file: file,
         isValid: !Object.values(validFormats).includes(file?.type),
-        hash: await generateHash(await file.text())
+        hash: calculateHash ? await generateHash(await file.text()) : ''
       } as DropFileUpload
     }))
     setFiles([...files, ...fileUploads]);
