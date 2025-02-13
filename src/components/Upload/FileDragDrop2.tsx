@@ -6,7 +6,7 @@ import {DropFileUpload} from "../../types/DropFileUpload";
 import {generateHash} from "../../utilities/file";
 
 export interface CustomUploadValidator {
-  func: CallableFunction,
+  func: (files: File[]) => boolean,
   message: string
 }
 

@@ -12,13 +12,14 @@ import React, {
 import { useEffect, useState } from 'react';
 import LoadingState from '../../constants/loadingState';
 import {getEnumByValue} from '../../utilities/enumUtils';
-import FileDragDrop2, {CustomUploadValidator} from "./FileDragDrop2";
+import FileDragDrop2 from "./FileDragDrop2";
 import {DropFileUpload} from "../../types/DropFileUpload";
 import {ResponseObject} from "../../types/responseObject.interface";
 import {uploadFastqSequence} from "../../utilities/resourceUtils";
 import {ResponseType} from "../../constants/responseType";
 import {ResponseMessage} from "../../types/apiResponse.interface";
 import {useApi} from "../../app/ApiContext";
+import {validateEvenNumberOfFiles} from "../../utilities/uploadUtils";
 
 interface SeqUploadRow {
   seqId: string | undefined
@@ -49,10 +50,6 @@ function UploadSequences() {
   }, []);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRow, setSeqUploadRow] = useState<SeqUploadRow>();
-  
-  const validateEvenNumberOfFiles = (files: File[]): boolean => {
-    return files.length % 2 === 0;
-  }
   
   const handleSeqId = (seqId: string) => {
     setSeqUploadRow({
@@ -220,10 +217,7 @@ function UploadSequences() {
           validFormats={validFormats} 
           multiple={true} 
           calculateHash={true}
-          customValidators={[{
-            func: validateEvenNumberOfFiles,
-            message: "Must upload an even number of files",
-          } as CustomUploadValidator]}
+          customValidators={[validateEvenNumberOfFiles]}
         />
         {files.length === 0 ? (<></>) : (
           <>
