@@ -9,8 +9,8 @@ import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCount';
 import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
-// TODO: Set a max card height and handle scroll voerflow
-function BasicDashboard(props: ProjectDashboardTemplateProps) {
+// TODO: Set a max card height and handle scroll overflow
+function DefaultDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
@@ -80,4 +80,4 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
     </Box>
   );
 }
-export default BasicDashboard;
+export default DefaultDashboard;
