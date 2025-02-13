@@ -219,8 +219,6 @@ function UploadSequences() {
           setFiles={setFiles} 
           validFormats={validFormats} 
           multiple={true} 
-          maxFiles={0}
-          minFiles={0}
           calculateHash={true}
           customValidators={[{
             func: validateEvenNumberOfFiles,
@@ -239,7 +237,7 @@ function UploadSequences() {
                 id="seqid-simple-select-label"
                 name="seqid"
                 variant="standard"
-                value={seqUploadRow?.seqId}
+                value={seqUploadRow?.seqId ?? ""}
                 onChange={e => handleSeqId(e.target.value)}
               />
             </FormControl>

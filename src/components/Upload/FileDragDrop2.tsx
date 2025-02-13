@@ -16,8 +16,6 @@ interface FileDragDropProps {
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
   validFormats: object,
   multiple: boolean,
-  maxFiles: number,
-  minFiles: number,
   calculateHash: boolean,
   customValidators: CustomUploadValidator[]
 }
@@ -30,13 +28,10 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     setFiles, 
     validFormats, 
     multiple = false, 
-    maxFiles = 0, 
-    minFiles = 0, 
     calculateHash = false,
     customValidators = []
   }
 ) => {
-  // TODO: validate min and max files
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   
@@ -49,24 +44,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       }
     }
     return isValid;
-  }
-
-  const maxFilesReached = (filesDropped: number): boolean => {
-    // Singular file upload is handled by the UI already.
-    if (!multiple) {
-      return false;
-    }
-    if (maxFiles === 0 && minFiles === 0) {
-      return false;
-    }
-    if (filesDropped > maxFiles) {
-      return true;
-    }
-    if (filesDropped < minFiles) {
-      return true;
-    }
-    
-    return false;
   }
 
   const handleFiles = async (uploadedFiles: File[]) => {
@@ -90,15 +67,15 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       setDragActive(false);
     }
   };
-  const handleDrop = (e: DragEvent) => {
+  const handleDrop = async (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (maxFilesReached(e.dataTransfer?.files?.length ?? 0)) {
-      console.log(`Only ${maxFiles} files accepted.`)
+    const uploadedFiles = Array.from(e.dataTransfer?.files ?? [])
+    if (!validateUpload(uploadedFiles)) {
       return
     }
-    handleFiles(Array.from(e.dataTransfer?.files ?? []))
+    await handleFiles(uploadedFiles)
   };
   const onBrowseClick = () => {
     fileInputRef.current?.click();
@@ -108,10 +85,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     e.preventDefault();
     const uploadedFiles = Array.from(e.target?.files ?? [])
     if (!validateUpload(uploadedFiles)) {
-      return
-    }
-    if (maxFilesReached(uploadedFiles.length ?? 0)) {
-      console.log(`Only ${maxFiles} files accepted.`)
       return
     }
     await handleFiles(uploadedFiles)
