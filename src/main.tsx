@@ -11,6 +11,7 @@ import { msalInstance } from './utilities/authUtils';
 import store from './app/store';
 import ApiProvider from './app/ApiContext';
 import { globalStyles } from './assets/themes/theme';
+import {SnackbarProvider} from "notistack";
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
@@ -21,7 +22,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <MsalProvider instance={msalInstance}>
           <ApiProvider>
             <GlobalStyles styles={globalStyles} />
-            <App />
+            <SnackbarProvider
+              autoHideDuration={5000}
+              anchorOrigin={{horizontal: "right", vertical: "bottom"}}
+              maxSnack={10}
+            >
+              <App />
+            </SnackbarProvider>
           </ApiProvider>
         </MsalProvider>
       </StyledEngineProvider>

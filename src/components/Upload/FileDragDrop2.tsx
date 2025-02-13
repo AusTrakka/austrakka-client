@@ -4,6 +4,7 @@ import {UploadFile} from '@mui/icons-material';
 import theme from '../../assets/themes/theme';
 import {DropFileUpload} from "../../types/DropFileUpload";
 import {generateHash} from "../../utilities/file";
+import {useSnackbar} from "notistack";
 
 export interface CustomUploadValidator {
   func: (files: File[]) => boolean,
@@ -20,8 +21,6 @@ interface FileDragDropProps {
   customValidators: CustomUploadValidator[]
 }
 
-// TODO: merge this with FileDragDrop if possible
-// @ts-ignore
 const FileDragDrop2: React.FC<FileDragDropProps> = (
   {
     files, 
@@ -32,6 +31,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     customValidators = []
   }
 ) => {
+  const { enqueueSnackbar } = useSnackbar()
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   
@@ -39,7 +39,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     let isValid = true;
     for (const validator of customValidators) {
       if (!validator.func(uploadedFiles)) {
-        console.error(validator.message)
+        enqueueSnackbar(validator.message, { variant: "error"})
         isValid = false;
       }
     }

@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useRef, useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Dialog,
@@ -8,9 +7,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Snackbar,
   TextField,
-  AlertColor,
   Stack,
   Divider,
 } from '@mui/material';
@@ -20,6 +17,7 @@ import { postFeedback } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
+import {useSnackbar} from "notistack";
 
 interface FeedbackProps {
   help: boolean;
@@ -28,6 +26,7 @@ interface FeedbackProps {
 }
 
 function Feedback(props: FeedbackProps) {
+  const { enqueueSnackbar } = useSnackbar()
   const {
     help,
     handleHelpClose,
@@ -42,16 +41,6 @@ function Feedback(props: FeedbackProps) {
   const [description, setDescription] = useState('');
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
-  const [toast, setToast] = useState<boolean>(false);
-  const handleToastClose = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      setToast(false);
-      return;
-    }
-    setToast(false);
-  };
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
@@ -62,18 +51,18 @@ function Feedback(props: FeedbackProps) {
       };
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
-        setFeedbackMessage(`Feedback received. Ticket number: ${feedbackResp.data?.id}`);
-        setToastSeverity('success');
+        enqueueSnackbar(
+          `Feedback received. Ticket number: ${feedbackResp.data?.id}`, 
+          { variant: "error"}
+        )
         setTitle('');
         setDescription('');
       } else {
-        setFeedbackMessage(feedbackResp.message);
-        setToastSeverity('error');
+        enqueueSnackbar(feedbackResp.message, { variant: "error"})
       }
       formValid.current.description = false;
       formValid.current.title = false;
       handleHelpClose({}, 'escapeKeyDown');
-      setToast(true);
     } else {
       if (!formValid.current.title) {
         setTitleError(true);
@@ -167,15 +156,6 @@ function Feedback(props: FeedbackProps) {
           </DialogActions>
         </Box>
       </Dialog>
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={toast}
-        autoHideDuration={10000}
-      >
-        <Alert onClose={handleToastClose} severity={toastSeverity}>
-          {feedbackMessage}
-        </Alert>
-      </Snackbar>
     </>
   );
 }
