@@ -74,6 +74,16 @@ function UploadSequences() {
       read2: file,
     })
   };
+
+  useEffect(() => {
+    // TODO: this needs to calculate these
+    setSeqUploadRow({
+      seqId: seqUploadRow?.seqId,
+      read1: files[0],
+      read2: files[1],
+    })
+  }, [files]);
+  
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
@@ -236,7 +246,7 @@ function UploadSequences() {
                 id="read1-simple-select-label"
                 label="Read 1"
                 name="read1"
-                value={seqUploadRow?.read1?.file.name}
+                value={seqUploadRow?.read1?.file.name ?? ""}
                 onChange={(e) => handleSelectRead1(e.target.value)}
               >
                 { files.map((file: DropFileUpload) => (
@@ -260,7 +270,7 @@ function UploadSequences() {
                 id="read2-simple-select-label"
                 label="Read 2"
                 name="read2"
-                value={seqUploadRow?.read2?.file.name}
+                value={seqUploadRow?.read2?.file.name ?? ""}
                 onChange={(e) => handleSelectRead2(e.target.value)}
               >
                 { files.map((file: DropFileUpload) => (
