@@ -5,6 +5,12 @@ import theme from '../../assets/themes/theme';
 import {DropFileUpload} from "../../types/DropFileUpload";
 import {generateHash} from "../../utilities/file";
 
+export interface CustomUploadValidator {
+  func: CallableFunction,
+  message: string
+}
+
+// The defaulting isn't working like I would have hoped
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
@@ -13,16 +19,37 @@ interface FileDragDropProps {
   maxFiles: number,
   minFiles: number,
   calculateHash: boolean,
+  customValidators: CustomUploadValidator[]
 }
 
 // TODO: merge this with FileDragDrop if possible
 // @ts-ignore
 const FileDragDrop2: React.FC<FileDragDropProps> = (
-  {files, setFiles, validFormats, multiple = false, maxFiles = 0, minFiles = 0, calculateHash = false}
+  {
+    files, 
+    setFiles, 
+    validFormats, 
+    multiple = false, 
+    maxFiles = 0, 
+    minFiles = 0, 
+    calculateHash = false,
+    customValidators = []
+  }
 ) => {
   // TODO: validate min and max files
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  
+  const validateUpload = (uploadedFiles: File[]): boolean => {
+    let isValid = true;
+    for (const validator of customValidators) {
+      if (!validator.func(uploadedFiles)) {
+        console.error(validator.message)
+        isValid = false;
+      }
+    }
+    return isValid;
+  }
 
   const maxFilesReached = (filesDropped: number): boolean => {
     // Singular file upload is handled by the UI already.
@@ -77,13 +104,17 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     fileInputRef.current?.click();
   };
 
-  const handleBrowseChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleBrowseChange = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (maxFilesReached(e.target?.files?.length ?? 0)) {
+    const uploadedFiles = Array.from(e.target?.files ?? [])
+    if (!validateUpload(uploadedFiles)) {
+      return
+    }
+    if (maxFilesReached(uploadedFiles.length ?? 0)) {
       console.log(`Only ${maxFiles} files accepted.`)
       return
     }
-    handleFiles(Array.from(e.target?.files ?? []))
+    await handleFiles(uploadedFiles)
   };
   return (
     <>
