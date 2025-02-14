@@ -3,11 +3,14 @@ import Grid from '@mui/material/Grid2';
 import React from 'react';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCount';
 import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
-function BasicDashboard(props: ProjectDashboardTemplateProps) {
+// TODO: Set a max card height and handle scroll overflow
+function DefaultDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
@@ -27,9 +30,9 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
               />
             </CardContent>
           </Card>
-          <Card sx={{ ...tallCardStyle, marginTop: 2 }}>
+          <Card sx={{ ...cardStyle, marginTop: 2 }}>
             <CardContent>
-              <OrgHasSeq
+              <EpiCurveChart
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
@@ -48,9 +51,33 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
+        {/* Third Row: Two cells sharing 50/50 */}
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+          <Card sx={tallCardStyle}>
+            <CardContent>
+              <MetadataCounts
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+                field="Date_coll"
+                title="Metadata counts"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+          <Card sx={tallCardStyle}>
+            <CardContent>
+              <OrgHasSeq
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
     </Box>
-    
   );
 }
-export default BasicDashboard;
+export default DefaultDashboard;
