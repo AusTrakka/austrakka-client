@@ -1,5 +1,5 @@
-import React, {Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField} from "@mui/material";
-import {SeqType, SeqUploadRow, SkipForce} from "./UploadSequences";
+import React, {Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography} from "@mui/material";
+import {SeqType, SeqUploadRow, SeqUploadRowStatus, SkipForce} from "./UploadSequences";
 import {useState} from "react";
 import LoadingState from "../../constants/loadingState";
 import {ResponseMessage} from "../../types/apiResponse.interface";
@@ -7,6 +7,7 @@ import {useApi} from "../../app/ApiContext";
 import {uploadFastqSequence} from "../../utilities/resourceUtils";
 import {ResponseObject} from "../../types/responseObject.interface";
 import {ResponseType} from "../../constants/responseType";
+import {generateHash} from "../../utilities/file";
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqUploadRow,
@@ -33,6 +34,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       seqId: seqId,
       read1: seqUploadRow.read1,
       read2: seqUploadRow.read2,
+      status: seqUploadRow.status,
     } as SeqUploadRow)
   }
 
@@ -45,6 +47,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       seqId: seqUploadRow.seqId,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
+      status: seqUploadRow.status,
     } as SeqUploadRow)
   };
   const handleSelectRead2 = (read2File: string) => {
@@ -56,18 +59,23 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       seqId: seqUploadRow.seqId,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
+      status: seqUploadRow.status,
     } as SeqUploadRow)
   };
   
+  const updateStatus = (status: SeqUploadRowStatus) => {
+    updateRow({
+      id: seqUploadRow.id,
+      seqId: seqUploadRow.seqId,
+      read1: seqUploadRow.read1,
+      read2: seqUploadRow.read2,
+      status: status
+    } as SeqUploadRow)
+  }
+  
   const handleSubmit = async () => {
-    if (!seqUploadRow) {
-      return
-    }
-    if (!seqUploadRow.read1 || !seqUploadRow.read2) {
-      // TODO: need an error message here
-      return
-    }
-    console.log("submitting")
+    updateStatus(SeqUploadRowStatus.CalculatingHash)
+    await new Promise(r => setTimeout(r, 2000));
     setSeqSubmission({
       ...seqSubmission,
       status: LoadingState.LOADING,
@@ -82,25 +90,27 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       'seq-type': seqTypeOption,
       'seq-id': seqUploadRow.seqId,
       'filename1': seqUploadRow.read1.file.name,
-      'filename1-hash': seqUploadRow.read1.hash,
+      'filename1-hash': await generateHash(await seqUploadRow.read1.file.text()),
       'filename2': seqUploadRow.read2.file.name,
-      'filename2-hash': seqUploadRow.read2.hash,
+      'filename2-hash': await generateHash(await seqUploadRow.read2.file.text()),
     }
 
+    updateStatus(SeqUploadRowStatus.Processing)
     const sequenceResponse: ResponseObject = await uploadFastqSequence(formData, optionString, token, headers);
-
     if (sequenceResponse.status === ResponseType.Success) {
       setSeqSubmission({
         ...seqSubmission,
         status: LoadingState.SUCCESS,
         messages: sequenceResponse.messages,
       });
+      updateStatus(SeqUploadRowStatus.Complete)
     } else {
       setSeqSubmission({
         ...seqSubmission,
         status: LoadingState.ERROR,
         messages: sequenceResponse.messages,
       });
+      updateStatus(SeqUploadRowStatus.Errored)
     }
   };
   
@@ -179,6 +189,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
               </Select>
             </FormControl>
             <Button onClick={handleSubmit}>Upload</Button>
+            <Typography variant="subtitle1" >{seqUploadRow.status}</Typography>
           </Stack>
         </>
     </>

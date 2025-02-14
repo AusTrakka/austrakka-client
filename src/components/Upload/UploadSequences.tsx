@@ -19,11 +19,21 @@ import {
 import UploadSequenceRow from "./UploadSequenceRow";
 import FileDragDrop2 from "./FileDragDrop2";
 
+export enum SeqUploadRowStatus {
+  Waiting = 'Waiting',
+  Queued = 'Queued',
+  CalculatingHash = 'Calculating Hash',
+  Processing = 'Processing',
+  Complete = 'Complete',
+  Errored = 'Errored',
+}
+
 export interface SeqUploadRow {
   id: string
   seqId: string
   read1: DropFileUpload
   read2: DropFileUpload
+  status: SeqUploadRowStatus 
 }
 
 export enum SeqType {
@@ -112,6 +122,7 @@ function UploadSequences() {
           seqId: getSampleNameFromFile(value.file.name),
           read1: value,
           read2: array[index+1],
+          status: SeqUploadRowStatus.Waiting
         } as SeqUploadRow);
       return result;
     }, []);
@@ -188,7 +199,7 @@ function UploadSequences() {
           setFiles={setFiles} 
           validFormats={validFormats} 
           multiple={true} 
-          calculateHash={true}
+          calculateHash={false}
           customValidators={[
             validateEvenNumberOfFiles,
             validateNoDuplicateFilenames,
