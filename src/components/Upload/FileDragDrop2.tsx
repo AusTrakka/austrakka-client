@@ -5,15 +5,7 @@ import theme from '../../assets/themes/theme';
 import {DropFileUpload} from "../../types/DropFileUpload";
 import {generateHash} from "../../utilities/file";
 import {useSnackbar} from "notistack";
-
-export interface CustomUploadValidatorReturn {
-  success: boolean,
-  message: string,
-}
-
-export interface CustomUploadValidator {
-  func: (files: File[]) => CustomUploadValidatorReturn,
-}
+import {CustomUploadValidator} from "../../utilities/uploadUtils";
 
 // The defaulting isn't working like I would have hoped
 interface FileDragDropProps {

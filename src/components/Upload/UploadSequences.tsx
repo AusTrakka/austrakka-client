@@ -9,10 +9,15 @@ import React, {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
-import FileDragDrop2, {CustomUploadValidator, CustomUploadValidatorReturn} from "./FileDragDrop2";
 import {DropFileUpload} from "../../types/DropFileUpload";
-import {validateEvenNumberOfFiles, validateNoDuplicateFilenames} from "../../utilities/uploadUtils";
+import {
+  CustomUploadValidator,
+  CustomUploadValidatorReturn,
+  validateEvenNumberOfFiles,
+  validateNoDuplicateFilenames
+} from "../../utilities/uploadUtils";
 import UploadSequenceRow from "./UploadSequenceRow";
+import FileDragDrop2 from "./FileDragDrop2";
 
 export interface SeqUploadRow {
   id: string

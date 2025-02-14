@@ -1,4 +1,12 @@
-import {CustomUploadValidator, CustomUploadValidatorReturn} from "../components/Upload/FileDragDrop2";
+export interface CustomUploadValidatorReturn {
+  success: boolean,
+  message: string,
+}
+
+export interface CustomUploadValidator {
+  func: (files: File[]) => CustomUploadValidatorReturn,
+}
+
 
 export const validateEvenNumberOfFiles = {
   func: (files: File[]) => {
