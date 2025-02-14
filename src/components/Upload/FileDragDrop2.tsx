@@ -25,7 +25,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   {
     files, 
     setFiles, 
-    validFormats, 
+    validFormats, // TODO: this hasn't been implemented
     multiple = false, 
     calculateHash = false,
     customValidators = []
