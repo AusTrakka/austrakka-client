@@ -30,11 +30,8 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
 
   const handleSeqId = (seqId: string) => {
     updateRow({
-      id: seqUploadRow.id,
+      ...seqUploadRow,
       seqId: seqId,
-      read1: seqUploadRow.read1,
-      read2: seqUploadRow.read2,
-      status: seqUploadRow.status,
     } as SeqUploadRow)
   }
 
@@ -43,11 +40,9 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       return
     } 
     updateRow({
-      id: seqUploadRow.id,
-      seqId: seqUploadRow.seqId,
+      ...seqUploadRow,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
-      status: seqUploadRow.status,
     } as SeqUploadRow)
   };
   const handleSelectRead2 = (read2File: string) => {
@@ -55,20 +50,15 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       return
     } 
     updateRow({
-      id: seqUploadRow.id,
-      seqId: seqUploadRow.seqId,
+      ...seqUploadRow,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
-      status: seqUploadRow.status,
     } as SeqUploadRow)
   };
   
   const updateStatus = (status: SeqUploadRowStatus) => {
     updateRow({
-      id: seqUploadRow.id,
-      seqId: seqUploadRow.seqId,
-      read1: seqUploadRow.read1,
-      read2: seqUploadRow.read2,
+      ...seqUploadRow,
       status: status
     } as SeqUploadRow)
   }
