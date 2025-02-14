@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
 import FileDragDrop2, {CustomUploadValidator, CustomUploadValidatorReturn} from "./FileDragDrop2";
 import {DropFileUpload} from "../../types/DropFileUpload";
-import {validateEvenNumberOfFiles} from "../../utilities/uploadUtils";
+import {validateEvenNumberOfFiles, validateNoDuplicateFilenames} from "../../utilities/uploadUtils";
 import UploadSequenceRow from "./UploadSequenceRow";
 
 export interface SeqUploadRow {
@@ -45,10 +45,12 @@ interface SeqPair {
   sampleName: string
 }
 
+const getSampleNameFromFile = (filename: string) => filename.split("_")[0];
+
 // TODO: fix typescript issues here
 const AllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
-    const filenames = files.map(f => { return {file: f, sampleName: f.name.split("_")[0]} as SeqPair})
+    const filenames = files.map(f => { return {file: f, sampleName: getSampleNameFromFile(f.name)} as SeqPair})
     // @ts-ignore
     const groupedFilenames = filenames.reduce((ubc, u) => ({  ...ubc,  [u.sampleName]: [ ...(ubc[u.sampleName] || []), u ],}), {});
     // @ts-ignore
@@ -74,7 +76,6 @@ function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
   
-  
   const updateRow = (newSur: SeqUploadRow) => {
     const nextRows = seqUploadRows.map((sur) => {
       if (newSur.id === sur.id) {
@@ -86,10 +87,15 @@ function UploadSequences() {
   }
 
   useEffect(() => {
-    // TODO: add algorithm for paired files
-    
-    
-    const newSeqUploadRows = files.reduce(function(
+    const newSeqUploadRows = files
+      .sort((a,b) => {
+        if (a.file.name < b.file.name) {
+          return -1;
+        } else {
+          return 1;
+        }
+      })
+      .reduce(function(
       result: SeqUploadRow[], 
       value: DropFileUpload, 
       index: number,
@@ -98,7 +104,7 @@ function UploadSequences() {
       if (index % 2 === 0)
         result.push({
           id: crypto.randomUUID(),
-          seqId: "Sample10",
+          seqId: getSampleNameFromFile(value.file.name),
           read1: value,
           read2: array[index+1],
         } as SeqUploadRow);
@@ -178,7 +184,11 @@ function UploadSequences() {
           validFormats={validFormats} 
           multiple={true} 
           calculateHash={true}
-          customValidators={[validateEvenNumberOfFiles, AllHaveSampleNamesWithTwoFilesOnly]}
+          customValidators={[
+            validateEvenNumberOfFiles,
+            validateNoDuplicateFilenames,
+            AllHaveSampleNamesWithTwoFilesOnly, 
+          ]}
         />
       </Stack>
       <Stack spacing={1}>

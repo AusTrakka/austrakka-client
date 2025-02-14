@@ -22,7 +22,7 @@ interface FileDragDropProps {
   validFormats: object,
   multiple: boolean,
   calculateHash: boolean,
-  customValidators: CustomUploadValidator[]
+  customValidators: CustomUploadValidator[],
 }
 
 const FileDragDrop2: React.FC<FileDragDropProps> = (
