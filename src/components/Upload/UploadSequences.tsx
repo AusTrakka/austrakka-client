@@ -9,7 +9,7 @@ import React, {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
-import FileDragDrop2 from "./FileDragDrop2";
+import FileDragDrop2, {CustomUploadValidator, CustomUploadValidatorReturn} from "./FileDragDrop2";
 import {DropFileUpload} from "../../types/DropFileUpload";
 import {validateEvenNumberOfFiles} from "../../utilities/uploadUtils";
 import UploadSequenceRow from "./UploadSequenceRow";
@@ -40,6 +40,34 @@ const validFormats = {
   ".fastq.gz": "",
 }
 
+interface SeqPair {
+  file: File
+  sampleName: string
+}
+
+// TODO: fix typescript issues here
+const AllHaveSampleNamesWithTwoFilesOnly = {
+  func: (files: File[]) => {
+    const filenames = files.map(f => { return {file: f, sampleName: f.name.split("_")[0]} as SeqPair})
+    // @ts-ignore
+    const groupedFilenames = filenames.reduce((ubc, u) => ({  ...ubc,  [u.sampleName]: [ ...(ubc[u.sampleName] || []), u ],}), {});
+    // @ts-ignore
+    const problemSampleNames = Object.entries(groupedFilenames)
+      // @ts-ignore
+      .filter((k) => k[1].length !== 2)
+      .map((k) => k[0])
+    if (problemSampleNames.length > 0) {
+      return {
+        success: false,
+        message: "Unable to parse file pairs for the following samples: " + problemSampleNames.join(", ")
+      } as CustomUploadValidatorReturn
+    }
+    return {
+      success: true,
+    } as CustomUploadValidatorReturn
+  },
+} as CustomUploadValidator
+
 function UploadSequences() {
   useEffect(() => {
   }, []);
@@ -59,6 +87,8 @@ function UploadSequences() {
 
   useEffect(() => {
     // TODO: add algorithm for paired files
+    
+    
     const newSeqUploadRows = files.reduce(function(
       result: SeqUploadRow[], 
       value: DropFileUpload, 
@@ -148,7 +178,7 @@ function UploadSequences() {
           validFormats={validFormats} 
           multiple={true} 
           calculateHash={true}
-          customValidators={[validateEvenNumberOfFiles]}
+          customValidators={[validateEvenNumberOfFiles, AllHaveSampleNamesWithTwoFilesOnly]}
         />
       </Stack>
       <Stack spacing={1}>

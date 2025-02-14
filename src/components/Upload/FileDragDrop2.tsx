@@ -6,9 +6,13 @@ import {DropFileUpload} from "../../types/DropFileUpload";
 import {generateHash} from "../../utilities/file";
 import {useSnackbar} from "notistack";
 
+export interface CustomUploadValidatorReturn {
+  success: boolean,
+  message: string,
+}
+
 export interface CustomUploadValidator {
-  func: (files: File[]) => boolean,
-  message: string
+  func: (files: File[]) => CustomUploadValidatorReturn,
 }
 
 // The defaulting isn't working like I would have hoped
@@ -36,14 +40,15 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   const [dragActive, setDragActive] = useState(false);
   
   const validateUpload = (uploadedFiles: File[]): boolean => {
-    let isValid = true;
     for (const validator of customValidators) {
-      if (!validator.func(uploadedFiles)) {
-        enqueueSnackbar(validator.message, { variant: "error"})
-        isValid = false;
+      const validatorReturn = validator.func(uploadedFiles);
+      if (!validatorReturn.success) {
+        enqueueSnackbar(validatorReturn.message, { variant: "error"})
+        console.error(validatorReturn.message)
+        return false;
       }
     }
-    return isValid;
+    return true;
   }
 
   const handleFiles = async (uploadedFiles: File[]) => {
