@@ -48,7 +48,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       return {
         file: file,
         isValid: !Object.values(validFormats).includes(file?.type),
-        hash: calculateHash ? await generateHash(await file.text()) : ''
+        hash: calculateHash ? await generateHash(await file.text()) : undefined
       } as DropFileUpload
     }))
     setFiles([...files, ...fileUploads]);

@@ -5,7 +5,7 @@ import React, {
   InputLabel,
   Select,
   MenuItem,
-  Stack,
+  Stack, Button,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
@@ -19,10 +19,11 @@ import {
 import UploadSequenceRow from "./UploadSequenceRow";
 import FileDragDrop2 from "./FileDragDrop2";
 
-export enum SeqUploadRowStatus {
+export enum SeqUploadRowState {
   Waiting = 'Waiting',
   Queued = 'Queued',
   CalculatingHash = 'Calculating Hash',
+  CalculatedHash = 'Calculated Hash',
   Processing = 'Processing',
   Complete = 'Complete',
   Errored = 'Errored',
@@ -33,7 +34,7 @@ export interface SeqUploadRow {
   seqId: string
   read1: DropFileUpload
   read2: DropFileUpload
-  status: SeqUploadRowStatus 
+  state: SeqUploadRowState
 }
 
 export enum SeqType {
@@ -86,8 +87,6 @@ const AllHaveSampleNamesWithTwoFilesOnly = {
 } as CustomUploadValidator
 
 function UploadSequences() {
-  useEffect(() => {
-  }, []);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
   
@@ -100,6 +99,29 @@ function UploadSequences() {
     })
     setSeqUploadRows(nextRows)
   }
+  
+  const queueAllRows = () => {
+    const queuedRows = seqUploadRows.map((sur) => {
+      sur.state = SeqUploadRowState.Queued;
+      return sur
+    })
+    setSeqUploadRows(queuedRows)
+  }
+
+  useEffect(() => {
+    // TODO: this still needs to orchestrate the efficient queuing of uploads
+    // If there are no items in Processing, nominate one Calculated Hash state to processing
+    // check for any rows in Calculated state 
+    const calculatedRows = seqUploadRows.filter(sur => sur.state === SeqUploadRowState.CalculatedHash)
+    const queuedRows = seqUploadRows.filter(sur => sur.state === SeqUploadRowState.Queued)
+
+    for (const row of queuedRows) {
+      updateRow({...row, state: SeqUploadRowState.CalculatingHash})
+    }
+    for (const row of calculatedRows) {
+      updateRow({...row, state: SeqUploadRowState.Processing})
+    }
+  }, [[...seqUploadRows.map(sur => sur.state)]]);
 
   useEffect(() => {
     const newSeqUploadRows = files
@@ -122,7 +144,7 @@ function UploadSequences() {
           seqId: getSampleNameFromFile(value.file.name),
           read1: value,
           read2: array[index+1],
-          status: SeqUploadRowStatus.Waiting
+          state: SeqUploadRowState.Waiting,
         } as SeqUploadRow);
       return result;
     }, []);
@@ -139,6 +161,10 @@ function UploadSequences() {
     const skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce
     setSelectedSkipForce(skipForce);
   };
+  
+  const handleUpload = () => {
+    queueAllRows()
+  }
   
   return (
     <Box>
@@ -199,7 +225,7 @@ function UploadSequences() {
           setFiles={setFiles} 
           validFormats={validFormats} 
           multiple={true} 
-          calculateHash={false}
+          calculateHash={true}
           customValidators={[
             validateEvenNumberOfFiles,
             validateNoDuplicateFilenames,
@@ -218,6 +244,7 @@ function UploadSequences() {
           />
         ))}
       </Stack>
+      <Button onClick={handleUpload}>Upload All</Button>
     </Box>
   );
 }
