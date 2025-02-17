@@ -6,10 +6,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button, Drawer, Chip, FormGroup, Checkbox, FormControlLabel, Switch,
+  Button, 
+  FormGroup, 
+  Checkbox, 
+  FormControlLabel, 
+  Switch,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { HelpOutline, ListAlt } from '@mui/icons-material';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import {
@@ -24,6 +27,8 @@ import {
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop from './FileDragDrop';
+import HelpSidebar from "../Help/HelpSidebar";
+import UploadSequencesHelp from "./UploadSequencesHelp";
 
 // TODO: these need mimetypes
 // the .fq and .fastq files can't available to select in the browser with octet
@@ -66,73 +71,10 @@ const AllHaveSampleNamesWithTwoFilesOnly = {
   },
 } as CustomUploadValidator;
 
-function UploadInstructions({ setDrawerOpen }: any) {
-  return (
-    <Box
-      sx={{ maxWidth: 600, padding: 6, borderLeft: 6, borderColor: 'secondary.main', height: '100%' }}
-      role="presentation"
-      onClick={() => setDrawerOpen(false)}
-      onKeyDown={() => setDrawerOpen(false)}
-    >
-      <ListAlt fontSize="large" color="primary" />
-      <Typography variant="h4" color="primary">
-        Upload Instructions
-      </Typography>
-      <br />
-      You can drag-and-drop a set of FASTQ files into the file upload box, or click to select files.
-      <br />
-      <br />
-      Once you have selected your files, AusTrakka will attempt to determine the Seq_IDs from the filenames,
-      and to pair the files into read 1 and read 2 file pairs.
-      AusTrakka will assume that the first part of the filename, up until the first underscore (_) is the Seq_ID.
-      <br />
-      <br />
-      You can edit file pair assignments and Seq_IDs before submitting.
-      <br />
-      <br />
-      If sequences already exist for a Seq_ID you are uploading to, by default, AusTrakka will skip the
-      upload for that Seq_ID, and display an error. If you know that some of your sequence files are for
-      samples which already have sequence data, you can select
-      {' '}
-      <code>Skip</code>
-      {' '}
-      to skip these files with no error
-      displayed, or
-      {' '}
-      <code>Force</code>
-      {' '}
-      to overwrite the existing data. Note that only sequence data of the same type
-      you are uploading (e.g. paired-end FASTQ) will be checked or overwritten.
-      <br />
-      <br />
-      If you encounter any errors and need to upload only the files which did not successfully upload,
-      you can retry the same upload with the
-      {' '}
-      <code>Skip</code>
-      {' '}
-      option selected.
-    </Box>
-  );
-}
-
 function UploadSequences() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
 
-  const toggleDrawer =
-    (open: boolean) =>
-      (event: React.KeyboardEvent | React.MouseEvent) => {
-        if (
-          event.type === 'keydown' &&
-          ((event as React.KeyboardEvent).key === 'Tab' ||
-            (event as React.KeyboardEvent).key === 'Shift')
-        ) {
-          return;
-        }
-        setDrawerOpen(open);
-      };
-  
   // TODO: check this logic with elsewhere
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
@@ -241,10 +183,10 @@ function UploadSequences() {
             </Typography>
           </Grid>
           <Grid>
-            <Chip
-              icon={<HelpOutline />}
-              label="View upload instructions"
-              onClick={toggleDrawer(true)}
+            <HelpSidebar 
+              content={UploadSequencesHelp()} 
+              title={"Upload Instructions"} 
+              chipLabel={"View upload instructions"}
             />
           </Grid>
         </Grid>
@@ -414,13 +356,6 @@ function UploadSequences() {
           </>
         )}
       </Box>
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-      >
-        <UploadInstructions setDrawerOpen={setDrawerOpen} />
-      </Drawer>
     </>
   );
 }
