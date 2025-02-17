@@ -1,17 +1,17 @@
 import React, {DragEvent, useState, useRef, ChangeEvent, SetStateAction, Dispatch} from 'react';
-import {Alert, Box, Button, Stack, Typography} from '@mui/material';
+import {Box, Button, Stack, Typography} from '@mui/material';
 import {AttachFile, UploadFile} from '@mui/icons-material';
 import {useSnackbar} from 'notistack';
 import theme from '../../assets/themes/theme';
 import {DropFileUpload} from '../../types/DropFileUpload';
 import {generateHash} from '../../utilities/file';
-import {CustomUploadValidator} from '../../utilities/uploadUtils';
+import {CustomUploadValidator, CustomUploadValidatorReturn} from '../../utilities/uploadUtils';
 
 // The defaulting isn't working like I would have hoped
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
-  validFormats: object,
+  validFormats: Record<string, string>,
   multiple: boolean,
   calculateHash: boolean,
   customValidators: CustomUploadValidator[],
@@ -33,8 +33,18 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
+  const validateFilesAreOfType = {
+    func: (files: File[]) => ({
+      success: Object.entries(validFormats).length === 0 
+        ? true 
+        : files.every(f => Object.values(validFormats).includes(f?.type)),
+      message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
+    } as CustomUploadValidatorReturn),
+  } as CustomUploadValidator;
+
   const validateUpload = (uploadedFiles: File[]): boolean => {
-    for (const validator of customValidators) {
+    // Add in built in validators first
+    for (const validator of [validateFilesAreOfType, ...customValidators]) {
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
         enqueueSnackbar(validatorReturn.message, {variant: 'error'});
@@ -48,7 +58,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   const handleFiles = async (uploadedFiles: File[]) => {
     const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
       file,
-      isValid: Object.values(validFormats).includes(file?.type),
       hash: calculateHash ? await generateHash(await file.text()) : undefined,
     } as DropFileUpload)));
     setFiles([...files, ...fileUploads]);
@@ -163,15 +172,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
                   >
                     Clear
                   </Button>
-
-                  { files.some(f => !f.isValid) ? (
-                      <Alert variant="outlined" severity="error">
-                        Invalid file type. Valid file types are:
-                        {' '}
-                        {Object.keys(validFormats).join(', ')}
-                      </Alert>
-                    )
-                    : (<></>)}
                 </>
               )}
             </Stack>
