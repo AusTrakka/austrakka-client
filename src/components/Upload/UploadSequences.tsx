@@ -76,7 +76,7 @@ function UploadSequences() {
     });
     setSeqUploadRows(queuedRows);
   };
-  
+
   const getRowsOfState = (state: SeqUploadRowState) => {
     return seqUploadRows.filter(sur => sur.state === state);
   }
@@ -87,7 +87,7 @@ function UploadSequences() {
     const queued = getRowsOfState(SeqUploadRowState.Queued);
     const processing = getRowsOfState(SeqUploadRowState.Uploading);
 
-    for (const row of queued.slice(0,Math.abs(calculating.length - 2))) {
+    for (const row of queued.slice(0, Math.abs(calculating.length - 2))) {
       // Calculate 2 hashes at a time
       updateRow({...row, state: SeqUploadRowState.CalculatingHash});
     }
@@ -135,6 +135,10 @@ function UploadSequences() {
     const skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce;
     setSelectedSkipForce(skipForce);
   };
+
+  const handleClearFiles = () => {
+    setFiles([])
+  }
 
   const handleUpload = () => {
     queueAllRows();
@@ -206,6 +210,7 @@ function UploadSequences() {
             validateNoDuplicateFilenames,
             AllHaveSampleNamesWithTwoFilesOnly,
           ]}
+          hideAfterDrop={true}
         />
       </Stack>
       <Stack spacing={1}>
@@ -219,7 +224,26 @@ function UploadSequences() {
           />
         ))}
       </Stack>
-      <Button onClick={handleUpload}>Upload All</Button>
+      {files.length === 0 ? (
+        <></>
+      ) : (
+        <>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleUpload}
+          >
+            Upload All
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleClearFiles}
+          >
+            Clear Files
+          </Button>
+        </>
+      )}
     </Box>
   );
 }
