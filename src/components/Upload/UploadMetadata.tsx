@@ -391,7 +391,11 @@ function UploadMetadata() {
           submission.status === LoadingState.SUCCESS ||
           submission.status === LoadingState.ERROR
         ) ? (
-          <Validation messages={messages} title={ options.validate ? "Validation status" : "Upload status"}/>
+          <Validation 
+            messages={messages} 
+            title={ options.validate ? "Validation status" : "Upload status"}
+            showTitle={true}
+          />
           )
           : null}
       </div>

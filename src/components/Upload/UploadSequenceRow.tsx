@@ -1,13 +1,13 @@
-import React, { FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import React, {Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
 import { uploadFastqSequence } from '../../utilities/resourceUtils';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { generateHash } from '../../utilities/file';
+import ValidationModal from "../Validation/ValidationModal";
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqUploadRow,
@@ -22,6 +22,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
   const { modeOption } = props;
   const { seqTypeOption } = props;
 
+  const [showValidation, setShowValidation] = useState(false);
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
@@ -141,6 +142,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
   }, [seqUploadRow.state]);
 
   return (
+    <>
     <Stack direction="row" spacing={2}>
       <FormControl
         size="small"
@@ -212,8 +214,15 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </MenuItem>
         </Select>
       </FormControl>
-      {/* <Button onClick={handleSubmit}>Upload</Button> */}
+      <Button onClick={() => {setShowValidation(!showValidation)}}>Show Response</Button> 
       <Typography variant="subtitle1">{seqUploadRow.state}</Typography>
     </Stack>
+    <ValidationModal 
+      messages={seqSubmission.messages ?? []} 
+      title={"Response Messages"} 
+      openModal={showValidation}
+      handleModalClose={() => setShowValidation(!showValidation)}
+    />
+    </>
   );
 }

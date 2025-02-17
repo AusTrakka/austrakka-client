@@ -214,7 +214,6 @@ function UploadSequences() {
         </Select>
       </FormControl>
       <Typography variant="h4" color="primary">Select sequence files</Typography>
-      <Stack direction="row" spacing={2}>
         <FileDragDrop
           files={files}
           setFiles={setFiles}
@@ -228,8 +227,6 @@ function UploadSequences() {
           ]}
           hideAfterDrop={true}
         />
-      </Stack>
-      <Stack spacing={1}>
         {seqUploadRows.map(sur => (
           <UploadSequenceRow
             key={sur.id}
@@ -239,7 +236,6 @@ function UploadSequences() {
             seqTypeOption={selectedSeqType}
           />
         ))}
-      </Stack>
       {files.length === 0 ? (
         <></>
       ) : (
