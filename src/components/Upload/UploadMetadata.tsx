@@ -1,17 +1,44 @@
-import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Box, FormControl, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
-  FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
-  Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
+// import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
+// import { Box, FormControl, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
+//   FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
+//   Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
+// import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
+// import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
+// import { Proforma } from '../../types/dtos';
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import {
+  Backdrop,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Drawer,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  InputLabel,
+  LinearProgress,
+  Link,
+  List,
+  ListItemText,
+  MenuItem,
+  Select,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
-import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
-import { Proforma } from '../../types/dtos';
+import {FileUpload, HelpOutline, ListAlt, Rule} from '@mui/icons-material';
+import {getUserProformas, uploadSubmissions, validateSubmissions} from '../../utilities/resourceUtils';
+import {Proforma} from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
-import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseMessage } from '../../types/apiResponse.interface';
-import { ResponseType } from '../../constants/responseType';
+import {useApi} from '../../app/ApiContext';
+import {ResponseObject} from '../../types/responseObject.interface';
+import {ResponseMessage} from '../../types/apiResponse.interface';
+import {ResponseType} from '../../constants/responseType';
+import {DropFileUpload} from "../../types/DropFileUpload";
+import Validation from "../Validation/Validation";
 
 interface Options {
   validate: boolean,
@@ -37,6 +64,7 @@ const uploadOptions = [
   },
 ];
 
+const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`
 const validFormats = {
   '.csv': 'text/csv',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -110,6 +138,7 @@ function UploadMetadata() {
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
   });
+  const [messages, setMessages] = useState<ResponseMessage[]>([]);
   const [proformaStatusMessage, setProformaStatusMessage] = useState('');
   const [selectedProforma, setSelectedProforma] = useState<Proforma>();
   const [options, setOptions] = useState({
@@ -117,8 +146,7 @@ function UploadMetadata() {
     'blank': false,
     'append': false,
   } as Options);
-  const [file, setFile] = useState<File>();
-  const [invalidFile, setInvalidFile] = useState(false);
+  const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
@@ -183,19 +211,27 @@ function UploadMetadata() {
     });
     const optionString = `?appendMode=${options.append}&deleteOnBlank=${options.blank}`;
     const formData = new FormData();
-    formData.append('file', file!);
+    formData.append('file', files[0].file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
     const submissionResponse : ResponseObject = options.validate ?
       await validateSubmissions(formData, optionString, token)
       : await uploadSubmissions(formData, optionString, token);
 
+    let newMessages = [...submissionResponse.messages ?? []]
     if (submissionResponse.status === ResponseType.Success) {
       setSubmission({
         ...submission,
         status: LoadingState.SUCCESS,
         messages: submissionResponse.messages,
       });
+      if (options.validate) {
+        newMessages.push({
+          ResponseType: ResponseType.Warning,
+          ResponseMessage: validateMessage,
+
+        } as ResponseMessage)
+      }
     } else {
       setSubmission({
         ...submission,
@@ -203,6 +239,7 @@ function UploadMetadata() {
         messages: submissionResponse.messages,
       });
     }
+    setMessages(newMessages)
   };
   useEffect(() => {
     // Every time file or option change, reset loading state of submission to idle
@@ -212,7 +249,7 @@ function UploadMetadata() {
       messages: [],
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, options]);
+  }, [files, options]);
 
   return (
     <>
@@ -307,13 +344,15 @@ function UploadMetadata() {
         </Grid>
         <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
-          <FileDragDrop
-            file={file}
-            setFile={setFile}
-            invalidFile={invalidFile}
-            setInvalidFile={setInvalidFile}
-            validFormats={validFormats}
-          />
+          <FileDragDrop 
+            files={files} 
+            setFiles={setFiles} 
+            validFormats={validFormats} 
+            multiple={false} 
+            calculateHash={false} 
+            hideAfterDrop={false}
+            customValidators={[]}
+          ></FileDragDrop>
         </Grid>
         <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
@@ -344,7 +383,7 @@ function UploadMetadata() {
           { options.validate ? (
             <Button
               variant="contained"
-              disabled={!selectedProforma || !file || invalidFile}
+              disabled={!selectedProforma || files.length === 0}
               endIcon={<Rule />}
               onClick={() => handleSubmit()}
             >
@@ -354,7 +393,7 @@ function UploadMetadata() {
             : (
               <Button
                 variant="contained"
-                disabled={!selectedProforma || !file || invalidFile}
+                disabled={!selectedProforma || files.length === 0}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
               >
@@ -368,44 +407,7 @@ function UploadMetadata() {
           submission.status === LoadingState.SUCCESS ||
           submission.status === LoadingState.ERROR
         ) ? (
-          <Grid container spacing={1} direction="column">
-            <Grid>
-              {options.validate ?
-                <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
-            </Grid>
-            {submission.messages!.map(
-              (message: ResponseMessage) => (
-                <Grid>
-                  <Alert severity={message.ResponseType.toLowerCase() as AlertColor}>
-                    <strong>{message.ResponseType}</strong>
-                    {' '}
-                    -
-                    {' '}
-                    {message.ResponseMessage}
-                  </Alert>
-                </Grid>
-              ),
-            )}
-            {(
-              submission.status === LoadingState.SUCCESS &&
-            options.validate === true
-            ) ? (
-              <Grid>
-                <Alert severity="warning">
-                  <strong>Warning</strong>
-                  {' '}
-                  -
-                  {' '}
-                  This was a validation only.
-                  Please uncheck the &quot;Validate only&quot; option
-                  and upload to load data into
-                  {' '}
-                  {import.meta.env.VITE_BRANDING_NAME}
-                  .
-                </Alert>
-              </Grid>
-              ) : null }
-          </Grid>
+          <Validation messages={messages} title={ options.validate ? "Validation status" : "Upload status"}/>
           )
           : null}
       </div>

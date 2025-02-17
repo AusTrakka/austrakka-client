@@ -5,7 +5,7 @@ export enum SeqUploadRowState {
   Queued = 'Queued',
   CalculatingHash = 'Calculating Hash',
   CalculatedHash = 'Calculated Hash',
-  Processing = 'Processing',
+  Uploading = 'Uploading',
   Complete = 'Complete',
   Errored = 'Errored',
 }

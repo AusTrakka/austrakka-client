@@ -1,30 +1,27 @@
-import React, {
-  Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Stack, Button,
-} from '@mui/material';
+import React, {Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, Typography,} from '@mui/material';
 import {useEffect, useState} from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
 import {DropFileUpload} from '../../types/DropFileUpload';
 import {
   CustomUploadValidator,
-  CustomUploadValidatorReturn, SeqType, SeqUploadRow, SeqUploadRowState, SkipForce,
+  CustomUploadValidatorReturn,
+  SeqType,
+  SeqUploadRow,
+  SeqUploadRowState,
+  SkipForce,
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
-import FileDragDrop2 from './FileDragDrop2';
+import FileDragDrop from './FileDragDrop';
 
 // TODO: these need mimetypes
+// the .fq and .fastq files can't available to select in the browser with octet
 const validFormats = {
   '.fq': '',
   '.fastq': '',
-  '.fq.gz': '',
-  '.fastq.gz': '',
+  '.fq.gz': 'application/x-gzip',
+  '.fastq.gz': 'application/x-gzip',
 };
 
 interface SeqPair {
@@ -81,19 +78,38 @@ function UploadSequences() {
     setSeqUploadRows(queuedRows);
   };
 
-  useEffect(() => {
-    // TODO: this still needs to orchestrate the efficient queuing of uploads
-    // If there are no items in Processing, nominate one Calculated Hash state to processing
-    // check for any rows in Calculated state 
-    const calculatedRows = seqUploadRows
-      .filter(sur => sur.state === SeqUploadRowState.CalculatedHash);
-    const queuedRows = seqUploadRows.filter(sur => sur.state === SeqUploadRowState.Queued);
+  const getRowsOfState = (state: SeqUploadRowState) => {
+    return seqUploadRows.filter(sur => sur.state === state);
+  }
+  
+  const uploadInProgress = (): boolean => {
+    return !seqUploadRows.every(sur => 
+      sur.state === SeqUploadRowState.Complete || 
+      sur.state === SeqUploadRowState.Errored ||
+      sur.state === SeqUploadRowState.Waiting
+    )
+  }
+  
+  const uploadFinished = (): boolean => {
+    return seqUploadRows.every(sur =>
+      sur.state === SeqUploadRowState.Complete ||
+      sur.state === SeqUploadRowState.Errored
+    )
+  }
 
-    for (const row of queuedRows) {
+  useEffect(() => {
+    const calculated = getRowsOfState(SeqUploadRowState.CalculatedHash);
+    const calculating = getRowsOfState(SeqUploadRowState.CalculatingHash);
+    const queued = getRowsOfState(SeqUploadRowState.Queued);
+    const processing = getRowsOfState(SeqUploadRowState.Uploading);
+
+    for (const row of queued.slice(0, Math.abs(calculating.length - 2))) {
+      // Calculate 2 hashes at a time
       updateRow({...row, state: SeqUploadRowState.CalculatingHash});
     }
-    for (const row of calculatedRows) {
-      updateRow({...row, state: SeqUploadRowState.Processing});
+    for (const row of calculated.slice(0, Math.abs(processing.length - 1))) {
+      // Only upload 1 at a time
+      updateRow({...row, state: SeqUploadRowState.Uploading});
     }
   }, [[...seqUploadRows.map(sur => sur.state)]]);
 
@@ -135,6 +151,10 @@ function UploadSequences() {
     const skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce;
     setSelectedSkipForce(skipForce);
   };
+
+  const handleClearFiles = () => {
+    setFiles([])
+  }
 
   const handleUpload = () => {
     queueAllRows();
@@ -195,7 +215,7 @@ function UploadSequences() {
       </FormControl>
       <Typography variant="h4" color="primary">Select sequence files</Typography>
       <Stack direction="row" spacing={2}>
-        <FileDragDrop2
+        <FileDragDrop
           files={files}
           setFiles={setFiles}
           validFormats={validFormats}
@@ -206,6 +226,7 @@ function UploadSequences() {
             validateNoDuplicateFilenames,
             AllHaveSampleNamesWithTwoFilesOnly,
           ]}
+          hideAfterDrop={true}
         />
       </Stack>
       <Stack spacing={1}>
@@ -219,7 +240,28 @@ function UploadSequences() {
           />
         ))}
       </Stack>
-      <Button onClick={handleUpload}>Upload All</Button>
+      {files.length === 0 ? (
+        <></>
+      ) : (
+        <>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleUpload}
+            disabled={uploadInProgress() || uploadFinished()}
+          >
+            Upload All
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleClearFiles}
+            disabled={uploadInProgress()}
+          >
+            Clear Files
+          </Button>
+        </>
+      )}
     </Box>
   );
 }
