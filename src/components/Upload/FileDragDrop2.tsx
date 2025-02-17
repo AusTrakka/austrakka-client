@@ -1,5 +1,5 @@
 import React, {DragEvent, useState, useRef, ChangeEvent, SetStateAction, Dispatch} from 'react';
-import {Box, Button, Stack, Typography} from '@mui/material';
+import {Alert, Box, Button, Stack, Typography} from '@mui/material';
 import {AttachFile, UploadFile} from '@mui/icons-material';
 import {useSnackbar} from 'notistack';
 import theme from '../../assets/themes/theme';
@@ -48,7 +48,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   const handleFiles = async (uploadedFiles: File[]) => {
     const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
       file,
-      isValid: !Object.values(validFormats).includes(file?.type),
+      isValid: Object.values(validFormats).includes(file?.type),
       hash: calculateHash ? await generateHash(await file.text()) : undefined,
     } as DropFileUpload)));
     setFiles([...files, ...fileUploads]);
@@ -136,6 +136,11 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
                       hidden
                     />
                   </Button>
+                  <Typography variant="subtitle2">
+                    Valid file types are:
+                    {' '}
+                    {Object.keys(validFormats).join(', ')}
+                  </Typography>
                 </>
               ) : (
                 <>
@@ -158,6 +163,15 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
                   >
                     Clear
                   </Button>
+
+                  { files.some(f => !f.isValid) ? (
+                      <Alert variant="outlined" severity="error">
+                        Invalid file type. Valid file types are:
+                        {' '}
+                        {Object.keys(validFormats).join(', ')}
+                      </Alert>
+                    )
+                    : (<></>)}
                 </>
               )}
             </Stack>
