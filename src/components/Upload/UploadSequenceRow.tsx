@@ -5,7 +5,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Stack,
+  TableCell,
   TextField,
 } from '@mui/material';
 import React, {useEffect, useState} from 'react';
@@ -26,17 +26,17 @@ interface UploadSequenceRowProps {
 }
 
 export default function UploadSequenceRow(props: UploadSequenceRowProps) {
-  const { seqUploadRow } = props;
-  const { updateRow } = props;
-  const { modeOption } = props;
-  const { seqTypeOption } = props;
-
+  const {seqUploadRow} = props;
+  const {updateRow} = props;
+  const {modeOption} = props;
+  const {seqTypeOption} = props;
+  
   const [showValidation, setShowValidation] = useState(false);
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
   });
-  const { token } = useApi();
+  const {token} = useApi();
 
   const updateState = (state: SeqUploadRowState) => {
     updateRow({
@@ -124,20 +124,20 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       updateState(SeqUploadRowState.Errored);
     }
   };
-  
+
   const disableResponse = (): boolean | undefined => {
-    return seqUploadRow.state !== SeqUploadRowState.Complete 
+    return seqUploadRow.state !== SeqUploadRowState.Complete
       && seqUploadRow.state !== SeqUploadRowState.Errored
   }
-  
+
   const requestCompleted = (): boolean | undefined => {
     return seqUploadRow.state === SeqUploadRowState.Complete
   }
-  
+
   const requestWaiting = (): boolean => {
     return seqUploadRow.state === SeqUploadRowState.Waiting;
   }
-  
+
   const rowInProgress = (): boolean => {
     return ![
       SeqUploadRowState.Waiting,
@@ -145,7 +145,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       SeqUploadRowState.Errored,
     ].includes(seqUploadRow.state)
   }
-  
+
   useEffect(() => {
     console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
@@ -157,7 +157,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
         .catch(console.error)
     }
   }, [seqUploadRow.state]);
-  
+
   useEffect(() => {
     if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash)
@@ -166,119 +166,129 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
 
   return (
     <>
-    <Stack direction="row" spacing={2}>
-      <FormControl
-        size="small"
-        sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
-        variant="standard"
-      >
-        <TextField
-          label="Seq ID"
-          id="seqid-simple-select-label"
-          name="seqid"
+      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+        <FormControl
+          size="small"
+          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
           variant="standard"
-          value={seqUploadRow?.seqId ?? ''}
-          onChange={e => handleSeqId(e.target.value)}
-          disabled={requestCompleted()}
-        />
-      </FormControl>
-      <FormControl
-        size="small"
-        sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
-        variant="standard"
-      >
-        <InputLabel id="read1-simple-select-label">Read 1</InputLabel>
-        <Select
-          labelId="read1-simple-select-label"
-          id="read1-simple-select-label"
-          label="Read 1"
-          name="read1"
-          value={seqUploadRow?.read1?.file.name ?? ''}
-          onChange={(e) => handleSelectRead1(e.target.value)}
-          disabled={requestCompleted()}
         >
-          <MenuItem
-            value={seqUploadRow?.read1?.file.name}
-            key={seqUploadRow?.read1?.file.name}
-          >
-            {`${seqUploadRow?.read1?.file.name}`}
-          </MenuItem>
-          <MenuItem
-            value={seqUploadRow?.read2?.file.name}
-            key={seqUploadRow?.read2?.file.name}
-          >
-            {`${seqUploadRow?.read2?.file.name}`}
-          </MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl
-        size="small"
-        sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
-        variant="standard"
-      >
-        <InputLabel id="read2-simple-select-label">Read 2</InputLabel>
-        <Select
-          labelId="read2-simple-select-label"
-          id="read2-simple-select-label"
-          label="Read 2"
-          name="read2"
-          value={seqUploadRow?.read2?.file.name ?? ''}
-          onChange={(e) => handleSelectRead2(e.target.value)}
-          disabled={requestCompleted()}
+          <TextField
+            label="Seq ID"
+            id="seqid-simple-select-label"
+            name="seqid"
+            variant="standard"
+            value={seqUploadRow?.seqId ?? ''}
+            onChange={e => handleSeqId(e.target.value)}
+            disabled={requestCompleted()}
+          />
+        </FormControl>
+      </TableCell>
+      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+        <FormControl
+          size="small"
+          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
+          variant="standard"
         >
-          <MenuItem
-            value={seqUploadRow?.read1?.file.name}
-            key={seqUploadRow?.read1?.file.name}
+          <InputLabel id="read1-simple-select-label">Read 1</InputLabel>
+          <Select
+            labelId="read1-simple-select-label"
+            id="read1-simple-select-label"
+            label="Read 1"
+            name="read1"
+            value={seqUploadRow?.read1?.file.name ?? ''}
+            onChange={(e) => handleSelectRead1(e.target.value)}
+            disabled={requestCompleted()}
           >
-            {`${seqUploadRow?.read1?.file.name}`}
-          </MenuItem>
-          <MenuItem
-            value={seqUploadRow?.read2?.file.name}
-            key={seqUploadRow?.read2?.file.name}
-          >
-            {`${seqUploadRow?.read2?.file.name}`}
-          </MenuItem>
-        </Select>
-      </FormControl>
-      <TextField
-        id="outlined-read-only-input"
-        label="State"
-        value={seqUploadRow.state}
-        variant="standard"
-        slotProps={{
-          input: {
-            readOnly: true,
-          },
-        }}
-      />
-      {rowInProgress() ? (
-        <CircularProgress/>
-      ) : (
-        <>
-          {
-            requestWaiting() ? (
-              <></>
-            ) : (
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              onClick={() => {setShowValidation(!showValidation)}}
-              disabled={disableResponse()}
+            <MenuItem
+              value={seqUploadRow?.read1?.file.name}
+              key={seqUploadRow?.read1?.file.name}
             >
-              Show Response
-            </Button>
-            )
-          }
-        </>
-      )}
-    </Stack>
-    <ValidationModal 
-      messages={seqSubmission.messages ?? []} 
-      title={"Response Messages"} 
-      openModal={showValidation}
-      handleModalClose={() => setShowValidation(!showValidation)}
-    />
+              {`${seqUploadRow?.read1?.file.name}`}
+            </MenuItem>
+            <MenuItem
+              value={seqUploadRow?.read2?.file.name}
+              key={seqUploadRow?.read2?.file.name}
+            >
+              {`${seqUploadRow?.read2?.file.name}`}
+            </MenuItem>
+          </Select>
+        </FormControl>
+      </TableCell>
+      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+        <FormControl
+          size="small"
+          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
+          variant="standard"
+        >
+          <InputLabel id="read2-simple-select-label">Read 2</InputLabel>
+          <Select
+            labelId="read2-simple-select-label"
+            id="read2-simple-select-label"
+            label="Read 2"
+            name="read2"
+            value={seqUploadRow?.read2?.file.name ?? ''}
+            onChange={(e) => handleSelectRead2(e.target.value)}
+            disabled={requestCompleted()}
+          >
+            <MenuItem
+              value={seqUploadRow?.read1?.file.name}
+              key={seqUploadRow?.read1?.file.name}
+            >
+              {`${seqUploadRow?.read1?.file.name}`}
+            </MenuItem>
+            <MenuItem
+              value={seqUploadRow?.read2?.file.name}
+              key={seqUploadRow?.read2?.file.name}
+            >
+              {`${seqUploadRow?.read2?.file.name}`}
+            </MenuItem>
+          </Select>
+        </FormControl>
+      </TableCell>
+      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+        <TextField
+          id="outlined-read-only-input"
+          label="State"
+          value={seqUploadRow.state}
+          variant="standard"
+          slotProps={{
+            input: {
+              readOnly: true,
+            },
+          }}
+        />
+      </TableCell>
+      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+        {rowInProgress() ? (
+          <CircularProgress/>
+        ) : (
+          <>
+            {
+              requestWaiting() ? (
+                <></>
+              ) : (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {
+                    setShowValidation(!showValidation)
+                  }}
+                  disabled={disableResponse()}
+                >
+                  Show Response
+                </Button>
+              )
+            }
+          </>
+        )}
+      </TableCell>
+      <ValidationModal
+        messages={seqSubmission.messages ?? []}
+        title={"Response Messages"}
+        openModal={showValidation}
+        handleModalClose={() => setShowValidation(!showValidation)}
+      />
     </>
   );
 }

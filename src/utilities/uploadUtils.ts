@@ -20,8 +20,8 @@ export interface SeqUploadRow {
 
 export enum SeqType {
   FastqIllPe = 'fastq-ill-pe',
-  FastqIllSe = 'fastq-ill-se',
-  FastqOnt = 'fastq-ont',
+  // FastqIllSe = 'fastq-ill-se',
+  // FastqOnt = 'fastq-ont',
 }
 
 export enum SkipForce {

@@ -6,11 +6,18 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button, 
-  FormGroup, 
-  Checkbox, 
-  FormControlLabel, 
-  Switch,
+  Button,
+  FormGroup,
+  Checkbox,
+  FormControlLabel,
+  Switch, 
+  TableContainer, 
+  Paper, 
+  Table, 
+  TableHead, 
+  TableRow, 
+  TableCell, 
+  TableBody,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { getEnumByValue } from '../../utilities/enumUtils';
@@ -324,15 +331,36 @@ function UploadSequences() {
           ]}
           hideAfterDrop
         />
-        {seqUploadRows.map(sur => (
-          <UploadSequenceRow
-            key={sur.id}
-            seqUploadRow={sur}
-            updateRow={updateRow}
-            modeOption={selectedSkipForce}
-            seqTypeOption={selectedSeqType}
-          />
-        ))}
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              {seqUploadRows.length > 0 ? (
+                <TableRow sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>
+                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Seq ID</TableCell>
+                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Read 1</TableCell>
+                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Read 2</TableCell>
+                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>State</TableCell>
+                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Actions</TableCell>
+                </TableRow>
+              ) : (<></>)}
+            </TableHead>
+            <TableBody>
+              {seqUploadRows.map(sur => (
+                <TableRow
+                  key={sur.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <UploadSequenceRow
+                    seqUploadRow={sur}
+                    updateRow={updateRow}
+                    modeOption={selectedSkipForce}
+                    seqTypeOption={selectedSeqType}
+                  />
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
         {files.length === 0 ? (
           <></>
         ) : (
