@@ -16,11 +16,12 @@ import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop2 from './FileDragDrop2';
 
 // TODO: these need mimetypes
+// the .fq and .fastq files can't available to select in the browser with octet
 const validFormats = {
   '.fq': '',
   '.fastq': '',
-  '.fq.gz': '',
-  '.fastq.gz': '',
+  '.fq.gz': 'application/x-gzip',
+  '.fastq.gz': 'application/x-gzip',
 };
 
 interface SeqPair {
