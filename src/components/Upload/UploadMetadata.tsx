@@ -4,9 +4,7 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   CircularProgress,
-  Drawer,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -21,7 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import {FileUpload, HelpOutline, ListAlt, Rule} from '@mui/icons-material';
+import {FileUpload, Rule} from '@mui/icons-material';
 import {getUserProformas, uploadSubmissions, validateSubmissions} from '../../utilities/resourceUtils';
 import {Proforma} from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
@@ -32,6 +30,8 @@ import {ResponseMessage} from '../../types/apiResponse.interface';
 import {ResponseType} from '../../constants/responseType';
 import {DropFileUpload} from "../../types/DropFileUpload";
 import Validation from "../Validation/Validation";
+import HelpSidebar from "../Help/HelpSidebar";
+import UploadMetadataHelp from "./UploadMetadataHelp";
 
 interface Options {
   validate: boolean,
@@ -63,67 +63,6 @@ const validFormats = {
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 };
 
-function UploadInstructions({ setDrawerOpen }: any) {
-  return (
-    <Box
-      sx={{ maxWidth: 600, padding: 6, borderLeft: 6, borderColor: 'secondary.main', height: '100%' }}
-      role="presentation"
-      onClick={() => setDrawerOpen(false)}
-      onKeyDown={() => setDrawerOpen(false)}
-    >
-      <ListAlt fontSize="large" color="primary" />
-      <Typography variant="h4" color="primary">
-        Upload Instructions
-      </Typography>
-      <br />
-      <Typography>Please use the supplied proforma to submit metadata for samples.</Typography>
-      <br />
-      Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
-      Files should have extensions
-      <code> .csv </code>
-      or
-      <code> .xlsx</code>
-      . If not using the proforma directly,
-      ensure that column names in your CSV or Excel file match those in the proforma.
-      <br />
-      <br />
-      Excel proformas include
-      <b> three </b>
-      worksheets:
-      <ul>
-        <li>The metadata proforma itself</li>
-        <li>A data dictionary, describing the usage of metadata fields</li>
-        <li>A type dictionary, specifying allowed values for fields, where applicable</li>
-      </ul>
-      The first row of data is considered to be the header.
-      When using an Excel proforma the first tab will be used as the sample metadata table.
-      <br />
-      <br />
-      Special columns, required in certain proformas, are:
-      <ul>
-        <li>
-          <b>Seq_ID</b>
-          , used as an identifier to match row metadata to sequence data
-        </li>
-        <li>
-          <b>Owner_group</b>
-          , used to assign the sample ownership.
-          This will affect edit rights over the data.
-          Usually a sample will be owned by the Owner group for its organisation
-          (for instance, the MDU-Owner group).
-        </li>
-        <li>
-          <b>Shared_groups</b>
-          , used to determine who will have permission to view the sample metadata.
-          Samples may be shared with multiple groups.
-          If a sample is uploaded with an empty Shared_groups value,
-          it will not be shared with anyone except the owner group.
-        </li>
-      </ul>
-    </Box>
-  );
-}
-
 function UploadMetadata() {
   const [proformas, setProformas] = useState<Proforma[]>([]);
   const [proformaStatus, setProformaStatus] = useState(LoadingState.IDLE);
@@ -140,23 +79,9 @@ function UploadMetadata() {
     'append': false,
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
-
-  const toggleDrawer =
-    (open: boolean) =>
-      (event: React.KeyboardEvent | React.MouseEvent) => {
-        if (
-          event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-        ) {
-          return;
-        }
-        setDrawerOpen(open);
-      };
-
+  
   useEffect(() => {
     setProformaStatus(LoadingState.LOADING);
     const getProformas = async () => {
@@ -270,10 +195,10 @@ function UploadMetadata() {
           </Typography>
         </Grid>
         <Grid>
-          <Chip
-            icon={<HelpOutline />}
-            label="View upload instructions"
-            onClick={toggleDrawer(true)}
+          <HelpSidebar 
+            content={UploadMetadataHelp()} 
+            title={"Upload Instructions"} 
+            chipLabel={"View upload instructions"}
           />
         </Grid>
       </Grid>
@@ -408,13 +333,6 @@ function UploadMetadata() {
           )
           : null}
       </div>
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-      >
-        <UploadInstructions setDrawerOpen={setDrawerOpen} />
-      </Drawer>
       <Backdrop
         sx={{
           color: 'var(--background-colour)',
