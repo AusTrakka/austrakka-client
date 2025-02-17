@@ -50,11 +50,11 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       ...seqUploadRow,
       read1: {
         ...seqUploadRow.read1,
-        hash: await generateHash(await seqUploadRow.read1.file.text()),
+        hash: await generateHash(await seqUploadRow.read1.file.arrayBuffer()),
       },
       read2: {
         ...seqUploadRow.read2,
-        hash: await generateHash(await seqUploadRow.read2.file.text()),
+        hash: await generateHash(await seqUploadRow.read2.file.arrayBuffer()),
       },
     })
   };

@@ -75,7 +75,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   const handleFiles = async (uploadedFiles: File[]) => {
     const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
       file,
-      hash: calculateHash ? await generateHash(await file.text()) : undefined,
+      hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
     } as DropFileUpload)));
     setFiles([...files, ...fileUploads]);
     console.log(`file length ${files.length}`);
