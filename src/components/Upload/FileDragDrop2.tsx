@@ -41,10 +41,27 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
     } as CustomUploadValidatorReturn),
   } as CustomUploadValidator;
+  
+  const validateSingleFile = {
+    func: (files: File[]) => ({
+      success: files.length === 1,
+      message: 'Only one file can be selected',
+    } as CustomUploadValidatorReturn),
+  } as CustomUploadValidator;
+  
+  const getBuiltInValidators = (): CustomUploadValidator[] => {
+    let validators: CustomUploadValidator[] = [];
+    if (!multiple) {
+      validators.push(validateSingleFile);
+    }
+    if (Object.entries(validFormats).length > 0 ) {
+      validators.push(validateFilesAreOfType);
+    }
+    return validators;
+  }
 
   const validateUpload = (uploadedFiles: File[]): boolean => {
-    // Add in built in validators first
-    for (const validator of [validateFilesAreOfType, ...customValidators]) {
+    for (const validator of [...getBuiltInValidators(), ...customValidators]) {
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
         enqueueSnackbar(validatorReturn.message, {variant: 'error'});
@@ -145,11 +162,16 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
                       hidden
                     />
                   </Button>
-                  <Typography variant="subtitle2">
-                    Valid file types are:
-                    {' '}
-                    {Object.keys(validFormats).join(', ')}
-                  </Typography>
+                  {
+                    Object.entries(validFormats).length > 0
+                    ? (
+                        <Typography variant="subtitle2">
+                          Valid file types are:
+                          {' '}
+                          {Object.keys(validFormats).join(', ')}
+                        </Typography>
+                      ) : (<></>)
+                  }
                 </>
               ) : (
                 <>
