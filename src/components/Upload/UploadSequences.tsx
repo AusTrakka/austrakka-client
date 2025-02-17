@@ -13,7 +13,7 @@ import {
   validateNoDuplicateFilenames,
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
-import FileDragDrop2 from './FileDragDrop2';
+import FileDragDrop from './FileDragDrop';
 
 // TODO: these need mimetypes
 // the .fq and .fastq files can't available to select in the browser with octet
@@ -215,7 +215,7 @@ function UploadSequences() {
       </FormControl>
       <Typography variant="h4" color="primary">Select sequence files</Typography>
       <Stack direction="row" spacing={2}>
-        <FileDragDrop2
+        <FileDragDrop
           files={files}
           setFiles={setFiles}
           validFormats={validFormats}

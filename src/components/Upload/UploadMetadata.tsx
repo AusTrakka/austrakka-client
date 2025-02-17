@@ -11,6 +11,7 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { ResponseType } from '../../constants/responseType';
+import {DropFileUpload} from "../../types/DropFileUpload";
 
 interface Options {
   validate: boolean,
@@ -116,8 +117,7 @@ function UploadMetadata() {
     'blank': false,
     'append': false,
   } as Options);
-  const [file, setFile] = useState<File>();
-  const [invalidFile, setInvalidFile] = useState(false);
+  const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
@@ -182,7 +182,7 @@ function UploadMetadata() {
     });
     const optionString = `?appendMode=${options.append}&deleteOnBlank=${options.blank}`;
     const formData = new FormData();
-    formData.append('file', file!);
+    formData.append('file', files[0].file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
     const submissionResponse : ResponseObject = options.validate ?
@@ -211,7 +211,7 @@ function UploadMetadata() {
       messages: [],
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, options]);
+  }, [files, options]);
 
   return (
     <>
@@ -297,13 +297,15 @@ function UploadMetadata() {
         </Grid>
         <Grid item lg={4} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
-          <FileDragDrop
-            file={file}
-            setFile={setFile}
-            invalidFile={invalidFile}
-            setInvalidFile={setInvalidFile}
-            validFormats={validFormats}
-          />
+          <FileDragDrop 
+            files={files} 
+            setFiles={setFiles} 
+            validFormats={validFormats} 
+            multiple={false} 
+            calculateHash={false} 
+            hideAfterDrop={false}
+            customValidators={[]}
+          ></FileDragDrop>
         </Grid>
         <Grid item lg={5} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
@@ -334,7 +336,7 @@ function UploadMetadata() {
           { options.validate ? (
             <Button
               variant="contained"
-              disabled={!selectedProforma || !file || invalidFile}
+              disabled={!selectedProforma || files.length === 0}
               endIcon={<Rule />}
               onClick={() => handleSubmit()}
             >
@@ -344,7 +346,7 @@ function UploadMetadata() {
             : (
               <Button
                 variant="contained"
-                disabled={!selectedProforma || !file || invalidFile}
+                disabled={!selectedProforma || files.length === 0}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
               >
