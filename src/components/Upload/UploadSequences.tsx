@@ -80,6 +80,21 @@ function UploadSequences() {
   const getRowsOfState = (state: SeqUploadRowState) => {
     return seqUploadRows.filter(sur => sur.state === state);
   }
+  
+  const uploadInProgress = (): boolean => {
+    return !seqUploadRows.every(sur => 
+      sur.state === SeqUploadRowState.Complete || 
+      sur.state === SeqUploadRowState.Errored ||
+      sur.state === SeqUploadRowState.Waiting
+    )
+  }
+  
+  const uploadFinished = (): boolean => {
+    return seqUploadRows.every(sur =>
+      sur.state === SeqUploadRowState.Complete ||
+      sur.state === SeqUploadRowState.Errored
+    )
+  }
 
   useEffect(() => {
     const calculated = getRowsOfState(SeqUploadRowState.CalculatedHash);
@@ -232,6 +247,7 @@ function UploadSequences() {
             variant="outlined"
             color="primary"
             onClick={handleUpload}
+            disabled={uploadInProgress() || uploadFinished()}
           >
             Upload All
           </Button>
@@ -239,6 +255,7 @@ function UploadSequences() {
             variant="outlined"
             color="error"
             onClick={handleClearFiles}
+            disabled={uploadInProgress()}
           >
             Clear Files
           </Button>
