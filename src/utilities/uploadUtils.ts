@@ -25,7 +25,7 @@ export enum SeqType {
 }
 
 export enum SkipForce {
-  None = 'none',
+  None = '',
   Skip = 'skip',
   Force = 'overwrite',
 }
