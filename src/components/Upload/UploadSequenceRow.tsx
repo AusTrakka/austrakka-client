@@ -125,6 +125,11 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
     }
   };
   
+  const disableResponse = (): boolean | undefined => {
+    return seqUploadRow.state !== SeqUploadRowState.Complete 
+      && seqUploadRow.state !== SeqUploadRowState.Errored
+  }
+  
   useEffect(() => {
     console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
@@ -214,8 +219,15 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </MenuItem>
         </Select>
       </FormControl>
-      <Button onClick={() => {setShowValidation(!showValidation)}}>Show Response</Button> 
       <Typography variant="subtitle1">{seqUploadRow.state}</Typography>
+      <Button 
+        variant="outlined" 
+        color="primary" 
+        onClick={() => {setShowValidation(!showValidation)}}
+        disabled={disableResponse()}
+      >
+        Show Response
+      </Button>
     </Stack>
     <ValidationModal 
       messages={seqSubmission.messages ?? []} 
