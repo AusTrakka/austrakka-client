@@ -80,7 +80,7 @@ export const validateSubmissions = (formData: FormData, params: string, token: s
 export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
 
 // Sequence endpoints
-export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers)
+export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);

@@ -196,16 +196,21 @@ Promise<ResponseObject> {
   });
 }
 
-export async function callPostMultipart(url: string, formData: FormData, token: string, customHeaders: any = {})
+export async function callPostMultipart(
+  url: string,
+  formData: FormData,
+  token: string,
+  customHeaders: any = {},
+)
   : Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
-  const headers = {...getHeadersMultipartPost(token), ...customHeaders}
+  const headers = { ...getHeadersMultipartPost(token), ...customHeaders };
   return callApi(url, {
     method: 'POST',
     body: formData,
-    headers: headers,
+    headers,
   });
 }
 
