@@ -1,10 +1,3 @@
-// import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
-// import { Box, FormControl, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
-//   FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
-//   Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
-// import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
-// import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
-// import { Proforma } from '../../types/dtos';
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {
   Backdrop,
@@ -253,9 +246,9 @@ function UploadMetadata() {
 
   return (
     <>
+      <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
         <Grid size={{ md: 12, lg: 9 }}>
-          <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
           <Typography variant="subtitle2" paddingBottom={1}>
             Please use the supplied proforma to submit metadata for samples.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
@@ -291,7 +284,7 @@ function UploadMetadata() {
             <FormControl
               error={proformaStatus === LoadingState.ERROR}
               size="small"
-              sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
               variant="standard"
             >
               <InputLabel id="proforma-simple-select-label">Proforma</InputLabel>
