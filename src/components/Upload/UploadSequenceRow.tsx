@@ -1,13 +1,13 @@
 import React, {Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography} from '@mui/material';
-import { useEffect, useState } from 'react';
-import { SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
+import {useEffect, useState} from 'react';
+import {SeqType, SeqUploadRow, SeqUploadRowState, SkipForce} from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
-import { ResponseMessage } from '../../types/apiResponse.interface';
-import { useApi } from '../../app/ApiContext';
-import { uploadFastqSequence } from '../../utilities/resourceUtils';
-import { ResponseType } from '../../constants/responseType';
-import { generateHash } from '../../utilities/file';
+import {ResponseMessage} from '../../types/apiResponse.interface';
+import {useApi} from '../../app/ApiContext';
+import {uploadFastqSequence} from '../../utilities/resourceUtils';
+import {ResponseType} from '../../constants/responseType';
 import ValidationModal from "../Validation/ValidationModal";
+import {generateHash} from "../../utilities/file";
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqUploadRow,
@@ -37,26 +37,17 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
   };
 
   const calculateHash = async () => {
-    console.log(`calculateHash ${seqUploadRow.seqId}`);
-
-    if (seqUploadRow.read1.hash === undefined) {
-      updateRow({
-        ...seqUploadRow,
-        read1: {
-          ...seqUploadRow.read1,
-          hash: await generateHash(await seqUploadRow.read1.file.text()),
-        },
-      });
-    }
-    if (seqUploadRow.read2.hash === undefined) {
-      updateRow({
-        ...seqUploadRow,
-        read2: {
-          ...seqUploadRow.read2,
-          hash: await generateHash(await seqUploadRow.read2.file.text()),
-        },
-      });
-    }
+    updateRow({
+      ...seqUploadRow,
+      read1: {
+        ...seqUploadRow.read1,
+        hash: await generateHash(await seqUploadRow.read1.file.text()),
+      },
+      read2: {
+        ...seqUploadRow.read2,
+        hash: await generateHash(await seqUploadRow.read2.file.text()),
+      },
+    })
   };
 
   const handleSeqId = (seqId: string) => {
@@ -134,17 +125,19 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
     console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
       calculateHash()
-        .then(() => updateState(SeqUploadRowState.CalculatedHash))
-        .catch((err) => {
-          console.error(err);
-        });
+        .catch(console.error)
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit()
-        .then(() => {
-        });
+        .catch(console.error)
     }
   }, [seqUploadRow.state]);
+  
+  useEffect(() => {
+    if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
+      updateState(SeqUploadRowState.CalculatedHash)
+    }
+  }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash])
 
   return (
     <>
