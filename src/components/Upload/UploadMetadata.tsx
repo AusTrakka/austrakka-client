@@ -379,28 +379,28 @@ function UploadMetadata() {
             ) }
           </FormGroup>
         </Grid>
-        <Grid container direction="row-reverse">
-          { options.validate ? (
+      </Grid>
+      <Grid container justifyContent="flex-end">
+        { options.validate ? (
+          <Button
+            variant="contained"
+            disabled={!selectedProforma || files.length === 0}
+            endIcon={<Rule />}
+            onClick={() => handleSubmit()}
+          >
+            Validate metadata
+          </Button>
+        )
+          : (
             <Button
               variant="contained"
               disabled={!selectedProforma || files.length === 0}
-              endIcon={<Rule />}
+              endIcon={<FileUpload />}
               onClick={() => handleSubmit()}
             >
-              Validate metadata
+              Upload metadata
             </Button>
-          )
-            : (
-              <Button
-                variant="contained"
-                disabled={!selectedProforma || files.length === 0}
-                endIcon={<FileUpload />}
-                onClick={() => handleSubmit()}
-              >
-                Upload metadata
-              </Button>
-            )}
-        </Grid>
+          )}
       </Grid>
       <div ref={scrollRef}>
         {(
