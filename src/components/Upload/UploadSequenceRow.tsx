@@ -133,7 +133,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           console.error(err);
         });
     }
-    if (seqUploadRow.state === SeqUploadRowState.Processing) {
+    if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit()
         .then(() => {
         });

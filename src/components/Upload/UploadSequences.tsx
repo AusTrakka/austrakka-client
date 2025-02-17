@@ -1,18 +1,14 @@
-import React, {
-  Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Stack, Button,
-} from '@mui/material';
+import React, {Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, Typography,} from '@mui/material';
 import {useEffect, useState} from 'react';
 import {getEnumByValue} from '../../utilities/enumUtils';
 import {DropFileUpload} from '../../types/DropFileUpload';
 import {
   CustomUploadValidator,
-  CustomUploadValidatorReturn, SeqType, SeqUploadRow, SeqUploadRowState, SkipForce,
+  CustomUploadValidatorReturn,
+  SeqType,
+  SeqUploadRow,
+  SeqUploadRowState,
+  SkipForce,
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
 } from '../../utilities/uploadUtils';
@@ -80,20 +76,24 @@ function UploadSequences() {
     });
     setSeqUploadRows(queuedRows);
   };
+  
+  const getRowsOfState = (state: SeqUploadRowState) => {
+    return seqUploadRows.filter(sur => sur.state === state);
+  }
 
   useEffect(() => {
-    // TODO: this still needs to orchestrate the efficient queuing of uploads
-    // If there are no items in Processing, nominate one Calculated Hash state to processing
-    // check for any rows in Calculated state 
-    const calculatedRows = seqUploadRows
-      .filter(sur => sur.state === SeqUploadRowState.CalculatedHash);
-    const queuedRows = seqUploadRows.filter(sur => sur.state === SeqUploadRowState.Queued);
+    const calculated = getRowsOfState(SeqUploadRowState.CalculatedHash);
+    const calculating = getRowsOfState(SeqUploadRowState.CalculatingHash);
+    const queued = getRowsOfState(SeqUploadRowState.Queued);
+    const processing = getRowsOfState(SeqUploadRowState.Uploading);
 
-    for (const row of queuedRows) {
+    for (const row of queued.slice(0,Math.abs(calculating.length - 2))) {
+      // Calculate 2 hashes at a time
       updateRow({...row, state: SeqUploadRowState.CalculatingHash});
     }
-    for (const row of calculatedRows) {
-      updateRow({...row, state: SeqUploadRowState.Processing});
+    for (const row of calculated.slice(0, Math.abs(processing.length - 1))) {
+      // Only upload 1 at a time
+      updateRow({...row, state: SeqUploadRowState.Uploading});
     }
   }, [[...seqUploadRows.map(sur => sur.state)]]);
 
