@@ -1,5 +1,14 @@
-import React, {Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography} from '@mui/material';
-import {useEffect, useState} from 'react';
+import {
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+} from '@mui/material';
+import React, {useEffect, useState} from 'react';
 import {SeqType, SeqUploadRow, SeqUploadRowState, SkipForce} from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
 import {ResponseMessage} from '../../types/apiResponse.interface';
@@ -121,6 +130,22 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       && seqUploadRow.state !== SeqUploadRowState.Errored
   }
   
+  const requestCompleted = (): boolean | undefined => {
+    return seqUploadRow.state === SeqUploadRowState.Complete
+  }
+  
+  const requestWaiting = (): boolean => {
+    return seqUploadRow.state === SeqUploadRowState.Waiting;
+  }
+  
+  const rowInProgress = (): boolean => {
+    return ![
+      SeqUploadRowState.Waiting,
+      SeqUploadRowState.Complete,
+      SeqUploadRowState.Errored,
+    ].includes(seqUploadRow.state)
+  }
+  
   useEffect(() => {
     console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
@@ -154,6 +179,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           variant="standard"
           value={seqUploadRow?.seqId ?? ''}
           onChange={e => handleSeqId(e.target.value)}
+          disabled={requestCompleted()}
         />
       </FormControl>
       <FormControl
@@ -169,6 +195,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           name="read1"
           value={seqUploadRow?.read1?.file.name ?? ''}
           onChange={(e) => handleSelectRead1(e.target.value)}
+          disabled={requestCompleted()}
         >
           <MenuItem
             value={seqUploadRow?.read1?.file.name}
@@ -197,6 +224,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           name="read2"
           value={seqUploadRow?.read2?.file.name ?? ''}
           onChange={(e) => handleSelectRead2(e.target.value)}
+          disabled={requestCompleted()}
         >
           <MenuItem
             value={seqUploadRow?.read1?.file.name}
@@ -212,15 +240,38 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </MenuItem>
         </Select>
       </FormControl>
-      <Typography variant="subtitle1">{seqUploadRow.state}</Typography>
-      <Button 
-        variant="outlined" 
-        color="primary" 
-        onClick={() => {setShowValidation(!showValidation)}}
-        disabled={disableResponse()}
-      >
-        Show Response
-      </Button>
+      <TextField
+        id="outlined-read-only-input"
+        label="State"
+        value={seqUploadRow.state}
+        variant="standard"
+        slotProps={{
+          input: {
+            readOnly: true,
+          },
+        }}
+      />
+      {rowInProgress() ? (
+        <CircularProgress/>
+      ) : (
+        <>
+          {
+            requestWaiting() ? (
+              <></>
+            ) : (
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={() => {setShowValidation(!showValidation)}}
+              disabled={disableResponse()}
+            >
+              Show Response
+            </Button>
+            )
+          }
+        </>
+      )}
     </Stack>
     <ValidationModal 
       messages={seqSubmission.messages ?? []} 
