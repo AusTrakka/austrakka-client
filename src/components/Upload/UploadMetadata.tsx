@@ -1,7 +1,8 @@
 import React, { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Box, FormControl, Grid, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
+import { Box, FormControl, InputLabel, Select, Typography, Button, FormControlLabel, Checkbox,
   FormGroup, MenuItem, Drawer, Tooltip, Chip, List, ListItemText, LinearProgress, Alert,
   Backdrop, CircularProgress, AlertColor, Link } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { ListAlt, HelpOutline, Rule, FileUpload } from '@mui/icons-material';
 import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
@@ -216,9 +217,9 @@ function UploadMetadata() {
   return (
     <>
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
-        <Grid item lg={9} md={12}>
+        <Grid size={{ md: 12, lg: 9 }}>
           <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
-          <Typography variant="subtitle2" color="primary">
+          <Typography variant="subtitle2" paddingBottom={1}>
             Please use the supplied proforma to submit metadata for samples.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
             Files should have extensions
@@ -227,9 +228,18 @@ function UploadMetadata() {
             <code> .xlsx</code>
             . If not using the proforma directly,
             ensure that column names in your CSV or Excel file match those in the proforma.
+            <br />
+            If you would prefer to upload metadata using the command line,&nbsp;
+            <Link
+              href={`${import.meta.env.VITE_DOCS_URL}/docs/AusTrakka CLI/CLI-metadata-upload`}
+              target="_blank"
+              color="primary.light"
+            >
+              refer to the CLI documentation.
+            </Link>
           </Typography>
         </Grid>
-        <Grid item>
+        <Grid>
           <Chip
             icon={<HelpOutline />}
             label="View upload instructions"
@@ -238,7 +248,7 @@ function UploadMetadata() {
         </Grid>
       </Grid>
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
-        <Grid item lg={3} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid size={{ lg: 3, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select proforma </Typography>
           <Tooltip title={proformaStatusMessage} placement="left" arrow>
             <FormControl
@@ -295,7 +305,7 @@ function UploadMetadata() {
             </List>
           ) : null}
         </Grid>
-        <Grid item lg={4} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
           <FileDragDrop
             file={file}
@@ -305,7 +315,7 @@ function UploadMetadata() {
             validFormats={validFormats}
           />
         </Grid>
-        <Grid item lg={5} md={12} xs={12} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
           <FormGroup>
             { uploadOptions.map(
@@ -330,7 +340,7 @@ function UploadMetadata() {
             ) }
           </FormGroup>
         </Grid>
-        <Grid item container direction="row-reverse">
+        <Grid container direction="row-reverse">
           { options.validate ? (
             <Button
               variant="contained"
@@ -359,13 +369,13 @@ function UploadMetadata() {
           submission.status === LoadingState.ERROR
         ) ? (
           <Grid container spacing={1} direction="column">
-            <Grid item>
+            <Grid>
               {options.validate ?
                 <Typography variant="h4" color="primary">Validation status</Typography> : <Typography variant="h4" color="primary">Upload status</Typography>}
             </Grid>
             {submission.messages!.map(
               (message: ResponseMessage) => (
-                <Grid item>
+                <Grid>
                   <Alert severity={message.ResponseType.toLowerCase() as AlertColor}>
                     <strong>{message.ResponseType}</strong>
                     {' '}
@@ -380,7 +390,7 @@ function UploadMetadata() {
               submission.status === LoadingState.SUCCESS &&
             options.validate === true
             ) ? (
-              <Grid item>
+              <Grid>
                 <Alert severity="warning">
                   <strong>Warning</strong>
                   {' '}
@@ -414,10 +424,10 @@ function UploadMetadata() {
         open={submission.status === LoadingState.LOADING}
       >
         <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">
-          <Grid item>
+          <Grid>
             <Typography>{options.validate ? 'Validating metadata... ' : 'Uploading metadata... '}</Typography>
           </Grid>
-          <Grid item>
+          <Grid>
             <CircularProgress color="inherit" />
           </Grid>
         </Grid>
