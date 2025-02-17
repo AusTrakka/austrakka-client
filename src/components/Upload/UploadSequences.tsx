@@ -347,7 +347,7 @@ function UploadSequences() {
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ paddingBottom: 1 }} key="option-skip">
+              <Box sx={{ paddingBottom: 1 }} key="option-overwrite">
                 <FormControlLabel
                   control={(
                     <Checkbox
@@ -368,35 +368,29 @@ function UploadSequences() {
             </FormGroup>
           </Grid>
         </Grid>
-        <Grid container alignItems="stretch">
-          <Grid size={{ lg: 4, md: 3, xs: 12 }} />
-          <Grid size={{ lg: 4, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" color="primary">Select sequence files</Typography>
-            <FileDragDrop
-              files={files}
-              setFiles={setFiles}
-              validFormats={validFormats}
-              multiple
-              calculateHash={false}
-              customValidators={[
-                validateEvenNumberOfFiles,
-                validateNoDuplicateFilenames,
-                AllHaveSampleNamesWithTwoFilesOnly,
-              ]}
-              hideAfterDrop
-            />
-            {seqUploadRows.map(sur => (
-              <UploadSequenceRow
-                key={sur.id}
-                seqUploadRow={sur}
-                updateRow={updateRow}
-                modeOption={selectedSkipForce}
-                seqTypeOption={selectedSeqType}
-              />
-            ))}
-            <Grid size={{ lg: 4, md: 3, xs: 12 }} />
-          </Grid>
-        </Grid>
+        <Typography variant="h4" color="primary">Select sequence files</Typography>
+        <FileDragDrop
+          files={files}
+          setFiles={setFiles}
+          validFormats={validFormats}
+          multiple
+          calculateHash={false}
+          customValidators={[
+            validateEvenNumberOfFiles,
+            validateNoDuplicateFilenames,
+            AllHaveSampleNamesWithTwoFilesOnly,
+          ]}
+          hideAfterDrop
+        />
+        {seqUploadRows.map(sur => (
+          <UploadSequenceRow
+            key={sur.id}
+            seqUploadRow={sur}
+            updateRow={updateRow}
+            modeOption={selectedSkipForce}
+            seqTypeOption={selectedSeqType}
+          />
+        ))}
         {files.length === 0 ? (
           <></>
         ) : (
