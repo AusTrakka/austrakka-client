@@ -146,8 +146,10 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
             <Stack spacing={1} justifyContent="center" alignItems="center">
               {files.length === 0 ? (
                 <>
-                  <UploadFile fontSize="large" color="primary"/>
-                  <Typography variant="h5" color="primary">Drag and drop file here</Typography>
+                  <UploadFile fontSize="large" color="primary" />
+                  <Typography variant="h5" color="primary">
+                    {multiple ? 'Drag and drop files here' : 'Drag and drop file here'}
+                  </Typography>
                   <Typography variant="subtitle1">or</Typography>
                   <Button variant="outlined" component="label">
                     Browse
