@@ -55,7 +55,6 @@ export const seqStateStyles = {
   },
 };
 
-
 export interface SeqUploadRow {
   id: string
   seqId: string
@@ -118,7 +117,7 @@ export const getSampleNameFromFile = (filename: string) => filename.split('_')[0
 // TODO: fix typescript issues here
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
-    const filenames = files
+    const filenames: SeqPair[] = files
       .map(f => ({ file: f, sampleName: getSampleNameFromFile(f.name) } as SeqPair));
     // @ts-ignore
     const groupedFilenames = filenames

@@ -70,10 +70,6 @@ function UploadSequences() {
     });
     setSeqUploadRows(queuedRows);
   };
-
-  const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
-    sur => sur.state === state,
-  );
   
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
@@ -85,6 +81,10 @@ function UploadSequences() {
       sur.state === SeqUploadRowState.Errored);
 
   useEffect(() => {
+    const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
+      sur => sur.state === state,
+    );
+    
     const calculated = getRowsOfState(SeqUploadRowState.CalculatedHash);
     const calculating = getRowsOfState(SeqUploadRowState.CalculatingHash);
     const queued = getRowsOfState(SeqUploadRowState.Queued);
@@ -98,7 +98,7 @@ function UploadSequences() {
       // Only upload 1 at a time
       updateRow({ ...row, state: SeqUploadRowState.Uploading });
     }
-  }, [[...seqUploadRows.map(sur => sur.state)]]);
+  }, [seqUploadRows.map(sur => sur.state)]);
 
   useEffect(() => {
     const newSeqUploadRows = files
@@ -155,7 +155,7 @@ function UploadSequences() {
         <Grid container spacing={2} sx={{ paddingBottom: 1 }} justifyContent="space-between" alignItems="center">
           <Grid size={{ md: 12, lg: 9 }}>
             <Typography variant="subtitle2" paddingBottom={1}>
-              Drag and drop files below to upload sequences.
+              Drag and drop files below, or click, to upload sequences.
               <br />
               Only FASTQ uploads are handled via the portal currently. Please
               use the CLI for any FASTA uploads.

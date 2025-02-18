@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import {
   Backdrop,
   Box,
@@ -16,22 +16,22 @@ import {
   MenuItem,
   Select,
   Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import {FileUpload, Rule} from '@mui/icons-material';
-import {getUserProformas, uploadSubmissions, validateSubmissions} from '../../utilities/resourceUtils';
-import {Proforma} from '../../types/dtos';
+import { FileUpload, Rule } from '@mui/icons-material';
+import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
+import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
-import {useApi} from '../../app/ApiContext';
-import {ResponseObject} from '../../types/responseObject.interface';
-import {ResponseMessage} from '../../types/apiResponse.interface';
-import {ResponseType} from '../../constants/responseType';
-import {DropFileUpload} from "../../types/DropFileUpload";
-import Validation from "../Validation/Validation";
-import HelpSidebar from "../Help/HelpSidebar";
-import UploadMetadataHelp from "./UploadMetadataHelp";
+import { useApi } from '../../app/ApiContext';
+import { ResponseObject } from '../../types/responseObject.interface';
+import { ResponseMessage } from '../../types/apiResponse.interface';
+import { ResponseType } from '../../constants/responseType';
+import { DropFileUpload } from '../../types/DropFileUpload';
+import Validation from '../Validation/Validation';
+import HelpSidebar from '../Help/HelpSidebar';
+import UploadMetadataHelp from './UploadMetadataHelp';
 
 interface Options {
   validate: boolean,
@@ -57,7 +57,7 @@ const uploadOptions = [
   },
 ];
 
-const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`
+const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`;
 const validFormats = {
   '.csv': 'text/csv',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -136,7 +136,7 @@ function UploadMetadata() {
       await validateSubmissions(formData, optionString, token)
       : await uploadSubmissions(formData, optionString, token);
 
-    let newMessages = [...submissionResponse.messages ?? []]
+    const newMessages = [...submissionResponse.messages ?? []];
     if (submissionResponse.status === ResponseType.Success) {
       setSubmission({
         ...submission,
@@ -148,7 +148,7 @@ function UploadMetadata() {
           ResponseType: ResponseType.Warning,
           ResponseMessage: validateMessage,
 
-        } as ResponseMessage)
+        } as ResponseMessage);
       }
     } else {
       setSubmission({
@@ -157,7 +157,7 @@ function UploadMetadata() {
         messages: submissionResponse.messages,
       });
     }
-    setMessages(newMessages)
+    setMessages(newMessages);
   };
   useEffect(() => {
     // Every time file or option change, reset loading state of submission to idle
@@ -175,14 +175,8 @@ function UploadMetadata() {
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
         <Grid size={{ md: 12, lg: 9 }}>
           <Typography variant="subtitle2" paddingBottom={1}>
-            Please use the supplied proforma to submit metadata for samples.
+            Please select a proforma for validation, and select a metadata file to upload.
             Metadata can be submitted in tabular format, either in CSV or Excel (xlsx) format.
-            Files should have extensions
-            <code> .csv </code>
-            or
-            <code> .xlsx</code>
-            . If not using the proforma directly,
-            ensure that column names in your CSV or Excel file match those in the proforma.
             <br />
             If you would prefer to upload metadata using the command line,&nbsp;
             <Link
@@ -195,10 +189,10 @@ function UploadMetadata() {
           </Typography>
         </Grid>
         <Grid>
-          <HelpSidebar 
-            content={UploadMetadataHelp()} 
-            title={"Upload Instructions"} 
-            chipLabel={"View upload instructions"}
+          <HelpSidebar
+            content={UploadMetadataHelp()}
+            title="Upload Instructions"
+            chipLabel="View upload instructions"
           />
         </Grid>
       </Grid>
@@ -262,15 +256,15 @@ function UploadMetadata() {
         </Grid>
         <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
-          <FileDragDrop 
-            files={files} 
-            setFiles={setFiles} 
-            validFormats={validFormats} 
-            multiple={false} 
-            calculateHash={false} 
+          <FileDragDrop
+            files={files}
+            setFiles={setFiles}
+            validFormats={validFormats}
+            multiple={false}
+            calculateHash={false}
             hideAfterDrop={false}
             customValidators={[]}
-          ></FileDragDrop>
+          />
         </Grid>
         <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
@@ -325,10 +319,10 @@ function UploadMetadata() {
           submission.status === LoadingState.SUCCESS ||
           submission.status === LoadingState.ERROR
         ) ? (
-          <Validation 
-            messages={messages} 
-            title={ options.validate ? "Validation status" : "Upload status"}
-            showTitle={true}
+          <Validation
+            messages={messages}
+            title={options.validate ? 'Validation status' : 'Upload status'}
+            showTitle
           />
           )
           : null}

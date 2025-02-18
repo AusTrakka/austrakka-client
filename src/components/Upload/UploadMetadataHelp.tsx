@@ -15,7 +15,7 @@ export default function UploadMetadataHelp() {
       ensure that column names in your CSV or Excel file match those in the proforma.
       <br />
       <br />
-      Excel proformas include
+      Excel proformas include at least
       <b> three </b>
       worksheets:
       <ul>

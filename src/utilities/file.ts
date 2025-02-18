@@ -1,3 +1,5 @@
+// TODO probably rename to fileUtils
+
 export function generateFilename(name: string = ''): string {
   if (name !== '') {
     name = `_${name}`;
