@@ -8,15 +8,15 @@ import {
   TableCell,
   TextField,
 } from '@mui/material';
-import React, {useEffect, useState} from 'react';
-import {SeqType, SeqUploadRow, SeqUploadRowState, SkipForce} from '../../utilities/uploadUtils';
+import React, { useEffect, useState } from 'react';
+import { SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
-import {ResponseMessage} from '../../types/apiResponse.interface';
-import {useApi} from '../../app/ApiContext';
-import {uploadFastqSequence} from '../../utilities/resourceUtils';
-import {ResponseType} from '../../constants/responseType';
-import ValidationModal from "../Validation/ValidationModal";
-import {generateHash} from "../../utilities/file";
+import { ResponseMessage } from '../../types/apiResponse.interface';
+import { useApi } from '../../app/ApiContext';
+import { uploadFastqSequence } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
+import ValidationModal from '../Validation/ValidationModal';
+import { generateHash } from '../../utilities/file';
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqUploadRow,
@@ -26,17 +26,17 @@ interface UploadSequenceRowProps {
 }
 
 export default function UploadSequenceRow(props: UploadSequenceRowProps) {
-  const {seqUploadRow} = props;
-  const {updateRow} = props;
-  const {modeOption} = props;
-  const {seqTypeOption} = props;
+  const { seqUploadRow } = props;
+  const { updateRow } = props;
+  const { modeOption } = props;
+  const { seqTypeOption } = props;
   
   const [showValidation, setShowValidation] = useState(false);
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
   });
-  const {token} = useApi();
+  const { token } = useApi();
 
   const updateState = (state: SeqUploadRowState) => {
     updateRow({
@@ -56,7 +56,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
         ...seqUploadRow.read2,
         hash: await generateHash(await seqUploadRow.read2.file.arrayBuffer()),
       },
-    })
+    });
   };
 
   const handleSeqId = (seqId: string) => {
@@ -125,51 +125,45 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
     }
   };
 
-  const disableResponse = (): boolean | undefined => {
-    return seqUploadRow.state !== SeqUploadRowState.Complete
-      && seqUploadRow.state !== SeqUploadRowState.Errored
-  }
+  const disableResponse = (): boolean | undefined =>
+    seqUploadRow.state !== SeqUploadRowState.Complete
+      && seqUploadRow.state !== SeqUploadRowState.Errored;
 
-  const requestCompleted = (): boolean | undefined => {
-    return seqUploadRow.state === SeqUploadRowState.Complete
-  }
+  const requestCompleted = (): boolean | undefined =>
+    seqUploadRow.state === SeqUploadRowState.Complete;
 
-  const requestWaiting = (): boolean => {
-    return seqUploadRow.state === SeqUploadRowState.Waiting;
-  }
+  const requestWaiting = (): boolean => seqUploadRow.state === SeqUploadRowState.Waiting;
 
-  const rowInProgress = (): boolean => {
-    return ![
-      SeqUploadRowState.Waiting,
-      SeqUploadRowState.Complete,
-      SeqUploadRowState.Errored,
-    ].includes(seqUploadRow.state)
-  }
+  const rowInProgress = (): boolean => ![
+    SeqUploadRowState.Waiting,
+    SeqUploadRowState.Complete,
+    SeqUploadRowState.Errored,
+  ].includes(seqUploadRow.state);
 
   useEffect(() => {
     console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
       calculateHash()
-        .catch(console.error)
+        .catch(console.error);
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit()
-        .catch(console.error)
+        .catch(console.error);
     }
   }, [seqUploadRow.state]);
 
   useEffect(() => {
     if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
-      updateState(SeqUploadRowState.CalculatedHash)
+      updateState(SeqUploadRowState.CalculatedHash);
     }
-  }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash])
+  }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash]);
 
   return (
     <>
-      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
         <FormControl
           size="small"
-          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
+          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
           variant="standard"
         >
           <TextField
@@ -183,10 +177,10 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           />
         </FormControl>
       </TableCell>
-      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
         <FormControl
           size="small"
-          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
+          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
           variant="standard"
         >
           <InputLabel id="read1-simple-select-label">Read 1</InputLabel>
@@ -214,10 +208,10 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </Select>
         </FormControl>
       </TableCell>
-      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
         <FormControl
           size="small"
-          sx={{minWidth: 200, marginTop: 2, marginBottom: 2}}
+          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
           variant="standard"
         >
           <InputLabel id="read2-simple-select-label">Read 2</InputLabel>
@@ -245,7 +239,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </Select>
         </FormControl>
       </TableCell>
-      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
         <TextField
           id="outlined-read-only-input"
           label="State"
@@ -258,34 +252,27 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           }}
         />
       </TableCell>
-      <TableCell sx={{padding: "2px", paddingLeft: "4px", paddingRight: "4px"}}>
+      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
         {rowInProgress() ? (
-          <CircularProgress/>
+          <CircularProgress />
         ) : (
-          <>
-            {
-              requestWaiting() ? (
-                <></>
-              ) : (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => {
-                    setShowValidation(!showValidation)
-                  }}
-                  disabled={disableResponse()}
-                >
-                  Show Response
-                </Button>
-              )
-            }
-          </>
-        )}
+          requestWaiting() || (
+          <Button
+            size="small"
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              setShowValidation(!showValidation);
+            }}
+            disabled={disableResponse()}
+          >
+            Show Response
+          </Button>
+          ))}
       </TableCell>
       <ValidationModal
         messages={seqSubmission.messages ?? []}
-        title={"Response Messages"}
+        title="Response Messages"
         openModal={showValidation}
         handleModalClose={() => setShowValidation(!showValidation)}
       />
