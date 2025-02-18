@@ -334,8 +334,8 @@ function UploadSequences() {
             </FormGroup>
           </Grid>
         </Grid>
-        <Grid container alignItems={'center'} justifyContent={'center'} paddingTop={1}>
-          {files.length === 0 ?
+        <Grid container alignItems="center" justifyContent="center" paddingTop={1}>
+          {files.length === 0 ? (
             <Box sx={{ minWidth: 200, maxWidth: 600 }}>
               <Typography variant="h4" color="primary">Select sequence files</Typography>
               <FileDragDrop
@@ -352,9 +352,9 @@ function UploadSequences() {
                 hideAfterDrop
               />
             </Box>
-            :
+          ) : (
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
                 <TableHead>
                   {seqUploadRows.length > 0 && (
                     <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
@@ -383,10 +383,10 @@ function UploadSequences() {
                 </TableBody>
               </Table>
             </TableContainer>
-          }
+          )}
         </Grid>
         {files.length !== 0 && (
-          <Grid container alignItems={'right'} justifyContent={'right'} paddingTop={2}>
+          <Grid container alignItems="right" justifyContent="right" paddingTop={2} paddingBottom={6}>
             <>
               <Button
                 variant="outlined"

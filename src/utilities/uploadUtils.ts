@@ -7,8 +7,50 @@ export enum SeqUploadRowState {
   CalculatedHash = 'Calculated Hash',
   Uploading = 'Uploading',
   Complete = 'Complete',
+  Skipped = 'Skipped', // TODO use if skipped
   Errored = 'Errored',
 }
+
+// We cannot use the color prop as it will only let us set primary,error,success etc
+// For some of these states that would be fine, but since it won't work for all,
+// set them all with styles here
+export const seqStateStyles = {
+  [SeqUploadRowState.Waiting]: {
+    color: 'black',
+    backgroundColor: 'white',
+    borderColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREY,
+    border: '1px solid',
+  },
+  [SeqUploadRowState.Queued]: {
+    color: 'black',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREY,
+  },
+  [SeqUploadRowState.CalculatingHash]: {
+    color: 'white',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
+  },
+  [SeqUploadRowState.CalculatedHash]: {
+    color: 'white',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_TEAL,
+  },
+  [SeqUploadRowState.Uploading]: {
+    color: 'white',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN,
+  },
+  [SeqUploadRowState.Complete]: {
+    color: 'white',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
+  },
+  [SeqUploadRowState.Skipped]: {
+    color: 'black',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
+  },
+  [SeqUploadRowState.Errored]: {
+    color: 'white',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_RED,
+  },
+};
+
 
 export interface SeqUploadRow {
   id: string

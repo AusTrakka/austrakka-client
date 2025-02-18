@@ -1,15 +1,15 @@
 import {
   Button,
+  Chip,
   CircularProgress,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
   TableCell,
   TextField,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
+import { seqStateStyles, SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
@@ -24,6 +24,9 @@ interface UploadSequenceRowProps {
   modeOption: SkipForce,
   seqTypeOption: SeqType,
 }
+
+const tableCellStyle = { padding: '0px', paddingLeft: '4px', paddingRight: '4px' };
+const tableFormControlStyle = { minWidth: 200, marginTop: 1, marginBottom: 1 };
 
 export default function UploadSequenceRow(props: UploadSequenceRowProps) {
   const { seqUploadRow } = props;
@@ -160,35 +163,33 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
 
   return (
     <>
-      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
+      <TableCell sx={tableCellStyle}>
         <FormControl
           size="small"
-          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+          sx={tableFormControlStyle}
           variant="standard"
         >
           <TextField
-            label="Seq ID"
-            id="seqid-simple-select-label"
+            id={`read1-select-${seqUploadRow.id}`}
             name="seqid"
             variant="standard"
+            slotProps={{ input: { disableUnderline: requestCompleted() } }}
             value={seqUploadRow?.seqId ?? ''}
             onChange={e => handleSeqId(e.target.value)}
             disabled={requestCompleted()}
           />
         </FormControl>
       </TableCell>
-      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
+      <TableCell sx={tableCellStyle}>
         <FormControl
           size="small"
-          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+          sx={tableFormControlStyle}
           variant="standard"
         >
-          <InputLabel id="read1-simple-select-label">Read 1</InputLabel>
           <Select
-            labelId="read1-simple-select-label"
-            id="read1-simple-select-label"
-            label="Read 1"
+            id={`read1-select-${seqUploadRow.id}`}
             name="read1"
+            disableUnderline
             value={seqUploadRow?.read1?.file.name ?? ''}
             onChange={(e) => handleSelectRead1(e.target.value)}
             disabled={requestCompleted()}
@@ -208,18 +209,16 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </Select>
         </FormControl>
       </TableCell>
-      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
+      <TableCell sx={tableCellStyle}>
         <FormControl
           size="small"
-          sx={{ minWidth: 200, marginTop: 2, marginBottom: 2 }}
+          sx={tableFormControlStyle}
           variant="standard"
         >
-          <InputLabel id="read2-simple-select-label">Read 2</InputLabel>
           <Select
-            labelId="read2-simple-select-label"
-            id="read2-simple-select-label"
-            label="Read 2"
+            id={`read2-select-${seqUploadRow.id}`}
             name="read2"
+            disableUnderline
             value={seqUploadRow?.read2?.file.name ?? ''}
             onChange={(e) => handleSelectRead2(e.target.value)}
             disabled={requestCompleted()}
@@ -239,22 +238,17 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           </Select>
         </FormControl>
       </TableCell>
-      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
-        <TextField
-          id="outlined-read-only-input"
-          label="State"
-          value={seqUploadRow.state}
-          variant="standard"
-          slotProps={{
-            input: {
-              readOnly: true,
-            },
-          }}
+      <TableCell sx={tableCellStyle}>
+        {/* Would JoyUI LinearProgress be an option here? */}
+        <Chip
+          label={seqUploadRow.state}
+          variant="filled"
+          sx={{ borderRadius: 1, width: '10em', ...seqStateStyles[seqUploadRow.state] }}
         />
       </TableCell>
-      <TableCell sx={{ padding: '2px', paddingLeft: '4px', paddingRight: '4px' }}>
+      <TableCell sx={tableCellStyle}>
         {rowInProgress() ? (
-          <CircularProgress />
+          <CircularProgress size={20} />
         ) : (
           requestWaiting() || (
           <Button
