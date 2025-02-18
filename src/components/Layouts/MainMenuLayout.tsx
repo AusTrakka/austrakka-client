@@ -142,6 +142,10 @@ function MainMenuLayout() {
       PermissionLevel.CanShow,
     ));
 
+  const showSidebarBrandingName = (): boolean => {
+    return import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === "true"
+  }
+
   useEffect(() => {
     if (account && account.username) {
       setUsername(account.username); // seems to be login email
@@ -190,6 +194,21 @@ function MainMenuLayout() {
               </IconButton>
             </Box>
           </Box>
+          {
+            drawer && showSidebarBrandingName() &&
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: 'primary.main', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                fontWeight: '800',
+              }}
+            >
+              {import.meta.env.VITE_BRANDING_NAME}
+            </Typography>
+          }
           <Divider />
           <List className={styles.pagelist}>
             {visiblePages.map((page) => (
