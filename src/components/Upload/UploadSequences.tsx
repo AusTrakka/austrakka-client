@@ -82,6 +82,8 @@ const AllHaveSampleNamesWithTwoFilesOnly = {
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
+  const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
+  const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
 
   // TODO: check this logic with elsewhere
   const updateRow = (newSur: SeqUploadRow) => {
@@ -158,12 +160,11 @@ function UploadSequences() {
     setSeqUploadRows(newSeqUploadRows);
   }, [files]);
 
-  const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
     setSelectedSeqType(seqType);
   };
-  const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
+
   const handleSelectSkipForce = (event: ChangeEvent<HTMLInputElement>, skipForceStr: string) => {
     let skipForce = SkipForce.None; // the value we will use if box unchecked
     if (event.target.checked) skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce;
