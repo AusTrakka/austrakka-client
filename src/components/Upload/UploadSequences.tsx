@@ -322,69 +322,78 @@ function UploadSequences() {
             </FormGroup>
           </Grid>
         </Grid>
-        <Typography variant="h4" color="primary">Select sequence files</Typography>
-        <FileDragDrop
-          files={files}
-          setFiles={setFiles}
-          validFormats={validFormats}
-          multiple
-          calculateHash={false}
-          customValidators={[
-            validateEvenNumberOfFiles,
-            validateNoDuplicateFilenames,
-            AllHaveSampleNamesWithTwoFilesOnly,
-          ]}
-          hideAfterDrop
-        />
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              {seqUploadRows.length > 0 && (
-                <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
-                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 1</TableCell>
-                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 2</TableCell>
-                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
-                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
-                </TableRow>
-              )}
-            </TableHead>
-            <TableBody>
-              {seqUploadRows.map(sur => (
-                <TableRow
-                  key={sur.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <UploadSequenceRow
-                    seqUploadRow={sur}
-                    updateRow={updateRow}
-                    modeOption={selectedSkipForce}
-                    seqTypeOption={selectedSeqType}
-                  />
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Grid container alignItems={'center'} justifyContent={'center'} paddingTop={1}>
+          {files.length === 0 ?
+            <Box sx={{ minWidth: 200, maxWidth: 600 }}>
+              <Typography variant="h4" color="primary">Select sequence files</Typography>
+              <FileDragDrop
+                files={files}
+                setFiles={setFiles}
+                validFormats={validFormats}
+                multiple
+                calculateHash={false}
+                customValidators={[
+                  validateEvenNumberOfFiles,
+                  validateNoDuplicateFilenames,
+                  AllHaveSampleNamesWithTwoFilesOnly,
+                ]}
+                hideAfterDrop
+              />
+            </Box>
+            :
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                  {seqUploadRows.length > 0 && (
+                    <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+                      <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
+                      <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 1</TableCell>
+                      <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 2</TableCell>
+                      <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
+                      <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
+                    </TableRow>
+                  )}
+                </TableHead>
+                <TableBody>
+                  {seqUploadRows.map(sur => (
+                    <TableRow
+                      key={sur.id}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <UploadSequenceRow
+                        seqUploadRow={sur}
+                        updateRow={updateRow}
+                        modeOption={selectedSkipForce}
+                        seqTypeOption={selectedSeqType}
+                      />
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          }
+        </Grid>
         {files.length !== 0 && (
-          <>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={handleUpload}
-              disabled={uploadInProgress() || uploadFinished()}
-            >
-              Upload All
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={handleClearFiles}
-              disabled={uploadInProgress()}
-            >
-              Clear Files
-            </Button>
-          </>
+          <Grid container alignItems={'right'} justifyContent={'right'} paddingTop={2}>
+            <>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleUpload}
+                disabled={uploadInProgress() || uploadFinished()}
+              >
+                Upload All
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleClearFiles}
+                disabled={uploadInProgress()}
+              >
+                Clear Files
+              </Button>
+            </>
+          </Grid>
         )}
       </Box>
     </>
