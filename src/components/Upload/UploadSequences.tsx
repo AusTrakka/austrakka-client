@@ -23,15 +23,15 @@ import Grid from '@mui/material/Grid2';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import {
-  CustomUploadValidator,
-  CustomUploadValidatorReturn,
   SeqType,
   seqTypeNames,
   SeqUploadRow,
   SeqUploadRowState,
   SkipForce,
+  getSampleNameFromFile,
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
+  validateAllHaveSampleNamesWithTwoFilesOnly,
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop from './FileDragDrop';
@@ -46,38 +46,6 @@ const validFormats = {
   '.fq.gz': 'application/x-gzip',
   '.fastq.gz': 'application/x-gzip',
 };
-
-interface SeqPair {
-  file: File
-  sampleName: string
-}
-
-const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
-
-// TODO: fix typescript issues here
-const AllHaveSampleNamesWithTwoFilesOnly = {
-  func: (files: File[]) => {
-    const filenames = files
-      .map(f => ({ file: f, sampleName: getSampleNameFromFile(f.name) } as SeqPair));
-    // @ts-ignore
-    const groupedFilenames = filenames
-      .reduce((ubc, u) => ({ ...ubc, [u.sampleName]: [...(ubc[u.sampleName] || []), u] }), {});
-    // @ts-ignore
-    const problemSampleNames = Object.entries(groupedFilenames)
-      // @ts-ignore
-      .filter((k) => k[1].length !== 2)
-      .map((k) => k[0]);
-    if (problemSampleNames.length > 0) {
-      return {
-        success: false,
-        message: `Unable to parse file pairs for the following samples: ${problemSampleNames.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
 
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
@@ -348,7 +316,7 @@ function UploadSequences() {
                 customValidators={[
                   validateEvenNumberOfFiles,
                   validateNoDuplicateFilenames,
-                  AllHaveSampleNamesWithTwoFilesOnly,
+                  validateAllHaveSampleNamesWithTwoFilesOnly,
                 ]}
                 hideAfterDrop
               />
