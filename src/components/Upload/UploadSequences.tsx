@@ -26,6 +26,7 @@ import {
   CustomUploadValidator,
   CustomUploadValidatorReturn,
   SeqType,
+  seqTypeNames,
   SeqUploadRow,
   SeqUploadRowState,
   SkipForce,
@@ -217,14 +218,20 @@ function UploadSequences() {
                 labelId="select-data-owner-label"
                 id="select-data-owner"
                 name="Data Owner"
-                value="dummy"
+                value="unspecified"
               >
-                {/* TODO needs to be a list of organisations in which the user has permission to upload */}
+                {/*
+                TODO
+                If create-sample-records is selected, data owner list needs to be a list of organisations
+                in which the user has permission to upload
+                If create-sample-records is unselected, the data owner should be disabled and display "Any" as we
+                do not check it
+                */}
                 <MenuItem
-                  value="dummy"
-                  key="dummy"
+                  value="unspecified"
+                  key="unspecified"
                 >
-                  MyOrg
+                  Any
                 </MenuItem>
               </Select>
             </FormControl>
@@ -241,7 +248,12 @@ function UploadSequences() {
                 name="Share with Projects"
                 value="none"
               >
-                {/* TODO needs to be a multi-select list of projects which the user can share with */}
+                {/*
+                TODO
+                If create-sample-records is selected, data owner list needs to be a list of projects
+                If create-sample-records is unselected, the projects should display "Unchanged" or "None" as we will not
+                change sharing settings
+                */}
                 <MenuItem
                   value="none"
                   key="none"
@@ -271,7 +283,7 @@ function UploadSequences() {
                     value={seqType}
                     key={seqType}
                   >
-                    {`${seqType}`}
+                    {`${seqTypeNames[seqType]}`}
                   </MenuItem>
                 ))}
               </Select>

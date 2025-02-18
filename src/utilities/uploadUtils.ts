@@ -24,6 +24,10 @@ export enum SeqType {
   // FastqOnt = 'fastq-ont',
 }
 
+export const seqTypeNames = {
+  [SeqType.FastqIllPe]: 'Illumina Paired-End FASTQ',
+};
+
 export enum SkipForce {
   None = '',
   Skip = 'skip',
