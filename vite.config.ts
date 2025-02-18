@@ -179,7 +179,7 @@ function defaultConfigValue(key: string, value: string, defaultValue: string): s
 }
 
 function defaultConfigValueBoolean(key: string, value: string, defaultValue: string): string {
-  if (!value && value !== "") {
+  if (value !== undefined && value !== "") {
     if (!["true", "false"].includes(value.toLowerCase())) {
       throw new Error(`Value of ${value} for ${key}. Must be 'true' or 'false'`)
     }
