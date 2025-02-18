@@ -1,11 +1,11 @@
-import React, {DragEvent, useState, useRef, ChangeEvent, SetStateAction, Dispatch} from 'react';
-import {Box, Button, Stack, Typography} from '@mui/material';
-import {AttachFile, UploadFile} from '@mui/icons-material';
-import {useSnackbar} from 'notistack';
+import React, { DragEvent, useState, useRef, ChangeEvent, SetStateAction, Dispatch } from 'react';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { AttachFile, UploadFile } from '@mui/icons-material';
+import { useSnackbar } from 'notistack';
 import theme from '../../assets/themes/theme';
-import {DropFileUpload} from '../../types/DropFileUpload';
-import {generateHash} from '../../utilities/file';
-import {CustomUploadValidator, CustomUploadValidatorReturn} from '../../utilities/uploadUtils';
+import { DropFileUpload } from '../../types/DropFileUpload';
+import { generateHash } from '../../utilities/file';
+import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
 // The defaulting isn't working like I would have hoped
 interface FileDragDropProps {
@@ -29,42 +29,41 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     hideAfterDrop = false,
   },
 ) => {
-  const {enqueueSnackbar} = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
   const validateFilesAreOfType = {
-    func: (files: File[]) => ({
-      success: Object.entries(validFormats).length === 0 
-        ? true 
-        : files.every(f => Object.values(validFormats).includes(f?.type)),
+    func: (_files: File[]) => ({
+      success: Object.entries(validFormats).length === 0 ||
+        _files.every(f => Object.values(validFormats).includes(f?.type)),
       message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
     } as CustomUploadValidatorReturn),
   } as CustomUploadValidator;
   
   const validateSingleFile = {
-    func: (files: File[]) => ({
-      success: files.length === 1,
+    func: (_files: File[]) => ({
+      success: _files.length === 1,
       message: 'Only one file can be selected',
     } as CustomUploadValidatorReturn),
   } as CustomUploadValidator;
   
   const getBuiltInValidators = (): CustomUploadValidator[] => {
-    let validators: CustomUploadValidator[] = [];
+    const validators: CustomUploadValidator[] = [];
     if (!multiple) {
       validators.push(validateSingleFile);
     }
-    if (Object.entries(validFormats).length > 0 ) {
+    if (Object.entries(validFormats).length > 0) {
       validators.push(validateFilesAreOfType);
     }
     return validators;
-  }
+  };
 
   const validateUpload = (uploadedFiles: File[]): boolean => {
     for (const validator of [...getBuiltInValidators(), ...customValidators]) {
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
-        enqueueSnackbar(validatorReturn.message, {variant: 'error'});
+        enqueueSnackbar(validatorReturn.message, { variant: 'error' });
         console.error(validatorReturn.message);
         return false;
       }
@@ -114,14 +113,14 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   };
 
   const handleClearFiles = () => {
-    setFiles([])
-  }
+    setFiles([]);
+  };
 
   return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {files.length > 0 && hideAfterDrop
-        ? (<></>)
-        : (
+      {(files.length > 0 && hideAfterDrop) ||
+        (
           <Box
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -139,7 +138,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
               borderStyle: dragActive ? 'dashed' : 'solid',
               transition: theme.transitions?.create!(
                 ['background-color', 'border'],
-                {duration: theme.transitions.duration?.standard},
+                { duration: theme.transitions.duration?.standard },
               ),
             }}
           >
@@ -165,21 +164,25 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
                     />
                   </Button>
                   {
-                    Object.entries(validFormats).length > 0
-                    ? (
+                    Object.entries(validFormats).length > 0 &&
+                      (
                         <Typography variant="subtitle2">
                           Valid file types are:
                           {' '}
                           {Object.keys(validFormats).join(', ')}
                         </Typography>
-                      ) : (<></>)
+                      )
                   }
                 </>
               ) : (
                 <>
-                  <AttachFile fontSize="large" color="primary"/>
-                  <Typography variant="h5"
-                              color="primary">{multiple ? 'Selected files:' : 'Selected file:'}</Typography>
+                  <AttachFile fontSize="large" color="primary" />
+                  <Typography
+                    variant="h5"
+                    color="primary"
+                  >
+                    {multiple ? 'Selected files:' : 'Selected file:'}
+                  </Typography>
                   <>
                     {files.map((file) => (
                       <div key={file.file.name}>
@@ -200,8 +203,7 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
               )}
             </Stack>
           </Box>
-        )
-      }
+        )}
     </>
   );
 };

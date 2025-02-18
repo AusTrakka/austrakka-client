@@ -10,13 +10,13 @@ import {
   FormGroup,
   Checkbox,
   FormControlLabel,
-  Switch, 
-  TableContainer, 
-  Paper, 
-  Table, 
-  TableHead, 
-  TableRow, 
-  TableCell, 
+  Switch,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
   TableBody,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -34,8 +34,8 @@ import {
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop from './FileDragDrop';
-import HelpSidebar from "../Help/HelpSidebar";
-import UploadSequencesHelp from "./UploadSequencesHelp";
+import HelpSidebar from '../Help/HelpSidebar';
+import UploadSequencesHelp from './UploadSequencesHelp';
 
 // TODO: these need mimetypes
 // the .fq and .fastq files can't available to select in the browser with octet
@@ -100,7 +100,9 @@ function UploadSequences() {
     setSeqUploadRows(queuedRows);
   };
 
-  const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(sur => sur.state === state);
+  const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
+    sur => sur.state === state,
+  );
   
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
@@ -180,7 +182,7 @@ function UploadSequences() {
       {/* Fix linting indentation later to avoid massive merge conflicts */}
       <Box>
         <Typography variant="h2" paddingBottom={1} color="primary">Upload Sequences</Typography>
-        <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
+        <Grid container spacing={2} sx={{ paddingBottom: 1 }} justifyContent="space-between" alignItems="center">
           <Grid size={{ md: 12, lg: 9 }}>
             <Typography variant="subtitle2" paddingBottom={1}>
               Drag and drop files below to upload sequences.
@@ -190,14 +192,14 @@ function UploadSequences() {
             </Typography>
           </Grid>
           <Grid>
-            <HelpSidebar 
-              content={UploadSequencesHelp()} 
-              title={"Upload Instructions"} 
-              chipLabel={"View upload instructions"}
+            <HelpSidebar
+              content={UploadSequencesHelp()}
+              title="Upload Instructions"
+              chipLabel="View upload instructions"
             />
           </Grid>
         </Grid>
-        <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
+        <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
             <FormControlLabel
@@ -209,40 +211,40 @@ function UploadSequences() {
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
               variant="standard"
             >
-            <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
-            <Select
-              disabled={true}
-              labelId="select-data-owner-label"
-              id="select-data-owner"
-              name="Data Owner"
-              value="dummy"
-            >
-              {/*TODO needs to be a list of organisations in which the user has permission to upload*/}
-              <MenuItem
-                value='dummy'
-                key='dummy'
+              <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
+              <Select
+                disabled
+                labelId="select-data-owner-label"
+                id="select-data-owner"
+                name="Data Owner"
+                value="dummy"
               >
-                MyOrg
-              </MenuItem>
-            </Select>
+                {/* TODO needs to be a list of organisations in which the user has permission to upload */}
+                <MenuItem
+                  value="dummy"
+                  key="dummy"
+                >
+                  MyOrg
+                </MenuItem>
+              </Select>
             </FormControl>
-              <FormControl
-                size="small"
-                sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
-                variant="standard"
-              >
+            <FormControl
+              size="small"
+              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              variant="standard"
+            >
               <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
               <Select
-                disabled={true}
+                disabled
                 labelId="select-project-share-label"
                 id="select-project-share"
                 name="Share with Projects"
                 value="none"
               >
-                {/*TODO needs to be a multi-select list of projects which the user can share with*/}
+                {/* TODO needs to be a multi-select list of projects which the user can share with */}
                 <MenuItem
-                  value='none'
-                  key='none'
+                  value="none"
+                  key="none"
                 >
                   None
                 </MenuItem>
@@ -253,7 +255,7 @@ function UploadSequences() {
             <Typography variant="h4" color="primary">Upload options</Typography>
             <FormControl
               size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              sx={{ minWidth: 200, maxWidth: 400, marginTop: 1, marginBottom: 1 }}
               variant="standard"
             >
               <InputLabel id="fastq-simple-select-label">FASTQ Type</InputLabel>
@@ -275,10 +277,11 @@ function UploadSequences() {
               </Select>
             </FormControl>
             <Typography>
-              If neither of the below options are selected, AusTrakka will give an error for any samples with existing sequences.
+              If neither of the below options are selected, the upload will return an error
+              for any samples with existing sequences.
             </Typography>
             <FormGroup>
-              <Box sx={{ paddingBottom: 1 }} key="option-skip">
+              <Box key="option-skip">
                 <FormControlLabel
                   control={(
                     <Checkbox
@@ -292,11 +295,12 @@ function UploadSequences() {
                 />
                 <Box sx={{ paddingLeft: 4 }}>
                   <Typography variant="subtitle2">
-                    Silently skip samples which already have sequences of the same data type, without displaying any errors.
+                    Silently skip samples which already have sequences of the same data type,
+                    without displaying any errors.
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ paddingBottom: 1 }} key="option-overwrite">
+              <Box key="option-overwrite">
                 <FormControlLabel
                   control={(
                     <Checkbox
@@ -310,7 +314,8 @@ function UploadSequences() {
                 />
                 <Box sx={{ paddingLeft: 4 }}>
                   <Typography variant="subtitle2">
-                    For any samples with existing sequences of the same data type, disable the old files and upload the new files as replacements.
+                    For any samples with existing sequences of the same data type,
+                    disable the old files and upload the new files as replacements.
                   </Typography>
                 </Box>
               </Box>
@@ -334,15 +339,15 @@ function UploadSequences() {
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
-              {seqUploadRows.length > 0 ? (
-                <TableRow sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>
-                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Seq ID</TableCell>
-                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Read 1</TableCell>
-                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Read 2</TableCell>
-                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>State</TableCell>
-                  <TableCell sx={{padding: "8px", paddingLeft: "4px", paddingRight: "4px"}}>Actions</TableCell>
+              {seqUploadRows.length > 0 && (
+                <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
+                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 1</TableCell>
+                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 2</TableCell>
+                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
+                  <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                 </TableRow>
-              ) : (<></>)}
+              )}
             </TableHead>
             <TableBody>
               {seqUploadRows.map(sur => (
@@ -361,9 +366,7 @@ function UploadSequences() {
             </TableBody>
           </Table>
         </TableContainer>
-        {files.length === 0 ? (
-          <></>
-        ) : (
+        {files.length !== 0 && (
           <>
             <Button
               variant="outlined"
