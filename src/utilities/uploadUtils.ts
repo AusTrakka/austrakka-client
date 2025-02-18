@@ -1,4 +1,5 @@
 import { DropFileUpload } from '../types/DropFileUpload';
+import {GroupRole} from "../types/dtos";
 
 interface SeqPair {
   file: File
@@ -138,3 +139,30 @@ export const validateAllHaveSampleNamesWithTwoFilesOnly = {
     } as CustomUploadValidatorReturn;
   },
 } as CustomUploadValidator;
+
+export interface OrgDescriptor {
+  abbreviation: string,
+  name: string,
+}
+
+// Logic of these two functions will need to change in perms V2; currently take in groupRoles
+
+// TODO requires special logic if we want admins to be allowed to upload to any org using this UI 
+//  but do we? They can always give themselves a role if they really need to use the UI
+
+// TODO ought to get group type in DTO rather than rely on group name structure - however this is temporary anyway
+export const getUploadableOrgs = (groupRoles: GroupRole[]): OrgDescriptor[] => {
+  const orgs: OrgDescriptor[] = groupRoles
+    .filter((groupRole) => groupRole.role.name === 'Uploader')
+    .filter((groupRole) => ['Owner', 'Contributor'].includes(groupRole.group.name.split('-').pop()!))
+    .map((groupRole) => groupRole.group.organisation);
+  return orgs;
+};
+
+export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
+  const projectAbbrevs: string[] = groupRoles
+    .filter((groupRole) => groupRole.role.name === 'Uploader')
+    .filter((groupRole) => groupRole.group.name.split('-').pop()! === 'Group')
+    .map((groupRole) => groupRole.group.name.split('-').slice(0, -1).join('-'));
+  return projectAbbrevs;
+};

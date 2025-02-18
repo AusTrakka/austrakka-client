@@ -23,6 +23,7 @@ import Grid from '@mui/material/Grid2';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import {
+  OrgDescriptor,
   SeqType,
   seqTypeNames,
   SeqUploadRow,
@@ -32,11 +33,16 @@ import {
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
   validateAllHaveSampleNamesWithTwoFilesOnly,
+  getUploadableOrgs,
+  getSharableProjects,
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop from './FileDragDrop';
 import HelpSidebar from '../Help/HelpSidebar';
 import UploadSequencesHelp from './UploadSequencesHelp';
+import { useAppSelector } from '../../app/store';
+import { selectUserState, UserSliceState } from '../../app/userSlice';
+import LoadingState from '../../constants/loadingState';
 
 // TODO: these need mimetypes
 // the .fq and .fastq files can't available to select in the browser with octet
@@ -47,11 +53,22 @@ const validFormats = {
   '.fastq.gz': 'application/x-gzip',
 };
 
+interface SelectItem {
+  value: string;
+  label: string;
+}
+
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
   const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
   const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
+  const [selectedCreateSampleRecords, setSelectedCreateSampleRecords] = useState<boolean>(false);
+  const [availableDataOwners, setAvailableDataOwners] = useState<SelectItem[]>([{ value: 'unspecified', label: 'Any' }]);
+  const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
+  const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
+  const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
+  const user: UserSliceState = useAppSelector(selectUserState);
 
   // TODO: check this logic with elsewhere
   const updateRow = (newSur: SeqUploadRow) => {
@@ -147,6 +164,45 @@ function UploadSequences() {
     queueAllRows();
   };
   
+  // Data owner
+  useEffect(() => {
+    if (!selectedCreateSampleRecords) {
+      setAvailableDataOwners([{ value: 'unspecified', label: 'Any' }]);
+      setSelectedDataOwner('unspecified');
+      return;
+    }
+    if (user.loading !== LoadingState.SUCCESS) {
+      setAvailableDataOwners([]);
+      return;
+    }
+    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    // This mapping exists here so we can set "Any" as a value when disabled, regardless of label format
+    // Displaying org abbreviations in the dropdown for now, but this can be easily changed
+    setAvailableDataOwners(
+      orgs.map((org: OrgDescriptor) => ({ value: org.abbreviation, label: org.abbreviation })),
+    );
+    if (orgs.some(org => org.abbreviation === user.orgAbbrev)) {
+      setSelectedDataOwner(user.orgAbbrev);
+    }
+  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+  
+  // Projects
+  useEffect(() => {
+    if (!selectedCreateSampleRecords) {
+      setAvailableProjects([]);
+      setSelectedProjectShare([]);
+      return;
+    }
+    if (user.loading !== LoadingState.SUCCESS) {
+      setAvailableProjects([]);
+      return;
+    }
+    const projects: string[] = getSharableProjects(user.groupRoles ?? []);
+    setAvailableProjects(
+      projects.map((projectAbbrev: string) => ({ value: projectAbbrev, label: projectAbbrev })),
+    );
+  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+  
   return (
     <>
       {/* Fix linting indentation later to avoid massive merge conflicts */}
@@ -173,7 +229,13 @@ function UploadSequences() {
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
             <FormControlLabel
-              control={<Switch disabled checked={false} />}
+              id="create-sample-records-toggle"
+              control={(
+                <Switch
+                  checked={selectedCreateSampleRecords}
+                  onChange={(e) => setSelectedCreateSampleRecords(e.target.checked)}
+                />
+              )}
               label="Create new sample records if required"
             />
             <FormControl
@@ -183,25 +245,23 @@ function UploadSequences() {
             >
               <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
               <Select
-                disabled
+                disabled={!selectedCreateSampleRecords}
                 labelId="select-data-owner-label"
                 id="select-data-owner"
                 name="Data Owner"
-                value="unspecified"
+                value={selectedDataOwner}
+                onChange={(e) => setSelectedDataOwner(e.target.value)}
               >
-                {/*
-                TODO
-                If create-sample-records is selected, data owner list needs to be a list of organisations
-                in which the user has permission to upload
-                If create-sample-records is unselected, the data owner should be disabled and display "Any" as we
-                do not check it
-                */}
-                <MenuItem
-                  value="unspecified"
-                  key="unspecified"
-                >
-                  Any
-                </MenuItem>
+                {
+                  availableDataOwners.map((dataOwner: SelectItem) => (
+                    <MenuItem
+                      value={dataOwner.value}
+                      key={dataOwner.value}
+                    >
+                      {dataOwner.label}
+                    </MenuItem>
+                  ))
+                }
               </Select>
             </FormControl>
             <FormControl
@@ -211,24 +271,24 @@ function UploadSequences() {
             >
               <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
               <Select
-                disabled
+                disabled={!selectedCreateSampleRecords}
                 labelId="select-project-share-label"
                 id="select-project-share"
                 name="Share with Projects"
-                value="none"
+                value={selectedProjectShare}
+                multiple
+                onChange={(e) => setSelectedProjectShare(e.target.value)}
               >
-                {/*
-                TODO
-                If create-sample-records is selected, data owner list needs to be a list of projects
-                If create-sample-records is unselected, the projects should display "Unchanged" or "None" as we will not
-                change sharing settings
-                */}
-                <MenuItem
-                  value="none"
-                  key="none"
-                >
-                  None
-                </MenuItem>
+                {
+                  availableProjects.map((project: SelectItem) => (
+                    <MenuItem
+                      value={project.value}
+                      key={project.value}
+                    >
+                      {project.label}
+                    </MenuItem>
+                  ))
+                }
               </Select>
             </FormControl>
           </Grid>
