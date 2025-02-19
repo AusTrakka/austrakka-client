@@ -1,5 +1,7 @@
 import { DropFileUpload } from '../types/DropFileUpload';
-import {GroupRole} from "../types/dtos";
+import { GroupRole } from '../types/dtos';
+import { ResponseObject } from '../types/responseObject.interface';
+import { uploadSubmissions, validateSubmissions } from './resourceUtils';
 
 interface SeqPair {
   file: File
@@ -165,4 +167,27 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
     .filter((groupRole) => groupRole.group.name.split('-').pop()! === 'Group')
     .map((groupRole) => groupRole.group.name.split('-').slice(0, -1).join('-'));
   return projectAbbrevs;
+};
+
+export const createAndShareSamples = async (
+  dataOwnerAbbrev: string,
+  shareProjectAbbrevs: string[],
+  seqUploadRows: SeqUploadRow[],
+  token: string,
+): Promise<ResponseObject> => {
+  // construct CSV file out of seqUploadRows
+  const projectGroups = shareProjectAbbrevs.map(abbrev => `${abbrev}-Group`);
+  const csvHeader = 'Seq_ID,Owner_group,Shared_groups';
+  const csvRows = seqUploadRows.map(row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`);
+  const csv = [csvHeader, ...csvRows].join('\n');
+  const csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
+  
+  const formData = new FormData();
+  formData.append('file', csvFile);
+  formData.append('proforma-abbrev', 'min');
+
+  // TODO should perform a validate call first
+  const response = await uploadSubmissions(formData, '', token);
+  console.log(response);
+  return response;
 };

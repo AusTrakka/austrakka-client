@@ -15,9 +15,10 @@ export function generateFilename(name: string = ''): string {
 }
 
 export async function generateHash(textBuffer: ArrayBuffer) {
-  const hashBuffer = await window.crypto.subtle.digest("SHA-256", textBuffer);
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  const hashBuffer = await window.crypto.subtle.digest('SHA-256', textBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray
-    .map((item) => item.toString(16).padStart(2, "0"))
-    .join("");
+    .map((item) => item.toString(16).padStart(2, '0'))
+    .join('');
 }

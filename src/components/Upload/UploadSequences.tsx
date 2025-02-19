@@ -1,40 +1,43 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import {
   Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
-  FormGroup,
   Checkbox,
+  FormControl,
   FormControlLabel,
-  Switch,
-  TableContainer,
+  FormGroup,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
+  Switch,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import { useSnackbar } from 'notistack';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
+import { ResponseObject } from '../../types/responseObject.interface';
 import {
+  createAndShareSamples,
+  getSampleNameFromFile,
+  getSharableProjects,
+  getUploadableOrgs,
   OrgDescriptor,
   SeqType,
   seqTypeNames,
   SeqUploadRow,
   SeqUploadRowState,
   SkipForce,
-  getSampleNameFromFile,
+  validateAllHaveSampleNamesWithTwoFilesOnly,
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
-  validateAllHaveSampleNamesWithTwoFilesOnly,
-  getUploadableOrgs,
-  getSharableProjects,
 } from '../../utilities/uploadUtils';
 import UploadSequenceRow from './UploadSequenceRow';
 import FileDragDrop from './FileDragDrop';
@@ -43,6 +46,8 @@ import UploadSequencesHelp from './UploadSequencesHelp';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
+import { ResponseType } from '../../constants/responseType';
+import { useApi } from '../../app/ApiContext';
 
 // TODO: these need mimetypes
 // the .fq and .fastq files can't available to select in the browser with octet
@@ -69,6 +74,8 @@ function UploadSequences() {
   const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const user: UserSliceState = useAppSelector(selectUserState);
+  const { enqueueSnackbar } = useSnackbar();
+  const { token, tokenLoading } = useApi();
 
   // TODO: check this logic with elsewhere
   const updateRow = (newSur: SeqUploadRow) => {
@@ -160,7 +167,26 @@ function UploadSequences() {
     setFiles([]);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    // TODO need to use state for this really, to await tokenLoading if necessary
+    // TODO this hacky code means we silently do nothing if we are not ready, and the user has to re-click
+    if (tokenLoading) return;
+      
+    if (selectedCreateSampleRecords) {
+      const response: ResponseObject =
+        await createAndShareSamples(selectedDataOwner, selectedProjectShare, seqUploadRows, token);
+      if (response?.status === ResponseType.Success) {
+        enqueueSnackbar(`Samples created successfully: ${response.message}`, { variant: 'success' });
+      } else if (response?.status === ResponseType.Warning) {
+        enqueueSnackbar(`Samples created with warnings: ${response.message}`, { variant: 'warning' });
+      } else if (response?.status === ResponseType.Error) {
+        enqueueSnackbar(`Error creating samples: ${response.message}`, { variant: 'error' });
+        return;
+      } else {
+        enqueueSnackbar('Unknown error creating samples', { variant: 'error' });
+        return;
+      }
+    }
     queueAllRows();
   };
   

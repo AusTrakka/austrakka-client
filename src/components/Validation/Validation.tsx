@@ -1,6 +1,6 @@
-import {ResponseMessage} from "../../types/apiResponse.interface";
-import React from "react";
-import {Alert, AlertColor, Stack, Typography} from "@mui/material";
+import React from 'react';
+import { Alert, AlertColor, Stack, Typography } from '@mui/material';
+import { ResponseMessage } from '../../types/apiResponse.interface';
 
 interface ValidationProps {
   messages: ResponseMessage[],
@@ -28,5 +28,5 @@ export default function Validation(props: ValidationProps) {
         )}
       </Stack>
     </>
-  )
+  );
 }

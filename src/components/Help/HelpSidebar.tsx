@@ -1,6 +1,6 @@
-import React, {useState} from "react";
-import {Box, Chip, Drawer, Typography} from "@mui/material";
-import {HelpOutline, ListAlt} from "@mui/icons-material";
+import React, { useState } from 'react';
+import { Box, Chip, Drawer, Typography } from '@mui/material';
+import { HelpOutline, ListAlt } from '@mui/icons-material';
 
 interface HelpSidebarProps {
   content: React.ReactElement,
@@ -37,19 +37,19 @@ export default function HelpSidebar(props: HelpSidebarProps) {
       >
 
         <Box
-          sx={{maxWidth: 600, padding: 6, borderLeft: 6, borderColor: 'secondary.main', height: '100%'}}
+          sx={{ maxWidth: 600, padding: 6, borderLeft: 6, borderColor: 'secondary.main', height: '100%' }}
           role="presentation"
           onClick={() => setDrawerOpen(false)}
           onKeyDown={() => setDrawerOpen(false)}
         >
-          <ListAlt fontSize="large" color="primary"/>
+          <ListAlt fontSize="large" color="primary" />
           <Typography variant="h4" color="primary">
             {title}
           </Typography>
-          <br/>
+          <br />
           {content}
         </Box>
       </Drawer>
     </>
-  )
+  );
 }
