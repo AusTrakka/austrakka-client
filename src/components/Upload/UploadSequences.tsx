@@ -170,8 +170,8 @@ function UploadSequences() {
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
     // TODO this hacky code means we silently do nothing if we are not ready, and the user has to re-click
-    if (tokenLoading) return;
-      
+    if (tokenLoading !== LoadingState.SUCCESS) return;
+    
     if (selectedCreateSampleRecords) {
       const response: ResponseObject =
         await createAndShareSamples(selectedDataOwner, selectedProjectShare, seqUploadRows, token);
