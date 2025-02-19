@@ -307,7 +307,7 @@ function UploadSequences() {
                 name="Share with Projects"
                 value={selectedProjectShare}
                 multiple
-                onChange={(e) => setSelectedProjectShare(e.target.value)}
+                onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
               >
                 {
                   availableProjects.map((project: SelectItem) => (

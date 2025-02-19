@@ -117,14 +117,15 @@ export const validateNoDuplicateFilenames = {
 
 export const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
 
-// TODO: fix typescript issues here
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
     const filenames: SeqPair[] = files
       .map(f => ({ file: f, sampleName: getSampleNameFromFile(f.name) } as SeqPair));
     // @ts-ignore
     const groupedFilenames = filenames
-      .reduce((ubc, u) => ({ ...ubc, [u.sampleName]: [...(ubc[u.sampleName] || []), u] }), {});
+      .reduce((f, u) => (
+        { ...f, [u.sampleName]: [...(f[u.sampleName as keyof typeof f] || []), u] }
+      ), {});
     // @ts-ignore
     const problemSampleNames = Object.entries(groupedFilenames)
       // @ts-ignore
