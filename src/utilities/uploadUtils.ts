@@ -19,6 +19,14 @@ export enum SeqUploadRowState {
   Errored = 'Errored',
 }
 
+// Uploads are active (queued, but not finalised) if in these states
+export const activeSeqUploadStates = [
+  SeqUploadRowState.Queued,
+  SeqUploadRowState.CalculatingHash,
+  SeqUploadRowState.CalculatedHash,
+  SeqUploadRowState.Uploading,
+];
+
 // We cannot use the color prop as it will only let us set primary,error,success etc
 // For some of these states that would be fine, but since it won't work for all,
 // set them all with styles here
