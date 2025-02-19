@@ -1,7 +1,8 @@
 import { DropFileUpload } from '../types/DropFileUpload';
 import { GroupRole } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
-import { uploadSubmissions } from './resourceUtils';
+import { uploadSubmissions, validateSubmissions } from './resourceUtils';
+import { ResponseType } from '../constants/responseType';
 
 interface SeqPair {
   file: File
@@ -188,7 +189,11 @@ export const createAndShareSamples = async (
   formData.append('file', csvFile);
   formData.append('proforma-abbrev', 'min');
 
-  // TODO should perform a validate call first
-  const response = await uploadSubmissions(formData, '', token);
+  // Validate and go no further if error
+  // TODO if we get a warning from validation, consider getting user confirmation
+  let response = await validateSubmissions(formData, '', token);
+  if (response.status === ResponseType.Error) return response;
+  
+  response = await uploadSubmissions(formData, '', token);
   return response;
 };

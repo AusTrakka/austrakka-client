@@ -20,7 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { useSnackbar } from 'notistack';
+import { useSnackbar, VariantType } from 'notistack';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -48,6 +48,7 @@ import { selectUserState, UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
+import { ResponseMessage } from '../../types/apiResponse.interface';
 
 const validFormats = {
   '.fq': '',
@@ -169,26 +170,60 @@ function UploadSequences() {
     setFiles([]);
   };
 
+  const variantTypeForResponse = (responseType: ResponseType): VariantType => {
+    const responseMessageVariants = {
+      [ResponseType.Success]: 'success',
+      [ResponseType.Warning]: 'warning',
+      [ResponseType.Error]: 'error',
+    };
+    return (responseMessageVariants[responseType] ?? 'info') as VariantType;
+  };
+  
+  const showSampleCreationMessages = (response: ResponseObject) => {
+    const baseMessages = {
+      [ResponseType.Success]: 'Samples created successfully',
+      [ResponseType.Warning]: 'Samples created with warnings',
+      [ResponseType.Error]: 'Error creating samples',
+    };
+    const baseMessage = baseMessages[response.status] ?? 'Unknown error creating samples';
+
+    const responseMessageTimeouts = {
+      [ResponseType.Success]: 3000,
+      [ResponseType.Warning]: 8000,
+      [ResponseType.Error]: 8000,
+    };
+    
+    if (!response?.messages || response?.messages?.length === 0) {
+      enqueueSnackbar(baseMessage, {
+        variant: variantTypeForResponse(response.status),
+        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
+      });
+    } else if (response?.messages?.length === 1) {
+      enqueueSnackbar(`${baseMessage}: ${response.message}`, {
+        variant: variantTypeForResponse(response.status),
+        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
+      });
+    } else {
+      response.messages.forEach((message: ResponseMessage) => {
+        enqueueSnackbar(`${baseMessage}: ${message.ResponseMessage}`, {
+          variant: variantTypeForResponse(message.ResponseType),
+          autoHideDuration: responseMessageTimeouts[message.ResponseType] ?? 5000,
+        });
+      });
+    }
+  };
+  
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
     // TODO this hacky code means we silently do nothing if we are not ready, 
     // and the user has to re-click
     if (tokenLoading !== LoadingState.SUCCESS) return;
-    
+   
     if (selectedCreateSampleRecords) {
       const response: ResponseObject =
         await createAndShareSamples(selectedDataOwner, selectedProjectShare, seqUploadRows, token);
-      if (response?.status === ResponseType.Success) {
-        enqueueSnackbar(`Samples created successfully: ${response.message}`, { variant: 'success' });
-      } else if (response?.status === ResponseType.Warning) {
-        enqueueSnackbar(`Samples created with warnings: ${response.message}`, { variant: 'warning' });
-      } else if (response?.status === ResponseType.Error) {
-        enqueueSnackbar(`Error creating samples: ${response.message}`, { variant: 'error' });
-        return;
-      } else {
-        enqueueSnackbar('Unknown error creating samples', { variant: 'error' });
-        return;
-      }
+      showSampleCreationMessages(response);
+      if (response.status === ResponseType.Error) return;
     }
     queueAllRows();
   };
