@@ -207,8 +207,12 @@ function UploadSequences() {
         autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
       });
     } else {
+      enqueueSnackbar(baseMessage, {
+        variant: variantTypeForResponse(response.status),
+        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
+      });
       response.messages.forEach((message: ResponseMessage) => {
-        enqueueSnackbar(`${baseMessage}: ${message.ResponseMessage}`, {
+        enqueueSnackbar(message.ResponseMessage, {
           variant: variantTypeForResponse(message.ResponseType),
           autoHideDuration: responseMessageTimeouts[message.ResponseType] ?? 5000,
         });
