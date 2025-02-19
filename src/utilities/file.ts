@@ -15,7 +15,6 @@ export function generateFilename(name: string = ''): string {
 }
 
 export async function generateHash(textBuffer: ArrayBuffer) {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
   const hashBuffer = await window.crypto.subtle.digest('SHA-256', textBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray

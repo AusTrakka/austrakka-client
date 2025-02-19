@@ -110,8 +110,6 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       'filename2-hash': seqUploadRow.read2.hash,
     };
     
-    // sleep 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
     if (sequenceResponse.status === ResponseType.Success) {
       setSeqSubmission({
