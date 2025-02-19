@@ -13,11 +13,14 @@ export default function Validation(props: ValidationProps) {
   
   return (
     <>
-      { showTitle ? (<Typography variant="h4" color="primary">{title}</Typography>) : (<></>)}
+      { showTitle && (<Typography variant="h4" color="primary">{title}</Typography>)}
       <Stack direction="column" spacing={1}>
         {messages.map(
-          (message: ResponseMessage, index: number) => (
-            <Alert key={index} severity={message.ResponseType.toLowerCase() as AlertColor}>
+          (message: ResponseMessage) => (
+            <Alert
+              key={message.ResponseMessage}
+              severity={message.ResponseType.toLowerCase() as AlertColor}
+            >
               <strong>{message.ResponseType}</strong>
               {' '}
               -

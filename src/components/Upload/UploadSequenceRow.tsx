@@ -144,21 +144,20 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
   ].includes(seqUploadRow.state);
 
   useEffect(() => {
-    console.log(`Updating state for ${seqUploadRow.seqId} to ${seqUploadRow.state}`);
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
-      calculateHash()
-        .catch(console.error);
+      calculateHash();
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
-      handleSubmit()
-        .catch(console.error);
+      handleSubmit();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.state]);
 
   useEffect(() => {
     if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash]);
 
   return (
@@ -247,22 +246,24 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
         />
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        {rowInProgress() ? (
-          <CircularProgress size={20} />
-        ) : (
-          requestWaiting() || (
-          <Button
-            size="small"
-            variant="outlined"
-            color="primary"
-            onClick={() => {
-              setShowValidation(!showValidation);
-            }}
-            disabled={disableResponse()}
-          >
-            Show Response
-          </Button>
-          ))}
+        <>
+          {rowInProgress() ? (
+            <CircularProgress size={20} />
+          ) : (
+            requestWaiting() || (
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={() => {
+                setShowValidation(!showValidation);
+              }}
+              disabled={disableResponse()}
+            >
+              Show Response
+            </Button>
+            ))}
+        </>
       </TableCell>
       <ValidationModal
         messages={seqSubmission.messages ?? []}

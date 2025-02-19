@@ -260,10 +260,6 @@ function UploadMetadata() {
             files={files}
             setFiles={setFiles}
             validFormats={validFormats}
-            multiple={false}
-            calculateHash={false}
-            hideAfterDrop={false}
-            customValidators={[]}
           />
         </Grid>
         <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>

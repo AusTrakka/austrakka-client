@@ -1,7 +1,7 @@
 import { DropFileUpload } from '../types/DropFileUpload';
 import { GroupRole } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
-import { uploadSubmissions, validateSubmissions } from './resourceUtils';
+import { uploadSubmissions } from './resourceUtils';
 
 interface SeqPair {
   file: File
@@ -152,7 +152,8 @@ export interface OrgDescriptor {
 // TODO requires special logic if we want admins to be allowed to upload to any org using this UI 
 //  but do we? They can always give themselves a role if they really need to use the UI
 
-// TODO ought to get group type in DTO rather than rely on group name structure - however this is temporary anyway
+// TODO ought to get group type in DTO rather than rely on group name structure - 
+// however this is temporary anyway
 export const getUploadableOrgs = (groupRoles: GroupRole[]): OrgDescriptor[] => {
   const orgs: OrgDescriptor[] = groupRoles
     .filter((groupRole) => groupRole.role.name === 'Uploader')
@@ -188,6 +189,5 @@ export const createAndShareSamples = async (
 
   // TODO should perform a validate call first
   const response = await uploadSubmissions(formData, '', token);
-  console.log(response);
   return response;
 };

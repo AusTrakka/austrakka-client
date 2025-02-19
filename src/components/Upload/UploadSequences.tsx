@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -49,8 +49,6 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 
-// TODO: these need mimetypes
-// the .fq and .fastq files can't available to select in the browser with octet
 const validFormats = {
   '.fq': '',
   '.fastq': '',
@@ -66,6 +64,10 @@ interface SelectItem {
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
+  const seqUploadRowStates = useMemo(
+    () => seqUploadRows.map(sur => sur.state),
+    [seqUploadRows],
+  );
   const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
   const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
   const [selectedCreateSampleRecords, setSelectedCreateSampleRecords] = useState<boolean>(false);
@@ -122,7 +124,7 @@ function UploadSequences() {
       // Only upload 1 at a time
       updateRow({ ...row, state: SeqUploadRowState.Uploading });
     }
-  }, [seqUploadRows.map(sur => sur.state)]);
+  }, [seqUploadRows, seqUploadRowStates]);
 
   useEffect(() => {
     const newSeqUploadRows = files
@@ -169,7 +171,8 @@ function UploadSequences() {
 
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
-    // TODO this hacky code means we silently do nothing if we are not ready, and the user has to re-click
+    // TODO this hacky code means we silently do nothing if we are not ready, 
+    // and the user has to re-click
     if (tokenLoading !== LoadingState.SUCCESS) return;
     
     if (selectedCreateSampleRecords) {
@@ -202,7 +205,8 @@ function UploadSequences() {
       return;
     }
     const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
-    // This mapping exists here so we can set "Any" as a value when disabled, regardless of label format
+    // This mapping exists here so we can set "Any" as a value when disabled, regardless of 
+    // label format
     // Displaying org abbreviations in the dropdown for now, but this can be easily changed
     setAvailableDataOwners(
       orgs.map((org: OrgDescriptor) => ({ value: org.abbreviation, label: org.abbreviation })),
@@ -404,7 +408,6 @@ function UploadSequences() {
                   validateNoDuplicateFilenames,
                   validateAllHaveSampleNamesWithTwoFilesOnly,
                 ]}
-                hideAfterDrop
               />
             </Box>
           ) : (

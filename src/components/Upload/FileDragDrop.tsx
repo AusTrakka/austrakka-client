@@ -7,26 +7,24 @@ import { DropFileUpload } from '../../types/DropFileUpload';
 import { generateHash } from '../../utilities/file';
 import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
-// The defaulting isn't working like I would have hoped
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
   validFormats: Record<string, string>,
-  multiple: boolean,
-  calculateHash: boolean,
-  customValidators: CustomUploadValidator[],
-  hideAfterDrop: boolean,
+  multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
+  calculateHash?: boolean | undefined, // eslint-disable-line react/require-default-props
+  customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
 }
 
+// eslint-disable-next-line react/function-component-definition
 const FileDragDrop2: React.FC<FileDragDropProps> = (
   {
     files,
     setFiles,
-    validFormats, // TODO: this hasn't been implemented
+    validFormats,
     multiple = false,
     calculateHash = false,
     customValidators = [],
-    hideAfterDrop = false,
   },
 ) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -64,7 +62,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
         enqueueSnackbar(validatorReturn.message, { variant: 'error' });
-        console.error(validatorReturn.message);
         return false;
       }
     }
@@ -77,7 +74,6 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
       hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
     } as DropFileUpload)));
     setFiles([...files, ...fileUploads]);
-    console.log(`file length ${files.length}`);
   };
 
   const handleDrag = (e: DragEvent) => {
@@ -119,91 +115,88 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {(files.length > 0 && hideAfterDrop) ||
-        (
-          <Box
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              backgroundColor: dragActive ? '' : 'var(--primary-main-bg)',
-              marginTop: 2,
-              marginBottom: 2,
-              height: '100%',
-              border: dragActive ? 4 : 0,
-              borderColor: 'var(--primary-main-bg)',
-              borderStyle: dragActive ? 'dashed' : 'solid',
-              transition: theme.transitions?.create!(
-                ['background-color', 'border'],
-                { duration: theme.transitions.duration?.standard },
-              ),
-            }}
-          >
-            <Stack spacing={1} justifyContent="center" alignItems="center">
-              {files.length === 0 ? (
-                <>
-                  <UploadFile fontSize="large" color="primary" />
-                  <Typography variant="h5" color="primary">
-                    {multiple ? 'Drag and drop files here' : 'Drag and drop file here'}
-                  </Typography>
-                  <Typography variant="subtitle1">or</Typography>
-                  <Button variant="outlined" component="label">
-                    Browse
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      id="input-file-upload"
-                      onClick={onBrowseClick}
-                      multiple={multiple}
-                      onChange={handleBrowseChange}
-                      accept={Object.values(validFormats).toString()}
-                      hidden
-                    />
-                  </Button>
-                  {
-                    Object.entries(validFormats).length > 0 &&
-                      (
-                        <Typography variant="subtitle2">
-                          Valid file types are:
-                          {' '}
-                          {Object.keys(validFormats).join(', ')}
-                        </Typography>
-                      )
-                  }
-                </>
-              ) : (
-                <>
-                  <AttachFile fontSize="large" color="primary" />
-                  <Typography
-                    variant="h5"
-                    color="primary"
-                  >
-                    {multiple ? 'Selected files:' : 'Selected file:'}
-                  </Typography>
-                  <>
-                    {files.map((file) => (
-                      <div key={file.file.name}>
-                        <Typography variant="subtitle1">
-                          {file.file.name}
-                        </Typography>
-                      </div>
-                    ))}
-                  </>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={handleClearFiles}
-                  >
-                    Clear
-                  </Button>
-                </>
-              )}
-            </Stack>
-          </Box>
-        )}
+      <Box
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          backgroundColor: dragActive ? '' : 'var(--primary-main-bg)',
+          marginTop: 2,
+          marginBottom: 2,
+          height: '100%',
+          border: dragActive ? 4 : 0,
+          borderColor: 'var(--primary-main-bg)',
+          borderStyle: dragActive ? 'dashed' : 'solid',
+          transition: theme.transitions?.create!(
+            ['background-color', 'border'],
+            { duration: theme.transitions.duration?.standard },
+          ),
+        }}
+      >
+        <Stack spacing={1} justifyContent="center" alignItems="center">
+          {files.length === 0 ? (
+            <>
+              <UploadFile fontSize="large" color="primary" />
+              <Typography variant="h5" color="primary">
+                {multiple ? 'Drag and drop files here' : 'Drag and drop file here'}
+              </Typography>
+              <Typography variant="subtitle1">or</Typography>
+              <Button variant="outlined" component="label">
+                Browse
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="input-file-upload"
+                  onClick={onBrowseClick}
+                  multiple={multiple}
+                  onChange={handleBrowseChange}
+                  accept={Object.values(validFormats).toString()}
+                  hidden
+                />
+              </Button>
+              {
+                Object.entries(validFormats).length > 0 &&
+                  (
+                    <Typography variant="subtitle2">
+                      Valid file types are:
+                      {' '}
+                      {Object.keys(validFormats).join(', ')}
+                    </Typography>
+                  )
+              }
+            </>
+          ) : (
+            <>
+              <AttachFile fontSize="large" color="primary" />
+              <Typography
+                variant="h5"
+                color="primary"
+              >
+                {multiple ? 'Selected files:' : 'Selected file:'}
+              </Typography>
+              <>
+                {files.map((file) => (
+                  <div key={file.file.name}>
+                    <Typography variant="subtitle1">
+                      {file.file.name}
+                    </Typography>
+                  </div>
+                ))}
+              </>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleClearFiles}
+              >
+                Clear
+              </Button>
+            </>
+          )}
+        </Stack>
+      </Box>
     </>
   );
 };
