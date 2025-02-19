@@ -1,0 +1,35 @@
+import React from 'react';
+import { Alert, AlertColor, Stack, Typography } from '@mui/material';
+import { ResponseMessage } from '../../types/apiResponse.interface';
+
+interface ValidationProps {
+  messages: ResponseMessage[],
+  title: string,
+  showTitle: boolean,
+}
+
+export default function Validation(props: ValidationProps) {
+  const { messages, title, showTitle } = props;
+  
+  return (
+    <>
+      { showTitle && (<Typography variant="h4" color="primary">{title}</Typography>)}
+      <Stack direction="column" spacing={1}>
+        {messages.map(
+          (message: ResponseMessage) => (
+            <Alert
+              key={message.ResponseMessage}
+              severity={message.ResponseType.toLowerCase() as AlertColor}
+            >
+              <strong>{message.ResponseType}</strong>
+              {' '}
+              -
+              {' '}
+              {message.ResponseMessage}
+            </Alert>
+          ),
+        )}
+      </Stack>
+    </>
+  );
+}
