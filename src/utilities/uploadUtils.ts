@@ -38,11 +38,11 @@ export const seqStateStyles = {
   },
   [SeqUploadRowState.CalculatedHash]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_TEAL,
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
   },
   [SeqUploadRowState.Uploading]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN,
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
   },
   [SeqUploadRowState.Complete]: {
     color: 'white',
