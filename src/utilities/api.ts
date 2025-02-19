@@ -52,6 +52,14 @@ function getHeadersPost(token: string): any {
   };
 }
 
+function getHeadersMultipartPost(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
 async function parseApiResponse<T = any>(response: Response): Promise<ApiResponse<T>> {
   return (await response.json()) as ApiResponse<T>;
 }
@@ -185,6 +193,24 @@ Promise<ResponseObject> {
     method: 'POST',
     body: JSON.stringify(body),
     headers: getHeadersPost(token),
+  });
+}
+
+export async function callPostMultipart(
+  url: string,
+  formData: FormData,
+  token: string,
+  customHeaders: any = {},
+)
+  : Promise<ResponseObject> {
+  if (!token) {
+    return noToken as ResponseObject;
+  }
+  const headers = { ...getHeadersMultipartPost(token), ...customHeaders };
+  return callApi(url, {
+    method: 'POST',
+    body: formData,
+    headers,
   });
 }
 
