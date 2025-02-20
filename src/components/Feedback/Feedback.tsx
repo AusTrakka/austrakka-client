@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useRef, useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Dialog,
@@ -8,13 +7,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Snackbar,
   TextField,
-  AlertColor,
   Stack,
   Divider,
 } from '@mui/material';
 import { Location } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import { FeedbackPost } from '../../types/dtos';
 import { postFeedback } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
@@ -28,6 +26,7 @@ interface FeedbackProps {
 }
 
 function Feedback(props: FeedbackProps) {
+  const { enqueueSnackbar } = useSnackbar();
   const {
     help,
     handleHelpClose,
@@ -42,16 +41,6 @@ function Feedback(props: FeedbackProps) {
   const [description, setDescription] = useState('');
   const [titleError, setTitleError] = useState(false);
   const [descError, setDescError] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
-  const [toast, setToast] = useState<boolean>(false);
-  const handleToastClose = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      setToast(false);
-      return;
-    }
-    setToast(false);
-  };
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
@@ -62,18 +51,18 @@ function Feedback(props: FeedbackProps) {
       };
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
-        setFeedbackMessage(`Feedback received. Ticket number: ${feedbackResp.data?.id}`);
-        setToastSeverity('success');
+        enqueueSnackbar(
+          `Feedback received. Ticket number: ${feedbackResp.data?.id}`,
+          { variant: 'error' },
+        );
         setTitle('');
         setDescription('');
       } else {
-        setFeedbackMessage(feedbackResp.message);
-        setToastSeverity('error');
+        enqueueSnackbar(feedbackResp.message, { variant: 'error' });
       }
       formValid.current.description = false;
       formValid.current.title = false;
       handleHelpClose({}, 'escapeKeyDown');
-      setToast(true);
     } else {
       if (!formValid.current.title) {
         setTitleError(true);
@@ -103,80 +92,69 @@ function Feedback(props: FeedbackProps) {
   };
 
   return (
-    <>
-      <Dialog
-        open={help}
-        onClose={handleHelpClose}
-      >
-        <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
-          <DialogTitle>Support Requests</DialogTitle>
-          <DialogContent>
-            <DialogContentText variant="subtitle2">
-              Use this form to submit bug reports, support requests, or general feedback
-              directly to the
-              {' '}
-              {import.meta.env.VITE_BRANDING_NAME}
-              {' '}
-              team. The current page you are on will also be submitted.
-            </DialogContentText>
-            <Stack direction="column" paddingY={2} spacing={3}>
-              <Divider orientation="horizontal" flexItem />
-              <TextField
-                autoFocus
-                required
-                value={title}
-                onChange={handleTitleChange}
-                error={titleError}
-                helperText={titleError ? 'Please enter a title' : ''}
-                margin="dense"
-                id="feedback-title"
-                name="title"
-                label="Title"
-                fullWidth
-                variant="filled"
-              />
-              <TextField
-                id="feedback-description"
-                label="Description"
-                multiline
-                rows={4}
-                variant="filled"
-                fullWidth
-                required
-                value={description}
-                onChange={handleDescChange}
-                error={descError}
-                helperText={descError ? 'Please enter a description' : ''}
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={cancelFeedback}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
-              color="primary"
-              variant="contained"
-            >
-              Submit
-            </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={toast}
-        autoHideDuration={10000}
-      >
-        <Alert onClose={handleToastClose} severity={toastSeverity}>
-          {feedbackMessage}
-        </Alert>
-      </Snackbar>
-    </>
+    <Dialog
+      open={help}
+      onClose={handleHelpClose}
+    >
+      <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
+        <DialogTitle>Support Requests</DialogTitle>
+        <DialogContent>
+          <DialogContentText variant="subtitle2">
+            Use this form to submit bug reports, support requests, or general feedback
+            directly to the
+            {' '}
+            {import.meta.env.VITE_BRANDING_NAME}
+            {' '}
+            team. The current page you are on will also be submitted.
+          </DialogContentText>
+          <Stack direction="column" paddingY={2} spacing={3}>
+            <Divider orientation="horizontal" flexItem />
+            <TextField
+              autoFocus
+              required
+              value={title}
+              onChange={handleTitleChange}
+              error={titleError}
+              helperText={titleError ? 'Please enter a title' : ''}
+              margin="dense"
+              id="feedback-title"
+              name="title"
+              label="Title"
+              fullWidth
+              variant="filled"
+            />
+            <TextField
+              id="feedback-description"
+              label="Description"
+              multiline
+              rows={4}
+              variant="filled"
+              fullWidth
+              required
+              value={description}
+              onChange={handleDescChange}
+              error={descError}
+              helperText={descError ? 'Please enter a description' : ''}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={cancelFeedback}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
+            color="primary"
+            variant="contained"
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
   );
 }
 
