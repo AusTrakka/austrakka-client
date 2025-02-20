@@ -147,14 +147,17 @@ export default defineConfig({
       VITE_DOCS_URL: (key, value) => {
         return defaultConfigValue(key, value, DocsDefaultValues.Url)
       },
-}),
+      VITE_DOCS_ENABLED: (key, value) => {
+        return defaultConfigValueBoolean(key, value, DocsDefaultValues.Enabled)
+      },
+    }),
     {
       apply: 'build',
       ...eslint({
         failOnWarning: true,
         failOnError: true,
       })
-    }
+    },
   ]
 })
 
@@ -173,6 +176,15 @@ function defaultConfigValue(key: string, value: string, defaultValue: string): s
     value = defaultValue
   }
   return value
+}
+
+function defaultConfigValueBoolean(key: string, value: string, defaultValue: string): string {
+  if (value !== undefined && value !== "") {
+    if (!["true", "false"].includes(value.toLowerCase())) {
+      throw new Error(`Value of ${value} for ${key}. Must be 'true' or 'false'`)
+    }
+  }
+  return Boolean(defaultConfigValue(key, value, defaultValue).toLowerCase() === "true").toString()
 }
 
 enum ThemeDefaultValues {
@@ -226,4 +238,5 @@ enum BrandingDefaultValues {
 
 enum DocsDefaultValues {
   Url = "https://docs.austrakka.net",
+  Enabled = "true",
 }
