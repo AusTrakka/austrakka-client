@@ -32,7 +32,7 @@ function MainMenuLayout() {
     {
       title: 'Documentation',
       icon: <Description fontSize="small" />,
-      disabled: false,
+      disabled: import.meta.env.VITE_DOCS_ENABLED === 'false',
       onClick: () => {
         window.open(import.meta.env.VITE_DOCS_URL, '_blank')?.focus();
       },
