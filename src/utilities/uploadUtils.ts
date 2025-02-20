@@ -70,19 +70,37 @@ export const seqStateStyles = {
 export interface SeqUploadRow {
   id: string
   seqId: string
+  seqType: SeqType
+  state: SeqUploadRowState
+}
+
+export interface SeqPairedUploadRow extends SeqUploadRow {
+  id: string
+  seqId: string
   read1: DropFileUpload
   read2: DropFileUpload
+  seqType: SeqType
+  state: SeqUploadRowState
+}
+
+export interface SeqSingleUploadRow extends SeqUploadRow {
+  id: string
+  seqId: string
+  file: DropFileUpload
+  seqType: SeqType
   state: SeqUploadRowState
 }
 
 export enum SeqType {
   FastqIllPe = 'fastq-ill-pe',
-  // FastqIllSe = 'fastq-ill-se',
-  // FastqOnt = 'fastq-ont',
+  FastqIllSe = 'fastq-ill-se',
+  FastqOnt = 'fastq-ont',
 }
 
 export const seqTypeNames = {
   [SeqType.FastqIllPe]: 'Illumina Paired-End FASTQ',
+  [SeqType.FastqIllSe]: 'Illumina Single-End FASTQ',
+  [SeqType.FastqOnt]: 'Oxford Nanopore FASTQ',
 };
 
 export enum SkipForce {
@@ -103,7 +121,7 @@ export interface CustomUploadValidator {
 export const validateEvenNumberOfFiles = {
   func: (files: File[]) => ({
     success: files.length % 2 === 0,
-    message: 'Must upload an even number of files',
+    message: 'Must upload an even number of files for paired-end sequence data',
   } as CustomUploadValidatorReturn),
 } as CustomUploadValidator;
 
@@ -180,6 +198,7 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
+// TODO should pull out CSV creation into a testable utility function
 export const createAndShareSamples = async (
   dataOwnerAbbrev: string,
   shareProjectAbbrevs: string[],
@@ -204,4 +223,55 @@ export const createAndShareSamples = async (
   
   response = await uploadSubmissions(formData, '', token);
   return response;
+};
+
+export const createPairedSeqUploadRows = (
+  files: DropFileUpload[],
+  seqType: SeqType,
+): SeqPairedUploadRow[] => {
+  if (seqType !== SeqType.FastqIllPe) {
+    throw new Error('Invalid seqType for creating paired-end sequence upload rows');
+  }
+  const pairedFiles = files.sort((a, b) => {
+    if (a.file.name < b.file.name) {
+      return -1;
+    }
+    return 1;
+  })
+    .reduce((
+      result: SeqPairedUploadRow[],
+      value: DropFileUpload,
+      index: number,
+      array: DropFileUpload[],
+    ) => {
+      if (index % 2 === 0) {
+        result.push({
+          id: crypto.randomUUID(),
+          seqId: getSampleNameFromFile(value.file.name),
+          read1: value,
+          read2: array[index + 1],
+          seqType: SeqType.FastqIllPe,
+          state: SeqUploadRowState.Waiting,
+        } as SeqPairedUploadRow);
+      }
+      return result;
+    }, []);
+  return pairedFiles;
+};
+
+export const createSingleSeqUploadRows = (
+  files: DropFileUpload[],
+  seqType: SeqType,
+): SeqSingleUploadRow[] => {
+  if (![SeqType.FastqIllSe, SeqType.FastqOnt].includes(seqType)) {
+    throw new Error('Invalid seqType for creating single-end sequence upload rows');
+  }
+  const singleFiles = files.map((file) => ({
+    id: crypto.randomUUID(),
+    seqId: getSampleNameFromFile(file.file.name),
+    file,
+    seqType,
+    state: SeqUploadRowState.Waiting,
+  } as SeqSingleUploadRow));
+  return singleFiles;
 };

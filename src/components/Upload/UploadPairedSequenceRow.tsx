@@ -9,7 +9,12 @@ import {
   TextField,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { seqStateStyles, SeqType, SeqUploadRow, SeqUploadRowState, SkipForce } from '../../utilities/uploadUtils';
+import {
+  seqStateStyles,
+  SeqPairedUploadRow,
+  SeqUploadRowState,
+  SkipForce,
+} from '../../utilities/uploadUtils';
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
@@ -17,22 +22,18 @@ import { uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import ValidationModal from '../Validation/ValidationModal';
 import { generateHash } from '../../utilities/file';
+import { tableCellStyle, tableFormControlStyle } from '../../styles/uploadPageStyles';
 
 interface UploadSequenceRowProps {
-  seqUploadRow: SeqUploadRow,
-  updateRow: (newSur: SeqUploadRow) => void,
+  seqUploadRow: SeqPairedUploadRow,
+  updateRow: (newSur: SeqPairedUploadRow) => void,
   modeOption: SkipForce,
-  seqTypeOption: SeqType,
 }
 
-const tableCellStyle = { padding: '0px', paddingLeft: '4px', paddingRight: '4px' };
-const tableFormControlStyle = { minWidth: 200, marginTop: 1, marginBottom: 1 };
-
-export default function UploadSequenceRow(props: UploadSequenceRowProps) {
+export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   const { seqUploadRow } = props;
   const { updateRow } = props;
   const { modeOption } = props;
-  const { seqTypeOption } = props;
   
   const [showValidation, setShowValidation] = useState(false);
   const [seqSubmission, setSeqSubmission] = useState({
@@ -45,7 +46,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
     updateRow({
       ...seqUploadRow,
       state,
-    } as SeqUploadRow);
+    } as SeqPairedUploadRow);
   };
 
   const calculateHash = async () => {
@@ -66,7 +67,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
     updateRow({
       ...seqUploadRow,
       seqId,
-    } as SeqUploadRow);
+    } as SeqPairedUploadRow);
   };
 
   const handleSelectRead1 = (read1File: string) => {
@@ -77,7 +78,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       ...seqUploadRow,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
-    } as SeqUploadRow);
+    } as SeqPairedUploadRow);
   };
   const handleSelectRead2 = (read2File: string) => {
     if (read2File === seqUploadRow.read2.file.name) {
@@ -87,7 +88,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
       ...seqUploadRow,
       read1: seqUploadRow.read2,
       read2: seqUploadRow.read1,
-    } as SeqUploadRow);
+    } as SeqPairedUploadRow);
   };
 
   const handleSubmit = async () => {
@@ -102,7 +103,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
 
     const headers = {
       'mode': modeOption,
-      'seq-type': seqTypeOption,
+      'seq-type': seqUploadRow.seqType,
       'seq-id': seqUploadRow.seqId,
       'filename1': seqUploadRow.read1.file.name,
       'filename1-hash': seqUploadRow.read1.hash,
@@ -169,7 +170,7 @@ export default function UploadSequenceRow(props: UploadSequenceRowProps) {
           variant="standard"
         >
           <TextField
-            id={`read1-select-${seqUploadRow.id}`}
+            id={`seqid-select-${seqUploadRow.id}`}
             name="seqid"
             variant="standard"
             slotProps={{ input: { disableUnderline: requestCompleted() } }}
