@@ -209,6 +209,7 @@ function UserV2DetailOverview() {
   };
   
   const editUserDetails = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
 
     // Creating editedValuesDtoFormat object
