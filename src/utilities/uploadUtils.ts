@@ -4,10 +4,6 @@ import { ResponseObject } from '../types/responseObject.interface';
 import { uploadSubmissions, validateSubmissions } from './resourceUtils';
 import { ResponseType } from '../constants/responseType';
 
-interface SeqPair {
-  file: File
-  sampleName: string
-}
 export enum SeqUploadRowState {
   Waiting = 'Waiting',
   Queued = 'Queued',
@@ -144,24 +140,42 @@ export const validateNoDuplicateFilenames = {
 
 export const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
 
+function countElements(array: any[]): Record<string, number> {
+  const count: Record<string, number> = {};
+  array.forEach((val) => {
+    count[val] = (count[val] || 0) + 1;
+  });
+  return count;
+}
+
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
-    const filenames: SeqPair[] = files
-      .map(f => ({ file: f, sampleName: getSampleNameFromFile(f.name) } as SeqPair));
-    // @ts-ignore
-    const groupedFilenames = filenames
-      .reduce((f, u) => (
-        { ...f, [u.sampleName]: [...(f[u.sampleName as keyof typeof f] || []), u] }
-      ), {});
-    // @ts-ignore
-    const problemSampleNames = Object.entries(groupedFilenames)
-      // @ts-ignore
-      .filter((k) => k[1].length !== 2)
-      .map((k) => k[0]);
+    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const problemSampleNames = Object.entries(sampleCounts)
+      .filter(([_sample, count]) => count !== 2)
+      .map(([sample, _count]) => sample);
     if (problemSampleNames.length > 0) {
       return {
         success: false,
         message: `Unable to parse file pairs for the following samples: ${problemSampleNames.join(', ')}`,
+      } as CustomUploadValidatorReturn;
+    }
+    return {
+      success: true,
+    } as CustomUploadValidatorReturn;
+  },
+} as CustomUploadValidator;
+
+export const validateAllHaveSampleNamesWithOneFileOnly = {
+  func: (files: File[]) => {
+    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const problemSampleNames = Object.entries(sampleCounts)
+      .filter(([_sample, count]) => count !== 1)
+      .map(([sample, _count]) => sample);
+    if (problemSampleNames.length > 0) {
+      return {
+        success: false,
+        message: `Found too many files for the following samples: ${problemSampleNames.join(', ')}`,
       } as CustomUploadValidatorReturn;
     }
     return {

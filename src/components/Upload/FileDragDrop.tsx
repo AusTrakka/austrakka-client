@@ -1,4 +1,4 @@
-import React, { DragEvent, useState, useRef, ChangeEvent, SetStateAction, Dispatch } from 'react';
+import React, { DragEvent, useState, useEffect, useRef, ChangeEvent, SetStateAction, Dispatch, useCallback } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
@@ -10,14 +10,16 @@ import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilit
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
-  validFormats: Record<string, string>,
+  validFormats: Record<string, string>, // TODO when FASTA, must revalidate when this changes
   multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
   calculateHash?: boolean | undefined, // eslint-disable-line react/require-default-props
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
+  validated: boolean,
+  setValidated: Dispatch<SetStateAction<boolean>>,
 }
 
 // eslint-disable-next-line react/function-component-definition
-const FileDragDrop2: React.FC<FileDragDropProps> = (
+const FileDragDrop: React.FC<FileDragDropProps> = (
   {
     files,
     setFiles,
@@ -25,48 +27,53 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     multiple = false,
     calculateHash = false,
     customValidators = [],
+    validated,
+    setValidated,
   },
 ) => {
   const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<null | HTMLInputElement>(null);
-  const [dragActive, setDragActive] = useState(false);
-
-  const validateFilesAreOfType = {
-    func: (_files: File[]) => ({
-      success: Object.entries(validFormats).length === 0 ||
-        _files.every(f => Object.values(validFormats).includes(f?.type)),
-      message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
-    } as CustomUploadValidatorReturn),
-  } as CustomUploadValidator;
+  const [dragActive, setDragActive] = useState<boolean>(false);
   
-  const validateSingleFile = {
-    func: (_files: File[]) => ({
-      success: _files.length === 1,
-      message: 'Only one file can be selected',
-    } as CustomUploadValidatorReturn),
-  } as CustomUploadValidator;
-  
-  const getBuiltInValidators = (): CustomUploadValidator[] => {
-    const validators: CustomUploadValidator[] = [];
-    if (!multiple) {
-      validators.push(validateSingleFile);
-    }
-    if (Object.entries(validFormats).length > 0) {
-      validators.push(validateFilesAreOfType);
-    }
-    return validators;
-  };
+  const validateUpload = useCallback((uploadedFiles: File[]): boolean => {
+    const validateFilesAreOfType = {
+      func: (_files: File[]) => ({
+        success: Object.entries(validFormats).length === 0 ||
+          _files.every(f => Object.values(validFormats).includes(f?.type)),
+        message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
+      } as CustomUploadValidatorReturn),
+    } as CustomUploadValidator;
 
-  const validateUpload = (uploadedFiles: File[]): boolean => {
+    const validateSingleFile = {
+      func: (_files: File[]) => ({
+        success: _files.length === 1,
+        message: 'Only one file can be selected',
+      } as CustomUploadValidatorReturn),
+    } as CustomUploadValidator;
+    
+    const getBuiltInValidators = (): CustomUploadValidator[] => {
+      const validators: CustomUploadValidator[] = [];
+      if (!multiple) {
+        validators.push(validateSingleFile);
+      }
+      if (Object.entries(validFormats).length > 0) {
+        validators.push(validateFilesAreOfType);
+      }
+      return validators;
+    };
+    
     for (const validator of [...getBuiltInValidators(), ...customValidators]) {
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
-        enqueueSnackbar(validatorReturn.message, { variant: 'error' });
+        enqueueSnackbar(validatorReturn.message, { variant: 'error', autoHideDuration: 8000 });
+        setValidated(false);
+        setFiles([]);
         return false;
       }
     }
+    setValidated(true);
     return true;
-  };
+  }, [customValidators, enqueueSnackbar, multiple, setFiles, setValidated, validFormats]);
 
   const handleFiles = async (uploadedFiles: File[]) => {
     const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
@@ -107,10 +114,16 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
     }
     await handleFiles(uploadedFiles);
   };
-
+  
   const handleClearFiles = () => {
     setFiles([]);
   };
+
+  useEffect(() => {
+    if (files.length > 0 && !validated) {
+      validateUpload(files.map(f => f.file));
+    }
+  }, [validated, validateUpload, setFiles, files]);
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -201,4 +214,4 @@ const FileDragDrop2: React.FC<FileDragDropProps> = (
   );
 };
 
-export default FileDragDrop2;
+export default FileDragDrop;
