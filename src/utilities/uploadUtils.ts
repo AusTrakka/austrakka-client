@@ -1,23 +1,13 @@
 import { DropFileUpload } from '../types/DropFileUpload';
 import { GroupRole } from '../types/dtos';
-import { ResponseObject } from '../types/responseObject.interface';
-import { uploadSubmissions, validateSubmissions } from './resourceUtils';
-import { ResponseType } from '../constants/responseType';
-
-interface SeqPair {
-  file: File
-  sampleName: string
-}
-export enum SeqUploadRowState {
-  Waiting = 'Waiting',
-  Queued = 'Queued',
-  CalculatingHash = 'Calculating Hash',
-  CalculatedHash = 'Calculated Hash',
-  Uploading = 'Uploading',
-  Complete = 'Complete',
-  Skipped = 'Skipped', // TODO use if skipped
-  Errored = 'Errored',
-}
+import {
+  OrgDescriptor,
+  SeqPairedUploadRow,
+  SeqSingleUploadRow,
+  SeqType,
+  SeqUploadRow,
+  SeqUploadRowState,
+} from '../types/sequploadtypes';
 
 // Uploads are active (queued, but not finalised) if in these states
 export const activeSeqUploadStates = [
@@ -26,70 +16,6 @@ export const activeSeqUploadStates = [
   SeqUploadRowState.CalculatedHash,
   SeqUploadRowState.Uploading,
 ];
-
-// We cannot use the color prop as it will only let us set primary,error,success etc
-// For some of these states that would be fine, but since it won't work for all,
-// set them all with styles here
-export const seqStateStyles = {
-  [SeqUploadRowState.Waiting]: {
-    color: 'black',
-    backgroundColor: 'white',
-    borderColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREY,
-    border: '1px solid',
-  },
-  [SeqUploadRowState.Queued]: {
-    color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREY,
-  },
-  [SeqUploadRowState.CalculatingHash]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.CalculatedHash]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.Uploading]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.Complete]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
-  },
-  [SeqUploadRowState.Skipped]: {
-    color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
-  },
-  [SeqUploadRowState.Errored]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_RED,
-  },
-};
-
-export interface SeqUploadRow {
-  id: string
-  seqId: string
-  read1: DropFileUpload
-  read2: DropFileUpload
-  state: SeqUploadRowState
-}
-
-export enum SeqType {
-  FastqIllPe = 'fastq-ill-pe',
-  // FastqIllSe = 'fastq-ill-se',
-  // FastqOnt = 'fastq-ont',
-}
-
-export const seqTypeNames = {
-  [SeqType.FastqIllPe]: 'Illumina Paired-End FASTQ',
-};
-
-export enum SkipForce {
-  None = '',
-  Skip = 'skip',
-  Force = 'overwrite',
-}
 
 export interface CustomUploadValidatorReturn {
   success: boolean,
@@ -103,7 +29,7 @@ export interface CustomUploadValidator {
 export const validateEvenNumberOfFiles = {
   func: (files: File[]) => ({
     success: files.length % 2 === 0,
-    message: 'Must upload an even number of files',
+    message: 'Must upload an even number of files for paired-end sequence data',
   } as CustomUploadValidatorReturn),
 } as CustomUploadValidator;
 
@@ -126,20 +52,20 @@ export const validateNoDuplicateFilenames = {
 
 export const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
 
+function countElements(array: any[]): Record<string, number> {
+  const count: Record<string, number> = {};
+  array.forEach((val) => {
+    count[val] = (count[val] || 0) + 1;
+  });
+  return count;
+}
+
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
-    const filenames: SeqPair[] = files
-      .map(f => ({ file: f, sampleName: getSampleNameFromFile(f.name) } as SeqPair));
-    // @ts-ignore
-    const groupedFilenames = filenames
-      .reduce((f, u) => (
-        { ...f, [u.sampleName]: [...(f[u.sampleName as keyof typeof f] || []), u] }
-      ), {});
-    // @ts-ignore
-    const problemSampleNames = Object.entries(groupedFilenames)
-      // @ts-ignore
-      .filter((k) => k[1].length !== 2)
-      .map((k) => k[0]);
+    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const problemSampleNames = Object.entries(sampleCounts)
+      .filter(([_sample, count]) => count !== 2)
+      .map(([sample, _count]) => sample);
     if (problemSampleNames.length > 0) {
       return {
         success: false,
@@ -152,10 +78,23 @@ export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   },
 } as CustomUploadValidator;
 
-export interface OrgDescriptor {
-  abbreviation: string,
-  name: string,
-}
+export const validateAllHaveSampleNamesWithOneFileOnly = {
+  func: (files: File[]) => {
+    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const problemSampleNames = Object.entries(sampleCounts)
+      .filter(([_sample, count]) => count !== 1)
+      .map(([sample, _count]) => sample);
+    if (problemSampleNames.length > 0) {
+      return {
+        success: false,
+        message: `Found too many files for the following samples: ${problemSampleNames.join(', ')}`,
+      } as CustomUploadValidatorReturn;
+    }
+    return {
+      success: true,
+    } as CustomUploadValidatorReturn;
+  },
+} as CustomUploadValidator;
 
 // Logic of these two functions will need to change in perms V2; currently take in groupRoles
 
@@ -180,28 +119,70 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
-export const createAndShareSamples = async (
+export const createSampleCSV = (
   dataOwnerAbbrev: string,
   shareProjectAbbrevs: string[],
   seqUploadRows: SeqUploadRow[],
-  token: string,
-): Promise<ResponseObject> => {
-  // construct CSV file out of seqUploadRows
+): string => {
+  if (!dataOwnerAbbrev) {
+    throw new Error('Data owner abbreviation cannot be empty');
+  }
   const projectGroups = shareProjectAbbrevs.map(abbrev => `${abbrev}-Group`);
   const csvHeader = 'Seq_ID,Owner_group,Shared_groups';
-  const csvRows = seqUploadRows.map(row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`);
+  const csvRows = seqUploadRows.map(
+    row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`,
+  );
   const csv = [csvHeader, ...csvRows].join('\n');
-  const csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
-  
-  const formData = new FormData();
-  formData.append('file', csvFile);
-  formData.append('proforma-abbrev', 'min');
+  return csv;
+};
 
-  // Validate and go no further if error
-  // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token);
-  if (response.status === ResponseType.Error) return response;
-  
-  response = await uploadSubmissions(formData, '', token);
-  return response;
+export const createPairedSeqUploadRows = (
+  files: DropFileUpload[],
+  seqType: SeqType,
+): SeqPairedUploadRow[] => {
+  if (seqType !== SeqType.FastqIllPe) {
+    throw new Error('Invalid seqType for creating paired-end sequence upload rows');
+  }
+  const pairedFiles = files.sort((a, b) => {
+    if (a.file.name < b.file.name) {
+      return -1;
+    }
+    return 1;
+  })
+    .reduce((
+      result: SeqPairedUploadRow[],
+      value: DropFileUpload,
+      index: number,
+      array: DropFileUpload[],
+    ) => {
+      if (index % 2 === 0) {
+        result.push({
+          id: crypto.randomUUID(),
+          seqId: getSampleNameFromFile(value.file.name),
+          read1: value,
+          read2: array[index + 1],
+          seqType: SeqType.FastqIllPe,
+          state: SeqUploadRowState.Waiting,
+        } as SeqPairedUploadRow);
+      }
+      return result;
+    }, []);
+  return pairedFiles;
+};
+
+export const createSingleSeqUploadRows = (
+  files: DropFileUpload[],
+  seqType: SeqType,
+): SeqSingleUploadRow[] => {
+  if (![SeqType.FastqIllSe, SeqType.FastqOnt].includes(seqType)) {
+    throw new Error('Invalid seqType for creating single-end sequence upload rows');
+  }
+  const singleFiles = files.map((file) => ({
+    id: crypto.randomUUID(),
+    seqId: getSampleNameFromFile(file.file.name),
+    file,
+    seqType,
+    state: SeqUploadRowState.Waiting,
+  } as SeqSingleUploadRow));
+  return singleFiles;
 };
