@@ -8,11 +8,10 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import {
-  seqStateStyles,
   SeqSingleUploadRow,
   SeqUploadRowState,
   SkipForce,
-} from '../../utilities/uploadUtils';
+} from '../../types/sequploadtypes';
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
@@ -20,7 +19,7 @@ import { uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import ValidationModal from '../Validation/ValidationModal';
 import { generateHash } from '../../utilities/file';
-import { tableCellStyle, tableFormControlStyle } from '../../styles/uploadPageStyles';
+import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqSingleUploadRow,

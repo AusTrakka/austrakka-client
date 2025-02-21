@@ -1,19 +1,13 @@
 import { DropFileUpload } from '../types/DropFileUpload';
 import { GroupRole } from '../types/dtos';
-import { ResponseObject } from '../types/responseObject.interface';
-import { uploadSubmissions, validateSubmissions } from './resourceUtils';
-import { ResponseType } from '../constants/responseType';
-
-export enum SeqUploadRowState {
-  Waiting = 'Waiting',
-  Queued = 'Queued',
-  CalculatingHash = 'Calculating Hash',
-  CalculatedHash = 'Calculated Hash',
-  Uploading = 'Uploading',
-  Complete = 'Complete',
-  Skipped = 'Skipped', // TODO use if skipped
-  Errored = 'Errored',
-}
+import {
+  OrgDescriptor,
+  SeqPairedUploadRow,
+  SeqSingleUploadRow,
+  SeqType,
+  SeqUploadRow,
+  SeqUploadRowState,
+} from '../types/sequploadtypes';
 
 // Uploads are active (queued, but not finalised) if in these states
 export const activeSeqUploadStates = [
@@ -22,88 +16,6 @@ export const activeSeqUploadStates = [
   SeqUploadRowState.CalculatedHash,
   SeqUploadRowState.Uploading,
 ];
-
-// We cannot use the color prop as it will only let us set primary,error,success etc
-// For some of these states that would be fine, but since it won't work for all,
-// set them all with styles here
-export const seqStateStyles = {
-  [SeqUploadRowState.Waiting]: {
-    color: 'black',
-    backgroundColor: 'white',
-    borderColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREY,
-    border: '1px solid',
-  },
-  [SeqUploadRowState.Queued]: {
-    color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREY,
-  },
-  [SeqUploadRowState.CalculatingHash]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.CalculatedHash]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.Uploading]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.Complete]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
-  },
-  [SeqUploadRowState.Skipped]: {
-    color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
-  },
-  [SeqUploadRowState.Errored]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_RED,
-  },
-};
-
-export interface SeqUploadRow {
-  id: string
-  seqId: string
-  seqType: SeqType
-  state: SeqUploadRowState
-}
-
-export interface SeqPairedUploadRow extends SeqUploadRow {
-  id: string
-  seqId: string
-  read1: DropFileUpload
-  read2: DropFileUpload
-  seqType: SeqType
-  state: SeqUploadRowState
-}
-
-export interface SeqSingleUploadRow extends SeqUploadRow {
-  id: string
-  seqId: string
-  file: DropFileUpload
-  seqType: SeqType
-  state: SeqUploadRowState
-}
-
-export enum SeqType {
-  FastqIllPe = 'fastq-ill-pe',
-  FastqIllSe = 'fastq-ill-se',
-  FastqOnt = 'fastq-ont',
-}
-
-export const seqTypeNames = {
-  [SeqType.FastqIllPe]: 'Illumina Paired-End FASTQ',
-  [SeqType.FastqIllSe]: 'Illumina Single-End FASTQ',
-  [SeqType.FastqOnt]: 'Oxford Nanopore FASTQ',
-};
-
-export enum SkipForce {
-  None = '',
-  Skip = 'skip',
-  Force = 'overwrite',
-}
 
 export interface CustomUploadValidatorReturn {
   success: boolean,
@@ -184,11 +96,6 @@ export const validateAllHaveSampleNamesWithOneFileOnly = {
   },
 } as CustomUploadValidator;
 
-export interface OrgDescriptor {
-  abbreviation: string,
-  name: string,
-}
-
 // Logic of these two functions will need to change in perms V2; currently take in groupRoles
 
 // TODO requires special logic if we want admins to be allowed to upload to any org using this UI 
@@ -212,31 +119,21 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
-// TODO should pull out CSV creation into a testable utility function
-export const createAndShareSamples = async (
+export const createSampleCSV = (
   dataOwnerAbbrev: string,
   shareProjectAbbrevs: string[],
   seqUploadRows: SeqUploadRow[],
-  token: string,
-): Promise<ResponseObject> => {
-  // construct CSV file out of seqUploadRows
+): string => {
+  if (!dataOwnerAbbrev) {
+    throw new Error('Data owner abbreviation cannot be empty');
+  }
   const projectGroups = shareProjectAbbrevs.map(abbrev => `${abbrev}-Group`);
   const csvHeader = 'Seq_ID,Owner_group,Shared_groups';
-  const csvRows = seqUploadRows.map(row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`);
+  const csvRows = seqUploadRows.map(
+    row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`,
+  );
   const csv = [csvHeader, ...csvRows].join('\n');
-  const csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
-  
-  const formData = new FormData();
-  formData.append('file', csvFile);
-  formData.append('proforma-abbrev', 'min');
-
-  // Validate and go no further if error
-  // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token);
-  if (response.status === ResponseType.Error) return response;
-  
-  response = await uploadSubmissions(formData, '', token);
-  return response;
+  return csv;
 };
 
 export const createPairedSeqUploadRows = (

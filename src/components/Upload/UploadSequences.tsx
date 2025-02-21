@@ -27,20 +27,21 @@ import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import { ResponseObject } from '../../types/responseObject.interface';
 import {
+  seqTypeNames,
+  SkipForce,
+  SeqPairedUploadRow,
+  SeqSingleUploadRow,
+  OrgDescriptor,
+  SeqType,
+  SeqUploadRowState,
+  SeqUploadRow,
+} from '../../types/sequploadtypes';
+import {
   activeSeqUploadStates,
-  createAndShareSamples,
-  createPairedSeqUploadRows,
+  createPairedSeqUploadRows, createSampleCSV,
   createSingleSeqUploadRows,
   getSharableProjects,
   getUploadableOrgs,
-  OrgDescriptor,
-  SeqPairedUploadRow,
-  SeqSingleUploadRow,
-  SeqType,
-  seqTypeNames,
-  SeqUploadRow,
-  SeqUploadRowState,
-  SkipForce,
   validateAllHaveSampleNamesWithOneFileOnly,
   validateAllHaveSampleNamesWithTwoFilesOnly,
   validateEvenNumberOfFiles,
@@ -57,6 +58,7 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
+import { uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 
 const validFormats = {
   '.fq': '',
@@ -90,6 +92,37 @@ const validatorsPerSeqType = {
     validateNoDuplicateFilenames,
     validateAllHaveSampleNamesWithOneFileOnly,
   ],
+};
+
+const createAndShareSamples = async (
+  dataOwnerAbbrev: string,
+  shareProjectAbbrevs: string[],
+  seqUploadRows: SeqUploadRow[],
+  token: string,
+): Promise<ResponseObject> => {
+  let csvFile: File;
+  
+  try {
+    const csv = createSampleCSV(dataOwnerAbbrev, shareProjectAbbrevs, seqUploadRows);
+    csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
+  } catch (error) {
+    return {
+      status: ResponseType.Error,
+      message: 'Error creating sample records',
+    };
+  }
+
+  const formData = new FormData();
+  formData.append('file', csvFile);
+  formData.append('proforma-abbrev', 'min');
+
+  // Validate and go no further if error
+  // TODO if we get a warning from validation, consider getting user confirmation
+  let response = await validateSubmissions(formData, '', token);
+  if (response.status === ResponseType.Error) return response;
+
+  response = await uploadSubmissions(formData, '', token);
+  return response;
 };
 
 function UploadSequences() {
