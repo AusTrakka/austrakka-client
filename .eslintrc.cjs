@@ -25,6 +25,7 @@ module.exports = {
     'import/prefer-default-export': 0, // allow single exports
     'no-param-reassign': 0,  // allow modifying function parameters in-place
     'no-trailing-spaces': ['error', { 'ignoreComments': true, 'skipBlankLines': true }],
+    '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],  // allow vars starting with _
     'no-restricted-syntax': [  // dropping ForOfStatement; reiterating the other rules
       'error',
       {
