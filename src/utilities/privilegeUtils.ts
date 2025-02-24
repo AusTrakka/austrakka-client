@@ -1,8 +1,9 @@
 import { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
 import {
-  GroupedPrivilegesByRecordType, PrivilegeWithRoles,
+  GroupedPrivilegesByRecordType, GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRoles,
   RecordRole,
 } from '../types/dtos';
+import { ScopeDefinitions } from '../constants/scopes';
 
 export const groupPendingChangesByType = (changes: PendingChange[]) =>
   changes.reduce((acc, change) => {
@@ -15,6 +16,26 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
     acc[type][recordType].push(change);
     return acc;
   }, {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>);
+
+export const checkFetchUserScope =
+    (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
+      scope =>
+        scope.recordType === 'Tenant' &&
+          scope.recordRoles.some(record =>
+            record.roles.some(role =>
+              role.scopes.includes(ScopeDefinitions.GET_USER_BY_GLOBAL_ID))),
+    );
+
+export const checkEditUserScopes =
+    (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
+      scope =>
+        scope.recordType === 'Tenant' &&
+          scope.recordRoles.some(record =>
+            record.roles.some(role =>
+              role.scopes.includes(ScopeDefinitions.DELETE_USER_ACCESS) &&
+                role.scopes.includes(ScopeDefinitions.GRANT_USER_ACCESS) &&
+                role.scopes.includes(ScopeDefinitions.UPDATE_USER))),
+    );
 
 export const groupFailedChangesByType = (changes: [string | null, PendingChange][]) =>
   changes.reduce((acc, [errorMessage, change]) => {
