@@ -79,6 +79,7 @@ function UploadMetadata() {
     'append': false,
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
+  const [fileValidated, setFileValidated] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
   
@@ -260,6 +261,8 @@ function UploadMetadata() {
             files={files}
             setFiles={setFiles}
             validFormats={validFormats}
+            validated={fileValidated}
+            setValidated={setFileValidated}
           />
         </Grid>
         <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
