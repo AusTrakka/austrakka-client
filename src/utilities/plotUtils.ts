@@ -131,7 +131,7 @@ export const setRowInSpecToValue =
       const newSpec: any = { ...oldSpec };
       if (rowField === 'none') {
         // Remove row from encoding
-        const { row, ...newEncoding } = (oldSpec as any).encoding;
+        const { _row, ...newEncoding } = (oldSpec as any).encoding;
         newSpec.encoding = newEncoding;
       } else {
         // Set row in encoding
