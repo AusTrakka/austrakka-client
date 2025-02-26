@@ -26,16 +26,28 @@ export const checkFetchUserScope =
               role.scopes.includes(ScopeDefinitions.GET_USER_BY_GLOBAL_ID))),
     );
 
-export const checkEditUserScopes =
-    (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
-      scope =>
-        scope.recordType === 'Tenant' &&
-          scope.recordRoles.some(record =>
-            record.roles.some(role =>
-              role.scopes.includes(ScopeDefinitions.DELETE_USER_ACCESS) &&
-                role.scopes.includes(ScopeDefinitions.GRANT_USER_ACCESS) &&
-                role.scopes.includes(ScopeDefinitions.UPDATE_USER))),
-    );
+export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => {
+  // This may be a bit excessive, another option is that if the user can update a user the 
+  // assumption is that they can edit the users privileges as well.
+  // (This may not always be the case but its good enough for a visual conditional in my opinion)
+  const requiredScopes = [
+    ScopeDefinitions.DELETE_USER_ACCESS,
+    ScopeDefinitions.GRANT_USER_ACCESS,
+    ScopeDefinitions.UPDATE_USER,
+    ScopeDefinitions.DELETE_ORG_ACCESS,
+    ScopeDefinitions.GRANT_ORG_ACCESS,
+    ScopeDefinitions.GRANT_TENANT_ACCESS,
+    ScopeDefinitions.DELETE_TENANT_ACCESS,
+  ];
+
+  const hasAllScopes = (role: { scopes: string[] }) =>
+    requiredScopes.every(scope => role.scopes.includes(scope));
+
+  return scopes.some(scope =>
+    scope.recordType === 'Tenant' &&
+      scope.recordRoles.some(record =>
+        record.roles.some(hasAllScopes)));
+};
 
 export const groupFailedChangesByType = (changes: [string | null, PendingChange][]) =>
   changes.reduce((acc, [errorMessage, change]) => {
