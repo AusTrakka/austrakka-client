@@ -23,6 +23,7 @@ export const checkFetchUserScope =
         scope.recordType === 'Tenant' &&
           scope.recordRoles.some(record =>
             record.roles.some(role =>
+              role.scopes.includes(ScopeDefinitions.ALL_ACCESS) ||
               role.scopes.includes(ScopeDefinitions.GET_USER_BY_GLOBAL_ID))),
     );
 
@@ -35,9 +36,12 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
     ScopeDefinitions.GRANT_USER_ACCESS,
     ScopeDefinitions.UPDATE_USER,
     ScopeDefinitions.DELETE_ORG_ACCESS,
+    ScopeDefinitions.DISABLE_USER,
+    ScopeDefinitions.ENABLE_USER,
     ScopeDefinitions.GRANT_ORG_ACCESS,
     ScopeDefinitions.GRANT_TENANT_ACCESS,
     ScopeDefinitions.DELETE_TENANT_ACCESS,
+    // can add for ProForma and user as-well if the need arises
   ];
 
   const hasAllScopes = (role: { scopes: string[] }) =>
@@ -46,6 +50,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
   return scopes.some(scope =>
     scope.recordType === 'Tenant' &&
       scope.recordRoles.some(record =>
+        record.roles.some(role => role.scopes.includes(ScopeDefinitions.ALL_ACCESS)) ||
         record.roles.some(hasAllScopes)));
 };
 
