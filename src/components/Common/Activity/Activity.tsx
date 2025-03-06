@@ -11,7 +11,7 @@ import {Paper, Typography} from "@mui/material";
 import {Column} from "primereact/column";
 import {ActivityDetailInfo} from "./activityViewModels.interface";
 import ActivityDetails from "./ActivityDetails";
-import {Info} from "@mui/icons-material";
+import {Cancel, Info} from "@mui/icons-material";
 import {ActivityField, RefinedLog} from "../../../types/dtos";
 import useActivityLogs from "../../../hooks/useActivityLogs";
 import {buildPrimeReactColumnDefinitions, ColumnBuilder} from "../../../utilities/tableUtils";
@@ -110,8 +110,6 @@ const Activity: FC<ActivityProps> = (props) => {
         const firstCol = supportedColumns.filter(c => c.columnName === OPERATION_NAME_COLUMN)[0];
         const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
         firstColBuilder.isDecorated = true;
-        firstColBuilder.body = firstColumnTemplate;
-        
         const remainingCols = supportedColumns.filter(c => c.columnName !== OPERATION_NAME_COLUMN);
         const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
         
@@ -160,7 +158,20 @@ const Activity: FC<ActivityProps> = (props) => {
         });
 
         data.forEach((item) => {
-            if (item.aggregationMemberKey) {
+            if (item.aggregationMemberKey 
+                /*
+                * An aggregate can be a member of a parent aggregate. However, if
+                * the root level being displayed does not contain the parent aggregate,
+                * then the child aggregate should be displayed at the root level.
+                * Eg, tenant (agg) -> org (agg1) -> sample
+                * 
+                * If displaying platform(tenant) level, org should be displayed as a child 
+                * of tenant. However, if displaying at the org level (get activity log for org),
+                * org should be displayed at the root level. The server would not return
+                * information about the parent. Therefore, this is the check for the parent.
+                * */
+                && nodesByKey[item.aggregationMemberKey]) 
+            {
                 const parentNode = nodesByKey[item.aggregationMemberKey];
                 if (parentNode) {
                     if (!parentNode.children) parentNode.children = [];
@@ -235,12 +246,27 @@ const Activity: FC<ActivityProps> = (props) => {
     );
 
     const firstColumnTemplate = (rowData: any) => {
-        const iconColour = rowData['eventStatus'] === 'Success' ? 'rgb(21,101,192)' : 'rgb(198, 40, 40)';
         return (
-            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '15px' }}>
-                <Info sx={{color: iconColour, fontSize: '16px', marginRight: '10px'}}/>
-                {rowData[OPERATION_NAME_COLUMN]}
-            </div>
+            rowData['eventStatus'] === 'Success'
+            ? <span style={getIndentStyle(rowData.level ?? 0)}>
+                <Info style={{
+                    marginRight: '10px',
+                    cursor: 'pointer',
+                    color: 'rgb(21,101,192)',
+                    fontSize: '14px',
+                    verticalAlign: 'middle'
+                    }}/>
+                {rowData[OPERATION_NAME_COLUMN]}</span>
+                
+            : <span style={getIndentStyle(rowData.level ?? 0)}>
+                <Cancel style={{
+                    marginRight: '10px',
+                    cursor: 'pointer',
+                    color: 'rgb(198, 40, 40)',
+                    fontSize: '14px',
+                    verticalAlign: 'middle'
+                }}/>
+                {rowData[OPERATION_NAME_COLUMN]}</span>
         );
     };
 
@@ -304,18 +330,7 @@ const Activity: FC<ActivityProps> = (props) => {
                             field={OPERATION_NAME_COLUMN}
                             header="Operation name"
                             hidden={false}
-                            body={(rowData: RefinedLog) =>
-                                <span style={getIndentStyle(rowData.level ?? 0)}>
-                                    <Info style={{
-                                        marginRight: '10px',
-                                        cursor: 'pointer',
-                                        color: 'rgb(21,101,192)',
-                                        fontSize: '14px',
-                                        verticalAlign: 'middle'
-                                    }}/>
-                                    {rowData[OPERATION_NAME_COLUMN]}
-                                </span>
-                            }
+                            body={firstColumnTemplate}
                             sortable={false}
                             resizeable
                             style={{ minWidth: '150px', paddingLeft: '16px' }}
