@@ -32,18 +32,15 @@ export interface Plot {
   isActive: boolean
 }
 
-export interface JobInstance {
-  jobInstanceId: number;
-  analysisId: number;
-  analysisName: string;
+export interface TreeVersion {
+  treeVersionId: number;
+  treeId: number;
+  treeName: string;
   projectId: number;
   projectMembersGroupId: number;
   projectName: string;
-  startTime: string;
   completedTime: string;
   wasScheduled: boolean;
-  resultsDataId: number;
-  treeId: number;
   newickTree: string;
   isActive: boolean;
   versionName: string;
