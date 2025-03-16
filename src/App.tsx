@@ -2,14 +2,13 @@ import React from 'react';
 import './App.css';
 import './assets/themes/custom-style.css';
 import {
-  Routes, Route, Navigate, useNavigate,
+  Routes, Route, Navigate,
 } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
-import ProjectsList from './components/ProjectsList/ProjectsList';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
 import Upload from './components/Upload/Upload';
 import theme from './assets/themes/theme';
@@ -30,16 +29,14 @@ function App() {
             <Routes>
               {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
               <Route element={<MainMenuLayout />}>
-                <Route path="/" element={<ProjectsList />} />
-                // TODO
+                <Route path="/" element={<Upload />} />
                 <Route path="upload" element={<Upload />} />
                 <Route path="upload/metadata" element={<UploadMetadata />} />
-                <Route path="projects" element={<ProjectsList />} />
-                <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                <Route path="projects/:projectAbbrev/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
-                <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
-                <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
-                <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
+                <Route path="data/plots/:plotAbbrev" element={<PlotDetail />} />
+                <Route path="data/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
+                <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />
+                <Route path="data/:tab" element={<ProjectOverview />} />
+                <Route path="data" element={<ProjectOverview />} />
                 <Route path="fields" element={<Fields />} />
               </Route>
               <Route path="*" element={<Navigate to="/" />} />

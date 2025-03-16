@@ -19,7 +19,7 @@ import { useAppSelector } from '../../app/store';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
 function ProjectOverview() {
-  const { projectAbbrev, tab } = useParams();
+  const { tab } = useParams();
   const [tabValue, setTabValue] = useState(0);
 
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
@@ -49,7 +49,7 @@ function ProjectOverview() {
     setProjectDetails({
       projectId: 1,
       globalId: 'project-id',
-      abbreviation: projectAbbrev ?? 'local',
+      abbreviation: 'local',
       name: 'Local',
       description: 'Local data',
       type: 'Local',
@@ -60,7 +60,7 @@ function ProjectOverview() {
       projectAnalyses: [],
       created: new Date(),
     });
-  }, [projectAbbrev]);
+  }, []);
 
   useEffect(() => {
     // This currently provides total sample count to both Summary(dashboard) and Samples tabs
@@ -118,12 +118,12 @@ function ProjectOverview() {
           <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
-              projectAbbrev={projectAbbrev!}
+              projectAbbrev="local"
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
-              projectAbbrev={projectAbbrev!}
+              projectAbbrev="local"
               isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>

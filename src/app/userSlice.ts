@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
+import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole } from '../types/dtos';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';

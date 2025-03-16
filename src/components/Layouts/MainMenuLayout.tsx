@@ -43,7 +43,7 @@ function MainMenuLayout() {
     },
   ];
   const breadcrumbNameMap: { [key: string]: any } = {
-    projects: 'Projects',
+    data: 'Data',
     plots: 'Plots',
     trees: 'Trees',
     records: 'Records',
@@ -62,14 +62,6 @@ function MainMenuLayout() {
 
   const breadcrumbNoLink: string[] = ['versions', 'records'];
 
-  /**
-   * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
-   * to determine which tab we are on. This was done as when react router dom updated it cause each
-   * use navigate call to re-render the page.
-   * This was ulitmately was not performant and was removed.
-   * The project tabs can only be routed through bread crumbs when they are not the leaf node.
-   */
-
   const noBreadCrumbIfLast: string[] =
     ['summary', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
   const location = useLocation();
@@ -82,7 +74,7 @@ function MainMenuLayout() {
 
   if (pathnames.length > 0 && pathnames.length <= 3 &&
       noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
-      && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
+      && (pathnames[0] === 'data')) {
     pathnames.pop();
   }
 
@@ -93,8 +85,8 @@ function MainMenuLayout() {
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages = [
     {
-      title: 'Projects',
-      link: '/projects',
+      title: 'Data',
+      link: '/data',
       icon: <Inventory />,
     },
     {
