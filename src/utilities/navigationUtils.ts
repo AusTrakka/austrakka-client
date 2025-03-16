@@ -1,7 +1,6 @@
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { NavigateFunction } from 'react-router-dom';
 import { encodeFilterObj } from './urlUtils';
-import { ORG_OVERVIEW_TABS } from '../components/OrganisationOverview/orgTabConstants';
 import { PROJECT_OVERVIEW_TABS } from '../components/ProjectOverview/projTabConstants';
 
 function parse<T>(value: string | null, defaultValue: T): T {
@@ -43,10 +42,8 @@ export default function getQueryParamOrDefault<T>(
 // Helper function to determine if the last segment matches any tab title
 const shouldReplaceLastSegment =
     (lastSegment: string) =>
-      ORG_OVERVIEW_TABS
-        .some(tab => tab.title.toLowerCase() === lastSegment) ||
-        PROJECT_OVERVIEW_TABS
-          .some(tab => tab.title.toLowerCase() === lastSegment);
+      PROJECT_OVERVIEW_TABS
+        .some(tab => tab.title.toLowerCase() === lastSegment);
 
 // Helper function to build the new path based on current path and tabs
 const buildNewPath = (currentPath: string, tabUrl: string) => {

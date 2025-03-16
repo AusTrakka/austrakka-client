@@ -1,7 +1,4 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject } from '../types/responseObject.interface';
-import { getTenant } from '../utilities/resourceUtils';
-import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 
@@ -22,20 +19,14 @@ const fetchDefaultTenant = createAsyncThunk(
   async (
     token: string,
     thunkAPI,
-  ): Promise<string | unknown> => {
-    try {
-      const defaultTenantObject: ResponseObject = await getTenant(token);
-      if (defaultTenantObject.status !== ResponseType.Success) {
-        return thunkAPI.rejectWithValue(defaultTenantObject.message);
-      }
-      return thunkAPI.fulfillWithValue({
-        globalId: defaultTenantObject.data.globalId,
-        name: defaultTenantObject.data.name,
-      } as FetchDefaultTenantResponse);
-    } catch (error) {
-      return thunkAPI.rejectWithValue('An unexpected error occurred');
-    }
-  },
+  ): Promise<string | unknown> =>
+    
+    // For now, dummy values
+    thunkAPI.fulfillWithValue({
+      globalId: 'local-tenant-ID',
+      name: 'LocalSystem',
+    } as FetchDefaultTenantResponse)
+  ,
 );
 
 const tenantSlice = createSlice({

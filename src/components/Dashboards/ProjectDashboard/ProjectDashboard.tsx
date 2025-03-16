@@ -18,15 +18,10 @@ import { DataTableFilterMeta } from 'primereact/datatable';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import { DashboardTimeFilter, DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
-import { useApi } from '../../../app/ApiContext';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
-import { getProjectDashboard } from '../../../utilities/resourceUtils';
-import { ResponseType } from '../../../constants/responseType';
 import { Sample } from '../../../types/sample.interface';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import { ProjectDashboardDetails } from '../../../types/dtos';
 
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
@@ -38,8 +33,8 @@ interface ProjectDashboardProps {
 
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectAbbrev } = props;
-  const { token, tokenLoading } = useApi();
-  const [dashboardName, setDashboardName] = useState<string | null>(null);
+  // For now hard-coded dashboard
+  const [dashboardName, setDashboardName] = useState<string | null>('default');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -75,24 +70,6 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       dashboardProps,
     );
   }
-  
-  useEffect(() => {
-    async function getDashboardName() {
-      const response = await getProjectDashboard(projectAbbrev!, token);
-      if (response.status === ResponseType.Success) {
-        const dashboard : ProjectDashboardDetails = response.data;
-        setDashboardName(dashboard.name);
-      } else {
-        setErrorMessage('Error retrieving project dashboard');
-      }
-    }
-    
-    if (projectAbbrev &&
-        tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
-      getDashboardName();
-    }
-  }, [token, tokenLoading, projectAbbrev]);
   
   // Filter data by date
   useEffect(() => {

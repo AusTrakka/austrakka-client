@@ -13,11 +13,6 @@ import { DataTable,
   DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { getProjectList } from '../../utilities/resourceUtils';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -63,14 +58,13 @@ const columns = [
 
 function ProjectsList() {
   const [projectsList, setProjectsList] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
   const [allTypes, setAllTypes] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { token, tokenLoading } = useApi();
   const [filters, setFilters] = useState<DataTableFilterMeta>(
     {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -79,25 +73,15 @@ function ProjectsList() {
   );
 
   useEffect(() => {
-    async function getProject() {
-      const projectResponse: ResponseObject = await getProjectList(token);
-      if (projectResponse.status === ResponseType.Success) {
-        setProjectsList(projectResponse.data);
-        setIsLoading(false);
-        setIsError(false);
-      } else {
-        setIsError(true);
-        setIsLoading(false);
-        setProjectsList([]);
-        setErrorMessage(projectResponse.message);
-      }
-    }
-    // NEW: Only call endpoint if token has already been retrieved/attempted to be retrieved
-    // Otherwise the first endpoint call will always be unsuccessful
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      getProject();
-    }
-  }, [token, tokenLoading]);
+    // For now, set to a single local "project" TODO change this
+    setProjectsList([{
+      abbreviation: 'local',
+      name: 'Local',
+      type: 'Local',
+      description: 'Local data',
+      created: new Date(),
+    }]);
+  }, []);
 
   useEffect(() => {
     if (Object.keys(selectedProject).length !== 0) {

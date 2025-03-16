@@ -1,4 +1,4 @@
-import { TableChart, TextSnippet } from '@mui/icons-material';
+import { TableChart } from '@mui/icons-material';
 import { Box, Card, CardActionArea, CardContent, Grid, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -9,13 +9,6 @@ const uploadPages = [
     link: '/metadata',
     icon: <TableChart color="primary" />,
     description: 'Submit metadata for samples.',
-    disabled: false,
-  },
-  {
-    title: 'Upload Sequences',
-    link: '/sequences',
-    icon: <TextSnippet color="primary" />,
-    description: 'Submit sequence files',
     disabled: false,
   },
 ];

@@ -5,29 +5,16 @@ import {
   Button,
   Checkbox,
   CircularProgress,
-  FormControl,
   FormControlLabel,
   FormGroup,
-  InputLabel,
-  LinearProgress,
   Link,
-  List,
-  ListItemText,
-  MenuItem,
-  Select,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { FileUpload, Rule } from '@mui/icons-material';
-import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
-import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
-import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseMessage } from '../../types/apiResponse.interface';
-import { ResponseType } from '../../constants/responseType';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import Validation from '../Validation/Validation';
 import HelpSidebar from '../Help/HelpSidebar';
@@ -64,15 +51,11 @@ const validFormats = {
 };
 
 function UploadMetadata() {
-  const [proformas, setProformas] = useState<Proforma[]>([]);
-  const [proformaStatus, setProformaStatus] = useState(LoadingState.IDLE);
   const [submission, setSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
   });
   const [messages, setMessages] = useState<ResponseMessage[]>([]);
-  const [proformaStatusMessage, setProformaStatusMessage] = useState('');
-  const [selectedProforma, setSelectedProforma] = useState<Proforma>();
   const [options, setOptions] = useState({
     'validate': false,
     'blank': false,
@@ -81,24 +64,6 @@ function UploadMetadata() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [fileValidated, setFileValidated] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
-  const { token, tokenLoading } = useApi();
-  
-  useEffect(() => {
-    setProformaStatus(LoadingState.LOADING);
-    const getProformas = async () => {
-      const proformaResponse: ResponseObject = await getUserProformas(token);
-      if (proformaResponse.status === ResponseType.Success) {
-        setProformas(proformaResponse.data);
-        setProformaStatus(LoadingState.SUCCESS);
-      } else {
-        setProformaStatusMessage(proformaResponse.message!);
-        setProformaStatus(LoadingState.ERROR);
-      }
-    };
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      getProformas();
-    }
-  }, [token, tokenLoading]);
 
   useEffect(() => {
     // Scroll vaidation or upload response messages into view
@@ -106,13 +71,6 @@ function UploadMetadata() {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [submission.messages]);
-
-  // Handle proforma selection
-  const handleSelectProforma = (proformaAbbrev: string) => {
-    // Find selected proforma object
-    const proformaObj = proformas.filter(proforma => proforma.abbreviation === proformaAbbrev);
-    setSelectedProforma(proformaObj[0]);
-  };
 
   // Handle upload option change
   const handleOptionChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -124,42 +82,10 @@ function UploadMetadata() {
 
   // Handle upload submission
   const handleSubmit = async () => {
-    setSubmission({
-      ...submission,
-      status: LoadingState.LOADING,
-    });
-    const optionString = `?appendMode=${options.append}&deleteOnBlank=${options.blank}`;
-    const formData = new FormData();
-    formData.append('file', files[0].file!);
-    formData.append('proforma-abbrev', selectedProforma!.abbreviation);
-
-    const submissionResponse : ResponseObject = options.validate ?
-      await validateSubmissions(formData, optionString, token)
-      : await uploadSubmissions(formData, optionString, token);
-
-    const newMessages = [...submissionResponse.messages ?? []];
-    if (submissionResponse.status === ResponseType.Success) {
-      setSubmission({
-        ...submission,
-        status: LoadingState.SUCCESS,
-        messages: submissionResponse.messages,
-      });
-      if (options.validate) {
-        newMessages.push({
-          ResponseType: ResponseType.Warning,
-          ResponseMessage: validateMessage,
-
-        } as ResponseMessage);
-      }
-    } else {
-      setSubmission({
-        ...submission,
-        status: LoadingState.ERROR,
-        messages: submissionResponse.messages,
-      });
-    }
-    setMessages(newMessages);
+    // TODO this will need to do something entirely different - 
+    // client-side validation and inserting data into the project redux state
   };
+  
   useEffect(() => {
     // Every time file or option change, reset loading state of submission to idle
     setSubmission({
@@ -198,63 +124,6 @@ function UploadMetadata() {
         </Grid>
       </Grid>
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
-        <Grid size={{ lg: 3, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">Select proforma </Typography>
-          <Tooltip title={proformaStatusMessage} placement="left" arrow>
-            <FormControl
-              error={proformaStatus === LoadingState.ERROR}
-              size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
-              variant="standard"
-            >
-              <InputLabel id="proforma-simple-select-label">Proforma</InputLabel>
-              <Select
-                labelId="proforma-simple-select-label"
-                id="proforma-simple-select-label"
-                label="Proforma"
-                name="proforma"
-                value={selectedProforma?.abbreviation || ''}
-                onChange={(e) => handleSelectProforma(e.target.value)}
-              >
-                { proformas.map((proforma: Proforma) => (
-                  <MenuItem
-                    value={proforma.abbreviation}
-                    key={proforma.abbreviation}
-                  >
-                    {`${proforma.abbreviation} : ${proforma.name}`}
-                  </MenuItem>
-                )) }
-                { proformas.length === 0 ? (
-                  <MenuItem disabled>No proformas available</MenuItem>
-                ) : null}
-              </Select>
-              {proformaStatus === LoadingState.LOADING
-                ? (
-                  <LinearProgress
-                    color="secondary"
-                  />
-                )
-                : null }
-            </FormControl>
-          </Tooltip>
-          { selectedProforma ? (
-            <List>
-              <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
-                View or download proforma
-              </Link>
-              <ListItemText
-                primary="Proforma name"
-                secondary={selectedProforma?.name}
-                key="name"
-              />
-              <ListItemText
-                primary="Proforma abbreviation"
-                secondary={selectedProforma?.abbreviation}
-                key="abbrev"
-              />
-            </List>
-          ) : null}
-        </Grid>
         <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
           <FileDragDrop
@@ -295,7 +164,7 @@ function UploadMetadata() {
         { options.validate ? (
           <Button
             variant="contained"
-            disabled={!selectedProforma || files.length === 0}
+            disabled={files.length === 0}
             endIcon={<Rule />}
             onClick={() => handleSubmit()}
           >
@@ -305,7 +174,7 @@ function UploadMetadata() {
           : (
             <Button
               variant="contained"
-              disabled={!selectedProforma || files.length === 0}
+              disabled={files.length === 0}
               endIcon={<FileUpload />}
               onClick={() => handleSubmit()}
             >

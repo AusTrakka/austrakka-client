@@ -18,14 +18,6 @@ export const PROJECT_OVERVIEW_TABS: TabContentProps[] = [
     title: 'Plots',
   },
   {
-    index: 4,
-    title: 'Members',
-  },
-  {
-    index: 5,
-    title: 'Proformas',
-  },
-  {
     index: 6,
     title: 'Datasets',
   },

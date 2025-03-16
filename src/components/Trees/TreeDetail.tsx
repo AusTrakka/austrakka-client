@@ -4,7 +4,6 @@ import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { TreeVersion } from '../../types/dtos';
 import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
@@ -14,14 +13,10 @@ import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import TreeState from '../../types/tree.interface';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeTable from './TreeTable';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
 import {
-  selectProjectMetadata, ProjectMetadataState, fetchProjectMetadata,
+  selectProjectMetadata, ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -90,17 +85,7 @@ function TreeDetail() {
     useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
-
-  // Request redux data if not loaded
-  useEffect(() => {
-    if (projectAbbrev &&
-       tokenLoading !== LoadingState.LOADING &&
-       tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
-    }
-  }, [projectAbbrev, dispatch, token, tokenLoading]);
 
   useEffect(() => {
     // Get list of Seq_IDs from newick
@@ -160,17 +145,9 @@ function TreeDetail() {
 
   // Get tree historical versions
   useEffect(() => {
-    const fetchVersions = async () => {
-      const versionsResponse = await getTreeVersions(Number(treeId), token);
-      if (versionsResponse.status === ResponseType.Success) {
-        setVersions(versionsResponse.data);
-      }
-    };
-
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      fetchVersions();
-    }
-  }, [treeId, token, tokenLoading]);
+    // For now, empty
+    setVersions([]);
+  }, [treeId]);
 
   // Set tree properties from metadata and selected fields
   useEffect(() => {
@@ -240,32 +217,12 @@ function TreeDetail() {
     state.alignLabels,
     state.nodeColumn]);
 
+  // TODO we are going to need a treeSlice
+  
   useEffect(() => {
-    // Get tree details, including tree type
-    const getTree = async () => {
-      let treeResponse: ResponseObject;
-      if (treeVersionId === 'latest') {
-        treeResponse = await getLatestTreeData(Number(treeId), token);
-      } else {
-        treeResponse = await getTreeData(Number(treeVersionId), token);
-      }
-      if (treeResponse.status === ResponseType.Success) {
-        setTree(treeResponse.data);
-        if (treeVersionId === 'latest') {
-          const currentPath = window.location.href;
-          const newPath = currentPath.replace('latest', treeResponse.data.treeVersionId);
-          window.history.pushState(null, '', newPath);
-        }
-      } else {
-        setErrorMsg(treeResponse.message);
-      }
-      setIsTreeLoading(false);
-    };
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
-      getTree();
-    }
-  }, [treeId, treeVersionId, token, tokenLoading]);
+    // For now, no tree; need a treeSlice
+    setErrorMsg('Trees not yet implemented');
+  }, [treeId, treeVersionId]);
 
   const renderTree = () => {
     if (isTreeLoading) {

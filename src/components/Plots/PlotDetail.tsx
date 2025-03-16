@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { Plot } from '../../types/dtos';
-import { getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
 import BarChart from './PlotTypes/BarChart';
@@ -10,12 +9,9 @@ import Custom from './PlotTypes/Custom';
 import HeatMap from './PlotTypes/HeatMap';
 import Histogram from './PlotTypes/Histogram';
 import PlotTypeProps from '../../types/plottypeprops.interface';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import { useAppSelector } from '../../app/store';
+import { selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import { STATIC_PLOT_LIST } from '../../constants/standaloneClientConstants';
 
 const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
   'ClusterTimeline': ClusterTimeline,
@@ -35,8 +31,6 @@ function PlotDetail() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const dataErrorMsg = useAppSelector(state =>
     selectProjectMetadataError(state, plot?.projectAbbreviation));
-  const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (dataErrorMsg) {
@@ -46,25 +40,13 @@ function PlotDetail() {
 
   useEffect(() => {
     // Get plot details, including plot type
-    const getPlot = async () => {
-      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
-      if (plotResponse.status === ResponseType.Success) {
-        setPlot(plotResponse.data as Plot);
-      } else {
-        setErrorMsg(`Plot ${plotAbbrev} could not be loaded`);
-      }
-      setIsPlotLoading(false);
-    };
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      getPlot();
+    const _plot: Plot | undefined = STATIC_PLOT_LIST.find(p => p.abbreviation === plotAbbrev);
+    if (_plot) {
+      setPlot(_plot);
+    } else {
+      setErrorMsg(`Plot ${plotAbbrev} not found`);
     }
-  }, [plotAbbrev, token, tokenLoading]);
-
-  useEffect(() => {
-    if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ projectAbbrev: plot.projectAbbreviation, token }));
-    }
-  }, [plot, dispatch, token, tokenLoading]);
+  }, [plotAbbrev]);
 
   useEffect(() => {
     if (plot) {

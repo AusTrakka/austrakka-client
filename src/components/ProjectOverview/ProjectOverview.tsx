@@ -3,34 +3,23 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import {
-  getProjectDetails, getTotalSamples,
-} from '../../utilities/resourceUtils';
 // import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
-import MemberList from './MemberList';
 import Datasets from '../ProjectDatasets/Datasets';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { Project } from '../../types/dtos';
-import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
-import ProFormas from './ProFormas';
-import { useApi } from '../../app/ApiContext';
 import {
-  fetchProjectMetadata,
   selectAwaitingProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
+import { useAppSelector } from '../../app/store';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
-  const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
 
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
@@ -54,60 +43,54 @@ function ProjectOverview() {
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
   const [isPlotsLoading, setIsPlotsLoading] = useState(true);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [isProformasLoading, setIsProformasLoading] = useState(true);
-
-  const dispatch = useAppDispatch();
-
+  
   useEffect(() => {
-    async function getProject() {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
-      if (projectResponse.status === ResponseType.Success) {
-        setProjectDetails(projectResponse.data as Project);
-        setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
-      } else {
-        setIsOverviewError((prevState) => ({
-          ...prevState,
-          detailsError: true,
-          detailsErrorMessage: projectResponse.message,
-        }));
-        setIsOverviewLoading(false);
-      }
-    }
-    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      getProject();
-    }
-  }, [projectAbbrev, token, tokenLoading]);
+    // Static project details for now
+    setProjectDetails({
+      projectId: 1,
+      globalId: 'project-id',
+      abbreviation: projectAbbrev ?? 'local',
+      name: 'Local',
+      description: 'Local data',
+      type: 'Local',
+      projectMembers: {
+        id: 1,
+        name: 'Local-Group',
+      },
+      projectAnalyses: [],
+      created: new Date(),
+    });
+  }, [projectAbbrev]);
 
   useEffect(() => {
     // This currently provides total sample count to both Summary(dashboard) and Samples tabs
     // Could replace with a function that counts groupMetadata.metadata.length
-    async function getProjectSummary() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(
-        projectDetails!.projectMembers.id,
-        token,
-      );
-      if (totalSamplesResponse.status === ResponseType.Success) {
-        setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
-      } else {
-        setIsOverviewError((prevState) => ({
-          ...prevState,
-          totalSamplesError: true,
-          totalSamplesErrorMessage: totalSamplesResponse.message,
-        }));
-      }
-      setIsOverviewLoading(false);
-      // TODO: Make use of latest upload date from project views
-    }
-
-    if (projectDetails &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      getProjectSummary();
-      dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
-    }
-  }, [projectDetails, token, tokenLoading, dispatch]);
+    // TODO
+    // async function getProjectSummary() {
+    //   const totalSamplesResponse: ResponseObject = await getTotalSamples(
+    //     projectDetails!.projectMembers.id,
+    //     token,
+    //   );
+    //   if (totalSamplesResponse.status === ResponseType.Success) {
+    //     setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
+    //   } else {
+    //     setIsOverviewError((prevState) => ({
+    //       ...prevState,
+    //       totalSamplesError: true,
+    //       totalSamplesErrorMessage: totalSamplesResponse.message,
+    //     }));
+    //   }
+    //   setIsOverviewLoading(false);
+    //   // TODO: Make use of latest upload date from project views
+    // }
+    //
+    // if (projectDetails &&
+    //   tokenLoading !== LoadingState.IDLE &&
+    //   tokenLoading !== LoadingState.LOADING
+    // ) {
+    //   getProjectSummary();
+    // }
+  }, [projectDetails]);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
@@ -156,20 +139,6 @@ function ProjectOverview() {
               projectDetails={projectDetails}
               isPlotsLoading={isPlotsLoading}
               setIsPlotsLoading={setIsPlotsLoading}
-            />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
-            <MemberList
-              projectDetails={projectDetails}
-              isMembersLoading={isMembersLoading}
-              setIsMembersLoading={setIsMembersLoading}
-            />
-          </TabPanel>
-          <TabPanel value={tabValue} index={5} tabLoader={isProformasLoading}>
-            <ProFormas
-              projectDetails={projectDetails}
-              isProformasLoading={isProformasLoading}
-              setIsProformasLoading={setIsProformasLoading}
             />
           </TabPanel>
           <TabPanel value={tabValue} index={6} tabLoader={false}>

@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import {
   Inventory, Upload, Help,
-  Dashboard, AccountTree, Description, AccountCircle,
+  Description, AccountCircle,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
 } from '@mui/icons-material';
 import {
@@ -15,10 +15,8 @@ import {
 } from '@mui/material';
 import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
-import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 
@@ -58,8 +56,6 @@ function MainMenuLayout() {
     samples: 'Samples',
     proformas: 'ProFormas',
     members: 'Members',
-    users: 'Users',
-    usersV2: 'Users (V2)',
     fields: 'Fields',
     datasets: 'Datasets',
   };
@@ -97,19 +93,9 @@ function MainMenuLayout() {
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages = [
     {
-      title: 'Dashboard',
-      link: '/',
-      icon: <Dashboard />,
-    },
-    {
       title: 'Projects',
       link: '/projects',
       icon: <Inventory />,
-    },
-    {
-      title: 'Organisation',
-      link: `/org/${user.orgAbbrev}`,
-      icon: <AccountTree />,
     },
     {
       title: 'Upload',
@@ -121,26 +107,8 @@ function MainMenuLayout() {
       link: '/fields',
       icon: <ViewColumn />,
     },
-    {
-      title: 'Users',
-      link: '/users',
-      icon: <People />,
-      permissionDomain: 'users',
-    },
-    {
-      title: 'Users (V2)',
-      link: '/usersV2',
-      icon: <People color="warning" />,
-      permissionDomain: 'usersV2',
-    },
   ];
-  const visiblePages = pages.filter((page) =>
-    !page.permissionDomain || hasPermission(
-      user,
-      'AusTrakka-Owner',
-      page.permissionDomain,
-      PermissionLevel.CanShow,
-    ));
+  const visiblePages = pages;
 
   useEffect(() => {
     if (account && account.username) {
@@ -266,7 +234,6 @@ function MainMenuLayout() {
                   : null}
               </MenuItem>
             ))}
-            <LogoutButton showText={drawer} />
           </List>
         </Drawer>
       </Box>

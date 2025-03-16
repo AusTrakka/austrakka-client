@@ -4,17 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { Field } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { ProjectMetadataState, selectAwaitingProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { useAppSelector } from '../../app/store';
 import { renderValue } from '../../utilities/renderUtils';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
   const [colWidth, setColWidth] = useState<number>(100);
-  const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
 
   // Would there be any benefit in more refined selectors which select out sample?
   const projectMetadata : ProjectMetadataState | null =
@@ -26,15 +23,6 @@ function SampleDetail() {
     projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS ?
     projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId) :
     null;
-
-  useEffect(() => {
-    if (projectAbbrev &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
-    }
-  }, [projectAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
     if (projectMetadata?.fields && projectMetadata.fields.length > 0) {

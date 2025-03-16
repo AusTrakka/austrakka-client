@@ -13,10 +13,6 @@ import {
 } from '@mui/material';
 import { Location } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { FeedbackPost } from '../../types/dtos';
-import { postFeedback } from '../../utilities/resourceUtils';
-import { useApi } from '../../app/ApiContext';
-import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
 
 interface FeedbackProps {
@@ -32,7 +28,6 @@ function Feedback(props: FeedbackProps) {
     handleHelpClose,
     location,
   } = props;
-  const { token, tokenLoading } = useApi();
   const formValid = useRef({
     title: false,
     description: false,
@@ -44,22 +39,29 @@ function Feedback(props: FeedbackProps) {
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
-      const feedbackDto: FeedbackPost = {
-        title,
-        description,
-        currentPage: location.pathname,
-      };
-      const feedbackResp = await postFeedback(feedbackDto, token);
-      if (feedbackResp.status === ResponseType.Success) {
-        enqueueSnackbar(
-          `Feedback received. Ticket number: ${feedbackResp.data?.id}`,
-          { variant: 'error' },
-        );
-        setTitle('');
-        setDescription('');
-      } else {
-        enqueueSnackbar(feedbackResp.message, { variant: 'error' });
-      }
+      // const feedbackDto: FeedbackPost = {
+      //   title,
+      //   description,
+      //   currentPage: location.pathname,
+      // };
+      
+      // For now do nothing with the feedback
+      enqueueSnackbar(
+        'Feedback on local client not implemented yet',
+        { variant: 'warning' },
+      );
+      
+      // const feedbackResp = await postFeedback(feedbackDto, token);
+      // if (feedbackResp.status === ResponseType.Success) {
+      //   enqueueSnackbar(
+      //     `Feedback received. Ticket number: ${feedbackResp.data?.id}`,
+      //     { variant: 'error' },
+      //   );
+      //   setTitle('');
+      //   setDescription('');
+      // } else {
+      //   enqueueSnackbar(feedbackResp.message, { variant: 'error' });
+      // }
       formValid.current.description = false;
       formValid.current.title = false;
       handleHelpClose({}, 'escapeKeyDown');
@@ -146,7 +148,6 @@ function Feedback(props: FeedbackProps) {
           </Button>
           <Button
             type="submit"
-            disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}
             color="primary"
             variant="contained"
           >

@@ -18,7 +18,7 @@ export interface Project {
   // could add auditable fields - created, createdBy
 }
 
-export interface Plot {
+export interface Plot extends PlotListing {
   plotId: number,
   abbreviation: string,
   name: string,
@@ -59,17 +59,6 @@ export interface PlotListing {
   plotType: string,
   projectId: number,
   // also projectName, and isActive. projectAbbrev??
-}
-
-export interface Member {
-  objectId: string,
-  roles: string[],
-  organization:{
-    id: number,
-    abbreviation: string,
-  },
-  displayName: string,
-  contactEmail: string,
 }
 
 export interface User {
@@ -151,33 +140,6 @@ export interface RecordRole {
   privilegeGlobalId?: string,
 }
 
-export interface UserList {
-  name: string,
-  id: string,
-  globalId: string,
-  organisation: string,
-  contactEmail: string,
-  isActive: boolean,
-  created: string,
-  createdBy: string,
-  isAusTrakkaAdmin: boolean,
-  isAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
-}
-
-export interface UserListV2 {
-  name: string,
-  id: string,
-  organisation: string,
-  contactEmail: string,
-  isActive: boolean,
-  created: string,
-  createdBy: string,
-  isAusTrakkaAdmin: boolean,
-  isAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
-}
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -256,37 +218,6 @@ export interface ProjectView {
   isBase: boolean,
   fields: string[],
   viewFields: string[] // this is currently calculated client-side
-}
-
-export interface Proforma {
-  proformaId: number,
-  proFormaVersionId: number,
-  version: number,
-  name: string,
-  abbreviation: string,
-  description: string,
-  isActive: boolean,
-  isCurrent: boolean,
-  hasAttached: boolean,
-  created: string,
-  lastUpdated: string,
-  createdBy: string,
-  lastUpdatedBy: string,
-  columnMappings: MetaDataColumnMapping[],
-}
-
-export interface ProFormaVersion {
-  proFormaVersionId: number,
-  proFormaId: number,
-  version: number,
-  abbreviation: string,
-  originalFileName: string,
-  fileName: string,
-  columnMappings: MetaDataColumnMapping[],
-  isCurrent: boolean,
-  assetId : number,
-  created: Date,
-  createdBy: string,
 }
 
 export interface GroupRole {

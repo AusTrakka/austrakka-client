@@ -6,11 +6,8 @@ import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primere
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { HelpOutline } from '@mui/icons-material';
-import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
+// import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
-import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
@@ -27,11 +24,10 @@ interface DatasetProps {
 
 function Datasets(props: DatasetProps) {
   const { projectDetails, mergeAlgorithm } = props;
-  const { token } = useApi();
   const [rows, setRows] = useState<DataSetEntry[]>([]);
   const [openSnackbar, setOpenSnackbar] = useState(false); // State for toast
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
-  const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
+  // const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
   const [datasetError, setDatasetError] = useState(false);
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
@@ -60,43 +56,27 @@ function Datasets(props: DatasetProps) {
   );
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response: ResponseObject = await getDatasets(projectDetails!.abbreviation, token);
-      if (response.status === ResponseType.Success) {
-        const newData = response.data.map((entry: any) => ({
-          ...entry, // Spread the properties of the original entry
-          uploadedDate: new Date(entry.uploadedDate), // Modify the uploadedDate property
-        }));
-
-        setRows(newData as DataSetEntry[]);
-        setDatasetError(false); // Reset error state
-      } else {
-        setDatasetError(true);
-      }
-    };
-    if (projectDetails) {
-      fetchData();
-    }
-  }, [projectDetails, token]);
+    setRows([]);
+  }, []);
 
   const handleConfirmDisable = async () => {
-    try {
-      setOpenDialog(false); // Close the dialog
-      const response: ResponseObject =
-        await disableDataset(projectDetails!.abbreviation, dataSetIdToDelete!, token);
-      if (response.status !== ResponseType.Success) {
-        throw new Error('Failed to disable dataset');
-      }
-      const updatedData = rows.filter((entry) => entry.dataSetId !== dataSetIdToDelete);
-      setRows(updatedData);
-      setOpenSnackbar(true); // Open toast on success
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error disabling dataset:', error);
-      // Handle error appropriately
-    } finally {
-      setDataSetIdToDelete(null); // Clear the dataset ID after the operation
-    }
+    // try {
+    //   setOpenDialog(false); // Close the dialog
+    //   const response: ResponseObject =
+    //     await disableDataset(projectDetails!.abbreviation, dataSetIdToDelete!, token);
+    //   if (response.status !== ResponseType.Success) {
+    //     throw new Error('Failed to disable dataset');
+    //   }
+    //   const updatedData = rows.filter((entry) => entry.dataSetId !== dataSetIdToDelete);
+    //   setRows(updatedData);
+    //   setOpenSnackbar(true); // Open toast on success
+    // } catch (error) {
+    //   // eslint-disable-next-line no-console
+    //   console.error('Error disabling dataset:', error);
+    //   // Handle error appropriately
+    // } finally {
+    //   setDataSetIdToDelete(null); // Clear the dataset ID after the operation
+    // }
   };
 
   const canDelete = () => {
@@ -112,8 +92,8 @@ function Datasets(props: DatasetProps) {
   };
 
   const handleDeleteRow = (row: number) => {
-    setDataSetIdToDelete(row);
-    setOpenDialog(true);
+    // setDataSetIdToDelete(row);
+    // setOpenDialog(true);
   };
 
   const handleCloseSnackbar = () => {

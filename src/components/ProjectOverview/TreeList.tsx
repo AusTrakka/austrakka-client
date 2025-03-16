@@ -5,10 +5,6 @@ import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Project } from '../../types/dtos';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { getTrees } from '../../utilities/resourceUtils';
-import { useApi } from '../../app/ApiContext';
-import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -34,31 +30,12 @@ function TreeList(props: TreesProps) {
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
-  const { token } = useApi();
 
   useEffect(() => {
-    async function getTreeList() {
-      const treeListResponse: ResponseObject = await getTrees(
-        projectDetails!.abbreviation,
-        false,
-        token,
-      );
-      if (treeListResponse.status === ResponseType.Success) {
-        setTreeList(treeListResponse.data);
-        setTreeListError(false);
-        setIsTreesLoading(false);
-      } else {
-        setIsTreesLoading(false);
-        setTreeList([]);
-        setTreeListError(true);
-        setTreeListErrorMessage(treeListResponse.message);
-      }
-    }
-
-    if (projectDetails) {
-      getTreeList();
-    }
-  }, [projectDetails, setIsTreesLoading, token]);
+    // For now, empty: TODO need a tree slice
+    setTreeList([]);
+    setIsTreesLoading(false);
+  }, []);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;

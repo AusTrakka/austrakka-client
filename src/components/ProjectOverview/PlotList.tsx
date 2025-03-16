@@ -1,17 +1,14 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { Paper } from '@mui/material';
 import { PlotListing, Project } from '../../types/dtos';
-import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { getPlots } from '../../utilities/resourceUtils';
-import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { STATIC_PLOT_LIST } from '../../constants/standaloneClientConstants';
 
 interface PlotListProps {
   projectDetails: Project | null
@@ -22,9 +19,8 @@ interface PlotListProps {
 function PlotList(props: PlotListProps) {
   const { projectDetails, isPlotsLoading, setIsPlotsLoading } = props;
 
-  const [plotList, setPlotList] = useState<PlotListing[]>([]);
+  const [plotList, setPlotList] = useState<PlotListing[]>(STATIC_PLOT_LIST);
   const navigate = useNavigate();
-  const { token } = useApi();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
@@ -39,24 +35,6 @@ function PlotList(props: PlotListProps) {
     header: 'Created',
     body: (rowData: any) => isoDateLocalDate(rowData.created),
   }];
-
-  useEffect(() => {
-    async function getPlotList() {
-      const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
-      if (plotsResponse.status === ResponseType.Success) {
-        setPlotList(plotsResponse.data as PlotListing[]);
-        setIsPlotsLoading(false);
-      } else {
-        setIsPlotsLoading(false);
-        setPlotList([]);
-        // TODO set plots errors
-      }
-    }
-
-    if (projectDetails) {
-      getPlotList();
-    }
-  }, [projectDetails, setIsPlotsLoading, token]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);

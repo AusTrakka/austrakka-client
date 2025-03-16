@@ -10,7 +10,6 @@ import { SnackbarProvider } from 'notistack';
 import App from './App';
 import { msalInstance } from './utilities/authUtils';
 import store from './app/store';
-import ApiProvider from './app/ApiContext';
 import { globalStyles } from './assets/themes/theme';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -20,16 +19,14 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       {/* StyledEngineProvider: Allows MUI's styles to be overridden */}
       <StyledEngineProvider injectFirst>
         <MsalProvider instance={msalInstance}>
-          <ApiProvider>
-            <GlobalStyles styles={globalStyles} />
-            <SnackbarProvider
-              autoHideDuration={5000}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              maxSnack={10}
-            >
-              <App />
-            </SnackbarProvider>
-          </ApiProvider>
+          <GlobalStyles styles={globalStyles} />
+          <SnackbarProvider
+            autoHideDuration={5000}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            maxSnack={10}
+          >
+            <App />
+          </SnackbarProvider>
         </MsalProvider>
       </StyledEngineProvider>
     </BrowserRouter>

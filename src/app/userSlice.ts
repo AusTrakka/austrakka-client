@@ -1,13 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ResponseObject } from '../types/responseObject.interface';
-import { ResponseType } from '../constants/responseType';
 import { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
-import { getMe, getMeV2 } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
 import type { RootState } from './store';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
-import { selectTenantState, TenantSliceState } from './tenantSlice';
 
 export interface UserSliceState {
   groupRolesByGroup: Record<string, string[]>,
@@ -36,45 +32,55 @@ const fetchUserRoles = createAsyncThunk(
   'user/fetchUserRoles',
   async (token: string, thunkAPI): Promise<GroupRole[] | unknown> => {
     try {
-      const state = thunkAPI.getState() as RootState;
-      const tenant: TenantSliceState = selectTenantState(state);
-
-      if (!tenant.defaultTenantGlobalId) {
-        return thunkAPI.rejectWithValue('No default tenant global ID found');
-      }
-
-      // Fetch group roles
-      const groupResponse: ResponseObject = await getMe(token);
-      if (groupResponse.status !== ResponseType.Success) {
-        return thunkAPI.rejectWithValue(groupResponse.message);
-      }
-
-      // Fetch user scope using tenant globalId
-      const scopeResponse: ResponseObject = await getMeV2(
-        tenant.defaultTenantGlobalId,
-        token,
-      );
-      if (scopeResponse.status !== ResponseType.Success) {
-        return thunkAPI.rejectWithValue(scopeResponse.message);
-      }
-
-      // Destructure the response data
-      const {
-        groupRoles,
-        isAusTrakkaAdmin,
-        displayName,
-        orgAbbrev,
-        orgName,
-      } = groupResponse.data as User;
-      const { scopes } = scopeResponse.data as UserMe;
-
+      // For now, just a dummy call that mimics an admin
+      // const scopes = {
+      //   objectId: 'dummy-objectId',
+      //   displayName: 'Local User',
+      //   contactEmail: '',
+      //   orgId: 1,
+      //   orgAbbrev: 'None',
+      //   orgName: 'None',
+      //   analysisServerUsername: '',
+      //   scopes
+      // }
+      
+      const groupRoles : GroupRole[] = [{
+        role: {
+          id: 1,
+          name: 'AusTrakkaAdmin',
+        },
+        group: {
+          groupId: 1,
+          name: 'AusTrakka-Owner',
+          organisation: {
+            abbreviation: 'AusTrakka',
+            name: 'AusTrakka',
+          },
+        },
+      }];
+      
+      const scopes : GroupedPrivilegesByRecordTypeWithScopes[] = [{
+        recordType: 'Tenant',
+        recordRoles: [{
+          recordName: 'Local System',
+          recordGlobalId: 'local-system-ID',
+          roles: [{
+            roleName: 'SuperUser',
+            privilegeLevel: 1,
+            privilegeGlobalId: 'privilege-1',
+            scopes: ['*/*'],
+          }],
+        }],
+      }];
+      
       // Fulfill with user role data
       return {
         groupRoles,
-        displayName,
-        isAusTrakkaAdmin,
-        orgAbbrev,
-        orgName,
+        displayName: 'Local User',
+        isAusTrakkaAdmin: true,
+        orgAbbrev: 'None',
+        orgName: 'None',
+        defaultTenant: 'LocalSystem', // TODO
         scopes,
       } as FetchUserRolesResponse;
     } catch (error) {
