@@ -7,7 +7,6 @@ import { Alert, Typography } from '@mui/material';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
-import Datasets from '../ProjectDatasets/Datasets';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
 import { Project } from '../../types/dtos';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
@@ -140,9 +139,6 @@ function ProjectOverview() {
               isPlotsLoading={isPlotsLoading}
               setIsPlotsLoading={setIsPlotsLoading}
             />
-          </TabPanel>
-          <TabPanel value={tabValue} index={6} tabLoader={false}>
-            <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
           </TabPanel>
         </>
       )
