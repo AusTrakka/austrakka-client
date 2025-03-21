@@ -25,9 +25,11 @@ import { formatDate } from '../../../utilities/dateUtils';
 const TIME_AXIS_FIELD = 'Date_coll';
 const JURISDICTION_FIELD = 'Jurisdiction';
 const STATE_FIELD = 'State';
+const COUNTRY_FIELD = 'Country';
 const OWNER_FIELD = 'Owner_group';
 // Jurisdiction and state use the jurisdictional colour scheme, but owner organisations may 
 // have multiple orgs per jurisdiction, so use a different scheme
+const COUNTRY_COLOUR_SCHEME = 'set3';
 const OWNER_COLOUR_SCHEME = 'set3';
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
@@ -90,6 +92,8 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
       setColourSpecFromField(JURISDICTION_FIELD, schemeJurisdiction);
     } else if (data.fields.map(fld => fld.columnName).includes(STATE_FIELD)) {
       setColourSpecFromField(STATE_FIELD, schemeJurisdiction);
+    } else if (data.fields.map(fld => fld.columnName).includes(COUNTRY_FIELD)) {
+      setColourSpecFromField(COUNTRY_FIELD, discreteColorSchemes[COUNTRY_COLOUR_SCHEME]);
     } else if (data.fields.map(fld => fld.columnName).includes(OWNER_FIELD)) {
       setColourSpecFromField(OWNER_FIELD, discreteColorSchemes[OWNER_COLOUR_SCHEME]);
     }
