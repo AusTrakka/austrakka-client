@@ -4,7 +4,6 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { ScaleOrdinal } from 'd3';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -13,24 +12,22 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { Sample } from '../../../types/sample.interface';
-import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { schemeJurisdiction, discreteColorSchemes } from '../../../constants/schemes';
-import { legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
+import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 
 // Widget displaying a basic Epi Curve
 // Requires Date_coll for x-axis
-// Colour by Jurisdiction, State, or Owner_group if a field present; otherwise dark green
+// Colour by Jurisdiction-style field if these fields present; otherwise dark green
 
 const TIME_AXIS_FIELD = 'Date_coll';
-const JURISDICTION_FIELD = 'Jurisdiction';
-const STATE_FIELD = 'State';
-const COUNTRY_FIELD = 'Country';
-const OWNER_FIELD = 'Owner_group';
-// Jurisdiction and state use the jurisdictional colour scheme, but owner organisations may 
-// have multiple orgs per jurisdiction, so use a different scheme
-const COUNTRY_COLOUR_SCHEME = 'set3';
-const OWNER_COLOUR_SCHEME = 'set3';
+
+// The first of these fields that is present will be used to colour the plot
+const FIELDS_AND_COLOURS: string[][] = [
+  ['Jurisdiction', 'jurisdiction'],
+  ['State', 'jurisdiction'],
+  ['Country', 'set3'],
+  ['Owner_group', 'set3'],
+];
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
@@ -69,17 +66,12 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
   };
   
   useEffect(() => {
-    const setColourSpecFromField = (field: string, colourScheme: ScaleOrdinal<string, string>) => {
-      // Works if field is configured with ANZ Jurisdiction or ISO State values 
+    const setColourSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
       const colSpec = {
         // eslint-disable-next-line object-shorthand
         field: field,
-        scale: {
-          domain: values,
-          // NB val ? assumes these values are strings, and therefore falsy values are null or empty
-          range: values.map((val) => (val ? colourScheme(val) : NULL_COLOUR)),
-        },
+        scale: createVegaScale(values, colourScheme),
         legend: legendSpec,
       };
       setColourSpec(colSpec);
@@ -88,14 +80,12 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
       return;
     }
-    if (data.fields.map(fld => fld.columnName).includes(JURISDICTION_FIELD)) {
-      setColourSpecFromField(JURISDICTION_FIELD, schemeJurisdiction);
-    } else if (data.fields.map(fld => fld.columnName).includes(STATE_FIELD)) {
-      setColourSpecFromField(STATE_FIELD, schemeJurisdiction);
-    } else if (data.fields.map(fld => fld.columnName).includes(COUNTRY_FIELD)) {
-      setColourSpecFromField(COUNTRY_FIELD, discreteColorSchemes[COUNTRY_COLOUR_SCHEME]);
-    } else if (data.fields.map(fld => fld.columnName).includes(OWNER_FIELD)) {
-      setColourSpecFromField(OWNER_FIELD, discreteColorSchemes[OWNER_COLOUR_SCHEME]);
+
+    for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
+      if (data!.fields!.map(fld => fld.columnName).includes(field)) {
+        setColourSpecFromField(field, colourScheme);
+        break;
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);

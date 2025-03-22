@@ -12,6 +12,14 @@ import { maxObj, minObj } from './dataProcessingUtils';
 
 const ONE_SAMPLE_POINT_SIZE = 40;
 
+export function createVegaScale(uniqueValues: string[], colorScheme: string) {
+  const mapping = createColourMapping(uniqueValues, colorScheme);
+  return {
+    domain: uniqueValues,
+    range: uniqueValues.map((val) => mapping[val]),
+  };
+}
+
 // Get the preferred field to populate a selector when fields first loaded.
 // If a preferred field is not of the correct type it will simply appear unavailable.
 // If in show-all mode, the first preferredField is SNP_cluster and available fields are
@@ -78,14 +86,10 @@ export const setColorInSpecToValue = (
     newSpec.encoding = newEncoding;
   } else {
     // Set colour in encoding
-    const colourMapping = createColourMapping(uniqueValues, colourScheme);
     newSpec.encoding = { ...(oldSpec as any).encoding };
     newSpec.encoding.color = {
       field: colourField,
-      scale: {
-        domain: uniqueValues,
-        range: uniqueValues.map((val) => colourMapping[val]),
-      },
+      scale: createVegaScale(uniqueValues, colourScheme),
       legend: legendSpec,
     };
     // Set opacity on interactive legend
