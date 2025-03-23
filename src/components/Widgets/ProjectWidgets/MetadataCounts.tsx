@@ -1,3 +1,4 @@
+/* eslint react/require-default-props: 0 */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,7 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { Sample } from '../../../types/sample.interface';
 
 // Parameterised widget; field must be specified
@@ -23,15 +25,20 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
   filteredData: Sample[];
   timeFilterObject: DataTableFilterMeta;
   field: string; // This is the field parameter the widget will report on
-  // eslint-disable-next-line react/require-default-props
+  categoryField?: string; // This is the y-axis field; defaults to Owner_group
   title?: string | undefined; // Optionally, a different title for the widget
 }
 
-const ORG_FIELD_NAME = 'Owner_group';
-const ORG_FIELD_PLOTNAME = 'Owner_organisation';
-
 export default function MetadataCounts(props: MetadataCountWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
+  let { categoryField } = props;
+  let axisTitle = categoryField;
+  if (!categoryField) {
+    categoryField = 'Owner_group';
+  }
+  if (!axisTitle) {
+    axisTitle = 'Organisation';
+  }
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
@@ -54,7 +61,8 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     if (!item || !item.datum) return;
 
     const status = item.datum[`${field}_status`];
-    const org = item.datum[ORG_FIELD_PLOTNAME];
+    let category = item.datum[categoryField!];
+    if (categoryField === 'Owner_group') category = `${category}-Owner`;
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [field]: {
@@ -66,12 +74,12 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           },
         ],
       },
-      [ORG_FIELD_NAME]: {
+      [categoryField!]: {
         operator: FilterOperator.AND,
         constraints: [
           {
             matchMode: FilterMatchMode.EQUALS,
-            value: `${org}-Owner`,
+            value: category,
           },
         ],
       },
@@ -89,7 +97,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
-      { calculate: `split(datum['${ORG_FIELD_NAME}'],'-Owner')[0]`, as: ORG_FIELD_PLOTNAME },
+      ...ownerGroupVegaTransform(categoryField),
       dateStatusTransform,
     ],
     width: 'container',
@@ -103,8 +111,8 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           axis: { title: 'Count' },
         },
         y: {
-          field: ORG_FIELD_PLOTNAME,
-          axis: { title: 'Organisation' },
+          field: categoryField,
+          axis: { title: axisTitle },
         },
         color: {
           field: `${field}_status`,
@@ -125,7 +133,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           stack: 'zero',
           bandPosition: 0.5,
         },
-        y: { field: ORG_FIELD_PLOTNAME },
+        y: { field: categoryField },
         detail: {
           field: `${field}_status`,
         },
@@ -142,18 +150,30 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
   });
 
   useEffect(() => {
-    if (data?.loadingState && (
+    if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+      return;
+    }
+    if (data?.fieldLoadingStates[categoryField!] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${categoryField} values`);
+      return;
+    }
+    if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${field} values`);
+      return;
+    }
+    if (categoryField && data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-            data.loadingState === MetadataLoadingState.DATA_LOADED
+      data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
-      const fields = data.fields!.map(fld => fld.columnName);
-      if (!fields.includes(ORG_FIELD_NAME)) {
-        setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
+      const fields = data.fields!.map(_field => _field.columnName);
+      if (!fields.includes(categoryField!)) {
+        setErrorMessage(`Field ${categoryField} not found in project`);
       } else if (!fields.includes(field)) {
         setErrorMessage(`Field ${field} not found in project`);
       }
     }
-  }, [data, field]);
+  }, [data, field, categoryField]);
 
   useEffect(() => {
     const createVegaViews = async () => {
@@ -181,16 +201,6 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
-  useEffect(() => {
-    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
-      setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
-    } else if (data?.loadingState === MetadataLoadingState.ERROR) {
-      setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${ORG_FIELD_NAME} values`);
-    }
-  }, [data]);
-
   return (
     <Box>
       <Tooltip title={tooltipTitle} arrow placement="top">
@@ -204,7 +214,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           {errorMessage}
         </Alert>
       ) :
-        (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
+        (data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div

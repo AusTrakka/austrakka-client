@@ -4,7 +4,7 @@ import React from 'react';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
+import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
 function BasicDashboard(props: ProjectDashboardTemplateProps) {
@@ -29,7 +29,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
           </Card>
           <Card sx={{ ...tallCardStyle, marginTop: 2 }}>
             <CardContent>
-              <OrgHasSeq
+              <HasSeq
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
