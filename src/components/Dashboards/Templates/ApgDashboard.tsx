@@ -5,7 +5,7 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import OrgHasSeq from '../../Widgets/ProjectWidgets/HasSeq';
+import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
@@ -72,7 +72,7 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
         <Grid size={{ xs: 12, md: 12, lg: 6 }}>
           <Card sx={tallCardStyle}>
             <CardContent>
-              <OrgHasSeq
+              <HasSeq
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
