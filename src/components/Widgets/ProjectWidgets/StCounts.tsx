@@ -15,16 +15,11 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
-
-interface CountRow {
-  [stFieldName]: string;
-  sampleCount: number;
-}
 
 function STChart(props: any) {
   const { stData, stDataAggregated } = props;
@@ -43,7 +38,7 @@ function STChart(props: any) {
       x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', bin: { maxbins: 20 }, axis: { format: ' %d %b %Y' } },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: {
-        field: stFieldName,
+        field: 'value',
         title: `${stFieldName} Value`,
         // NB not currently using defaultColorSchemeName
         scale: { scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10' },
@@ -153,8 +148,8 @@ export default function StCounts(props: ProjectWidgetProps) {
   };
 
   const columns = useMemo<any[]>(() => [
-    { field: stFieldName, header: `${stFieldName} Value` },
-    { field: 'sampleCount', header: 'Sample count' },
+    { field: 'value', header: `${stFieldName} Value` },
+    { field: 'count', header: 'Sample count' },
   ], []);
 
   return (

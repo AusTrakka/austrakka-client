@@ -1,4 +1,3 @@
-/* eslint react/require-default-props: 0 */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -11,78 +10,70 @@ import { InlineData } from 'vega-lite/build/src/data';
 import { useAppSelector } from '../../../app/store';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { Sample } from '../../../types/sample.interface';
+import { createVegaScale } from '../../../utilities/plotUtils';
+import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 
 // Parameterised widget; field must be specified
 
-interface MetadataCountWidgetProps extends ProjectWidgetProps {
+const COLOUR_SCHEME = 'set3';
+
+interface MetadataValueWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
   filteredData: Sample[];
   timeFilterObject: DataTableFilterMeta;
   field: string; // This is the field parameter the widget will report on
-  categoryField?: string; // This is the y-axis field; defaults to Owner_group
+  // eslint-disable-next-line react/require-default-props
   title?: string | undefined; // Optionally, a different title for the widget
 }
 
-export default function MetadataCounts(props: MetadataCountWidgetProps) {
+export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
-  let { categoryField } = props;
-  let axisTitle = categoryField;
-  if (!categoryField) {
-    categoryField = 'Owner_group';
-  }
-  if (!axisTitle) {
-    axisTitle = 'Organisation';
-  }
+  // TODO maybe just fieldUniqueValues selector?
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
-  const tooltipTitle = `Samples with populated ${field} values`;
-
-  const CHART_COLORS = {
-    AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
-    MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
-  } as const;
-  
-  const dateStatusTransform = {
-    calculate: `datum['${field}'] ? 'Available' : 'Missing'`,
-    as: `${field}_status`,
-  };
+  const tooltipTitle = `${field} values`;
 
   function handleItemClick(item: any) {
     if (!item || !item.datum) return;
 
-    const status = item.datum[`${field}_status`];
-    let category = item.datum[categoryField!];
-    if (categoryField === 'Owner_group') category = `${category}-Owner`;
-
-    const drillDownTableMetaFilters: DataTableFilterMeta = {
-      [field]: {
-        operator: FilterOperator.AND,
-        constraints: [
-          {
-            matchMode: FilterMatchMode.CUSTOM,
-            value: status !== 'Available',
-          },
-        ],
-      },
-      [categoryField!]: {
-        operator: FilterOperator.AND,
-        constraints: [
-          {
-            matchMode: FilterMatchMode.EQUALS,
-            value: category,
-          },
-        ],
-      },
-    };
+    const value = item.datum[field];
+    let drillDownTableMetaFilters: DataTableFilterMeta = {};
+    
+    if (isNullOrEmpty(value)) {
+      // Find empty values
+      drillDownTableMetaFilters = {
+        [field]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              matchMode: FilterMatchMode.CUSTOM,
+              value: true,
+            },
+          ],
+        },
+      };
+    } else {
+      // Not null, so match metadata value
+      drillDownTableMetaFilters = {
+        [field]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              matchMode: FilterMatchMode.EQUALS,
+              value,
+            },
+          ],
+        },
+      };
+    }
 
     const combinedFilters: DataTableFilterMeta =
         timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
@@ -91,98 +82,65 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
 
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
-
-  // The transform required for the Owner_group field name change, iff required
-  const ownerGroupTransform = () => {
-    if (categoryField === 'Owner_group') {
-      return [
-        { calculate: `split(datum['${categoryField}'],'-Owner')[0]`, as: categoryField },
-      ];
-    }
-    return [];
-  };
   
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
-    transform: [
-      ...ownerGroupTransform(),
-      dateStatusTransform,
-    ],
     width: 'container',
-    height: { step: 40 },
     layer: [{
-      mark: { type: 'bar', tooltip: true, cursor: 'pointer' },
+      mark: { type: 'arc', radius: 90, radius2: 40, tooltip: true, cursor: 'pointer' },
       encoding: {
-        x: {
+        theta: {
           aggregate: 'count',
           stack: 'zero',
           axis: { title: 'Count' },
         },
-        y: {
-          field: categoryField,
-          axis: { title: axisTitle },
-        },
         color: {
-          field: `${field}_status`,
-          scale: {
-            domain: ['Available', 'Missing'],
-            range: [CHART_COLORS.AVAILABLE, CHART_COLORS.MISSING],
+          field: `${field}`,
+          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], COLOUR_SCHEME),
+          legend: {
+            title: field,
+            orient: 'bottom',
+            labelExpr: "datum.label || 'unknown'",
           },
-          legend: { title: `${field} status`, orient: 'bottom' },
         },
       },
     },
     {
-      mark: { type: 'text', color: 'black', tooltip: true, cursor: 'pointer' },
-      encoding: {
-        text: { aggregate: 'count' },
-        x: {
-          aggregate: 'count',
-          stack: 'zero',
-          bandPosition: 0.5,
-        },
-        y: { field: categoryField },
-        detail: {
-          field: `${field}_status`,
-        },
-      },
+      mark: { type: 'text', radius: 67, color: 'black', tooltip: true, cursor: 'pointer' },
+      // encoding: {
+      //   text: { aggregate: 'count' },
+      //   theta: {
+      //     aggregate: 'count',
+      //     stack: 'zero',
+      //     bandPosition: 0.5,
+      //   },
+      //   detail: {
+      //     field: `${field}`,
+      //   },
+      // },
     }],
-    title: {
-      text: `${field} counts`,
-      anchor: 'middle',
-      fontSize: 12,
-    },
+    // title: {
+    //   text: `${field} counts`,
+    //   anchor: 'middle',
+    //   fontSize: 12,
+    // },
     usermeta: {
       dateCollField: field,
     },
   });
 
   useEffect(() => {
-    if (data?.loadingState === MetadataLoadingState.ERROR) {
-      setErrorMessage(data.errorMessage);
-      return;
-    }
-    if (data?.fieldLoadingStates[categoryField!] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${categoryField} values`);
-      return;
-    }
-    if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${field} values`);
-      return;
-    }
-    if (categoryField && data?.loadingState && (
+    if (data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-      data.loadingState === MetadataLoadingState.DATA_LOADED
+            data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
-      const fields = data.fields!.map(_field => _field.columnName);
-      if (!fields.includes(categoryField!)) {
-        setErrorMessage(`Field ${categoryField} not found in project`);
-      } else if (!fields.includes(field)) {
+      const fields = data.fields!.map(fld => fld.columnName);
+      if (!fields.includes(field)) {
         setErrorMessage(`Field ${field} not found in project`);
       }
     }
-  }, [data, field, categoryField]);
+  }, [data, field]);
 
   useEffect(() => {
     const createVegaViews = async () => {
@@ -210,6 +168,12 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
+  useEffect(() => {
+    if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+    }
+  }, [data]);
+
   return (
     <Box>
       <Tooltip title={tooltipTitle} arrow placement="top">
@@ -222,8 +186,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
-      ) :
-        (data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
+      ) : (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div
@@ -236,7 +199,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
             <ExportVegaPlot vegaView={vegaView} />
           </Grid>
         </Grid>
-        ))}
+      )}
       {(!(data?.loadingState) ||
                 !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
                     data.loadingState === MetadataLoadingState.ERROR ||
