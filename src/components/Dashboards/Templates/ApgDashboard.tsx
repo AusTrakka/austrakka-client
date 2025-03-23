@@ -5,8 +5,8 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import OrgHasSeq from '../../Widgets/ProjectWidgets/OrgHasSeq';
-import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCount';
+import OrgHasSeq from '../../Widgets/ProjectWidgets/HasSeq';
+import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
 function ApgDashboard(props: ProjectDashboardTemplateProps) {
