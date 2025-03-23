@@ -20,8 +20,13 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
   
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        <Grid container spacing={2} size={{ lg: 8, md: 12 }}> {/* big left column */}
+      <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
+        <Grid
+          container
+          sx={{ alignItems: 'flex-start' }}
+          spacing={2}
+          size={{ lg: 8, md: 12 }}
+        > {/* big left column */}
           <Grid size={12}>
             <Card sx={cardStyle}>
               <CardContent>
