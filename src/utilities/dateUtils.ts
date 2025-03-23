@@ -26,6 +26,16 @@ export function formatDate(dateUTC: string): string {
   return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
 }
 
+export function formatDateAsTwoStrings(dateUTC: string): string[] {
+  if (!dateUTC) return ['', ''];
+  if (dateUTC === 'null') return ['', ''];
+  if (Number.isNaN(Date.parse(dateUTC))) return ['Invalid Date', ''];
+  const date = new Date(dateUTC);
+  const dateString = date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const timeString = date.toLocaleString('en-AU', { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
+  return [dateString, timeString];
+}
+
 export function isISODateString(value: string) {
   const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?$/;
 

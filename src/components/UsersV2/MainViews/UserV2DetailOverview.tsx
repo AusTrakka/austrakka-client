@@ -35,6 +35,8 @@ import { FailedChangesDialog } from './FailedChangesDialog';
 import UserProperties from './UserProperties';
 import UserPrivileges from './UserPrivileges';
 import {
+  checkEditUserScopes,
+  checkFetchUserScope,
   filterAssignedRoles, removeSelectionFromPrivileges,
   updateEditedPrivileges, updatePendingChanges, updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
@@ -64,6 +66,7 @@ function UserV2DetailOverview() {
   const {
     loading,
     adminV2,
+    scopes,
   } = useAppSelector(selectUserState);
   const { defaultTenantGlobalId } = useAppSelector(selectTenantState);
 
@@ -88,8 +91,18 @@ function UserV2DetailOverview() {
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
+
+  // Add a boolean constant to determine if the user can see this page.
+  // Currently, access is only granted to adminV2 (the root super user).
+  // Instead, the visibility and editability of the page should be checked separately
+  // based on the required scopes.
   
-  if (loading === LoadingState.SUCCESS && adminV2) {
+  const canFetch = checkFetchUserScope(scopes);
+  const canEdit = checkEditUserScopes(scopes);
+  
+  // this should check if it has loaded then if its super user and
+  // lastly if they have the scope for fetching the user
+  if (loading === LoadingState.SUCCESS && (adminV2 || canFetch)) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -324,7 +337,7 @@ function UserV2DetailOverview() {
 
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
-  const canSee = () => (loading === LoadingState.SUCCESS && adminV2);
+  const canSeeEditButtons = () => (loading === LoadingState.SUCCESS && (adminV2 || canEdit));
   return (user) ? (
     <div>
       <Stack
@@ -358,7 +371,7 @@ function UserV2DetailOverview() {
             onSave={onSave}
             handleCancel={handleCancel}
             hasChanges={hasChanges}
-            canSee={canSee}
+            canSee={canSeeEditButtons}
             onSaveLoading={onSaveLoading}
             errMsg={errMsg}
             nonDisplayFields={nonDisplayFields}
@@ -375,7 +388,7 @@ function UserV2DetailOverview() {
             handlePrivCancel={handlePrivCancel}
             onSaveLoading={onSaveLoading}
             privHasChanges={privHasChanges}
-            canSee={canSee}
+            canSee={canSeeEditButtons}
             editedPrivileges={editedPrivileges}
             openGroupRoles={openGroupRoles}
             setOpenGroupRoles={setOpenGroupRoles}

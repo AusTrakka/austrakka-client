@@ -1,3 +1,4 @@
+/* eslint react/require-default-props: 0 */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +15,31 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { Sample } from '../../../types/sample.interface';
+import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 
-const ORG_FIELD_NAME = 'Owner_group';
-const ORG_FIELD_PLOTNAME = 'Owner_organisation';
+// Takes y-axis field as an optional parameter; 
+// defaults to Owner_group, which gets special handling
+
 const HAS_SEQ = 'Has_sequences';
 
-export default function OrgHasSeq(props: ProjectWidgetProps) {
+interface HasSeqWidgetProps extends ProjectWidgetProps {
+  projectAbbrev: string;
+  filteredData?: Sample[];
+  timeFilterObject?: DataTableFilterMeta;
+  categoryField?: string;
+}
+
+export default function HasSeq(props: HasSeqWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject } = props;
+  let { categoryField } = props;
+  let axisTitle = categoryField;
+  if (!categoryField) {
+    categoryField = 'Owner_group';
+  }
+  if (!axisTitle) {
+    axisTitle = 'Organisation';
+  }
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
@@ -40,8 +59,11 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
   
   function handleItemClick(item: any) {
     if (!item || !item.datum) return;
+    
     const status = item.datum[`${HAS_SEQ}_status`];
-    const org = item.datum[ORG_FIELD_PLOTNAME];
+    let category = item.datum[categoryField!];
+    if (categoryField === 'Owner_group') category = `${category}-Owner`;
+    
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [HAS_SEQ]: {
         operator: FilterOperator.AND,
@@ -52,12 +74,12 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
           },
         ],
       },
-      [ORG_FIELD_NAME]: {
+      [categoryField!]: {
         operator: FilterOperator.AND,
         constraints: [
           {
             matchMode: FilterMatchMode.EQUALS,
-            value: `${org}-Owner`,
+            value: category,
           },
         ],
       },
@@ -72,12 +94,12 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
       updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
     }
   }
-
+  
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
-      { calculate: `split(datum['${ORG_FIELD_NAME}'],'-Owner')[0]`, as: ORG_FIELD_PLOTNAME },
+      ...ownerGroupVegaTransform(categoryField),
       dateStatusTransform,
     ],
     width: 'container',
@@ -91,8 +113,8 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
           axis: { title: 'Count' },
         },
         y: {
-          field: ORG_FIELD_PLOTNAME,
-          axis: { title: 'Organisation' },
+          field: categoryField,
+          axis: { title: axisTitle },
         },
         color: {
           field: `${HAS_SEQ}_status`,
@@ -113,7 +135,7 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
           stack: 'zero',
           bandPosition: 0.5,
         },
-        y: { field: ORG_FIELD_PLOTNAME },
+        y: { field: categoryField },
         detail: {
           field: `${HAS_SEQ}_status`,
         },
@@ -130,19 +152,32 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
   });
 
   useEffect(() => {
-    if (data?.loadingState && (
+    if (data?.loadingState === MetadataLoadingState.ERROR) {
+      setErrorMessage(data.errorMessage);
+      return;
+    }
+    if (data?.fieldLoadingStates[categoryField!] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${categoryField} values`);
+      return;
+    }
+    if (data?.fieldLoadingStates[HAS_SEQ] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${HAS_SEQ} values`);
+      return;
+    }
+    if (categoryField && data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
             data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
       const fields = data.fields!.map(field => field.columnName);
-      if (!fields.includes(ORG_FIELD_NAME)) {
-        setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
+      if (!fields.includes(categoryField!)) {
+        setErrorMessage(`Field ${categoryField} not found in project`);
       } else if (!fields.includes(HAS_SEQ)) {
         setErrorMessage(`Field ${HAS_SEQ} not found in project`);
       }
     }
-  }, [data]);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.loadingState, data?.fieldLoadingStates, categoryField]);
+  
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
@@ -168,16 +203,6 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
-  useEffect(() => {
-    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
-      setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
-    } else if (data?.loadingState === MetadataLoadingState.ERROR) {
-      setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${ORG_FIELD_NAME} values`);
-    }
-  }, [data]);
-
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
@@ -189,7 +214,7 @@ export default function OrgHasSeq(props: ProjectWidgetProps) {
           {errorMessage}
         </Alert>
       ) :
-        (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
+        (data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div

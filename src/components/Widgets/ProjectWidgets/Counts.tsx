@@ -11,66 +11,98 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { Sample } from '../../../types/sample.interface';
 
-// TODO This widget is really now obsolete; we could use the Counts widget
+// Counts table for specified field
 
-const ORG_FIELD_NAME = 'Owner_group';
+const NULL_VALUE = 'Missing';
 
-const columns = [
-  {
-    field: 'value',
-    header: 'Owner organisation',
-    body: (rowData: any) => rowData.value.split('-Owner'),
-  },
-  {
-    field: 'count',
-    header: 'Sample Count',
-  },
-];
+interface CountsWidgetProps extends ProjectWidgetProps {
+  projectAbbrev: string;
+  filteredData: Sample[];
+  timeFilterObject: DataTableFilterMeta;
+  field: string;
+  title: string;
+  // eslint-disable-next-line react/require-default-props
+  fieldTitle?: string;
+}
 
-export default function Organisations(props: ProjectWidgetProps) {
+export default function Counts(props: CountsWidgetProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject,
+    projectAbbrev, filteredData, timeFilterObject, field, title,
   } = props;
+  let { fieldTitle } = props;
+  if (!fieldTitle) {
+    fieldTitle = field;
+  }
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const columns = [
+    {
+      field: 'value',
+      header: fieldTitle,
+      body: (rowData: any) => (field === 'Owner_group' ? rowData.value.split('-Owner') : rowData.value),
+    },
+    {
+      field: 'count',
+      header: 'Sample Count',
+    },
+  ];
+  
   useEffect(() => {
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)) {
-      const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
-      counts.sort((a, b) => b.count - a.count);
+        data.fieldLoadingStates[field] === LoadingState.SUCCESS)) {
+      const counts = aggregateArrayObjects(field, filteredData!, NULL_VALUE) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
+  }, [field, filteredData, data?.loadingState, data?.fieldLoadingStates]);
   
   useEffect(() => {
-    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(ORG_FIELD_NAME)) {
-      setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
+    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(field)) {
+      setErrorMessage(`Field ${field} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${ORG_FIELD_NAME} values`);
+    } else if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${field} values`);
     }
-  }, [data]);
+  }, [data, field]);
   
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    const drillDownTableMetaFilters: DataTableFilterMeta = {
-      [ORG_FIELD_NAME]: {
-        operator: FilterOperator.AND,
-        constraints: [
-          {
-            matchMode: FilterMatchMode.EQUALS,
-            value: selectedRow.Owner_group,
-          },
-        ],
-      },
-    };
+    let drillDownTableMetaFilters: DataTableFilterMeta = {};
+    
+    if (selectedRow.value === NULL_VALUE) {
+      // Find empty values
+      drillDownTableMetaFilters = {
+        [field]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              matchMode: FilterMatchMode.CUSTOM,
+              value: true,
+            },
+          ],
+        },
+      };
+    } else {
+      // Not null, so match metadata value
+      drillDownTableMetaFilters = {
+        [field]: {
+          operator: FilterOperator.AND,
+          constraints: [
+            {
+              matchMode: FilterMatchMode.EQUALS,
+              value: selectedRow.value,
+            },
+          ],
+        },
+      };
+    }
 
     if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
       const combinedFilters: DataTableFilterMeta = {
@@ -86,9 +118,9 @@ export default function Organisations(props: ProjectWidgetProps) {
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Owner organisations
+        {title}
       </Typography>
-      { data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
+      { data?.fieldLoadingStates[field] === LoadingState.SUCCESS && (
       <DataTable
         value={aggregatedCounts}
         size="small"
@@ -112,8 +144,8 @@ export default function Organisations(props: ProjectWidgetProps) {
       </Alert>
       )}
       {(!(data?.fieldLoadingStates) ||
-        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.LOADING ||
-        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.IDLE) && (
+        data?.fieldLoadingStates[field] === LoadingState.LOADING ||
+        data?.fieldLoadingStates[field] === LoadingState.IDLE) && (
         <div>Loading...</div>
       )}
     </Box>
