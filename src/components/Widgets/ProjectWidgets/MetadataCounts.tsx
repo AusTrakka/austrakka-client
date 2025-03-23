@@ -92,8 +92,6 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
 
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
-
-
   
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
