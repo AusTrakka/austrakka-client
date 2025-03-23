@@ -15,6 +15,7 @@ import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { Sample } from '../../../types/sample.interface';
 
 // Parameterised widget; field must be specified
@@ -92,21 +93,13 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
 
-  // The transform required for the Owner_group field name change, iff required
-  const ownerGroupTransform = () => {
-    if (categoryField === 'Owner_group') {
-      return [
-        { calculate: `split(datum['${categoryField}'],'-Owner')[0]`, as: categoryField },
-      ];
-    }
-    return [];
-  };
+
   
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
-      ...ownerGroupTransform(),
+      ...ownerGroupVegaTransform(categoryField),
       dateStatusTransform,
     ],
     width: 'container',

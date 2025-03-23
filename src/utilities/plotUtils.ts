@@ -236,3 +236,14 @@ export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: numb
   if (daysInRange < 20 * 365) return { unit: 'yearmonth', step: 3 }; // 7300 which is max 80 quarters, min 20 years
   return { unit: 'year', step: 1 };
 };
+
+// The transform required for the Owner_group field, when required. Strips -Owner from the group.
+export const ownerGroupVegaTransform = (field: string | undefined) => {
+  if (!field) return [];
+  if (field === 'Owner_group') {
+    return [
+      { calculate: `split(datum['${field}'],'-Owner')[0]`, as: field },
+    ];
+  }
+  return [];
+};

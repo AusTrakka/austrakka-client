@@ -16,6 +16,7 @@ import ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { Sample } from '../../../types/sample.interface';
+import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 
 // Takes y-axis field as an optional parameter; 
 // defaults to Owner_group, which gets special handling
@@ -93,22 +94,12 @@ export default function HasSeq(props: HasSeqWidgetProps) {
       updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
     }
   }
-
-  // The transform required for the Owner_group field name change, iff required
-  const ownerGroupTransform = () => {
-    if (categoryField === 'Owner_group') {
-      return [
-        { calculate: `split(datum['${categoryField}'],'-Owner')[0]`, as: categoryField },
-      ];
-    }
-    return [];
-  };
   
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
-      ...ownerGroupTransform(),
+      ...ownerGroupVegaTransform(categoryField),
       dateStatusTransform,
     ],
     width: 'container',
