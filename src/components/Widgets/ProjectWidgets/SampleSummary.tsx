@@ -1,6 +1,5 @@
 import React from 'react';
-import {Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography} from '@mui/material';
-import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
+import { Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
@@ -67,12 +66,66 @@ export default function SampleSummary(props: ProjectWidgetProps) {
       updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
     }
   };
+  
+  const renderLatestSampleUpload = () => {
+    // If there are no samples
+    // Should only be called if state DATA_LOADED, but check metadata exists anyway
+    if (!data?.metadata || data.metadata.length === 0) {
+      return (
+        <Tooltip title="No records in project" placement="top">
+          <Typography variant="h2" paddingBottom={1} color="primary">
+            None
+          </Typography>
+        </Tooltip>
+      );
+    }
+    
+    // If there are samples but we don't know Date_created
+    if (!(data!.fields!.some((field) => field.columnName === 'Date_created'))) {
+      return (
+        <Tooltip
+          title="Date_created is not a project field, so latest uploaded sample is not known"
+          placement="top"
+        >
+          <Typography variant="h2" paddingBottom={1} color="primary">
+            Unknown
+          </Typography>
+        </Tooltip>
+      );
+    }
+    
+    // Success case
+    return (
+      <>
+        <Typography variant="h2" paddingBottom={1} color="primary">
+          {formatDateAsTwoStrings(maxObj(data!.metadata!.map((sample) => sample.Date_created)))[0]}
+        </Typography>
+        <Stack direction="row" spacing={5}>
+          <Typography variant="subtitle2" paddingBottom={1} color="primary">
+            {formatDateAsTwoStrings(
+              maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+            )[1]}
+          </Typography>
+          <DrilldownButton
+            title="View Samples"
+            enabled={data!.metadata!.length > 0}
+            onClick={() => handleDrilldownFilters(
+              'latest_upload',
+              getLastUploadFilter(
+                maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+              ),
+            )}
+          />
+        </Stack>
+      </>
+    );
+  };
 
   return (
     <Box>
       <Grid container spacing={2} direction="row" justifyContent="space-between">
         { data?.loadingState === MetadataLoadingState.DATA_LOADED && (
-          <><>
+          <>
             <Grid item>
               <Typography variant="h5" paddingBottom={1} color="primary">
                 Total samples
@@ -83,42 +136,14 @@ export default function SampleSummary(props: ProjectWidgetProps) {
               </Typography>
               <DrilldownButton
                 title="View Samples"
-                onClick={() => handleDrilldownFilters('all_samples', allSamplesFilter)}/>
+                onClick={() => handleDrilldownFilters('all_samples', allSamplesFilter)}
+              />
             </Grid>
             <Grid item>
               <Typography variant="h5" paddingBottom={1} color="primary">
                 Latest sample upload
               </Typography>
-              {(data!.fields!.some((field) => field.columnName === 'Date_created') ?
-                (data!.metadata!.length >= 0 ?
-                  <>
-                    <Typography variant="h2" paddingBottom={1} color="primary">
-                      {formatDateAsTwoStrings(maxObj(data!.metadata!.map((sample) => sample.Date_created)))[0]}
-                    </Typography>
-                    <Stack direction="row" spacing={5}>
-                    <Typography variant="subtitle2" paddingBottom={1} color="primary">
-                      {formatDateAsTwoStrings(maxObj(data!.metadata!.map((sample) => sample.Date_created)))[1]}
-                    </Typography>
-                    <DrilldownButton
-                      title="View Samples"
-                      enabled={data!.metadata!.length > 0}
-                      onClick={() => handleDrilldownFilters(
-                        'latest_upload',
-                        getLastUploadFilter(
-                          maxObj(data!.metadata!.map((sample) => sample.Date_created))
-                        )
-                      )}/>
-                    </Stack>
-                  </> :
-                  'None'
-              ) : (
-                <Tooltip title="Date_created is not a project field, so latest uploaded sample is not known"
-                         placement="top">
-                  <Typography variant="h2" paddingBottom={1} color="primary">
-                    Unknown
-                  </Typography>
-                </Tooltip>
-                ))}
+              {renderLatestSampleUpload()}
             </Grid>
             <Grid item>
               <Typography variant="h5" paddingBottom={1} color="primary">
@@ -134,7 +159,8 @@ export default function SampleSummary(props: ProjectWidgetProps) {
                   </Typography>
                   <DrilldownButton
                     title="View Samples"
-                    onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}/>
+                    onClick={() => handleDrilldownFilters('has_sequence', hasSequenceFilter)}
+                  />
                 </>
               ) : (
                 <Tooltip title="Has_sequences is not a project field, so this count is not known" placement="top">
@@ -143,8 +169,8 @@ export default function SampleSummary(props: ProjectWidgetProps) {
                   </Typography>
                 </Tooltip>
               ))}
-            </Grid></>
-        </>
+            </Grid>
+          </>
         )}
         { data?.errorMessage && (
         <Grid container item>
