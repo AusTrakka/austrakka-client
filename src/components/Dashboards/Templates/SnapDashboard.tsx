@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-one-expression-per-line */
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import React from 'react';
@@ -20,9 +21,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        <Grid container spacing={2} size={{ lg: 8, md: 12 }}>
-          {' '}
-          {/* big left column */}
+        <Grid container spacing={2} size={{ lg: 8, md: 12 }}> {/* big left column */}
           <Grid size={12}>
             <Card sx={cardStyle}>
               <CardContent>
@@ -71,15 +70,9 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-        {' '}
-        {/* big left column */}
-        <Grid container spacing={2} size={{ lg: 4, md: 12 }}>
-          {' '}
-          {/* narrow right column */}
-          <Grid container size={{ lg: 12, md: 6, sm: 12 }}>
-            {' '}
-            {/* NB fraction of parent column, which is smaller at lg */}
+        </Grid> {/* big left column */}
+        <Grid container spacing={2} size={{ lg: 4, md: 12 }}> {/* narrow right column */}
+          <Grid container size={{ lg: 12, md: 6, sm: 12 }}> {/* NB fraction of parent column, which is smaller at lg */}
             <Card sx={tallCardStyle}>
               <CardContent>
                 <Counts
@@ -92,9 +85,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid container size={{ lg: 12, md: 6, sm: 12 }}>
-            {' '}
-            {/* NB fraction of parent column */}
+          <Grid container size={{ lg: 12, md: 6, sm: 12 }}> {/* NB fraction of parent column */}
             <Card sx={tallCardStyle}>
               <CardContent>
                 <Counts
@@ -107,9 +98,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid container size={{ lg: 12, md: 6, sm: 12 }}>
-            {' '}
-            {/* NB fraction of parent column */}
+          <Grid container size={{ lg: 12, md: 6, sm: 12 }}> {/* NB fraction of parent column */}
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieChart
@@ -122,9 +111,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-        {' '}
-        {/* rightmost column */}
+        </Grid> {/* rightmost column */}
       </Grid>
     </Box>
   );
