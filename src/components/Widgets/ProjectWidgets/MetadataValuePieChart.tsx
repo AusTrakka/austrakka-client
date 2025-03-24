@@ -98,7 +98,10 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         },
         color: {
           field: `${field}`,
-          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], colourScheme || DEFAULT_COLOUR_SCHEME),
+          scale: createVegaScale(
+            data!.fieldUniqueValues![field] ?? [],
+            colourScheme || DEFAULT_COLOUR_SCHEME,
+          ),
           legend: {
             title: field,
             orient: 'bottom',
