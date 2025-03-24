@@ -7,5 +7,5 @@ export const cardStyle = {
 
 export const tallCardStyle = {
   ...cardStyle,
-  minHeight: 300,
+  minHeight: 350,
 };

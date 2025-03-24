@@ -126,6 +126,8 @@ export default function Counts(props: CountsWidgetProps) {
         size="small"
         onRowClick={rowClickHandler}
         selectionMode="single"
+        scrollable
+        scrollHeight="800px"
       >
         {columns.map((col: any) => (
           <Column
