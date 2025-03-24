@@ -39,6 +39,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
+                preferredColourField="Country"
               />
             </CardContent>
           </Card>
