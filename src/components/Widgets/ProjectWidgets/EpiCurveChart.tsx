@@ -1,9 +1,9 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
-
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -28,12 +28,20 @@ const FIELDS_AND_COLOURS: string[][] = [
   ['Country', 'set3'],
   ['Owner_group', 'set3'],
 ];
+const DEFAULT_COLOUR_SCHEME = 'set3';
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
-export default function EpiCurveChart(props: ProjectWidgetProps) {
+interface EpiCurveChartProps extends ProjectWidgetProps {
+  projectAbbrev: string;
+  filteredData?: Sample[];
+  timeFilterObject?: DataTableFilterMeta;
+  preferredColourField?: string;
+}
+
+export default function EpiCurveChart(props: EpiCurveChartProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject,
+    projectAbbrev, filteredData, timeFilterObject, preferredColourField,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -80,11 +88,19 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
       return;
     }
-
-    for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
-      if (data!.fields!.map(fld => fld.columnName).includes(field)) {
-        setColourSpecFromField(field, colourScheme);
-        break;
+    
+    // If preferred colour field specified and available, use it, otherwise go through list
+    if (preferredColourField &&
+        data.fields.map(fld => fld.columnName).includes(preferredColourField)
+    ) {
+      const colourSchemePair = FIELDS_AND_COLOURS.find(fld => fld[0] === preferredColourField) ?? ['', DEFAULT_COLOUR_SCHEME];
+      setColourSpecFromField(preferredColourField, colourSchemePair[1]);
+    } else {
+      for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
+        if (data!.fields!.map(fld => fld.columnName).includes(field)) {
+          setColourSpecFromField(field, colourScheme);
+          break;
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
