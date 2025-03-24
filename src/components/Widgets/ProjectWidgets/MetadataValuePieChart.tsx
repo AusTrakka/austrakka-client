@@ -32,11 +32,7 @@ interface MetadataValueWidgetProps extends ProjectWidgetProps {
 }
 
 export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
-  let { colourScheme } = props;
-  if (!colourScheme) {
-    colourScheme = DEFAULT_COLOUR_SCHEME;
-  }
+  const { projectAbbrev, filteredData, timeFilterObject, field, title, colourScheme } = props;
   // TODO maybe just fieldUniqueValues selector?
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
@@ -102,7 +98,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         },
         color: {
           field: `${field}`,
-          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], colourScheme),
+          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], colourScheme || DEFAULT_COLOUR_SCHEME),
           legend: {
             title: field,
             orient: 'bottom',
