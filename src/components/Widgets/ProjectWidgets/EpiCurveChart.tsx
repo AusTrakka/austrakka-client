@@ -25,10 +25,10 @@ const TIME_AXIS_FIELD = 'Date_coll';
 const FIELDS_AND_COLOURS: string[][] = [
   ['Jurisdiction', 'jurisdiction'],
   ['State', 'jurisdiction'],
-  ['Country', 'set3'],
-  ['Owner_group', 'set3'],
+  ['Country', 'tableau10'],
+  ['Owner_group', 'tableau10'],
 ];
-const DEFAULT_COLOUR_SCHEME = 'set3';
+const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
