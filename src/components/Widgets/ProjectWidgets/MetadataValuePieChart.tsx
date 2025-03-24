@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -19,19 +20,23 @@ import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 
 // Parameterised widget; field must be specified
 
-const COLOUR_SCHEME = 'set3';
+const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 interface MetadataValueWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
   filteredData: Sample[];
   timeFilterObject: DataTableFilterMeta;
   field: string; // This is the field parameter the widget will report on
-  // eslint-disable-next-line react/require-default-props
   title?: string | undefined; // Optionally, a different title for the widget
+  colourScheme?: string | undefined;
 }
 
 export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
+  let { colourScheme } = props;
+  if (!colourScheme) {
+    colourScheme = DEFAULT_COLOUR_SCHEME;
+  }
   // TODO maybe just fieldUniqueValues selector?
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
@@ -97,7 +102,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         },
         color: {
           field: `${field}`,
-          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], COLOUR_SCHEME),
+          scale: createVegaScale(data!.fieldUniqueValues![field] ?? [], colourScheme),
           legend: {
             title: field,
             orient: 'bottom',
