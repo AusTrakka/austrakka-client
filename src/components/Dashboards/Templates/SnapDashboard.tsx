@@ -25,7 +25,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
           container
           sx={{ alignItems: 'flex-start' }}
           spacing={2}
-          size={{ lg: 8, md: 12 }}
+          size={{ xl: 9, lg: 8, md: 12 }}
         > {/* big left column */}
           <Grid size={12}>
             <Card sx={cardStyle}>
@@ -85,6 +85,21 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   timeFilterObject={timeFilterObject}
                   field="mecA_status"
                   title="mecA status"
+                  colourScheme="set1"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid container size={{ lg: 6, md: 6, sm: 12 }}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <MetadataValuePieChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  field="blaZ_status"
+                  title="blaZ status"
+                  colourScheme="set1"
                 />
               </CardContent>
             </Card>
@@ -94,12 +109,12 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
           container
           sx={{ alignItems: 'flex-start' }}
           spacing={2}
-          size={{ lg: 4, md: 12 }}
+          size={{ xl: 3, lg: 4, md: 12 }}
         > {/* narrow right column */}
           <Grid size={{ lg: 12, md: 6, sm: 12 }}> {/* NB at lg, 100% of narrower column */}
             <Card sx={tallCardStyle}>
               <CardContent>
-                <Counts
+                <MetadataValuePieChart
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
