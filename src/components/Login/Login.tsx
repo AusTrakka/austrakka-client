@@ -3,20 +3,18 @@ import { Button, Alert, Typography, Box, Grid } from '@mui/material';
 import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { LoginRounded } from '@mui/icons-material';
+import { useSearchParams } from 'react-router-dom';
 import { loginRequest } from '../../config/authConfig';
-import {useSearchParams} from 'react-router-dom';
 
 const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
 
-const autoLoginParam = 'auto_login'
-
+const autoLoginParam = 'auto_login';
 
 // TODO: Add login loading and login failure features
 function LoginButton() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { instance, inProgress } = useMsal();
   const [loginError, setLoginError] = useState(false);
-
 
   const handleLogin = (loginType: string) => {
     if (loginType === 'redirect') {
@@ -28,12 +26,12 @@ function LoginButton() {
 
   useEffect(() => {
     const autoLogin = searchParams.get(autoLoginParam) === 'true';
-    if (autoLogin == true) {
-      searchParams.delete(autoLoginParam)
-      setSearchParams(searchParams)
-      handleLogin('redirect')
+    if (autoLogin === true) {
+      searchParams.delete(autoLoginParam);
+      setSearchParams(searchParams);
+      handleLogin('redirect');
     }
-  }, []);
+  });
 
   return (
     <>
