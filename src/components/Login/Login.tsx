@@ -4,13 +4,19 @@ import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { LoginRounded } from '@mui/icons-material';
 import { loginRequest } from '../../config/authConfig';
+import {useSearchParams} from 'react-router-dom';
 
 const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
 
+const fromPublicSiteParam = 'from_public_site'
+
+
 // TODO: Add login loading and login failure features
 function LoginButton() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { instance, inProgress } = useMsal();
   const [loginError, setLoginError] = useState(false);
+
 
   const handleLogin = (loginType: string) => {
     if (loginType === 'redirect') {
@@ -19,6 +25,16 @@ function LoginButton() {
       });
     }
   };
+
+  useEffect(() => {
+    const autoLogin = searchParams.get(fromPublicSiteParam) === 'true';
+    if (autoLogin == true) {
+      searchParams.delete(fromPublicSiteParam)
+      setSearchParams(searchParams)
+      handleLogin('redirect')
+    }
+  }, []);
+
   return (
     <>
       <Button
