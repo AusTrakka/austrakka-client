@@ -8,7 +8,7 @@ import {useSearchParams} from 'react-router-dom';
 
 const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url).href;
 
-const fromPublicSiteParam = 'from_public_site'
+const autoLoginParam = 'auto_login'
 
 
 // TODO: Add login loading and login failure features
@@ -27,9 +27,9 @@ function LoginButton() {
   };
 
   useEffect(() => {
-    const autoLogin = searchParams.get(fromPublicSiteParam) === 'true';
+    const autoLogin = searchParams.get(autoLoginParam) === 'true';
     if (autoLogin == true) {
-      searchParams.delete(fromPublicSiteParam)
+      searchParams.delete(autoLoginParam)
       setSearchParams(searchParams)
       handleLogin('redirect')
     }
