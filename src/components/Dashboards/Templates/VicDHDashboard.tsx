@@ -17,69 +17,61 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid size={{ xl: 8, md: 12 }}>
-          <Grid container direction="column" spacing={2}>
-            <Grid>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <SampleSummary
-                    projectAbbrev={projectAbbrev}
-                    filteredData={filteredData}
-                    timeFilterObject={timeFilterObject}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <StCounts
-                    projectAbbrev={projectAbbrev}
-                    filteredData={filteredData}
-                    timeFilterObject={timeFilterObject}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+        <Grid size={12}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <SampleSummary
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid >
-          <Grid container direction="row" spacing={2}>
-            <Grid size={{ xl: 12, xs: 4}}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <Organisations
-                    projectAbbrev={projectAbbrev}
-                    filteredData={filteredData}
-                    timeFilterObject={timeFilterObject}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-            {/* <Grid item xl={12} xs={4}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <QcStatus
-                    projectId={projectId}
-                    groupId={groupId}
-                    setFilterList={setFilterList}
-                    setTabValue={setTabValue}
-                  />
-                </CardContent>
-              </Card>
-            </Grid> */}
-            <Grid size={{ xl: 12, xs: 4 }}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <PhessIdStatus
-                    projectAbbrev={projectAbbrev}
-                    filteredData={filteredData}
-                    timeFilterObject={timeFilterObject}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+        <Grid size={12}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <StCounts
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ lg: 4, sm: 12}}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <Organisations
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        {/* <Grid item xl={12} xs={4}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <QcStatus
+                projectId={projectId}
+                groupId={groupId}
+                setFilterList={setFilterList}
+                setTabValue={setTabValue}
+              />
+            </CardContent>
+          </Card>
+        </Grid> */}
+        <Grid size={{ lg: 4, sm: 12 }}>
+          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+            <CardContent>
+              <PhessIdStatus
+                projectAbbrev={projectAbbrev}
+                filteredData={filteredData}
+                timeFilterObject={timeFilterObject}
+              />
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
       <Grid container spacing={2} />
