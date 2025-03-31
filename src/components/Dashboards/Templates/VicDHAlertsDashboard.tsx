@@ -1,4 +1,5 @@
-import { Card, CardContent, Grid } from '@mui/material';
+import { Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import React from 'react';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
@@ -15,7 +16,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xl={8} md={12}>
+      <Grid size={{ xl: 8, md: 12 }}>
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <SampleSummary
@@ -26,7 +27,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xl={4} md={3}>
+      <Grid size={{ xl: 4, md: 3 }}>
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <PhessIdStatus
@@ -37,7 +38,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xl={3} md={4}>
+      <Grid size={{ xl: 3, md: 4 }}>
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
           <CardContent>
             <Organisations
@@ -48,7 +49,7 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xl={5} md={5}>
+      <Grid size={{ xl: 5, md: 5 }}>
         <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', maxHeight: '70vh', overflow: 'auto' }}>
           <CardContent>
             <ThresholdAlerts

@@ -1,4 +1,5 @@
-import { Card, CardContent, Grid } from '@mui/material';
+import { Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import React from 'react';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
@@ -6,20 +7,19 @@ import PhessIdStatus from '../../Widgets/ProjectWidgets/PhessIdStatus';
 import StCounts from '../../Widgets/ProjectWidgets/StCounts';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
-// TODO: Set a max card height and handle scroll voerflow
 function VicDHDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
     timeFilterObject,
   } = props;
-
+  
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item xl={8} xs={12}>
+        <Grid size={{ xl: 8, md: 12 }}>
           <Grid container direction="column" spacing={2}>
-            <Grid item>
+            <Grid>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <SampleSummary
@@ -30,7 +30,7 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item>
+            <Grid>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <StCounts
@@ -43,9 +43,9 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs>
+        <Grid >
           <Grid container direction="row" spacing={2}>
-            <Grid item xl={12} xs={4}>
+            <Grid size={{ xl: 12, xs: 4}}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <Organisations
@@ -68,7 +68,7 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
                 </CardContent>
               </Card>
             </Grid> */}
-            <Grid item xl={12} xs={4}>
+            <Grid size={{ xl: 12, xs: 4 }}>
               <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
                 <CardContent>
                   <PhessIdStatus
