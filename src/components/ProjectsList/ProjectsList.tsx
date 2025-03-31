@@ -22,6 +22,7 @@ import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
+import { Project } from '../../types/dtos';
 
 //* * will not be used for now **//
 // function renderTagChip(cell: string): JSX.Element {
@@ -62,7 +63,7 @@ const columns = [
 ];
 
 function ProjectsList() {
-  const [projectsList, setProjectsList] = useState([]);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -80,9 +81,9 @@ function ProjectsList() {
 
   useEffect(() => {
     async function getProject() {
-      const projectResponse: ResponseObject = await getProjectList(token);
+      const projectResponse : ResponseObject<Project[]> = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectsList(projectResponse.data);
+        setProjectsList(projectResponse.data!);
         setIsLoading(false);
         setIsError(false);
       } else {
@@ -178,6 +179,8 @@ function ProjectsList() {
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
+              sortField="created" // Initial sort order
+              sortOrder={-1}
               filters={filters}
               globalFilterFields={columns.map((col) => col.field)}
               size="small"

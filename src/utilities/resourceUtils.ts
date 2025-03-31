@@ -9,13 +9,13 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
+import { Feedback, FeedbackPost, Project, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) => callGET('/api/Projects?&includeall=false', token);
+export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
