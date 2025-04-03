@@ -79,7 +79,7 @@ function ProjectsList() {
   );
 
   useEffect(() => {
-    async function getProject() {
+    async function getProjects() {
       const projectResponse: ResponseObject = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
         setProjectsList(projectResponse.data);
@@ -95,7 +95,7 @@ function ProjectsList() {
     // NEW: Only call endpoint if token has already been retrieved/attempted to be retrieved
     // Otherwise the first endpoint call will always be unsuccessful
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      getProject();
+      getProjects();
     }
   }, [token, tokenLoading]);
 

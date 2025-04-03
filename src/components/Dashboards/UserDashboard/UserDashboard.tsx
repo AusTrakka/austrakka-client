@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
-import { Box, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Box, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { FilterMatchMode } from 'primereact/api';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
@@ -10,11 +11,10 @@ import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
 import PhessIdOverall from '../../Widgets/UserWidgets/PhessIdOverall/PhessIdOverall';
 import { updateTimeFilter, updateTimeFilterObject } from './userDashboardSlice';
-import { fetchUserOverview } from '../../Widgets/UserWidgets/UserOverview/userOverviewSlice';
-import { fetchProjectsTotal } from '../../Widgets/UserWidgets/ProjectsTotal/projectsTotalSlice';
 import { fetchPhessIdOverall } from '../../Widgets/UserWidgets/PhessIdOverall/phessIdOverallSlice';
 import LoadingState from '../../../constants/loadingState';
 import FieldTypes from '../../../constants/fieldTypes';
+import { cardStyle } from '../../../styles/dashboardStyles';
 
 interface UserDashboardProps {
 }
@@ -49,8 +49,6 @@ function DateSelector(props: any) {
     // Dispatch widget async thunks
     if (tokenLoading !== LoadingState.IDLE &&
       tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchUserOverview(token));
-      dispatch(fetchProjectsTotal(token));
       dispatch(fetchPhessIdOverall(token));
     }
   };
@@ -74,48 +72,37 @@ function DateSelector(props: any) {
 }
 
 function UserDashboard(props: UserDashboardProps) {
-  const dispatch = useAppDispatch();
   const { hidePhessWidget } = useAppSelector((state) => state.phessIdOverallState);
 
   return (
     <Box>
-      <Grid container direction="row" spacing={2}>
-        <Grid container item xs={12} justifyContent="space-between">
+      <Grid container spacing={2}>
+        <Grid container size={12} justifyContent="space-between">
           <Typography variant="h2" color="primary">Dashboard</Typography>
           <DateSelector />
         </Grid>
-        <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-main-bg)' }}>
-          <Grid container spacing={2}>
-            <Grid container item xs={12}>
-              <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                <CardContent>
-                  <UserOverview />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid container item xs={12} spacing={2}>
-              <Grid item>
-                <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+        <Grid container size={12} spacing={2} sx={{ marginTop: 1, padding: 2, backgroundColor: 'var(--primary-main-bg)' }}>
+          <Card sx={cardStyle}>
+            <CardContent>
+              <UserOverview />
+            </CardContent>
+          </Card>
+          <Card sx={cardStyle}>
+            <CardContent>
+              <ProjectsTotal />
+            </CardContent>
+          </Card>
+          {
+            hidePhessWidget ?
+              null
+              : (
+                <Card sx={cardStyle}>
                   <CardContent>
-                    <ProjectsTotal />
+                    <PhessIdOverall />
                   </CardContent>
                 </Card>
-              </Grid>
-              <Grid item>
-                {
-                  hidePhessWidget ?
-                    null
-                    : (
-                      <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
-                        <CardContent>
-                          <PhessIdOverall />
-                        </CardContent>
-                      </Card>
-                    )
-                  }
-              </Grid>
-            </Grid>
-          </Grid>
+              )
+            }
         </Grid>
       </Grid>
     </Box>

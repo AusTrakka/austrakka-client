@@ -14,6 +14,12 @@ export interface Project {
     id: number,
     name: string
   }[],
+  sampleCount : number,
+  sequencedSampleCount: number,
+  latestSampleDate: string, // TODO date?
+  latestSequenceDate: string,
+  latestTreeDate: string,
+  isActive: boolean,
   created: Date,
   // could add auditable fields - created, createdBy
 }

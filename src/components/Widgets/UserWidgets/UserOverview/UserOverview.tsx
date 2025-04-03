@@ -1,74 +1,97 @@
-import React, { useEffect } from 'react';
-import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '../../../../app/store';
+import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../../../constants/loadingState';
-import { fetchUserOverview } from './userOverviewSlice';
 import { useApi } from '../../../../app/ApiContext';
 import { formatDate } from '../../../../utilities/dateUtils';
+import { Project } from '../../../../types/dtos';
+import { ResponseObject } from '../../../../types/responseObject.interface';
+import { getProjectList } from '../../../../utilities/resourceUtils';
+import { ResponseType } from '../../../../constants/responseType';
 
 export default function UserOverview() {
   // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.userOverviewState);
-  const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const { token, tokenLoading } = useApi();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
-  const dispatch = useAppDispatch();
   useEffect(() => {
-    if (loading === 'idle' &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
-      dispatch(fetchUserOverview(token));
+    async function getProjects() { // TODO maybe move to utility?
+      const projectResponse: ResponseObject = await getProjectList(token);
+      if (projectResponse.status === ResponseType.Success) {
+        setProjects(projectResponse.data);
+      } else {
+        setErrorMessage(projectResponse.error);
+      }
+      setIsLoading(false);
     }
-  }, [loading, dispatch, timeFilter, token, tokenLoading]);
+
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getProjects();
+    }
+  }, [token, tokenLoading]);
+
+  // Derived state variables
+  const totalSamples = projects.reduce((acc, project) => acc + project.sampleCount, 0);
+  const latestUploadDate = projects.reduce((latest, project) => {
+    const latestDate = project.latestSampleDate;
+    return latestDate > latest ? latestDate : latest;
+  }, '');
+  const samplesWithSequences = projects.reduce(
+    (acc, project) => acc + project.sequencedSampleCount,
+    0,
+  );
+  const samplesWithoutSequences = totalSamples - samplesWithSequences;
+  
   return (
     <Box>
       <Grid container spacing={6} direction="row" justifyContent="space-between">
-        { loading === LoadingState.SUCCESS && (
+        { isLoading || errorMessage || (
         <>
-          <Grid item>
+          <Grid>
             <FileUploadOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
               Total uploaded samples
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
-              {parseFloat(data.data.total).toLocaleString('en-US')}
+              {totalSamples.toLocaleString('en-US')}
             </Typography>
           </Grid>
-          <Grid item>
+          <Grid>
             <Event color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
               Latest sample upload
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              { data.data.latestUploadedDateUtc ? formatDate(data.data.latestUploadedDateUtc) : '-'}
+              { latestUploadDate ? formatDate(latestUploadDate) : '-'}
             </Typography>
 
           </Grid>
-          <Grid item>
+          <Grid>
             <RuleOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
               Records without sequences
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary">
-              {parseFloat(data.data.samplesNotSequenced).toLocaleString('en-US')}
+              {samplesWithoutSequences.toLocaleString('en-US')}
             </Typography>
           </Grid>
         </>
         )}
-        { loading === LoadingState.ERROR && (
-        <Grid container item>
+        { errorMessage && (
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {data.message}
+            {errorMessage}
           </Alert>
-        </Grid>
         )}
-        { loading === LoadingState.LOADING && (
-        <Grid container item>
-          Loading...
-        </Grid>
+        { isLoading && (
+          <Typography>
+            Loading...
+          </Typography>
         )}
       </Grid>
     </Box>

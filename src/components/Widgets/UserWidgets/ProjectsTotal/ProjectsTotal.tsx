@@ -1,36 +1,45 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useAppDispatch, useAppSelector } from '../../../../app/store';
 import LoadingState from '../../../../constants/loadingState';
-import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../../Common/DrilldownButton';
 import { useApi } from '../../../../app/ApiContext';
 import { isoDateLocalDate } from '../../../../utilities/dateUtils';
+import { ResponseObject } from '../../../../types/responseObject.interface';
+import { getProjectList } from '../../../../utilities/resourceUtils';
+import { ResponseType } from '../../../../constants/responseType';
+import { Project } from '../../../../types/dtos';
 
 const columns = [
-  { field: 'projectName', header: 'Project Name' },
-  { field: 'total', header: 'Samples uploaded' },
-  { field: 'latestDateCreated', header: 'Latest sample created', body: (rowData: any) => isoDateLocalDate(rowData.latestDateCreated) },
+  { field: 'name', header: 'Project Name' },
+  { field: 'sampleCount', header: 'Samples uploaded' },
+  { field: 'latestSampleDate', header: 'Latest sample', body: (rowData: any) => isoDateLocalDate(rowData.latestSampleDate) },
 ];
 
 export default function ProjectsTotal() {
-  // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.projectTotalState);
-  const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading === 'idle' &&
-    tokenLoading !== LoadingState.IDLE &&
-    tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchProjectsTotal(token));
+    async function getProjects() { // TODO maybe move to utility?
+      const projectResponse: ResponseObject = await getProjectList(token);
+      if (projectResponse.status === ResponseType.Success) {
+        setProjects(projectResponse.data);
+      } else {
+        setErrorMessage(projectResponse.error);
+      }
+      setIsLoading(false);
     }
-  }, [loading, dispatch, timeFilter, token, tokenLoading]);
+
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getProjects();
+    }
+  }, [token, tokenLoading]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
@@ -38,18 +47,18 @@ export default function ProjectsTotal() {
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    navigate(`/projects/${selectedRow.abbrev}`);
+    navigate(`/projects/${selectedRow.abbreviation}`);
   };
 
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Project Samples
+        Project Status
       </Typography>
-      { loading === LoadingState.SUCCESS && (
+      { isLoading || errorMessage || (
       <>
         <DataTable
-          value={data.data}
+          value={projects}
           size="small"
           onRowClick={rowClickHandler}
           selectionMode="single"
@@ -70,13 +79,13 @@ export default function ProjectsTotal() {
         />
       </>
       )}
-      { loading === LoadingState.ERROR && (
+      { errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {data.message}
+          {errorMessage}
         </Alert>
       )}
-      { loading === LoadingState.LOADING && (
+      { isLoading && (
         <div>Loading...</div>
       )}
     </Box>
