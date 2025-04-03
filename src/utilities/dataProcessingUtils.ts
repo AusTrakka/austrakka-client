@@ -79,3 +79,14 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
 // Get max or min for any object kind that implements comparison
 export const maxObj = (arr: any[]) => arr.reduce((a, b) => (a > b ? a : b));
 export const minObj = (arr: any[]) => arr.reduce((a, b) => (a < b ? a : b));
+
+// For use in sorting by multiple properties
+export function compareProperties(a: any, b: any, transformFunctions: [((a: any) => any), number][]): number {
+  for (const [transform, sign] of transformFunctions) {
+    const transformedA = transform(a);
+    const transformedB = transform(b);
+    if (transformedA < transformedB) return -sign;
+    if (transformedA > transformedB) return sign;
+  }
+  return 0;
+}
