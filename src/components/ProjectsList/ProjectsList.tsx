@@ -83,7 +83,10 @@ function ProjectsList() {
     async function getProject() {
       const projectResponse : ResponseObject<Project[]> = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectsList(projectResponse.data!);
+        const filteredProjects = projectResponse.data?.filter(
+          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
+        );
+        setProjectsList(filteredProjects ?? []);
         setIsLoading(false);
         setIsError(false);
       } else {
