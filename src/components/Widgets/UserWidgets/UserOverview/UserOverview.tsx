@@ -49,8 +49,8 @@ export default function UserOverview() {
   
   return (
     <Box>
-      <Grid container spacing={6} direction="row" justifyContent="space-between">
-        { isLoading || errorMessage || (
+      <Grid container spacing={2} direction="row" justifyContent="space-between">
+        { isLoading || errorMessage != null || (
         <>
           <Grid>
             <FileUploadOutlined color="primary" />
@@ -82,7 +82,8 @@ export default function UserOverview() {
           </Grid>
         </>
         )}
-        { errorMessage && (
+      </Grid>
+      { errorMessage != null && (
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
             {errorMessage}
@@ -93,7 +94,6 @@ export default function UserOverview() {
             Loading...
           </Typography>
         )}
-      </Grid>
     </Box>
   );
 }

@@ -72,7 +72,7 @@ export default function ProjectsTotal() {
       <Typography variant="h5" paddingBottom={3} color="primary">
         Project Status
       </Typography>
-      { isLoading || errorMessage || (
+      { isLoading || errorMessage != null || (
       <>
         <DataTable
           value={projects}
@@ -97,7 +97,7 @@ export default function ProjectsTotal() {
         />
       </>
       )}
-      { errorMessage && (
+      { errorMessage != null && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}

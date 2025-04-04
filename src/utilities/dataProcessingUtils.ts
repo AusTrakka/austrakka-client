@@ -82,9 +82,13 @@ export const minObj = (arr: any[]) => arr.reduce((a, b) => (a < b ? a : b));
 
 // For use in sorting by multiple properties
 export function compareProperties(a: any, b: any, transformFunctions: [((a: any) => any), number][]): number {
+  if(isNullOrEmpty(a) && isNullOrEmpty(b)) return 0;
   for (const [transform, sign] of transformFunctions) {
     const transformedA = transform(a);
     const transformedB = transform(b);
+    if(isNullOrEmpty(transformedA) && isNullOrEmpty(transformedB)) continue;
+    if(isNullOrEmpty(transformedA)) return 1; // nulls last, regardless of asc/desc
+    if(isNullOrEmpty(transformedB)) return -1;
     if (transformedA < transformedB) return -sign;
     if (transformedA > transformedB) return sign;
   }
