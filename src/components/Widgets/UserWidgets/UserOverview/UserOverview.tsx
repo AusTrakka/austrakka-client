@@ -6,46 +6,37 @@ import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../../../constants/loadingState';
 import { useApi } from '../../../../app/ApiContext';
 import { formatDate } from '../../../../utilities/dateUtils';
-import { Project } from '../../../../types/dtos';
 import { ResponseObject } from '../../../../types/responseObject.interface';
-import { getProjectList } from '../../../../utilities/resourceUtils';
+import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
+import { UserDashboardOverview } from '../../../../types/dtos';
 
 export default function UserOverview() {
-  // Get initial state from store
   const { token, tokenLoading } = useApi();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [projects, setProjects] = React.useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [totalSamples, setTotalSamples] = useState<number>(0);
+  const [samplesWithoutSequences, setSamplesWithoutSequences] = useState<number>(0);
+  const [latestUploadDate, setLatestUploadDate] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function getProjects() { // TODO maybe move to utility?
-      const projectResponse: ResponseObject = await getProjectList(token);
-      if (projectResponse.status === ResponseType.Success) {
-        setProjects(projectResponse.data);
+    async function getOverview() {
+      const overviewResponse: ResponseObject<UserDashboardOverview> = await getUserDashboardOverview(token);
+      if (overviewResponse?.status === ResponseType.Success) {
+        setTotalSamples(overviewResponse.data?.total ?? 0);
+        setSamplesWithoutSequences(overviewResponse.data?.samplesNotSequenced ?? 0);
+        setLatestUploadDate(overviewResponse.data?.latestUploadedDateUtc ?? '');
       } else {
-        setErrorMessage(projectResponse.error);
+        setErrorMessage(overviewResponse.message ?? 'An error occurred loading data');
       }
       setIsLoading(false);
     }
 
     if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      getProjects();
+      getOverview();
     }
   }, [token, tokenLoading]);
-
-  // Derived state variables
-  const totalSamples = projects.reduce((acc, project) => acc + project.sampleCount, 0);
-  const latestUploadDate = projects.reduce((latest, project) => {
-    const latestDate = project.latestSampleDate;
-    return latestDate > latest ? latestDate : latest;
-  }, '');
-  const samplesWithSequences = projects.reduce(
-    (acc, project) => acc + project.sequencedSampleCount,
-    0,
-  );
-  const samplesWithoutSequences = totalSamples - samplesWithSequences;
   
   return (
     <Box>
@@ -69,7 +60,6 @@ export default function UserOverview() {
             <Typography variant="h2" paddingBottom={1} color="primary">
               { latestUploadDate ? formatDate(latestUploadDate) : '-'}
             </Typography>
-
           </Grid>
           <Grid>
             <RuleOutlined color="primary" />
@@ -84,16 +74,16 @@ export default function UserOverview() {
         )}
       </Grid>
       { errorMessage != null && (
-          <Alert severity="error">
-            <AlertTitle>Error</AlertTitle>
-            {errorMessage}
-          </Alert>
-        )}
-        { isLoading && (
-          <Typography>
-            Loading...
-          </Typography>
-        )}
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {errorMessage}
+        </Alert>
+      )}
+      { isLoading && errorMessage == null && (
+        <Typography>
+          Loading...
+        </Typography>
+      )}
     </Box>
   );
 }

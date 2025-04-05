@@ -25,9 +25,18 @@ const renderDateWithTimeTooltip = (cell: string): JSX.Element | null => {
 
 const columns = [
   { field: 'name', header: 'Project Name' },
-  { field: 'sampleCount', header: 'Samples', align: 'center' },
-  { field: 'latestSampleDate', header: 'Latest sample', body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSampleDate) },
-  { field: 'latestSequenceDate', header: 'Latest sequence', body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSequenceDate) },
+  { field: 'sampleCount',
+    header: 'Samples',
+    align: 'right',
+    body: (rowData: any) => <span style={{ paddingRight: '1em' }}>{rowData.sampleCount}</span> },
+  { field: 'latestSampleDate',
+    header: 'Latest sample',
+    align: 'center',
+    body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSampleDate) },
+  { field: 'latestSequenceDate',
+    header: 'Latest sequence',
+    align: 'center',
+    body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSequenceDate) },
 ];
 
 export default function ProjectsTotal() {
@@ -38,7 +47,7 @@ export default function ProjectsTotal() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function getProjects() { // TODO maybe move to utility?
+    async function getProjects() {
       const projectResponse: ResponseObject = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
         projectResponse.data.sort((a: Project, b: Project) =>

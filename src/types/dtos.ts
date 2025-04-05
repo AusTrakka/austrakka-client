@@ -38,6 +38,12 @@ export interface Plot {
   isActive: boolean
 }
 
+export interface UserDashboardOverview {
+  latestUploadedDateUtc: string,
+  total: number,
+  samplesNotSequenced: number,
+}
+
 export interface JobInstance {
   jobInstanceId: number;
   analysisId: number;
