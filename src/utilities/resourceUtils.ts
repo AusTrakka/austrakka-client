@@ -18,9 +18,6 @@ import { ResponseObject } from '../types/responseObject.interface';
 export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
-// User dashboard endpoints
-export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
-
 // Plots endpoints
 export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
 export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
@@ -72,6 +69,9 @@ export const getProjectViewData = (projectAbbrev: string, viewId: number, token:
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
+
+// User dashboard endpoints
+export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
 
 // Submission endpoints
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
