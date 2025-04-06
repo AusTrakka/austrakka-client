@@ -14,12 +14,12 @@ import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
-// User dashboard endpoints
-export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
-
 // Project endpoints
 export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+
+// User dashboard endpoints
+export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
 
 // Plots endpoints
 export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);

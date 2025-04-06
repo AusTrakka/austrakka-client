@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../../../constants/loadingState';
 import { useApi } from '../../../../app/ApiContext';
 import { formatDate } from '../../../../utilities/dateUtils';
@@ -18,11 +17,11 @@ export default function UserOverview() {
   const [totalSamples, setTotalSamples] = useState<number>(0);
   const [samplesWithoutSequences, setSamplesWithoutSequences] = useState<number>(0);
   const [latestUploadDate, setLatestUploadDate] = useState<string>('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function getOverview() {
-      const overviewResponse: ResponseObject<UserDashboardOverview> = await getUserDashboardOverview(token);
+      const overviewResponse: ResponseObject<UserDashboardOverview> =
+        await getUserDashboardOverview(token);
       if (overviewResponse?.status === ResponseType.Success) {
         setTotalSamples(overviewResponse.data?.total ?? 0);
         setSamplesWithoutSequences(overviewResponse.data?.samplesNotSequenced ?? 0);
