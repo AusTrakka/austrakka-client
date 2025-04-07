@@ -1,10 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
-import userDashboardReducer from '../components/Dashboards/UserDashboard/userDashboardSlice';
-import userOverviewReducer from '../components/Widgets/UserWidgets/UserOverview/userOverviewSlice';
-import projectsTotalReducer from '../components/Widgets/UserWidgets/ProjectsTotal/projectsTotalSlice';
-import phessIdOverallReducer from '../components/Widgets/UserWidgets/PhessIdOverall/phessIdOverallSlice';
 import projectMetadataReducer from './projectMetadataSlice';
 import groupMetadataReducer from './groupMetadataSlice';
 import userReducer from './userSlice';
@@ -12,10 +8,6 @@ import tenantReducer from './tenantSlice';
 
 const store = configureStore({
   reducer: {
-    userDashboardState: userDashboardReducer,
-    userOverviewState: userOverviewReducer,
-    projectTotalState: projectsTotalReducer,
-    phessIdOverallState: phessIdOverallReducer,
     projectMetadataState: projectMetadataReducer,
     groupMetadataState: groupMetadataReducer,
     userState: userReducer,
