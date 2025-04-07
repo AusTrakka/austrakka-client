@@ -7,7 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
+  SelectChangeEvent, Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -159,8 +159,10 @@ function ProjectDashboard(props: ProjectDashboardProps) {
         { dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
           <>
             <Grid container size={12} justifyContent="space-between">
-              <Typography>{projectDesc}</Typography>
-              { renderDateSelector() }
+              <Stack direction="row" width="100%" justifyContent="space-between" alignItems="center">
+                <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
+                { renderDateSelector() }
+              </Stack>
             </Grid>
             <Grid
               container
