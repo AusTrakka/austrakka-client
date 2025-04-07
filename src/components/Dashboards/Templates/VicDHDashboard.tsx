@@ -39,7 +39,7 @@ function VicDHDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ lg: 4, sm: 12}}>
+        <Grid size={{ lg: 4, sm: 12 }}>
           <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
             <CardContent>
               <Organisations

@@ -163,13 +163,13 @@ export default function StCounts(props: ProjectWidgetProps) {
       </Typography>
       { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
       <Grid container direction="row" alignItems="flex-start" spacing={2}>
-        <Grid size={{lg: 3, md: 4, xs: 12}}>
+        <Grid size={{ lg: 3, md: 4, xs: 12 }}>
           <DataTable
             value={aggregatedCounts}
             size="small"
             selectionMode="single"
             onRowClick={rowClickHandler}
-            scrollable={true}
+            scrollable
             scrollHeight="500px"
           >
             {columns.map((col: any) => (
@@ -181,7 +181,7 @@ export default function StCounts(props: ProjectWidgetProps) {
             ))}
           </DataTable>
         </Grid>
-        <Grid size={{lg: 9, md: 8, xs: 12}}>
+        <Grid size={{ lg: 9, md: 8, xs: 12 }}>
           <STChart
             stData={filteredData}
             stDataAggregated={aggregatedCounts}
