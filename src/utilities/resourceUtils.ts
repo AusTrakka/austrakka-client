@@ -24,9 +24,9 @@ export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/P
 
 // Analysis endpoints
 export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Analyses/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/api/JobInstance/${jobInstanceId}`, token);
-export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
-export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
+export const getTreeData = (treeVersionId: number, token: string) => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+export const getLatestTreeData = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+export const getTreeVersions = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
 export const getMetadata = (groupId: number, fields: string[], token: string) => {

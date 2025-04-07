@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
 import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { TreeExportFuctions } from '../Tree';
-import { JobInstance } from '../../../types/dtos';
+import { TreeVersion } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 
 interface State {
@@ -14,7 +14,7 @@ interface State {
 interface TreeNavigationProps {
   state: State,
   currentVersion: string,
-  versions: JobInstance[],
+  versions: TreeVersion[],
   selectedIds: string[],
   rootId: string,
   onChange: (
@@ -37,7 +37,7 @@ export default function TreeNavigation(
   }: TreeNavigationProps,
 ) {
   const navigate = useNavigate();
-  const { projectAbbrev, analysisId } = useParams();
+  const { projectAbbrev, treeId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
   const [history, setHistory] = React.useState<Array<PhylocanvasNode>>([]);
   // the root is implicitly the -1th element of the history
@@ -124,10 +124,10 @@ export default function TreeNavigation(
     setHistory([]);
     setHistoryIndex(-1);
   };
-  const versionClickHandler = (version: JobInstance) => {
+  const versionClickHandler = (version: TreeVersion) => {
     if (version.version === currentVersion) return;
     handleGoToRoot();
-    navigate(`/projects/${projectAbbrev}/trees/${analysisId}/versions/${version.jobInstanceId}`);
+    navigate(`/projects/${projectAbbrev}/trees/${treeId}/versions/${version.treeVersionId}`);
     setNodes(null);
     resetHistory();
   };
@@ -147,7 +147,7 @@ export default function TreeNavigation(
           {
             versions.filter((version => version.version !== null)).map((version) => (
               <MenuItem
-                key={version.jobInstanceId}
+                key={version.treeVersionId}
                 value={version.version}
                 onClick={() => { versionClickHandler(version); }}
               >
