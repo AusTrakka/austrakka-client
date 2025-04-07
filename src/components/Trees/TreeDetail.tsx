@@ -2,7 +2,7 @@ import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { JobInstance } from '../../types/dtos';
+import { TreeVersion } from '../../types/dtos';
 import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import Tree, { TreeExportFuctions } from './Tree';
@@ -63,15 +63,15 @@ interface Style {
 const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
-  const { projectAbbrev, analysisId, jobInstanceId } = useParams();
-  const [tree, setTree] = useState<JobInstance | null>();
+  const { projectAbbrev, treeId, treeVersionId } = useParams();
+  const [tree, setTree] = useState<TreeVersion | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
   const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
-  const [versions, setVersions] = useState<JobInstance[]>([]);
+  const [versions, setVersions] = useState<TreeVersion[]>([]);
   const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
@@ -161,7 +161,7 @@ function TreeDetail() {
   // Get tree historical versions
   useEffect(() => {
     const fetchVersions = async () => {
-      const versionsResponse = await getTreeVersions(Number(analysisId), token);
+      const versionsResponse = await getTreeVersions(Number(treeId), token);
       if (versionsResponse.status === ResponseType.Success) {
         setVersions(versionsResponse.data);
       }
@@ -170,7 +170,7 @@ function TreeDetail() {
     if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchVersions();
     }
-  }, [analysisId, token, tokenLoading]);
+  }, [treeId, token, tokenLoading]);
 
   // Set tree properties from metadata and selected fields
   useEffect(() => {
@@ -244,16 +244,16 @@ function TreeDetail() {
     // Get tree details, including tree type
     const getTree = async () => {
       let treeResponse: ResponseObject;
-      if (jobInstanceId === 'latest') {
-        treeResponse = await getLatestTreeData(Number(analysisId), token);
+      if (treeVersionId === 'latest') {
+        treeResponse = await getLatestTreeData(Number(treeId), token);
       } else {
-        treeResponse = await getTreeData(Number(jobInstanceId), token);
+        treeResponse = await getTreeData(Number(treeVersionId), token);
       }
       if (treeResponse.status === ResponseType.Success) {
         setTree(treeResponse.data);
-        if (jobInstanceId === 'latest') {
+        if (treeVersionId === 'latest') {
           const currentPath = window.location.href;
-          const newPath = currentPath.replace('latest', treeResponse.data.jobInstanceId);
+          const newPath = currentPath.replace('latest', treeResponse.data.treeVersionId);
           window.history.pushState(null, '', newPath);
         }
       } else {
@@ -265,7 +265,7 @@ function TreeDetail() {
       tokenLoading !== LoadingState.IDLE) {
       getTree();
     }
-  }, [analysisId, jobInstanceId, token, tokenLoading]);
+  }, [treeId, treeVersionId, token, tokenLoading]);
 
   const renderTree = () => {
     if (isTreeLoading) {
@@ -411,7 +411,7 @@ function TreeDetail() {
             </AccordionDetails>
           </Accordion>
           <ExportButton
-            analysisName={tree.analysisName}
+            analysisName={tree.treeName}
             phylocanvasRef={treeRef}
             legendRef={legRef}
           />
@@ -518,7 +518,7 @@ function TreeDetail() {
       {renderControls()}
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
-          {tree ? `${tree.analysisName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
+          {tree ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderWarning()}

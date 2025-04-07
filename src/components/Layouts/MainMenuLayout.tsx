@@ -34,7 +34,7 @@ function MainMenuLayout() {
       icon: <Description fontSize="small" />,
       disabled: import.meta.env.VITE_DOCS_ENABLED === 'false',
       onClick: () => {
-        window.open(import.meta.env.VITE_DOCS_URL, '_blank')?.focus();
+        window.open(`${import.meta.env.VITE_DOCS_URL}?auto_login=true`, '_blank')?.focus();
       },
     },
     {

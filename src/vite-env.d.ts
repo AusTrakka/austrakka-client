@@ -49,6 +49,7 @@ interface ImportMetaEnv {
   readonly VITE_BRANDING_TAGLINE_1: string
   readonly VITE_BRANDING_TAGLINE_2: string
   readonly VITE_BRANDING_SIDEBAR_NAME_ENABLED: string
+  readonly VITE_BRANDING_ID: string
   // Docs
   readonly VITE_DOCS_URL: string
   readonly VITE_DOCS_ENABLED: string
