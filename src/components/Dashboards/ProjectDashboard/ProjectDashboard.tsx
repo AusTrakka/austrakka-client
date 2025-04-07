@@ -4,7 +4,6 @@ import {
   AlertTitle,
   Box,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -12,6 +11,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
@@ -158,19 +158,27 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       <Grid container direction="row" spacing={2}>
         { dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
           <>
-            <Grid container item xs={12}>
+            <Grid container size={12} justifyContent="space-between">
               <Stack direction="row" width="100%" justifyContent="space-between" alignItems="center">
                 <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
                 { renderDateSelector() }
               </Stack>
             </Grid>
-            <Grid container item xs={12} sx={{ marginTop: 1, paddingRight: 2, paddingBottom: 2, backgroundColor: 'var(--primary-main-bg)' }}>
+            <Grid
+              container
+              size={12}
+              sx={{
+                marginTop: 1,
+                padding: 2,
+                backgroundColor: 'var(--primary-main-bg)',
+              }}
+            >
               {renderDashboard()}
             </Grid>
           </>
         )}
         { errorMessage && (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
               {`An error occurred while loading your dashboard - ${errorMessage}`}
@@ -179,7 +187,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
         )}
         { !(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED)
           && !errorMessage && (
-          <Grid item xs={12}>
+          <Grid size={12}>
             Loading...
           </Grid>
         )}
