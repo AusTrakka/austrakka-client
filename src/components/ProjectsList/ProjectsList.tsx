@@ -22,6 +22,7 @@ import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
+import { Project } from '../../types/dtos';
 
 //* * will not be used for now **//
 // function renderTagChip(cell: string): JSX.Element {
@@ -62,7 +63,7 @@ const columns = [
 ];
 
 function ProjectsList() {
-  const [projectsList, setProjectsList] = useState([]);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -79,10 +80,13 @@ function ProjectsList() {
   );
 
   useEffect(() => {
-    async function getProject() {
-      const projectResponse: ResponseObject = await getProjectList(token);
+    async function getProjects() {
+      const projectResponse: ResponseObject<Project[]> = await getProjectList(token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectsList(projectResponse.data);
+        const filteredProjects = projectResponse.data?.filter(
+          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
+        );
+        setProjectsList(filteredProjects ?? []);
         setIsLoading(false);
         setIsError(false);
       } else {
@@ -95,7 +99,7 @@ function ProjectsList() {
     // NEW: Only call endpoint if token has already been retrieved/attempted to be retrieved
     // Otherwise the first endpoint call will always be unsuccessful
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      getProject();
+      getProjects();
     }
   }, [token, tokenLoading]);
 
@@ -178,6 +182,8 @@ function ProjectsList() {
               resizableColumns
               reorderableColumns
               sortIcon={sortIcon}
+              sortField="created" // Initial sort order
+              sortOrder={-1}
               filters={filters}
               globalFilterFields={columns.map((col) => col.field)}
               size="small"
