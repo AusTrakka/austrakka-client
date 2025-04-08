@@ -68,7 +68,7 @@ function TreeList(props: TreesProps) {
   };
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/trees/${row.data.analysisId}/versions/latest`);
+    navigate(`/projects/${projectDetails!.abbreviation}/trees/${row.data.treeId}/versions/latest`);
   };
 
   const header = (

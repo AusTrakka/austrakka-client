@@ -411,7 +411,7 @@ function TreeDetail() {
             </AccordionDetails>
           </Accordion>
           <ExportButton
-            analysisName={tree.treeName}
+            treeName={tree.treeName}
             phylocanvasRef={treeRef}
             legendRef={legRef}
           />
