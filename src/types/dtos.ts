@@ -11,7 +11,7 @@ export interface Project {
     id: number,
     name: string
   },
-  projectAnalyses: {
+  trees: {
     id: number,
     name: string
   }[],
