@@ -80,7 +80,12 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
       file,
       hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
     } as DropFileUpload)));
-    setFiles([...files, ...fileUploads]);
+    if (multiple) {
+      setFiles([...files, ...fileUploads]);
+    } else {
+      // Replace existing file
+      setFiles(fileUploads);
+    }
   };
 
   const handleDrag = (e: DragEvent) => {
