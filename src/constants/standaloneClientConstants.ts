@@ -1,69 +1,19 @@
-import { Plot } from '../types/dtos';
+import { Project } from '../types/dtos';
 
-export const STATIC_PLOT_LIST: Plot[] = [
-  {
-    plotId: 1,
-    abbreviation: 'epicurve',
-    name: 'Epi curve',
-    description: 'Histogram of sample counts by date',
-    plotType: 'EpiCurve',
-    spec: '',
-    projectId: 1,
-    projectName: 'Local',
-    projectAbbreviation: 'local',
-    projectGroupId: 1,
-    isActive: true,
+// This currently mimics the back-end Project DTO, but some info is redundant
+export const LOCAL_PROJECT: Project = {
+  projectId: 1,
+  globalId: 'project-id',
+  abbreviation: 'local',
+  name: 'Local',
+  description: 'Local data',
+  type: 'Local',
+  projectMembers: {
+    id: 1,
+    name: 'Local-Group',
   },
-  {
-    plotId: 2,
-    abbreviation: 'clustertimeline',
-    name: 'Cluster timeline',
-    description: 'Plot of sample clusters by date',
-    plotType: 'ClusterTimeline',
-    spec: '',
-    projectId: 1,
-    projectName: 'Local',
-    projectAbbreviation: 'local',
-    projectGroupId: 1,
-    isActive: true,
-  },
-  {
-    plotId: 3,
-    abbreviation: 'barchart',
-    name: 'Bar chart',
-    description: 'Bar chart of sample counts by category',
-    plotType: 'BarChart',
-    spec: '',
-    projectId: 1,
-    projectName: 'Local',
-    projectAbbreviation: 'local',
-    projectGroupId: 1,
-    isActive: true,
-  },
-  {
-    plotId: 4,
-    abbreviation: 'histogram',
-    name: 'Histogram',
-    description: 'Histogram of sample counts against a numeric field',
-    plotType: 'Histogram',
-    spec: '',
-    projectId: 1,
-    projectName: 'Local',
-    projectAbbreviation: 'local',
-    projectGroupId: 1,
-    isActive: true,
-  },
-  {
-    plotId: 5,
-    abbreviation: 'heatmap',
-    name: 'Heat map',
-    description: 'Heat map of sample counts by categorical fields',
-    plotType: 'HeatMap',
-    spec: '',
-    projectId: 1,
-    projectName: 'Local',
-    projectAbbreviation: 'local',
-    projectGroupId: 1,
-    isActive: true,
-  },
-];
+  projectAnalyses: [],
+  created: new Date(),
+};
+
+export const localProjectAbbrev = LOCAL_PROJECT.abbreviation;

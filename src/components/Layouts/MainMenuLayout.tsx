@@ -4,9 +4,9 @@ import {
   NavLink, useLocation, Link, Outlet, useNavigate,
 } from 'react-router-dom';
 import {
-  Inventory, Upload, Help,
+  Upload, Help, AccountTree,
   Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, ViewColumn,
 } from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
@@ -85,12 +85,12 @@ function MainMenuLayout() {
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages = [
     {
-      title: 'Data',
+      title: 'Visualise',
       link: '/data',
-      icon: <Inventory />,
+      icon: <AccountTree />,
     },
     {
-      title: 'Upload',
+      title: 'Add Data',
       link: '/upload',
       icon: <Upload />,
     },

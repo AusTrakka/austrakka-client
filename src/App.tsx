@@ -10,11 +10,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
-import Upload from './components/Upload/Upload';
 import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
-import UploadMetadata from './components/Upload/UploadMetadata';
+import LocalUpload from './components/Upload/LocalUpload';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Fields from './components/Fields/Fields';
 import UserProvider from './providers/UserProvider';
@@ -29,9 +28,8 @@ function App() {
             <Routes>
               {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
               <Route element={<MainMenuLayout />}>
-                <Route path="/" element={<Upload />} />
-                <Route path="upload" element={<Upload />} />
-                <Route path="upload/metadata" element={<UploadMetadata />} />
+                <Route path="/" element={<LocalUpload />} />
+                <Route path="upload" element={<LocalUpload />} />
                 <Route path="data/plots/:plotAbbrev" element={<PlotDetail />} />
                 <Route path="data/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                 <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />
