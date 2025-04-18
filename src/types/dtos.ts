@@ -183,7 +183,7 @@ export interface MetaDataColumn extends Field {
 export interface ProjectField {
   projectFieldId: number,
   fieldName: string,
-  primitiveType: string,
+  primitiveType: string | null,
   metaDataColumnTypeName: string,
   fieldSource: string,
   columnOrder: number,
@@ -201,7 +201,7 @@ export interface ProjectViewField extends Field {
   columnName: string,
   projectFieldId: number,
   projectFieldName: string,
-  primitiveType: string,
+  primitiveType: string | null,
   metaDataColumnTypeName: string,
   fieldSource: string,
   columnOrder: number,
