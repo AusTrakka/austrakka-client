@@ -6,7 +6,6 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
-import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import Counts from '../../Widgets/ProjectWidgets/Counts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
@@ -50,7 +49,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ lg: 6, md: 12 }}>
+          <Grid size={{ lg: 12, md: 12 }}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataCounts
@@ -59,18 +58,6 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   timeFilterObject={timeFilterObject}
                   field="Date_coll"
                   title="Metadata counts"
-                  categoryField="Country"
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={{ lg: 6, md: 12 }}>
-            <Card sx={tallCardStyle}>
-              <CardContent>
-                <HasSeq
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
                   categoryField="Country"
                 />
               </CardContent>
@@ -104,6 +91,34 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
+          <Grid container size={{ lg: 6, md: 6, sm: 12 }}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <MetadataValuePieChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  field="blaR_status"
+                  title="blaR status"
+                  colourScheme="set1"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid container size={{ lg: 6, md: 6, sm: 12 }}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <MetadataValuePieChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  field="blaI_status"
+                  title="blaI status"
+                  colourScheme="set1"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid> {/* big left column */}
         <Grid
           container
@@ -120,6 +135,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   timeFilterObject={timeFilterObject}
                   field="SNAP_trial_group"
                   title="SNAP trial group counts"
+                  colourScheme="set1"
                 />
               </CardContent>
             </Card>
