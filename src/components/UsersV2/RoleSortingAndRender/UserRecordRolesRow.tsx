@@ -1,58 +1,40 @@
 import React from 'react';
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
+import { Cancel } from '@mui/icons-material';
+import { RecordRole } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
+  recordType: string;
   recordName: string;
-  roleNames: string[];
+  recordGlobalId: string;
+  recordRoles: RecordRole[];
+  onSelectionRemove: (
+    role: RecordRole,
+    recordType: string,
+    recordName: string,
+    recordGlobalId: string,
+  ) => void;
   isOpen: boolean;
+  editing: boolean;
 }
 
 function UserRecordRolesRow(props: UserGroupRolesRowProps) {
-  const { recordName,
-    roleNames,
-    isOpen } = props;
+  const { recordType,
+    recordName,
+    recordRoles,
+    recordGlobalId,
+    onSelectionRemove,
+    isOpen,
+    editing } = props;
   
   // TODO: come back to these functions as they relate to editing these chips
   
-  // locked now equals true if the type of group is personal orgs and its everything but
-  // the owner group for the subset of groups in this type. which will be locked.
-
-  /*
-  const isItLocked = () => {
-    switch (recordType) {
-      case GroupHeadings.HOME_ORG:
-        return !recordName.endsWith('-Owner');
-      default:
-        return false;
-    }
-  };
-*/
-
-  // const locked = isItLocked();
-
-  /*
-  const handleRoleDelete = (roleName: string) => {
-    const updatedRoles = userGroupRoles.filter(
-      (groupRole) => {
-        if (groupRole.group.name === recordName) {
-          return !groupRole.role.name.includes(roleName);
-        }
-        return true;
-      },
-    );
-    updateUserGroupRoles(updatedRoles);
-  };
-*/
-
-  /*
-  const handleColor = () => {
-    if (editing && locked) {
-      return 'default';
-    }
-    return editing ? 'error' : 'primary';
-  };
-*/
-
+  // I need this to be a payload thing. where if the 
+  // role is in the editied state and not the original state
+  // then I can just delete it from the edited state.
+  // However, if it is in the original state, then I need to
+  // create a payload item for deletion.
+  
   return (
     isOpen ? (
       <TableRow key={recordName} style={{ borderRadius: '6px' }}>
@@ -63,12 +45,16 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
                 <Typography variant="body2" width="15em">
                   {recordName}
                 </Typography>
-                {roleNames.map((roleName) => (
+                {recordRoles.map((role) => (
                   <Chip
-                    key={`${recordName}-${roleName}`}
-                    label={roleName}
-                    color="primary"
-                    variant="outlined"
+                    key={`${recordName}-${role.roleName}`}
+                    label={role.roleName}
+                    color={editing ? 'error' : 'primary'}
+                    variant={editing ? 'filled' : 'outlined'}
+                    onDelete={editing ?
+                      () => onSelectionRemove(role, recordType, recordName, recordGlobalId) :
+                      undefined}
+                    deleteIcon={<Cancel />}
                   />
                 ))}
               </Stack>

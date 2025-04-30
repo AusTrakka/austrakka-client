@@ -1,11 +1,12 @@
-import { Box, Card, CardContent, Grid } from '@mui/material';
+import { Box, Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import React from 'react';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
-import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
+import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
-// TODO: Set a max card height and handle scroll voerflow
 function BasicDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
@@ -16,8 +17,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        <Grid item lg={8} md={12}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none' }}>
+        <Grid size={{ lg: 8, md: 12 }}>
+          <Card sx={cardStyle}>
             <CardContent>
               <SampleSummary
                 projectAbbrev={projectAbbrev}
@@ -26,9 +27,9 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
               />
             </CardContent>
           </Card>
-          <Card sx={{ padding: 1, border: 'none', marginTop: 2, boxShadow: 'none' }}>
+          <Card sx={{ ...tallCardStyle, marginTop: 2 }}>
             <CardContent>
-              <EpiCurveChart
+              <HasSeq
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
@@ -36,8 +37,8 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item lg={4} md={6} xs={8}>
-          <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', minHeight: 300 }}>
+        <Grid size={{ lg: 4, md: 6, xs: 8 }}>
+          <Card sx={tallCardStyle}>
             <CardContent>
               <Organisations
                 projectAbbrev={projectAbbrev}
@@ -49,6 +50,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
       </Grid>
     </Box>
+    
   );
 }
 export default BasicDashboard;

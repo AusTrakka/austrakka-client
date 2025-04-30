@@ -1,0 +1,11 @@
+.form-control {
+    min-width: 150px;
+}
+
+.select {
+    transition: border-color 0.3s ease;
+}
+
+.select.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--secondary-light-green); /* Your desired color */
+}

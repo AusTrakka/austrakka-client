@@ -14,6 +14,15 @@ const theme: ThemeOptions = createTheme({
       // @ts-ignore
       main: import.meta.env.VITE_THEME_BACKGROUND,
     },
+    success: {
+      main: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
+    },
+    error: {
+      main: import.meta.env.VITE_THEME_SECONDARY_RED,
+    },
+    warning: {
+      main: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
+    },
   },
   typography: {
     h1: {
@@ -36,6 +45,7 @@ const theme: ThemeOptions = createTheme({
     },
   },
 });
+
 export default theme;
 
 function hexToRgb(hex: string) {

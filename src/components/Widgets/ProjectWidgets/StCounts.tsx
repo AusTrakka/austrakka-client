@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
@@ -15,16 +16,11 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
-
-interface CountRow {
-  [stFieldName]: string;
-  sampleCount: number;
-}
 
 function STChart(props: any) {
   const { stData, stDataAggregated } = props;
@@ -83,10 +79,10 @@ function STChart(props: any) {
 
   return (
     <Grid container direction="row">
-      <Grid item xs={11}>
+      <Grid size={11}>
         <div id="#plot-container" ref={plotDiv} />
       </Grid>
-      <Grid item xs={1}>
+      <Grid size={1}>
         <ExportVegaPlot
           vegaView={vegaView}
         />
@@ -153,8 +149,8 @@ export default function StCounts(props: ProjectWidgetProps) {
   };
 
   const columns = useMemo<any[]>(() => [
-    { field: stFieldName, header: `${stFieldName} Value` },
-    { field: 'sampleCount', header: 'Sample count' },
+    { field: 'value', header: `${stFieldName} Value` },
+    { field: 'count', header: 'Sample count' },
   ], []);
 
   return (
@@ -166,13 +162,15 @@ export default function StCounts(props: ProjectWidgetProps) {
         Counts
       </Typography>
       { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
-      <Grid container direction="row" alignItems="center" spacing={2}>
-        <Grid item xl={3} xs={4}>
+      <Grid container direction="row" alignItems="flex-start" spacing={2}>
+        <Grid size={{ lg: 3, md: 4, xs: 12 }}>
           <DataTable
             value={aggregatedCounts}
             size="small"
             selectionMode="single"
             onRowClick={rowClickHandler}
+            scrollable
+            scrollHeight="500px"
           >
             {columns.map((col: any) => (
               <Column
@@ -183,7 +181,7 @@ export default function StCounts(props: ProjectWidgetProps) {
             ))}
           </DataTable>
         </Grid>
-        <Grid item xl={9} xs={8}>
+        <Grid size={{ lg: 9, md: 8, xs: 12 }}>
           <STChart
             stData={filteredData}
             stDataAggregated={aggregatedCounts}

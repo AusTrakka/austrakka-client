@@ -1,10 +1,9 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
-
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { InlineData } from 'vega-lite/build/src/data';
-import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -13,24 +12,36 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { Sample } from '../../../types/sample.interface';
-import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { schemeJurisdiction } from '../../../constants/schemes';
-import { legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
+import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 
 // Widget displaying a basic Epi Curve
 // Requires Date_coll for x-axis
-// Colour by Jurisdiction if field present, or State if field present; otherwise dark green
+// Colour by Jurisdiction-style field if these fields present; otherwise dark green
 
 const TIME_AXIS_FIELD = 'Date_coll';
-const JURISDICTION_FIELD = 'Jurisdiction';
-const STATE_FIELD = 'State';
+
+// The first of these fields that is present will be used to colour the plot
+const FIELDS_AND_COLOURS: string[][] = [
+  ['Jurisdiction', 'jurisdiction'],
+  ['State', 'jurisdiction'],
+  ['Country', 'tableau10'],
+  ['Owner_group', 'tableau10'],
+];
+const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
-export default function EpiCurveChart(props: ProjectWidgetProps) {
+interface EpiCurveChartProps extends ProjectWidgetProps {
+  projectAbbrev: string;
+  filteredData?: Sample[];
+  timeFilterObject?: DataTableFilterMeta;
+  preferredColourField?: string;
+}
+
+export default function EpiCurveChart(props: EpiCurveChartProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject,
+    projectAbbrev, filteredData, timeFilterObject, preferredColourField,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -63,16 +74,12 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
   };
   
   useEffect(() => {
-    const setJurisdictionalColourFromField = (field: string) => {
-      // Works if field is configured with ANZ Jurisdiction or ISO State values 
+    const setColourSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
       const colSpec = {
         // eslint-disable-next-line object-shorthand
         field: field,
-        scale: {
-          domain: values,
-          range: values.map((val) => (val ? schemeJurisdiction(val) : NULL_COLOUR)),
-        },
+        scale: createVegaScale(values, colourScheme),
         legend: legendSpec,
       };
       setColourSpec(colSpec);
@@ -81,10 +88,20 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
       return;
     }
-    if (data.fields.map(fld => fld.columnName).includes(JURISDICTION_FIELD)) {
-      setJurisdictionalColourFromField(JURISDICTION_FIELD);
-    } else if (data.fields.map(fld => fld.columnName).includes(STATE_FIELD)) {
-      setJurisdictionalColourFromField(STATE_FIELD);
+    
+    // If preferred colour field specified and available, use it, otherwise go through list
+    if (preferredColourField &&
+        data.fields.map(fld => fld.columnName).includes(preferredColourField)
+    ) {
+      const colourSchemePair = FIELDS_AND_COLOURS.find(fld => fld[0] === preferredColourField) ?? ['', DEFAULT_COLOUR_SCHEME];
+      setColourSpecFromField(preferredColourField, colourSchemePair[1]);
+    } else {
+      for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
+        if (data!.fields!.map(fld => fld.columnName).includes(field)) {
+          setColourSpecFromField(field, colourScheme);
+          break;
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);
@@ -132,7 +149,7 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
       const copy = filteredData!.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as InlineData).values = copy;
+      (compiledSpec.data![0] as any).values = copy;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();

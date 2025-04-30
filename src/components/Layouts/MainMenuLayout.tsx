@@ -34,9 +34,9 @@ function MainMenuLayout() {
     {
       title: 'Documentation',
       icon: <Description fontSize="small" />,
-      disabled: false,
+      disabled: import.meta.env.VITE_DOCS_ENABLED === 'false',
       onClick: () => {
-        window.open(import.meta.env.VITE_DOCS_URL, '_blank')?.focus();
+        window.open(`${import.meta.env.VITE_DOCS_URL}?auto_login=true`, '_blank')?.focus();
       },
     },
     {
@@ -178,7 +178,8 @@ function MainMenuLayout() {
         user.defaultTenantGlobalId,
         [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS]);
   }
-  
+
+  const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
@@ -220,6 +221,22 @@ function MainMenuLayout() {
               </IconButton>
             </Box>
           </Box>
+          {
+            drawer && showSidebarBrandingName() && (
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'primary.main',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontWeight: '800',
+              }}
+            >
+              {import.meta.env.VITE_BRANDING_NAME}
+            </Typography>
+            )
+}
           <Divider />
           <List className={styles.pagelist}>
             {visiblePages.map((page) => (

@@ -34,13 +34,13 @@ const base64toBlob = (base64Image: string) => {
 };
 
 interface Props {
-  analysisName: string,
+  treeName: string,
   phylocanvasRef: React.RefObject<TreeExportFuctions>,
   legendRef: React.RefObject<HTMLDivElement>,
 }
 
 export default function ExportButton(
-  { analysisName, phylocanvasRef, legendRef }: Props,
+  { treeName, phylocanvasRef, legendRef }: Props,
 ) {
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
@@ -78,7 +78,7 @@ export default function ExportButton(
     }
     if (!leafIDs) return;
     const leafIDsString = leafIDs.join('\n');
-    download(leafIDsString, `${analysisName}.txt`, false);
+    download(leafIDsString, `${treeName}.txt`, false);
   };
 
   const convertHtmlToPngDataUrl = async (element: HTMLDivElement) => {
@@ -145,13 +145,13 @@ export default function ExportButton(
     {
       exportFunction: () => phylocanvasRef.current?.exportSVG(),
       label: 'Export tree as SVG',
-      fileName: `${analysisName}.svg`,
+      fileName: `${treeName}.svg`,
       encode: false,
     },
     {
       exportFunction: () => phylocanvasRef.current?.exportPNG(),
       label: 'Export tree as PNG',
-      fileName: `${analysisName}.png`,
+      fileName: `${treeName}.png`,
       encode: true,
     },
   ];

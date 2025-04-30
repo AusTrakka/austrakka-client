@@ -58,6 +58,14 @@ function getHeadersPost(token: string): any {
   };
 }
 
+function getHeadersMultipartPost(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
+
 async function parseApiResponse<T = any>(response: Response): Promise<ApiResponse<T>> {
   return (await response.json()) as ApiResponse<T>;
 }
@@ -197,6 +205,24 @@ Promise<ResponseObject> {
   });
 }
 
+export async function callPostMultipart(
+  url: string,
+  formData: FormData,
+  token: string,
+  customHeaders: any = {},
+)
+  : Promise<ResponseObject> {
+  if (!token) {
+    return noToken as ResponseObject;
+  }
+  const headers = { ...getHeadersMultipartPost(token), ...customHeaders };
+  return callApi(url, {
+    method: 'POST',
+    body: formData,
+    headers,
+  });
+}
+
 export async function callPOSTForm(
     url: string, 
     formData: FormData, 
@@ -214,6 +240,27 @@ export async function callPOSTForm(
     method: 'POST',
     body: formData,
     headers: headers,
+  });
+}
+
+export async function callDELETE(url: string, token: string, body?: any):
+Promise<ResponseObject> {
+  // Check if token is null/undefined before making API call
+  if (!token) {
+    return noToken;
+  }
+
+  if (!body) {
+    return callApi(url, {
+      method: 'DELETE',
+      headers: getHeaders(token),
+    });
+  }
+
+  return callApi(url, {
+    method: 'DELETE',
+    body: JSON.stringify(body),
+    headers: getHeadersPatch(token),
   });
 }
 

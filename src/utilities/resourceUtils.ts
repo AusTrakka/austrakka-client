@@ -1,31 +1,33 @@
 import {
+  callDELETE, 
   buildOwnerOrgHeader,
   callGET,
   callPATCH,
   callPost,
   callPOSTForm,
+  callPostMultipart,
   callPUT,
   callSimpleGET,
-  downloadFile
+  downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, UserPatchV2 } from '../types/dtos';
+import { Feedback, FeedbackPost, Project, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) => callGET('/api/Projects?&includeall=false', token);
+export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
 export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
 export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
-// Analysis endpoints
-export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Analyses/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (jobInstanceId: number, token: string) => callGET(`/api/JobInstance/${jobInstanceId}`, token);
-export const getLatestTreeData = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/LatestVersion`, token);
-export const getTreeVersions = (analysisId: number, token: string) => callGET(`/api/JobInstance/${analysisId}/AllVersions`, token);
+// Tree endpoints
+export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
+export const getTreeData = (treeVersionId: number, token: string) => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+export const getLatestTreeData = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+export const getTreeVersions = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
 export const getMetadata = (groupId: number, fields: string[], token: string) => {
@@ -84,6 +86,10 @@ export const uploadSubmissions = (formData: FormData, params: string, token: str
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 }
 
+// Sequence endpoints
+// TODO: this should parse the response
+export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
+
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
@@ -110,6 +116,24 @@ export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Prom
 // PermissionV2 endpoints
 // Tenant
 export const getTenant = (token: string) => callGET('/api/V2/Tenant/Default', token);
+
+export const postTenantPrivilege = (
+  tenantGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+) => callPost(`/api/V2/Tenant/${tenantGlobalId}/Privilege`, token, privilegeBody);
+
+export const deleteTenantPrivilege = (
+  tenantGlobalId: string,
+  privilegeGlobalId: string,
+  defaultTenantGlobalId: string,
+  token:string,
+) =>
+  callDELETE(
+    `/api/V2/Tenant/${tenantGlobalId}/Privilege/${privilegeGlobalId}?owningTenantGlobalId=${defaultTenantGlobalId}`,
+    token,
+  );
+
 // User
 export const getMeV2 = (owningTenantGlobalId: string, token: string) => callGET(`/api/V2/Tenant/${owningTenantGlobalId}/User/Me`, token);
 export const getUserListV2 = (
@@ -172,8 +196,23 @@ export const patchUserOrganisationV2 = (
   targetOrgGlobalId,
 );
 
-// Tenant
+export const postOrgPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token:string,
+) => callPost(`/api/V2/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
 
+export const deleteOrgPrivilege = (
+  recordGlobalId: string,
+  privilegeGlobalId: string,
+  defaultTenantGlobalId: string,
+  token:string,
+) => callDELETE(
+  `/api/V2/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}/?owningTenantGlobalId=${defaultTenantGlobalId}`,
+  token,
+);
+
+// Tenant
 export const getFieldsV2 = (
   tenantGlobalId: string,
   token: string,

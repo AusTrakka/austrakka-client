@@ -4,8 +4,16 @@ export function isNullOrEmpty(value: any) {
 }
 
 // Function to aggregate counts of objects in an array, on a certain property
+export interface CountRow {
+  value: string;
+  count: number;
+}
 
-export function aggregateArrayObjects(property: string, array: Array<any>) {
+export function aggregateArrayObjects(
+  property: string,
+  array: Array<any>,
+  nullPropertyName: string | null = null,
+) : CountRow[] {
   if (!array || !Array.isArray(array)) {
     return [];
   }
@@ -17,7 +25,8 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
     const item = array[i];
 
     if (item && typeof item === 'object' && property in item) {
-      const value = item[property];
+      let value = item[property];
+      if (nullPropertyName && isNullOrEmpty(value)) value = nullPropertyName;
       if (map.has(value)) {
         map.set(value, map.get(value) + 1);
       } else {
@@ -27,9 +36,17 @@ export function aggregateArrayObjects(property: string, array: Array<any>) {
   }
 
   for (const [key, value] of map) {
-    const obj = { [property]: key, sampleCount: value }; // TODO rename to generic
+    const obj = { value: key, count: value };
     aggregatedCounts.push(obj);
   }
+  
+  // If null or nullPropertyName values are present, sort them to the start of the list
+  // Otherwise sort by count descending
+  aggregatedCounts.sort((a, b) => {
+    if (isNullOrEmpty(a.value) || a.value === nullPropertyName) return -1;
+    if (isNullOrEmpty(b.value) || b.value === nullPropertyName) return 1;
+    return b.count - a.count;
+  });
 
   return aggregatedCounts;
 }

@@ -6,11 +6,13 @@ export interface Project {
   owningTenantGlobalId: string,
   name: string,
   description: string,
+  type: string,
+  clientType: string,
   projectMembers: {
     id: number,
     name: string
   },
-  projectAnalyses: {
+  trees: {
     id: number,
     name: string
   }[],
@@ -32,18 +34,15 @@ export interface Plot {
   isActive: boolean
 }
 
-export interface JobInstance {
-  jobInstanceId: number;
-  analysisId: number;
-  analysisName: string;
+export interface TreeVersion {
+  treeVersionId: number;
+  treeId: number;
+  treeName: string;
   projectId: number;
   projectMembersGroupId: number;
   projectName: string;
-  startTime: string;
   completedTime: string;
   wasScheduled: boolean;
-  resultsDataId: number;
-  treeId: number;
   newickTree: string;
   isActive: boolean;
   versionName: string;
@@ -128,11 +127,13 @@ export interface GroupedPrivilegesByRecordTypeWithScopes {
 export interface PrivilegeWithRolesWithScopes {
   recordName: string,
   recordGlobalId: string,
-  roles: RoleWithScopes[],
+  roles: RecordRoleWithScopes[],
 }
 
-export interface RoleWithScopes {
-  role: string,
+export interface RecordRoleWithScopes {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId: string,
   scopes: string[],
 }
 
@@ -143,7 +144,14 @@ export interface GroupedPrivilegesByRecordType {
 
 export interface PrivilegeWithRoles {
   recordName: string,
-  roleNames: string[],
+  recordGlobalId: string,
+  roles: RecordRole[],
+}
+
+export interface RecordRole {
+  roleName: string,
+  privilegeLevel: number,
+  privilegeGlobalId?: string,
 }
 
 export interface UserList {
@@ -335,6 +343,19 @@ export interface Role {
   description: string,
 }
 
+export interface RolesV2 {
+  name: string,
+  globalId: string,
+  allowedRootResourceTypes: AllowedResourceTypes[]
+  privilegeLevel: number,
+}
+
+export interface AllowedResourceTypes {
+  globalId: string
+  name: string,
+  isAggregateRoot: boolean,
+}
+
 export interface FeedbackPost {
   title: string,
   description: string,
@@ -363,6 +384,12 @@ export interface UserPatchV2 {
   displayName: string,
   contactEmail: string,
   analysisServerUsername: string,
+}
+
+export interface UserRoleRecordPrivilegePost {
+  owningTenantGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
 }
 
 export interface RefinedLog {

@@ -8,25 +8,22 @@ import { useAppSelector } from '../../../app/store';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
 
-const ORG_FIELD_NAME = 'Owner_group';
+// TODO This widget is really now obsolete; we could use the Counts widget
 
-interface CountRow {
-  [ORG_FIELD_NAME]: string;
-  sampleCount: number;
-}
+const ORG_FIELD_NAME = 'Owner_group';
 
 const columns = [
   {
-    field: ORG_FIELD_NAME,
+    field: 'value',
     header: 'Owner organisation',
-    body: (rowData: any) => rowData.Owner_group.split('-Owner'),
+    body: (rowData: any) => rowData.value.split('-Owner'),
   },
   {
-    field: 'sampleCount',
+    field: 'count',
     header: 'Sample Count',
   },
 ];
@@ -46,6 +43,7 @@ export default function Organisations(props: ProjectWidgetProps) {
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)) {
       const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
+      counts.sort((a, b) => b.count - a.count);
       setAggregatedCounts(counts);
     }
   }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);

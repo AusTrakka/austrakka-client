@@ -6,6 +6,7 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { MsalProvider } from '@azure/msal-react';
 import { GlobalStyles } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
 import App from './App';
 import { msalInstance } from './utilities/authUtils';
 import store from './app/store';
@@ -21,7 +22,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <MsalProvider instance={msalInstance}>
           <ApiProvider>
             <GlobalStyles styles={globalStyles} />
-            <App />
+            <SnackbarProvider
+              autoHideDuration={5000}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              maxSnack={10}
+            >
+              <App />
+            </SnackbarProvider>
           </ApiProvider>
         </MsalProvider>
       </StyledEngineProvider>
