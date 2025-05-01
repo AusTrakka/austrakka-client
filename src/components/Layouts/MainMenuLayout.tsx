@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet, useNavigate,
 } from 'react-router-dom';
@@ -21,8 +21,8 @@ import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission, hasScopes } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
-import useUsername from "../../hooks/useUsername";
-import {ScopeDefinitions} from "../../constants/scopes";
+import useUsername from '../../hooks/useUsername';
+import { ScopeDefinitions } from '../../constants/scopes';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -131,7 +131,7 @@ function MainMenuLayout() {
       icon: <Domain />,
       requirePermission: true,
       permissionDomain: null,
-      requiredTenantScopes: [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG]
+      requiredTenantScopes: [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG],
     },
     {
       title: 'Users',
@@ -148,36 +148,28 @@ function MainMenuLayout() {
       permissionDomain: 'usersV2',
     },
   ];
-  
-  const visiblePages = pages.filter((page) =>
-    !page.requirePermission 
-      || hasV1Perm(page.permissionDomain) 
-      || hasTenantPerm()
-  );
 
-  // Declared as function so that it is hoisted above the
-  // declaration of "visiblePages". We can also declare
-  // this function before declaring "visiblePages" but this
-  // is a more permanent solution.
-  function hasV1Perm(domain: string | null) : boolean {
+  const hasV1Perm = (domain: string | null) : boolean => {
     return hasPermission(
-        user,
-        'AusTrakka-Owner',
-        domain,
-        PermissionLevel.CanShow,
+      user,
+      'AusTrakka-Owner',
+      domain,
+      PermissionLevel.CanShow,
     );
   }
 
-  // Declared as function so that it is hoisted above the
-  // declaration of "visiblePages". We can also declare
-  // this function before declaring "visiblePages" but this
-  // is a more permanent solution.
-  function hasTenantPerm() : boolean {
+  const hasTenantPerm = () : boolean => {
     return hasScopes(
-        user,
-        user.defaultTenantGlobalId,
-        [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS]);
+      user,
+      user.defaultTenantGlobalId,
+      [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS]);
   }
+
+  const visiblePages = pages.filter((page) =>
+    !page.requirePermission
+      || hasV1Perm(page.permissionDomain) 
+      || hasTenantPerm()
+  );
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
