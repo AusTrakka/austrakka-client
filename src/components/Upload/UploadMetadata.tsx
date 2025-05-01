@@ -258,7 +258,7 @@ function UploadMetadata() {
               />
             </List>
           ) : null}
-          <Grid item>
+          <Grid>
             <Typography variant="h4" color="primary" marginTop="50px">Owner Organisation</Typography>
             <Tooltip title="The owner organisation of every metadata record 
             in the csv. There can be only one owner. If multiple owners are 

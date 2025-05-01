@@ -187,7 +187,7 @@ const Activity: FC<ActivityProps> = (props) => {
     };
 
     const toggleRow = (e: DataTableRowToggleEvent) => {
-        const row = e.data[0] as RefinedLog;
+        const row = (e.data as any[])[0] as RefinedLog;
 
         const firstChildIdx = localLogs.findIndex((node) =>
             node.aggregationMemberKey
@@ -322,7 +322,7 @@ const Activity: FC<ActivityProps> = (props) => {
                         )}
                     >
                         <Column
-                            expander={(rowData: RefinedLog) => rowData.children?.length ?? 0 > 0}
+                            expander={(rowData: RefinedLog) => (rowData.children?.length ?? 0) > 0}
                             style={{ width: '3em' }}
                         />
                         <Column

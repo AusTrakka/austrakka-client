@@ -16,7 +16,7 @@ interface FileDragDropProps {
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
   validated: boolean,
   setValidated: Dispatch<SetStateAction<boolean>>,
-  disabled:boolean,
+  disabled?:boolean,
 }
 
 // eslint-disable-next-line react/function-component-definition

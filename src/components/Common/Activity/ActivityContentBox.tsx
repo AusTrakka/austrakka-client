@@ -95,7 +95,9 @@ const ActivityContentBox: FC<ContentBoxProps> = ({entry, marginTop}) => {
                             <DetailedText text={f} isSubHeading={true}/>
                         </td>
                         <td style={{padding: '8px 8px 8px 100px'}}>
-                            <DetailedText text={f === "Time stamp" ? formatDate(entry[f]) :entry[f]} />
+                            <DetailedText text={f === "Time stamp" 
+                              ? formatDate(entry[f as keyof ActivityDetailInfo]) 
+                              : entry[f as keyof ActivityDetailInfo]} />
                         </td>
                     </tr>
                 ))}
