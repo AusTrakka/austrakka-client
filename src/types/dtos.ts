@@ -356,6 +356,11 @@ export interface AllowedResourceTypes {
   isAggregateRoot: boolean,
 }
 
+export interface InteractionWindowPost {
+  scopeAlias: string,
+  specificityProps: any,
+}
+
 export interface FeedbackPost {
   title: string,
   description: string,

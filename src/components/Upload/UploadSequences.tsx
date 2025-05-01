@@ -58,7 +58,13 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
-import { uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
+import {
+  requestInteractionWindow,
+  uploadSubmissions,
+  validateSubmissions
+} from '../../utilities/resourceUtils';
+import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
+import {InteractionWindowPost} from "../../types/dtos";
 
 const validFormats = {
   '.fq': '',
@@ -118,10 +124,10 @@ const createAndShareSamples = async (
 
   // Validate and go no further if error
   // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token);
+  let response = await validateSubmissions(formData, '', token, dataOwnerAbbrev);
   if (response.status === ResponseType.Error) return response;
 
-  response = await uploadSubmissions(formData, '', token);
+  response = await uploadSubmissions(formData, '', token, dataOwnerAbbrev);
   return response;
 };
 
@@ -140,10 +146,18 @@ function UploadSequences() {
   const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
   const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
+  const [iwToken, setIwToken] = useState<string | null>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
 
+  const canUpload = (selectedOwner: string) : boolean => {
+    return selectedOwner !== 'unspecified' 
+      && selectedOwner !== ''
+      && selectedOwner !== undefined;
+  }
+  
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
       if (newSur.id === sur.id) {
@@ -153,9 +167,10 @@ function UploadSequences() {
     }));
   };
 
-  const queueAllRows = () => {
+  const queueAllRows = (iwToken: string) => {
     const queuedRows = seqUploadRows.map((sur) => {
       sur.state = SeqUploadRowState.Queued;
+      sur.interactionWindowToken = iwToken;
       return sur;
     });
     setSeqUploadRows(queuedRows);
@@ -261,6 +276,29 @@ function UploadSequences() {
     }
   };
   
+  const RequestInteractionWindowToken = async (tenantGlobalId: string) => {
+    let specificityObj = {
+      'ownerOrgAbbrev': selectedDataOwner,
+      'seqType': selectedSeqType,
+    };
+    
+    let postDto : InteractionWindowPost = {
+      scopeAlias: 'sequence-upload-interaction',
+      specificityProps: specificityObj,
+    };
+    
+    const resp: ResponseObject = await requestInteractionWindow(tenantGlobalId, postDto, token);
+
+    if (resp.status === ResponseType.Success) 
+    {
+      setIwToken(resp.data as string);
+    } 
+    else 
+    {
+      console.error('Could not request an interaction windows for grouping these uploads.');
+    }
+  }
+  
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
     // TODO this hacky code means we silently do nothing if we are not ready, 
@@ -273,16 +311,11 @@ function UploadSequences() {
       showSampleCreationMessages(response);
       if (response.status === ResponseType.Error) return;
     }
-    queueAllRows();
+    queueAllRows(iwToken!);
   };
   
   // Data owner
   useEffect(() => {
-    if (!selectedCreateSampleRecords) {
-      setAvailableDataOwners([{ value: 'unspecified', label: 'Any' }]);
-      setSelectedDataOwner('unspecified');
-      return;
-    }
     if (user.loading !== LoadingState.SUCCESS) {
       setAvailableDataOwners([]);
       return;
@@ -359,9 +392,35 @@ function UploadSequences() {
         </Grid>
         <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
+            <Typography variant="h4" color="primary" marginTop={6} paddingBottom={2}>Data ownership</Typography>
+            <FormControl
+                size="small"
+                sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+                variant="standard"
+            >
+              <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
+              <Select
+                  labelId="select-data-owner-label"
+                  id="select-data-owner"
+                  name="Data Owner"
+                  value={selectedDataOwner}
+                  onChange={(e) => setSelectedDataOwner(e.target.value)}
+              >
+                {
+                  availableDataOwners.map((dataOwner: SelectItem) => (
+                      <MenuItem
+                          value={dataOwner.value}
+                          key={dataOwner.value}
+                      >
+                        {dataOwner.label}
+                      </MenuItem>
+                  ))
+                }
+              </Select>
+            </FormControl>
             <FormControlLabel
               id="create-sample-records-toggle"
+              sx={{ marginTop: 8}}
               control={(
                 <Switch
                   checked={selectedCreateSampleRecords}
@@ -370,32 +429,6 @@ function UploadSequences() {
               )}
               label="Create new sample records if required"
             />
-            <FormControl
-              size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
-              variant="standard"
-            >
-              <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
-              <Select
-                disabled={!selectedCreateSampleRecords}
-                labelId="select-data-owner-label"
-                id="select-data-owner"
-                name="Data Owner"
-                value={selectedDataOwner}
-                onChange={(e) => setSelectedDataOwner(e.target.value)}
-              >
-                {
-                  availableDataOwners.map((dataOwner: SelectItem) => (
-                    <MenuItem
-                      value={dataOwner.value}
-                      key={dataOwner.value}
-                    >
-                      {dataOwner.label}
-                    </MenuItem>
-                  ))
-                }
-              </Select>
-            </FormControl>
             <FormControl
               size="small"
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
@@ -499,6 +532,7 @@ function UploadSequences() {
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
             <Typography variant="h4" color="primary">Select sequence files</Typography>
             <FileDragDrop
+              disabled={!canUpload(selectedDataOwner)}
               files={files}
               setFiles={setFiles}
               validFormats={validFormats}

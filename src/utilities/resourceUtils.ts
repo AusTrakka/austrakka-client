@@ -10,7 +10,14 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, Project, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
+import {
+  Feedback,
+  FeedbackPost,
+  InteractionWindowPost,
+  Project,
+  UserPatchV2,
+  UserRoleRecordPrivilegePost
+} from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -89,6 +96,7 @@ export const uploadSubmissions = (formData: FormData, params: string, token: str
 // Sequence endpoints
 // TODO: this should parse the response
 export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
+export const requestInteractionWindow = async (tenantGlobalId: string, postDto: InteractionWindowPost, token: string) => callPost(`/api/v2/Tenant/${tenantGlobalId}/InteractionWindow`, token, postDto); 
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);

@@ -39,6 +39,7 @@ export interface SeqUploadRow {
   seqId: string
   seqType: SeqType
   state: SeqUploadRowState
+  interactionWindowToken: string
 }
 
 export interface SeqPairedUploadRow extends SeqUploadRow {
