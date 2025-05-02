@@ -41,7 +41,7 @@ export default function useActivityLogs(
       setDataLoading(true);
       getData();
     }
-  }, [recordType, rguid, token, tokenLoading]);
+  }, [recordType, rguid, token, tokenLoading, owningTenantGlobalId]);
 
   return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
 }

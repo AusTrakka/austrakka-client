@@ -1,6 +1,22 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 import FriendlyHeader from '../types/friendlyHeader.interface';
 
+const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
+  const csvRows = [];
+
+  for (const row of data) {
+    const values = headerString.map(header => {
+      const value = row[header];
+      if (value === undefined) {
+        throw new Error(`Could not find value for header ${header}`);
+      }
+      return `"${value}"`;
+    });
+    csvRows.push(values.join(','));
+  }
+  return csvRows;
+};
+
 export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
   const csvRows = [];
   const csvHeader = headers.map(header => header.displayName).join(',');
@@ -61,20 +77,4 @@ export const generateCSV = (data: any[], headers?:string[]) => {
 
   // Set data for CSVLink
   return formatDataAsCSV(formattedData, header);
-};
-
-const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
-  const csvRows = [];
-
-  for (const row of data) {
-    const values = headerString.map(header => {
-      const value = row[header];
-      if (value === undefined) {
-        throw new Error(`Could not find value for header ${header}`);
-      }
-      return `"${value}"`;
-    });
-    csvRows.push(values.join(','));
-  }
-  return csvRows;
 };

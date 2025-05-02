@@ -84,11 +84,21 @@ export const getUserDashboardProjects = (token: string, searchParams?: string) =
 export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
 
 // Submission endpoints
-export const validateSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
+export const validateSubmissions = (
+  formData: FormData,
+  params: string,
+  token: string,
+  ownerOrgAbbrev: string,
+) => {
   const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
   return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
 };
-export const uploadSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
+export const uploadSubmissions = (
+  formData: FormData,
+  params: string,
+  token: string,
+  ownerOrgAbbrev: string,
+) => {
   const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };

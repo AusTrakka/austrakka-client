@@ -21,7 +21,7 @@ function Platform() {
       <TabPanel tabLoader={false} index={0} value={tabValue}>
         <Activity
           recordType="tenant"
-          rguid={user.defaultTenantGlobalId}
+          rGuid={user.defaultTenantGlobalId}
           owningTenantGlobalId={user.defaultTenantGlobalId}
         />
       </TabPanel>

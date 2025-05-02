@@ -19,18 +19,22 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]): Col
 
   const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 
-  fields.forEach((field: PrimeReactField) => {
+  fields.forEach(({ columnName, primitiveType, columnDisplayName }: PrimeReactField) => {
     let c = {
-      field: field.columnName,
-      header: field.columnDisplayName || field.columnName,
+      field: columnName,
+      header: columnDisplayName || columnName,
       isDecorated: false,
     };
-
-    if (field.columnName in fieldRenderFunctions) {
-      const body = { body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]) };
+    
+    if (columnName in fieldRenderFunctions) {
+      const body = {
+        body: (rowData: any) => fieldRenderFunctions[columnName](rowData[columnName]),
+      };
       c = assign(c, body);
-    } else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
-      const body = { body: (rowData: any) => typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) };
+    } else if (primitiveType && primitiveType in typeRenderFunctions) {
+      const body = {
+        body: (rowData: any) => typeRenderFunctions[primitiveType!](rowData[columnName]),
+      };
       c = assign(c, body);
     }
     columnBuilders.push(c);

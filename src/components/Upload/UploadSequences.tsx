@@ -63,7 +63,6 @@ import {
   uploadSubmissions,
   validateSubmissions,
 } from '../../utilities/resourceUtils';
-import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import { InteractionWindowPost } from '../../types/dtos';
 
 const validFormats = {
@@ -146,7 +145,6 @@ function UploadSequences() {
   const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
   const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   const [iwToken, setIwToken] = useState<string | null>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
@@ -165,10 +163,10 @@ function UploadSequences() {
     }));
   };
 
-  const queueAllRows = (iwToken: string) => {
+  const queueAllRows = (iwToken2: string) => {
     const queuedRows = seqUploadRows.map((sur) => {
       sur.state = SeqUploadRowState.Queued;
-      sur.interactionWindowToken = iwToken;
+      sur.interactionWindowToken = iwToken2;
       return sur;
     });
     setSeqUploadRows(queuedRows);
@@ -274,7 +272,8 @@ function UploadSequences() {
     }
   };
   
-  const RequestInteractionWindowToken = async (tenantGlobalId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const requestInteractionWindowToken = async (tenantGlobalId: string) => {
     const specificityObj = {
       'ownerOrgAbbrev': selectedDataOwner,
       'seqType': selectedSeqType,
@@ -290,7 +289,9 @@ function UploadSequences() {
     if (resp.status === ResponseType.Success) {
       setIwToken(resp.data as string);
     } else {
-      console.error('Could not request an interaction windows for grouping these uploads.');
+      // Show a warning message to the user. Will decide once
+      // it is clear what should be done about the issues around
+      // life cycle.
     }
   };
   

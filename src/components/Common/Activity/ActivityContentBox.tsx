@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import DetailedText from '../Page/DetailedText';
@@ -24,8 +24,7 @@ interface GenericDetails {
 
 const fieldOrder : string[] = ['Operation name', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
 
-const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
-  const mgt = marginTop || '0px';
+function ActivityContentBox({ entry, marginTop = '0px' } : ContentBoxProps): JSX.Element {
   const genericDetails: GenericDetails | null = entry.Details ? JSON.parse(entry.Details) : null;
     
   const styles = {
@@ -45,6 +44,7 @@ const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
 
   const details = () => (
     <tr key="details">
+      {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
       <td style={styles.tableCell}>
         <DetailedText text="Details" isSubHeading />
       </td>
@@ -59,27 +59,27 @@ const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
             <DetailedText text={formatDate(genericDetails!.RecentEventDateTime)} />
           </li>
           {
-                            genericDetails?.Sections?.map(
-                              (section: SummarySection, index: number) => (
-                                <li key={index} style={styles.li}>
-                                  <DetailedText text={section.Title} isSubHeading />
-                                  <DetailedText text={section.Description} />
-                                  <span />
-                                  {section?.Values && section.Values.map((value: string, index: number) => (
-                                    <DetailedText key={index} text={value} />
-                                  ))}
-                                  {section?.DynamicProperties && Object.keys(section.DynamicProperties).map(
-                                    (key: string, index: number) => (
-                                      <DetailedText
-                                        key={key + index.toString()}
-                                        text={`${key}: ${section.DynamicProperties[key]}`}
-                                      />
-                                    ),
-                                  )}
-                                </li>
-                              ),
-                            )
-                        }
+            genericDetails?.Sections?.map(
+              (section: SummarySection) => (
+                <li key={section.Title} style={styles.li}>
+                  <DetailedText text={section.Title} isSubHeading />
+                  <DetailedText text={section.Description} />
+                  <span />
+                  {section?.Values && section.Values.map((value: string) => (
+                    <DetailedText key={section.Title + value} text={value} />
+                  ))}
+                  {section?.DynamicProperties && Object.keys(section.DynamicProperties).map(
+                    (key: string) => (
+                      <DetailedText
+                        key={key}
+                        text={`${key}: ${section.DynamicProperties[key]}`}
+                      />
+                    ),
+                  )}
+                </li>
+              ),
+            )
+        }
         </ul>
       </td>
     </tr>
@@ -90,9 +90,11 @@ const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
       <tbody>
         {fieldOrder.map(f => (
           <tr key={f}>
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <td style={{ padding: '8px 0px' }}>
               <DetailedText text={f} isSubHeading />
             </td>
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <td style={{ padding: '8px 8px 8px 100px' }}>
               <DetailedText text={f === 'Time stamp'
                 ? formatDate(entry[f as keyof ActivityDetailInfo])
@@ -108,7 +110,7 @@ const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
 
   return (
     <>
-      <Tabs value={0} sx={{ color: 'var(--primary-main)', marginTop: mgt }}>
+      <Tabs value={0} sx={{ color: 'var(--primary-main)', marginTop }}>
         <Tab
           key={0}
           tabIndex={0}
@@ -119,6 +121,6 @@ const ActivityContentBox: FC<ContentBoxProps> = ({ entry, marginTop }) => {
       {renderDetailTab()}
     </>
   );
-};
+}
 
 export default ActivityContentBox;

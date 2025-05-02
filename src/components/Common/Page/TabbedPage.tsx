@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import React, { Dispatch, FC, ReactNode, SetStateAction, useMemo } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, useMemo } from 'react';
 import CustomTabs, { TabContentProps } from '../CustomTabs';
 
 interface TabbedPageProps {
@@ -10,16 +10,16 @@ interface TabbedPageProps {
   children: ReactNode;
 }
 
-const TabbedPage : FC<TabbedPageProps> = (props) => {
-  const tabs: TabContentProps[] = useMemo(() => props.headers, []);
+function TabbedPage({ headers, tabValue, setTabValue, children, title }: TabbedPageProps): any {
+  const tabs: TabContentProps[] = useMemo(() => headers, [headers]);
     
   return (
     <>
-      <Typography className="pageTitle">{props.title}</Typography>
-      <CustomTabs value={props.tabValue} tabContent={tabs} setValue={props.setTabValue} />
-      {props.children}
+      <Typography className="pageTitle">{title}</Typography>
+      <CustomTabs value={tabValue} tabContent={tabs} setValue={setTabValue} />
+      {children}
     </>
   );
-};
+}
 
 export default TabbedPage;

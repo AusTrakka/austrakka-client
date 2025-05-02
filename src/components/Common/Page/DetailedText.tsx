@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { Typography } from '@mui/material';
 
 interface DetailedTextProps {
@@ -7,7 +7,7 @@ interface DetailedTextProps {
   display?: string,
 }
 
-const DetailedText : FC<DetailedTextProps> = ({ text, isSubHeading, display }) => {
+function DetailedText({ text, isSubHeading, display }: DetailedTextProps): any {
   const semiBold = '600';
   const fontWeight = isSubHeading ? semiBold : 'normal';
   const displayStyle = display || 'block';
@@ -28,6 +28,6 @@ const DetailedText : FC<DetailedTextProps> = ({ text, isSubHeading, display }) =
       {text}
     </Typography>
   );
-};
+}
 
 export default DetailedText;

@@ -97,6 +97,7 @@ function DataFilters(props: DataFiltersProps) {
     setIsOpen,
     dataLoaded,
     setLoadingState,
+    contentType,
   } = props;
   const [rowCount, setRowCount] = useState<number | undefined>();
   const [totalRows, setTotalRows] = useState<number | undefined>();
@@ -449,7 +450,7 @@ function DataFilters(props: DataFiltersProps) {
                   </Stack>
                 </Grid>
                 <Grid item sx={{ paddingLeft: 8 }}>
-                  {`Showing ${rowCount} of ${totalRows} ${props.contentType ?? 'samples'}.`}
+                  {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
                 </Grid>
               </Grid>
             </Button>

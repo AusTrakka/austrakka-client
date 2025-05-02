@@ -1,8 +1,8 @@
 import React from 'react';
-import { Cancel, ErrorOutline, Https, Inbox } from '@mui/icons-material';
+import { ErrorOutline, Https, Inbox } from '@mui/icons-material';
 
 export enum ContentIcon {
-  Inbox = 'Inbox',
+  InTray = 'Inbox',
   Forbidden = 'Forbidden',
   Error = 'Error',
 }
@@ -12,21 +12,6 @@ interface EmptyContentProps {
   subText?: string;
   icon?: ContentIcon;
 }
-
-const EmptyContentPane: React.FC<EmptyContentProps> = ({ message, icon, subText }) => {
-  let iconComponent = <Inbox sx={iconStyles} />;
-  if (icon === ContentIcon.Forbidden) { iconComponent = <Https sx={iconStyles} />; } else if (icon === ContentIcon.Error) { iconComponent = <ErrorOutline sx={iconStyles} />; }
-    
-  return (
-    <div style={containerStyles}>
-      <div style={iconBackgroundStyles}>
-        { iconComponent }
-      </div>
-      <p style={textStyles}>{message || 'No content to show'}</p>
-      {subText && <p style={subTextStyles}>{subText}</p>}
-    </div>
-  );
-};
 
 // TODO: move to this way of coding style so that the dom structure
 // are easier to read. However, examine what colours are specific to
@@ -72,5 +57,25 @@ const subTextStyles: React.CSSProperties = {
   color: 'rgb(10,53,70,0.7)',
   margin: 0,
 };
+
+function EmptyContentPane({ message, icon, subText }: EmptyContentProps): any {
+  let iconComponent = <Inbox sx={iconStyles} />;
+  
+  if (icon === ContentIcon.Forbidden) {
+    iconComponent = <Https sx={iconStyles} />;
+  } else if (icon === ContentIcon.Error) {
+    iconComponent = <ErrorOutline sx={iconStyles} />;
+  }
+
+  return (
+    <div style={containerStyles}>
+      <div style={iconBackgroundStyles}>
+        { iconComponent }
+      </div>
+      <p style={textStyles}>{message || 'No content to show'}</p>
+      {subText && <p style={subTextStyles}>{subText}</p>}
+    </div>
+  );
+}
 
 export default EmptyContentPane;

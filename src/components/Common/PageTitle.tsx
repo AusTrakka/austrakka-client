@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { Typography } from '@mui/material';
 
 interface PageTitleProps {
@@ -6,8 +6,8 @@ interface PageTitleProps {
   fontWeight?: string,
 }
 
-const PageTitle: FC<PageTitleProps> = ({ title, fontWeight }) => {
-  const weight = fontWeight != undefined ? fontWeight : 'normal';
+function PageTitle({ title, fontWeight }: PageTitleProps): any {
+  const weight = fontWeight !== undefined ? fontWeight : 'normal';
   return (
     <Typography
       sx={{
@@ -20,6 +20,6 @@ const PageTitle: FC<PageTitleProps> = ({ title, fontWeight }) => {
       {title}
     </Typography>
   );
-};
+}
 
 export default PageTitle;

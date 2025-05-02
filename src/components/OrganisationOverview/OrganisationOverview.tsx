@@ -172,7 +172,7 @@ function OrganisationOverview() {
               <TabPanel value={tabValue} index={2} tabLoader={false}>
                 <Activity
                   recordType="organisation"
-                  rguid={user.orgGlobalId}
+                  rGuid={user.orgGlobalId}
                   owningTenantGlobalId={user.defaultTenantGlobalId}
                 />
               </TabPanel>

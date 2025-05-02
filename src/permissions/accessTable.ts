@@ -55,8 +55,8 @@ export function hasScopes(
   const tenantScopes = user.scopes
     .filter(scope => scope.recordType === RecordType.TENANT)
     .filter(scope => scope.recordRoles
-      ?.some(recordRole => recordRole.recordGlobalId === recordId &&
-                               recordRole.roles.some(role => scopes.some(scope => role.scopes.includes(scope)))));
+      ?.some(recordRole => recordRole.recordGlobalId === recordId
+        && recordRole.roles.some(role => scopes.some(s => role.scopes.includes(s)))));
 
   return tenantScopes.length > 0;
 }

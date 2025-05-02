@@ -7,15 +7,15 @@ interface ExportToolTipProps {
   exportData: () => void
 }
 
-function ExportToolTip(props: ExportToolTipProps) {
+function ExportToolTip({ exportData, disabled }: ExportToolTipProps) {
   return (
     <>
       <Tooltip title="Export to CSV" placement="top" arrow>
         <span>
           <IconButton
-            onClick={() => { props.exportData(); }}
-            disabled={props.disabled}
-            color={props.disabled ? 'secondary' : 'default'}
+            onClick={() => { exportData(); }}
+            disabled={disabled}
+            color={disabled ? 'secondary' : 'default'}
           >
             <SimCardDownload />
           </IconButton>

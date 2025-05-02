@@ -15,14 +15,12 @@ import {
   List,
   ListItemText,
   MenuItem,
-  Drawer,
   Select,
   Tooltip,
-  Chip,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { ListAlt, HelpOutline, FileUpload, Rule } from '@mui/icons-material';
+import { FileUpload, Rule } from '@mui/icons-material';
 import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';

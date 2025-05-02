@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FilterMatchMode } from 'primereact/api';
 import {
   DataTable,
@@ -17,12 +17,11 @@ import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, ColumnBuilder } from '../../../utilities/tableUtils';
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
-import ReduxLoadingState from '../../Platform/ReduxLoadingState';
 import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
 
 interface ActivityProps {
   recordType: string,
-  rguid: string,
+  rGuid: string,
   owningTenantGlobalId: string,
 }
 
@@ -82,19 +81,72 @@ export const supportedColumns: ActivityField[] = [
   },
 ];
 
-const Activity: FC<ActivityProps> = (props) => {
+export const defaultState = {
+  global: {
+    operator: 'and',
+    constraints: [{
+      value: null,
+      matchMode: FilterMatchMode.CONTAINS,
+    }],
+  } as DataTableOperatorFilterMetaData,
+};
+
+function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<any[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
-    
-  const routeSegment = props.recordType === 'tenant'
-    ? props.recordType
-    : `${props.recordType}V2`;
+  
+  const routeSegment = recordType === 'tenant'
+    ? recordType
+    : `${recordType}V2`;
     
   const { refinedLogs,
-    httpStatusCode } = useActivityLogs(routeSegment, props.rguid, props.owningTenantGlobalId);
+    httpStatusCode } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId);
+
+  const transformData = (data: RefinedLog[]): RefinedLog[] => {
+    const nodesByKey: { [key: string]: RefinedLog } = {};
+    const rootNodes: RefinedLog[] = [];
+
+    const addChildren = (node: RefinedLog, parentLevel: number): void => {
+      node.level = parentLevel; // Set the level of the current node
+      node.children?.forEach((child) => {
+        addChildren(child, parentLevel + 1); // Recursively assign level to children
+      });
+    };
+
+    data.forEach((item) => {
+      if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
+    });
+
+    data.forEach((item) => {
+      if (item.aggregationMemberKey
+        /*
+        * An aggregate can be a member of a parent aggregate. However, if
+        * the root level being displayed does not contain the parent aggregate,
+        * then the child aggregate should be displayed at the root level.
+        * Eg, tenant (agg) -> org (agg1) -> sample
+        * 
+        * If displaying platform(tenant) level, org should be displayed as a child 
+        * of tenant. However, if displaying at the org level (get activity log for org),
+        * org should be displayed at the root level. The server would not return
+        * information about the parent. Therefore, this is the check for the parent.
+        * */
+        && nodesByKey[item.aggregationMemberKey]) {
+        const parentNode = nodesByKey[item.aggregationMemberKey];
+        if (parentNode) {
+          if (!parentNode.children) parentNode.children = [];
+          parentNode.children?.push(item); // Add child to parent node
+        }
+      } else {
+        rootNodes.push(item); // Root node has no parent
+      }
+    });
+
+    rootNodes.forEach((node) => addChildren(node, 0));
+    return rootNodes;
+  };
 
   useEffect(() => {
     if (refinedLogs.length > 0) {
@@ -115,7 +167,7 @@ const Activity: FC<ActivityProps> = (props) => {
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
-  }, [props.recordType, props.rguid, props.owningTenantGlobalId]);
+  }, [recordType, rGuid, owningTenantGlobalId, columns.length]);
 
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const row = event.data;
@@ -139,49 +191,6 @@ const Activity: FC<ActivityProps> = (props) => {
 
   const onRowSelect = (e: DataTableSelectEvent) => {
     setSelectedRow(e.data);
-  };
-
-  const transformData = (data: RefinedLog[]): RefinedLog[] => {
-    const nodesByKey: { [key: string]: RefinedLog } = {};
-    const rootNodes: RefinedLog[] = [];
-
-    const addChildren = (node: RefinedLog, parentLevel: number): void => {
-      node.level = parentLevel; // Set the level of the current node
-      node.children?.forEach((child) => {
-        addChildren(child, parentLevel + 1); // Recursively assign level to children
-      });
-    };
-        
-    data.forEach((item) => {
-      if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
-    });
-
-    data.forEach((item) => {
-      if (item.aggregationMemberKey
-                /*
-                * An aggregate can be a member of a parent aggregate. However, if
-                * the root level being displayed does not contain the parent aggregate,
-                * then the child aggregate should be displayed at the root level.
-                * Eg, tenant (agg) -> org (agg1) -> sample
-                * 
-                * If displaying platform(tenant) level, org should be displayed as a child 
-                * of tenant. However, if displaying at the org level (get activity log for org),
-                * org should be displayed at the root level. The server would not return
-                * information about the parent. Therefore, this is the check for the parent.
-                * */
-                && nodesByKey[item.aggregationMemberKey]) {
-        const parentNode = nodesByKey[item.aggregationMemberKey];
-        if (parentNode) {
-          if (!parentNode.children) parentNode.children = [];
-          parentNode.children?.push(item); // Add child to parent node
-        }
-      } else {
-        rootNodes.push(item); // Root node has no parent
-      }
-    });
-
-    rootNodes.forEach((node) => addChildren(node, 0));
-    return rootNodes;
   };
 
   const toggleRow = (e: DataTableRowToggleEvent) => {
@@ -234,13 +243,18 @@ const Activity: FC<ActivityProps> = (props) => {
     
   const header = (
     <TableToolbar
-      loadingState={ReduxLoadingState.IDLE}
       filteredData={refinedLogs}
       rowDataHeaders={friendlyHeaders}
       showDisplayHeader
       showExportButton={refinedLogs.length > 0}
     />
   );
+
+  const getIndentStyle = (level: number) => ({
+    paddingLeft: `${level * 25}px`, // Indent by 20px per level
+    display: 'inline-flex', // Use inline-flex to align both the icon and the ID in a row
+    alignItems: 'center',
+  });
 
   const firstColumnTemplate = (rowData: any) => (
     rowData.eventStatus === 'Success'
@@ -273,12 +287,6 @@ const Activity: FC<ActivityProps> = (props) => {
       )
   );
 
-  const getIndentStyle = (level: number) => ({
-    paddingLeft: `${level * 25}px`, // Indent by 20px per level
-    display: 'inline-flex', // Use inline-flex to align both the icon and the ID in a row
-    alignItems: 'center',
-  });
-    
   const tableContent = (
     <>
       {
@@ -339,7 +347,7 @@ const Activity: FC<ActivityProps> = (props) => {
               headerClassName="custom-title"
             />
             {columns ? columns.filter((col: ColumnBuilder) => col.field !== OPERATION_NAME_COLUMN)
-              .map((col: any, index: any) => (
+              .map((col: any) => (
                 <Column
                   key={col.field}
                   field={col.field}
@@ -367,7 +375,7 @@ const Activity: FC<ActivityProps> = (props) => {
         icon={ContentIcon.Forbidden}
       />
     );
-  } else if (!props.rguid || !props.owningTenantGlobalId) {
+  } else if (!rGuid || !owningTenantGlobalId) {
     contentPane = (
       <EmptyContentPane
         message="Cannot fetch activity log."
@@ -378,7 +386,7 @@ const Activity: FC<ActivityProps> = (props) => {
   } else {
     contentPane = refinedLogs.length > 0
       ? tableContent
-      : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.Inbox} />;
+      : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.InTray} />;
   }
     
   return (
@@ -386,16 +394,6 @@ const Activity: FC<ActivityProps> = (props) => {
       {contentPane}
     </>
   );
-};
-
-export const defaultState = {
-  global: {
-    operator: 'and',
-    constraints: [{
-      value: null,
-      matchMode: FilterMatchMode.CONTAINS,
-    }],
-  } as DataTableOperatorFilterMetaData,
-};
+}
 
 export default Activity;

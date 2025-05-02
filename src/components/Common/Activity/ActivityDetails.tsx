@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { IconButton, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ActivityContentBox from './ActivityContentBox';
@@ -13,7 +13,7 @@ interface ActivityDetailProps {
   detailInfo: ActivityDetailInfo,
 }
 
-const ActivityDetails: FC<ActivityDetailProps> = ({ onClose, detailInfo }) => {
+function ActivityDetails({ onClose, detailInfo }: ActivityDetailProps): JSX.Element {
   const friendlyEventDate = formatDate(detailInfo['Time stamp']);
     
   const banner = (
@@ -47,8 +47,10 @@ const ActivityDetails: FC<ActivityDetailProps> = ({ onClose, detailInfo }) => {
   );
     
   return (
-    <ATDrawer onClose={onClose} children={banner} />
+    <ATDrawer onClose={onClose}>
+      {banner}
+    </ATDrawer>
   );
-};
+}
 
 export default ActivityDetails;

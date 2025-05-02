@@ -47,10 +47,12 @@ function CsvExportButton(props: CsvExportButtonProps) {
     setExportCSVStatus(LoadingState.IDLE);
   };
     
-  const selectHeaders = (showDisplayHeader: boolean, headers?: FriendlyHeader[]) => (showDisplayHeader
-    ? headers?.map(header => header.displayName)
-    : headers?.map(header => header.name));
-
+  function selectHeaders(showDispHeaders: boolean, hs?: FriendlyHeader[]) {
+    return (showDispHeaders
+      ? hs?.map(header => header.displayName)
+      : hs?.map(header => header.name));
+  }
+  
   return (
     <>
       {

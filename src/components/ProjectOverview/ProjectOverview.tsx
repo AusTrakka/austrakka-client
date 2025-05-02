@@ -178,7 +178,7 @@ function ProjectOverview() {
             <TabPanel value={tabValue} index={7} tabLoader={false}>
               <Activity
                 recordType="project"
-                rguid={projectDetails?.globalId ?? ''}
+                rGuid={projectDetails?.globalId ?? ''}
                 owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
               />
             </TabPanel>
