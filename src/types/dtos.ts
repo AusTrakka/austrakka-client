@@ -15,8 +15,22 @@ export interface Project {
     id: number,
     name: string
   }[],
+  isActive: boolean,
   created: Date,
   // could add auditable fields - created, createdBy
+}
+
+// Summary statistics about a project
+export interface ProjectSummary {
+  projectId: number,
+  globalId: string,
+  abbreviation: string,
+  name: string,
+  sampleCount : number,
+  sequencedSampleCount: number,
+  latestSampleDate: string, // TODO date?
+  latestSequenceDate: string,
+  latestTreeDate: string,
 }
 
 export interface Plot {
@@ -31,6 +45,12 @@ export interface Plot {
   projectAbbreviation: string
   projectGroupId: number
   isActive: boolean
+}
+
+export interface UserDashboardOverview {
+  latestUploadedDateUtc: string,
+  total: number,
+  samplesNotSequenced: number,
 }
 
 export interface TreeVersion {

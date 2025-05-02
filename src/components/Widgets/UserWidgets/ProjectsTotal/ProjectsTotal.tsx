@@ -1,36 +1,70 @@
-import React, { useEffect } from 'react';
-import { Alert, AlertTitle, Box, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useAppDispatch, useAppSelector } from '../../../../app/store';
 import LoadingState from '../../../../constants/loadingState';
-import { fetchProjectsTotal } from './projectsTotalSlice';
 import DrilldownButton from '../../../Common/DrilldownButton';
 import { useApi } from '../../../../app/ApiContext';
-import { isoDateLocalDate } from '../../../../utilities/dateUtils';
+import { formatDateAsTwoIsoStrings } from '../../../../utilities/dateUtils';
+import { ResponseObject } from '../../../../types/responseObject.interface';
+import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
+import { ResponseType } from '../../../../constants/responseType';
+import {Project, ProjectSummary} from '../../../../types/dtos';
+import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
+
+const renderDateWithTimeTooltip = (cell: string): JSX.Element | null => {
+  if (isNullOrEmpty(cell)) return <span>None</span>;
+  const [date, time] = formatDateAsTwoIsoStrings(cell);
+  return (
+    <Tooltip title={`${date} ${time}`}>
+      <span>{date}</span>
+    </Tooltip>
+  );
+};
 
 const columns = [
-  { field: 'projectName', header: 'Project Name' },
-  { field: 'total', header: 'Samples uploaded' },
-  { field: 'latestDateCreated', header: 'Latest sample created', body: (rowData: any) => isoDateLocalDate(rowData.latestDateCreated) },
+  { field: 'name', header: 'Project Name' },
+  { field: 'sampleCount',
+    header: 'Samples',
+    align: 'right'},
+  { field: 'latestSampleDate',
+    header: 'Latest sample',
+    align: 'center',
+    body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSampleDate) },
+  { field: 'latestSequenceDate',
+    header: 'Latest sequence',
+    align: 'center',
+    body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSequenceDate) },
 ];
 
 export default function ProjectsTotal() {
-  // Get initial state from store
-  const { loading, data } = useAppSelector((state) => state.projectTotalState);
-  const { timeFilter } = useAppSelector((state) => state.userDashboardState);
   const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [projects, setProjects] = React.useState<ProjectSummary[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading === 'idle' &&
-    tokenLoading !== LoadingState.IDLE &&
-    tokenLoading !== LoadingState.LOADING) {
-      dispatch(fetchProjectsTotal(token));
+    async function getProjects() {
+      const projectResponse: ResponseObject = await getUserDashboardProjects(token);
+      if (projectResponse.status === ResponseType.Success) {
+        projectResponse.data.sort((a: Project, b: Project) =>
+          compareProperties(a, b, [
+            [(x => x.latestSequenceDate), -1],
+            [(x => x.latestSampleDate), -1],
+          ]));
+        setProjects(projectResponse.data);
+      } else {
+        setErrorMessage(projectResponse.error);
+      }
+      setIsLoading(false);
     }
-  }, [loading, dispatch, timeFilter, token, tokenLoading]);
+
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      getProjects();
+    }
+  }, [token, tokenLoading]);
 
   const navigateToProjectList = () => {
     navigate('/projects');
@@ -38,18 +72,18 @@ export default function ProjectsTotal() {
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    navigate(`/projects/${selectedRow.abbrev}`);
+    navigate(`/projects/${selectedRow.abbreviation}`);
   };
 
   return (
     <Box>
       <Typography variant="h5" paddingBottom={3} color="primary">
-        Project Samples
+        Project Status
       </Typography>
-      { loading === LoadingState.SUCCESS && (
+      { isLoading || errorMessage != null || (
       <>
         <DataTable
-          value={data.data}
+          value={projects}
           size="small"
           onRowClick={rowClickHandler}
           selectionMode="single"
@@ -60,23 +94,25 @@ export default function ProjectsTotal() {
               field={col.field}
               header={col.header}
               body={col.body}
+              align={col.align ?? 'left'}
+              sortable
             />
           ))}
         </DataTable>
         <br />
         <DrilldownButton
-          title="View all projects"
+          title="View projects table"
           onClick={navigateToProjectList}
         />
       </>
       )}
-      { loading === LoadingState.ERROR && (
+      { errorMessage != null && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {data.message}
+          {errorMessage}
         </Alert>
       )}
-      { loading === LoadingState.LOADING && (
+      { isLoading && (
         <div>Loading...</div>
       )}
     </Box>
