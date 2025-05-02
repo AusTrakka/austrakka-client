@@ -92,7 +92,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     e.preventDefault();
     e.stopPropagation();
     
-    if(disabled) { return; }
+    if (disabled) { return; }
     
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);

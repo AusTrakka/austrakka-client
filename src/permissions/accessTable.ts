@@ -46,17 +46,16 @@ export function hasPermission(
 }
 
 export function hasScopes(
-    user: UserSliceState, 
-    recordId: string,
-    scopes: string[] = []
-): boolean 
-{
+  user: UserSliceState,
+  recordId: string,
+  scopes: string[] = [],
+): boolean {
   if (!user || !user.scopes) return false;
   
   const tenantScopes = user.scopes
-      .filter(scope => scope.recordType === RecordType.TENANT)
-      .filter(scope => scope.recordRoles
-          ?.some(recordRole => recordRole.recordGlobalId === recordId &&
+    .filter(scope => scope.recordType === RecordType.TENANT)
+    .filter(scope => scope.recordRoles
+      ?.some(recordRole => recordRole.recordGlobalId === recordId &&
                                recordRole.roles.some(role => scopes.some(scope => role.scopes.includes(scope)))));
 
   return tenantScopes.length > 0;

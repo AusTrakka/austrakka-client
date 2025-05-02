@@ -1,3 +1,3 @@
 export interface RowData {
-    [key: string]: any;
+  [key: string]: any;
 }

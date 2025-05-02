@@ -61,10 +61,10 @@ import { ResponseMessage } from '../../types/apiResponse.interface';
 import {
   requestInteractionWindow,
   uploadSubmissions,
-  validateSubmissions
+  validateSubmissions,
 } from '../../utilities/resourceUtils';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
-import {InteractionWindowPost} from "../../types/dtos";
+import { InteractionWindowPost } from '../../types/dtos';
 
 const validFormats = {
   '.fq': '',
@@ -152,11 +152,9 @@ function UploadSequences() {
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
 
-  const canUpload = (selectedOwner: string) : boolean => {
-    return selectedOwner !== 'unspecified' 
+  const canUpload = (selectedOwner: string) : boolean => selectedOwner !== 'unspecified'
       && selectedOwner !== ''
       && selectedOwner !== undefined;
-  }
   
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
@@ -277,27 +275,24 @@ function UploadSequences() {
   };
   
   const RequestInteractionWindowToken = async (tenantGlobalId: string) => {
-    let specificityObj = {
+    const specificityObj = {
       'ownerOrgAbbrev': selectedDataOwner,
       'seqType': selectedSeqType,
     };
     
-    let postDto : InteractionWindowPost = {
+    const postDto : InteractionWindowPost = {
       scopeAlias: 'sequence-upload-interaction',
       specificityProps: specificityObj,
     };
     
     const resp: ResponseObject = await requestInteractionWindow(tenantGlobalId, postDto, token);
 
-    if (resp.status === ResponseType.Success) 
-    {
+    if (resp.status === ResponseType.Success) {
       setIwToken(resp.data as string);
-    } 
-    else 
-    {
+    } else {
       console.error('Could not request an interaction windows for grouping these uploads.');
     }
-  }
+  };
   
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
@@ -394,33 +389,33 @@ function UploadSequences() {
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" color="primary" marginTop={6} paddingBottom={2}>Data ownership</Typography>
             <FormControl
-                size="small"
-                sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
-                variant="standard"
+              size="small"
+              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              variant="standard"
             >
               <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
               <Select
-                  labelId="select-data-owner-label"
-                  id="select-data-owner"
-                  name="Data Owner"
-                  value={selectedDataOwner}
-                  onChange={(e) => setSelectedDataOwner(e.target.value)}
+                labelId="select-data-owner-label"
+                id="select-data-owner"
+                name="Data Owner"
+                value={selectedDataOwner}
+                onChange={(e) => setSelectedDataOwner(e.target.value)}
               >
                 {
                   availableDataOwners.map((dataOwner: SelectItem) => (
-                      <MenuItem
-                          value={dataOwner.value}
-                          key={dataOwner.value}
-                      >
-                        {dataOwner.label}
-                      </MenuItem>
+                    <MenuItem
+                      value={dataOwner.value}
+                      key={dataOwner.value}
+                    >
+                      {dataOwner.label}
+                    </MenuItem>
                   ))
                 }
               </Select>
             </FormControl>
             <FormControlLabel
               id="create-sample-records-toggle"
-              sx={{ marginTop: 8}}
+              sx={{ marginTop: 8 }}
               control={(
                 <Switch
                   checked={selectedCreateSampleRecords}

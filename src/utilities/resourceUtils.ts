@@ -1,5 +1,5 @@
 import {
-  callDELETE, 
+  callDELETE,
   buildOwnerOrgHeader,
   callGET,
   callPATCH,
@@ -16,7 +16,7 @@ import {
   InteractionWindowPost,
   Project,
   UserPatchV2,
-  UserRoleRecordPrivilegePost
+  UserRoleRecordPrivilegePost,
 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
@@ -87,16 +87,16 @@ export const getUserDashboardPhessStatus = (token: string, searchParams?: string
 export const validateSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
   const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
   return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
-}
+};
 export const uploadSubmissions = (formData: FormData, params: string, token: string, ownerOrgAbbrev: string) => {
   const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
-}
+};
 
 // Sequence endpoints
 // TODO: this should parse the response
 export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
-export const requestInteractionWindow = async (tenantGlobalId: string, postDto: InteractionWindowPost, token: string) => callPost(`/api/v2/Tenant/${tenantGlobalId}/InteractionWindow`, token, postDto); 
+export const requestInteractionWindow = async (tenantGlobalId: string, postDto: InteractionWindowPost, token: string) => callPost(`/api/v2/Tenant/${tenantGlobalId}/InteractionWindow`, token, postDto);
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field, ProjectViewField, PrimeReactField } from '../types/dtos';
+import { Field, PrimeReactField, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export const compareFields = (field1: Field, field2: Field) =>
@@ -14,26 +14,23 @@ export interface ColumnBuilder {
   isDecorated?: boolean;
 }
 
-export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]) : ColumnBuilder[] {
+export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]): ColumnBuilder[] {
   const columnBuilders: ColumnBuilder[] = [];
 
-  const assign = (original: any, newPart: any) : any => {
-    return Object.assign({}, original, newPart);
-  }
-  
+  const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
+
   fields.forEach((field: PrimeReactField) => {
     let c = {
       field: field.columnName,
       header: field.columnDisplayName || field.columnName,
       isDecorated: false,
     };
-    
+
     if (field.columnName in fieldRenderFunctions) {
-      let body = { body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]) }
+      const body = { body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]) };
       c = assign(c, body);
-    } 
-    else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
-      let body = { body: (rowData: any) => typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) }
+    } else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
+      const body = { body: (rowData: any) => typeRenderFunctions[field.primitiveType!](rowData[field.columnName]) };
       c = assign(c, body);
     }
     columnBuilders.push(c);
@@ -47,7 +44,8 @@ export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) 
     header: string,
     dataType?: string,
     hidden?: boolean,
-    body?: (rowData: any) => React.ReactNode, }[] = [];
+    body?: (rowData: any) => React.ReactNode,
+  }[] = [];
 
   fields.forEach((field: ProjectViewField) => {
     if (field.columnName in fieldRenderFunctions) {

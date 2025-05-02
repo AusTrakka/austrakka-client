@@ -27,7 +27,7 @@ import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
-import Activity from "../Common/Activity/Activity";
+import Activity from '../Common/Activity/Activity';
 
 function ProjectOverview() {
   const { projectAbbrev, tab } = useParams();
@@ -140,7 +140,7 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
-            {!isSamplesLoading && <Samples projectAbbrev={projectAbbrev!}/>}
+            {!isSamplesLoading && <Samples projectAbbrev={projectAbbrev!} />}
           </TabPanel>
           <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
             <TreeList
@@ -174,15 +174,16 @@ function ProjectOverview() {
             <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
           </TabPanel>
           {
-            tabValue === 7 &&
+            tabValue === 7 && (
             <TabPanel value={tabValue} index={7} tabLoader={false}>
               <Activity
-                  recordType={"project"}
-                  rguid={projectDetails?.globalId ?? ''}
-                  owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
+                recordType="project"
+                rguid={projectDetails?.globalId ?? ''}
+                owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
               />
             </TabPanel>
-          }
+            )
+}
         </>
       )
 

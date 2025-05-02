@@ -19,7 +19,7 @@ const INVALID_TOKEN = 'invalid_token';
 
 export function buildOwnerOrgHeader(ownerOrgAbbrev: string): any {
   return {
-    "X-Metadata-Owner-Org-Abbrev": ownerOrgAbbrev,
+    'X-Metadata-Owner-Org-Abbrev': ownerOrgAbbrev,
   };
 }
 
@@ -224,10 +224,10 @@ export async function callPostMultipart(
 }
 
 export async function callPOSTForm(
-    url: string, 
-    formData: FormData, 
-    token: string,
-    customHeaders: any = {}
+  url: string,
+  formData: FormData,
+  token: string,
+  customHeaders: any = {},
 )
   : Promise<ResponseObject> {
   if (!token) {
@@ -239,7 +239,7 @@ export async function callPOSTForm(
   return callApi(url, {
     method: 'POST',
     body: formData,
-    headers: headers,
+    headers,
   });
 }
 

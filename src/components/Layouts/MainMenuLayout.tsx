@@ -149,27 +149,23 @@ function MainMenuLayout() {
     },
   ];
 
-  const hasV1Perm = (domain: string | null) : boolean => {
-    return hasPermission(
-      user,
-      'AusTrakka-Owner',
-      domain,
-      PermissionLevel.CanShow,
-    );
-  }
+  const hasV1Perm = (domain: string | null) : boolean => hasPermission(
+    user,
+    'AusTrakka-Owner',
+    domain,
+    PermissionLevel.CanShow,
+  );
 
-  const hasTenantPerm = () : boolean => {
-    return hasScopes(
-      user,
-      user.defaultTenantGlobalId,
-      [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS]);
-  }
+  const hasTenantPerm = () : boolean => hasScopes(
+    user,
+    user.defaultTenantGlobalId,
+    [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS],
+  );
 
   const visiblePages = pages.filter((page) =>
     !page.requirePermission
-      || hasV1Perm(page.permissionDomain) 
-      || hasTenantPerm()
-  );
+      || hasV1Perm(page.permissionDomain)
+      || hasTenantPerm());
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {

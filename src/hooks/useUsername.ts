@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import {AccountInfo} from "@azure/msal-browser";
+import { useEffect, useState } from 'react';
+import { AccountInfo } from '@azure/msal-browser';
 
 export default function useUsername(account: AccountInfo | null) {
   const [username, setUsername] = useState<string | null>(null);

@@ -137,9 +137,9 @@ function UploadMetadata() {
     formData.append('file', files[0].file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
-    const submissionResponse : ResponseObject = options.validate 
-        ? await validateSubmissions(formData, optionString, token, ownerOrgAbbrev)
-        : await uploadSubmissions(formData, optionString, token, ownerOrgAbbrev);
+    const submissionResponse : ResponseObject = options.validate
+      ? await validateSubmissions(formData, optionString, token, ownerOrgAbbrev)
+      : await uploadSubmissions(formData, optionString, token, ownerOrgAbbrev);
 
     const newMessages = [...submissionResponse.messages ?? []];
     if (submissionResponse.status === ResponseType.Success) {
@@ -260,16 +260,19 @@ function UploadMetadata() {
           ) : null}
           <Grid>
             <Typography variant="h4" color="primary" marginTop="50px">Owner Organisation</Typography>
-            <Tooltip title="The owner organisation of every metadata record 
-            in the csv. There can be only one owner. If multiple owners are 
-            involved, the records need to be grouped into a file per owner 
-            and uploaded separately." placement="bottom">
-              <TextField 
-                  id="standard-basic" 
-                  label="Abbreviation" 
-                  variant="standard" 
-                  required={true}
-                  onChange={(e) => setOwnerOrgAbbrev(e.target.value)}
+            <Tooltip
+              title="The owner organisation of every metadata record
+            in the csv. There can be only one owner. If multiple owners are
+            involved, the records need to be grouped into a file per owner
+            and uploaded separately."
+              placement="bottom"
+            >
+              <TextField
+                id="standard-basic"
+                label="Abbreviation"
+                variant="standard"
+                required
+                onChange={(e) => setOwnerOrgAbbrev(e.target.value)}
               />
             </Tooltip>
           </Grid>

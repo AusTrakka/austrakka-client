@@ -9,10 +9,10 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
 
   return targetGroup.recordRoles.some(
     recordRole =>
-      recordRole.roles?.some(roleWithScopes => 
-          // TODO: This is not how you check for super user role.
-          // Instead of looking at the method pattern, check for
-          // privilegeLevel === 1.
+      recordRole.roles?.some(roleWithScopes =>
+      // TODO: This is not how you check for super user role.
+      // Instead of looking at the method pattern, check for
+      // privilegeLevel === 1.
         roleWithScopes.scopes.includes('method=*,/**')),
   );
 }

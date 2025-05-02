@@ -1,6 +1,6 @@
-interface FriendlyHeader{
-    name: string,
-    displayName: string,
+interface FriendlyHeader {
+  name: string,
+  displayName: string,
 }
 
 export default FriendlyHeader;

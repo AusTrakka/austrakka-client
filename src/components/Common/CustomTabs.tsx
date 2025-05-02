@@ -23,9 +23,9 @@ interface CustomTabsProps {
 
 export function TabPanel(props: TabPanelProps) {
   const {
-    children, 
-    tabLoader, 
-    value, 
+    children,
+    tabLoader,
+    value,
     index,
   } = props;
 
