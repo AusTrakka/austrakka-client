@@ -22,7 +22,7 @@ export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
   const csvHeader = headers.map(header => header.displayName).join(',');
   const dataHeaders = headers.map(header => header.name);
   const csvContent = formatCsvBody(data, dataHeaders);
-  csvRows.push(...csvHeader);
+  csvRows.push(csvHeader);
   csvRows.push(...csvContent);
   return csvRows.join('\n');
 };

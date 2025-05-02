@@ -290,12 +290,12 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   const tableContent = (
     <>
       {
-                openDetails && (
-                <ActivityDetails
-                  onClose={closeDetailsHandler}
-                  detailInfo={detailInfo}
-                />
-                )
+        openDetails && (
+          <ActivityDetails
+            onClose={closeDetailsHandler}
+            detailInfo={detailInfo}
+          />
+        )
 }
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <div>
