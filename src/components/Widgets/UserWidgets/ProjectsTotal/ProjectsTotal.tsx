@@ -36,6 +36,10 @@ const columns = [
     header: 'Latest sequence',
     align: 'center',
     body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSequenceDate) },
+  { field: 'latestTreeDate',
+    header: 'Latest tree',
+    align: 'center',
+    body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestTreeDate) },
 ];
 
 export default function ProjectsTotal() {
