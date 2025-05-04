@@ -10,7 +10,7 @@ import { formatDateAsTwoIsoStrings } from '../../../../utilities/dateUtils';
 import { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
-import {Project, ProjectSummary} from '../../../../types/dtos';
+import { Project, ProjectSummary } from '../../../../types/dtos';
 import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 
 const renderDateWithTimeTooltip = (cell: string): JSX.Element | null => {
@@ -27,7 +27,7 @@ const columns = [
   { field: 'name', header: 'Project Name' },
   { field: 'sampleCount',
     header: 'Samples',
-    align: 'right'},
+    align: 'right' },
   { field: 'latestSampleDate',
     header: 'Latest sample',
     align: 'center',
