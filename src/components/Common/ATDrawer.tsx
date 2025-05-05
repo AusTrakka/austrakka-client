@@ -15,7 +15,7 @@ function ATDrawer({ onClose, children }: ATDrawerProps): JSX.Element {
         onClick={onClose}
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1, // Ensure it's above other content
-          backgroundColor: 'rgba(0,0,0,0) !important',
+          backgroundColor: 'rgba(var(--background-colour), 0) !important',
         }}
       />
       {/* Drawer positioned on the right with custom width */}
@@ -33,7 +33,7 @@ function ATDrawer({ onClose, children }: ATDrawerProps): JSX.Element {
             right: 0, // Position on the right side of the screen
             border: 'none',
             boxShadow: 'none',
-            backgroundColor: 'background.paper', // Or any color you prefer
+            backgroundColor: 'var(--background-colour)', // Or any color you prefer
             padding: '16px 25px',
           },
         }}

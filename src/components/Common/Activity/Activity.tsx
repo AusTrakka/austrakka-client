@@ -287,6 +287,12 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
       )
   );
 
+  const selectRowClassName = (rowData: any) => {
+    const level = rowData.level ?? 0;
+    if (level <= 0 || level > 5) return '';
+    return `indent-level-${level}-tint`;
+  };
+  
   const tableContent = (
     <>
       {
@@ -319,6 +325,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
             onRowToggle={toggleRow}
             selectionMode="single"
             rows={25}
+            rowClassName={selectRowClassName}
             loading={false}
             rowsPerPageOptions={[25, 50, 100, 500, 2000]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
@@ -334,6 +341,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
             <Column
               expander={(rowData: RefinedLog) => (rowData.children?.length ?? 0) > 0}
               style={{ width: '3em' }}
+              className="activity-row-expander"
             />
             <Column
               key={OPERATION_NAME_COLUMN}
