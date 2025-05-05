@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid2';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import LoadingState from '../../../../constants/loadingState';
 import { useApi } from '../../../../app/ApiContext';
-import { formatDate } from '../../../../utilities/dateUtils';
+import { formatDateAsTwoStrings } from '../../../../utilities/dateUtils';
 import { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
@@ -45,7 +45,7 @@ export default function UserOverview() {
           <Grid>
             <FileUploadOutlined color="primary" />
             <Typography variant="h5" paddingBottom={1} color="primary">
-              Total uploaded samples
+              Total viewable samples
             </Typography>
             <Typography variant="h2" paddingBottom={1} color="primary.main">
               {totalSamples.toLocaleString('en-US')}
@@ -56,9 +56,20 @@ export default function UserOverview() {
             <Typography variant="h5" paddingBottom={1} color="primary">
               Latest sample upload
             </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary">
-              { latestUploadDate ? formatDate(latestUploadDate) : '-'}
-            </Typography>
+            {latestUploadDate ? (
+              <>
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  {formatDateAsTwoStrings(latestUploadDate)[0]}
+                </Typography>
+                <Typography variant="subtitle2" paddingBottom={1} color="primary">
+                  {formatDateAsTwoStrings(latestUploadDate)[1]}
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="h2" paddingBottom={1} color="primary">
+                -
+              </Typography>
+            )}
           </Grid>
           <Grid>
             <RuleOutlined color="primary" />
