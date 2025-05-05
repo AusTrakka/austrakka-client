@@ -383,6 +383,14 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
         icon={ContentIcon.Forbidden}
       />
     );
+  } else if (httpStatusCode >= 400) {
+    contentPane = (
+      <EmptyContentPane
+        message="Cannot fetch activity log."
+        subText="An error occurred while fetching the activity log."
+        icon={ContentIcon.Error}
+      />
+    );
   } else if (!rGuid || !owningTenantGlobalId) {
     contentPane = (
       <EmptyContentPane
