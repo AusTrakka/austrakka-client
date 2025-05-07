@@ -7,7 +7,7 @@ import {
   DataTableRowToggleEvent,
   DataTableSelectEvent,
 } from 'primereact/datatable';
-import { Paper, Typography } from '@mui/material';
+import {Alert, AlertTitle, Paper, Typography} from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel, Info } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
@@ -378,26 +378,24 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   let contentPane = <></>;
   if (httpStatusCode === 401 || httpStatusCode === 403) {
     contentPane = (
-      <EmptyContentPane
-        message="You do not have permission to view activity logs."
-        icon={ContentIcon.Forbidden}
-      />
+      <Alert severity="error">
+        <AlertTitle>Permission Denied</AlertTitle>
+        You do not have permission to view activity logs.
+      </Alert>
     );
   } else if (httpStatusCode >= 400) {
     contentPane = (
-      <EmptyContentPane
-        message="Cannot fetch activity log."
-        subText="An error occurred while fetching the activity log."
-        icon={ContentIcon.Error}
-      />
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        An error occurred while fetching the activity log.
+      </Alert>
     );
   } else if (!rGuid || !owningTenantGlobalId) {
     contentPane = (
-      <EmptyContentPane
-        message="Cannot fetch activity log."
-        subText="Missing record information."
-        icon={ContentIcon.Error}
-      />
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        Missing record information.
+      </Alert>
     );
   } else {
     contentPane = refinedLogs.length > 0
