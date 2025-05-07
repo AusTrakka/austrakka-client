@@ -129,9 +129,6 @@ export default defineConfig({
       VITE_THEME_PRIMARY_MAIN_BG: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryMainBackground)
       },
-      VITE_THEME_PRIMARY_RADIUS: (key, value) => {
-        return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryRadius)
-      },
       VITE_LOGO_PATH: (key, value) => {
         return defaultCustomLogoValue(key, value, LogoDefaultValues.Logo)
       },
@@ -232,7 +229,6 @@ enum ThemeDefaultValues {
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
   PrimaryMainBackground = '#eef2f6',
-  PrimaryRadius = '5px',
 }
 
 enum LogoDefaultValues {

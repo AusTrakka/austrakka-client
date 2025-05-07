@@ -13,9 +13,6 @@ interface EmptyContentProps {
   icon?: ContentIcon;
 }
 
-// TODO: move to this way of coding style so that the dom structure
-// are easier to read. However, examine what colours are specific to
-// this component and what are global. Do this with all components.
 const containerStyles: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -26,7 +23,7 @@ const containerStyles: React.CSSProperties = {
   padding: '200px 20px',
   boxSizing: 'border-box',
   backgroundColor: 'var(--primary-main-bg)',
-  borderRadius: 'var(--primary-radius)',
+  borderRadius: '5px',
 };
 
 const iconStyles: React.CSSProperties = {
