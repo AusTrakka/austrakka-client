@@ -3,10 +3,7 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import {
-  getProjectDetails, getTotalSamples,
-} from '../../utilities/resourceUtils';
-// import Summary from './Summary';
+import { getProjectDetails } from '../../utilities/resourceUtils';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
@@ -72,7 +69,7 @@ function ProjectOverview() {
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       getProject();
     }
-  }, [projectAbbrev, token, tokenLoading]);
+  }, [dispatch, projectAbbrev, token, tokenLoading]);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 

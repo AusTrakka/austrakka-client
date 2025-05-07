@@ -38,7 +38,6 @@ export const getSamples = (token: string, groupId: number, searchParams?: URLSea
   searchParams.append('groupContext', String(groupId));
   return callGET(`/api/MetadataSearch?${searchParams}`, token);
 };
-export const getTotalSamples = (groupId: number, token: string) => callGET(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, token);
 
 // Group endpoints
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
