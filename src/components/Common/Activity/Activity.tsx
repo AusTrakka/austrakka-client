@@ -7,7 +7,7 @@ import {
   DataTableRowToggleEvent,
   DataTableSelectEvent,
 } from 'primereact/datatable';
-import {Alert, AlertTitle, Paper, Typography} from '@mui/material';
+import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel, Info } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
