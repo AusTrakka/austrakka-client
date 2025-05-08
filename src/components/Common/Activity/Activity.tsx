@@ -102,8 +102,11 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
     ? recordType
     : `${recordType}V2`;
     
-  const { refinedLogs,
-    httpStatusCode } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId);
+  const {
+    refinedLogs,
+    httpStatusCode,
+    dataLoading,
+  } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId);
 
   const transformData = (data: RefinedLog[]): RefinedLog[] => {
     const nodesByKey: { [key: string]: RefinedLog } = {};
@@ -397,6 +400,8 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
         Missing record information.
       </Alert>
     );
+  } else if (dataLoading) {
+    contentPane = <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />;
   } else {
     contentPane = refinedLogs.length > 0
       ? tableContent

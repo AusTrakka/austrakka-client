@@ -1,10 +1,12 @@
 import React from 'react';
 import { ErrorOutline, Https, Inbox } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 
 export enum ContentIcon {
   InTray = 'Inbox',
   Forbidden = 'Forbidden',
   Error = 'Error',
+  Loading = 'Loading',
 }
 
 interface EmptyContentProps {
@@ -56,18 +58,20 @@ const subTextStyles: React.CSSProperties = {
 };
 
 function EmptyContentPane({ message, icon, subText }: EmptyContentProps): any {
-  let iconComponent = <Inbox sx={iconStyles} />;
+  let component = <Inbox sx={iconStyles} />;
   
   if (icon === ContentIcon.Forbidden) {
-    iconComponent = <Https sx={iconStyles} />;
+    component = <Https sx={iconStyles} />;
   } else if (icon === ContentIcon.Error) {
-    iconComponent = <ErrorOutline sx={iconStyles} />;
+    component = <ErrorOutline sx={iconStyles} />;
+  } else if (icon === ContentIcon.Loading) {
+    component = <CircularProgress sx={iconStyles} />;
   }
 
   return (
     <div style={containerStyles}>
       <div style={iconBackgroundStyles}>
-        { iconComponent }
+        { component }
       </div>
       <p style={textStyles}>{message || 'No content to show'}</p>
       {subText && <p style={subTextStyles}>{subText}</p>}
