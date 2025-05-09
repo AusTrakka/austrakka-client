@@ -27,7 +27,6 @@ function ProjectOverview() {
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
   const [isTreesLoading, setIsTreesLoading] = useState(true);
-  const [isPlotsLoading, setIsPlotsLoading] = useState(true);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
@@ -72,11 +71,9 @@ function ProjectOverview() {
               setIsTreesLoading={setIsTreesLoading}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
+          <TabPanel value={tabValue} index={3} tabLoader={false}>
             <PlotList
               projectDetails={projectDetails}
-              isPlotsLoading={isPlotsLoading}
-              setIsPlotsLoading={setIsPlotsLoading}
             />
           </TabPanel>
         </>

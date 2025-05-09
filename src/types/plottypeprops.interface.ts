@@ -1,6 +1,5 @@
-import { Plot } from './dtos';
-
 export default interface PlotTypeProps {
-  plot: Plot | undefined | null,
+  projectAbbrev: string | undefined;
+  customSpec: string | undefined | null,
   setPlotErrorMsg: Function,
 }

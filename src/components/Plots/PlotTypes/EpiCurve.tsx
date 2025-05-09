@@ -56,14 +56,14 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function EpiCurve(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    state => selectProjectMetadataFields(state, projectAbbrev),
   );
   // This plot also accesses the data itself, to determine an initial date binning
   const data: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, plot?.projectAbbreviation));
+    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -115,14 +115,12 @@ function EpiCurve(props: PlotTypeProps) {
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   useEffect(() => {
     if (fields && fields.length > 0) {
@@ -374,7 +372,7 @@ function EpiCurve(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        projectAbbrev={plot?.projectAbbreviation}
+        projectAbbrev={projectAbbrev}
       />
     </>
   );

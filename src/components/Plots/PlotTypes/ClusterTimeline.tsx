@@ -59,10 +59,10 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function ClusterTimeline(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    state => selectProjectMetadataFields(state, projectAbbrev),
   );
   const urlSearchParams = new URLSearchParams(window.location.search);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
@@ -96,14 +96,12 @@ function ClusterTimeline(props: PlotTypeProps) {
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
   useEffect(() => {
@@ -266,7 +264,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       {renderControls()}
       <VegaDataPlot
         spec={spec}
-        projectAbbrev={plot?.projectAbbreviation}
+        projectAbbrev={projectAbbrev}
       />
     </>
   );

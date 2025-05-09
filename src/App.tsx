@@ -30,7 +30,7 @@ function App() {
               <Route element={<MainMenuLayout />}>
                 <Route path="/" element={<LocalUpload />} />
                 <Route path="upload" element={<LocalUpload />} />
-                <Route path="data/plots/:plotAbbrev" element={<PlotDetail />} />
+                <Route path="data/plots/:plotType" element={<PlotDetail />} />
                 <Route path="data/trees/:analysisId/versions/:jobInstanceId" element={<TreeDetail />} />
                 <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />
                 <Route path="data/:tab" element={<ProjectOverview />} />
