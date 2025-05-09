@@ -166,7 +166,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
                   onClick={onBrowseClick}
                   multiple={multiple}
                   onChange={handleBrowseChange}
-                  accept={[...new Set(Object.entries(validFormats).flat().filter(x => x !== ""))].join(",")}
+                  accept={[...new Set(Object.entries(validFormats).flat().filter(x => x !== ''))].join(',')}
                   hidden
                 />
               </Button>
