@@ -7,4 +7,3 @@ export enum RoleName {
   ProjectAnalyst = 'ProjectAnalyst',
   ResultWriter = 'ResultWriter',
 }
-

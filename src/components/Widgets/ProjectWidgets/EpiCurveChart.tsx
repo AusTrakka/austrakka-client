@@ -68,7 +68,7 @@ export default function EpiCurveChart(props: ProjectWidgetProps) {
   
   useEffect(() => {
     const setColourSpecFromField = (field: string, colourScheme: ScaleOrdinal<string, string>) => {
-      // Works if field is configured with ANZ Jurisdiction or ISO State values 
+      // Works if field is configured with ANZ Jurisdiction or ISO State values
       const values: string[] = data!.fieldUniqueValues![field]!;
       const colSpec = {
         // eslint-disable-next-line object-shorthand

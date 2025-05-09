@@ -149,31 +149,31 @@ function LocalUpload() {
             multiple={false}
           />
         </Grid>
-        {/*<Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>*/}
-        {/*  <Typography variant="h4" color="primary">Select metadata options</Typography>*/}
-        {/*  <FormGroup>*/}
-        {/*    { uploadOptions.map(*/}
-        {/*      (uploadOption: { name: string; label: string; description: string; }) => (*/}
-        {/*        <Box sx={{ paddingBottom: 1 }} key={uploadOption.name}>*/}
-        {/*          <FormControlLabel*/}
-        {/*            control={(*/}
-        {/*              <Checkbox*/}
-        {/*                color="secondary"*/}
-        {/*                checked={options[uploadOption.name as keyof Options]}*/}
-        {/*                onChange={handleOptionChange}*/}
-        {/*                name={uploadOption.name}*/}
-        {/*              />*/}
-        {/*        )}*/}
-        {/*            label={<b>{uploadOption.label}</b>}*/}
-        {/*          />*/}
-        {/*          <Box sx={{ paddingLeft: 4 }}>*/}
-        {/*            {uploadOption.description}*/}
-        {/*          </Box>*/}
-        {/*        </Box>*/}
-        {/*      ),*/}
-        {/*    ) }*/}
-        {/*  </FormGroup>*/}
-        {/*</Grid>*/}
+        {/* <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}> */}
+        {/*  <Typography variant="h4" color="primary">Select metadata options</Typography> */}
+        {/*  <FormGroup> */}
+        {/*    { uploadOptions.map( */}
+        {/*      (uploadOption: { name: string; label: string; description: string; }) => ( */}
+        {/*        <Box sx={{ paddingBottom: 1 }} key={uploadOption.name}> */}
+        {/*          <FormControlLabel */}
+        {/*            control={( */}
+        {/*              <Checkbox */}
+        {/*                color="secondary" */}
+        {/*                checked={options[uploadOption.name as keyof Options]} */}
+        {/*                onChange={handleOptionChange} */}
+        {/*                name={uploadOption.name} */}
+        {/*              /> */}
+        {/*        )} */}
+        {/*            label={<b>{uploadOption.label}</b>} */}
+        {/*          /> */}
+        {/*          <Box sx={{ paddingLeft: 4 }}> */}
+        {/*            {uploadOption.description} */}
+        {/*          </Box> */}
+        {/*        </Box> */}
+        {/*      ), */}
+        {/*    ) } */}
+        {/*  </FormGroup> */}
+        {/* </Grid> */}
       </Grid>
       <Grid container justifyContent="flex-end">
         { options.validate ? (

@@ -8,7 +8,6 @@ import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import { Project } from '../../types/dtos';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import {
   selectAwaitingProjectMetadata,
@@ -49,7 +48,7 @@ function ProjectOverview() {
       : (
         <>
           <Typography className="pageTitle">
-            {/*{projectDetails ? projectDetails.name : ''}*/}
+            {/* {projectDetails ? projectDetails.name : ''} */}
           </Typography>
           <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
           <TabPanel value={tabValue} index={0} tabLoader={isSamplesLoading}>
