@@ -18,6 +18,10 @@ interface FileDragDropProps {
   setValidated: Dispatch<SetStateAction<boolean>>,
 }
 
+const getFileExtension = (f: File): string => {
+  return '.'+f.name.split('.').pop()
+}
+
 // eslint-disable-next-line react/function-component-definition
 const FileDragDrop: React.FC<FileDragDropProps> = (
   {
@@ -39,7 +43,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     const validateFilesAreOfType = {
       func: (_files: File[]) => ({
         success: Object.entries(validFormats).length === 0 ||
-          _files.every(f => Object.values(validFormats).includes(f?.type)),
+          _files.every(f => Object.keys(validFormats).includes(getFileExtension(f))),
         message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
       } as CustomUploadValidatorReturn),
     } as CustomUploadValidator;
@@ -166,7 +170,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
                   onClick={onBrowseClick}
                   multiple={multiple}
                   onChange={handleBrowseChange}
-                  accept={Object.values(validFormats).toString()}
+                  accept={[...new Set(Object.entries(validFormats).flat().filter(x => x !== ""))].join(",")}
                   hidden
                 />
               </Button>
