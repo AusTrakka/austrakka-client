@@ -20,7 +20,7 @@ export default function useActivityLogs(
 
   useEffect(() => {
     const getData = async () => {
-      const resp: ResponseObject = await getActivities(
+      const resp: ResponseObject<RefinedLog[]> = await getActivities(
         recordType,
         rguid,
         owningTenantGlobalId,
@@ -28,8 +28,8 @@ export default function useActivityLogs(
       );
             
       if (resp.status === ResponseType.Success) {
-        setRefinedLogs(resp.data as RefinedLog[]);
-        setExportData(resp.data as RefinedLog[]);
+        setRefinedLogs(resp.data ?? []);
+        setExportData(resp.data ?? []);
       } else {
         setHttpStatusCode(resp.httpStatusCode || -1);
         setIsLoadingErrorMsg(resp.message);
