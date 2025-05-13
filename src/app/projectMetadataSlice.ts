@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/brace-style */
 import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
@@ -377,8 +376,10 @@ export const selectProjectMetadata:
   };
 
 // May want to also include per-field loading state in this selector
-export const selectProjectMetadataFields = (state: RootState, projectAbbrev: string | undefined) =>
-{
+export const selectProjectMetadataFields = (
+  state: RootState,
+  projectAbbrev: string | undefined,
+) => {
   if (!projectAbbrev) {
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
