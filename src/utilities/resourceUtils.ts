@@ -9,7 +9,7 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, Project, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
+import { Feedback, FeedbackPost, Project, ProjectSummary, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
@@ -71,9 +71,9 @@ export const getProjectViewData = (projectAbbrev: string, viewId: number, token:
 export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 
 // User dashboard endpoints
-export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
-export const getUserDashboardProjects = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/projects-total?filters=${searchParams}`, token);
-export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
+export const getUserDashboardOverview = (token: string) => callGET('/api/DashboardSearch/user-dashboard/overview', token);
+export const getUserDashboardProjects = (token: string) : Promise<ResponseObject<ProjectSummary>> =>
+  callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
