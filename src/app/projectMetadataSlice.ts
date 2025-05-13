@@ -91,7 +91,7 @@ const fetchProjectInfo = createAsyncThunk(
     { rejectWithValue, fulfillWithValue, getState },
   ):Promise<FetchProjectInfoResponse | unknown> => {
     const { projectAbbrev } = params;
-    const { token } = (getState() as RootState).projectMetadataSliceState;
+    const { token } = (getState() as RootState).projectMetadataState;
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
     if (fieldsResponse.status !== 'Success') {
       return rejectWithValue(fieldsResponse.error);
@@ -120,8 +120,8 @@ const fetchDataView = createAsyncThunk(
   ):Promise<FetchDataViewResponse | unknown > => {
     const { projectAbbrev, viewIndex } = params;
     const state = getState() as RootState;
-    const { token } = state.projectMetadataSliceState;
-    const view = state.projectMetadataSliceState.data[projectAbbrev].views[viewIndex];
+    const { token } = state.projectMetadataState;
+    const view = state.projectMetadataState.data[projectAbbrev].views[viewIndex];
 
     const response = await getProjectViewData(projectAbbrev, view.id, token!);
     if (response.ok) {
@@ -145,9 +145,9 @@ listenerMiddleware.startListening({
     // Return early if wrong action; don't try to read projectAbbrev
     if (action.type !== 'projectMetadata/fetchProjectMetadata') return false;
     // Check that the reducer logic is telling us to trigger a new load process
-    const previousLoadingState = (previousState as RootState).projectMetadataSliceState
+    const previousLoadingState = (previousState as RootState).projectMetadataState
       .data[(action as any).payload.projectAbbrev]?.loadingState;
-    const loadingState = (currentState as RootState).projectMetadataSliceState
+    const loadingState = (currentState as RootState).projectMetadataState
       .data[(action as any).payload.projectAbbrev]?.loadingState;
     return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
            loadingState === MetadataLoadingState.FETCH_REQUESTED;
@@ -166,16 +166,16 @@ listenerMiddleware.startListening({
     if (!isAnyOf(fetchProjectInfo.fulfilled, fetchDataView.fulfilled)(action)) return false;
     const { projectAbbrev } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
-    const previousViewToFetch = (previousState as RootState).projectMetadataSliceState
+    const previousViewToFetch = (previousState as RootState).projectMetadataState
       .data[projectAbbrev]?.viewToFetch;
-    const viewToFetch = (currentState as RootState).projectMetadataSliceState
+    const viewToFetch = (currentState as RootState).projectMetadataState
       .data[projectAbbrev]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
   },
   effect: (action, listenerApi) => {
     const { projectAbbrev } = (action as any).meta.arg;
     const { views, viewToFetch } =
-      (listenerApi.getState() as RootState).projectMetadataSliceState.data[projectAbbrev];
+      (listenerApi.getState() as RootState).projectMetadataState.data[projectAbbrev];
     // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
@@ -373,7 +373,7 @@ export const selectProjectMetadata:
 (state: RootState, projectAbbrev: string | null | undefined) => ProjectMetadataState | null =
   (state, projectAbbrev) => {
     if (!projectAbbrev) return null; // should not be 0, which is fine
-    return state.projectMetadataSliceState.data[projectAbbrev!] ?? null;
+    return state.projectMetadataState.data[projectAbbrev!] ?? null;
   };
 
 // May want to also include per-field loading state in this selector
@@ -383,15 +383,15 @@ export const selectProjectMetadataFields = (state: RootState, projectAbbrev: str
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
   return {
-    fields: state.projectMetadataSliceState.data[projectAbbrev]?.fields,
-    fieldUniqueValues: state.projectMetadataSliceState.data[projectAbbrev]?.fieldUniqueValues,
-    loadingState: state.projectMetadataSliceState.data[projectAbbrev]?.loadingState,
+    fields: state.projectMetadataState.data[projectAbbrev]?.fields,
+    fieldUniqueValues: state.projectMetadataState.data[projectAbbrev]?.fieldUniqueValues,
+    loadingState: state.projectMetadataState.data[projectAbbrev]?.loadingState,
   };
 };
 
 export const selectProjectMetadataError = (state: RootState, projectAbbrev: string | undefined) => {
   if (!projectAbbrev) return null;
-  return state.projectMetadataSliceState.data[projectAbbrev]?.errorMessage;
+  return state.projectMetadataState.data[projectAbbrev]?.errorMessage;
 };
 
 // Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
@@ -400,7 +400,7 @@ export const selectProjectMetadataError = (state: RootState, projectAbbrev: stri
 export const selectAwaitingProjectMetadata =
   (state: RootState, projectAbbrev: string | undefined) => {
     if (!projectAbbrev) return true;
-    const loadingState = state.projectMetadataSliceState.data[projectAbbrev]?.loadingState;
+    const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
     return loadingState === MetadataLoadingState.IDLE ||
           loadingState === MetadataLoadingState.FETCH_REQUESTED ||
           loadingState === MetadataLoadingState.AWAITING_FIELDS ||
@@ -411,5 +411,5 @@ export const selectAwaitingProjectMetadata =
 export const selectProjectMergeAlgorithm =
   (state: RootState, projectAbbrev: string | undefined) => {
     if (!projectAbbrev) return null;
-    return state.projectMetadataSliceState.data[projectAbbrev]?.mergeAlgorithm;
+    return state.projectMetadataState.data[projectAbbrev]?.mergeAlgorithm;
   };

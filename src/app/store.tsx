@@ -16,7 +16,7 @@ const store = configureStore({
     userOverviewState: userOverviewReducer,
     projectTotalState: projectsTotalReducer,
     phessIdOverallState: phessIdOverallReducer,
-    projectMetadataSliceState: projectMetadataReducer,
+    projectMetadataState: projectMetadataReducer,
     groupMetadataState: groupMetadataReducer,
     userState: userReducer,
     tenantSliceState: tenantReducer,
