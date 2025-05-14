@@ -149,7 +149,18 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
         && nodesByKey[item.aggregationMemberKey]) {
         const parentNode = nodesByKey[item.aggregationMemberKey];
         if (!parentNode.children) { parentNode.children = []; }
-        parentNode.children?.push(item); // Add child to parent node
+        const existingChildIndex = parentNode.children.findIndex(
+          child => child.refinedLogId === item.refinedLogId
+        );
+
+        // Merge / append children.
+        if (existingChildIndex === -1) {
+          // Item doesn't exist, add it
+          parentNode.children.push(item);
+        } else {
+          // Item exists, update it
+          parentNode.children[existingChildIndex] = item;
+        }
       } else {
         rootNodes.push(item); // Root node has no parent
       }
