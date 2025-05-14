@@ -21,6 +21,7 @@ import { useAppDispatch } from '../../app/store';
 import { addMetadata } from '../../app/projectMetadataSlice';
 import { Sample } from '../../types/sample.interface';
 import { ResponseType } from '../../constants/responseType';
+import { buildFieldListAndUpdateData } from '../../utilities/standaloneClientUtils';
 
 interface Options {
   validate: boolean,
@@ -75,8 +76,8 @@ function LocalUpload() {
 
   // Handle upload submission
   // This component should do the CSV parsing and validation, 
-  // as it is async and we want to show errors locally
-  // we should only call the redux action if the data is valid
+  // as it is async and we want to show errors locally.
+  // We should only call the redux action if the data is valid.
   const handleSubmit = async () => {
     // Needs to validate, and insert data into project redux state
     Papa.parse(files[0].file, {
@@ -101,8 +102,10 @@ function LocalUpload() {
           // TODO if we have succeeded, but result.errors is non-empty, show warnings
           return;
         }
+
+        const fields = buildFieldListAndUpdateData(csvData, fieldNames);
+        dispatch(addMetadata({ uploadedData: csvData, uploadedFields: fields }));
         
-        dispatch(addMetadata({ uploadedData: csvData, uploadedFields: fieldNames }));
         setSubmission((oldSubmissionState) => ({
           ...oldSubmissionState,
           status: LoadingState.SUCCESS, // TODO how to actually ensure success? check project state?

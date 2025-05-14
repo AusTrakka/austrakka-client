@@ -12,7 +12,6 @@ import {
   replaceDateStrings,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
-import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { localProjectAbbrev } from '../constants/standaloneClientConstants';
 
@@ -58,10 +57,10 @@ const initialState: ProjectMetadataSliceState = {
 
 interface AddMetadataParams {
   uploadedData: Sample[]
-  uploadedFields: string[] // could turn this into field objects if we include a UI for setting types
+  uploadedFields: Field[]
 }
 
-const fieldToProjectField = (field: Field, idx: number) : ProjectField => ({
+const fieldToProjectField = (field: Field, idx: number): ProjectField => ({
   ...field,
   projectFieldId: idx,
   fieldName: field.columnName,
@@ -71,22 +70,12 @@ const fieldToProjectField = (field: Field, idx: number) : ProjectField => ({
   createdBy: 'upload', // TODO why is this here?
 });
 
-const fieldToProjectViewField = (field: Field, idx: number) : ProjectViewField => ({
+const fieldToProjectViewField = (field: Field, idx: number): ProjectViewField => ({
   ...field,
   projectFieldId: idx,
   projectFieldName: field.columnName,
-  fieldSource: MergeAlgorithm.OVERRIDE,
+  fieldSource: field.columnName === SAMPLE_ID_FIELD ? FieldSource.BOTH : FieldSource.SAMPLE,
   hidden: false,
-});
-
-// Temporarily, we just make all fields visualisable strings
-const makeVisualisableStringField = (fieldName: string, idx: number): Field => ({
-  columnName: fieldName,
-  primitiveType: 'string',
-  metaDataColumnTypeName: 'string',
-  metaDataColumnValidValues: null,
-  canVisualise: true,
-  columnOrder: idx,
 });
 
 export const projectMetadataSlice = createSlice({
@@ -95,19 +84,20 @@ export const projectMetadataSlice = createSlice({
   reducers: {
     addMetadata: (state, action: PayloadAction<AddMetadataParams>) => {
       const { uploadedData, uploadedFields } = action.payload;
-
-      // If updating existing metadata, should use existing state to return modified
-      // for now treat all as visualisable string fields, and just replace data
       
+      // If updating existing metadata, should use existing state to return modified
+      // for now just replace data
+
       if (!state.data[localProjectAbbrev]) {
         state.data[localProjectAbbrev] = projectMetadataInitialStateCreator(localProjectAbbrev);
       }
 
       const metadataState = state.data[localProjectAbbrev];
 
-      const fields = uploadedFields.map(makeVisualisableStringField);
-      metadataState.projectFields = fields.map(fieldToProjectField);
-      metadataState.fields = fields.map(fieldToProjectViewField);
+      const fieldNames = uploadedFields.map(field => field.columnName);
+
+      metadataState.projectFields = uploadedFields.map(fieldToProjectField);
+      metadataState.fields = uploadedFields.map(fieldToProjectViewField);
       metadataState.views = {
         1: {
           id: 1,
@@ -115,36 +105,41 @@ export const projectMetadataSlice = createSlice({
           blobFilePath: 'dummy.csv',
           originalFileName: 'dummy.csv', // should we use uploaded CSV name?
           isBase: true,
-          fields: uploadedFields,
-          viewFields: uploadedFields,
+          fields: fieldNames,
+          viewFields: fieldNames,
         },
       };
+
+      replaceNullsWithEmpty(uploadedData);
+
       metadataState.metadata = uploadedData;
+      replaceDateStrings(
+        uploadedData,
+        metadataState.fields!,
+        metadataState.fields.map(field => field.columnName),
+      );
 
       // Field unique values
       // For now, this is going to calculate unique vals for ALL fields!
       metadataState.fieldUniqueValues = {};
       const uniqueVals = calculateUniqueValues(
-        uploadedFields,
+        fieldNames,
         metadataState.fields,
         uploadedData, // should be resulting merged data, if merging
       );
       metadataState.fields!.forEach((field) => {
         metadataState.fieldUniqueValues![field.columnName] = uniqueVals[field.columnName!];
       });
-      
+
       // Loading states
       metadataState.loadingState = MetadataLoadingState.DATA_LOADED;
       metadataState.viewLoadingStates = { 1: LoadingState.SUCCESS };
-      fields.forEach(fld => {
-        metadataState.fieldLoadingStates[fld.columnName] = LoadingState.SUCCESS;
+      fieldNames.forEach(fld => {
+        metadataState.fieldLoadingStates[fld] = LoadingState.SUCCESS;
       });
-      
-      // Might want to add in, from deleted reducers
-      // replaceNullsWithEmpty(data);
-      // replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
-      // Default sort data by Seq_ID, which should be consistent across views.
-      // Could be done server-side, in which case this sort operation is redundant but cheap
+
+      // Might want to add in default sort data by Seq_ID, from deleted reducers
+      // - but maybe better to respect order of user-added CSV file and let user sort
       // if (state.data[projectAbbrev].metadata!.length > 0 &&
       //   state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
       //   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
@@ -170,8 +165,10 @@ export const selectProjectMetadata:
   };
 
 // May want to also include per-field loading state in this selector
-export const selectProjectMetadataFields = (state: RootState, projectAbbrev: string | undefined) =>
-{
+export const selectProjectMetadataFields = (
+  state: RootState,
+  projectAbbrev: string | undefined,
+) => {
   if (!projectAbbrev) {
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
@@ -194,10 +191,10 @@ export const selectAwaitingProjectMetadata =
     if (!projectAbbrev) return true;
     const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
     return loadingState === MetadataLoadingState.IDLE ||
-          loadingState === MetadataLoadingState.FETCH_REQUESTED ||
-          loadingState === MetadataLoadingState.AWAITING_FIELDS ||
-          loadingState === MetadataLoadingState.FIELDS_LOADED ||
-          loadingState === MetadataLoadingState.AWAITING_DATA;
+      loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+      loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+      loadingState === MetadataLoadingState.FIELDS_LOADED ||
+      loadingState === MetadataLoadingState.AWAITING_DATA;
   };
 
 export const selectProjectMergeAlgorithm =
