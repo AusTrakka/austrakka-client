@@ -7,13 +7,13 @@ import {
   DataTableRowToggleEvent,
   DataTableSelectEvent,
 } from 'primereact/datatable';
-import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
+import { Alert, AlertTitle, Button, CircularProgress, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel, Info } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
 import { ActivityField, RefinedLog } from '../../../types/dtos';
-import useActivityLogs from '../../../hooks/useActivityLogs';
+import useActivityLogs, { FirstPageRequest } from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, ColumnBuilder } from '../../../utilities/tableUtils';
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
@@ -97,6 +97,13 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
+
+  // Default to 7 days of logs
+  const firstPageReq: FirstPageRequest = {
+    startPeriod: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    endPeriod: new Date().toISOString(),
+    pageSize: 2,
+  };
   
   const routeSegment = recordType === 'tenant'
     ? recordType
@@ -106,7 +113,10 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
     refinedLogs,
     httpStatusCode,
     dataLoading,
-  } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId);
+    moreDataLoading,
+    loadMore,
+    noMoreData,
+  } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId, firstPageReq);
 
   const transformData = (data: RefinedLog[]): RefinedLog[] => {
     const nodesByKey: { [key: string]: RefinedLog } = {};
@@ -138,10 +148,8 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
         * */
         && nodesByKey[item.aggregationMemberKey]) {
         const parentNode = nodesByKey[item.aggregationMemberKey];
-        if (parentNode) {
-          if (!parentNode.children) parentNode.children = [];
-          parentNode.children?.push(item); // Add child to parent node
-        }
+        if (!parentNode.children) { parentNode.children = []; }
+        parentNode.children?.push(item); // Add child to parent node
       } else {
         rootNodes.push(item); // Root node has no parent
       }
@@ -152,7 +160,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   };
 
   useEffect(() => {
-    if (refinedLogs.length > 0) {
+    if (!dataLoading && !moreDataLoading && refinedLogs.length > 0) {
       const transformedData = transformData(refinedLogs);
       setLocalLogs(transformedData);
     }
@@ -201,8 +209,8 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
 
     const firstChildIdx = localLogs.findIndex((node) =>
       node.aggregationMemberKey
-            && row.aggregationKey
-            && node.aggregationMemberKey === row.aggregationKey);
+        && row.aggregationKey
+        && node.aggregationMemberKey === row.aggregationKey);
 
     const clonedRows = [...localLogs];
 
@@ -320,17 +328,14 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
             removableSort
             header={header}
             scrollable
-            scrollHeight="calc(100vh - 300px)"
-            paginator
+            paginator={false}
             onRowClick={rowClickHandler}
             selection={selectedRow}
             onRowSelect={onRowSelect}
             onRowToggle={toggleRow}
             selectionMode="single"
-            rows={25}
             rowClassName={selectRowClassName}
             loading={false}
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
@@ -339,7 +344,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
               <Typography variant="subtitle1" color="textSecondary" align="center">
                 No activity found
               </Typography>
-                        )}
+            )}
           >
             <Column
               expander={(rowData: RefinedLog) => (rowData.children?.length ?? 0) > 0}
@@ -372,12 +377,19 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
                 />
               )) : null}
           </DataTable>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '15px 0' }}>
+            {
+              moreDataLoading
+              ? <CircularProgress size="30px" />
+              : <Button onClick={loadMore} disabled={dataLoading || noMoreData}>More</Button>
+            }
+          </div>
         </div>
       </Paper>
       <div style={{ height: '10px' }} />
     </>
   );
-    
+  
   let contentPane = <></>;
   if (httpStatusCode === 401 || httpStatusCode === 403) {
     contentPane = (

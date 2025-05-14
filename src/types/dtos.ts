@@ -400,6 +400,7 @@ export interface UserRoleRecordPrivilegePost {
 export interface RefinedLog {
   // Server fields
   refinedLogGlobalId: string,
+  refinedLogId: number,
   eventSpecGlobalId: string,
   operationName: string,
   resourceGlobalId: string,

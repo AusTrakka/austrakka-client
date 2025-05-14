@@ -20,6 +20,7 @@ import {
   UserRoleRecordPrivilegePost,
 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
+import { FirstPageRequest, NextPageDescRequest } from "../hooks/useActivityLogs";
 
 // Definition of endpoints
 
@@ -114,7 +115,30 @@ export const disableInteractionWindow = async (tenantGlobalId: string, windowId:
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
-export const getActivities = (recordType: string, rguid: string, owningTenantGlobalId: string, token: string): Promise<ResponseObject<RefinedLog[]>> => callGET(`/api/V2/${recordType}/${rguid}/ActivityLog?owningTenantGlobalId=${owningTenantGlobalId}`, token);
+export function getActivities(
+  recordType: string,
+  rguid: string,
+  owningTenantGlobalId: string,
+  token: string,
+  firstPageReq: FirstPageRequest,
+  cursor?: NextPageDescRequest|null): Promise<ResponseObject<RefinedLog[]>>
+{
+  const start = cursor?.startPeriod || firstPageReq.startPeriod;
+  const previousDateTime = cursor?.previousDateTime || '';
+  const encodedPreviousDateTime = encodeURIComponent(previousDateTime);
+  const encodedStart = encodeURIComponent(start);
+  const encodedEnd = encodeURIComponent(firstPageReq.endPeriod);
+  
+  const uriComp = 
+    `/api/V2/${recordType}/${rguid}/ActivityLog?owningTenantGlobalId=${owningTenantGlobalId}` +
+    `&startPeriod=${encodedStart}` +
+    `&endPeriod=${encodedEnd}` +
+    `&previousDateTime=${encodedPreviousDateTime}` +
+    `&previousRefinedLogId=${cursor?.previousRefinedLogId || ''}` +
+    `&pageSize=${firstPageReq.pageSize}`;
+  
+  return callGET(uriComp, token);
+}
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
 export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
 
