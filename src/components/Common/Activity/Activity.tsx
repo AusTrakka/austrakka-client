@@ -182,25 +182,8 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
     const childrenToAdd = (row.children ?? []).filter(child =>
       !clonedRows.some(existingRow => existingRow.refinedLogGlobalId === child.refinedLogGlobalId)
     );
-
-    // Sort children in descending order by EventTime and then by RefinedLogGlobalId
-    const sortedChildren = [...childrenToAdd].sort((a, b) => {
-      // First compare by EventTime in descending order
-      if (a.eventTime && b.eventTime) {
-        const timeComparison = new Date(b.eventTime).getTime() - new Date(a.eventTime).getTime();
-        if (timeComparison !== 0) return timeComparison;
-      } else if (a.eventTime) {
-        return -1; // a has time, b doesn't, so a comes first
-      } else if (b.eventTime) {
-        return 1;  // b has time, a doesn't, so b comes first
-      }
-
-      // If EventTime is the same or missing, sort by RefinedLogGlobalId in descending order
-      return b.refinedLogGlobalId.toString().localeCompare(a.refinedLogGlobalId.toString());
-    });
-
-    // Insert sorted children at position rowIdx + 1
-    clonedRows.splice(rowIdx + 1, 0, ...sortedChildren);
+    
+    clonedRows.splice(rowIdx + 1, 0, ...childrenToAdd);
 
     const expansionStateClone = new Set(expandedNodeIds);
     expansionStateClone.add(row.refinedLogGlobalId.toString());
