@@ -11,7 +11,13 @@ import {
   Box,
   Typography,
 } from '@mui/material';
-import { ViewColumn } from '@mui/icons-material';
+import {
+  ViewColumn,
+  VisibilityOff,
+  Visibility,
+  HourglassEmpty,
+  InfoOutlined, VisibilityOffOutlined,
+} from '@mui/icons-material';
 
 interface ColumnVisibilityMenuProps {
   columns: any[];
@@ -22,7 +28,9 @@ interface ColumnVisibilityMenuProps {
 function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   const { columns, onColumnVisibilityChange, emptyColumnNames } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedColumns, setSelectedColumns] = useState<any>(columns.filter((c) => c.hidden));
+  const [selectedColumns, setSelectedColumns] = useState<any>(
+    columns.filter((c) => c.hidden),
+  );
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -34,15 +42,28 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   };
 
   const handleColumnSelect = (column: any) => {
-    setSelectedColumns((prevSelectedColumns: any) =>
-      (prevSelectedColumns.some((p: any) => p.header === column.header)
+    setSelectedColumns((prevSelectedColumns: any) => {
+      const updatedSelection = prevSelectedColumns.some((p: any) => p.header === column.header)
         ? prevSelectedColumns.filter((c: any) => c.header !== column.header)
-        : [...prevSelectedColumns, column]));
+        : [...prevSelectedColumns, column];
+
+      onColumnVisibilityChange(updatedSelection);
+      return updatedSelection;
+    });
   };
 
-  const onColumnToggle = () => {
-    onColumnVisibilityChange(selectedColumns);
-    handleClose();
+  const hasHiddenColumns = columns.some((col: any) => col.hidden);
+
+  const onColumnHideAll = () => {
+    setSelectedColumns(columns);
+    onColumnVisibilityChange(columns);
+  };
+
+  const onColumnHideEmpty = () => {
+    const columnsToToggle = columns.filter((c) =>
+      emptyColumnNames?.includes(c.field));
+    setSelectedColumns(columnsToToggle);
+    onColumnVisibilityChange(columnsToToggle);
   };
 
   const onColumnReset = () => {
@@ -50,24 +71,18 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
     onColumnVisibilityChange([]);
   };
 
-  const onColumnHideAll = () => {
-    setSelectedColumns(columns);
-    onColumnVisibilityChange(columns);
-  };
-  
-  const onColumnHideEmpty = () => {
-    const columnsToToggle = columns.filter((c) => emptyColumnNames?.includes(c.field));
-    setSelectedColumns(columnsToToggle);
-    onColumnVisibilityChange(columnsToToggle);
-  };
-
   return (
     <Box style={{ display: 'flex', alignItems: 'center' }}>
-      <Tooltip title="Show/Hide Columns" placement="top" arrow>
+      <Tooltip
+        title={hasHiddenColumns ? 'Some columns are hidden' : 'Show/Hide Columns'}
+        placement="top"
+        arrow
+      >
         <IconButton
           size="small"
-          aria-label="more"
-          aria-controls={open ? 'long-menu' : undefined}
+          color={hasHiddenColumns ? 'warning' : 'default'}
+          aria-label="column-visibility"
+          aria-controls={open ? 'column-menu' : undefined}
           aria-expanded={open ? 'true' : undefined}
           aria-haspopup="true"
           onClick={handleClick}
@@ -75,115 +90,115 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
           <ViewColumn />
         </IconButton>
       </Tooltip>
+
       <Menu
-        id="long-menu"
+        id="column-menu"
         anchorEl={anchorEl}
         keepMounted
         elevation={1}
         open={open}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        sx={{ height: '50vh' }}
         onClose={handleClose}
         MenuListProps={{
-          style: {
+          disablePadding: true,
+          sx: {
+            minWidth: 330,
             padding: 0,
-            minWidth: '330px',
           },
         }}
       >
-        <Paper
-          square
-          sx={{
-            position: 'sticky',
-            backgroundColor: 'white',
-            top: 0,
-            padding: '5px',
-            zIndex: 2,
-            display: 'flex',
-            justifyContent: 'space-evenly',
-          }}
-        >
-          <MenuItem
-            disableGutters
-            disableRipple
-            dense
+        <Box>
+          {/* Fixed header */}
+          <Paper
+            square
             sx={{
-              'pointerEvents': 'none',
-              '&:hover': { backgroundColor: 'white' },
+              backgroundColor: 'white',
+              padding: 2,
+              zIndex: 2,
+              borderBottom: '1px solid #ddd',
             }}
           >
-            <Stack direction="row" spacing={1} justifyContent="space-evenly">
-              <div>
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Manage column visibility
+                </Typography>
+                <Tooltip title="Use these options to show or hide columns." placement="top-start" arrow>
+                  <InfoOutlined fontSize="small" color="action" />
+                </Tooltip>
+              </Stack>
+              <Stack direction="row" spacing={1} justifyContent="space-evenly" flexWrap="nowrap">
                 <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onColumnToggle();
-                  }}
-                  sx={{ pointerEvents: 'auto' }}
-                >
-                  Submit
-                </Button>
-              </div>
-              <div>
-                <Button
+                  size="small"
                   variant="outlined"
-                  color="inherit"
-                  sx={{ pointerEvents: 'auto' }}
+                  color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     onColumnHideAll();
                   }}
+                  fullWidth
+                  startIcon={<VisibilityOff />}
                 >
                   Hide All
                 </Button>
-              </div>
-              {emptyColumnNames && emptyColumnNames.length > 0 && (
-                <div>
+                {emptyColumnNames && emptyColumnNames.length > 0 && (
                   <Button
+                    size="small"
                     variant="outlined"
-                    color="inherit"
-                    sx={{ pointerEvents: 'auto' }}
+                    color="primary"
                     onClick={(e) => {
                       e.stopPropagation();
                       onColumnHideEmpty();
                     }}
+                    fullWidth
+                    startIcon={<VisibilityOffOutlined />}
                   >
                     Hide Empty
                   </Button>
-                </div>
-              )}
-              <div style={{ marginRight: 10 }}>
+                )}
+              </Stack>
+              <Stack direction="row" justifyContent="center">
                 <Button
+                  fullWidth
+                  size="small"
                   variant="outlined"
-                  color="inherit"
-                  sx={{ pointerEvents: 'auto' }}
+                  color="success"
                   onClick={(e) => {
                     e.stopPropagation();
                     onColumnReset();
                   }}
+                  startIcon={<Visibility />}
+                  disabled={selectedColumns.length === 0}
                 >
                   Show All
                 </Button>
-              </div>
+              </Stack>
             </Stack>
-          </MenuItem>
-        </Paper>
-        {columns.map((column: any) => (
-          <MenuItem
-            key={column.header}
-            value={column.field}
-            onClick={() => handleColumnSelect(column)}
+          </Paper>
+
+          {/* Scrollable section */}
+          <Box
+            sx={{
+              maxHeight: 300,
+              overflowY: 'auto',
+            }}
           >
-            <Checkbox
-              checked={!selectedColumns.some(
-                (p: any) => p.header === column.header,
-              )}
-            />
-            <Typography>{column.header}</Typography>
-          </MenuItem>
-        ))}
+            {columns.map((column: any) => (
+              <MenuItem
+                key={column.header}
+                value={column.field}
+                onClick={() => handleColumnSelect(column)}
+              >
+                <Checkbox
+                  checked={!selectedColumns.some(
+                    (p: any) => p.header === column.header,
+                  )}
+                />
+                <Typography>{column.header}</Typography>
+              </MenuItem>
+            ))}
+          </Box>
+        </Box>
       </Menu>
     </Box>
   );
