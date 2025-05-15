@@ -1,10 +1,32 @@
 .form-control {
     min-width: 150px;
+    width: auto; /* Makes sure the form control takes available space */
 }
 
 .select {
     transition: border-color 0.3s ease;
+    height: 40px; /* Fixed height for the select component */
+}
+
+.select .MuiOutlinedInput-input {
+    padding-right: 50px !important; /* Make space for endAdornment and dropdown icon */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.select .MuiSelect-icon {
+    right: 7px; /* Position dropdown icon to avoid overlap */
+}
+
+/* Ensure endAdornment stays on same line */
+.select .MuiInputAdornment-root {
+    margin-left: 0;
+    flex-shrink: 0;
+    position: absolute;
+    right: 24px;
 }
 
 .select.Mui-focused .MuiOutlinedInput-notchedOutline {
     border-color: var(--secondary-light-green);
+}
