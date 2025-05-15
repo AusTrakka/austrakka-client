@@ -4,6 +4,7 @@ import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { InlineData } from 'vega-lite/build/src/data';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -52,7 +53,7 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
   const [timeBinSpec, setTimeBinSpec] = useState<{ unit: string, step: number }>({ unit: 'yearweek', step: 1 });
   const [colourSpec, setColourSpec] = useState<object>(UniformColourSpec);
 
-  const spec: TopLevelSpec = {
+  const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: {
       name: 'inputdata',
@@ -71,7 +72,7 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: colourSpec,
     },
-  };
+  });
   
   useEffect(() => {
     const setColourSpecFromField = (field: string, colourScheme: string) => {
@@ -145,11 +146,12 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
       if (vegaView) {
         vegaView.finalize();
       }
-      const compiledSpec = compile(spec!).spec;
+      const spec = createSpec();
+      const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as any).values = copy;
+      (compiledSpec.data![0] as InlineData).values = copy;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -160,7 +162,7 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
       createVegaView();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, plotDiv, timeBinSpec, colourSpec]);
+  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
   
   return (
     // <Box sx={{ flexGrow: 1 }}>
