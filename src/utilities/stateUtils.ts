@@ -35,7 +35,9 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
     }
 
     // Convert searchParams to a string
-    const queryString = currentSearchParams.toString();
+    const queryString = Array.from(currentSearchParams.entries())
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
@@ -92,7 +94,9 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
       }
     });
     // Convert searchParams to a string
-    const queryString = currentSearchParams.toString();
+    const queryString = Array.from(currentSearchParams.entries())
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
     // Update the URL without navigating
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
