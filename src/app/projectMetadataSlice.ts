@@ -218,7 +218,13 @@ export const projectMetadataSlice = createSlice({
       const { mergeAlgorithm, fields, views } = action.payload as FetchProjectInfoResponse;
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
       // Sort fields by columnOrder and set state
-      fields.sort((a, b) => a.columnOrder - b.columnOrder);
+      fields.sort((a, b) => {
+        if (a.columnOrder !== b.columnOrder) {
+          return a.columnOrder - b.columnOrder;
+        }
+        return a.fieldName.localeCompare(b.fieldName, undefined, { sensitivity: 'base' });
+      });
+      
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
