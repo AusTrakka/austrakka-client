@@ -15,8 +15,8 @@ import {
   ViewColumn,
   VisibilityOff,
   Visibility,
-  HourglassEmpty,
-  InfoOutlined, VisibilityOffOutlined,
+  InfoOutlined,
+  VisibilityOffOutlined,
 } from '@mui/icons-material';
 
 interface ColumnVisibilityMenuProps {
