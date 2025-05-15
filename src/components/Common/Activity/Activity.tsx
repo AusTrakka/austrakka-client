@@ -370,7 +370,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
               body={firstColumnTemplate}
               sortable={false}
               resizeable
-              style={{ minWidth: '150px', paddingLeft: '16px' }}
+              style={{ width: '400px', paddingLeft: '16px' }}
               headerClassName="custom-title"
             />
             {columns ? columns.filter((col: ColumnBuilder) => col.field !== OPERATION_NAME_COLUMN)
