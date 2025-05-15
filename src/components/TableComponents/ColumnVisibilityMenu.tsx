@@ -15,11 +15,12 @@ import { ViewColumn } from '@mui/icons-material';
 
 interface ColumnVisibilityMenuProps {
   columns: any[];
+  emptyColumnNames?: string[] | null;
   onColumnVisibilityChange: (selectedColumns: any[]) => void;
 }
 
 function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
-  const { columns, onColumnVisibilityChange } = props;
+  const { columns, onColumnVisibilityChange, emptyColumnNames } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedColumns, setSelectedColumns] = useState<any>(columns.filter((c) => c.hidden));
   const open = Boolean(anchorEl);
@@ -52,6 +53,12 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   const onColumnHideAll = () => {
     setSelectedColumns(columns);
     onColumnVisibilityChange(columns);
+  };
+  
+  const onColumnHideEmpty = () => {
+    const columnsToToggle = columns.filter((c) => emptyColumnNames?.includes(c.field));
+    setSelectedColumns(columnsToToggle);
+    onColumnVisibilityChange(columnsToToggle);
   };
 
   return (
@@ -132,6 +139,21 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
                   Hide All
                 </Button>
               </div>
+              {emptyColumnNames && emptyColumnNames.length > 0 && (
+                <div>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    sx={{ pointerEvents: 'auto' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onColumnHideEmpty();
+                    }}
+                  >
+                    Hide Empty
+                  </Button>
+                </div>
+              )}
               <div style={{ marginRight: 10 }}>
                 <Button
                   variant="outlined"
@@ -166,5 +188,9 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
     </Box>
   );
 }
+
+ColumnVisibilityMenu.defaultProps = {
+  emptyColumnNames: null,
+};
 
 export default ColumnVisibilityMenu;
