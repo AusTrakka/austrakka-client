@@ -97,6 +97,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
+  const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set());
 
   // Default to 7 days of logs
   const firstPageReq: FirstPageRequest = {
@@ -170,10 +171,103 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
     return rootNodes;
   };
 
+  const isExpanded = (row: RefinedLog) => {
+    return expandedNodeIds.has(row.refinedLogGlobalId.toString());
+  }
+
+  function expandRow(row: RefinedLog, clonedRows: RefinedLog[]) {
+    const rowIdx = localLogs.indexOf(row);
+
+    // Get children not already in clonedRows
+    const childrenToAdd = (row.children ?? []).filter(child =>
+      !clonedRows.some(existingRow => existingRow.refinedLogGlobalId === child.refinedLogGlobalId)
+    );
+
+    // Sort children in descending order by EventTime and then by RefinedLogGlobalId
+    const sortedChildren = [...childrenToAdd].sort((a, b) => {
+      // First compare by EventTime in descending order
+      if (a.eventTime && b.eventTime) {
+        const timeComparison = new Date(b.eventTime).getTime() - new Date(a.eventTime).getTime();
+        if (timeComparison !== 0) return timeComparison;
+      } else if (a.eventTime) {
+        return -1; // a has time, b doesn't, so a comes first
+      } else if (b.eventTime) {
+        return 1;  // b has time, a doesn't, so b comes first
+      }
+
+      // If EventTime is the same or missing, sort by RefinedLogGlobalId in descending order
+      return b.refinedLogGlobalId.toString().localeCompare(a.refinedLogGlobalId.toString());
+    });
+
+    // Insert sorted children at position rowIdx + 1
+    clonedRows.splice(rowIdx + 1, 0, ...sortedChildren);
+
+    const expansionStateClone = new Set(expandedNodeIds);
+    expansionStateClone.add(row.refinedLogGlobalId.toString());
+    setExpandedNodeIds(expansionStateClone);
+  }
+
+  function collapseRow(row: RefinedLog, clonedRows: RefinedLog[]) {
+    // Remove
+    // Traverse the tree of row recursively to fine all the descendants.
+    // Compile the nodes into a flat array. Using this information, remove
+    // each member of the array from currentRows.
+    const targets: RefinedLog[] = [];
+    const expansionStateClone = new Set(expandedNodeIds);
+
+    const findDescendants = (node: RefinedLog) => {
+      targets.push(node);
+      node.children?.forEach((child) => findDescendants(child));
+    };
+
+    if (row.children) {
+      for (let i = 0; i < row.children.length; i++) {
+        findDescendants(row.children[i]);
+      }
+    }
+
+    // Remove the targets from the currentRows
+    targets.forEach((target) => {
+      const idx = clonedRows.indexOf(target);
+      if (idx !== -1) {
+        clonedRows.splice(idx, 1);
+      }
+    });
+    expansionStateClone.delete(row.refinedLogGlobalId.toString());
+    setExpandedNodeIds(expansionStateClone);
+  }
+
   useEffect(() => {
     if (!dataLoading && !moreDataLoading && refinedLogs.length > 0) {
       const transformedData = transformData(refinedLogs);
-      setLocalLogs(transformedData);
+
+      // Create a clone of transformedData to work with
+      const clonedRows = [...transformedData];
+
+      // Recursive function to expand a node and its descendants if needed
+      const expandNodesRecursively = (nodes: RefinedLog[], processedNodes: Set<string> = new Set()) => {
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+          const nodeId = node.refinedLogGlobalId.toString();
+
+          // Skip if we've already processed this node to avoid infinite loops
+          if (processedNodes.has(nodeId)) continue;
+          processedNodes.add(nodeId);
+
+          // If this node should be expanded
+          if (expandedNodeIds.has(nodeId) && node.children && node.children.length > 0) {
+            // Expand this node
+            expandRow(node, clonedRows);
+
+            // Recursively process its children
+            expandNodesRecursively(node.children, processedNodes);
+          }
+        }
+      };
+
+      // Start the recursive expansion process
+      expandNodesRecursively(clonedRows);
+      setLocalLogs(clonedRows);
     }
   }, [refinedLogs]);
 
@@ -217,44 +311,13 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
 
   const toggleRow = (e: DataTableRowToggleEvent) => {
     const row = (e.data as any[])[0] as RefinedLog;
-
-    const firstChildIdx = localLogs.findIndex((node) =>
-      node.aggregationMemberKey
-        && row.aggregationKey
-        && node.aggregationMemberKey === row.aggregationKey);
-
     const clonedRows = [...localLogs];
 
-    if (firstChildIdx === -1) {
+    if (!isExpanded(row)) {
       // Add
-      const rowIdx = localLogs.indexOf(row);
-      // Insert row.children at position rowIdx + 1
-      clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
+      expandRow(row, clonedRows);
     } else {
-      // Remove
-      // Traverse the tree of row recursively to fine all the descendants.
-      // Compile the nodes into a flat array. Using this information, remove
-      // each member of the array from currentRows.
-      const targets: RefinedLog[] = [];
-
-      const findDescendants = (node: RefinedLog) => {
-        targets.push(node);
-        node.children?.forEach((child) => findDescendants(child));
-      };
-
-      if (row.children) {
-        for (let i = 0; i < row.children.length; i++) {
-          findDescendants(row.children[i]);
-        }
-      }
-
-      // Remove the targets from the currentRows
-      targets.forEach((target) => {
-        const idx = clonedRows.indexOf(target);
-        if (idx !== -1) {
-          clonedRows.splice(idx, 1);
-        }
-      });
+      collapseRow(row, clonedRows);
     }
     setLocalLogs(clonedRows);
   };
