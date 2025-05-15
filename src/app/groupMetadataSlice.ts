@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { MetaDataColumn } from '../types/dtos';
@@ -9,6 +9,7 @@ import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import {
+  getEmptyStringColumns,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
@@ -44,6 +45,7 @@ export interface GroupMetadataState {
   viewToFetch: number
   metadata: Sample[] | null
   columnLoadingStates: Record<string, LoadingState>
+  emptyColumns: string[]
   errorMessage: string | null
 }
 
@@ -57,6 +59,7 @@ const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState =
   viewToFetch: 0,
   metadata: null,
   columnLoadingStates: {},
+  emptyColumns: [],
   errorMessage: null,
 });
 
@@ -257,6 +260,7 @@ export const groupMetadataSlice = createSlice({
         replaceHasSequencesNullsWithFalse(data);
       }
       replaceNullsWithEmpty(data);
+      state.data[groupId].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[groupId].fields!, viewFields);
       state.data[groupId].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.

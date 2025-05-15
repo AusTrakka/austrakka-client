@@ -13,7 +13,7 @@ import {
   calculateViewFieldNames,
   replaceDateStrings,
   replaceNullsWithEmpty,
-  replaceHasSequencesNullsWithFalse,
+  replaceHasSequencesNullsWithFalse, getEmptyStringColumns,
 } from './metadataSliceUtils';
 
 export interface ProjectMetadataState {
@@ -27,6 +27,7 @@ export interface ProjectMetadataState {
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
   metadata: Sample[] | null
+  emptyColumns: string[]
   fieldLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
@@ -42,6 +43,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   viewLoadingStates: {},
   viewToFetch: 0,
   metadata: null,
+  emptyColumns: [],
   fieldLoadingStates: {},
   errorMessage: null,
 });
@@ -298,6 +300,7 @@ export const projectMetadataSlice = createSlice({
         replaceHasSequencesNullsWithFalse(data);
       }
       replaceNullsWithEmpty(data);
+      state.data[projectAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
       // Each returned view is a superset of the previous; we always replace the data
       state.data[projectAbbrev].metadata = data;
