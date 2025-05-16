@@ -32,6 +32,23 @@ export interface Plot extends PlotListing {
   isActive: boolean
 }
 
+export interface Tree {
+  treeId: number;
+  abbreviation: string;
+  name: string;
+  description: string;
+  latestTreeLastUpdated: Date;
+  project: {
+    abbreviation: string,
+  };
+  projectName: string;
+  isActive: boolean;
+  created: Date;
+  lastUpdated: Date;
+  createdBy: string;
+  lastUpdatedBy: string;
+}
+
 export interface TreeVersion {
   treeVersionId: number;
   treeId: number;

@@ -4,7 +4,7 @@ import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowCl
 import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { Project } from '../../types/dtos';
+import { Project, Tree } from '../../types/dtos';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -26,7 +26,7 @@ function TreeList(props: TreesProps) {
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
-  const [treeList, setTreeList] = useState<[]>([]);
+  const [treeList, setTreeList] = useState<Tree[]>([]);
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
