@@ -163,7 +163,7 @@ function TreeDetail() {
     const fetchVersions = async () => {
       const versionsResponse = await getTreeVersions(Number(treeId), token);
       if (versionsResponse.status === ResponseType.Success) {
-        setVersions(versionsResponse.data);
+        setVersions(versionsResponse.data!);
       }
     };
 
