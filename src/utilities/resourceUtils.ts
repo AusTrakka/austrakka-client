@@ -26,12 +26,16 @@ import { ResponseObject } from '../types/responseObject.interface';
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
-export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+export const getProjectList = (token: string) :
+  Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
+export const getProjectDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
-export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
-export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
+export const getPlots = (projectId: number, token: string) :
+  Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+export const getPlotDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Plot>> => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Tree endpoints
 export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) :
