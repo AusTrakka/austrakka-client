@@ -36,6 +36,13 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
   data.forEach(replaceNullsInObject);
 }
 
+export function getEmptyStringColumns(data: Sample[], fields: string[]): string[] {
+  if (data.length === 0) return [];
+
+  return fields.filter(field =>
+    data.every(sample => sample[field] === ''));
+}
+
 export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
   data.map((sample) => {
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {

@@ -18,6 +18,7 @@ import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projec
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { legendSpec } from '../../../utilities/plotUtils';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
@@ -33,7 +34,7 @@ function STChart(props: any) {
       name: 'inputdata',
     },
     width: 'container',
-    height: 250,
+    height: 350,
     mark: { type: 'bar', tooltip: true },
     encoding: {
       x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', bin: { maxbins: 20 }, axis: { format: ' %d %b %Y' } },
@@ -43,13 +44,10 @@ function STChart(props: any) {
         title: `${stFieldName} Value`,
         // NB not currently using defaultColorSchemeName
         scale: { scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10' },
-      },
-    },
-    config: {
-      legend: {
-        symbolLimit: 0,
-        orient: 'right',
-        direction: 'vertical',
+        legend: {
+          ...legendSpec as object,
+          columns: 15,
+        },
       },
     },
   };
@@ -64,7 +62,6 @@ function STChart(props: any) {
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      compiledSpec.legends![0].columns = Math.ceil(stDataAggregated.length / 16);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
