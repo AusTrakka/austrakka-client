@@ -26,7 +26,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 
 function ProFormaDetail() {
-  const { proformaAbbrev } = useParams();
+  const { proformaAbbrev, proformaVersion } = useParams();
   const [proforma, setProforma] = useState<Proforma | null>();
   const [selectedVersion, setSelectedVersion] = useState<ProFormaVersion | null>();
   const [proformaVersionList, setProformaVersionList] = useState<ProFormaVersion[]>([]);
@@ -66,7 +66,10 @@ function ProFormaDetail() {
           .sort((a, b) => b.version - a.version);
         setProformaVersionList(keepVersions);
         if (keepVersions.length > 0) {
-          setSelectedVersion(keepVersions[0]);
+          setSelectedVersion(
+            keepVersions.find(v => v.version.toString() === proformaVersion) ??
+              keepVersions[0],
+          );
           return;
         }
       }
@@ -79,7 +82,7 @@ function ProFormaDetail() {
       getCurrentProformaDetails();
       getProformas();
     }
-  }, [proformaAbbrev, token, tokenLoading]);
+  }, [proformaAbbrev, proformaVersion, token, tokenLoading]);
 
   const renderDownloadCard = () => {
     // Only show card if current proforma version is selected
@@ -147,7 +150,6 @@ function ProFormaDetail() {
     }
     return `${isoDateLocalDateNoTime(version.created.toString())} : ${version.originalFileName}`;
   };
-
   return (
     errMsg ? <Alert severity="error">{errMsg}</Alert> : (
       <>

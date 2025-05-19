@@ -1,36 +1,120 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Card, CardContent, Typography, CardMedia, Stack, CardActionArea, IconButton, Icon, CircularProgress, Tooltip, Grid } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  CardMedia,
+  Stack,
+  CardActionArea,
+  IconButton,
+  Icon,
+  CircularProgress,
+  Tooltip,
+  Grid, // need to import Grid2 for the future.
+} from '@mui/material';
 import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
 import { ProFormaVersion } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 
+const {
+  VITE_THEME_SECONDARY_BLUE,
+  VITE_THEME_SECONDARY_TEAL,
+  VITE_BRANDING_NAME,
+  VITE_THEME_PRIMARY_MAIN,
+  VITE_THEME_PRIMARY_GREY,
+  VITE_THEME_PRIMARY_GREY_600,
+  VITE_THEME_BACKGROUND,
+  VITE_THEME_SECONDARY_DARK_GREY,
+  VITE_THEME_SECONDARY_LIGHT_GREY,
+  VITE_THEME_PRIMARY_GREY_400,
+} = import.meta.env;
+
 export enum CardType {
-  Summary = 0,
-  Details,
+  CurrentWithFile = 0,
+  Historical = 1,
+  CurrentWithoutFile = 2,
+}
+
+interface CardStyleConfig {
+  cardBackground: string;
+  textColor: string;
+  showDownloadIcon: boolean;
+  showLatestLabel: boolean;
+  iconToShow: React.ReactNode | null;
+}
+
+function getCardStyleConfig(cardType: CardType): CardStyleConfig {
+  switch (cardType) {
+    case CardType.CurrentWithFile:
+      return {
+        cardBackground: VITE_THEME_PRIMARY_MAIN,
+        textColor: VITE_THEME_PRIMARY_GREY,
+        showDownloadIcon: true,
+        showLatestLabel: true,
+        iconToShow: null,
+      };
+    case CardType.Historical:
+      return {
+        cardBackground: VITE_THEME_BACKGROUND,
+        textColor: VITE_THEME_SECONDARY_DARK_GREY,
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: <Icon />,
+      };
+    case CardType.CurrentWithoutFile:
+      return {
+        cardBackground: VITE_THEME_PRIMARY_GREY,
+        textColor: VITE_THEME_PRIMARY_GREY_600, // Slightly muted for subtlety
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: (
+          <Tooltip title="No Attached File - Validation Specification" arrow>
+            <InfoOutlined
+              sx={{
+                color: VITE_THEME_SECONDARY_BLUE,
+                cursor: 'help',
+                pointerEvents: 'auto',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Tooltip>
+        ),
+      };
+    default:
+      return {
+        cardBackground: VITE_THEME_BACKGROUND,
+        textColor: VITE_THEME_SECONDARY_DARK_GREY,
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: null,
+      };
+  }
 }
 
 function GenerateCards(
   versions: ProFormaVersion[],
-  handleFileDownload: (dAbbrev: string, version : number | null) => Promise<void>,
+  handleFileDownload: (dAbbrev: string, version: number | null) => Promise<void>,
   cardType: CardType,
   loadingState: number | null,
   setLoadingState: Dispatch<SetStateAction<number | null>>,
   handleRedirect: (version: ProFormaVersion) => void,
 ) {
-  const handleDownload = async (abbrev: string, id: number, version:number | null = null) => {
+  const styleConfig = getCardStyleConfig(cardType);
+
+  const handleDownload = async (abbrev: string, id: number, version: number | null = null) => {
     try {
       setLoadingState(id); // Set loading state
       await handleFileDownload(abbrev, version);
     } finally {
       setTimeout(() => {
-        setLoadingState(null); // Reset loading statek
+        setLoadingState(null); // Reset loading state
       }, 2000); // 2000 milliseconds = 2 seconds
     }
   };
- 
-  const renderIconButton = (version : ProFormaVersion) => {
-    if (cardType === CardType.Details) {
-      return <Icon />;
+
+  const renderIconButton = (version: ProFormaVersion) => {
+    if (styleConfig.iconToShow) {
+      return styleConfig.iconToShow;
     }
 
     if (loadingState === version.proFormaId) {
@@ -39,30 +123,39 @@ function GenerateCards(
       );
     }
 
-    return (
-      <IconButton
-        aria-label="download"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDownload(
-            version.abbreviation,
-            version.proFormaId,
-            !version.isCurrent ?
-              version.version :
-              undefined,
-          );
-        }}
-        sx={{ padding: 0, pointerEvents: 'auto' }}
-      >
-        <MoveToInbox color="secondary" fontSize="large" />
-      </IconButton>
-    );
+    if (styleConfig.showDownloadIcon) {
+      return (
+        <IconButton
+          aria-label="download"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownload(
+              version.abbreviation,
+              version.proFormaId,
+              !version.isCurrent ?
+                version.version :
+                undefined,
+            );
+          }}
+          sx={{ padding: 0, pointerEvents: 'auto' }}
+        >
+          <MoveToInbox color="secondary" fontSize="large" />
+        </IconButton>
+      );
+    }
+
+    return null;
   };
 
   const renderInformationButton = (version: ProFormaVersion) => {
-    if (!version.isCurrent && cardType === CardType.Summary) {
+    if (!version.isCurrent && cardType === CardType.CurrentWithFile) {
       return (
-        <Tooltip title={`This is the latest template, but the definition in ${import.meta.env.VITE_BRANDING_NAME} has changed since this was uploaded`} sx={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <Tooltip
+          title={`This is the latest template, but the definition in ${VITE_BRANDING_NAME}
+         has changed since this was uploaded`}
+          sx={{ pointerEvents: 'auto' }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <InfoOutlined
             sx={{ fontSize: '15px', padding: 0, marginLeft: '5px', color: 'white', pointerEvents: 'auto' }}
           />
@@ -91,19 +184,20 @@ function GenerateCards(
     <Card
       key={version.proFormaVersionId}
       style={{
-        backgroundColor: cardType === CardType.Summary ? 'var(--primary-main)' : 'white',
-        width: '280px', // Set a fixed width
-        height: '250px', // Set a fixed height
-        display: 'flex', // Use flex to control layout
-        flexDirection: 'column', // Arrange content vertically
-        justifyContent: 'space-between', // Spread content evenly
+        backgroundColor: styleConfig.cardBackground,
+        width: '280px',
+        height: '250px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        border: cardType === CardType.CurrentWithoutFile ? `1px dashed ${VITE_THEME_SECONDARY_TEAL}` : 'none',
       }}
     >
       <CardActionArea
         onClick={() => handleRedirect(version)}
         sx={{ pointerEvents: 'auto',
           borderBottom: 1,
-          borderColor: 'var(--secondary-light-grey)',
+          borderColor: VITE_THEME_SECONDARY_LIGHT_GREY,
           cursor: 'zoom-in' }}
       >
         <CardMedia
@@ -138,7 +232,7 @@ function GenerateCards(
                 .map((item) => renderColumnFields(item))}
             </Stack>
           </Grid>
-          <Typography color="var(--primary-grey-400)" variant="button" padding={1}>
+          <Typography color={VITE_THEME_PRIMARY_GREY_400} variant="button" padding={1}>
             DETAILS
           </Typography>
         </CardMedia>
@@ -147,20 +241,20 @@ function GenerateCards(
         <Stack direction="row" justifyContent="space-between">
           <Stack sx={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '200px' }}>
             <Typography
-              title={version.originalFileName}
+              title={version.assetId ? version.originalFileName : 'No File'}
               noWrap
               gutterBottom
               variant="h5"
               component="div"
-              style={{ color: cardType === CardType.Summary ? 'white' : 'black', alignContent: 'end', pointerEvents: 'auto' }}
+              style={{ color: styleConfig.textColor, alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {version.originalFileName}
+              {version.assetId ? version.originalFileName : 'No File'}
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
-              style={{ color: cardType === CardType.Summary ? 'white' : 'black',
+              style={{ color: styleConfig.textColor,
                 textAlign: 'left',
                 textOverflow: 'ellipsis',
                 overflow: 'hidden',
@@ -171,7 +265,7 @@ function GenerateCards(
               {isoDateLocalDate(version.created.toString())}
             </Typography>
           </Stack>
-          <Stack alignItems="flex-end" spacing={2} justifyContent="space-evenly">
+          <Stack alignItems="flex-end" spacing={2} justifyContent="space-between">
             {renderIconButton(version)}
             <div style={{
               display: 'inline-flex',
@@ -184,9 +278,9 @@ function GenerateCards(
               <Typography
                 variant="caption"
                 color="text.secondary"
-                style={{ color: cardType === CardType.Summary ? 'white' : 'black' }}
+                style={{ color: styleConfig.textColor }}
               >
-                {cardType === CardType.Summary ? 'Latest' : ''}
+                {styleConfig.showLatestLabel && version.assetId ? 'Latest' : ''}
               </Typography>
               {renderInformationButton(version)}
             </div>
