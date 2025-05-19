@@ -226,6 +226,7 @@ export const setTimeAggregationInSpecToValue = (
 // Note we return 3 months rather than a quarter, since quarter does not work everywhere
 export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: number } => {
   const nonNullDates = dates.filter((date) => date !== null);
+  if (nonNullDates.length === 0) return { unit: 'yearmonthdate', step: 1 };
   const maxDate = new Date(maxObj(nonNullDates));
   const minDate = new Date(minObj(nonNullDates));
   const diff = maxDate.getTime() - minDate.getTime();
