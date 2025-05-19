@@ -21,7 +21,6 @@ import {
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
@@ -53,10 +52,12 @@ function ProjectOverview() {
 
   useEffect(() => {
     async function getProject() {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
+      const projectResponse = await getProjectDetails(projectAbbrev!, token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectDetails(projectResponse.data as Project);
-        dispatch(fetchProjectMetadata({ projectAbbrev: projectResponse.data.abbreviation, token }));
+        setProjectDetails(projectResponse.data!);
+        dispatch(
+          fetchProjectMetadata({ projectAbbrev: projectResponse.data!.abbreviation, token }),
+        );
         setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
       } else {
         setIsOverviewError((prevState) => ({

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/indent */
+// ^ rule is broken for some typescript-specific syntax features
 import {
   callDELETE,
   callGET,
@@ -9,24 +11,41 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, Project, ProjectSummary, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
+import {
+  Feedback,
+  FeedbackPost, Plot, PlotListing,
+  Project,
+  ProjectSummary,
+  Tree,
+  TreeVersion,
+  UserPatchV2,
+  UserRoleRecordPrivilegePost,
+} from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
-export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+export const getProjectList = (token: string) :
+  Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
+export const getProjectDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
-export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
-export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
+export const getPlots = (projectId: number, token: string) :
+  Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+export const getPlotDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Plot>> => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Tree endpoints
-export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (treeVersionId: number, token: string) => callGET(`/api/TreeVersion/${treeVersionId}`, token);
-export const getLatestTreeData = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
-export const getTreeVersions = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
+export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) :
+  Promise<ResponseObject<Tree[]>> => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
+export const getTreeData = (treeVersionId: number, token: string) :
+  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+export const getLatestTreeData = (treeId: number, token: string) :
+  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+export const getTreeVersions = (treeId: number, token: string) :
+  Promise<ResponseObject<TreeVersion[]>> => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
 export const getMetadata = (groupId: number, fields: string[], token: string) => {
