@@ -68,7 +68,7 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
         showDownloadIcon: false,
         showLatestLabel: false,
         iconToShow: (
-          <Tooltip title="Reference template — no attached file" arrow>
+          <Tooltip title="No Attached File - Validation Specification" arrow>
             <InfoOutlined
               sx={{
                 color: VITE_THEME_SECONDARY_BLUE,
@@ -241,7 +241,7 @@ function GenerateCards(
         <Stack direction="row" justifyContent="space-between">
           <Stack sx={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '200px' }}>
             <Typography
-              title={version.assetId ? version.originalFileName : 'Template'}
+              title={version.assetId ? version.originalFileName : 'No File'}
               noWrap
               gutterBottom
               variant="h5"
@@ -249,7 +249,7 @@ function GenerateCards(
               style={{ color: styleConfig.textColor, alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {version.assetId ? version.originalFileName : 'Template'}
+              {version.assetId ? version.originalFileName : 'No File'}
             </Typography>
             <Typography
               variant="caption"
