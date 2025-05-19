@@ -82,7 +82,7 @@ function ProFormaDetail() {
       getCurrentProformaDetails();
       getProformas();
     }
-  }, [proformaAbbrev, token, tokenLoading]);
+  }, [proformaAbbrev, proformaVersion, token, tokenLoading]);
 
   const renderDownloadCard = () => {
     // Only show card if current proforma version is selected
@@ -150,8 +150,6 @@ function ProFormaDetail() {
     }
     return `${isoDateLocalDateNoTime(version.created.toString())} : ${version.originalFileName}`;
   };
-  { console.log(proformaVersionList); }
-  { console.log(selectedVersion?.version.toString()); }
   return (
     errMsg ? <Alert severity="error">{errMsg}</Alert> : (
       <>
