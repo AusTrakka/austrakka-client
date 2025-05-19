@@ -24,12 +24,13 @@ import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface TreeTableProps {
+  displayFields: ProjectViewField[],
+  emptyColumns: string[],
+  fieldLoadingState: Record<string, LoadingState>,
+  metadataLoadingState: MetadataLoadingState,
   selectedIds: string[],
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
-  displayFields: ProjectViewField[],
   tableMetadata: Sample[],
-  metadataLoadingState: MetadataLoadingState,
-  fieldLoadingState: Record<string, LoadingState>,
 }
 
 interface BodyComponentProps {
@@ -54,6 +55,7 @@ export default function TreeTable(props: TreeTableProps) {
     tableMetadata,
     metadataLoadingState,
     fieldLoadingState,
+    emptyColumns,
   } = props;
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
@@ -192,6 +194,7 @@ export default function TreeTable(props: TreeTableProps) {
               });
               setSampleTableColumns(newColumns);
             }}
+            emptyColumnNames={emptyColumns}
           />
           <Tooltip title="Toggle Vertical Headers" placement="top">
             <IconButton
