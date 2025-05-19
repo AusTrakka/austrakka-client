@@ -12,7 +12,6 @@ import Histogram from './PlotTypes/Histogram';
 import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
@@ -47,9 +46,9 @@ function PlotDetail() {
   useEffect(() => {
     // Get plot details, including plot type
     const getPlot = async () => {
-      const plotResponse: ResponseObject = await getPlotDetails(plotAbbrev!, token);
+      const plotResponse = await getPlotDetails(plotAbbrev!, token);
       if (plotResponse.status === ResponseType.Success) {
-        setPlot(plotResponse.data as Plot);
+        setPlot(plotResponse.data!);
       } else {
         setErrorMsg(`Plot ${plotAbbrev} could not be loaded`);
       }

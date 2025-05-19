@@ -3,10 +3,7 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import {
-  getProjectDetails, getTotalSamples,
-} from '../../utilities/resourceUtils';
-// import Summary from './Summary';
+import { getProjectDetails } from '../../utilities/resourceUtils';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
@@ -24,7 +21,6 @@ import {
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 
@@ -36,14 +32,9 @@ function ProjectOverview() {
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   // Project Overview component states
-  const [isOverviewLoading, setIsOverviewLoading] = useState(true);
   const [isOverviewError, setIsOverviewError] = useState({
     detailsError: false,
     detailsErrorMessage: '',
-    totalSamplesError: false,
-    totalSamplesErrorMessage: '',
-    latestDateError: true,
-    latestDateErrorMessage: `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`,
   });
   // const [lastUpload] = useState('');
 
@@ -61,9 +52,12 @@ function ProjectOverview() {
 
   useEffect(() => {
     async function getProject() {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
+      const projectResponse = await getProjectDetails(projectAbbrev!, token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectDetails(projectResponse.data as Project);
+        setProjectDetails(projectResponse.data!);
+        dispatch(
+          fetchProjectMetadata({ projectAbbrev: projectResponse.data!.abbreviation, token }),
+        );
         setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
       } else {
         setIsOverviewError((prevState) => ({
@@ -71,43 +65,12 @@ function ProjectOverview() {
           detailsError: true,
           detailsErrorMessage: projectResponse.message,
         }));
-        setIsOverviewLoading(false);
       }
     }
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       getProject();
     }
-  }, [projectAbbrev, token, tokenLoading]);
-
-  useEffect(() => {
-    // This currently provides total sample count to both Summary(dashboard) and Samples tabs
-    // Could replace with a function that counts groupMetadata.metadata.length
-    async function getProjectSummary() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(
-        projectDetails!.projectMembers.id,
-        token,
-      );
-      if (totalSamplesResponse.status === ResponseType.Success) {
-        setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
-      } else {
-        setIsOverviewError((prevState) => ({
-          ...prevState,
-          totalSamplesError: true,
-          totalSamplesErrorMessage: totalSamplesResponse.message,
-        }));
-      }
-      setIsOverviewLoading(false);
-      // TODO: Make use of latest upload date from project views
-    }
-
-    if (projectDetails &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      getProjectSummary();
-      dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
-    }
-  }, [projectDetails, token, tokenLoading, dispatch]);
+  }, [dispatch, projectAbbrev, token, tokenLoading]);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
@@ -132,7 +95,7 @@ function ProjectOverview() {
             {projectDetails ? projectDetails.name : ''}
           </Typography>
           <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
-          <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
+          <TabPanel value={tabValue} index={0} tabLoader={isSamplesLoading}>
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectAbbrev={projectAbbrev!}

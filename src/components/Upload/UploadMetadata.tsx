@@ -239,7 +239,7 @@ function UploadMetadata() {
           </Tooltip>
           { selectedProforma ? (
             <List>
-              <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
+              <Link href={`/proformas/${selectedProforma?.abbreviation}/${selectedProforma?.version}`} color="secondary.dark">
                 View or download proforma
               </Link>
               <ListItemText

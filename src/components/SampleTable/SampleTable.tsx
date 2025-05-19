@@ -121,6 +121,7 @@ function SampleTable(props: SamplesProps) {
             });
             setSampleTableColumns(newColumns);
           }}
+          emptyColumnNames={metadata?.emptyColumns ?? null}
         />
         <ExportTableData
           dataToExport={

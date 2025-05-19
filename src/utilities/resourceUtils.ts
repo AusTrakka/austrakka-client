@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/indent */
+// ^ rule is broken for some typescript-specific syntax features
 import {
   callDELETE,
   callGET,
@@ -9,24 +11,41 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import { Feedback, FeedbackPost, Project, UserPatchV2, UserRoleRecordPrivilegePost } from '../types/dtos';
+import {
+  Feedback,
+  FeedbackPost, Plot, PlotListing,
+  Project,
+  ProjectSummary,
+  Tree,
+  TreeVersion,
+  UserPatchV2,
+  UserRoleRecordPrivilegePost,
+} from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) : Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
-export const getProjectDetails = (abbrev: string, token: string) => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+export const getProjectList = (token: string) :
+  Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
+export const getProjectDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
-export const getPlots = (projectId: number, token: string) => callGET(`/api/Plots/project/${projectId}`, token);
-export const getPlotDetails = (abbrev: string, token: string) => callGET(`/api/Plots/abbrev/${abbrev}`, token);
+export const getPlots = (projectId: number, token: string) :
+  Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+export const getPlotDetails = (abbrev: string, token: string) :
+  Promise<ResponseObject<Plot>> => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Tree endpoints
-export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (treeVersionId: number, token: string) => callGET(`/api/TreeVersion/${treeVersionId}`, token);
-export const getLatestTreeData = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
-export const getTreeVersions = (treeId: number, token: string) => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
+export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) :
+  Promise<ResponseObject<Tree[]>> => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
+export const getTreeData = (treeVersionId: number, token: string) :
+  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+export const getLatestTreeData = (treeId: number, token: string) :
+  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+export const getTreeVersions = (treeId: number, token: string) :
+  Promise<ResponseObject<TreeVersion[]>> => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
 export const getMetadata = (groupId: number, fields: string[], token: string) => {
@@ -38,7 +57,6 @@ export const getSamples = (token: string, groupId: number, searchParams?: URLSea
   searchParams.append('groupContext', String(groupId));
   return callGET(`/api/MetadataSearch?${searchParams}`, token);
 };
-export const getTotalSamples = (groupId: number, token: string) => callGET(`/api/MetadataSearch/?groupContext=${groupId}&pageSize=1&page=1`, token);
 
 // Group endpoints
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
@@ -71,9 +89,9 @@ export const getProjectViewData = (projectAbbrev: string, viewId: number, token:
 export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 
 // User dashboard endpoints
-export const getUserDashboardOverview = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/overview?filters=${searchParams}`, token);
-export const getUserDashboardProjects = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/projects-total?filters=${searchParams}`, token);
-export const getUserDashboardPhessStatus = (token: string, searchParams?: string) => callGET(`/api/DashboardSearch/user-dashboard/phess-status?filters=${searchParams}`, token);
+export const getUserDashboardOverview = (token: string) => callGET('/api/DashboardSearch/user-dashboard/overview', token);
+export const getUserDashboardProjects = (token: string) : Promise<ResponseObject<ProjectSummary>> =>
+  callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);

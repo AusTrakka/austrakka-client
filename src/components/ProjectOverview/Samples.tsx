@@ -139,6 +139,7 @@ function Samples(props: SamplesProps) {
             });
             setSampleTableColumns(newColumns);
           }}
+          emptyColumnNames={metadata?.emptyColumns ?? null}
         />
         <Tooltip title="Toggle Vertical Headers" placement="top">
           <IconButton

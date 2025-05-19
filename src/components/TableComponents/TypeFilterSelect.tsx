@@ -30,21 +30,28 @@ function TypeFilterSelect(props: TypeFilterSelectProps) {
         className="select"
         renderValue={(selected) =>
           (selected ? (
-            <em style={{ fontSize: '.9em' }}>{selected}</em>
+            <em style={{ fontSize: '.9em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selected}</em>
           ) : (
-            <Typography color="textDisabled" variant="subtitle2">
+            <Typography color="textDisabled" variant="subtitle2" sx={{ whiteSpace: 'nowrap' }}>
               Filter by Type
             </Typography>
           ))}
         endAdornment={
-                    selectedValue && (
-                    <InputAdornment position="end" style={{ marginRight: '0.5rem' }}>
-                      <IconButton onClick={onTypeFilterClear} size="small">
-                        <Clear fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                    )
-                }
+          selectedValue && (
+            <InputAdornment position="end" sx={{ ml: 0, flexShrink: 0 }}>
+              <IconButton onClick={onTypeFilterClear} size="small">
+                <Clear fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          )
+        }
+        sx={{
+          '.MuiSelect-select': {
+            display: 'flex',
+            alignItems: 'center',
+            pr: '32px !important', // Make sure there's space for the dropdown icon
+          },
+        }}
       >
         {allTypes.map((option) => (
           <MenuItem key={option} value={option} style={{ fontSize: '0.9em' }}>
