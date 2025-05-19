@@ -12,6 +12,7 @@ import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
 import { Project, ProjectSummary } from '../../../../types/dtos';
 import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
+import sortIcon from '../../../TableComponents/SortIcon';
 
 const renderDateWithTimeTooltip = (cell: string): JSX.Element | null => {
   if (isNullOrEmpty(cell)) return <span>None</span>;
@@ -90,6 +91,8 @@ export default function ProjectsTotal() {
           value={projects}
           size="small"
           onRowClick={rowClickHandler}
+          removableSort
+          sortIcon={sortIcon}
           selectionMode="single"
         >
           {columns.map((col: any) => (
@@ -100,6 +103,8 @@ export default function ProjectsTotal() {
               body={col.body}
               align={col.align ?? 'left'}
               sortable
+              style={{ minWidth: '100px' }}
+              headerClassName="custom-title"
             />
           ))}
         </DataTable>

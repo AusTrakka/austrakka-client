@@ -59,9 +59,9 @@ function ProFormaList(props: ProFormasListProps) {
     handleProformaDownload(dAbbrev, version, token);
   };
 
-  const handleRedirect = (version: ProFormaVersion) => {
-    const { abbreviation } = version;
-    const url = `/proformas/${abbreviation}`;
+  const handleRedirect = (pVersion: ProFormaVersion) => {
+    const { abbreviation, version } = pVersion;
+    const url = `/proformas/${abbreviation}/${version}`;
     navigate(url);
   };
 

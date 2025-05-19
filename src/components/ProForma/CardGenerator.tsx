@@ -4,6 +4,19 @@ import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
 import { ProFormaVersion } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 
+const {
+  VITE_THEME_SECONDARY_BLUE,
+  VITE_THEME_SECONDARY_TEAL,
+  VITE_BRANDING_NAME,
+  VITE_THEME_PRIMARY_MAIN,
+  VITE_THEME_PRIMARY_GREY,
+  VITE_THEME_PRIMARY_GREY_600,
+  VITE_THEME_BACKGROUND,
+  VITE_THEME_SECONDARY_DARK_GREY,
+  VITE_THEME_SECONDARY_LIGHT_GREY,
+  VITE_THEME_PRIMARY_GREY_400,
+} = import.meta.env;
+
 export enum CardType {
   Summary = 0,
   Details = 1,
@@ -22,31 +35,31 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
   switch (cardType) {
     case CardType.Summary:
       return {
-        cardBackground: 'var(--primary-main)',
-        textColor: 'white',
+        cardBackground: VITE_THEME_PRIMARY_MAIN,
+        textColor: VITE_THEME_PRIMARY_GREY,
         showDownloadIcon: true,
         showLatestLabel: true,
         iconToShow: null,
       };
     case CardType.Details:
       return {
-        cardBackground: 'white',
-        textColor: 'black',
+        cardBackground: VITE_THEME_BACKGROUND,
+        textColor: VITE_THEME_SECONDARY_DARK_GREY,
         showDownloadIcon: false,
         showLatestLabel: false,
         iconToShow: <Icon />,
       };
     case CardType.Reference:
       return {
-        cardBackground: 'var(--secondary-light)', // Or '#f5f5f5' for soft contrast
-        textColor: '#555', // Slightly muted for subtlety
+        cardBackground: VITE_THEME_PRIMARY_GREY,
+        textColor: VITE_THEME_PRIMARY_GREY_600, // Slightly muted for subtlety
         showDownloadIcon: false,
         showLatestLabel: false,
         iconToShow: (
           <Tooltip title="Reference template — no attached file" arrow>
             <InfoOutlined
               sx={{
-                color: '#757575',
+                color: VITE_THEME_SECONDARY_BLUE,
                 cursor: 'help',
                 pointerEvents: 'auto',
               }}
@@ -57,8 +70,8 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
       };
     default:
       return {
-        cardBackground: 'white',
-        textColor: 'black',
+        cardBackground: VITE_THEME_BACKGROUND,
+        textColor: VITE_THEME_SECONDARY_DARK_GREY,
         showDownloadIcon: false,
         showLatestLabel: false,
         iconToShow: null,
@@ -125,7 +138,12 @@ function GenerateCards(
   const renderInformationButton = (version: ProFormaVersion) => {
     if (!version.isCurrent && cardType === CardType.Summary) {
       return (
-        <Tooltip title={`This is the latest template, but the definition in ${import.meta.env.VITE_BRANDING_NAME} has changed since this was uploaded`} sx={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <Tooltip
+          title={`This is the latest template, but the definition in ${VITE_BRANDING_NAME}
+         has changed since this was uploaded`}
+          sx={{ pointerEvents: 'auto' }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <InfoOutlined
             sx={{ fontSize: '15px', padding: 0, marginLeft: '5px', color: 'white', pointerEvents: 'auto' }}
           />
@@ -160,14 +178,14 @@ function GenerateCards(
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        border: cardType === CardType.Reference ? '1px dashed #ccc' : 'none',
+        border: cardType === CardType.Reference ? `1px dashed ${VITE_THEME_SECONDARY_TEAL}` : 'none',
       }}
     >
       <CardActionArea
         onClick={() => handleRedirect(version)}
         sx={{ pointerEvents: 'auto',
           borderBottom: 1,
-          borderColor: 'var(--secondary-light-grey)',
+          borderColor: VITE_THEME_SECONDARY_LIGHT_GREY,
           cursor: 'zoom-in' }}
       >
         <CardMedia
@@ -202,7 +220,7 @@ function GenerateCards(
                 .map((item) => renderColumnFields(item))}
             </Stack>
           </Grid>
-          <Typography color="var(--primary-grey-400)" variant="button" padding={1}>
+          <Typography color={VITE_THEME_PRIMARY_GREY_400} variant="button" padding={1}>
             DETAILS
           </Typography>
         </CardMedia>
