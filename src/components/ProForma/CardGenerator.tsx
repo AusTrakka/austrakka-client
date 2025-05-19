@@ -1,5 +1,17 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Card, CardContent, Typography, CardMedia, Stack, CardActionArea, IconButton, Icon, CircularProgress, Tooltip, Grid } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  CardMedia,
+  Stack,
+  CardActionArea,
+  IconButton,
+  Icon,
+  CircularProgress,
+  Tooltip,
+  Grid, // need to import Grid2 for the future.
+} from '@mui/material';
 import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
 import { ProFormaVersion } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -18,9 +30,9 @@ const {
 } = import.meta.env;
 
 export enum CardType {
-  Summary = 0,
-  Details = 1,
-  Reference = 2,
+  CurrentWithFile = 0,
+  Historical = 1,
+  CurrentWithoutFile = 2,
 }
 
 interface CardStyleConfig {
@@ -33,7 +45,7 @@ interface CardStyleConfig {
 
 function getCardStyleConfig(cardType: CardType): CardStyleConfig {
   switch (cardType) {
-    case CardType.Summary:
+    case CardType.CurrentWithFile:
       return {
         cardBackground: VITE_THEME_PRIMARY_MAIN,
         textColor: VITE_THEME_PRIMARY_GREY,
@@ -41,7 +53,7 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
         showLatestLabel: true,
         iconToShow: null,
       };
-    case CardType.Details:
+    case CardType.Historical:
       return {
         cardBackground: VITE_THEME_BACKGROUND,
         textColor: VITE_THEME_SECONDARY_DARK_GREY,
@@ -49,7 +61,7 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
         showLatestLabel: false,
         iconToShow: <Icon />,
       };
-    case CardType.Reference:
+    case CardType.CurrentWithoutFile:
       return {
         cardBackground: VITE_THEME_PRIMARY_GREY,
         textColor: VITE_THEME_PRIMARY_GREY_600, // Slightly muted for subtlety
@@ -136,7 +148,7 @@ function GenerateCards(
   };
 
   const renderInformationButton = (version: ProFormaVersion) => {
-    if (!version.isCurrent && cardType === CardType.Summary) {
+    if (!version.isCurrent && cardType === CardType.CurrentWithFile) {
       return (
         <Tooltip
           title={`This is the latest template, but the definition in ${VITE_BRANDING_NAME}
@@ -178,7 +190,7 @@ function GenerateCards(
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        border: cardType === CardType.Reference ? `1px dashed ${VITE_THEME_SECONDARY_TEAL}` : 'none',
+        border: cardType === CardType.CurrentWithoutFile ? `1px dashed ${VITE_THEME_SECONDARY_TEAL}` : 'none',
       }}
     >
       <CardActionArea
