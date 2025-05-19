@@ -146,7 +146,9 @@ function ProFormaList(props: ProFormasListProps) {
                     GenerateCards(
                       groupedObjects[index].slice(0, 1),
                       handleFileDownload,
-                      groupedObjects[index][0].assetId ? CardType.CurrentWithFile : CardType.CurrentWithoutFile,
+                      groupedObjects[index][0].assetId ?
+                        CardType.CurrentWithFile :
+                        CardType.CurrentWithoutFile,
                       loadingState,
                       setLoadingState,
                       handleRedirect,
