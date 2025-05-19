@@ -18,6 +18,7 @@ import { buildPrimeReactColumnDefinitions, ColumnBuilder } from '../../../utilit
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
 import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
+import { hasNonWhitespace } from "../../../utilities/stringUtil";
 
 interface ActivityProps {
   recordType: string,
@@ -81,6 +82,8 @@ export const supportedColumns: ActivityField[] = [
   },
 ];
 
+const nonExpandableEvents = ['Add sequence'];
+
 export const defaultState = {
   global: {
     operator: 'and',
@@ -103,7 +106,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   const firstPageReq: FirstPageRequest = {
     startPeriod: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     endPeriod: new Date().toISOString(),
-    pageSize: 2,
+    pageSize: 20,
   };
   
   const routeSegment = recordType === 'tenant'
@@ -223,33 +226,22 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
   useEffect(() => {
     if (!dataLoading && !moreDataLoading && refinedLogs.length > 0) {
       const transformedData = transformData(refinedLogs);
-
-      // Create a clone of transformedData to work with
       const clonedRows = [...transformedData];
-
-      // Recursive function to expand a node and its descendants if needed
-      const expandNodesRecursively = (nodes: RefinedLog[], processedNodes: Set<string> = new Set()) => {
-        for (let i = 0; i < nodes.length; i++) {
-          const node = nodes[i];
-          const nodeId = node.refinedLogGlobalId.toString();
-
-          // Skip if we've already processed this node to avoid infinite loops
-          if (processedNodes.has(nodeId)) continue;
-          processedNodes.add(nodeId);
-
-          // If this node should be expanded
-          if (expandedNodeIds.has(nodeId) && node.children && node.children.length > 0) {
-            // Expand this node
-            expandRow(node, clonedRows);
-
-            // Recursively process its children
-            expandNodesRecursively(node.children, processedNodes);
-          }
+      
+      const expandNodes = (nodes: RefinedLog[]) => {
+        let nodesToFind = new Set<string>(expandedNodeIds);
+        while(nodesToFind.size > 0) {
+          const notYetFound = new Set<string>();
+          nodesToFind.forEach(value => {
+            const node = nodes.find(n => n.refinedLogGlobalId === value);
+            if (node) { expandRow(node, clonedRows); }
+            else { notYetFound.add(value); }
+          });
+          nodesToFind = notYetFound;
         }
       };
 
-      // Start the recursive expansion process
-      expandNodesRecursively(clonedRows);
+      expandNodes(clonedRows);
       setLocalLogs(clonedRows);
     }
   }, [refinedLogs]);
@@ -404,7 +396,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
             )}
           >
             <Column
-              expander={(rowData: RefinedLog) => (rowData.children?.length ?? 0) > 0}
+              expander={(rowData: RefinedLog) => hasNonWhitespace(rowData.aggregationKey) && !nonExpandableEvents.includes(rowData.operationName)}
               style={{ width: '3em' }}
               className="activity-row-expander"
             />
