@@ -6,31 +6,90 @@ import { isoDateLocalDate } from '../../utilities/dateUtils';
 
 export enum CardType {
   Summary = 0,
-  Details,
+  Details = 1,
+  Reference = 2,
+}
+
+interface CardStyleConfig {
+  cardBackground: string;
+  textColor: string;
+  showDownloadIcon: boolean;
+  showLatestLabel: boolean;
+  iconToShow: React.ReactNode | null;
+}
+
+function getCardStyleConfig(cardType: CardType): CardStyleConfig {
+  switch (cardType) {
+    case CardType.Summary:
+      return {
+        cardBackground: 'var(--primary-main)',
+        textColor: 'white',
+        showDownloadIcon: true,
+        showLatestLabel: true,
+        iconToShow: null,
+      };
+    case CardType.Details:
+      return {
+        cardBackground: 'white',
+        textColor: 'black',
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: <Icon />,
+      };
+    case CardType.Reference:
+      return {
+        cardBackground: 'var(--secondary-light)', // Or '#f5f5f5' for soft contrast
+        textColor: '#555', // Slightly muted for subtlety
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: (
+          <Tooltip title="Reference template — no attached file" arrow>
+            <InfoOutlined
+              sx={{
+                color: '#757575',
+                cursor: 'help',
+                pointerEvents: 'auto',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Tooltip>
+        ),
+      };
+    default:
+      return {
+        cardBackground: 'white',
+        textColor: 'black',
+        showDownloadIcon: false,
+        showLatestLabel: false,
+        iconToShow: null,
+      };
+  }
 }
 
 function GenerateCards(
   versions: ProFormaVersion[],
-  handleFileDownload: (dAbbrev: string, version : number | null) => Promise<void>,
+  handleFileDownload: (dAbbrev: string, version: number | null) => Promise<void>,
   cardType: CardType,
   loadingState: number | null,
   setLoadingState: Dispatch<SetStateAction<number | null>>,
   handleRedirect: (version: ProFormaVersion) => void,
 ) {
-  const handleDownload = async (abbrev: string, id: number, version:number | null = null) => {
+  const styleConfig = getCardStyleConfig(cardType);
+
+  const handleDownload = async (abbrev: string, id: number, version: number | null = null) => {
     try {
       setLoadingState(id); // Set loading state
       await handleFileDownload(abbrev, version);
     } finally {
       setTimeout(() => {
-        setLoadingState(null); // Reset loading statek
+        setLoadingState(null); // Reset loading state
       }, 2000); // 2000 milliseconds = 2 seconds
     }
   };
- 
-  const renderIconButton = (version : ProFormaVersion) => {
-    if (cardType === CardType.Details) {
-      return <Icon />;
+
+  const renderIconButton = (version: ProFormaVersion) => {
+    if (styleConfig.iconToShow) {
+      return styleConfig.iconToShow;
     }
 
     if (loadingState === version.proFormaId) {
@@ -39,24 +98,28 @@ function GenerateCards(
       );
     }
 
-    return (
-      <IconButton
-        aria-label="download"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDownload(
-            version.abbreviation,
-            version.proFormaId,
-            !version.isCurrent ?
-              version.version :
-              undefined,
-          );
-        }}
-        sx={{ padding: 0, pointerEvents: 'auto' }}
-      >
-        <MoveToInbox color="secondary" fontSize="large" />
-      </IconButton>
-    );
+    if (styleConfig.showDownloadIcon) {
+      return (
+        <IconButton
+          aria-label="download"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownload(
+              version.abbreviation,
+              version.proFormaId,
+              !version.isCurrent ?
+                version.version :
+                undefined,
+            );
+          }}
+          sx={{ padding: 0, pointerEvents: 'auto' }}
+        >
+          <MoveToInbox color="secondary" fontSize="large" />
+        </IconButton>
+      );
+    }
+
+    return null;
   };
 
   const renderInformationButton = (version: ProFormaVersion) => {
@@ -91,12 +154,13 @@ function GenerateCards(
     <Card
       key={version.proFormaVersionId}
       style={{
-        backgroundColor: cardType === CardType.Summary ? 'var(--primary-main)' : 'white',
-        width: '280px', // Set a fixed width
-        height: '250px', // Set a fixed height
-        display: 'flex', // Use flex to control layout
-        flexDirection: 'column', // Arrange content vertically
-        justifyContent: 'space-between', // Spread content evenly
+        backgroundColor: styleConfig.cardBackground,
+        width: '280px',
+        height: '250px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        border: cardType === CardType.Reference ? '1px dashed #ccc' : 'none',
       }}
     >
       <CardActionArea
@@ -147,20 +211,20 @@ function GenerateCards(
         <Stack direction="row" justifyContent="space-between">
           <Stack sx={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '200px' }}>
             <Typography
-              title={version.originalFileName}
+              title={version.assetId ? version.originalFileName : 'Template'}
               noWrap
               gutterBottom
               variant="h5"
               component="div"
-              style={{ color: cardType === CardType.Summary ? 'white' : 'black', alignContent: 'end', pointerEvents: 'auto' }}
+              style={{ color: styleConfig.textColor, alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {version.originalFileName}
+              {version.assetId ? version.originalFileName : 'Template'}
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
-              style={{ color: cardType === CardType.Summary ? 'white' : 'black',
+              style={{ color: styleConfig.textColor,
                 textAlign: 'left',
                 textOverflow: 'ellipsis',
                 overflow: 'hidden',
@@ -171,7 +235,7 @@ function GenerateCards(
               {isoDateLocalDate(version.created.toString())}
             </Typography>
           </Stack>
-          <Stack alignItems="flex-end" spacing={2} justifyContent="space-evenly">
+          <Stack alignItems="flex-end" spacing={2} justifyContent="space-between">
             {renderIconButton(version)}
             <div style={{
               display: 'inline-flex',
@@ -184,9 +248,9 @@ function GenerateCards(
               <Typography
                 variant="caption"
                 color="text.secondary"
-                style={{ color: cardType === CardType.Summary ? 'white' : 'black' }}
+                style={{ color: styleConfig.textColor }}
               >
-                {cardType === CardType.Summary ? 'Latest' : ''}
+                {styleConfig.showLatestLabel && version.assetId ? 'Latest' : ''}
               </Typography>
               {renderInformationButton(version)}
             </div>

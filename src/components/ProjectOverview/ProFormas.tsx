@@ -99,18 +99,19 @@ function ProFormaList(props: ProFormasListProps) {
     flexDirection: 'column',
   }));
 
-  const renderTitleOrError = (hasError: boolean, errMsg: string) => (hasError === true
-    ? <Alert severity="error">{errMsg}</Alert>
-    : (
-      <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
-        This page holds pro formas with attached
-        templates. Only
-        {' '}
-        <b>current</b>
-        {' '}
-        pro forma templates may be downloaded.
-      </Typography>
-    ));
+  const renderTitleOrError = (hasError: boolean, errMsg: string) => (
+    hasError ?
+      <Alert severity="error">{errMsg}</Alert>
+      : (
+        <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
+          This page holds pro formas with attached
+          templates. Only
+          {' '}
+          <b>current</b>
+          {' '}
+          pro forma templates may be downloaded.
+        </Typography>
+      ));
 
   const renderEmptyState = (isEmpty: boolean, hasError: boolean) => (
     isEmpty && !hasError
@@ -145,7 +146,7 @@ function ProFormaList(props: ProFormasListProps) {
                     GenerateCards(
                       groupedObjects[index].slice(0, 1),
                       handleFileDownload,
-                      CardType.Summary,
+                      groupedObjects[index][0].assetId ? CardType.Summary : CardType.Reference,
                       loadingState,
                       setLoadingState,
                       handleRedirect,

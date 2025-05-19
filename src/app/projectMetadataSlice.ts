@@ -381,7 +381,7 @@ export const selectProjectMetadata:
     return state.projectMetadataState.data[projectAbbrev!] ?? null;
   };
 
-// May want to also include per-field loading state in this selector
+// May want to also include a per-field loading state in this selector
 export const selectProjectMetadataFields = (
   state: RootState,
   projectAbbrev: string | undefined,
