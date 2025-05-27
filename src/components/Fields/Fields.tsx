@@ -21,6 +21,18 @@ import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 
 function Fields() {
+  const bodyValueWithEditIcon = (rowData: any, field: string) => (
+    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+      {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
+      <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
+    </div>
+  );
+  
+  const renderAllowedValues = (allowedValues: string[] | null): string => {
+    if (allowedValues === null || allowedValues.length === 0) return '';
+    return allowedValues.join(', ');
+  };
+  
   const interactiveColumns = [
     {
       field: 'columnName',
@@ -174,11 +186,6 @@ function Fields() {
     </div>
   );
 
-  const renderAllowedValues = (allowedValues: string[] | null): string => {
-    if (allowedValues === null || allowedValues.length === 0) return '';
-    return allowedValues.join(', ');
-  };
-
   const cellEditor = (options: ColumnEditorOptions) => {
     if (options.field === 'columnOrder') {
       return <NumericEditable value={options.value} editorCallback={options.editorCallback!} />;
@@ -240,13 +247,6 @@ function Fields() {
     }
   };
 
-  const bodyValueWithEditIcon = (rowData: any, field: string) => (
-    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-      {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
-      <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
-    </div>
-  );
-
   return (
     <>
       <Typography className="pageTitle">Fields</Typography>
@@ -293,7 +293,7 @@ function Fields() {
                   e.originalEvent.preventDefault() : undefined)}
               />
             ))
-}
+          }
         </DataTable>
       </Paper>
     </>
