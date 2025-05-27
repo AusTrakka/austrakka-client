@@ -410,6 +410,7 @@ function UploadSequences() {
                 name="Data Owner"
                 value={selectedDataOwner}
                 onChange={(e) => setSelectedDataOwner(e.target.value)}
+                disabled={uploadInProgress()}
               >
                 {
                   availableDataOwners.map((dataOwner: SelectItem) => (
@@ -430,6 +431,7 @@ function UploadSequences() {
                 <Switch
                   checked={selectedCreateSampleRecords}
                   onChange={(e) => setSelectedCreateSampleRecords(e.target.checked)}
+                  disabled={uploadInProgress()}
                 />
               )}
               label="Create new sample records if required"
@@ -476,6 +478,7 @@ function UploadSequences() {
                 name="fastq"
                 value={selectedSeqType}
                 onChange={(e) => handleSelectSeqType(e.target.value)}
+                disabled={uploadInProgress()}
               >
                 {Object.values(SeqType).map((seqType: SeqType) => (
                   <MenuItem
@@ -500,6 +503,7 @@ function UploadSequences() {
                       checked={selectedSkipForce === SkipForce.Skip}
                       onChange={(e) => handleSelectSkipForce(e, SkipForce.Skip)}
                       name={SkipForce.Skip}
+                      disabled={uploadInProgress()}
                     />
                 )}
                   label="Skip samples with sequences"
@@ -519,6 +523,7 @@ function UploadSequences() {
                       checked={selectedSkipForce === SkipForce.Force}
                       onChange={(e) => handleSelectSkipForce(e, SkipForce.Force)}
                       name={SkipForce.Force}
+                      disabled={uploadInProgress()}
                     />
                 )}
                   label="Overwrite existing sequences"
