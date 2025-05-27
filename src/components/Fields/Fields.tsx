@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Paper, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
-import { Column, ColumnEvent } from 'primereact/column';
+import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { EditOutlined } from '@mui/icons-material';
 import { MetaDataColumn } from '../../types/dtos';
@@ -10,7 +10,7 @@ import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
-import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
+import { hasPermissionV2 } from '../../permissions/accessTable';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
@@ -18,25 +18,101 @@ import sortIcon from '../TableComponents/SortIcon';
 import { NumericEditable, TextEditable } from './EditableFields';
 import { ScopeDefinitions } from '../../constants/scopes';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 
 function Fields() {
-  const [fields, setFields] = useState<MetaDataColumn[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const { token, tokenLoading } = useApi();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
-    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
-  });
-  const user: UserSliceState = useAppSelector(selectUserState);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
+  const interactiveColumns = [
+    {
+      field: 'columnName',
+      header: 'Field',
+      hidden: false,
+    },
+    {
+      field: 'primitiveType',
+      header: 'Type',
+      hidden: false,
+    },
+    {
+      field: 'description',
+      header: 'Description',
+      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'description'),
+      editable: true,
+      hidden: false,
+    },
+    {
+      field: 'examples',
+      header: 'Examples',
+      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'examples'),
+      editable: true,
+      hidden: false,
+    },
+    {
+      field: 'metaDataColumnValidValues',
+      header: 'Allowed Values',
+      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      hidden: false,
+    },
+    {
+      field: 'columnOrder',
+      header: 'Ordering',
+      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'columnOrder'),
+      editable: true,
+      hidden: false,
+    },
+  ];
+
+  const nonInteractiveColumns = [
+    {
+      field: 'columnName',
+      header: 'Field',
+      hidden: false,
+    },
+    {
+      field: 'primitiveType',
+      header: 'Type',
+      hidden: false,
+    },
+    {
+      field: 'description',
+      header: 'Description',
+      hidden: false,
+    },
+    {
+      field: 'examples',
+      header: 'Examples',
+      hidden: false,
+    },
+    {
+      field: 'metaDataColumnValidValues',
+      header: 'Allowed Values',
+      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      hidden: false,
+    },
+  ];
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
   const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
+
+  const user: UserSliceState = useAppSelector(selectUserState);
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   const interactionPermission = hasPermissionV2(
     user,
     tenant.defaultTenantGlobalId,
     tenant.defaultTenantName,
     scope,
   );
+  
+  const [fields, setFields] = useState<MetaDataColumn[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [columns, setColumns] = useState<any[]>(
+    interactionPermission ?
+      interactiveColumns :
+      nonInteractiveColumns,
+  );
+  const { token, tokenLoading } = useApi();
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+  });
 
   // get all AT fields
   useEffect(() => {
@@ -83,6 +159,17 @@ function Fields() {
             setGlobalFilter(filters);
           }}
         />
+        <ColumnVisibilityMenu
+          columns={columns}
+          onColumnVisibilityChange={(selectedColumns: any[]) => {
+            const newColumns = columns.map((col: any) => {
+              const newCol = { ...col };
+              newCol.hidden = selectedColumns.some((sCols: any) => sCols.field === col.field);
+              return newCol;
+            });
+            setColumns(newColumns);
+          }}
+        />
       </div>
     </div>
   );
@@ -92,12 +179,12 @@ function Fields() {
     return allowedValues.join(', ');
   };
 
-  const cellEditor = (options: any) => {
+  const cellEditor = (options: ColumnEditorOptions) => {
     if (options.field === 'columnOrder') {
-      return <NumericEditable value={options.value} editorCallback={options.editorCallback} />;
+      return <NumericEditable value={options.value} editorCallback={options.editorCallback!} />;
     }
-    if (options.field === 'description') {
-      return <TextEditable value={options.value} editorCallback={options.editorCallback} />;
+    if (options.field === 'description' || options.field === 'examples') {
+      return <TextEditable value={options.value} editorCallback={options.editorCallback!} />;
     }
     return undefined;
   };
@@ -160,55 +247,6 @@ function Fields() {
     </div>
   );
 
-  const interactiveColumns = [
-    {
-      field: 'columnName',
-      header: 'Field',
-    },
-    {
-      field: 'description',
-      header: 'Description',
-      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'description'),
-      editable: true,
-    },
-    {
-      field: 'primitiveType',
-      header: 'Type',
-    },
-    {
-      field: 'columnOrder',
-      header: 'Ordering',
-      body: (rowData: any) => bodyValueWithEditIcon(rowData, 'columnOrder'),
-      editable: true,
-    },
-    {
-      field: 'metaDataColumnValidValues',
-      header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
-    },
-  ];
-
-  const nonInteractiveColumns = [
-    {
-      field: 'columnName',
-      header: 'Field',
-    },
-    {
-      field: 'description',
-      header: 'Description',
-    },
-    {
-      field: 'primitiveType',
-      header: 'Type',
-    },
-    {
-      field: 'metaDataColumnValidValues',
-      header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
-    },
-  ];
-
-  const columns = interactionPermission ? interactiveColumns : nonInteractiveColumns;
   return (
     <>
       <Typography className="pageTitle">Fields</Typography>
@@ -234,7 +272,7 @@ function Fields() {
           paginatorPosition="bottom"
           paginatorRight
           selectionMode="single"
-          editMode={hasPermission(user, 'AusTrakka-Owner', 'fields', PermissionLevel.CanClick) ? 'cell' : undefined}
+          editMode={interactionPermission ? 'cell' : undefined}
           filters={globalFilter}
         >
           {
@@ -247,6 +285,7 @@ function Fields() {
                 editor={interactionPermission ? (options) => cellEditor(options) : undefined}
                 sortable
                 resizeable
+                hidden={col.hidden}
                 headerClassName="custom-title"
                 style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
                 onCellEditComplete={onCellEditComplete}
