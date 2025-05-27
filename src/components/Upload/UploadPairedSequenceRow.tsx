@@ -108,6 +108,9 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       'filename1-hash': seqUploadRow.read1.hash,
       'filename2': seqUploadRow.read2.file.name,
       'filename2-hash': seqUploadRow.read2.hash,
+      'X-Interaction-Window-Global-Id': seqUploadRow.interactionWindowToken 
+        ? seqUploadRow.interactionWindowToken 
+        : null,
     };
     
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);

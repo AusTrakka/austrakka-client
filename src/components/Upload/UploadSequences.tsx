@@ -59,6 +59,7 @@ import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import {
+  disableInteractionWindow,
   requestInteractionWindow,
   uploadSubmissions,
   validateSubmissions,
@@ -145,7 +146,7 @@ function UploadSequences() {
   const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
   const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
-  const [iwToken, setIwToken] = useState<string | null>(null);
+  const [openedIw, setOpenedIw] = useState<boolean>(false);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
@@ -170,6 +171,7 @@ function UploadSequences() {
       return sur;
     });
     setSeqUploadRows(queuedRows);
+    setOpenedIw(true);
   };
   
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
@@ -198,6 +200,14 @@ function UploadSequences() {
     for (const row of calculated.slice(0, Math.abs(processing.length - 1))) {
       // Only upload 1 at a time
       updateRow({ ...row, state: SeqUploadRowState.Uploading });
+    }
+    if(uploadFinished() && openedIw) { 
+      disableInteractionWindow(
+        user.defaultTenantGlobalId,
+        seqUploadRows[0].interactionWindowToken,
+        token);
+      
+      setOpenedIw(false);
     }
   }, [seqUploadRows, seqUploadRowStates]);
 
@@ -287,11 +297,9 @@ function UploadSequences() {
     const resp: ResponseObject = await requestInteractionWindow(tenantGlobalId, postDto, token);
 
     if (resp.status === ResponseType.Success) {
-      setIwToken(resp.data as string);
+      return resp.data?.windowGlobalId as string;
     } else {
-      // Show a warning message to the user. Will decide once
-      // it is clear what should be done about the issues around
-      // life cycle.
+      return null;
     }
   };
   
@@ -307,6 +315,7 @@ function UploadSequences() {
       showSampleCreationMessages(response);
       if (response.status === ResponseType.Error) return;
     }
+    const iwToken = await requestInteractionWindowToken(user.defaultTenantGlobalId);
     queueAllRows(iwToken!);
   };
   
