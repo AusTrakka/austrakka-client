@@ -90,8 +90,11 @@ export const getProjectDashboard = (projectAbbrev: string, token: string) => cal
 
 // User dashboard endpoints
 export const getUserDashboardOverview = (token: string) => callGET('/api/DashboardSearch/user-dashboard/overview', token);
-export const getUserDashboardProjects = (token: string) : Promise<ResponseObject<ProjectSummary>> =>
-  callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
+
+// has to be split to 3 different lines as it was getting too long
+export const getUserDashboardProjects =
+    (token: string) : Promise<ResponseObject<ProjectSummary[]>> =>
+        callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
 export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);

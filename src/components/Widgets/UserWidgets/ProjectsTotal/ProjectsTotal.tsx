@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import project from 'vega-lite/build/src/compile/selection/project';
 import LoadingState from '../../../../constants/loadingState';
 import DrilldownButton from '../../../Common/DrilldownButton';
 import { useApi } from '../../../../app/ApiContext';
@@ -52,14 +53,19 @@ export default function ProjectsTotal() {
 
   useEffect(() => {
     async function getProjects() {
-      const projectResponse: ResponseObject = await getUserDashboardProjects(token);
-      if (projectResponse.status === ResponseType.Success) {
-        projectResponse.data.sort((a: Project, b: Project) =>
-          compareProperties(a, b, [
-            [(x => x.latestSequenceDate), -1],
-            [(x => x.latestSampleDate), -1],
-          ]));
-        setProjects(projectResponse.data);
+      const projectResponse: ResponseObject<ProjectSummary[]> =
+          await getUserDashboardProjects(token);
+      if (projectResponse.data && projectResponse.status === ResponseType.Success) {
+        const { data } = projectResponse;
+        const processedProjs = data
+          .filter((p:ProjectSummary) =>
+            p.clientType === import.meta.env.VITE_BRANDING_ID)
+          .sort((a: ProjectSummary, b: ProjectSummary) =>
+            compareProperties(a, b, [
+              [(x => x.latestSequenceDate), -1],
+              [(x => x.latestSampleDate), -1],
+            ]));
+        setProjects(processedProjs);
       } else {
         setErrorMessage(projectResponse.error);
       }
