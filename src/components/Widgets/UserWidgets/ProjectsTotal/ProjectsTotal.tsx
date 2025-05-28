@@ -3,7 +3,6 @@ import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import project from 'vega-lite/build/src/compile/selection/project';
 import LoadingState from '../../../../constants/loadingState';
 import DrilldownButton from '../../../Common/DrilldownButton';
 import { useApi } from '../../../../app/ApiContext';
@@ -11,7 +10,7 @@ import { formatDateAsTwoIsoStrings } from '../../../../utilities/dateUtils';
 import { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
-import { Project, ProjectSummary } from '../../../../types/dtos';
+import { ProjectSummary } from '../../../../types/dtos';
 import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import sortIcon from '../../../TableComponents/SortIcon';
 
