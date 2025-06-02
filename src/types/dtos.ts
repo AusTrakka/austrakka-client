@@ -23,6 +23,7 @@ export interface Project {
 // Summary statistics about a project
 export interface ProjectSummary {
   projectId: number,
+  clientType: string,
   globalId: string,
   abbreviation: string,
   name: string,
