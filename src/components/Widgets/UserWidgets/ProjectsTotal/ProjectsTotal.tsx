@@ -10,7 +10,7 @@ import { formatDateAsTwoIsoStrings } from '../../../../utilities/dateUtils';
 import { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
-import { Project, ProjectSummary } from '../../../../types/dtos';
+import { ProjectSummary } from '../../../../types/dtos';
 import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import sortIcon from '../../../TableComponents/SortIcon';
 
@@ -52,14 +52,19 @@ export default function ProjectsTotal() {
 
   useEffect(() => {
     async function getProjects() {
-      const projectResponse: ResponseObject = await getUserDashboardProjects(token);
-      if (projectResponse.status === ResponseType.Success) {
-        projectResponse.data.sort((a: Project, b: Project) =>
-          compareProperties(a, b, [
-            [(x => x.latestSequenceDate), -1],
-            [(x => x.latestSampleDate), -1],
-          ]));
-        setProjects(projectResponse.data);
+      const projectResponse: ResponseObject<ProjectSummary[]> =
+          await getUserDashboardProjects(token);
+      if (projectResponse.data && projectResponse.status === ResponseType.Success) {
+        const { data } = projectResponse;
+        const processedProjs = data
+          .filter((p:ProjectSummary) =>
+            p.clientType === import.meta.env.VITE_BRANDING_ID)
+          .sort((a: ProjectSummary, b: ProjectSummary) =>
+            compareProperties(a, b, [
+              [(x => x.latestSequenceDate), -1],
+              [(x => x.latestSampleDate), -1],
+            ]));
+        setProjects(processedProjs);
       } else {
         setErrorMessage(projectResponse.error);
       }
