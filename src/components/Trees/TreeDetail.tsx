@@ -19,11 +19,17 @@ import {
   selectProjectMetadata, ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppSelector } from '../../app/store';
 import { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import { selectTreeById } from '../../app/treeSlice';
+import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
+
+// TODO need to inform user if CSV and tree don't match, and which way they don't match
+
+// TODO remove the useless version selector widget from this version of the client
 
 const defaultState: TreeState = {
   blocks: [],
@@ -58,8 +64,7 @@ interface Style {
 const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
-  const { projectAbbrev, treeId, treeVersionId } = useParams();
-  const [tree, setTree] = useState<TreeVersion | null>();
+  const { treeId } = useParams();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
@@ -67,8 +72,6 @@ function TreeDetail() {
   const [phylocanvasMetadata, setPhylocanvasMetadata] = useState<PhylocanvasMetadata>({});
   const [phylocanvasLegends, setPhylocanvasLegends] = useState<PhylocanvasLegends>({});
   const [versions, setVersions] = useState<TreeVersion[]>([]);
-  const [isTreeLoading, setIsTreeLoading] = useState<boolean>(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
   const [state, setState] = useStateFromSearchParamsForObject(
@@ -82,10 +85,11 @@ function TreeDetail() {
     searchParams,
   );
   const projectMetadata : ProjectMetadataState | null =
-    useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
+    useAppSelector(state => selectProjectMetadata(state, LOCAL_PROJECT.abbreviation));
+  const [tree, errorMsg] : [TreeVersion | null, string] =
+    useAppSelector(state => selectTreeById(state, Number(treeId)));
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     // Get list of Seq_IDs from newick
@@ -216,18 +220,8 @@ function TreeDetail() {
     phylocanvasMetadata,
     state.alignLabels,
     state.nodeColumn]);
-
-  // TODO we are going to need a treeSlice
   
-  useEffect(() => {
-    // For now, no tree; need a treeSlice
-    setErrorMsg('Trees not yet implemented');
-  }, [treeId, treeVersionId]);
-
   const renderTree = () => {
-    if (isTreeLoading) {
-      return <Typography>Loading tree</Typography>;
-    }
     if (errorMsg && errorMsg.length > 0) {
       return (
         <Alert severity="error">

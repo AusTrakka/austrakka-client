@@ -25,7 +25,6 @@ function ProjectOverview() {
   // Tab loading states
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
-  const [isTreesLoading, setIsTreesLoading] = useState(true);
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
 
@@ -37,7 +36,6 @@ function ProjectOverview() {
     }
   }, [tab, projectOverviewTabs]);
 
-  // TODO why isn't isSamplesLoading triggering?
   return (
     isSamplesLoading
       ? (
@@ -59,16 +57,12 @@ function ProjectOverview() {
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
-              projectAbbrev="local"
+              projectAbbrev={LOCAL_PROJECT.abbreviation}
               isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
-            <TreeList
-              projectDetails={projectDetails}
-              isTreesLoading={isTreesLoading}
-              setIsTreesLoading={setIsTreesLoading}
-            />
+          <TabPanel value={tabValue} index={2} tabLoader={false}>
+            <TreeList />
           </TabPanel>
           <TabPanel value={tabValue} index={3} tabLoader={false}>
             <PlotList

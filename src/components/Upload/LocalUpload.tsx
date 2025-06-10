@@ -22,11 +22,17 @@ import { addMetadata } from '../../app/projectMetadataSlice';
 import { Sample } from '../../types/sample.interface';
 import { ResponseType } from '../../constants/responseType';
 import { buildFieldListAndUpdateData } from '../../utilities/standaloneClientUtils';
+import { addTree } from '../../app/treeSlice';
 
 interface Options {
   validate: boolean,
   blank: boolean,
 }
+
+// TODO add option to use local storage
+
+const getSuffix = (file: DropFileUpload) =>
+  `.${file.file.name.split('.').pop() ?? ''}`;
 
 const uploadOptions = [
   { name: 'validate',
@@ -40,10 +46,17 @@ const uploadOptions = [
 ];
 
 const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`;
-const validFormats = {
-  '.csv': 'text/csv',
+
+const METADATA_FORMATS : Record<string, string> = {
+  '.csv': 'text/csv', // TODO tsv, maybe later excel
   // '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 };
+const TREE_FORMATS : Record<string, string> = {
+  '.nwk': 'text/plain',
+  '.newick': 'text/plain',
+  '.tree': 'text/plain',
+};
+const validFormats = { ...METADATA_FORMATS, ...TREE_FORMATS };
 
 function LocalUpload() {
   const dispatch = useAppDispatch();
@@ -59,8 +72,21 @@ function LocalUpload() {
   const [fileValidated, setFileValidated] = useState(false);
   const scrollRef = useRef<null | HTMLDivElement>(null);
 
+  const buttonLabel = () => {
+    if (files.length === 0) {
+      return 'Add data';
+    }
+    if (METADATA_FORMATS[getSuffix(files[0])]) {
+      return 'Add metadata';
+    }
+    if (TREE_FORMATS[getSuffix(files[0])]) {
+      return 'Add tree';
+    }
+    return 'Add data';
+  };
+  
   useEffect(() => {
-    // Scroll vaidation or upload response messages into view
+    // Scroll validation or upload response messages into view
     if (submission.messages?.length !== 0) {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -74,13 +100,9 @@ function LocalUpload() {
     });
   };
 
-  // Handle upload submission
-  // This component should do the CSV parsing and validation, 
-  // as it is async and we want to show errors locally.
-  // We should only call the redux action if the data is valid.
-  const handleSubmit = async () => {
+  const handleMetadataAdded = async (file: File) => {
     // Needs to validate, and insert data into project redux state
-    Papa.parse(files[0].file, {
+    Papa.parse(file, {
       header: true,
       complete: (result) => {
         console.log(result);
@@ -89,7 +111,7 @@ function LocalUpload() {
 
         const csvData = result.data as Sample[];
         const fieldNames: string[] = result.meta.fields;
-        
+
         if (csvData.length === 0) {
           setSubmission((oldSubmissionState) => ({
             ...oldSubmissionState,
@@ -105,7 +127,7 @@ function LocalUpload() {
 
         const fields = buildFieldListAndUpdateData(csvData, fieldNames);
         dispatch(addMetadata({ uploadedData: csvData, uploadedFields: fields }));
-        
+
         setSubmission((oldSubmissionState) => ({
           ...oldSubmissionState,
           status: LoadingState.SUCCESS, // TODO how to actually ensure success? check project state?
@@ -116,6 +138,43 @@ function LocalUpload() {
         }));
       },
     });
+  };
+  
+  const handleTreeAdded = async (file: File) => {
+    const reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = (event) => {
+      const newickString = event.target?.result as string;
+      dispatch(addTree({
+        treeName: 'Loaded tree', // TODO ask user for tree name
+        newickTree: newickString,
+      }));
+      setSubmission((oldSubmissionState) => ({
+        ...oldSubmissionState,
+        status: LoadingState.SUCCESS, // TODO how to actually ensure success? check tree state?
+        messages: [{
+          ResponseType: ResponseType.Success,
+          ResponseMessage: 'Tree loaded',
+        }],
+      }));
+    };
+  };
+  
+  // Handle upload submission
+  // This component should do the CSV parsing and validation, 
+  // as it is async and we want to show errors locally.
+  // We should only call the redux action if the data is valid.
+  const handleSubmit = async () => {
+    // Check file type via suffix
+    if (files.length !== 1) {
+      throw new Error('Expect exactly one file on submission');
+    }
+    const suffix : string = getSuffix(files[0]);
+    if (METADATA_FORMATS[suffix]) {
+      handleMetadataAdded(files[0].file);
+    } else if (TREE_FORMATS[suffix]) {
+      handleTreeAdded(files[0].file);
+    }
   };
   
   useEffect(() => {
@@ -134,9 +193,12 @@ function LocalUpload() {
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
         <Grid size={{ md: 12, lg: 9 }}>
           <Typography variant="subtitle2" paddingBottom={1}>
-            Drag-and-drop a sample metadata file to add it to your project.
-            Metadata can be added in tabular (CSV) format.
+            Drag-and-drop a sample metadata file or tree file to add it to your project.
+            <br />
+            Metadata can be added in tabular (CSV) format. 
             The Seq_ID column will be used as the unique identifier to match to tree nodes.
+            <br />
+            Trees can be added in newick format.
           </Typography>
         </Grid>
       </Grid>
@@ -196,7 +258,7 @@ function LocalUpload() {
               endIcon={<FileUpload />}
               onClick={() => handleSubmit()}
             >
-              Add metadata
+              {buttonLabel()}
             </Button>
           )}
       </Grid>

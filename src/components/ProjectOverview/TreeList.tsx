@@ -4,38 +4,26 @@ import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowCl
 import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { Project, Tree } from '../../types/dtos';
+import { TreeVersion } from '../../types/dtos';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { selectTrees } from '../../app/treeSlice';
+import { useAppSelector } from '../../app/store';
 
-interface TreesProps {
-  projectDetails: Project | null
-  isTreesLoading: boolean,
-  setIsTreesLoading: React.Dispatch<React.SetStateAction<boolean>>,
-}
+// TODO if there's only one tree in the list, select it immediately
 
-function TreeList(props: TreesProps) {
-  const { projectDetails, isTreesLoading, setIsTreesLoading } = props;
+function TreeList() {
+  // NB this is a list of TreeVersions. In the standalone client, we assume one "version" per tree
   const columns = [
-    { field: 'abbreviation', header: 'Abbreviation' },
-    { field: 'name', header: 'Name' },
-    { field: 'description', header: 'Description' },
-    { field: 'latestTreeLastUpdated', header: 'Updated', body: (rowData: any) => isoDateLocalDate(rowData.latestTreeLastUpdated) },
+    { field: 'treeName', header: 'Name' },
   ];
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
-  const [treeList, setTreeList] = useState<Tree[]>([]);
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // For now, empty: TODO need a tree slice
-    setTreeList([]);
-    setIsTreesLoading(false);
-  }, []);
+  const treeList: TreeVersion[] = useAppSelector(state => selectTrees(state));
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -45,7 +33,7 @@ function TreeList(props: TreesProps) {
   };
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/trees/${row.data.analysisId}/versions/latest`);
+    navigate(`/data/trees/${row.data.treeId}`);
   };
 
   const header = (
@@ -56,9 +44,7 @@ function TreeList(props: TreesProps) {
       />
     </div>
   );
-
-  if (isTreesLoading) return null;
-
+  
   return (
     treeListError ? (
       <Alert severity="error">
@@ -89,7 +75,6 @@ function TreeList(props: TreesProps) {
               key={col.field}
               field={col.field}
               header={col.header}
-              body={col.body}
               sortable
               resizeable
               headerClassName="custom-title"

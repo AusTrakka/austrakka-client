@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
 import projectMetadataReducer from './projectMetadataSlice';
+import treeReducer from './treeSlice';
 import userReducer from './userSlice';
 import tenantReducer from './tenantSlice';
 
 const store = configureStore({
   reducer: {
     projectMetadataState: projectMetadataReducer,
+    treeState: treeReducer,
     userState: userReducer,
     tenantSliceState: tenantReducer,
   },
