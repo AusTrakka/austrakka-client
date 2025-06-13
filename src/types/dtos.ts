@@ -1,4 +1,6 @@
 // These are view models; should correspond to server-side DTO.
+import { DateTime } from 'vega-lite/build/src/datetime';
+
 export interface Project {
   projectId: number,
   globalId: string,
@@ -122,6 +124,8 @@ export interface User {
   groupRoles: GroupRole[],
   displayName: string,
   created: Date,
+  lastLogIn: Date,
+  lastActive: Date,
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
@@ -138,6 +142,8 @@ export interface UserV2 {
   isAusTrakkaAdmin: boolean,
   displayName: string,
   created: Date,
+  lastLogIn: Date,
+  lastActive: Date,
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
@@ -199,6 +205,8 @@ export interface UserList {
   isActive: boolean,
   created: string,
   createdBy: string,
+  lastLogIn: Date,
+  lastActive: Date,
   isAusTrakkaAdmin: boolean,
   isAusTrakkaProcess: boolean,
   analysisServerUsername: string,
@@ -212,6 +220,8 @@ export interface UserListV2 {
   isActive: boolean,
   created: string,
   createdBy: string,
+  lastLogIn: Date,
+  lastActive: Date,
   isAusTrakkaAdmin: boolean,
   isAusTrakkaProcess: boolean,
   analysisServerUsername: string,

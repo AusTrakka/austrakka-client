@@ -18,6 +18,7 @@ import ExportTableData from '../Common/ExportTableData';
 import renderIcon from './UserIconRenderer';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 
 function renderDisplayName(rowData: UserList) {
   return (
@@ -61,6 +62,8 @@ function UsersV2() {
       body: emailBodyTemplate },
     { field: 'organisation', header: 'Organisation' },
     { field: 'analysisServerUsername', header: 'Analysis Server Username' },
+    { field: 'lastLogIn', header: 'Last Log In', body: (rowData: any) => isoDateLocalDate(rowData.lastLogIn) },
+    { field: 'lastActive', header: 'Last Active', body: (rowData: any) => isoDateLocalDate(rowData.lastActive) },
   ];
 
   useEffect(() => {
