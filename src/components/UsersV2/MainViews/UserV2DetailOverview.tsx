@@ -41,6 +41,7 @@ import {
   updateEditedPrivileges, updatePendingChanges, updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
 import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
+import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
   
 function UserV2DetailOverview() {
   const { userGlobalId } = useParams();
@@ -88,6 +89,8 @@ function UserV2DetailOverview() {
     'objectId',
     'orgAbbrev',
     'orgGlobalId',
+    'lastLogIn',
+    'lastActive',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
@@ -344,11 +347,50 @@ function UserV2DetailOverview() {
         direction="column"
         justifyContent="space-between"
       >
-        <div style={{ display: 'flex' }}>
-          {renderIcon(user, 'large')}
-          <Typography className="pageTitle" style={{ paddingBottom: 0 }}>
-            {user.displayName}
-          </Typography>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Left: Icon and Name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {renderIcon(user, 'large')}
+            <Typography className="pageTitle" style={{ paddingBottom: 0 }}>
+              {user.displayName}
+            </Typography>
+          </div>
+
+          {/* Right: Stacked Dates */}
+          <Stack direction="column" spacing={0.5}>
+            <Stack direction="row" justifyContent="space-between" minWidth={220}>
+              <Typography
+                variant="caption"
+                fontSize=".9rem"
+                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+              >
+                Last Active:
+              </Typography>
+              <Typography
+                variant="caption"
+                fontSize=".9rem"
+                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+              >
+                {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
+              </Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between" minWidth={220}>
+              <Typography
+                variant="caption"
+                fontSize=".9rem"
+                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+              >
+                Last Login:
+              </Typography>
+              <Typography
+                variant="caption"
+                fontSize=".9rem"
+                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+              >
+                {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
+              </Typography>
+            </Stack>
+          </Stack>
         </div>
         {errMsg && (
           <Alert severity="error" onClose={() => setErrMsg(null)}>
