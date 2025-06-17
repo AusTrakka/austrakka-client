@@ -2,7 +2,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, Switch, TableCell, TableRow, TextField } from '@mui/material';
 import { User } from '../../../types/dtos';
-import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 
 interface EditableRowProps {
   field: keyof User;
@@ -55,16 +55,25 @@ function EditableRow(props : EditableRowProps) {
   };
   switch (typeof detailValue) {
     case 'string':
+     
       if (nonEditableFields.includes(field)) {
+        let displayValue;
+        if (field === 'created') {
+          displayValue = isoDateLocalDate(detailValue);
+        } else if (field === 'lastLogIn' || field === 'lastActive') {
+          displayValue = isoDateOrNotRecorded(detailValue); // Replace with your method
+        } else {
+          displayValue = detailValue;
+        }
+
         return (
           <TableRow key={field}>
             <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              {field === 'created' ? isoDateLocalDate(detailValue) : detailValue}
-            </TableCell>
+            <TableCell>{displayValue}</TableCell>
           </TableRow>
         );
       }
+
       if (field === 'orgName') {
         return (
           <TableRow key={field}>
