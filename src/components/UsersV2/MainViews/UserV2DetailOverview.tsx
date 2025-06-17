@@ -357,19 +357,19 @@ function UserV2DetailOverview() {
           </div>
 
           {/* Right: Stacked Dates */}
-          <Stack direction="column" spacing={0.5}>
+          <Stack direction="column" spacing={0.2} marginRight={2}>
             <Stack direction="row" justifyContent="space-between" minWidth={220}>
               <Typography
                 variant="caption"
                 fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
               >
                 Last Active:
               </Typography>
               <Typography
                 variant="caption"
                 fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
               >
                 {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
               </Typography>
@@ -378,14 +378,14 @@ function UserV2DetailOverview() {
               <Typography
                 variant="caption"
                 fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
               >
                 Last Login:
               </Typography>
               <Typography
                 variant="caption"
                 fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_SECONDARY_DARK_GREY}
+                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
               >
                 {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
               </Typography>

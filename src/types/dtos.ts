@@ -1,6 +1,4 @@
 // These are view models; should correspond to server-side DTO.
-import { DateTime } from 'vega-lite/build/src/datetime';
-
 export interface Project {
   projectId: number,
   globalId: string,
