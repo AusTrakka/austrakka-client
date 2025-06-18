@@ -27,16 +27,6 @@
   width: auto;
 }
 
-/* Your existing custom header styles */
-.custom-header {
-  padding-left: 10px;
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .custom-title .p-column-title {
   display: flex;
   align-items: center;
@@ -48,6 +38,30 @@
   align-items: center;
   white-space: nowrap;
   flex-direction: row;
+}
+
+/* Ensure the th takes full height */
+.vertical-table-mode th {
+  vertical-align: bottom;
+}
+
+/* Header content wrapper */
+.vertical-table-mode .p-column-header-content {
+  flex-direction: column;
+  align-items: flex-start;   /* align content to left */
+}
+
+/* Vertically rendered text */
+.custom-vertical-header {
+  writing-mode: sideways-lr;
+  white-space: nowrap;
+  display: flex;
+  align-items: center; /* aligns inline items like tooltip icon */
+  padding: 0;
+}
+
+.custom-vertical-header .vertical-text {
+  white-space: nowrap;
 }
 
 .custom-icon-container {

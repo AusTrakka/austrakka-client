@@ -233,6 +233,7 @@ function Samples(props: SamplesProps) {
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
+            className={verticalHeaders ? 'vertical-table-mode' : undefined}
             filters={allFieldsLoaded ?
               currentFilters :
               defaultState}
@@ -251,17 +252,17 @@ function Samples(props: SamplesProps) {
                 field={col.field}
                 header={
                   !verticalHeaders ? (
-                    <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
                       {col.header}
                       <Tooltip title={getFieldSource(col.field)} placement="top">
                         <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
                       </Tooltip>
                     </div>
                   ) : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
-                      {col.header}
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
+                      <span className="vertical-text">{col.header}</span>
                       <Tooltip title={getFieldSource(col.field)} placement="top">
-                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ marginBottom: 4 }} />
                       </Tooltip>
                     </div>
                   )
@@ -270,7 +271,9 @@ function Samples(props: SamplesProps) {
                 hidden={col.hidden}
                 sortable
                 resizeable
-                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
+                headerStyle={verticalHeaders ?
+                  { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
+                  { width: `${maxHeight}px` }}
                 headerClassName="custom-title"
               />
             )) : null}

@@ -269,6 +269,7 @@ export default function TreeTable(props: TreeTableProps) {
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
             sortIcon={sortIcon}
+            className={verticalHeaders ? 'vertical-table-mode' : undefined}
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
             {sampleTableColumns.map((col: Sample, index: any) => (
@@ -277,7 +278,7 @@ export default function TreeTable(props: TreeTableProps) {
                 field={col.field}
                 header={(
                   !verticalHeaders ? <div>{col.header}</div> : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
                       {col.header}
                     </div>
                   )
