@@ -223,7 +223,7 @@ function SampleTable(props: SamplesProps) {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 300px)"
+          scrollHeight="calc(100vh - 500px)"
           sortIcon={sortIcon}
           paginator
           onRowClick={rowClickHandler}
@@ -235,6 +235,7 @@ function SampleTable(props: SamplesProps) {
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
           paginatorRight
+          className="my-flexible-table"
         >
           {sampleTableColumns.map((col: any) => (
             <Column
@@ -247,6 +248,8 @@ function SampleTable(props: SamplesProps) {
               resizeable
               style={{ minWidth: '150px' }}
               headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
             />
           ))}
         </DataTable>

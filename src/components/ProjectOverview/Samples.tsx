@@ -239,6 +239,7 @@ function Samples(props: SamplesProps) {
               defaultState}
             reorderableColumns
             resizableColumns
+            className="my-flexible-table"
             sortIcon={sortIcon}
             emptyMessage={(
               <Typography variant="subtitle1" color="textSecondary" align="center">
@@ -275,6 +276,8 @@ function Samples(props: SamplesProps) {
                   { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
                   { width: `${maxHeight}px` }}
                 headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName="value-cells"
               />
             )) : null}
           </DataTable>
