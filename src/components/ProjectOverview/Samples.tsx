@@ -233,13 +233,12 @@ function Samples(props: SamplesProps) {
             header={header}
             onRowClick={rowClickHandler}
             selectionMode="single"
-            className={verticalHeaders ? 'vertical-table-mode' : undefined}
+            className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
             filters={allFieldsLoaded ?
               currentFilters :
               defaultState}
             reorderableColumns
             resizableColumns
-            className="my-flexible-table"
             sortIcon={sortIcon}
             emptyMessage={(
               <Typography variant="subtitle1" color="textSecondary" align="center">
