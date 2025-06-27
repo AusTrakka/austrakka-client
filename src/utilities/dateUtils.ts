@@ -62,3 +62,16 @@ export function isISODateString(value: string) {
   }
   return false;
 }
+
+export function isoDateOrNotRecorded(datetime: string): string {
+  if (!datetime || datetime === 'null') return '';
+
+  const date = new Date(datetime);
+  const minDate = new Date('0001-01-01T00:00:00Z');
+
+  if (date.getTime() === minDate.getTime()) {
+    return 'Not Recorded';
+  }
+
+  return isoDateLocalDate(datetime);
+}
