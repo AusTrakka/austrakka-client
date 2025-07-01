@@ -6,6 +6,7 @@ import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
 import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
 import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
+import WithQC from '../components/Dashboards/Templates/WithQC';
 
 const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'default': DefaultDashboard,
@@ -14,5 +15,6 @@ const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps
   'vicdh': VicDHDashboard,
   'vicdh-alerts': VicDHAlertsDashboard,
   'apg': ApgDashboard,
+  'withqc': WithQC,
 };
 export default DashboardTemplates;
