@@ -17,6 +17,7 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { Sample } from '../../../types/sample.interface';
 import { createVegaScale } from '../../../utilities/plotUtils';
 import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import { NULL_COLOUR } from '../../../utilities/colourUtils';
 
 // Parameterised widget; field must be specified
 
@@ -29,16 +30,29 @@ interface MetadataValueWidgetProps extends ProjectWidgetProps {
   field: string; // This is the field parameter the widget will report on
   title?: string | undefined; // Optionally, a different title for the widget
   colourScheme?: string | undefined;
+  colourMapping?: Record<string, string> | undefined;
 }
 
 export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, field, title, colourScheme } = props;
+  const {
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
+    field,
+    title,
+    colourScheme,
+    colourMapping,
+  } = props;
+  if (colourScheme && colourMapping) {
+    console.warn('colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored');
+  }
   // TODO maybe just fieldUniqueValues selector?
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const tooltipTitle = `${field} values`;
 
@@ -84,6 +98,30 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
   
+  // Not ideal, but only used for the case where the widget colourMapping is specified incorrectly
+  const randomColour = () => {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = 70;
+    const lightness = 70;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
+  
+  // Move to utility file if used outside this widget
+  const createCustomScale = () => {
+    const uniqueValues = data!.fieldUniqueValues![field] ?? [];
+    if (colourMapping) {
+      return {
+        domain: uniqueValues,
+        range: uniqueValues.map((val) => (
+          isNullOrEmpty(val) ? NULL_COLOUR : (colourMapping[val] ?? randomColour()))),
+      };
+    }
+    return createVegaScale(
+      uniqueValues ?? [],
+      colourScheme || DEFAULT_COLOUR_SCHEME,
+    );
+  };
+  
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
@@ -98,10 +136,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         },
         color: {
           field: `${field}`,
-          scale: createVegaScale(
-            data!.fieldUniqueValues![field] ?? [],
-            colourScheme || DEFAULT_COLOUR_SCHEME,
-          ),
+          scale: createCustomScale(),
           legend: {
             title: field,
             orient: 'bottom',
@@ -141,7 +176,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     )) {
       const fields = data.fields!.map(fld => fld.columnName);
       if (!fields.includes(field)) {
-        setErrorMessage(`Field ${field} not found in project`);
+        setInfoMessage(`Field ${field} not found in project. Add this field to the project to see data.`);
       }
     }
   }, [data, field]);
@@ -185,12 +220,18 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
           { title ?? `${field} counts` }
         </Typography>
       </Tooltip>
-      {errorMessage ? (
+      {errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
-      ) : (
+      )}
+      {infoMessage && (
+      <Alert severity="info">
+        {infoMessage}
+      </Alert>
+      )}
+      {!errorMessage && !infoMessage && (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div
