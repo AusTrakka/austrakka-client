@@ -44,6 +44,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     colourMapping,
   } = props;
   if (colourScheme && colourMapping) {
+    // eslint-disable-next-line no-console
     console.warn('colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored');
   }
   // TODO maybe just fieldUniqueValues selector?
