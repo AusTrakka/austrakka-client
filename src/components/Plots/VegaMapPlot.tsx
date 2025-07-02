@@ -2,7 +2,7 @@
 // Implements elements common to all plot types
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
+import { compile } from 'vega-lite';
 import { Alert, Grid } from '@mui/material';
 // import Grid from '@mui/material/Grid2';
 import { DataTable } from 'primereact/datatable';
@@ -123,6 +123,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
     }
   }, [filteredData, isoLookup, geoLookupField, geoSpec]);
   
+  // TODO this works but check: are we mixing vega-lite and vega pre-compilation?
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     description: 'Map-based data visualisation.',
@@ -244,7 +245,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
         vegaView.finalize();
       }
       const spec = createSpec();
-      const compiledSpec = compile((spec as TopLevelSpec)!).spec;
+      const compiledSpec = compile((spec as any)!).spec;
 
       setLoading(true);
       const view = await new VegaView(parse(compiledSpec))
