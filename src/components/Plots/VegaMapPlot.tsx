@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { Alert, Typography, Grid } from '@mui/material';
-//import Grid from '@mui/material/Grid2';
+import { Alert, Grid } from '@mui/material';
+// import Grid from '@mui/material/Grid2';
 import { DataTable } from 'primereact/datatable';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
@@ -292,13 +292,8 @@ function VegaMapPlot(props: VegaMapPlotProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
   
-  const renderFloat = (x) => Number.parseFloat(x).toFixed(2);
-  
   return (
     <>
-      <Typography>
-        {`${renderFloat(latitude)}, ${renderFloat(longitude)}`}
-      </Typography>
       <Grid container direction="column">
         {!errorOccurred ? (
           <Grid container item direction="row">
