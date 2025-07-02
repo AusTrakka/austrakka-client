@@ -1,32 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
-import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
-import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 // @ts-ignore
 import mapJson from '../../../maps/Australia_50m_countries_states.json';
 import VegaMapPlot from '../VegaMapPlot';
 
 function MapAustralia(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
-  const { fields, fieldUniqueValues } = useAppSelector(
+  const { fields } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
-  );
-  const searchParams = new URLSearchParams(window.location.search);
-  const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
-    'colourScheme',
-    defaultDiscreteColorScheme,
-    searchParams,
   );
   
   const geoField = 'State';
   const isoField = 'iso_3166_2';
 
   useEffect(() => {
-    if (fields && fields.length > 0) {  // TODO check loadingState?
-      if( !fields.some(fld => fld.columnName == geoField)) {
+    if (fields && fields.length > 0) { // TODO check loadingState?
+      if (!fields.some(fld => fld.columnName === geoField)) {
         setPlotErrorMsg(`Field ${geoField} not found in project metadata`);
       }
     }
@@ -40,7 +31,7 @@ function MapAustralia(props: PlotTypeProps) {
 
   return (
     <>
-      {/*renderControls()*/}
+      {/* renderControls() */}
       <VegaMapPlot
         projectAbbrev={plot?.projectAbbreviation}
         geoSpec={mapJson}

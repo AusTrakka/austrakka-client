@@ -53,7 +53,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
     initialLongitude,
     initialZoom,
   } = props;
-  const nameProperty = geoLookupField=='Country' ? 'properties.NAME' : 'properties.name';
+  const nameProperty = geoLookupField === 'Country' ? 'properties.NAME' : 'properties.name';
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -101,7 +101,6 @@ function VegaMapPlot(props: VegaMapPlotProps) {
       const geoCountRows: GeoCountRow[] = [];
       const lookupTable: Record<string, number> = {};
       const expectedValues = parseGeoJson(geoSpec, isoLookup);
-      console.log(expectedValues)
       expectedValues.forEach((value) => {
         lookupTable[value] = 0; // for log, =1 . But how to show correct values on scale?
       });
@@ -111,6 +110,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
         if (lookupTable[geoFeature] === undefined) {
           // TODO should show a user-visible warning about values ignored because not on map
           // TODO should also count nulls and warn about those
+          // eslint-disable-next-line no-console
           console.error(`Unexpected value ${geoFeature} in filtered data`);
         } else {
           lookupTable[geoFeature] += 1;
@@ -128,7 +128,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
     description: 'Map-based data visualisation.',
     width: 'container',
     height: 500, // TODO can we get responsive map height or fixed aspect ratio?
-    //autosize: { type: 'fit', contains: 'padding' },
+    // autosize: { type: 'fit', contains: 'padding' },
     data: {
       values: geoSpec,
       format: { property: 'features' },
@@ -249,14 +249,14 @@ function VegaMapPlot(props: VegaMapPlotProps) {
       setLoading(true);
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
-        .addSignalListener('centerY', (name, lat) => {
-          setLatitude(lat);
+        .addSignalListener('centerY', (name, lat_signal) => {
+          setLatitude(lat_signal);
         })
-        .addSignalListener('rotateX', (name, lon) => {
-          setLongitude(-lon);
+        .addSignalListener('rotateX', (name, lon_signal) => {
+          setLongitude(-lon_signal);
         })
-        .addSignalListener('scale', (name, zoom) => {
-          setZoom(zoom);
+        .addSignalListener('scale', (name, zoom_signal) => {
+          setZoom(zoom_signal);
         })
         .runAsync();
       setVegaView(view);
