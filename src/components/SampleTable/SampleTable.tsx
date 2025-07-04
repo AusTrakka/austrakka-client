@@ -167,7 +167,7 @@ function SampleTable(props: SamplesProps) {
   );
 
   return (
-    <>
+    <div className="datatable-container-org">
       <Backdrop
         sx={{ color: 'var(--background-colour)', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
@@ -208,7 +208,7 @@ function SampleTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
         <DataTable
           value={metadata?.metadata ?? []}
           onValueChange={(e) => {
@@ -223,7 +223,7 @@ function SampleTable(props: SamplesProps) {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 500px)"
+          scrollHeight="flex"
           sortIcon={sortIcon}
           paginator
           onRowClick={rowClickHandler}
@@ -254,7 +254,7 @@ function SampleTable(props: SamplesProps) {
           ))}
         </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
 

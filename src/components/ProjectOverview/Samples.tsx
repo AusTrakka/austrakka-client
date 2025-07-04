@@ -163,7 +163,7 @@ function Samples(props: SamplesProps) {
 
   if (isSamplesLoading) return null;
   return (
-    <>
+    <div className="datatable-container-proj">
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -207,50 +207,49 @@ function Samples(props: SamplesProps) {
       {
         /* TODO: Make a function for the table so that a different sort is used per column type */
       }
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
-        <div>
-          <DataTable
-            value={metadata?.metadata ?? []}
-            onValueChange={(e) => {
-              setFilteredDataLength(e.length);
-              setLoadingState(false);
-              setFilteredData(e);
-            }}
-            size="small"
-            removableSort
-            showGridlines
-            scrollable
-            scrollHeight="calc(100vh - 480px)"
-            paginator
-            loading={loadingState}
-            rows={25}
-            columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight
-            header={header}
-            onRowClick={rowClickHandler}
-            selectionMode="single"
-            className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-            filters={allFieldsLoaded ?
-              currentFilters :
-              defaultState}
-            reorderableColumns
-            resizableColumns
-            sortIcon={sortIcon}
-            emptyMessage={(
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No samples found
-              </Typography>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
+        <DataTable
+          value={metadata?.metadata ?? []}
+          onValueChange={(e) => {
+            setFilteredDataLength(e.length);
+            setLoadingState(false);
+            setFilteredData(e);
+          }}
+          size="small"
+          removableSort
+          showGridlines
+          scrollable
+          scrollHeight="flex"
+          paginator
+          loading={loadingState}
+          rows={25}
+          columnResizeMode="expand"
+          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+          paginatorPosition="bottom"
+          paginatorRight
+          header={header}
+          onRowClick={rowClickHandler}
+          selectionMode="single"
+          className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
+          filters={allFieldsLoaded ?
+            currentFilters :
+            defaultState}
+          reorderableColumns
+          resizableColumns
+          sortIcon={sortIcon}
+          emptyMessage={(
+            <Typography variant="subtitle1" color="textSecondary" align="center">
+              No samples found
+            </Typography>
             )}
-          >
-            {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
-              <Column
-                key={col.field}
-                field={col.field}
-                header={
+        >
+          {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={
                   !verticalHeaders ? (
                     <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
                       {col.header}
@@ -267,22 +266,21 @@ function Samples(props: SamplesProps) {
                     </div>
                   )
                 }
-                body={BodyComponent({ col, readyFields })}
-                hidden={col.hidden}
-                sortable
-                resizeable
-                headerStyle={verticalHeaders ?
-                  { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
-                  { width: `${maxHeight}px` }}
-                headerClassName="custom-title"
-                className="flexible-column"
-                bodyClassName="value-cells"
-              />
-            )) : null}
-          </DataTable>
-        </div>
+              body={BodyComponent({ col, readyFields })}
+              hidden={col.hidden}
+              sortable
+              resizeable
+              headerStyle={verticalHeaders ?
+                { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
+                { width: `${maxHeight}px` }}
+              headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
+            />
+          )) : null}
+        </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
 export default Samples;
