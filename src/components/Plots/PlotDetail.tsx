@@ -9,6 +9,9 @@ import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
 import HeatMap from './PlotTypes/HeatMap';
 import Histogram from './PlotTypes/Histogram';
+import MapWorld from './PlotTypes/MapWorld';
+import MapAustralia from './PlotTypes/MapAustralia';
+import MapMalaysia from './PlotTypes/MapMalaysia';
 import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -22,6 +25,9 @@ const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = 
   'BarChart': BarChart,
   'Histogram': Histogram,
   'HeatMap': HeatMap,
+  'MapWorld': MapWorld,
+  'MapAustralia': MapAustralia,
+  'MapMalaysia': MapMalaysia,
   'Custom': Custom,
 };
 
