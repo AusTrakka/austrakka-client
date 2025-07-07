@@ -105,7 +105,7 @@ export default function CustomTabs(props: CustomTabsProps) {
   return (
     <Box>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary">
+        <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary" variant="scrollable">
           {InnerTabs}
         </Tabs>
       </Box>
