@@ -36,6 +36,8 @@ import UsersV2 from './components/Admin/UsersV2';
 import TenantProvider from './providers/TenantProvider';
 import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
+import MapTest from './components/Maps/MapTest';
+import MapTestDetail from './components/Maps/MapTestDetail';
 
 function App() {
   const navigate = useNavigate();
@@ -73,6 +75,7 @@ function App() {
                     <Route path="fields" element={<Fields />} />
                     <Route path="users/:userObjectId" element={<UserDetail />} />
                     <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
+                    <Route path="projects/:projectAbbrev/map" element={<MapTestDetail />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

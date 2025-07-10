@@ -9,6 +9,7 @@ import { createColourMapping } from './colourUtils';
 import { ProjectViewField } from '../types/dtos';
 import { defaultDiscreteColorScheme, defaultContinuousColorScheme } from '../constants/schemes';
 import { maxObj, minObj } from './dataProcessingUtils';
+import { Sample } from '../types/sample.interface';
 
 const ONE_SAMPLE_POINT_SIZE = 40;
 
@@ -247,4 +248,44 @@ export const ownerGroupVegaTransform = (field: string | undefined) => {
     ];
   }
   return [];
+};
+
+export interface GeoCountRow {
+  geoFeature: string;
+  count: number;
+}
+
+export const aggregateGeoData = (
+  rawData: Sample[],
+  geoLookupField: string,
+  geoSpec: any,
+  isoLookup: string,
+): GeoCountRow[] => {
+  if (!rawData || rawData.length === 0) return [];
+
+  const lookupTable: Record<string, number> = {};
+
+  // Initialize lookup table with expected values from GeoJSON
+  const expectedValues = geoSpec.features?.map((feature: any) =>
+    feature.properties[isoLookup]).filter(Boolean) || [];
+
+  expectedValues.forEach((value: string) => {
+    lookupTable[value] = 0;
+  });
+
+  // Count occurrences of each geographic feature
+  rawData.forEach((sample) => {
+    const geoFeature = sample[geoLookupField];
+    if (geoFeature && lookupTable[geoFeature] !== undefined) {
+      lookupTable[geoFeature] += 1;
+    } else if (geoFeature) {
+      console.warn(`Unexpected value ${geoFeature} in filtered data - not found in map`);
+    }
+  });
+
+  // Convert to array format
+  return Object.entries(lookupTable).map(([geoFeature, count]) => ({
+    geoFeature,
+    count,
+  }));
 };
