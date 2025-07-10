@@ -279,6 +279,7 @@ export const aggregateGeoData = (
     if (geoFeature && lookupTable[geoFeature] !== undefined) {
       lookupTable[geoFeature] += 1;
     } else if (geoFeature) {
+      // eslint-disable-next-line no-console
       console.warn(`Unexpected value ${geoFeature} in filtered data - not found in map`);
     }
   });

@@ -36,7 +36,6 @@ import UsersV2 from './components/Admin/UsersV2';
 import TenantProvider from './providers/TenantProvider';
 import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
-import MapTest from './components/Maps/MapTest';
 import MapTestDetail from './components/Maps/MapTestDetail';
 
 function App() {

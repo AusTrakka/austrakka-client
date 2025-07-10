@@ -3,7 +3,6 @@ import * as echarts from 'echarts';
 import { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Stack } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
-import 'leaflet/dist/leaflet.css';
 import ausNzMap from '../../assets/maps/au_nz_processed.json';
 import { fetchProjectMetadata, ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -50,16 +49,17 @@ function MapTest(props: MapTestProps) {
     if (projectAbbrev &&
         tokenLoading !== LoadingState.LOADING &&
         tokenLoading !== LoadingState.IDLE) {
-      const someValue = dispatch(fetchProjectMetadata({ projectAbbrev, token }));
+      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);
-  
+
   useEffect(() => {
     if (!chartRef.current) {
-      return;
+      return undefined;
     }
+
     chartInstance.current = echarts.init(chartRef.current);
- 
+
     // Clean up on unmount
     return () => {
       if (chartInstance.current) {
@@ -67,7 +67,7 @@ function MapTest(props: MapTestProps) {
         chartInstance.current = null;
       }
     };
-  }, []); // Empty dependency - initialize once
+  }, []);
 
   useEffect(() => {
     function handleResize() {
@@ -167,7 +167,7 @@ function MapTest(props: MapTestProps) {
             ],
             unproject: (point) => [
               (point[0] * 180) / Math.PI,
-              (2 * 180) / Math.PI * Math.atan(Math.exp(point[1])) - 90,
+              ((2 * 180) / Math.PI) * Math.atan(Math.exp(point[1])) - 90,
             ],
           },
           roam: true,
