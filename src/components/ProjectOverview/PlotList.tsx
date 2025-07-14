@@ -93,7 +93,7 @@ function PlotList(props: PlotListProps) {
         header={header}
         globalFilterFields={columns.map((col) => col.field)}
         size="small"
-        scrollHeight="calc(100vh - 500px)"
+        scrollHeight="calc(100vh - 300px)"
         columnResizeMode="expand"
         removableSort
         reorderableColumns

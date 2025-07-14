@@ -223,7 +223,7 @@ function MemberList(props: MembersProps) {
               onValueChange={(e) => setExportData(e)}
               size="small"
               scrollable
-              scrollHeight="100%"
+              scrollHeight="calc(100vh - 300px)"
               reorderableColumns
               showGridlines
               selectionMode="single"
