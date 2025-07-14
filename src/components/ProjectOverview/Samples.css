@@ -1,3 +1,17 @@
+.datatable-container-proj
+{
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+}
+
+.datatable-container-org
+{
+ display: flex;
+  flex-direction: column;
+  height: calc(100vh - 310px);
+}
+
 .my-flexible-table {
   width: 100%;
 }
