@@ -185,11 +185,12 @@ function Datasets(props: DatasetProps) {
               reorderableColumns
               removableSort
               scrollable
-              scrollHeight="calc(100vh - 500px)"
+              scrollHeight="calc(100vh - 300px)"
               header={header}
               filters={globalFilter}
               globalFilterFields={columns.map((col) => col.field)}
               sortIcon={sortIcon}
+              className="my-flexible-table"
             >
               {canDelete() ? (
                 <Column
@@ -208,8 +209,10 @@ function Datasets(props: DatasetProps) {
                   hidden={col.hidden ?? false}
                   sortable
                   resizeable
+                  className="flexible-column"
                   style={{ minWidth: '150px' }}
                   headerClassName="custom-title"
+                  bodyClassName="value-cells"
                 />
               ))}
             </DataTable>

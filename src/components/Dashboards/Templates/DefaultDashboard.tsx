@@ -19,37 +19,43 @@ function DefaultDashboard(props: ProjectDashboardTemplateProps) {
   
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        <Grid size={{ lg: 8, md: 12 }}>
-          <Card sx={cardStyle}>
-            <CardContent>
-              <SampleSummary
-                projectAbbrev={projectAbbrev}
-                filteredData={filteredData}
-                timeFilterObject={timeFilterObject}
-              />
-            </CardContent>
-          </Card>
-          <Card sx={{ ...cardStyle, marginTop: 2 }}>
-            <CardContent>
-              <EpiCurveChart
-                projectAbbrev={projectAbbrev}
-                filteredData={filteredData}
-                timeFilterObject={timeFilterObject}
-              />
-            </CardContent>
-          </Card>
+      <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
+        <Grid container sx={{ alignItems: 'flex-start' }} size={{ lg: 8, md: 12 }}>
+          <Grid size={12}>
+            <Card sx={cardStyle}>
+              <CardContent>
+                <SampleSummary
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={12}>
+            <Card sx={cardStyle}>
+              <CardContent>
+                <EpiCurveChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid size={{ lg: 4, md: 6, xs: 8 }}>
-          <Card sx={tallCardStyle}>
-            <CardContent>
-              <Organisations
-                projectAbbrev={projectAbbrev}
-                filteredData={filteredData}
-                timeFilterObject={timeFilterObject}
-              />
-            </CardContent>
-          </Card>
+        <Grid container sx={{ alignItems: 'flex-start' }} size={{ lg: 4, md: 6, xs: 8 }}>
+          <Grid size={12}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <Organisations
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
         {/* Third Row: Two cells sharing 50/50 */}
         <Grid size={{ xs: 12, md: 12, lg: 6 }}>
