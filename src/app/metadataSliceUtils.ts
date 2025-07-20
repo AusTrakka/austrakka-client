@@ -124,8 +124,9 @@ export function calculateViewFieldNames(
   field: ProjectField,
   mergeAlgorithm: string,
 ): string[] {
-  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL && field.fieldSource === FieldSource.DATASET) {
-    return field.analysisLabels.map(label => `${field.fieldName}_${label}`);
+  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL &&
+      field.fieldSource === FieldSource.DATASET) {
+    return (field.analysisLabels ?? []).map(label => `${field.fieldName}_${label}`);
   }
   // override mode, or fieldSource is sample, or fieldSource is both (Seq_ID)
   return [field.fieldName];
