@@ -80,11 +80,9 @@ function TreeDetail() {
     defaultState,
   );
   const rootIdDefault: string = '0';
-  const searchParams = new URLSearchParams(window.location.search);
   const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
     'rootId',
     rootIdDefault,
-    searchParams,
   );
   const projectMetadata : ProjectMetadataState | null =
     useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
