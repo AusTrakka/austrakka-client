@@ -52,7 +52,7 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-function Samples(props: SamplesProps) {
+function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
     isSamplesLoading,
@@ -283,4 +283,4 @@ function Samples(props: SamplesProps) {
     </div>
   );
 }
-export default Samples;
+export default ProjectSamplesTable;

@@ -4,7 +4,7 @@ import React, {
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { getProjectDetails } from '../../utilities/resourceUtils';
-import Samples from './Samples';
+import ProjectSamplesTable from './ProjectSamplesTable';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
@@ -102,7 +102,7 @@ function ProjectOverview() {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
-            <Samples
+            <ProjectSamplesTable
               projectAbbrev={projectAbbrev!}
               isSamplesLoading={isSamplesLoading}
             />

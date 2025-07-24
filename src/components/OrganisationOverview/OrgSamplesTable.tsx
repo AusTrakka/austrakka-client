@@ -34,7 +34,7 @@ interface SamplesProps {
   groupContext: number | undefined,
 }
 
-function SampleTable(props: SamplesProps) {
+function OrgSamplesTable(props: SamplesProps) {
   const { groupContext } = props;
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -258,4 +258,4 @@ function SampleTable(props: SamplesProps) {
   );
 }
 
-export default memo(SampleTable);
+export default memo(OrgSamplesTable);
