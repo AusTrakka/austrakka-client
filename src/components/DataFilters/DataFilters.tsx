@@ -145,6 +145,59 @@ function DataFilters(props: DataFiltersProps) {
       registerFilterHandlers<Field>(allFields);
     }
   }, [allFields, visibleFields]);
+  
+  const handleStringValueSelector = () => {
+    const matchedFieldWithUniqueVals = fields
+      .filter(f => f.metaDataColumnValidValues && f.metaDataColumnValidValues.length > 0)
+      .find(f => f.columnName === filterFormValues.field);
+    
+    if (matchedFieldWithUniqueVals) {
+      return (
+        <>
+          <InputLabel id="value-simple-select-label">Value</InputLabel>
+          <Select
+            labelId="value-simple-select-label"
+            id="value-simple-select"
+            value={filterFormValues.value || ''}
+            label="Value"
+            name="value"
+            onChange={(event) => {
+              handleFilterChange(event);
+            }}
+          >
+            {matchedFieldWithUniqueVals.metaDataColumnValidValues?.map((val, idx) => (
+              <MenuItem key={idx} value={val}>
+                {val}
+              </MenuItem>
+            ))}
+          </Select>
+        </>
+      );
+    }
+    
+    return (
+      <TextField
+        id="outlined-basic"
+        label="Value"
+        variant="outlined"
+        name="value"
+        type={(filterFormValues.fieldType === FieldTypes.NUMBER ||
+                  filterFormValues.fieldType === FieldTypes.DOUBLE) ?
+          'number' :
+          undefined}
+        value={filterFormValues.value}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          handleFilterChange(event);
+        }}
+        size="small"
+        inputProps={(filterFormValues.fieldType === FieldTypes.NUMBER ||
+                  filterFormValues.fieldType === FieldTypes.DOUBLE) ?
+          { step: 'any' } :
+          { maxLength: 25 }}
+        disabled={nullOrEmptyFlag}
+      />
+    );
+  };
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     const { name, value } = event.target;
@@ -153,10 +206,11 @@ function DataFilters(props: DataFiltersProps) {
 
       const targetFieldProps = fields.find((field: Field) =>
         field.columnName === value);
-
+      
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
 
+      // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
         fieldType = FieldTypes.DATE;
@@ -177,6 +231,7 @@ function DataFilters(props: DataFiltersProps) {
         fieldType = FieldTypes.STRING;
         defaultCondition = FilterMatchMode.EQUALS;
       }
+      
       setNullOrEmptyFlag(false);
       setSelectedFieldType(fieldType as FieldTypes);
       setFilterFormValues((prevState) => ({
@@ -385,28 +440,7 @@ function DataFilters(props: DataFiltersProps) {
         );
       // Default return captures string and number types
       default:
-        return (
-          <TextField
-            id="outlined-basic"
-            label="Value"
-            variant="outlined"
-            name="value"
-            type={(filterFormValues.fieldType === FieldTypes.NUMBER ||
-              filterFormValues.fieldType === FieldTypes.DOUBLE) ?
-              'number' :
-              undefined}
-            value={filterFormValues.value}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleFilterChange(event);
-            }}
-            size="small"
-            inputProps={(filterFormValues.fieldType === FieldTypes.NUMBER ||
-              filterFormValues.fieldType === FieldTypes.DOUBLE) ?
-              { step: 'any' } :
-              { maxLength: 25 }}
-            disabled={nullOrEmptyFlag}
-          />
-        );
+        return (handleStringValueSelector());
     }
   };
 
@@ -605,10 +639,8 @@ function DataFilters(props: DataFiltersProps) {
                 </form>
               </Box>
             ) : null}
-          
           </Grid>
         </Box>
-      
       </Box>
     </div>
   );
