@@ -22,6 +22,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { style } from 'd3';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
@@ -146,7 +147,87 @@ function DataFilters(props: DataFiltersProps) {
     }
   }, [allFields, visibleFields]);
   
+  const handleFilterChange = (event: SelectChangeEvent) => {
+    const { name, value } = event.target;
+    if (name === 'field') {
+      setDateError(null);
+
+      const targetFieldProps = fields.find((field: Field) =>
+        field.columnName === value);
+
+      let defaultCondition = '';
+      let fieldType: FieldTypes = FieldTypes.STRING;
+
+      // this changes the filter options based on the field type
+      if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
+        setConditions(dateConditions);
+        fieldType = FieldTypes.DATE;
+        defaultCondition = FilterMatchMode.DATE_IS;
+      } else if (
+        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
+          targetFieldProps?.primitiveType === FieldTypes.DOUBLE
+      ) {
+        setConditions(numberConditions);
+        fieldType = targetFieldProps.primitiveType;
+        defaultCondition = FilterMatchMode.EQUALS;
+      } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
+        setConditions(booleanConditions);
+        fieldType = FieldTypes.BOOLEAN;
+        defaultCondition = FilterMatchMode.EQUALS;
+      } else {
+        setConditions(stringConditions);
+        fieldType = FieldTypes.STRING;
+        defaultCondition = FilterMatchMode.EQUALS;
+      }
+
+      setNullOrEmptyFlag(false);
+      setSelectedFieldType(fieldType as FieldTypes);
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value,
+        fieldType,
+        condition: defaultCondition,
+        value: '',
+      }));
+    } else if (name === 'condition' && value.includes('null')) {
+      setNullOrEmptyFlag(true);
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value as CustomFilterOperators,
+        value: !value.includes('not'),
+      }));
+    } else {
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleDateDependingOnCondition = (condition: FilterMatchMode, value: string) => {
+    // if the condition is custom, then the value is going to be a string boolean,
+    // and we don't need to do anything
+    if (condition === FilterMatchMode.CUSTOM) {
+      return value;
+    }
+    if (condition === FilterMatchMode.DATE_AFTER) {
+      const endOfDay = new Date(value);
+      endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
+      return endOfDay;
+    }
+
+    return new Date(value);
+  };
+
+  const handleFilterDateChange = (newDate: any) => {
+    setFilterFormValues((prevState) => ({
+      ...prevState,
+      value: newDate,
+    }));
+  };
+
   const handleStringValueSelector = () => {
+    // this will check if the selectedField has unique values to pull from
     const matchedFieldWithUniqueVals = fields
       .filter(f => f.metaDataColumnValidValues && f.metaDataColumnValidValues.length > 0)
       .find(f => f.columnName === filterFormValues.field);
@@ -161,6 +242,13 @@ function DataFilters(props: DataFiltersProps) {
             value={filterFormValues.value || ''}
             label="Value"
             name="value"
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: '300px',
+                },
+              },
+            }}
             onChange={(event) => {
               handleFilterChange(event);
             }}
@@ -198,86 +286,7 @@ function DataFilters(props: DataFiltersProps) {
       />
     );
   };
-
-  const handleFilterChange = (event: SelectChangeEvent) => {
-    const { name, value } = event.target;
-    if (name === 'field') {
-      setDateError(null);
-
-      const targetFieldProps = fields.find((field: Field) =>
-        field.columnName === value);
-      
-      let defaultCondition = '';
-      let fieldType: FieldTypes = FieldTypes.STRING;
-
-      // this changes the filter options based on the field type
-      if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
-        setConditions(dateConditions);
-        fieldType = FieldTypes.DATE;
-        defaultCondition = FilterMatchMode.DATE_IS;
-      } else if (
-        targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
-          targetFieldProps?.primitiveType === FieldTypes.DOUBLE
-      ) {
-        setConditions(numberConditions);
-        fieldType = targetFieldProps.primitiveType;
-        defaultCondition = FilterMatchMode.EQUALS;
-      } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
-        setConditions(booleanConditions);
-        fieldType = FieldTypes.BOOLEAN;
-        defaultCondition = FilterMatchMode.EQUALS;
-      } else {
-        setConditions(stringConditions);
-        fieldType = FieldTypes.STRING;
-        defaultCondition = FilterMatchMode.EQUALS;
-      }
-      
-      setNullOrEmptyFlag(false);
-      setSelectedFieldType(fieldType as FieldTypes);
-      setFilterFormValues((prevState) => ({
-        ...prevState,
-        [name]: value,
-        fieldType,
-        condition: defaultCondition,
-        value: '',
-      }));
-    } else if (name === 'condition' && value.includes('null')) {
-      setNullOrEmptyFlag(true);
-      setFilterFormValues((prevState) => ({
-        ...prevState,
-        [name]: value as CustomFilterOperators,
-        value: !value.includes('not'),
-      }));
-    } else {
-      setFilterFormValues((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
-  };
   
-  const handleDateDependingOnCondition = (condition: FilterMatchMode, value: string) => {
-    // if the condition is custom, then the value is going to be a string boolean,
-    // and we don't need to do anything
-    if (condition === FilterMatchMode.CUSTOM) {
-      return value;
-    }
-    if (condition === FilterMatchMode.DATE_AFTER) {
-      const endOfDay = new Date(value);
-      endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
-      return endOfDay;
-    }
-    
-    return new Date(value);
-  };
-
-  const handleFilterDateChange = (newDate: any) => {
-    setFilterFormValues((prevState) => ({
-      ...prevState,
-      value: newDate,
-    }));
-  };
-
   // TODO: I should really write some tests for this method some time.
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
     setLoadingState(true);
