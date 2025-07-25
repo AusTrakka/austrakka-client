@@ -261,8 +261,8 @@ function DataFilters(props: DataFiltersProps) {
               handleFilterChange(event);
             }}
           >
-            {matchedFieldWithUniqueVals.metaDataColumnValidValues?.map((val, idx) => (
-              <MenuItem key={idx} value={val}>
+            {matchedFieldWithUniqueVals.metaDataColumnValidValues?.map((val) => (
+              <MenuItem key={val} value={val}>
                 {val}
               </MenuItem>
             ))}
