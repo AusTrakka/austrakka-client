@@ -22,7 +22,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { style } from 'd3';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
@@ -197,9 +196,11 @@ function DataFilters(props: DataFiltersProps) {
         value: !value.includes('not'),
       }));
     } else {
+      setNullOrEmptyFlag(false);
       setFilterFormValues((prevState) => ({
         ...prevState,
         [name]: value,
+        value: '',
       }));
     }
   };
@@ -232,7 +233,11 @@ function DataFilters(props: DataFiltersProps) {
       .filter(f => f.metaDataColumnValidValues && f.metaDataColumnValidValues.length > 0)
       .find(f => f.columnName === filterFormValues.field);
     
-    if (matchedFieldWithUniqueVals) {
+    // only show drop down if it has valid values and the condition in a direct comparison
+    if (matchedFieldWithUniqueVals &&
+        (filterFormValues.condition === FilterMatchMode.EQUALS ||
+        filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
+    ) {
       return (
         <>
           <InputLabel id="value-simple-select-label">Value</InputLabel>
@@ -242,9 +247,12 @@ function DataFilters(props: DataFiltersProps) {
             value={filterFormValues.value || ''}
             label="Value"
             name="value"
+            size="small"
+            style={{ minWidth: '200px' }}
             MenuProps={{
               PaperProps: {
                 style: {
+                  minWidth: '200px',
                   maxHeight: '300px',
                 },
               },
