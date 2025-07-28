@@ -16,13 +16,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { SetStateAction, SyntheticEvent, useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import { AddBox, AddCircle, CloseRounded, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { field } from 'vega';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
