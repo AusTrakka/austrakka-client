@@ -11,11 +11,15 @@ export function isoDateLocalDate(datetime: string): string {
   });
 }
 
+/**
+ * This will return Date string with no time in the UTC timezone
+ * @param datetime 
+ */
 export function isoDateLocalDateNoTime(datetime: string) {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
-  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
+  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC' });
 }
 
 export function formatDate(dateUTC: string): string {

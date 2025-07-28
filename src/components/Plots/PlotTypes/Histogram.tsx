@@ -38,33 +38,27 @@ function Histogram(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
-  const searchParams = new URLSearchParams(window.location.search);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    searchParams,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    searchParams,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    searchParams,
   );
   const [binMode, setBinMode] = useStateFromSearchParamsForPrimitive<string>(
     'binMode',
     'auto',
-    searchParams,
   );
   const [stepSize, setStepSize] = useStateFromSearchParamsForPrimitive<number>(
     'stepSize',
     1,
-    searchParams,
   );
 
   // Set spec on load
