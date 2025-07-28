@@ -17,7 +17,6 @@ function SampleDetail() {
   const [groupName, setGroupName] = useStateFromSearchParamsForPrimitive<string | null>(
     'groupName',
     null,
-    new URLSearchParams(window.location.search),
   );
   const [groups, setGroups] = useState<Group[] | null>();
   const [errorGroupName, setErrorGroupName] = useState<string | null>(null);

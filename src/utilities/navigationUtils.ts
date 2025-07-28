@@ -34,10 +34,10 @@ function parse<T>(value: string | null, defaultValue: T): T {
 export default function getQueryParamOrDefault<T>(
   paramName: string | number | symbol,
   defaultState: T,
-  searchParams: URLSearchParams,
+  searchParams: Record<string, string | null>,
 ): T {
-  const paramValue = searchParams.get(String(paramName));
-  return parse(paramValue, defaultState);
+  const rawValue = searchParams[String(paramName)];
+  return parse(rawValue, defaultState);
 }
 
 // Helper function to determine if the last segment matches any tab title
