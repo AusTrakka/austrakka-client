@@ -3,19 +3,23 @@ import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import getQueryParamOrDefault from './navigationUtils';
-import { encodeFilterObj, getFilterObjFromSearchParams } from './urlUtils';
+import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
 import { isDataTableFiltersEqual } from './filterUtils';
 
 export function useStateFromSearchParamsForPrimitive<T extends
 string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
-  searchParams: URLSearchParams,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const stateSearchParams = getQueryParamOrDefault<T>(paramName, defaultState, searchParams);
+  const initCurrentSearchParams = getRawQueryParams(window.location.search);
+  const stateSearchParams = getQueryParamOrDefault<T>(
+    paramName,
+    defaultState,
+    initCurrentSearchParams,
+  );
   const [state, setState] = useState<T>(stateSearchParams);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
@@ -24,35 +28,39 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
   }, [stateSearchParams]);
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setState(newState);
-    const currentSearchParams = new URLSearchParams(window.location.search);
-    // If exists in the current searchParams, delete it
-    if (currentSearchParams.has(paramName)) {
-      currentSearchParams.delete(paramName);
-    }
-    // If differs from the default, append it to searchParams
-    if (newState !== defaultState) {
-      currentSearchParams.append(paramName, String(newState));
+
+    const currentSearchParams = getRawQueryParams(window.location.search);
+    
+    // Delete existing key
+    if (paramName in currentSearchParams) {
+      delete currentSearchParams[paramName];
     }
 
-    // Convert searchParams to a string
-    const queryString = Array.from(currentSearchParams.entries())
+    // Append only if value is not the default
+    if (newState !== defaultState) {
+      currentSearchParams[paramName] = String(newState); // Raw string
+    }
+
+    const queryString = Object.entries(currentSearchParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
-    // Update the URL without navigating
+
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  return [state, useMemo(
-    () => useStateWithQueryParam,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [paramName, defaultState, searchParams, setState],
-  )];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return [state, useMemo(() => useStateWithQueryParam, [
+    paramName,
+    defaultState,
+    setState,
+  ]),
+  ];
 }
 
 // TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
   defaultState: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const stateSearchParams = new URLSearchParams(window.location.search);
+  const stateSearchParams = getRawQueryParams(window.location.search);
   const state: T = { ...defaultState };
   Object.keys(defaultState).forEach((key) => {
     const queryValue = getQueryParamOrDefault<T[keyof T]>(
@@ -66,7 +74,7 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   });
   const [stateObject, setStateObject] = useState<T>(state);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     // Stringify and compare to avoid reference inequality in objects
     if (JSON.stringify(state) !== JSON.stringify(stateObject)) {
@@ -74,30 +82,38 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
-  
+
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setStateObject(newState);
-    const currentSearchParams = new URLSearchParams(window.location.search);
+    // const currentSearchParams = new URLSearchParams(window.location.search);
+    const currentSearchParams = new Map<string, string>();
+
+    const rawParams = getRawQueryParams(window.location.search);
+    Object.entries(rawParams).forEach(([key, value]) => {
+      currentSearchParams.set(key, value);
+    });
+
     Object.entries(newState).forEach(([key, value]) => {
-      // If the key exists in the current searchParams, delete it
+      // If the key exists, delete it
       if (currentSearchParams.has(key)) {
         currentSearchParams.delete(key);
       }
-      // If the value differs from the default, append it to searchParams
+
+      // If the value differs from the default, re-add it
       if (key in defaultState && value !== defaultState[key as keyof typeof state]) {
-        // If the value is an empty array, append a comma to the searchParams
-        if (value instanceof Array && value.length === 0) {
-          currentSearchParams.append(key, ',');
+        if (Array.isArray(value) && value.length === 0) {
+          currentSearchParams.set(key, ',');
         } else {
-          currentSearchParams.append(key, String(value));
+          currentSearchParams.set(key, String(value));
         }
       }
     });
-    // Convert searchParams to a string
+
+    // Convert back to a query string (raw, not encoded)
     const queryString = Array.from(currentSearchParams.entries())
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
-    // Update the URL without navigating
+
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,7 +142,7 @@ export function useStateFromSearchParamsForFilterObject(
   // This default initialisation only happens on the first render
   // Thus when the stateSearchParams changes, state here will not be updated
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
-  
+
   // This is why we need to use useEffect
   useEffect(() => {
     // Stringify and compare to avoid reference inequality in objects
@@ -135,36 +151,36 @@ export function useStateFromSearchParamsForFilterObject(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateSearchParams]);
-  
+
   const navigate = useNavigate();
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
     setState(newState);
     const resolvedState = resolveState(newState, state);
 
-    const currentSearchParams = new URLSearchParams(window.location.search);
+    const rawParams = getRawQueryParams(window.location.search);
 
-    // If exists in the current searchParams, delete it
-    if (currentSearchParams.has(paramName)) {
-      currentSearchParams.delete(paramName);
+    // Delete existing value if present
+    if (paramName in rawParams) {
+      delete rawParams[paramName];
     }
+
+    // Only add param if the filter state is not equal to the default
     if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
-      const encodedFilter = encodeFilterObj(resolvedState);
-      currentSearchParams.append(paramName, encodedFilter);
+      // This should return a string like 'type%3Aimage'
+      rawParams[paramName] = encodeFilterObj(resolvedState);
     }
 
-    const queryString = Array.from(currentSearchParams.entries())
+    const queryString = Object.entries(rawParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    // Update the URL without navigating -> DOES navigate, but replaces history?
     if (queryString === '' || queryString === `${paramName}=()`) {
       navigate(window.location.pathname, { replace: true });
       return;
     }
 
     const newUrl = `${window.location.pathname}?${queryString}`;
-
     navigate(newUrl, { replace: true });
   };
 
