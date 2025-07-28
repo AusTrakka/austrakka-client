@@ -25,6 +25,7 @@ import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUt
 
 interface TreeTableProps {
   displayFields: ProjectViewField[],
+  uniqueValues: Record<string, string[] | null> | null,
   emptyColumns: string[],
   fieldLoadingState: Record<string, LoadingState>,
   metadataLoadingState: MetadataLoadingState,
@@ -47,11 +48,12 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-export default function TreeTable(props: TreeTableProps) {
+export default function TreeSampleTable(props: TreeTableProps) {
   const {
     selectedIds,
     setSelectedIds,
     displayFields,
+    uniqueValues,
     tableMetadata,
     metadataLoadingState,
     fieldLoadingState,
@@ -224,6 +226,7 @@ export default function TreeTable(props: TreeTableProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={displayFields}
+        fieldUniqueValues={uniqueValues}
         setPrimeReactFilters={setCurrentFilters}
         primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
