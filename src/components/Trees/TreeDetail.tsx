@@ -17,7 +17,7 @@ import TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
-import TreeTable from './TreeTable';
+import TreeSamplesTable from './TreeSamplesTable';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import {
@@ -306,10 +306,11 @@ function TreeDetail() {
   const renderTable = () => {
     if (tree) {
       return (
-        <TreeTable
+        <TreeSamplesTable
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           displayFields={projectMetadata?.fields || []}
+          uniqueValues={projectMetadata?.fieldUniqueValues ?? null}
           tableMetadata={tableMetadata}
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
           fieldLoadingState={projectMetadata?.fieldLoadingStates || {}}
