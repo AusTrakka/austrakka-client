@@ -1,5 +1,5 @@
 import {
-  Alert,
+  Alert, Autocomplete,
   Box,
   Button,
   Chip,
@@ -16,12 +16,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { SetStateAction, useEffect, useState } from 'react';
+import React, { SetStateAction, SyntheticEvent, useEffect, useState } from 'react';
 import { AddBox, AddCircle, CloseRounded, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { field } from 'vega';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
@@ -41,6 +42,13 @@ export const defaultState = {
       matchMode: FilterMatchMode.CONTAINS,
     }],
   } as DataTableOperatorFilterMetaData,
+};
+
+type EventLike = {
+  target:{
+    name: string;
+    value: string;
+  };
 };
 
 interface InternalFormProperties {
@@ -69,6 +77,7 @@ interface DataFiltersProps {
   filteredDataLength: number
   visibleFields: any[] | null
   allFields: Field[]
+  fieldUniqueValues: Record<string, string[] | null> | null
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   primeReactFilters: DataTableFilterMeta
   isOpen: boolean
@@ -90,6 +99,7 @@ function DataFilters(props: DataFiltersProps) {
     filteredDataLength,
     visibleFields,
     allFields,
+    fieldUniqueValues,
     setPrimeReactFilters,
     primeReactFilters,
     isOpen,
@@ -146,7 +156,7 @@ function DataFilters(props: DataFiltersProps) {
     }
   }, [allFields, visibleFields]);
   
-  const handleFilterChange = (event: SelectChangeEvent) => {
+  const handleFilterChange = (event: SelectChangeEvent | EventLike) => {
     const { name, value } = event.target;
     if (name === 'field') {
       setDateError(null);
@@ -195,12 +205,18 @@ function DataFilters(props: DataFiltersProps) {
         [name]: value as CustomFilterOperators,
         value: !value.includes('not'),
       }));
-    } else {
+    } else if (name === 'condition') {
       setNullOrEmptyFlag(false);
       setFilterFormValues((prevState) => ({
         ...prevState,
-        [name]: value,
+        [name]: value as CustomFilterOperators,
         value: '',
+      }
+      ));
+    } else {
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value,
       }));
     }
   };
@@ -229,44 +245,49 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const matchedFieldWithUniqueVals = fields
-      .filter(f => f.metaDataColumnValidValues && f.metaDataColumnValidValues.length > 0)
-      .find(f => f.columnName === filterFormValues.field);
+    const matchedField = fields.find(f => f.columnName === filterFormValues.field);
+
+    let uniqueValues: string[] | null = null;
+
+    const fromFieldUnique = fieldUniqueValues && fieldUniqueValues[filterFormValues.field];
+    const fromMetaData = matchedField?.metaDataColumnValidValues;
+
+    if (fromFieldUnique && Array.isArray(fromFieldUnique) && fromFieldUnique.length > 0) {
+      uniqueValues = fromFieldUnique;
+    } else if (Array.isArray(fromMetaData) && fromMetaData.length > 0) {
+      uniqueValues = fromMetaData;
+    }
     
-    // only show drop down if it has valid values and the condition in a direct comparison
-    if (matchedFieldWithUniqueVals &&
+    // only show drop-down if it has valid values and the condition in a direct comparison
+    if (uniqueValues && uniqueValues.length > 0 &&
         (filterFormValues.condition === FilterMatchMode.EQUALS ||
-        filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
+            filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
     ) {
       return (
         <>
-          <InputLabel id="value-simple-select-label">Value</InputLabel>
-          <Select
-            labelId="value-simple-select-label"
-            id="value-simple-select"
-            value={filterFormValues.value || ''}
-            label="Value"
-            name="value"
+          <Autocomplete
+            id="value-autocomplete"
             size="small"
-            style={{ minWidth: '200px' }}
-            MenuProps={{
-              PaperProps: {
-                style: {
-                  minWidth: '200px',
-                  maxHeight: '300px',
+            options={uniqueValues ?? []}
+            value={filterFormValues.value || ''}
+            onChange={(_, newValue) => {
+              handleFilterChange({
+                target: {
+                  name: 'value',
+                  value: newValue ?? '',
                 },
-              },
+              });
             }}
-            onChange={(event) => {
-              handleFilterChange(event);
-            }}
-          >
-            {matchedFieldWithUniqueVals.metaDataColumnValidValues?.map((val) => (
-              <MenuItem key={val} value={val}>
-                {val}
-              </MenuItem>
-            ))}
-          </Select>
+            renderInput={(params) => (
+              <TextField
+                /* eslint-disable-next-line react/jsx-props-no-spreading */
+                {...params}
+                label="Value"
+                name="value"
+              />
+            )}
+            sx={{ minWidth: 200, maxHeight: 300 }}
+          />
         </>
       );
     }
@@ -652,7 +673,6 @@ function DataFilters(props: DataFiltersProps) {
                       return [];
                     })
                 }
-               
                 </form>
               </Box>
             ) : null}
