@@ -201,6 +201,7 @@ function OrgSamplesTable(props: SamplesProps) {
         filteredDataLength={filteredSampleList.length}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         primeReactFilters={currentFilters}
         isOpen={isFiltersOpen}

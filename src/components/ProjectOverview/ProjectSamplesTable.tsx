@@ -197,6 +197,7 @@ function ProjectSamplesTable(props: SamplesProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
