@@ -48,7 +48,7 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-export default function TreeSampleTable(props: TreeTableProps) {
+export default function TreeSamplesTable(props: TreeTableProps) {
   const {
     selectedIds,
     setSelectedIds,
