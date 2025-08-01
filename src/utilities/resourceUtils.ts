@@ -14,6 +14,7 @@ import {
   Feedback,
   FeedbackPost,
   InteractionWindowPost,
+  Organisation,
   Project,
   RefinedLog,
   UserPatchV2,
@@ -130,6 +131,7 @@ export const getSampleGroups = (sampleName:string, token: string) => callGET(`/a
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
+export const getOrganisation = (abbrev: string, token: string) : Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
 

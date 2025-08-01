@@ -327,6 +327,22 @@ export interface Group {
   }
 }
 
+export interface Organisation {
+  abbreviation: string,
+  name: string,
+  isActive: boolean,
+  country: string,
+  state: string,
+  primaryContact: string,
+  logo: string,
+  organisationId: number,
+  globalId: string,
+  created: Date,
+  lastUpdated: Date,
+  createdBy: string,
+  lastUpdatedBy: string,
+}
+
 export interface DataSetEntry {
   entryId: number;
   dataSetId: number;

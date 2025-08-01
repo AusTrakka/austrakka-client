@@ -3,9 +3,9 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
 import { useLocation, useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import { getGroupList, getGroupMembers } from '../../utilities/resourceUtils';
+import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-import { Member, GroupRole, Group } from '../../types/dtos';
+import { Member, GroupRole, Group, Organisation } from '../../types/dtos';
 import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
@@ -18,6 +18,7 @@ import Activity from '../Common/Activity/Activity';
 
 function OrganisationOverview() {
   const { orgAbbrev } = useParams();
+  const [organisation, setOrganisation] = useState<Organisation>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
@@ -25,11 +26,10 @@ function OrganisationOverview() {
   const [orgEveryone, setOrgEveryone] = useState<Group>();
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState(0);
-  const [organisationName, setOrganisationName] = useState('');
-  const [orgAbbreviation, setOrgAbbreviation] = useState('');
   const location = useLocation();
   const pathName = location.pathname;
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
+  const [orgDetailsError, setOrgDetailsError] = useState(false);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
@@ -37,6 +37,30 @@ function OrganisationOverview() {
   const user: UserSliceState = useAppSelector(selectUserState);
 
   useEffect(() => {
+    function getMyOrgDetails() {
+      // TODO this exists as a workaround for the fact that the getOrganisation() API call
+      //  currently only works for admins. Non-admins must therefore use this function to
+      //  get their own org details. This means some details like Country, State are not set.
+      setOrganisation({
+        abbreviation: orgAbbrev,
+        name: user.orgName,
+        isActive: true,
+        globalId: user.orgGlobalId,
+      } as Organisation);
+    }
+    
+    async function getOrgDetails() {
+      // Non-admins currently may not access other org's pages, as this call will fail
+      const orgResponse = await getOrganisation(orgAbbrev!, token);
+      if (orgResponse.status === ResponseType.Success) {
+        setOrganisation(orgResponse.data);
+      } else {
+        // We are not distinguishing between a permissions error or a retrieval error
+        // Either way we cannot safely show this page
+        setOrgDetailsError(true);
+      }
+    }
+    
     const getCorrectGroups = (groupRoles: GroupRole[]) =>
       groupRoles.filter((groupRole: GroupRole) =>
         (groupRole.group.name === `${orgAbbrev}-Owner`
@@ -63,8 +87,7 @@ function OrganisationOverview() {
 
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
-      const { groupRoles, orgName, admin } = user;
-      let foundOrgName = null;
+      const { groupRoles, admin } = user;
       if (!admin) {
         const orgViewerGroups = getCorrectGroups(groupRoles);
         setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
@@ -78,19 +101,21 @@ function OrganisationOverview() {
           setOrgEveryone(orgAdminGroups.find((group: Group) =>
             group.name === `${orgAbbrev}-Everyone`));
           setUserGroups(orgAdminGroups);
-          foundOrgName = orgAdminGroups.find((group: Group) =>
-            group.organisation.abbreviation === orgAbbrev)?.organisation.name;
         }
       }
       setIsUserGroupsLoading(false);
       setGroupStatus(LoadingState.SUCCESS);
-      setOrganisationName(foundOrgName || orgName);
-      setOrgAbbreviation(orgAbbrev!);
     }
 
     if (user.loading === LoadingState.SUCCESS &&
         tokenLoading !== LoadingState.IDLE &&
          tokenLoading !== LoadingState.LOADING) {
+      if (orgAbbrev === user.orgAbbrev) {
+        // This is only needed because non-admins cannot yet request org details from the API
+        getMyOrgDetails();
+      } else {
+        getOrgDetails();
+      }
       getGroups();
     } else if (user.loading === LoadingState.ERROR) {
       setGroupStatus(LoadingState.ERROR);
@@ -132,54 +157,65 @@ function OrganisationOverview() {
     }
   }, [pathName, orgOverviewTabs]);
 
+  // If groupStatus is error, or orgDetailsError is true, or the user is not in any groups, 
+  // we cannot show the page. Give a generic message
+  if (orgDetailsError || groupsStatus === LoadingState.ERROR ||
+    (groupsStatus === LoadingState.SUCCESS && userGroups.length === 0)
+  ) {
+    return (
+      <Alert severity="error">
+        There was an error loading the organisation data
+      </Alert>
+    );
+  }
+  
+  // If organisation details not loaded yet, but no error
+  if (!organisation ||
+    groupsStatus === LoadingState.LOADING ||
+    groupsStatus === LoadingState.IDLE
+  ) {
+    return (
+      <Typography>
+        Loading...
+      </Typography>
+    );
+  }
+  
+  // NB alternate return() calls above
   return (
-    groupsStatus === LoadingState.ERROR || (!user.admin && orgAbbrev !== user.orgAbbrev)
-      ? (
-        <Alert severity="error">
-          {groupsStatus === LoadingState.ERROR
-            ? groupStatusMessage
-            : 'You do not have access to this page'}
-        </Alert>
-      )
-      : (
-        <>
-          <Box>
-            <Typography variant="h2" color="primary">
-              {`${organisationName} (${orgAbbreviation})`}
-            </Typography>
-          </Box>
-          <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
-          <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
-            {isUserGroupsLoading ? null : (
-              <OrganisationSamples
-                defaultGroup={userGroups![0]}
-                groups={userGroups!}
-                groupStatus={groupsStatus}
-                groupStatusMessage={groupStatusMessage}
-              />
-            )}
-          </TabPanel>
-          <TabPanel value={tabValue} index={1} tabLoader={isMembersLoading}>
-            <OrgSimpleMemberList
-              isMembersLoading={isMembersLoading}
-              memberList={projectMembers}
-              memberListError={memberListError}
-              memberListErrorMessage={memberListErrorMessage}
-            />
-          </TabPanel>
-          {
-            tabValue === 2 && (
-              <TabPanel value={tabValue} index={2} tabLoader={false}>
-                <Activity
-                  recordType="organisation"
-                  rGuid={user.orgGlobalId}
-                  owningTenantGlobalId={user.defaultTenantGlobalId}
-                />
-              </TabPanel>
-            )
-}
-        </>
-      )
+    <>
+      <Box>
+        <Typography variant="h2" color="primary">
+          {`${organisation.name} (${organisation?.abbreviation})`}
+        </Typography>
+      </Box>
+      <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
+      <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
+        {isUserGroupsLoading ? null : (
+          <OrganisationSamples
+            defaultGroup={userGroups![0]}
+            groups={userGroups!}
+            groupStatus={groupsStatus}
+            groupStatusMessage={groupStatusMessage}
+          />
+        )}
+      </TabPanel>
+      <TabPanel value={tabValue} index={1} tabLoader={isMembersLoading}>
+        <OrgSimpleMemberList
+          isMembersLoading={isMembersLoading}
+          memberList={projectMembers}
+          memberListError={memberListError}
+          memberListErrorMessage={memberListErrorMessage}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={2} tabLoader={false}>
+        <Activity
+          recordType="organisation"
+          rGuid={organisation.globalId}
+          owningTenantGlobalId={user.defaultTenantGlobalId}
+        />
+      </TabPanel>
+    </>
   );
 }
 export default memo(OrganisationOverview);
