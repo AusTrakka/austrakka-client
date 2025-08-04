@@ -44,6 +44,11 @@ function Feedback(props: FeedbackProps) {
   const submitFeedback = async (e: any) => {
     e.preventDefault();
     if (Object.values(formValid.current).every(isValid => isValid)) {
+      enqueueSnackbar(
+        'Feedback sent',
+        { variant: 'info' },
+      );
+      handleHelpClose({}, 'escapeKeyDown');
       const feedbackDto: FeedbackPost = {
         title,
         description,
@@ -53,7 +58,7 @@ function Feedback(props: FeedbackProps) {
       if (feedbackResp.status === ResponseType.Success) {
         enqueueSnackbar(
           `Feedback received. Ticket number: ${feedbackResp.data?.id}`,
-          { variant: 'error' },
+          { variant: 'success' },
         );
         setTitle('');
         setDescription('');
@@ -62,7 +67,6 @@ function Feedback(props: FeedbackProps) {
       }
       formValid.current.description = false;
       formValid.current.title = false;
-      handleHelpClose({}, 'escapeKeyDown');
     } else {
       if (!formValid.current.title) {
         setTitleError(true);

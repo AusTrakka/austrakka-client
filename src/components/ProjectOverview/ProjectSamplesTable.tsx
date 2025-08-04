@@ -52,7 +52,7 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-function Samples(props: SamplesProps) {
+function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
     isSamplesLoading,
@@ -197,6 +197,7 @@ function Samples(props: SamplesProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
@@ -283,4 +284,4 @@ function Samples(props: SamplesProps) {
     </div>
   );
 }
-export default Samples;
+export default ProjectSamplesTable;

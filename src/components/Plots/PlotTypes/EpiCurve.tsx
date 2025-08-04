@@ -64,53 +64,43 @@ function EpiCurve(props: PlotTypeProps) {
   // This plot also accesses the data itself, to determine an initial date binning
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, plot?.projectAbbreviation));
-  const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'dateField',
     '',
-    searchParams,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     '',
-    searchParams,
   );
   const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
     'dateBinStep',
     1,
-    searchParams,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    searchParams,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    searchParams,
   );
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
     'rowField',
     'none',
-    searchParams,
   );
   const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetYAxisMode',
     'shared',
-    searchParams,
   );
   const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetXAxisMode',
     'shared',
-    searchParams,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
     'stackType',
     'zero',
-    searchParams,
   );
 
   // Set spec on load
