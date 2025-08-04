@@ -262,6 +262,22 @@ export interface MetaDataColumn extends Field {
   minWidth: number
 }
 
+// This is not a DTO, but a calculated field representing a column found in a project view
+// The projectFieldId and projectFieldName will not be unique
+// The columnName is formed from the projectFieldName and the analysisLabel
+export interface ProjectViewField extends Field {
+  columnName: string,
+  projectFieldId: number,
+  projectFieldName: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  hidden: boolean,
+  metaDataColumnValidValues: string[] | null,
+}
+
 // This represents the ProjectFieldDTO, with nested analysisLabels
 // It is appropriate for use in project management interfaces
 // It is not appropriate for representing the columns that will be found in a project view
@@ -277,22 +293,6 @@ export interface ProjectField {
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
   createdBy: string,
-}
-
-// This is not a DTO, but a calculated field representing a column found in a project view
-// The projectFieldId and projectFieldName will not be unique
-// The columnName is formed from the projectFieldName and the analysisLabel
-export interface ProjectViewField extends Field {
-  columnName: string,
-  projectFieldId: number,
-  projectFieldName: string,
-  primitiveType: string,
-  metaDataColumnTypeName: string,
-  fieldSource: string,
-  columnOrder: number,
-  canVisualise: boolean,
-  hidden: boolean,
-  metaDataColumnValidValues: string[] | null,
 }
 
 export interface ProjectView {

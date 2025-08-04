@@ -316,6 +316,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
           <DataFilters
             dataLength={metadata?.metadata?.length ?? 0}
             filteredDataLength={filteredData.length ?? 0}
+            fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
             visibleFields={null}
             allFields={metadata?.fields ?? []}
             setPrimeReactFilters={setCurrentFilters}
