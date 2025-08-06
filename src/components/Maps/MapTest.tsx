@@ -3,7 +3,6 @@ import * as echarts from 'echarts';
 import { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Stack } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
-import ausNzMap from '../../assets/maps/au_nz_processed.json';
 import { fetchProjectMetadata, ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { aggregateGeoData, GeoCountRow } from '../../utilities/plotUtils';
@@ -14,21 +13,31 @@ import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { Sample } from '../../types/sample.interface';
+import { FeatureLookupField, FeatureLookupFieldType, MapJson, Maps } from './mapMeta';
+import { filterGeoJsonByField } from '../../utilities/mapUtils';
 
 // Register the map once
-const filteredGeoJson = { ...ausNzMap,
-  features: ausNzMap.features.filter(f => {
-    const code = f.properties.iso_code;
-    return code === 'AU' || code === 'NZ' || code?.startsWith('AU-');
-  }) };
-echarts.registerMap('aus-nz', filteredGeoJson as GeoJSONSourceInput);
+
+const setupECharts = (mapSpec: MapJson, geoLookUpField: FeatureLookupFieldType) => {
+  const filteredGeoJson = filterGeoJsonByField(mapSpec, {
+    matchValues: ['AU', 'NZ'],
+    lookupField: geoLookUpField,
+    matchPrefix: 'AU-',
+  });
+
+  echarts.registerMap('aus-nz', filteredGeoJson as GeoJSONSourceInput);
+};
 
 interface MapTestProps {
   colourScheme: string;
-  projectAbbrev: string | undefined;
+  projectAbbrev: string;
+  mapSpec: MapJson;
+  geoLookupField: FeatureLookupFieldType;
 }
 function MapTest(props: MapTestProps) {
-  const { colourScheme, projectAbbrev } = props;
+  const { colourScheme, projectAbbrev, mapSpec, geoLookupField } = props;
+  setupECharts(mapSpec, geoLookupField);
+  
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -207,6 +216,7 @@ function MapTest(props: MapTestProps) {
           setIsOpen={setIsDataTableFilterOpen}
           dataLoaded={loading || allFieldsLoaded}
           setLoadingState={setLoading}
+          fieldUniqueValues={data?.fieldUniqueValues ?? null}
         />
       </Stack>
       <div style={{ display: 'none' }}>

@@ -127,7 +127,6 @@ export function calculateUniqueValues(
   
   return uniqueValues;
 }
-
 // for project metadata specifically
 
 // Given a list of field names, calculate the viewFields for that field
