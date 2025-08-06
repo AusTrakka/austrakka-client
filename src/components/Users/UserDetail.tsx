@@ -61,6 +61,10 @@ function UserDetail() {
     'orgId',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
+    'monthlyBytesUsed',
+    'lastDownloadDate',
+    'monthlyBytesQuota',
+    'noDownloadQuota',
   ];
 
   if (loading === LoadingState.SUCCESS && admin) {

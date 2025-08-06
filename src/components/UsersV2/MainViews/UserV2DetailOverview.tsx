@@ -93,6 +93,10 @@ function UserV2DetailOverview() {
     'lastActive',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
+    'monthlyBytesUsed',
+    'lastDownloadDate',
+    'monthlyBytesQuota',
+    'noDownloadQuota',
   ];
 
   // Add a boolean constant to determine if the user can see this page.
