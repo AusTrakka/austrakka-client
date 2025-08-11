@@ -83,6 +83,10 @@ function UserV2DetailOverview() {
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
     'analysisServerUsername': 'Linux Username',
+    'monthlyBytesUsed': 'Monthly Bytes Used',
+    'lastDownloadDate': 'Last Downloaded Date',
+    'monthlyBytesQuota': 'Monthly Bytes Quota',
+    'noDownloadQuota': 'No Download Quota',
   };
 
   let nonDisplayFields = [
@@ -93,10 +97,6 @@ function UserV2DetailOverview() {
     'lastActive',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
-    'monthlyBytesUsed',
-    'lastDownloadDate',
-    'monthlyBytesQuota',
-    'noDownloadQuota',
   ];
 
   // Add a boolean constant to determine if the user can see this page.
