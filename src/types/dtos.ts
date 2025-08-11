@@ -128,6 +128,10 @@ export interface User {
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
+  monthlyBytesUsed: number,
+  lastDownloadDate: Date,
+  monthlyBytesQuota: number,
+  noDownloadQuota: boolean
 }
 
 export interface UserV2 {
@@ -146,6 +150,10 @@ export interface UserV2 {
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
+  monthlyBytesUsed: number,
+  lastDownloadDate: Date,
+  monthlyBytesQuota: number,
+  noDownloadQuota: boolean
 }
 
 export interface UserMe {
