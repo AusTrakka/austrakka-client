@@ -53,6 +53,10 @@ function UserDetail() {
     'isActive': 'Active',
     'isAusTrakkaProcess': 'Austrakka Process',
     'analysisServerUsername': 'Analysis Server Username',
+    'monthlyBytesUsed': 'Monthly Bytes Used',
+    'lastDownloadDate': 'Last Downloaded Date',
+    'monthlyBytesQuota': 'Monthly Bytes Quota',
+    'noDownloadQuota': 'No Download Quota',
   };
 
   let nonDisplayFields = [

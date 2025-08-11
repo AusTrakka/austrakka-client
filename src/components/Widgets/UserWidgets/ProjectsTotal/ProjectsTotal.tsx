@@ -27,19 +27,15 @@ const renderDateWithTimeTooltip = (cell: string): JSX.Element | null => {
 const columns = [
   { field: 'name', header: 'Project Name' },
   { field: 'sampleCount',
-    header: 'Samples',
-    align: 'right' },
+    header: 'Samples' },
   { field: 'latestSampleDate',
     header: 'Latest sample',
-    align: 'center',
     body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSampleDate) },
   { field: 'latestSequenceDate',
     header: 'Latest sequence',
-    align: 'center',
     body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestSequenceDate) },
   { field: 'latestTreeDate',
     header: 'Latest tree',
-    align: 'center',
     body: (rowData: any) => renderDateWithTimeTooltip(rowData.latestTreeDate) },
 ];
 
@@ -106,10 +102,10 @@ export default function ProjectsTotal() {
               field={col.field}
               header={col.header}
               body={col.body}
-              align={col.align ?? 'left'}
               sortable
               style={{ minWidth: '100px' }}
               headerClassName="custom-title"
+              bodyClassName="value-cells"
             />
           ))}
         </DataTable>

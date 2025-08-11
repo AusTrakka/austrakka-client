@@ -30,6 +30,10 @@ function EditableRow(props : EditableRowProps) {
     'globalId',
     'lastLogIn',
     'lastActive',
+    'monthlyBytesUsed',
+    'lastDownloadDate',
+    'monthlyBytesQuota',
+    'noDownloadQuota',
   ];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
