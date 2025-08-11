@@ -34,7 +34,7 @@ interface SamplesProps {
   groupContext: number | undefined,
 }
 
-function SampleTable(props: SamplesProps) {
+function OrgSamplesTable(props: SamplesProps) {
   const { groupContext } = props;
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -201,6 +201,7 @@ function SampleTable(props: SamplesProps) {
         filteredDataLength={filteredSampleList.length}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         primeReactFilters={currentFilters}
         isOpen={isFiltersOpen}
@@ -258,4 +259,4 @@ function SampleTable(props: SamplesProps) {
   );
 }
 
-export default memo(SampleTable);
+export default memo(OrgSamplesTable);

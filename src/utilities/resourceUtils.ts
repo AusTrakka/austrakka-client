@@ -13,7 +13,10 @@ import {
 } from './api';
 import {
   Feedback,
-  FeedbackPost, Plot, PlotListing,
+  FeedbackPost,
+  Plot,
+  PlotListing,
+  Organisation,
   Project,
   ProjectSummary,
   Tree,
@@ -123,6 +126,7 @@ export const getSampleGroups = (sampleName:string, token: string) => callGET(`/a
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
+export const getOrganisation = (abbrev: string, token: string) : Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
 

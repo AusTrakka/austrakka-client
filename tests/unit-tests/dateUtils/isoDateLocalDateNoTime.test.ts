@@ -1,4 +1,3 @@
-import { register, TimeZone, unregister } from 'timezone-mock';
 import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 import { isoDateLocalDateNoTime } from '../../../src/utilities/dateUtils';
 

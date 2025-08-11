@@ -47,6 +47,10 @@ function EditableRow(props : EditableRowProps) {
     'objectId',
     'globalId',
     'orgName',
+    'monthlyBytesUsed',
+    'lastDownloadDate',
+    'monthlyBytesQuota',
+    'noDownloadQuota',
   ];
   
   const immutableGuids = [
