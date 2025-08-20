@@ -1,11 +1,12 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Tooltip } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { HelpOutline } from '@mui/icons-material';
+import { NavigateFunction } from 'react-router-dom';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -167,6 +168,7 @@ function Datasets(props: DatasetProps) {
     </div>
   );
 
+  console.log('DATASETS');
   return (
     (datasetError) ? (
       <Alert severity="error">
@@ -242,4 +244,4 @@ function Datasets(props: DatasetProps) {
   );
 }
 
-export default Datasets;
+export default memo(Datasets);

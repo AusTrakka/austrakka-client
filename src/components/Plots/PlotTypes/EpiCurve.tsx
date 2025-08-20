@@ -22,6 +22,7 @@ import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUt
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { Sample } from '../../../types/sample.interface';
+import {useNavigate} from "react-router-dom";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -58,6 +59,7 @@ const defaultSpec: TopLevelSpec = {
 function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
+  const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
@@ -69,38 +71,47 @@ function EpiCurve(props: PlotTypeProps) {
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'dateField',
     '',
+    navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     '',
+    navigate,
   );
   const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
     'dateBinStep',
     1,
+    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
+    navigate,
   );
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
     'rowField',
     'none',
+    navigate,
   );
   const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetYAxisMode',
     'shared',
+    navigate,
   );
   const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetXAxisMode',
     'shared',
+    navigate,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
     'stackType',
     'zero',
+    navigate,
   );
 
   // Set spec on load

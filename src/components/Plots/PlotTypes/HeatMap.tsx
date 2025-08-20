@@ -11,6 +11,7 @@ import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { defaultContinuousColorScheme } from '../../../constants/schemes';
+import {useNavigate} from "react-router-dom";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -48,17 +49,21 @@ function HeatMap(props: PlotTypeProps) {
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
+  const navigate = useNavigate();
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
+    navigate,
   );
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultContinuousColorScheme,
+    navigate,
   );
 
   // Set spec on load

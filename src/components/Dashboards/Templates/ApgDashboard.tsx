@@ -1,5 +1,5 @@
 import { Box, Card, CardContent } from '@mui/material';
-import React from 'react';
+import React, { memo } from 'react';
 import Grid from '@mui/material/Grid2';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
@@ -108,8 +108,7 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
       </Grid>
     </Box>
-
   );
 }
 
-export default ApgDashboard;
+export default memo(ApgDashboard);

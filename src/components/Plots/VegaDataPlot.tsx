@@ -50,7 +50,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       setErrorMsg('The plot could not be rendered. It may be too large for the browser. ' +
           'Consider filtering the data, or changing the selected fields.');
     } else {
-      setErrorMsg('An error occurred rendering the plot. Please contact AusTrakka Support.');
+      setErrorMsg(`An error occurred rendering the plot. Please contact ${import.meta.env.VITE_BRANDING_NAME} Support.`);
     }
 
     setErrorOccurred(true);

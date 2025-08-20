@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { memo, MutableRefObject, useEffect, useState } from 'react';
 import { IconButton, Menu, MenuItem, Dialog, Alert, AlertTitle } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
+import { View } from 'vega';
 import { generateFilename } from '../../utilities/file';
 
-export default function ExportVegaPlot(props: any) {
+function ExportVegaPlot(props: any) {
   const { vegaView } = props;
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [exportError, setExportError] = useState(false);
@@ -65,3 +66,5 @@ export default function ExportVegaPlot(props: any) {
     </>
   );
 }
+
+export default memo(ExportVegaPlot);
