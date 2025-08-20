@@ -13,6 +13,10 @@ import store from './app/store';
 import ApiProvider from './app/ApiContext';
 import { globalStyles } from './assets/themes/theme';
 
+if (import.meta.env.DEV) {
+  import('./wydr');
+}
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
   <Provider store={store}>
