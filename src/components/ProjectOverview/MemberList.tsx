@@ -180,7 +180,6 @@ function MemberList(props: MembersProps) {
     </div>
   );
   
-  console.log('these are the members you stinx');
   return (
     <>
       {memberListError ? (

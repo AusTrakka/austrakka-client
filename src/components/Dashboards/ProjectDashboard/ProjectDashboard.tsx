@@ -66,7 +66,6 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     return data.metadata!.filter(sample =>
       dayjs(sample[DashboardTimeFilterField]!).isAfter(dayjs(timeFilterThreshold)));
   }, [data, timeFilterThreshold]);
-  
 
   const dashBoardElements = React.useMemo(() => {
     if (!dashboardName || !projectAbbrev) {

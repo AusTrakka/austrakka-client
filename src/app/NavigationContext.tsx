@@ -7,7 +7,7 @@ interface NavigationContextType {
 
 // Create a stable context value that never changes reference
 const stableContextValue: NavigationContextType = {
-  navigate: ((...args: any[]) => {
+  navigate: (() => {
     throw new Error('Navigation not initialized');
   }) as NavigateFunction,
 };

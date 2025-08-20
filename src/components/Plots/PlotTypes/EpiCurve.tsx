@@ -1,6 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
+import { useNavigate } from 'react-router-dom';
 import {
   ProjectMetadataState,
   selectProjectMetadata,
@@ -22,7 +23,6 @@ import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUt
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { Sample } from '../../../types/sample.interface';
-import {useNavigate} from "react-router-dom";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these

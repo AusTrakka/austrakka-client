@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { ColorScheme } from 'vega';
+import { useNavigate } from 'react-router-dom';
 import { getStartingField, setColorAggregateInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
@@ -11,7 +12,6 @@ import { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { defaultContinuousColorScheme } from '../../../constants/schemes';
-import {useNavigate} from "react-router-dom";
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these

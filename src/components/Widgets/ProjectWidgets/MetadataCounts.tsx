@@ -201,7 +201,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, plotDiv, projectAbbrev, timeFilterObject, spec]);
+  }, [filteredData, plotDiv, projectAbbrev, timeFilterObject]);
 
   return (
     <Box>
@@ -240,5 +240,4 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
   );
 }
 
-MetadataCounts.whyDidYouRender = true;
 export default memo(MetadataCounts);

@@ -6,7 +6,6 @@ import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primere
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { HelpOutline } from '@mui/icons-material';
-import { NavigateFunction } from 'react-router-dom';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -168,7 +167,6 @@ function Datasets(props: DatasetProps) {
     </div>
   );
 
-  console.log('DATASETS');
   return (
     (datasetError) ? (
       <Alert severity="error">

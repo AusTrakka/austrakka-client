@@ -1,7 +1,6 @@
-import React, { memo, MutableRefObject, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { IconButton, Menu, MenuItem, Dialog, Alert, AlertTitle } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
-import { View } from 'vega';
 import { generateFilename } from '../../utilities/file';
 
 function ExportVegaPlot(props: any) {

@@ -239,6 +239,4 @@ function HasSeq(props: HasSeqWidgetProps) {
     </Box>
   );
 }
-
-HasSeq.whyDidYouRender = true;
 export default HasSeq;
