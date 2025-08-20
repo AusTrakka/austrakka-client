@@ -1,8 +1,8 @@
-/* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-pascal-case */
 
 import React, {
-  useEffect, useState,
+  memo, useCallback,
+  useEffect, useMemo, useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@mui/material';
 import './Samples.css';
-import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -40,9 +39,9 @@ interface SamplesProps {
 
 interface BodyComponentProps {
   col: Sample,
-  readyFields: Record<string, LoadingState> | null,
+  readyFields: Record<string, LoadingState> | undefined,
 }
-
+  
 function BodyComponent(props: BodyComponentProps) {
   const { col, readyFields } = props;
   return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
@@ -69,13 +68,12 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
 
-  const [readyFields, setReadyFields] = useState<Record<string, LoadingState> | null>(null);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
-  
+
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const { maxHeight, getHeaderRef } =
@@ -84,7 +82,6 @@ function ProjectSamplesTable(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    setReadyFields(metadata.fieldLoadingStates);
     if (Object.values(metadata.fieldLoadingStates).every(field => field === LoadingState.SUCCESS)) {
       setAllFieldsLoaded(true);
     }
@@ -269,7 +266,7 @@ function ProjectSamplesTable(props: SamplesProps) {
                     </div>
                   )
                 }
-              body={BodyComponent({ col, readyFields })}
+              body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
               hidden={col.hidden}
               sortable
               resizeable
