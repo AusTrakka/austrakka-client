@@ -16,10 +16,6 @@ import { Sample } from '../../../types/sample.interface';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 
-// Widget displaying a basic Epi Curve
-// Requires Date_coll for x-axis
-// Colour by Jurisdiction-style field if these fields present; otherwise dark green
-
 const TIME_AXIS_FIELD = 'Date_coll';
 
 // The first of these fields that is present will be used to colour the plot
@@ -34,15 +30,16 @@ const DEFAULT_COLOUR_SCHEME = 'tableau10';
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
 interface EpiCurveChartProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData?: Sample[];
-  timeFilterObject?: DataTableFilterMeta;
   preferredColourField?: string;
 }
-
-export default function EpiCurveChart(props: EpiCurveChartProps) {
+ 
+/** Widget displaying a basic Epi Curve
+* Requires Date_coll for x-axis
+* Colour by Jurisdiction-style field if these fields present; otherwise dark green
+ * */
+function EpiCurveChart(props: EpiCurveChartProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject, preferredColourField,
+    projectAbbrev, filteredData, timeFilterObject, preferredColourField = null,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -67,7 +64,6 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
         type: 'temporal',
         title: 'Sample collected date (Date_coll)',
         timeUnit: timeBinSpec as any,
-        // axis: { format: ' %d %b %Y' },
       },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: colourSpec,
@@ -165,7 +161,6 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
   }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
   
   return (
-    // <Box sx={{ flexGrow: 1 }}>
     <Box>
       <Typography variant="h5" paddingBottom={5} color="primary">
         {`Samples (${timeFilterDescription})`}
@@ -197,3 +192,6 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
     </Box>
   );
 }
+
+EpiCurveChart.whyDidYouRender = true;
+export default EpiCurveChart;

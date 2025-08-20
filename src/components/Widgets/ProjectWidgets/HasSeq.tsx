@@ -1,7 +1,6 @@
 /* eslint react/require-default-props: 0 */
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { compile, TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
@@ -17,11 +16,18 @@ import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { Sample } from '../../../types/sample.interface';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
+import { genericErrorMessage } from '../../../utilities/api';
+import { useStableNavigate } from '../../../app/NavigationContext';
 
 // Takes y-axis field as an optional parameter; 
 // defaults to Owner_group, which gets special handling
 
 const HAS_SEQ = 'Has_sequences';
+
+const CHART_COLORS = {
+  AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
+  MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
+} as const;
 
 interface HasSeqWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
@@ -30,7 +36,7 @@ interface HasSeqWidgetProps extends ProjectWidgetProps {
   categoryField?: string;
 }
 
-export default function HasSeq(props: HasSeqWidgetProps) {
+function HasSeq(props: HasSeqWidgetProps) {
   const { projectAbbrev, filteredData, timeFilterObject } = props;
   let { categoryField } = props;
   let axisTitle = categoryField;
@@ -40,24 +46,22 @@ export default function HasSeq(props: HasSeqWidgetProps) {
   if (!axisTitle) {
     axisTitle = 'Organisation';
   }
+  const { navigate } = useStableNavigate();
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev));
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  const CHART_COLORS = {
-    AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
-    MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
-  } as const;
-
+  
+  console.log('HASSEQ');
+  
   const dateStatusTransform = {
     calculate: `datum['${HAS_SEQ}'] === true ? 'Available' : 'Missing'`,
     as: `${HAS_SEQ}_status`,
   };
   
   function handleItemClick(item: any) {
+    if (!navigate) { setErrorMessage(genericErrorMessage); return; }
     if (!item || !item.datum) return;
     
     const status = item.datum[`${HAS_SEQ}_status`];
@@ -187,13 +191,14 @@ export default function HasSeq(props: HasSeqWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
-      const copy = filteredData!.map((item: any) => ({ ...item }));
-      (compiledSpec.data![0] as InlineData).values = copy;
+      (compiledSpec.data![0] as InlineData).values =
+          filteredData!.map((item: any) => ({ ...item }));
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => handleItemClick(item))
         .runAsync();
+      
       setVegaView(view);
     };
 
@@ -236,3 +241,6 @@ export default function HasSeq(props: HasSeqWidgetProps) {
     </Box>
   );
 }
+
+HasSeq.whyDidYouRender = true;
+export default HasSeq;
