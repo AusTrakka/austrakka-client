@@ -30,8 +30,8 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -57,12 +57,14 @@ function ProjectSamplesTable(props: SamplesProps) {
     projectAbbrev,
     isSamplesLoading,
   } = props;
-  const navigate = useNavigate();
+  
+  const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
@@ -284,4 +286,6 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-export default ProjectSamplesTable;
+
+ProjectSamplesTable.whyDidYouRender = true;
+export default memo(ProjectSamplesTable);

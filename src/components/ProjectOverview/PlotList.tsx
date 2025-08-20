@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
@@ -12,18 +11,17 @@ import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface PlotListProps {
   projectDetails: Project | null
-  isPlotsLoading: boolean
-  setIsPlotsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 function PlotList(props: PlotListProps) {
-  const { projectDetails, isPlotsLoading, setIsPlotsLoading } = props;
-
+  const { projectDetails, setIsLoading } = props;
+  const { navigate } = useStableNavigate();
   const [plotList, setPlotList] = useState<PlotListing[]>([]);
-  const navigate = useNavigate();
   const { token } = useApi();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
@@ -45,9 +43,12 @@ function PlotList(props: PlotListProps) {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === ResponseType.Success) {
         setPlotList(plotsResponse.data as PlotListing[]);
-        setIsPlotsLoading(false);
+        setTimeout(() => {
+          console.log('paused');
+          setIsLoading(false);
+        }, 1000);
       } else {
-        setIsPlotsLoading(false);
+        setIsLoading(false);
         setPlotList([]);
         // TODO set plots errors
       }
@@ -56,7 +57,7 @@ function PlotList(props: PlotListProps) {
     if (projectDetails) {
       getPlotList();
     }
-  }, [projectDetails, setIsPlotsLoading, token]);
+  }, [projectDetails, setIsLoading, token]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
@@ -69,7 +70,7 @@ function PlotList(props: PlotListProps) {
     setGlobalFilter(filters);
   };
 
-  if (isPlotsLoading) return null;
+  // if (isLoading) return null;
 
   const header = (
     <div style={{ display: 'flex' }}>
@@ -79,7 +80,7 @@ function PlotList(props: PlotListProps) {
       />
     </div>
   );
-
+  console.log('PLOTS');
   return (
     <Paper elevation={2} sx={{ marginBottom: 10 }}>
       <DataTable
