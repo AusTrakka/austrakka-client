@@ -57,5 +57,6 @@ module.exports = {
       },
     ],
     "react/jsx-no-useless-fragment": 0,
+    "react/require-default-props": 0,
   },
 };
