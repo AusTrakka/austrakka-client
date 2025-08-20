@@ -82,7 +82,6 @@ function TreeList(props: TreesProps) {
 
   // if (isLoading) return null;
 
-  console.log('TREES');
   return (
     treeListError ? (
       <Alert severity="error">
@@ -126,6 +125,4 @@ function TreeList(props: TreesProps) {
     )
   );
 }
-
-TreeList.whyDidYouRender = true;
 export default memo(TreeList);

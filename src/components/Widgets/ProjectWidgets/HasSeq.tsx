@@ -53,8 +53,6 @@ function HasSeq(props: HasSeqWidgetProps) {
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  console.log('HASSEQ');
-  
   const dateStatusTransform = {
     calculate: `datum['${HAS_SEQ}'] === true ? 'Available' : 'Missing'`,
     as: `${HAS_SEQ}_status`,

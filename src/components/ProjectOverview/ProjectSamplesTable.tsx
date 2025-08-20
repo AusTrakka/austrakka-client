@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-pascal-case */
-
 import React, {
-  memo, useCallback,
-  useEffect, useMemo, useState,
+  memo,
+  useEffect,
+  useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -283,6 +283,4 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-
-ProjectSamplesTable.whyDidYouRender = true;
 export default memo(ProjectSamplesTable);

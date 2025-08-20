@@ -25,7 +25,6 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
-import ProjectsTotal from '../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
 
 interface ProjectOverviewProps {
   tab: string,

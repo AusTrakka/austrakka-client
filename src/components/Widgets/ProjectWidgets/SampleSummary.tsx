@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
@@ -122,8 +122,6 @@ function SampleSummary(props: ProjectWidgetProps) {
     );
   };
   
-  console.log('SAMPLESUMMARY TYPE ');
-
   return (
     <Box>
       <Grid container spacing={2} direction="row" justifyContent="space-between">
@@ -195,6 +193,4 @@ function SampleSummary(props: ProjectWidgetProps) {
     </Box>
   );
 }
-
-SampleSummary.whyDidYouRender = true;
 export default SampleSummary;

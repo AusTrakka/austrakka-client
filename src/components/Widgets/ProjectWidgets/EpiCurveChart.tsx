@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { InlineData } from 'vega-lite/build/src/data';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
@@ -192,6 +192,4 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     </Box>
   );
 }
-
-EpiCurveChart.whyDidYouRender = true;
 export default EpiCurveChart;

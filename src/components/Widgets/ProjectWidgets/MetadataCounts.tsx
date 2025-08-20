@@ -17,7 +17,6 @@ import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { Sample } from '../../../types/sample.interface';
-import { genericErrorMessage } from '../../../utilities/api';
 import { useStableNavigate } from '../../../app/NavigationContext';
 
 // Parameterised widget; field must be specified
@@ -50,7 +49,6 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
   
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev), shallowEqual);
-
  
   const plotDiv = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -97,7 +95,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
   
-  const createSpec = () => ({
+  const creatSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
@@ -179,14 +177,13 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     }
   }, [data, field, categoryFieldStable]);
 
-
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
       if (vegaView) {
         vegaView.finalize();
       }
-
+      const spec = creatSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;

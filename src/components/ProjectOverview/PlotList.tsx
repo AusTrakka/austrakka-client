@@ -43,10 +43,7 @@ function PlotList(props: PlotListProps) {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === ResponseType.Success) {
         setPlotList(plotsResponse.data as PlotListing[]);
-        setTimeout(() => {
-          console.log('paused');
-          setIsLoading(false);
-        }, 1000);
+        setIsLoading(false);
       } else {
         setIsLoading(false);
         setPlotList([]);
@@ -70,8 +67,6 @@ function PlotList(props: PlotListProps) {
     setGlobalFilter(filters);
   };
 
-  // if (isLoading) return null;
-
   const header = (
     <div style={{ display: 'flex' }}>
       <SearchInput
@@ -80,7 +75,6 @@ function PlotList(props: PlotListProps) {
       />
     </div>
   );
-  console.log('PLOTS');
   return (
     <Paper elevation={2} sx={{ marginBottom: 10 }}>
       <DataTable

@@ -75,8 +75,7 @@ function ProFormaList(props: ProFormasListProps) {
   // eslint-disable-next-line max-len
   const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
     const group = obj.abbreviation;
-    let result: { [p: string]: ProFormaVersion[] };
-    result = { ...acc };
+    const result: { [p: string]: ProFormaVersion[] } = { ...acc };
 
     if (!result[group]) {
       result[group] = [];
@@ -179,7 +178,6 @@ function ProFormaList(props: ProFormasListProps) {
       </Masonry>
     </Box>
   );
-  console.log('PROFORMAs');
   return (
     <>
       { renderTitleOrError(proformaError, proformaErrorMessage) }
