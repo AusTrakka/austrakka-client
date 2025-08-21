@@ -605,7 +605,12 @@ function DataFilters(props: DataFiltersProps) {
                         variant="contained"
                         color="success"
                         size="small"
-                        sx={{ m: 1, minWidth: '50px' }}
+                        sx={{ 'm': 1,
+                          'minWidth': '50px',
+                          'boxShadow': 'none',
+                          '&:hover': {
+                            boxShadow: 'none',
+                          } }}
                         disabled={
                               !nullOrEmptyFlag &&
                               Object.values(filterFormValues).some((x) => x === null || x === '')
