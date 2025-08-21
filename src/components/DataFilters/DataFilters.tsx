@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { SetStateAction, useEffect, useState } from 'react';
-import { Add, AddBox, AddCircle, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
+import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
