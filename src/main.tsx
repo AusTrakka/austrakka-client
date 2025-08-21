@@ -14,7 +14,7 @@ import ApiProvider from './app/ApiContext';
 import { globalStyles } from './assets/themes/theme';
 
 if (import.meta.env.DEV) {
-  import('./wydr');
+  import('./wdyr');
 }
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
