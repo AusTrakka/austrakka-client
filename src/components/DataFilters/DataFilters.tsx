@@ -185,7 +185,7 @@ function DataFilters(props: DataFiltersProps) {
       } else {
         setConditions(stringConditions);
         fieldType = FieldTypes.STRING;
-        defaultCondition = FilterMatchMode.EQUALS;
+        defaultCondition = FilterMatchMode.CONTAINS;
       }
 
       setNullOrEmptyFlag(false);
