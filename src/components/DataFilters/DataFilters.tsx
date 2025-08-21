@@ -445,6 +445,13 @@ function DataFilters(props: DataFiltersProps) {
             slotProps={{
               textField: {
                 size: 'small',
+                sx: {
+                  'width': '200',
+                  '& .MuiInputBase-input': {
+                    flex: 1,
+                    minWidth: 0,
+                  },
+                },
               },
             }}
             disabled={nullOrEmptyFlag}
