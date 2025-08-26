@@ -1,7 +1,7 @@
 // TODO: Need to move this function else where as it is more than a utility
 import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DataTableFilterMeta } from 'primereact/datatable';
+import { NavigateFunction } from 'react-router-dom';
 import getQueryParamOrDefault from './navigationUtils';
 import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
 import { isDataTableFiltersEqual } from './filterUtils';
@@ -10,6 +10,7 @@ export function useStateFromSearchParamsForPrimitive<T extends
 string | number | boolean | null | Array<string | number | boolean | null>>(
   paramName: string,
   defaultState: T,
+  navigate: NavigateFunction,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const initCurrentSearchParams = getRawQueryParams(window.location.search);
   const stateSearchParams = getQueryParamOrDefault<T>(
@@ -18,7 +19,6 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
     initCurrentSearchParams,
   );
   const [state, setState] = useState<T>(stateSearchParams);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
@@ -59,6 +59,7 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
 // TODO: Need to move this function else where as it is more than a utillitiy
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
   defaultState: T,
+  navigate: NavigateFunction,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const stateSearchParams = getRawQueryParams(window.location.search);
   const state: T = { ...defaultState };
@@ -73,7 +74,6 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
     }
   });
   const [stateObject, setStateObject] = useState<T>(state);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Stringify and compare to avoid reference inequality in objects
@@ -137,10 +137,11 @@ function resolveState(
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
+  navigate: NavigateFunction,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
   const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
-  // This default initialisation only happens on the first render
-  // Thus when the stateSearchParams changes, state here will not be updated
+  // This default initialisation only happens on the first render. 
+  // Thus when the stateSearchParams changes, the state here will not be updated
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
 
   // This is why we need to use useEffect
@@ -151,8 +152,6 @@ export function useStateFromSearchParamsForFilterObject(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateSearchParams]);
-
-  const navigate = useNavigate();
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
     setState(newState);

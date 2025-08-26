@@ -3,13 +3,15 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
+import { NavigationProvider } from '../../app/NavigationContext';
 import { getProjectDetails } from '../../utilities/resourceUtils';
 import ProjectSamplesTable from './ProjectSamplesTable';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import Datasets from '../ProjectDatasets/Datasets';
-import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
+import CustomTabs from '../Common/CustomTabs';
+import TabPanel from '../Common/TabPanel';
 import { Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
@@ -22,13 +24,37 @@ import {
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
-import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
+import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
 
-function ProjectOverview() {
-  const { projectAbbrev, tab } = useParams();
+interface ProjectOverviewProps {
+  tab: string,
+  projectAbbrev: string,
+}
+
+const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).reduce(
+  (acc, t) => {
+    acc[t.index] = true; // loading by default
+    return acc;
+  },
+  {} as Record<number, boolean>,
+);
+
+function ProjectOverview(props: ProjectOverviewProps) {
+  const { projectAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
-  const [tabValue, setTabValue] = useState(0);
+  
+  const [tabValue, setTabValue] = useState<number | null>(null);
 
+  const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
+
+  const tabLoadingSetters = useMemo(() => (
+    Object.values(PROJ_TABS).reduce((acc, pt) => {
+      acc[pt.index] = (loading: boolean) =>
+        setTabLoadStates(prev => ({ ...prev, [pt.index]: loading }));
+      return acc;
+    }, {} as Record<number, (loading: boolean) => void>)
+  ), []);
+  
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   // Project Overview component states
@@ -36,18 +62,9 @@ function ProjectOverview() {
     detailsError: false,
     detailsErrorMessage: '',
   });
-  // const [lastUpload] = useState('');
 
   // Tab loading states
-  const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
-  const mergeAlgorithm = useAppSelector((state) =>
-    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
-  const [isTreesLoading, setIsTreesLoading] = useState(true);
-  const [isPlotsLoading, setIsPlotsLoading] = useState(true);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [isProformasLoading, setIsProformasLoading] = useState(true);
-
+ 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -72,15 +89,21 @@ function ProjectOverview() {
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);
 
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
+  const isSamplesLoading : boolean = useAppSelector((state) =>
+    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
   useEffect(() => {
-    const initialTabValue = projectOverviewTabs
-      .findIndex((t) => tab === t.title.toLowerCase());
-    if (initialTabValue !== -1) {
-      setTabValue(initialTabValue);
+    const tabKey = tab.toLowerCase(); // e.g. "plots"
+    const tabObj = PROJ_TABS[tabKey];
+
+    if (tabObj) {
+      setTabValue(tabObj.index);
     }
-  }, [tab, projectOverviewTabs]);
+  }, [tab]);
+  
+  if (tabValue === null) { return null; }
 
   return (
     isOverviewError.detailsError
@@ -94,53 +117,95 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {projectDetails ? projectDetails.name : ''}
           </Typography>
-          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
-          <TabPanel value={tabValue} index={0} tabLoader={isSamplesLoading}>
+          <CustomTabs
+            value={tabValue}
+            tabContent={Object.values(PROJ_TABS)}
+            setValue={setTabValue}
+          />
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.summary.index}
+          >
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
+
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.samples.index}
+          >
             <ProjectSamplesTable
               projectAbbrev={projectAbbrev!}
               isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.trees.index}
+            loadingState={tabLoadStates[PROJ_TABS.trees.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
+          >
             <TreeList
               projectDetails={projectDetails}
-              isTreesLoading={isTreesLoading}
-              setIsTreesLoading={setIsTreesLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.plots.index}
+            loadingState={tabLoadStates[PROJ_TABS.plots.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
+          >
             <PlotList
               projectDetails={projectDetails}
-              isPlotsLoading={isPlotsLoading}
-              setIsPlotsLoading={setIsPlotsLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.members.index}
+            loadingState={tabLoadStates[PROJ_TABS.members.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
+          >
             <MemberList
               projectDetails={projectDetails}
-              isMembersLoading={isMembersLoading}
-              setIsMembersLoading={setIsMembersLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={5} tabLoader={isProformasLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.proformas.index}
+            loadingState={tabLoadStates[PROJ_TABS.proformas.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
+          >
             <ProFormas
               projectDetails={projectDetails}
-              isProformasLoading={isProformasLoading}
-              setIsProformasLoading={setIsProformasLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={6} tabLoader={false}>
-            <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.datasets.index}
+          >
+            <Datasets
+              projectDetails={projectDetails}
+              mergeAlgorithm={mergeAlgorithm}
+            />
           </TabPanel>
         </>
       )
-
   );
 }
-export default ProjectOverview;
+
+function ProjectOverviewWrapper() {
+  const { projectAbbrev, tab } = useParams();
+  if (!projectAbbrev) return null;
+  return (
+    <NavigationProvider>
+      <ProjectOverview projectAbbrev={projectAbbrev} tab={tab ?? PROJ_HOME_TAB} />
+    </NavigationProvider>
+  );
+}
+export default ProjectOverviewWrapper;

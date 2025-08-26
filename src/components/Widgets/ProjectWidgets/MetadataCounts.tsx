@@ -1,13 +1,13 @@
 /* eslint react/require-default-props: 0 */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { compile, TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { InlineData } from 'vega-lite/build/src/data';
+import { shallowEqual } from 'react-redux';
 import { useAppSelector } from '../../../app/store';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
@@ -17,6 +17,7 @@ import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { Sample } from '../../../types/sample.interface';
+import { useStableNavigate } from '../../../app/NavigationContext';
 
 // Parameterised widget; field must be specified
 
@@ -29,40 +30,42 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
   title?: string | undefined; // Optionally, a different title for the widget
 }
 
-export default function MetadataCounts(props: MetadataCountWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
-  let { categoryField } = props;
-  let axisTitle = categoryField;
-  if (!categoryField) {
-    categoryField = 'Owner_group';
-  }
-  if (!axisTitle) {
-    axisTitle = 'Organisation';
-  }
-  const data: ProjectMetadataState | null = useAppSelector(state =>
-    selectProjectMetadata(state, projectAbbrev));
-  const plotDiv = useRef<HTMLDivElement>(null);
-  const [vegaView, setVegaView] = useState<VegaView | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const tooltipTitle = `Samples with populated ${field} values`;
+const CHART_COLORS = {
+  AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
+  MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
+} as const;
 
-  const CHART_COLORS = {
-    AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
-    MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
-  } as const;
+function MetadataCounts(props: MetadataCountWidgetProps) {
+  const { projectAbbrev,
+    filteredData,
+    timeFilterObject,
+    field,
+    title,
+    categoryField } = props;
   
-  const dateStatusTransform = {
+  const { navigate } = useStableNavigate();
+  const categoryFieldStable = categoryField ?? 'Owner_group';
+  const axisTitleStable = categoryField ?? 'Organisation';
+  
+  const data: ProjectMetadataState | null = useAppSelector(state =>
+    selectProjectMetadata(state, projectAbbrev), shallowEqual);
+ 
+  const plotDiv = useRef<HTMLDivElement>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const tooltipTitle = `Samples with populated ${field} values`;
+  const [vegaView, setVegaView] = useState<VegaView | null>(null);
+  
+  const dateStatusTransform = React.useMemo(() => ({
     calculate: `datum['${field}'] ? 'Available' : 'Missing'`,
     as: `${field}_status`,
-  };
+  }), [field]);
 
   function handleItemClick(item: any) {
     if (!item || !item.datum) return;
 
     const status = item.datum[`${field}_status`];
-    let category = item.datum[categoryField!];
-    if (categoryField === 'Owner_group') category = `${category}-Owner`;
+    let category = item.datum[categoryFieldStable];
+    if (categoryFieldStable === 'Owner_group') category = `${category}-Owner`;
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [field]: {
@@ -74,7 +77,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           },
         ],
       },
-      [categoryField!]: {
+      [categoryFieldStable]: {
         operator: FilterOperator.AND,
         constraints: [
           {
@@ -89,15 +92,14 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
         timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
           { ...drillDownTableMetaFilters, ...timeFilterObject }
           : drillDownTableMetaFilters;
-
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
   
-  const createSpec = () => ({
+  const creatSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     transform: [
-      ...ownerGroupVegaTransform(categoryField),
+      ...ownerGroupVegaTransform(categoryFieldStable),
       dateStatusTransform,
     ],
     width: 'container',
@@ -111,8 +113,8 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           axis: { title: 'Count' },
         },
         y: {
-          field: categoryField,
-          axis: { title: axisTitle },
+          field: categoryFieldStable,
+          axis: { title: axisTitleStable },
         },
         color: {
           field: `${field}_status`,
@@ -133,7 +135,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           stack: 'zero',
           bandPosition: 0.5,
         },
-        y: { field: categoryField },
+        y: { field: categoryFieldStable },
         detail: {
           field: `${field}_status`,
         },
@@ -154,26 +156,26 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
       setErrorMessage(data.errorMessage);
       return;
     }
-    if (data?.fieldLoadingStates[categoryField!] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${categoryField} values`);
+    if (data?.fieldLoadingStates[categoryFieldStable] === LoadingState.ERROR) {
+      setErrorMessage(`Error loading ${categoryFieldStable} values`);
       return;
     }
     if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${field} values`);
       return;
     }
-    if (categoryField && data?.loadingState && (
+    if (categoryFieldStable && data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
       data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
       const fields = data.fields!.map(_field => _field.columnName);
-      if (!fields.includes(categoryField!)) {
-        setErrorMessage(`Field ${categoryField} not found in project`);
+      if (!fields.includes(categoryFieldStable)) {
+        setErrorMessage(`Field ${categoryFieldStable} not found in project`);
       } else if (!fields.includes(field)) {
         setErrorMessage(`Field ${field} not found in project`);
       }
     }
-  }, [data, field, categoryField]);
+  }, [data, field, categoryFieldStable]);
 
   useEffect(() => {
     const createVegaViews = async () => {
@@ -181,8 +183,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
       if (vegaView) {
         vegaView.finalize();
       }
-
-      const spec = createSpec();
+      const spec = creatSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
@@ -191,15 +192,16 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => handleItemClick(item))
         .runAsync();
+    
       setVegaView(view);
     };
 
-    if (filteredData && plotDiv?.current) {
+    if (filteredData) {
       createVegaViews();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
+  }, [filteredData, plotDiv, projectAbbrev, timeFilterObject]);
 
   return (
     <Box>
@@ -214,7 +216,7 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
           {errorMessage}
         </Alert>
       ) :
-        (data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
+        (data?.fieldLoadingStates[categoryFieldStable] === LoadingState.SUCCESS && (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div
@@ -237,3 +239,5 @@ export default function MetadataCounts(props: MetadataCountWidgetProps) {
     </Box>
   );
 }
+
+export default memo(MetadataCounts);
