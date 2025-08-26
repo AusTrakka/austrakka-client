@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { TreeVersion } from '../../types/dtos';
@@ -64,6 +64,7 @@ const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
   const { projectAbbrev, treeId, treeVersionId } = useParams();
+  const navigate = useNavigate();
   const [tree, setTree] = useState<TreeVersion | null>();
   const treeRef = createRef<TreeExportFuctions>();
   const legRef = createRef<HTMLDivElement>();
@@ -78,11 +79,13 @@ function TreeDetail() {
   const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
   const [state, setState] = useStateFromSearchParamsForObject(
     defaultState,
+    navigate,
   );
   const rootIdDefault: string = '0';
   const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
     'rootId',
     rootIdDefault,
+    navigate,
   );
   const projectMetadata : ProjectMetadataState | null =
     useAppSelector(st => selectProjectMetadata(st, projectAbbrev));

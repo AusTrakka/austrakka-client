@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createElement, memo, useEffect, useState } from 'react';
 import {
   Alert,
   AlertTitle,
@@ -23,7 +23,6 @@ import { useApi } from '../../../app/ApiContext';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import { ResponseType } from '../../../constants/responseType';
-import { Sample } from '../../../types/sample.interface';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import { ProjectDashboardDetails } from '../../../types/dtos';
@@ -35,7 +34,6 @@ interface ProjectDashboardProps {
   projectDesc: string,
   projectAbbrev: string | null,
 }
-
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectAbbrev } = props;
   const { token, tokenLoading } = useApi();
@@ -45,36 +43,47 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const [timeFilter, setTimeFilter] = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
   const [timeFilterThreshold, setTimeFilterThreshold] = useState<Date | null>(null);
-  const [filteredData, setFilteredData] = useState<Sample[]>([]);
-
   // this state variable will be passed as prop for line-list filters
-  const timeFilterObject : DataTableFilterMeta = timeFilterThreshold ? {
-    [DashboardTimeFilterField]: {
-      operator: FilterOperator.AND,
-      constraints: [
-        {
-          value: timeFilterThreshold,
-          matchMode: FilterMatchMode.DATE_AFTER,
-        }],
-    },
-  } : {};
-  
-  function renderDashboard() {
+  const timeFilterObject: DataTableFilterMeta = React.useMemo(() => {
+    if (!timeFilterThreshold) return {} as DataTableFilterMeta;
+    return {
+      [DashboardTimeFilterField]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            value: timeFilterThreshold,
+            matchMode: FilterMatchMode.DATE_AFTER,
+          },
+        ],
+      },
+    };
+  }, [timeFilterThreshold]);
+
+  const filteredDataMemo = React.useMemo(() => {
+    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
+    if (!timeFilterThreshold) return data.metadata!;
+    // Re-use your filtering function here or inline logic
+    return data.metadata!.filter(sample =>
+      dayjs(sample[DashboardTimeFilterField]!).isAfter(dayjs(timeFilterThreshold)));
+  }, [data, timeFilterThreshold]);
+
+  const dashBoardElements = React.useMemo(() => {
     if (!dashboardName || !projectAbbrev) {
-      return React.createElement(() => null);
+      return createElement(() => null);
     }
     if (typeof DashboardTemplates[dashboardName] === 'undefined') {
       setErrorMessage(`Dashboard type ${dashboardName} is not known`);
-      return React.createElement(() => null);
+      return createElement(() => null);
     }
+
     const dashboardProps: ProjectDashboardTemplateProps = {
-      projectAbbrev, filteredData, timeFilterObject,
+      projectAbbrev,
+      filteredData: filteredDataMemo,
+      timeFilterObject,
     };
-    return React.createElement(
-      DashboardTemplates[dashboardName],
-      dashboardProps,
-    );
-  }
+
+    return createElement(DashboardTemplates[dashboardName], dashboardProps);
+  }, [dashboardName, projectAbbrev, filteredDataMemo, timeFilterObject]);
   
   useEffect(() => {
     async function getDashboardName() {
@@ -95,26 +104,6 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   }, [token, tokenLoading, projectAbbrev]);
   
   // Filter data by date
-  useEffect(() => {
-    // Could be moved to dataProcessingUtils
-    const filterDataAfterDate = (
-      inputdata: Sample[],
-      dateField: string,
-      threshold: Date | null,
-    ) => {
-      if (!threshold) {
-        return inputdata;
-      }
-      // This line only reached if dateField present; otherwise control to set threshold is disabled
-      return inputdata.filter((sample) => dayjs(sample[dateField]!).isAfter(dayjs(threshold)));
-    };
-    
-    if (data?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(
-        filterDataAfterDate(data!.metadata!, DashboardTimeFilterField, timeFilterThreshold),
-      );
-    }
-  }, [data, timeFilterThreshold]);
   
   const onTimeFilterChange = (event: SelectChangeEvent) => {
     let value: Date | undefined;
@@ -173,7 +162,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
                 backgroundColor: 'var(--primary-main-bg)',
               }}
             >
-              {renderDashboard()}
+              {dashBoardElements}
             </Grid>
           </>
         )}
@@ -195,4 +184,5 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     </Box>
   );
 }
-export default ProjectDashboard;
+
+export default memo(ProjectDashboard);

@@ -6,6 +6,7 @@ import { compile } from 'vega-lite';
 import { Alert, Grid } from '@mui/material';
 // import Grid from '@mui/material/Grid2';
 import { DataTable } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import {
@@ -54,6 +55,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
     initialZoom,
   } = props;
   const nameProperty = geoLookupField === 'Country' ? 'properties.NAME' : 'properties.name';
+  const navigate = useNavigate();
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -67,6 +69,7 @@ function VegaMapPlot(props: VegaMapPlotProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);

@@ -8,6 +8,7 @@ import {
 } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { ProjectViewField } from '../../types/dtos';
 import {
   buildPrimeReactColumnDefinitionsPVF,
@@ -59,6 +60,7 @@ export default function TreeSamplesTable(props: TreeTableProps) {
     fieldLoadingState,
     emptyColumns,
   } = props;
+  const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [columnError, setColumnError] = useState(false);
@@ -71,6 +73,7 @@ export default function TreeSamplesTable(props: TreeTableProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);

@@ -3,7 +3,6 @@ import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../app/store';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
@@ -11,9 +10,9 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { useStableNavigate } from '../../../app/NavigationContext';
 
 // TODO This widget is really now obsolete; we could use the Counts widget
-
 const ORG_FIELD_NAME = 'Owner_group';
 
 const columns = [
@@ -32,11 +31,11 @@ export default function Organisations(props: ProjectWidgetProps) {
   const {
     projectAbbrev, filteredData, timeFilterObject,
   } = props;
+  const { navigate } = useStableNavigate();
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
