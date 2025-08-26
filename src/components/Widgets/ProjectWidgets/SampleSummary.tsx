@@ -2,7 +2,6 @@ import React from 'react';
 import { Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
-import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../app/store';
 import DrilldownButton from '../../Common/DrilldownButton';
 import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
@@ -11,15 +10,17 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { useStableNavigate } from '../../../app/NavigationContext';
 
-export default function SampleSummary(props: ProjectWidgetProps) {
+function SampleSummary(props: ProjectWidgetProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject,
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const navigate = useNavigate();
-
+  const { navigate } = useStableNavigate();
   // Drilldown filters
   const allSamplesFilter: any [] = [];
 
@@ -120,7 +121,7 @@ export default function SampleSummary(props: ProjectWidgetProps) {
       </>
     );
   };
-
+  
   return (
     <Box>
       <Grid container spacing={2} direction="row" justifyContent="space-between">
@@ -192,3 +193,4 @@ export default function SampleSummary(props: ProjectWidgetProps) {
     </Box>
   );
 }
+export default SampleSummary;
