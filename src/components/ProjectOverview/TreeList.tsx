@@ -101,6 +101,8 @@ function TreeList(props: TreesProps) {
           globalFilterFields={columns.map((col) => col.field)}
           size="small"
           scrollHeight="calc(100vh - 500px)"
+          sortField="latestTreeLastUpdated"
+          sortOrder={-1}
           removableSort
           reorderableColumns
           columnResizeMode="expand"
