@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
 import { TopLevelSpec, compile } from 'vega-lite';
-import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { InlineData } from 'vega-lite/build/src/data';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -14,10 +15,6 @@ import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter
 import { Sample } from '../../../types/sample.interface';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
-
-// Widget displaying a basic Epi Curve
-// Requires Date_coll for x-axis
-// Colour by Jurisdiction-style field if these fields present; otherwise dark green
 
 const TIME_AXIS_FIELD = 'Date_coll';
 
@@ -33,15 +30,16 @@ const DEFAULT_COLOUR_SCHEME = 'tableau10';
 const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
 
 interface EpiCurveChartProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData?: Sample[];
-  timeFilterObject?: DataTableFilterMeta;
   preferredColourField?: string;
 }
-
-export default function EpiCurveChart(props: EpiCurveChartProps) {
+ 
+/** Widget displaying a basic Epi Curve
+* Requires Date_coll for x-axis
+* Colour by Jurisdiction-style field if these fields present; otherwise dark green
+ * */
+function EpiCurveChart(props: EpiCurveChartProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject, preferredColourField,
+    projectAbbrev, filteredData, timeFilterObject, preferredColourField = null,
   } = props;
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -52,7 +50,7 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
   const [timeBinSpec, setTimeBinSpec] = useState<{ unit: string, step: number }>({ unit: 'yearweek', step: 1 });
   const [colourSpec, setColourSpec] = useState<object>(UniformColourSpec);
 
-  const spec: TopLevelSpec = {
+  const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: {
       name: 'inputdata',
@@ -66,12 +64,11 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
         type: 'temporal',
         title: 'Sample collected date (Date_coll)',
         timeUnit: timeBinSpec as any,
-        // axis: { format: ' %d %b %Y' },
       },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: colourSpec,
     },
-  };
+  });
   
   useEffect(() => {
     const setColourSpecFromField = (field: string, colourScheme: string) => {
@@ -145,11 +142,12 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
       if (vegaView) {
         vegaView.finalize();
       }
-      const compiledSpec = compile(spec!).spec;
+      const spec = createSpec();
+      const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as any).values = copy;
+      (compiledSpec.data![0] as InlineData).values = copy;
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .runAsync();
@@ -160,10 +158,9 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
       createVegaView();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, plotDiv, timeBinSpec, colourSpec]);
+  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
   
   return (
-    // <Box sx={{ flexGrow: 1 }}>
     <Box>
       <Typography variant="h5" paddingBottom={5} color="primary">
         {`Samples (${timeFilterDescription})`}
@@ -195,3 +192,4 @@ export default function EpiCurveChart(props: EpiCurveChartProps) {
     </Box>
   );
 }
+export default EpiCurveChart;

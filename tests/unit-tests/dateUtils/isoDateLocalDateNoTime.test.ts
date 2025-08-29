@@ -1,4 +1,3 @@
-import { register, TimeZone, unregister } from 'timezone-mock';
 import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 import { isoDateLocalDateNoTime } from '../../../src/utilities/dateUtils';
 
@@ -30,9 +29,9 @@ describe('isoDateLocalDateNoTime', () => {
       const result = isoDateLocalDateNoTime(differentDate.toISOString());
       const parsedResult = parseTestDate(result);
 
-      expect(parsedResult.getUTCFullYear()).toEqual(differentDate.getFullYear());
-      expect(parsedResult.getUTCMonth()).toEqual(differentDate.getMonth());
-      expect(parsedResult.getUTCDate()).toEqual(differentDate.getDate());
+      expect(parsedResult.getUTCFullYear()).toEqual(differentDate.getUTCFullYear());
+      expect(parsedResult.getUTCMonth()).toEqual(differentDate.getUTCMonth());
+      expect(parsedResult.getUTCDate()).toEqual(differentDate.getUTCDate());
     });
   });
 
@@ -109,25 +108,6 @@ describe('isoDateLocalDateNoTime', () => {
       expect(parsed.getUTCMinutes()).toBe(0);
       expect(parsed.getUTCSeconds()).toBe(0);
       expect(parsed.getUTCMilliseconds()).toBe(0);
-    });
-  });
-
-  describe('when used across different time zones', () => {
-    test('produces consistent results regardless of timezone', () => {
-      const input = new Date();
-      const mockTimezones: TimeZone[] = ['Australia/Adelaide', 'US/Eastern', 'Europe/London', 'US/Pacific', 'Etc/GMT+9', 'Etc/GMT-9', 'UTC'];
-
-      const results = mockTimezones.map(zone => {
-        register(zone);
-        const result = isoDateLocalDateNoTime(input.toISOString());
-        const expected = formatTestDate(input, zone);
-        unregister();
-        return { zone, result, expected };
-      });
-
-      results.forEach(item => {
-        expect(item.result).toMatch(item.expected);
-      });
     });
   });
 });

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import { Error } from '@mui/icons-material';
-import SampleTable from '../SampleTable/SampleTable';
 import LoadingState from '../../constants/loadingState';
 import { Group } from '../../types/dtos';
+import OrgSamplesTable from './OrgSamplesTable';
 
-interface OrgansiationSampleProps {
+interface OrganisationSampleProps {
   defaultGroup: Group;
   groups: Group[];
   groupStatus: LoadingState;
@@ -77,7 +77,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
   );
 }
 
-function OrganisationSamples(props: OrgansiationSampleProps) {
+function OrganisationSamples(props: OrganisationSampleProps) {
   const { defaultGroup, groups, groupStatus, groupStatusMessage } = props;
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
@@ -110,7 +110,7 @@ function OrganisationSamples(props: OrgansiationSampleProps) {
         selectedGroup={selectedGroup!}
         setSelectedGroup={setSelectedGroup}
       />
-      <SampleTable
+      <OrgSamplesTable
         groupContext={selectedGroup!.groupId}
       />
     </Box>

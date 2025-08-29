@@ -3,16 +3,15 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import {
-  getProjectDetails, getTotalSamples,
-} from '../../utilities/resourceUtils';
-// import Summary from './Summary';
-import Samples from './Samples';
+import { NavigationProvider } from '../../app/NavigationContext';
+import { getProjectDetails } from '../../utilities/resourceUtils';
+import ProjectSamplesTable from './ProjectSamplesTable';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import MemberList from './MemberList';
 import Datasets from '../ProjectDatasets/Datasets';
-import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
+import CustomTabs from '../Common/CustomTabs';
+import TabPanel from '../Common/TabPanel';
 import { Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
@@ -24,47 +23,59 @@ import {
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
 import Activity from '../Common/Activity/Activity';
+import { PROJ_HOME_TAB, PROJ_TABS } from "./projTabConstants";
 
-function ProjectOverview() {
-  const { projectAbbrev, tab } = useParams();
+interface ProjectOverviewProps {
+  tab: string,
+  projectAbbrev: string,
+}
+
+const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).reduce(
+  (acc, t) => {
+    acc[t.index] = true; // loading by default
+    return acc;
+  },
+  {} as Record<number, boolean>,
+);
+
+function ProjectOverview(props: ProjectOverviewProps) {
+  const { projectAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
-  const [tabValue, setTabValue] = useState(0);
+  
+  const [tabValue, setTabValue] = useState<number | null>(null);
 
+  const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
+
+  const tabLoadingSetters = useMemo(() => (
+    Object.values(PROJ_TABS).reduce((acc, pt) => {
+      acc[pt.index] = (loading: boolean) =>
+        setTabLoadStates(prev => ({ ...prev, [pt.index]: loading }));
+      return acc;
+    }, {} as Record<number, (loading: boolean) => void>)
+  ), []);
+  
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   // Project Overview component states
-  const [isOverviewLoading, setIsOverviewLoading] = useState(true);
   const [isOverviewError, setIsOverviewError] = useState({
     detailsError: false,
     detailsErrorMessage: '',
-    totalSamplesError: false,
-    totalSamplesErrorMessage: '',
-    latestDateError: true,
-    latestDateErrorMessage: `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`,
   });
-  // const [lastUpload] = useState('');
 
   // Tab loading states
-  const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
-  const mergeAlgorithm = useAppSelector((state) =>
-    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
-  const [isTreesLoading, setIsTreesLoading] = useState(true);
-  const [isPlotsLoading, setIsPlotsLoading] = useState(true);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [isProformasLoading, setIsProformasLoading] = useState(true);
-
+ 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     async function getProject() {
-      const projectResponse: ResponseObject = await getProjectDetails(projectAbbrev!, token);
+      const projectResponse = await getProjectDetails(projectAbbrev!, token);
       if (projectResponse.status === ResponseType.Success) {
-        setProjectDetails(projectResponse.data as Project);
+        setProjectDetails(projectResponse.data!);
+        dispatch(
+          fetchProjectMetadata({ projectAbbrev: projectResponse.data!.abbreviation, token }),
+        );
         setIsOverviewError((prevState) => ({ ...prevState, detailsError: false }));
       } else {
         setIsOverviewError((prevState) => ({
@@ -72,53 +83,28 @@ function ProjectOverview() {
           detailsError: true,
           detailsErrorMessage: projectResponse.message,
         }));
-        setIsOverviewLoading(false);
       }
     }
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       getProject();
     }
-  }, [projectAbbrev, token, tokenLoading]);
+  }, [dispatch, projectAbbrev, token, tokenLoading]);
+
+  const isSamplesLoading : boolean = useAppSelector((state) =>
+    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+  const mergeAlgorithm = useAppSelector((state) =>
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
   useEffect(() => {
-    // This currently provides total sample count to both Summary(dashboard) and Samples tabs
-    // Could replace with a function that counts groupMetadata.metadata.length
-    async function getProjectSummary() {
-      const totalSamplesResponse: ResponseObject = await getTotalSamples(
-        projectDetails!.projectMembers.id,
-        token,
-      );
-      if (totalSamplesResponse.status === ResponseType.Success) {
-        setIsOverviewError((prevState) => ({ ...prevState, totalSamplesError: false }));
-      } else {
-        setIsOverviewError((prevState) => ({
-          ...prevState,
-          totalSamplesError: true,
-          totalSamplesErrorMessage: totalSamplesResponse.message,
-        }));
-      }
-      setIsOverviewLoading(false);
-      // TODO: Make use of latest upload date from project views
-    }
+    const tabKey = tab.toLowerCase(); // e.g. "plots"
+    const tabObj = PROJ_TABS[tabKey];
 
-    if (projectDetails &&
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
-      getProjectSummary();
-      dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
+    if (tabObj) {
+      setTabValue(tabObj.index);
     }
-  }, [projectDetails, token, tokenLoading, dispatch]);
-
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
-
-  useEffect(() => {
-    const initialTabValue = projectOverviewTabs
-      .findIndex((t) => tab === t.title.toLowerCase());
-    if (initialTabValue !== -1) {
-      setTabValue(initialTabValue);
-    }
-  }, [tab, projectOverviewTabs]);
+  }, [tab]);
+  
+  if (tabValue === null) { return null; }
 
   return (
     isOverviewError.detailsError
@@ -132,61 +118,103 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {projectDetails ? projectDetails.name : ''}
           </Typography>
-          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
-          <TabPanel value={tabValue} index={0} tabLoader={isOverviewLoading}>
+          <CustomTabs
+            value={tabValue}
+            tabContent={Object.values(PROJ_TABS)}
+            setValue={setTabValue}
+          />
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.summary.index}
+          >
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
-            {!isSamplesLoading && <Samples projectAbbrev={projectAbbrev!} />}
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.samples.index}
+          >
+            <ProjectSamplesTable
+              projectAbbrev={projectAbbrev!}
+            />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} tabLoader={isTreesLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.trees.index}
+            loadingState={tabLoadStates[PROJ_TABS.trees.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
+          >
             <TreeList
               projectDetails={projectDetails}
-              isTreesLoading={isTreesLoading}
-              setIsTreesLoading={setIsTreesLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={3} tabLoader={isPlotsLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.plots.index}
+            loadingState={tabLoadStates[PROJ_TABS.plots.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
+          >
             <PlotList
               projectDetails={projectDetails}
-              isPlotsLoading={isPlotsLoading}
-              setIsPlotsLoading={setIsPlotsLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={4} tabLoader={isMembersLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.members.index}
+            loadingState={tabLoadStates[PROJ_TABS.members.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
+          >
             <MemberList
               projectDetails={projectDetails}
-              isMembersLoading={isMembersLoading}
-              setIsMembersLoading={setIsMembersLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={5} tabLoader={isProformasLoading}>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.proformas.index}
+            loadingState={tabLoadStates[PROJ_TABS.proformas.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
+          >
             <ProFormas
               projectDetails={projectDetails}
-              isProformasLoading={isProformasLoading}
-              setIsProformasLoading={setIsProformasLoading}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={6} tabLoader={false}>
-            <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.datasets.index}
+          >
+            <Datasets
+              projectDetails={projectDetails}
+              mergeAlgorithm={mergeAlgorithm}
+            />
           </TabPanel>
-          {
-            tabValue === 7 && (
-            <TabPanel value={tabValue} index={7} tabLoader={false}>
-              <Activity
-                recordType="project"
-                rGuid={projectDetails?.globalId ?? ''}
-                owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
-              />
-            </TabPanel>
-            )
-}
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="project"
+              rGuid={projectDetails?.globalId ?? ''}
+              owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
+            />
+          </TabPanel>
         </>
       )
-
   );
 }
-export default ProjectOverview;
+
+function ProjectOverviewWrapper() {
+  const { projectAbbrev, tab } = useParams();
+  if (!projectAbbrev) return null;
+  return (
+    <NavigationProvider>
+      <ProjectOverview projectAbbrev={projectAbbrev} tab={tab ?? PROJ_HOME_TAB} />
+    </NavigationProvider>
+  );
+}
+export default ProjectOverviewWrapper;

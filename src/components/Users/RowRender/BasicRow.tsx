@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { User } from '../../../types/dtos';
-import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 
 interface BasicRowProps {
   field: keyof User;
@@ -26,8 +26,13 @@ function BasicRow(props: BasicRowProps) {
       <TableCell>
         {(() => {
           switch (true) {
+            case field === 'lastActive':
+            case field === 'lastLogIn':
+              return isoDateOrNotRecorded(value);
+
             case field === 'created':
               return isoDateLocalDate(value);
+
             case field === 'objectId':
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -42,8 +47,10 @@ function BasicRow(props: BasicRowProps) {
                   </Tooltip>
                 </div>
               );
+
             case typeof value === 'boolean':
               return <Switch disabled checked={value} size="small" />;
+
             default:
               return value;
           }

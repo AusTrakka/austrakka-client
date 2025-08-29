@@ -8,6 +8,7 @@ import {
 } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { ProjectViewField } from '../../types/dtos';
 import {
   buildPrimeReactColumnDefinitionsPVF,
@@ -24,12 +25,14 @@ import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
 interface TreeTableProps {
+  displayFields: ProjectViewField[],
+  uniqueValues: Record<string, string[] | null> | null,
+  emptyColumns: string[],
+  fieldLoadingState: Record<string, LoadingState>,
+  metadataLoadingState: MetadataLoadingState,
   selectedIds: string[],
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
-  displayFields: ProjectViewField[],
   tableMetadata: Sample[],
-  metadataLoadingState: MetadataLoadingState,
-  fieldLoadingState: Record<string, LoadingState>,
 }
 
 interface BodyComponentProps {
@@ -46,15 +49,18 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-export default function TreeTable(props: TreeTableProps) {
+export default function TreeSamplesTable(props: TreeTableProps) {
   const {
     selectedIds,
     setSelectedIds,
     displayFields,
+    uniqueValues,
     tableMetadata,
     metadataLoadingState,
     fieldLoadingState,
+    emptyColumns,
   } = props;
+  const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [columnError, setColumnError] = useState(false);
@@ -67,6 +73,7 @@ export default function TreeTable(props: TreeTableProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);
@@ -192,6 +199,7 @@ export default function TreeTable(props: TreeTableProps) {
               });
               setSampleTableColumns(newColumns);
             }}
+            emptyColumnNames={emptyColumns}
           />
           <Tooltip title="Toggle Vertical Headers" placement="top">
             <IconButton
@@ -221,6 +229,7 @@ export default function TreeTable(props: TreeTableProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={displayFields}
+        fieldUniqueValues={uniqueValues}
         setPrimeReactFilters={setCurrentFilters}
         primeReactFilters={currentFilters}
         isOpen={isDataFiltersOpen}
@@ -266,6 +275,7 @@ export default function TreeTable(props: TreeTableProps) {
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
             sortIcon={sortIcon}
+            className={verticalHeaders ? 'vertical-table-mode' : undefined}
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
             {sampleTableColumns.map((col: Sample, index: any) => (
@@ -274,7 +284,7 @@ export default function TreeTable(props: TreeTableProps) {
                 field={col.field}
                 header={(
                   !verticalHeaders ? <div>{col.header}</div> : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
                       {col.header}
                     </div>
                   )

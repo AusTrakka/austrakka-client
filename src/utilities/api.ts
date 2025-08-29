@@ -7,7 +7,7 @@ interface HTTPOptions {
 }
 
 // Constants
-const genericErrorMessage = `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`;
+export const genericErrorMessage = `There was an error, please report this to the ${import.meta.env.VITE_BRANDING_NAME} team.`;
 const expiredTokenErrorMessage = 'Your session has expired. Please refresh.';
 const base = import.meta.env.VITE_REACT_API_URL;
 const noToken = {

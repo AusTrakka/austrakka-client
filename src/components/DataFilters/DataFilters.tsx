@@ -1,5 +1,5 @@
 import {
-  Alert,
+  Alert, Autocomplete,
   Box,
   Button,
   Chip,
@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { SetStateAction, useEffect, useState } from 'react';
-import { AddBox, AddCircle, CloseRounded, IndeterminateCheckBox } from '@mui/icons-material';
+import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
@@ -41,6 +41,13 @@ export const defaultState = {
       matchMode: FilterMatchMode.CONTAINS,
     }],
   } as DataTableOperatorFilterMetaData,
+};
+
+type EventLike = {
+  target:{
+    name: string;
+    value: string;
+  };
 };
 
 interface InternalFormProperties {
@@ -69,6 +76,7 @@ interface DataFiltersProps {
   filteredDataLength: number
   visibleFields: any[] | null
   allFields: Field[]
+  fieldUniqueValues: Record<string, string[] | null> | null
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   primeReactFilters: DataTableFilterMeta
   isOpen: boolean
@@ -91,6 +99,7 @@ function DataFilters(props: DataFiltersProps) {
     filteredDataLength,
     visibleFields,
     allFields,
+    fieldUniqueValues,
     setPrimeReactFilters,
     primeReactFilters,
     isOpen,
@@ -147,8 +156,8 @@ function DataFilters(props: DataFiltersProps) {
       registerFilterHandlers<Field>(allFields);
     }
   }, [allFields, visibleFields]);
-
-  const handleFilterChange = (event: SelectChangeEvent) => {
+  
+  const handleFilterChange = (event: SelectChangeEvent | EventLike) => {
     const { name, value } = event.target;
     if (name === 'field') {
       setDateError(null);
@@ -159,6 +168,7 @@ function DataFilters(props: DataFiltersProps) {
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
 
+      // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
         setConditions(dateConditions);
         fieldType = FieldTypes.DATE;
@@ -177,8 +187,9 @@ function DataFilters(props: DataFiltersProps) {
       } else {
         setConditions(stringConditions);
         fieldType = FieldTypes.STRING;
-        defaultCondition = FilterMatchMode.EQUALS;
+        defaultCondition = FilterMatchMode.CONTAINS;
       }
+
       setNullOrEmptyFlag(false);
       setSelectedFieldType(fieldType as FieldTypes);
       setFilterFormValues((prevState) => ({
@@ -195,6 +206,14 @@ function DataFilters(props: DataFiltersProps) {
         [name]: value as CustomFilterOperators,
         value: !value.includes('not'),
       }));
+    } else if (name === 'condition') {
+      setNullOrEmptyFlag(false);
+      setFilterFormValues((prevState) => ({
+        ...prevState,
+        [name]: value as CustomFilterOperators,
+        value: '',
+      }
+      ));
     } else {
       setFilterFormValues((prevState) => ({
         ...prevState,
@@ -202,7 +221,7 @@ function DataFilters(props: DataFiltersProps) {
       }));
     }
   };
-  
+
   const handleDateDependingOnCondition = (condition: FilterMatchMode, value: string) => {
     // if the condition is custom, then the value is going to be a string boolean,
     // and we don't need to do anything
@@ -214,7 +233,7 @@ function DataFilters(props: DataFiltersProps) {
       endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
       return endOfDay;
     }
-    
+
     return new Date(value);
   };
 
@@ -225,6 +244,79 @@ function DataFilters(props: DataFiltersProps) {
     }));
   };
 
+  const handleStringValueSelector = () => {
+    // this will check if the selectedField has unique values to pull from
+    const matchedField = fields.find(f => f.columnName === filterFormValues.field);
+
+    let uniqueValues: string[] | null = null;
+
+    const fromFieldUnique = fieldUniqueValues && fieldUniqueValues[filterFormValues.field];
+    const fromMetaData = matchedField?.metaDataColumnValidValues;
+
+    if (fromFieldUnique && Array.isArray(fromFieldUnique) && fromFieldUnique.length > 0) {
+      uniqueValues = fromFieldUnique;
+    } else if (Array.isArray(fromMetaData) && fromMetaData.length > 0) {
+      uniqueValues = fromMetaData;
+    }
+    
+    // only show drop-down if it has valid values and the condition in a direct comparison
+    if (uniqueValues && uniqueValues.length > 0 &&
+        (filterFormValues.condition === FilterMatchMode.EQUALS ||
+            filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
+    ) {
+      return (
+        <>
+          <Autocomplete
+            id="value-autocomplete"
+            size="small"
+            options={uniqueValues ?? []}
+            value={filterFormValues.value || ''}
+            onChange={(_, newValue) => {
+              handleFilterChange({
+                target: {
+                  name: 'value',
+                  value: newValue ?? '',
+                },
+              });
+            }}
+            renderInput={(params) => (
+              <TextField
+                /* eslint-disable-next-line react/jsx-props-no-spreading */
+                {...params}
+                label="Value"
+                name="value"
+              />
+            )}
+            sx={{ minWidth: 200, maxHeight: 300 }}
+          />
+        </>
+      );
+    }
+    
+    return (
+      <TextField
+        id="outlined-basic"
+        label="Value"
+        variant="outlined"
+        name="value"
+        type={(filterFormValues.fieldType === FieldTypes.NUMBER ||
+                  filterFormValues.fieldType === FieldTypes.DOUBLE) ?
+          'number' :
+          undefined}
+        value={filterFormValues.value}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          handleFilterChange(event);
+        }}
+        size="small"
+        inputProps={(filterFormValues.fieldType === FieldTypes.NUMBER ||
+                  filterFormValues.fieldType === FieldTypes.DOUBLE) ?
+          { step: 'any' } :
+          { maxLength: 25 }}
+        disabled={nullOrEmptyFlag}
+      />
+    );
+  };
+  
   // TODO: I should really write some tests for this method some time.
   const handleFilterAdd = (event: React.FormEvent<HTMLFormElement>) => {
     setLoadingState(true);
@@ -355,6 +447,13 @@ function DataFilters(props: DataFiltersProps) {
             slotProps={{
               textField: {
                 size: 'small',
+                sx: {
+                  'width': '200',
+                  '& .MuiInputBase-input': {
+                    flex: 1,
+                    minWidth: 0,
+                  },
+                },
               },
             }}
             disabled={nullOrEmptyFlag}
@@ -387,28 +486,7 @@ function DataFilters(props: DataFiltersProps) {
         );
       // Default return captures string and number types
       default:
-        return (
-          <TextField
-            id="outlined-basic"
-            label="Value"
-            variant="outlined"
-            name="value"
-            type={(filterFormValues.fieldType === FieldTypes.NUMBER ||
-              filterFormValues.fieldType === FieldTypes.DOUBLE) ?
-              'number' :
-              undefined}
-            value={filterFormValues.value}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleFilterChange(event);
-            }}
-            size="small"
-            inputProps={(filterFormValues.fieldType === FieldTypes.NUMBER ||
-              filterFormValues.fieldType === FieldTypes.DOUBLE) ?
-              { step: 'any' } :
-              { maxLength: 25 }}
-            disabled={nullOrEmptyFlag}
-          />
-        );
+        return (handleStringValueSelector());
     }
   };
 
@@ -467,7 +545,7 @@ function DataFilters(props: DataFiltersProps) {
               </Alert>
             </Snackbar>
             {isOpen ? (
-              <Box>
+              <Box width="100%">
                 <Snackbar
                   open={rowCount === 0 &&
                     !isDataTableFiltersEqual(primeReactFilters, defaultState)}
@@ -481,99 +559,111 @@ function DataFilters(props: DataFiltersProps) {
                   </Alert>
                 </Snackbar>
                 <form onSubmit={(event) => handleFilterAdd(event)}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                      <InputLabel id="field-simple-select-label">Field</InputLabel>
-                      <Select
-                        labelId="field-simple-select-label"
-                        id="field-simple-select-label"
-                        label="Field"
-                        name="field"
-                        value={filterFormValues.field}
-                        onChange={handleFilterChange}
-                      >
-                        {fields.map((field: Field) => (
-                          <MenuItem key={field.columnName} value={field.columnName}>
-                            {field.columnName}
-                          </MenuItem>
-                        ))}
-                        ;
-                      </Select>
-                    </FormControl>
-                    <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                      <InputLabel id="condition-simple-select-label">Condition</InputLabel>
-                      <Select
-                        labelId="condition-simple-select-label"
-                        id="condition-simple-select"
-                        label="Condition"
-                        name="condition"
-                        value={filterFormValues.condition}
-                        onChange={handleFilterChange}
-                      >
-                        {conditions.map((condition) => (
-                          <MenuItem key={condition.name} value={condition.value}>
-                            {condition.name}
-                          </MenuItem>
-                        ))}
-                        ;
-                      </Select>
-                    </FormControl>
-                    {nullOrEmptyFlag ? null : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', minWidth: '50%' }}>
                       <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
-                        {renderValueElement()}
+                        <InputLabel id="field-simple-select-label">Field</InputLabel>
+                        <Select
+                          labelId="field-simple-select-label"
+                          id="field-simple-select-label"
+                          label="Field"
+                          name="field"
+                          value={filterFormValues.field}
+                          onChange={handleFilterChange}
+                        >
+                          {fields.map((field: Field) => (
+                            <MenuItem key={field.columnName} value={field.columnName}>
+                              {field.columnName}
+                            </MenuItem>
+                          ))}
+                          ;
+                        </Select>
                       </FormControl>
-                    )}
-                    <IconButton
-                      type="submit"
-                      disabled={!nullOrEmptyFlag && (Object.values(filterFormValues).some((x) => x === null || x === ''))}
-                    >
-                      <AddCircle color={!nullOrEmptyFlag &&
-                      Object.values(filterFormValues).some((x) => x === null || x === '') ?
-                        'disabled' : 'secondary'}
-                      />
-                    </IconButton>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={clearFilters}
-                      disabled={isDataTableFiltersEqual(primeReactFilters, defaultState)}
-                    >
-                      Reset
-                    </Button>
+                      <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+                        <InputLabel id="condition-simple-select-label">Condition</InputLabel>
+                        <Select
+                          labelId="condition-simple-select-label"
+                          id="condition-simple-select"
+                          label="Condition"
+                          name="condition"
+                          value={filterFormValues.condition}
+                          onChange={handleFilterChange}
+                        >
+                          {conditions.map((condition) => (
+                            <MenuItem key={condition.name} value={condition.value}>
+                              {condition.name}
+                            </MenuItem>
+                          ))}
+                          ;
+                        </Select>
+                      </FormControl>
+                      {nullOrEmptyFlag ? null : (
+                        <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+                          {renderValueElement()}
+                        </FormControl>
+                      )}
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        sx={{ 'm': 1,
+                          'minWidth': '50px',
+                          'boxShadow': 'none',
+                          '&:hover': {
+                            boxShadow: 'none',
+                          } }}
+                        disabled={
+                              !nullOrEmptyFlag &&
+                              Object.values(filterFormValues).some((x) => x === null || x === '')
+                          }
+                        startIcon={(
+                          <Add />
+                          )}
+                      >
+                        Add
+                      </Button>
+                    </div>
                     <br />
                   </div>
-                  {
-                  isDataTableFiltersEqual(primeReactFilters, defaultState) ? null :
-                    Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
-                      if (isOperatorFilterMetaData(filterData)) {
+                  { !isDataTableFiltersEqual(primeReactFilters, defaultState) && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    {/* Chips area (takes 70% of the width, wraps when overflowing) */}
+                    <div
+                      style={{
+                        flex: '0 0 70%',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 8,
+                      }}
+                    >
+                      {Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
+                        if (!isOperatorFilterMetaData(filterData)) return [];
+
                         return filterData.constraints.map((constraint) => {
-                        // Determine the condition name based on matchMode
+                        // Determine condition name
                           const conditionName = (() => {
-                            const findConditionName = (_conditions: { value: string;
-                              name: string }[]) =>
-                              _conditions.find((c) => c.value === constraint.matchMode)?.name ||
-                                (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                    (constraint.value === true || constraint.value === 'true') &&
-                                  'Null or Empty') ||
-                                (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                    (constraint.value === false || constraint.value === 'false')
-                                && 'Not Null or Empty') ||
-                                'Unknown';
+                            const findConditionName =
+                              (_conditions: { value: string; name: string }[]) =>
+                                _conditions.find((c) => c.value === constraint.matchMode)?.name ||
+                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
+                                      (constraint.value === true || constraint.value === 'true') &&
+                                      'Null or Empty') ||
+                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
+                                      (constraint.value === false || constraint.value === 'false') &&
+                                      'Not Null or Empty') ||
+                                  'Unknown';
+
                             return findConditionName(
                               [...dateConditions, ...numberConditions, ...stringConditions],
                             );
                           })();
 
                           const displayValue = (() => {
-                            switch (constraint.matchMode) {
-                              case FilterMatchMode.CUSTOM:
-                              // Handle special cases where no value should be displayed
-                                return null;
-                              default:
-                                return dateConditions.some((c) => c.name === conditionName)
-                                  ? new Date(constraint.value).toLocaleDateString('en-CA')
-                                  : `${constraint.value}`;
-                            }
+                            if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
+                            return dateConditions.some((c) => c.name === conditionName)
+                              ? new Date(constraint.value).toLocaleDateString('en-CA')
+                              : `${constraint.value}`;
                           })();
 
                           return (
@@ -587,30 +677,48 @@ function DataFilters(props: DataFiltersProps) {
                                   {' '}
                                   {displayValue}
                                 </>
-                                )}
-                              onDelete={() => handleFilterDelete(
-                                field,
-                                { value: constraint.value,
-                                  matchMode: constraint.matchMode as FilterMatchMode },
-                              )}
-                              sx={{
-                                margin: 1,
-                              }}
+                                    )}
+                              onDelete={() =>
+                                handleFilterDelete(field, {
+                                  value: constraint.value,
+                                  matchMode: constraint.matchMode as FilterMatchMode,
+                                })}
+                              sx={{ margin: 0.5 }}
                             />
                           );
                         });
-                      }
-                      return [];
-                    })
-                }
-               
+                      })}
+                    </div>
+
+                    {/* Reset button aligned to the far right */}
+                    <Button
+                      variant="contained"
+                      color="inherit"
+                      size="small"
+                      sx={{
+                        'alignSelf': 'flex-end', // bottom align
+                        'marginLeft': 'auto',
+                        'boxShadow': 'none',
+                        '&:hover': {
+                          backgroundColor: (theme) => theme.palette.error.main,
+                          color: (theme) => theme.palette.error.contrastText,
+                          boxShadow: 'none',
+                        },
+                      }}
+                      onClick={clearFilters}
+                      startIcon={(
+                        <Delete />
+                        )}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                  )}
                 </form>
               </Box>
             ) : null}
-          
           </Grid>
         </Box>
-      
       </Box>
     </div>
   );

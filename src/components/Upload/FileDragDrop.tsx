@@ -44,7 +44,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     const validateFilesAreOfType = {
       func: (_files: File[]) => ({
         success: Object.entries(validFormats).length === 0 ||
-          _files.every(f => Object.values(validFormats).includes(f?.type)),
+          _files.every(f => Object.keys(validFormats).some(ex => f.name.endsWith(ex))),
         message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
       } as CustomUploadValidatorReturn),
     } as CustomUploadValidator;
@@ -177,7 +177,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
                   onClick={onBrowseClick}
                   multiple={multiple}
                   onChange={handleBrowseChange}
-                  accept={Object.values(validFormats).toString()}
+                  accept={[...new Set(Object.entries(validFormats).flat().filter(x => x !== ''))].join(',')}
                   hidden
                 />
               </Button>

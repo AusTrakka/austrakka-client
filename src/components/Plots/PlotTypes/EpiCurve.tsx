@@ -1,6 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
+import { useNavigate } from 'react-router-dom';
 import {
   ProjectMetadataState,
   selectProjectMetadata,
@@ -58,59 +59,59 @@ const defaultSpec: TopLevelSpec = {
 function EpiCurve(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
+  const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   // This plot also accesses the data itself, to determine an initial date binning
   const data: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, plot?.projectAbbreviation));
-  const searchParams = new URLSearchParams(window.location.search);
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'dateField',
     '',
-    searchParams,
+    navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     '',
-    searchParams,
+    navigate,
   );
   const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
     'dateBinStep',
     1,
-    searchParams,
+    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    searchParams,
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    searchParams,
+    navigate,
   );
   const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
     'rowField',
     'none',
-    searchParams,
+    navigate,
   );
   const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetYAxisMode',
     'shared',
-    searchParams,
+    navigate,
   );
   const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetXAxisMode',
     'shared',
-    searchParams,
+    navigate,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
     'stackType',
     'zero',
-    searchParams,
+    navigate,
   );
 
   // Set spec on load

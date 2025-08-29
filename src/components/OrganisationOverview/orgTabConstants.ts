@@ -1,16 +1,9 @@
-import { TabContentProps } from '../Common/CustomTabs';
+import { TabObjectRecord } from '../Common/CustomTabs';
 
-export const ORG_OVERVIEW_TABS: TabContentProps[] = [
-  {
-    index: 0,
-    title: 'Samples',
-  },
-  {
-    index: 1,
-    title: 'Members',
-  },
-  {
-    index: 2,
-    title: 'Activity',
-  },
-];
+export const ORG_HOME_TAB = 'samples';
+
+export const ORG_TABS: TabObjectRecord = {
+  samples: { index: 0, title: 'Samples' },
+  members: { index: 1, title: 'Members' },
+  activity: { index: 2, title: 'Activity' },
+};

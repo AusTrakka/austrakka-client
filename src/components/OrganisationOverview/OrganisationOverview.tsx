@@ -1,23 +1,54 @@
 // first lets make the get organisation information
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Box, Typography } from '@mui/material';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { Member, GroupRole, Group, Organisation } from '../../types/dtos';
-import CustomTabs, { TabContentProps, TabPanel } from '../Common/CustomTabs';
+import CustomTabs from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
-import { ORG_OVERVIEW_TABS } from './orgTabConstants';
 import Activity from '../Common/Activity/Activity';
+import TabPanel from '../Common/TabPanel';
+import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
+import { NavigationProvider } from '../../app/NavigationContext';
 
-function OrganisationOverview() {
-  const { orgAbbrev } = useParams();
+const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
+  groupRoles.filter((groupRole: GroupRole) =>
+    (groupRole.group.name === `${orgAbbrev}-Owner`
+            || groupRole.group.name === `${orgAbbrev}-Everyone`)
+        && (groupRole.role.name === 'Viewer'))
+    .sort((a: any, b: any) => {
+      // Owner group first
+      if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
+      if (a.group.name.endsWith('-Owner')) return -1;
+      if (b.group.name.endsWith('-Owner')) return 1;
+      return 0;
+    });
+
+const getCorrectGroupsAdmin = (groups: Group[], orgAbbrev: string): Group[] =>
+  groups.filter((group: Group) => (
+    group.name === `${orgAbbrev}-Owner`
+        || group.name === `${orgAbbrev}-Everyone`)).sort((a: any, b: any) => {
+    // Owner group first
+    if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
+    if (a.name.endsWith('-Owner')) return -1;
+    if (b.name.endsWith('-Owner')) return 1;
+    return 0;
+  });
+
+interface OrganisationOverviewProps {
+  orgAbbrev: string,
+  tab: string,
+}
+
+function OrganisationOverview(props: OrganisationOverviewProps) {
+  const { orgAbbrev, tab } = props;
   const [organisation, setOrganisation] = useState<Organisation>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
@@ -25,9 +56,7 @@ function OrganisationOverview() {
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
   const [orgEveryone, setOrgEveryone] = useState<Group>();
   const { token, tokenLoading } = useApi();
-  const [tabValue, setTabValue] = useState(0);
-  const location = useLocation();
-  const pathName = location.pathname;
+  const [tabValue, setTabValue] = useState<number | null>(null);
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
@@ -61,35 +90,11 @@ function OrganisationOverview() {
       }
     }
     
-    const getCorrectGroups = (groupRoles: GroupRole[]) =>
-      groupRoles.filter((groupRole: GroupRole) =>
-        (groupRole.group.name === `${orgAbbrev}-Owner`
-            || groupRole.group.name === `${orgAbbrev}-Everyone`)
-          && (groupRole.role.name === 'Viewer'))
-        .sort((a: any, b: any) => {
-        // Owner group first
-          if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
-          if (a.group.name.endsWith('-Owner')) return -1;
-          if (b.group.name.endsWith('-Owner')) return 1;
-          return 0;
-        });
-
-    const getCorrectGroupsAdmin = (groups: Group[]) =>
-      groups.filter((group: Group) => (
-        group.name === `${orgAbbrev}-Owner`
-            || group.name === `${orgAbbrev}-Everyone`)).sort((a: any, b: any) => {
-        // Owner group first
-        if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
-        if (a.name.endsWith('-Owner')) return -1;
-        if (b.name.endsWith('-Owner')) return 1;
-        return 0;
-      });
-
     async function getGroups() {
       setGroupStatus(LoadingState.LOADING);
       const { groupRoles, admin } = user;
       if (!admin) {
-        const orgViewerGroups = getCorrectGroups(groupRoles);
+        const orgViewerGroups = getCorrectGroups(groupRoles, orgAbbrev);
         setOrgEveryone(orgViewerGroups.find((groupRole: GroupRole) =>
           groupRole.group.name === `${orgAbbrev}-Everyone`)?.group);
         setUserGroups(orgViewerGroups.map((groupRole: GroupRole) => groupRole.group));
@@ -97,7 +102,7 @@ function OrganisationOverview() {
         const groupsResponseObject : ResponseObject = await getGroupList(token);
         if (groupsResponseObject.status === ResponseType.Success) {
           const groupsData = groupsResponseObject.data as Group[];
-          const orgAdminGroups = getCorrectGroupsAdmin(groupsData);
+          const orgAdminGroups = getCorrectGroupsAdmin(groupsData, orgAbbrev);
           setOrgEveryone(orgAdminGroups.find((group: Group) =>
             group.name === `${orgAbbrev}-Everyone`));
           setUserGroups(orgAdminGroups);
@@ -122,7 +127,8 @@ function OrganisationOverview() {
       setGroupStatusMessage(user.errorMessage);
     }
   }, [orgAbbrev, token, tokenLoading, user]);
-
+  
+  // THIS SHOULD BE LOADED IN THE TAB NOT IN THE OVERVIEW.
   useEffect(() => {
     async function getOrgMembersList() {
       if (orgEveryone) {
@@ -147,15 +153,13 @@ function OrganisationOverview() {
     }
   }, [token, tokenLoading, groupsStatus, orgEveryone]);
 
-  const orgOverviewTabs: TabContentProps[] = useMemo(() => ORG_OVERVIEW_TABS, []);
-
   useEffect(() => {
-    const initialTabValue = orgOverviewTabs
-      .findIndex((tab) => pathName.endsWith(tab.title.toLowerCase()));
-    if (initialTabValue !== -1) {
-      setTabValue(initialTabValue);
+    const tabKey = tab.toLowerCase(); // e.g. "plots"
+    const tabObj = ORG_TABS[tabKey];
+    if (tabObj) {
+      setTabValue(tabObj.index);
     }
-  }, [pathName, orgOverviewTabs]);
+  }, [tab]);
 
   // If groupStatus is error, or orgDetailsError is true, or the user is not in any groups, 
   // we cannot show the page. Give a generic message
@@ -172,7 +176,8 @@ function OrganisationOverview() {
   // If organisation details not loaded yet, but no error
   if (!organisation ||
     groupsStatus === LoadingState.LOADING ||
-    groupsStatus === LoadingState.IDLE
+    groupsStatus === LoadingState.IDLE ||
+      isUserGroupsLoading
   ) {
     return (
       <Typography>
@@ -180,6 +185,8 @@ function OrganisationOverview() {
       </Typography>
     );
   }
+  
+  if (tabValue === null) { return null; }
   
   // NB alternate return() calls above
   return (
@@ -189,18 +196,16 @@ function OrganisationOverview() {
           {`${organisation.name} (${organisation?.abbreviation})`}
         </Typography>
       </Box>
-      <CustomTabs value={tabValue} setValue={setTabValue} tabContent={orgOverviewTabs} />
-      <TabPanel value={tabValue} index={0} tabLoader={isUserGroupsLoading}>
-        {isUserGroupsLoading ? null : (
-          <OrganisationSamples
-            defaultGroup={userGroups![0]}
-            groups={userGroups!}
-            groupStatus={groupsStatus}
-            groupStatusMessage={groupStatusMessage}
-          />
-        )}
+      <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
+      <TabPanel value={tabValue} index={0}>
+        <OrganisationSamples
+          defaultGroup={userGroups![0]}
+          groups={userGroups!}
+          groupStatus={groupsStatus}
+          groupStatusMessage={groupStatusMessage}
+        />
       </TabPanel>
-      <TabPanel value={tabValue} index={1} tabLoader={isMembersLoading}>
+      <TabPanel value={tabValue} index={1}>
         <OrgSimpleMemberList
           isMembersLoading={isMembersLoading}
           memberList={projectMembers}
@@ -208,7 +213,7 @@ function OrganisationOverview() {
           memberListErrorMessage={memberListErrorMessage}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={2} tabLoader={false}>
+      <TabPanel value={tabValue} index={2}>
         <Activity
           recordType="organisation"
           rGuid={organisation.globalId}
@@ -218,4 +223,15 @@ function OrganisationOverview() {
     </>
   );
 }
-export default memo(OrganisationOverview);
+
+function OrganisationOverviewWrapper() {
+  const { orgAbbrev, tab } = useParams();
+  if (!orgAbbrev) return null;
+  return (
+    <NavigationProvider>
+      <OrganisationOverview orgAbbrev={orgAbbrev} tab={tab ?? ORG_HOME_TAB} />
+    </NavigationProvider>
+  );
+}
+
+export default OrganisationOverviewWrapper;

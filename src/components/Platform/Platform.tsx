@@ -1,34 +1,55 @@
-import React, { useState } from 'react';
-import TabbedPage from '../Common/Page/TabbedPage';
-import { PLATFORM_TABS } from './platformTabConstants';
-import { TabPanel } from '../Common/CustomTabs';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import React, { useEffect, useState } from 'react';
+import { Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
+import TabPanel from '../Common/TabPanel';
 import { useAppSelector } from '../../app/store';
 import Activity from '../Common/Activity/Activity';
+import { NavigationProvider } from '../../app/NavigationContext';
+import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 
-function Platform() {
-  const [tabValue, setTabValue] = useState(0);
-  const user: UserSliceState = useAppSelector(selectUserState);
-    
+interface PlatformProps {
+  tab: string,
+}
+
+function Platform(props: PlatformProps) {
+  const { tab } = props;
+  const [tabValue, setTabValue] = useState<number | null>(null);
+  const tenant: TenantSliceState = useAppSelector(selectTenantState);
+  
+  useEffect(() => {
+    const tabKey = tab.toLowerCase(); // e.g. "plots"
+    const tabObj = PLATFORM_TABS[tabKey];
+
+    if (tabObj) {
+      setTabValue(tabObj.index);
+    }
+  }, [tab]);
+
+  if (tabValue === null) { return null; }
+  
   return (
-    <TabbedPage
-      title="AusTrakka"
-      headers={PLATFORM_TABS}
-      setTabValue={setTabValue}
-      tabValue={tabValue}
-    >
-      {tabValue === 0 && (
-      <TabPanel tabLoader={false} index={0} value={tabValue}>
+    <>
+      <Typography className="pageTitle">
+        Platform
+      </Typography>
+      <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
         <Activity
           recordType="tenant"
-          rGuid={user.defaultTenantGlobalId}
-          owningTenantGlobalId={user.defaultTenantGlobalId}
+          rGuid={tenant.defaultTenantGlobalId}
+          owningTenantGlobalId={tenant.defaultTenantGlobalId}
         />
       </TabPanel>
-      )}
-            
-    </TabbedPage>
+    </>
   );
 }
 
-export default Platform;
+function PlatformWrapper() {
+  const { tab } = useParams();
+  return (
+    <NavigationProvider>
+      <Platform tab={tab ?? PLATFORM_HOME_TAB} />
+    </NavigationProvider>
+  );
+}
+export default PlatformWrapper;

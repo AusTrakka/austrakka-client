@@ -8,7 +8,6 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Sample } from '../../types/sample.interface';
@@ -29,13 +28,15 @@ import {
 } from '../../app/groupMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
 }
 
-function SampleTable(props: SamplesProps) {
+function OrgSamplesTable(props: SamplesProps) {
   const { groupContext } = props;
+  const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -45,13 +46,13 @@ function SampleTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
 
   const { token, tokenLoading } = useApi();
-  const navigate = useNavigate();
   const metadata: GroupMetadataState | null =
       useAppSelector(state => selectGroupMetadata(state, groupContext));
   const isSamplesLoading : boolean = useAppSelector((state) =>
@@ -121,6 +122,7 @@ function SampleTable(props: SamplesProps) {
             });
             setSampleTableColumns(newColumns);
           }}
+          emptyColumnNames={metadata?.emptyColumns ?? null}
         />
         <ExportTableData
           dataToExport={
@@ -166,7 +168,7 @@ function SampleTable(props: SamplesProps) {
   );
 
   return (
-    <>
+    <div className="datatable-container-org">
       <Backdrop
         sx={{ color: 'var(--background-colour)', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
         open={exportCSVStatus === LoadingState.LOADING}
@@ -200,6 +202,7 @@ function SampleTable(props: SamplesProps) {
         filteredDataLength={filteredSampleList.length}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         primeReactFilters={currentFilters}
         isOpen={isFiltersOpen}
@@ -207,7 +210,7 @@ function SampleTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
         <DataTable
           value={metadata?.metadata ?? []}
           onValueChange={(e) => {
@@ -222,7 +225,7 @@ function SampleTable(props: SamplesProps) {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 300px)"
+          scrollHeight="flex"
           sortIcon={sortIcon}
           paginator
           onRowClick={rowClickHandler}
@@ -234,6 +237,7 @@ function SampleTable(props: SamplesProps) {
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
           paginatorRight
+          className="my-flexible-table"
         >
           {sampleTableColumns.map((col: any) => (
             <Column
@@ -246,12 +250,14 @@ function SampleTable(props: SamplesProps) {
               resizeable
               style={{ minWidth: '150px' }}
               headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
             />
           ))}
         </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
 
-export default memo(SampleTable);
+export default memo(OrgSamplesTable);

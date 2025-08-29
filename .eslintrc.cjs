@@ -43,21 +43,30 @@ module.exports = {
             format: ['PascalCase'],
         },
     ],
-    'no-restricted-syntax': [  // dropping ForOfStatement; reiterating the other rules
+    'no-restricted-syntax': [
       'error',
       {
         selector: 'ForInStatement',
-        message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
+        message:
+          'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
       },
       {
         selector: 'LabeledStatement',
-        message: 'Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.',
+        message:
+          'Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.',
       },
       {
         selector: 'WithStatement',
-        message: '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
+        message:
+          '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
+      },
+      {
+        selector: "MemberExpression[property.name='whyDidYouRender']",
+        message:
+          'Remove whyDidYouRender flags before committing or building — this is for dev-only debugging.',
       },
     ],
     "react/jsx-no-useless-fragment": 0,
+    "react/require-default-props": 0,
   },
 };

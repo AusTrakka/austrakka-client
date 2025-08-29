@@ -2,6 +2,7 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { ColorScheme } from 'vega';
+import { useNavigate } from 'react-router-dom';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
@@ -60,38 +61,38 @@ const defaultSpec: TopLevelSpec = {
 
 function ClusterTimeline(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
+  const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
-  const urlSearchParams = new URLSearchParams(window.location.search);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
-    urlSearchParams,
+    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    urlSearchParams,
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    urlSearchParams,
+    navigate,
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    urlSearchParams,
+    navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     'yearmonthdate',
-    urlSearchParams,
+    navigate,
   );
 
   // Set spec on load

@@ -1,8 +1,8 @@
-/* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-pascal-case */
-
 import React, {
-  useEffect, useState,
+  memo,
+  useEffect,
+  useState,
 } from 'react';
 import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@mui/material';
 import './Samples.css';
-import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'primereact/skeleton';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -30,8 +29,8 @@ import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
-
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -39,9 +38,9 @@ interface SamplesProps {
 
 interface BodyComponentProps {
   col: Sample,
-  readyFields: Record<string, LoadingState> | null,
+  readyFields: Record<string, LoadingState> | undefined,
 }
-
+  
 function BodyComponent(props: BodyComponentProps) {
   const { col, readyFields } = props;
   return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
@@ -51,27 +50,28 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-function Samples(props: SamplesProps) {
+function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
   } = props;
-  const navigate = useNavigate();
+  
+  const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
 
-  const [readyFields, setReadyFields] = useState<Record<string, LoadingState> | null>(null);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
-  
+
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const { maxHeight, getHeaderRef } =
@@ -80,7 +80,6 @@ function Samples(props: SamplesProps) {
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    setReadyFields(metadata.fieldLoadingStates);
     if (Object.values(metadata.fieldLoadingStates).every(field => field === LoadingState.SUCCESS)) {
       setAllFieldsLoaded(true);
     }
@@ -137,6 +136,7 @@ function Samples(props: SamplesProps) {
             });
             setSampleTableColumns(newColumns);
           }}
+          emptyColumnNames={metadata?.emptyColumns ?? null}
         />
         <Tooltip title="Toggle Vertical Headers" placement="top">
           <IconButton
@@ -159,7 +159,7 @@ function Samples(props: SamplesProps) {
   );
 
   return (
-    <>
+    <div className="datatable-container-proj">
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -193,6 +193,7 @@ function Samples(props: SamplesProps) {
         filteredDataLength={filteredDataLength}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
+        fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
         setPrimeReactFilters={setCurrentFilters}
         isOpen={isDataFiltersOpen}
         setIsOpen={setIsDataFiltersOpen}
@@ -203,77 +204,80 @@ function Samples(props: SamplesProps) {
       {
         /* TODO: Make a function for the table so that a different sort is used per column type */
       }
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
-        <div>
-          <DataTable
-            value={metadata?.metadata ?? []}
-            onValueChange={(e) => {
-              setFilteredDataLength(e.length);
-              setLoadingState(false);
-              setFilteredData(e);
-            }}
-            size="small"
-            removableSort
-            showGridlines
-            scrollable
-            scrollHeight="calc(100vh - 480px)"
-            paginator
-            loading={loadingState}
-            rows={25}
-            columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight
-            header={header}
-            onRowClick={rowClickHandler}
-            selectionMode="single"
-            filters={allFieldsLoaded ?
-              currentFilters :
-              defaultState}
-            reorderableColumns
-            resizableColumns
-            sortIcon={sortIcon}
-            emptyMessage={(
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No samples found
-              </Typography>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
+        <DataTable
+          value={metadata?.metadata ?? []}
+          onValueChange={(e) => {
+            setFilteredDataLength(e.length);
+            setLoadingState(false);
+            setFilteredData(e);
+          }}
+          size="small"
+          removableSort
+          showGridlines
+          scrollable
+          scrollHeight="flex"
+          paginator
+          loading={loadingState}
+          rows={25}
+          columnResizeMode="expand"
+          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+          paginatorPosition="bottom"
+          paginatorRight
+          header={header}
+          onRowClick={rowClickHandler}
+          selectionMode="single"
+          className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
+          filters={allFieldsLoaded ?
+            currentFilters :
+            defaultState}
+          reorderableColumns
+          resizableColumns
+          sortIcon={sortIcon}
+          emptyMessage={(
+            <Typography variant="subtitle1" color="textSecondary" align="center">
+              No samples found
+            </Typography>
             )}
-          >
-            {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
-              <Column
-                key={col.field}
-                field={col.field}
-                header={
+        >
+          {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={
                   !verticalHeaders ? (
-                    <div style={{ display: 'flex', justifyItems: 'space-evenly', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
                       {col.header}
                       <Tooltip title={getFieldSource(col.field)} placement="top">
                         <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
                       </Tooltip>
                     </div>
                   ) : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-header">
-                      {col.header}
+                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
+                      <span className="vertical-text">{col.header}</span>
                       <Tooltip title={getFieldSource(col.field)} placement="top">
-                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
+                        <InfoOutlined fontSize="inherit" color="disabled" style={{ marginBottom: 4 }} />
                       </Tooltip>
                     </div>
                   )
                 }
-                body={BodyComponent({ col, readyFields })}
-                hidden={col.hidden}
-                sortable
-                resizeable
-                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
-                headerClassName="custom-title"
-              />
-            )) : null}
-          </DataTable>
-        </div>
+              body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
+              hidden={col.hidden}
+              sortable
+              resizeable
+              headerStyle={verticalHeaders ?
+                { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
+                { width: `${maxHeight}px` }}
+              headerClassName="custom-title"
+              className="flexible-column"
+              bodyClassName="value-cells"
+            />
+          )) : null}
+        </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
-export default Samples;
+export default memo(ProjectSamplesTable);

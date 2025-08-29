@@ -1,10 +1,9 @@
 import React, { memo, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { Project } from '../../types/dtos';
+import { Project, Tree } from '../../types/dtos';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getTrees } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
@@ -12,15 +11,17 @@ import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface TreesProps {
   projectDetails: Project | null
-  isTreesLoading: boolean,
-  setIsTreesLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsLoading: (isLoading: boolean) => void
 }
 
 function TreeList(props: TreesProps) {
-  const { projectDetails, isTreesLoading, setIsTreesLoading } = props;
+  const { projectDetails, setIsLoading } = props;
+  
+  const { navigate } = useStableNavigate();
   const columns = [
     { field: 'abbreviation', header: 'Abbreviation' },
     { field: 'name', header: 'Name' },
@@ -30,10 +31,9 @@ function TreeList(props: TreesProps) {
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
-  const [treeList, setTreeList] = useState<[]>([]);
+  const [treeList, setTreeList] = useState<Tree[]>([]);
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
-  const navigate = useNavigate();
   const { token } = useApi();
 
   useEffect(() => {
@@ -46,9 +46,9 @@ function TreeList(props: TreesProps) {
       if (treeListResponse.status === ResponseType.Success) {
         setTreeList(treeListResponse.data);
         setTreeListError(false);
-        setIsTreesLoading(false);
+        setIsLoading(false);
       } else {
-        setIsTreesLoading(false);
+        setIsLoading(false);
         setTreeList([]);
         setTreeListError(true);
         setTreeListErrorMessage(treeListResponse.message);
@@ -58,7 +58,7 @@ function TreeList(props: TreesProps) {
     if (projectDetails) {
       getTreeList();
     }
-  }, [projectDetails, setIsTreesLoading, token]);
+  }, [projectDetails, setIsLoading, token]);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -80,7 +80,7 @@ function TreeList(props: TreesProps) {
     </div>
   );
 
-  if (isTreesLoading) return null;
+  // if (isLoading) return null;
 
   return (
     treeListError ? (
@@ -101,6 +101,8 @@ function TreeList(props: TreesProps) {
           globalFilterFields={columns.map((col) => col.field)}
           size="small"
           scrollHeight="calc(100vh - 500px)"
+          sortField="latestTreeLastUpdated"
+          sortOrder={-1}
           removableSort
           reorderableColumns
           columnResizeMode="expand"

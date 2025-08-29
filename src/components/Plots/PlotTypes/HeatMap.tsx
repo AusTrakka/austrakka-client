@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { ColorScheme } from 'vega';
+import { useNavigate } from 'react-router-dom';
 import { getStartingField, setColorAggregateInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
@@ -47,22 +48,22 @@ function HeatMap(props: PlotTypeProps) {
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
-  const searchParams = new URLSearchParams(window.location.search);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
+  const navigate = useNavigate();
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    searchParams,
+    navigate,
   );
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
-    searchParams,
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultContinuousColorScheme,
-    searchParams,
+    navigate,
   );
 
   // Set spec on load

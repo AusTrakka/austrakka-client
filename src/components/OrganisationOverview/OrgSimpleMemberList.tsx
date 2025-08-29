@@ -1,18 +1,18 @@
 import React from 'react';
 import { Card, CardContent, CircularProgress, Grid, Tooltip, Typography } from '@mui/material';
 import { Error } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { Member } from '../../types/dtos';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface OrgMembersProps {
-  isMembersLoading: boolean,
   memberList: Member[],
   memberListError: boolean,
   memberListErrorMessage: string,
+  isMembersLoading: boolean,
 }
 
 function UserCard({ user }: { user: Member }) {
-  const navigate = useNavigate();
+  const { navigate } = useStableNavigate();
   const cardStyle = {
     width: '250px',
     height: '100px',

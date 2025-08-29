@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextField } from '@mui/material';
 
 function TextEditable({ value, editorCallback }:
-{ value: string, editorCallback: (newValue: string) => void }) {
+{ value: string, editorCallback: (newValue: any) => void }) {
   const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +20,7 @@ function TextEditable({ value, editorCallback }:
     }
   };
 
-  // Keep internal state in sync with the value prop
+  // Keep the internal state in sync with the value prop
   useEffect(() => {
     setInternalValue(value);
   }, [value]);
@@ -33,15 +33,34 @@ function TextEditable({ value, editorCallback }:
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       size="small"
-      variant="outlined"
+      color="secondary"
+      variant="filled"
       multiline
+      minRows={1}
+      maxRows={3}
       fullWidth
+      slotProps={{
+        input: {
+          sx: {
+            fontSize: '0.9rem',
+            padding: '10px',
+            width: '100%',
+            boxSizing: 'border-box',
+          },
+        },
+      }}
+      sx={{
+        '& .MuiInputBase-root': {
+          width: '100%',
+          fontSize: '0.9rem',
+        },
+      }}
     />
   );
 }
 
 function NumericEditable({ value, editorCallback }:
-{ value: string, editorCallback: (newValue: string) => void }) {
+{ value: string, editorCallback: (newValue: any) => void }) {
   const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,7 +78,7 @@ function NumericEditable({ value, editorCallback }:
     }
   };
 
-  // Keep internal state in sync with the value prop
+  // Keep the internal state in sync with the value prop
   useEffect(() => {
     setInternalValue(value);
   }, [value]);
@@ -71,9 +90,31 @@ function NumericEditable({ value, editorCallback }:
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      variant="standard"
       size="small"
-      variant="outlined"
       fullWidth
+      slotProps={{
+        htmlInput: {
+          inputMode: 'numeric',
+        },
+        input: {
+          sx: {
+            fontSize: '0.9rem',
+            paddingY: '4px',
+            height: '1.8rem',
+            boxSizing: 'border-box',
+            width: '100%',
+          },
+        },
+      }}
+      sx={{
+        '& .MuiInputBase-root': {
+          fontSize: '0.9rem',
+          lineHeight: 1.2,
+          maxHeight: '28px',
+          width: '100%',
+        },
+      }}
     />
   );
 }

@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/brace-style */
 import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
@@ -14,7 +13,7 @@ import {
   calculateViewFieldNames,
   replaceDateStrings,
   replaceNullsWithEmpty,
-  replaceHasSequencesNullsWithFalse,
+  replaceHasSequencesNullsWithFalse, getEmptyStringColumns,
 } from './metadataSliceUtils';
 
 export interface ProjectMetadataState {
@@ -28,6 +27,7 @@ export interface ProjectMetadataState {
   viewLoadingStates: Record<number, LoadingState>
   viewToFetch: number
   metadata: Sample[] | null
+  emptyColumns: string[]
   fieldLoadingStates: Record<string, LoadingState>
   errorMessage: string | null
 }
@@ -43,10 +43,12 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   viewLoadingStates: {},
   viewToFetch: 0,
   metadata: null,
+  emptyColumns: [],
   fieldLoadingStates: {},
   errorMessage: null,
 });
 
+// TODO This needs to be cleaned up as this has become a monster to work with card added | AB#7258
 interface ProjectMetadataSliceState {
   data: { [projectAbbrev: string]: ProjectMetadataState },
   token: string | null, // must be provided by calling component along with each fetch request
@@ -219,7 +221,13 @@ export const projectMetadataSlice = createSlice({
       const { mergeAlgorithm, fields, views } = action.payload as FetchProjectInfoResponse;
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
       // Sort fields by columnOrder and set state
-      fields.sort((a, b) => a.columnOrder - b.columnOrder);
+      fields.sort((a, b) => {
+        if (a.columnOrder !== b.columnOrder) {
+          return a.columnOrder - b.columnOrder;
+        }
+        return a.fieldName.localeCompare(b.fieldName, undefined, { sensitivity: 'base' });
+      });
+      
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
@@ -299,6 +307,7 @@ export const projectMetadataSlice = createSlice({
         replaceHasSequencesNullsWithFalse(data);
       }
       replaceNullsWithEmpty(data);
+      state.data[projectAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
       // Each returned view is a superset of the previous; we always replace the data
       state.data[projectAbbrev].metadata = data;
@@ -376,9 +385,11 @@ export const selectProjectMetadata:
     return state.projectMetadataState.data[projectAbbrev!] ?? null;
   };
 
-// May want to also include per-field loading state in this selector
-export const selectProjectMetadataFields = (state: RootState, projectAbbrev: string | undefined) =>
-{
+// May want to also include a per-field loading state in this selector
+export const selectProjectMetadataFields = (
+  state: RootState,
+  projectAbbrev: string | undefined,
+) => {
   if (!projectAbbrev) {
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }

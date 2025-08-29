@@ -1,5 +1,5 @@
 import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { MetaDataColumn, Group, Field } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
@@ -14,10 +14,11 @@ import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils
 
 function SampleDetail() {
   const { seqId } = useParams();
+  const navigate = useNavigate();
   const [groupName, setGroupName] = useStateFromSearchParamsForPrimitive<string | null>(
     'groupName',
     null,
-    new URLSearchParams(window.location.search),
+    navigate,
   );
   const [groups, setGroups] = useState<Group[] | null>();
   const [errorGroupName, setErrorGroupName] = useState<string | null>(null);

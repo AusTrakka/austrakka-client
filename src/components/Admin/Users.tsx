@@ -17,6 +17,7 @@ import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import renderIcon from './UserIconRenderer';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 
 function renderDisplayName(rowData: UserList) {
   return (
@@ -59,6 +60,8 @@ function Users() {
       body: emailBodyTemplate },
     { field: 'organisation', header: 'Organisation' },
     { field: 'analysisServerUsername', header: 'Analysis Server Username' },
+    { field: 'lastLogIn', header: 'Last Log In', body: (rowData: any) => isoDateOrNotRecorded(rowData.lastLogIn) },
+    { field: 'lastActive', header: 'Last Active', body: (rowData: any) => isoDateOrNotRecorded(rowData.lastActive) },
   ];
 
   useEffect(() => {

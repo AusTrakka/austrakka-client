@@ -16,8 +16,23 @@ export interface Project {
     id: number,
     name: string
   }[],
+  isActive: boolean,
   created: Date,
   // could add auditable fields - created, createdBy
+}
+
+// Summary statistics about a project
+export interface ProjectSummary {
+  projectId: number,
+  clientType: string,
+  globalId: string,
+  abbreviation: string,
+  name: string,
+  sampleCount : number,
+  sequencedSampleCount: number,
+  latestSampleDate: string, // TODO date?
+  latestSequenceDate: string,
+  latestTreeDate: string,
 }
 
 export interface Plot {
@@ -32,6 +47,29 @@ export interface Plot {
   projectAbbreviation: string
   projectGroupId: number
   isActive: boolean
+}
+
+export interface UserDashboardOverview {
+  latestUploadedDateUtc: string,
+  total: number,
+  samplesNotSequenced: number,
+}
+
+export interface Tree {
+  treeId: number;
+  abbreviation: string;
+  name: string;
+  description: string;
+  latestTreeLastUpdated: Date;
+  project: {
+    abbreviation: string,
+  };
+  projectName: string;
+  isActive: boolean;
+  created: Date;
+  lastUpdated: Date;
+  createdBy: string;
+  lastUpdatedBy: string;
 }
 
 export interface TreeVersion {
@@ -86,10 +124,16 @@ export interface User {
   groupRoles: GroupRole[],
   displayName: string,
   created: Date,
+  lastLogIn: Date,
+  lastActive: Date,
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
+  monthlyBytesUsed: number,
+  lastDownloadDate: Date,
+  monthlyBytesQuota: number,
+  noDownloadQuota: boolean
 }
 
 export interface UserV2 {
@@ -102,10 +146,16 @@ export interface UserV2 {
   isAusTrakkaAdmin: boolean,
   displayName: string,
   created: Date,
+  lastLogIn: Date,
+  lastActive: Date,
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
+  monthlyBytesUsed: number,
+  lastDownloadDate: Date,
+  monthlyBytesQuota: number,
+  noDownloadQuota: boolean
 }
 
 export interface UserMe {
@@ -163,6 +213,8 @@ export interface UserList {
   isActive: boolean,
   created: string,
   createdBy: string,
+  lastLogIn: Date,
+  lastActive: Date,
   isAusTrakkaAdmin: boolean,
   isAusTrakkaProcess: boolean,
   analysisServerUsername: string,
@@ -176,6 +228,8 @@ export interface UserListV2 {
   isActive: boolean,
   created: string,
   createdBy: string,
+  lastLogIn: Date,
+  lastActive: Date,
   isAusTrakkaAdmin: boolean,
   isAusTrakkaProcess: boolean,
   analysisServerUsername: string,
@@ -227,6 +281,22 @@ export interface MetaDataColumn extends Field {
   minWidth: number
 }
 
+// This is not a DTO, but a calculated field representing a column found in a project view
+// The projectFieldId and projectFieldName will not be unique
+// The columnName is formed from the projectFieldName and the analysisLabel
+export interface ProjectViewField extends Field {
+  columnName: string,
+  projectFieldId: number,
+  projectFieldName: string,
+  primitiveType: string,
+  metaDataColumnTypeName: string,
+  fieldSource: string,
+  columnOrder: number,
+  canVisualise: boolean,
+  hidden: boolean,
+  metaDataColumnValidValues: string[] | null,
+}
+
 // This represents the ProjectFieldDTO, with nested analysisLabels
 // It is appropriate for use in project management interfaces
 // It is not appropriate for representing the columns that will be found in a project view
@@ -242,22 +312,6 @@ export interface ProjectField {
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
   createdBy: string,
-}
-
-// This is not a DTO, but a calculated field representing a column found in a project view
-// The projectFieldId and projectFieldName will not be unique
-// The columnName is formed from the projectFieldName and the analysisLabel
-export interface ProjectViewField extends Field {
-  columnName: string,
-  projectFieldId: number,
-  projectFieldName: string,
-  primitiveType: string,
-  metaDataColumnTypeName: string,
-  fieldSource: string,
-  columnOrder: number,
-  canVisualise: boolean,
-  hidden: boolean,
-  metaDataColumnValidValues: string[] | null,
 }
 
 export interface ProjectView {

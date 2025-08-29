@@ -1,10 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import Masonry from '@mui/lab/Masonry';
-import { useNavigate } from 'react-router-dom';
 import { ProFormaVersion, Project } from '../../types/dtos';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { handleProformaDownload } from '../ProForma/proformaUtils';
@@ -12,24 +11,23 @@ import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 // Local Proforma Props
 interface ProFormasListProps {
   projectDetails: Project | null;
-  isProformasLoading: boolean,
-  setIsProformasLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 function ProFormaList(props: ProFormasListProps) {
   const { projectDetails,
-    isProformasLoading,
-    setIsProformasLoading } = props;
+    setIsLoading } = props;
 
+  const { navigate } = useStableNavigate();
   const [proformaList, setProformaList] = useState<ProFormaVersion[]>([]);
   const [proformaError, setProformaError] = useState(false);
   const [proformaErrorMessage, setProformaErrorMessage] = useState('');
   const { token } = useApi();
-  const navigate = useNavigate();
 
   // Used by GenerateCards
   const [loadingState, setLoadingState] = useState<number | null>(null);
@@ -41,9 +39,9 @@ function ProFormaList(props: ProFormasListProps) {
       if (proformaListResponse.status === ResponseType.Success) {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProformaList(data);
-        setIsProformasLoading(false);
+        setIsLoading(false);
       } else {
-        setIsProformasLoading(false);
+        setIsLoading(false);
         setProformaList([]);
         setProformaError(true);
         setProformaErrorMessage(proformaListResponse.message);
@@ -53,15 +51,15 @@ function ProFormaList(props: ProFormasListProps) {
     if (projectDetails) {
       getProFormaList();
     }
-  }, [projectDetails, token, setIsProformasLoading]);
+  }, [projectDetails, token, setIsLoading]);
 
   const handleFileDownload = async (dAbbrev: string, version : number | null) => {
     handleProformaDownload(dAbbrev, version, token);
   };
 
-  const handleRedirect = (version: ProFormaVersion) => {
-    const { abbreviation } = version;
-    const url = `/proformas/${abbreviation}`;
+  const handleRedirect = (pVersion: ProFormaVersion) => {
+    const { abbreviation, version } = pVersion;
+    const url = `/proformas/${abbreviation}/${version}`;
     navigate(url);
   };
 
@@ -77,7 +75,7 @@ function ProFormaList(props: ProFormasListProps) {
   // eslint-disable-next-line max-len
   const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
     const group = obj.abbreviation;
-    const result = { ...acc };
+    const result: { [p: string]: ProFormaVersion[] } = { ...acc };
 
     if (!result[group]) {
       result[group] = [];
@@ -99,18 +97,19 @@ function ProFormaList(props: ProFormasListProps) {
     flexDirection: 'column',
   }));
 
-  const renderTitleOrError = (hasError: boolean, errMsg: string) => (hasError === true
-    ? <Alert severity="error">{errMsg}</Alert>
-    : (
-      <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
-        This page holds pro formas with attached
-        templates. Only
-        {' '}
-        <b>current</b>
-        {' '}
-        pro forma templates may be downloaded.
-      </Typography>
-    ));
+  const renderTitleOrError = (hasError: boolean, errMsg: string) => (
+    hasError ?
+      <Alert severity="error">{errMsg}</Alert>
+      : (
+        <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
+          This page holds pro formas with attached
+          templates. Only
+          {' '}
+          <b>current</b>
+          {' '}
+          pro forma templates may be downloaded.
+        </Typography>
+      ));
 
   const renderEmptyState = (isEmpty: boolean, hasError: boolean) => (
     isEmpty && !hasError
@@ -145,7 +144,9 @@ function ProFormaList(props: ProFormasListProps) {
                     GenerateCards(
                       groupedObjects[index].slice(0, 1),
                       handleFileDownload,
-                      CardType.Summary,
+                      groupedObjects[index][0].assetId ?
+                        CardType.CurrentWithFile :
+                        CardType.CurrentWithoutFile,
                       loadingState,
                       setLoadingState,
                       handleRedirect,
@@ -159,12 +160,12 @@ function ProFormaList(props: ProFormasListProps) {
               >
                 <Stack spacing={3} sx={{ justifyContent: 'space-evenly' }}>
                   <Typography variant="overline">
-                    Previous Versions
+                    Previous Version
                   </Typography>
                   {GenerateCards(
                     groupedObjects[index].slice(1),
                     handleFileDownload,
-                    CardType.Details,
+                    CardType.Historical,
                     loadingState,
                     setLoadingState,
                     handleRedirect,
@@ -177,9 +178,6 @@ function ProFormaList(props: ProFormasListProps) {
       </Masonry>
     </Box>
   );
-
-  if (isProformasLoading) return null;
-
   return (
     <>
       { renderTitleOrError(proformaError, proformaErrorMessage) }
@@ -189,4 +187,4 @@ function ProFormaList(props: ProFormasListProps) {
   );
 }
 
-export default ProFormaList;
+export default memo(ProFormaList);

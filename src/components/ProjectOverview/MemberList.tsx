@@ -3,7 +3,6 @@ import React, { memo, useEffect, useRef, useState, JSX } from 'react';
 import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
-import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
@@ -16,11 +15,11 @@ import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { generateFilename } from '../../utilities/file';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface MembersProps {
   projectDetails: Project | null
-  isMembersLoading: boolean,
-  setIsMembersLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 function renderList(cell : any): JSX.Element[] {
@@ -37,10 +36,10 @@ function renderList(cell : any): JSX.Element[] {
 function MemberList(props: MembersProps) {
   const {
     projectDetails,
-    isMembersLoading,
-    setIsMembersLoading,
+    setIsLoading,
   } = props;
 
+  const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [transformedData, setTransformedData] = useState<any[]>([]);
   const [exportData, setExportData] = useState<Member[]>([]);
@@ -56,7 +55,6 @@ function MemberList(props: MembersProps) {
   );
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
-  const navigate = useNavigate();
   const { token } = useApi();
 
   useEffect(() => {
@@ -66,9 +64,9 @@ function MemberList(props: MembersProps) {
       if (memberListResponse.status === ResponseType.Success) {
         setMemberList(memberListResponse.data as Member[]);
         setMemberListError(false);
-        setIsMembersLoading(false);
+        setIsLoading(false);
       } else {
-        setIsMembersLoading(false);
+        setIsLoading(false);
         setMemberList([]);
         setMemberListError(true);
         setMemberListErrorMessage(memberListResponse.message);
@@ -78,7 +76,7 @@ function MemberList(props: MembersProps) {
     if (projectDetails) {
       getMemberList();
     }
-  }, [projectDetails, setIsMembersLoading, token]);
+  }, [projectDetails, setIsLoading, token]);
 
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
@@ -170,8 +168,6 @@ function MemberList(props: MembersProps) {
     setGlobalFilter(filters);
   };
 
-  if (isMembersLoading) return null;
-
   const header = (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -183,10 +179,9 @@ function MemberList(props: MembersProps) {
       </div>
     </div>
   );
-
+  
   return (
     <>
-      {isMembersLoading ? <CircularProgress /> : null}
       {memberListError ? (
         <Alert severity="error">
           {memberListErrorMessage}
@@ -223,7 +218,7 @@ function MemberList(props: MembersProps) {
               onValueChange={(e) => setExportData(e)}
               size="small"
               scrollable
-              scrollHeight="100%"
+              scrollHeight="calc(100vh - 300px)"
               reorderableColumns
               showGridlines
               selectionMode="single"
@@ -253,7 +248,6 @@ function MemberList(props: MembersProps) {
           </Paper>
         </>
       )}
-
     </>
   );
 }

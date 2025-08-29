@@ -36,6 +36,13 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
   data.forEach(replaceNullsInObject);
 }
 
+export function getEmptyStringColumns(data: Sample[], fields: string[]): string[] {
+  if (data.length === 0) return [];
+
+  return fields.filter(field =>
+    data.every(sample => sample[field] === ''));
+}
+
 export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
   data.map((sample) => {
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
@@ -89,24 +96,35 @@ export function calculateUniqueValues(
   // this means we are ignoring validValues; values won't be in legends if not in data
   const visualisableFields = fieldDetails.filter(field =>
     field.canVisualise && (!field.primitiveType || field.primitiveType === 'string'));
+  
   const valueSets : Record<string, Set<string>> = {};
   visualisableFields.forEach(field => {
     valueSets[field.columnName] = new Set();
   });
+  
   data.forEach(sample => {
     visualisableFields.forEach(field => {
-      const value = sample[field.columnName];
-      valueSets[field.columnName].add(value === null ? '' : value);
+      const rawValue = sample[field.columnName];
+      // Treat null and undefined as empty string; coerce non-strings safely
+      const value = rawValue == null ? '' : rawValue.toString();
+      valueSets[field.columnName].add(value);
     });
   });
-  visualisableFields.forEach(field => {
-    uniqueValues[field.columnName] = Array.from(valueSets[field.columnName]);
-  });
-  // Sort unique values using natural sort order
+  
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  
   visualisableFields.forEach(field => {
-    uniqueValues[field.columnName]!.sort(collator.compare);
+    const values = Array.from(valueSets[field.columnName]);
+
+    // Remove a single [""] array case
+    if (values.length === 1 && values[0] === '') {
+      uniqueValues[field.columnName] = [];
+    } else {
+      // sort
+      uniqueValues[field.columnName] = values.sort(collator.compare);
+    }
   });
+  
   return uniqueValues;
 }
 
@@ -117,8 +135,9 @@ export function calculateViewFieldNames(
   field: ProjectField,
   mergeAlgorithm: string,
 ): string[] {
-  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL && field.fieldSource === FieldSource.DATASET) {
-    return field.analysisLabels.map(label => `${field.fieldName}_${label}`);
+  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL &&
+      field.fieldSource === FieldSource.DATASET) {
+    return (field.analysisLabels ?? []).map(label => `${field.fieldName}_${label}`);
   }
   // override mode, or fieldSource is sample, or fieldSource is both (Seq_ID)
   return [field.fieldName];
