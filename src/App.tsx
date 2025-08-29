@@ -15,7 +15,6 @@ import 'dayjs/locale/en-gb';
 import CustomNavigationClient from './utilities/NavigationClient';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectsList from './components/ProjectsList/ProjectsList';
-import ProjectOverview from './components/ProjectOverview/ProjectOverview';
 import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
 import theme from './assets/themes/theme';
@@ -23,7 +22,6 @@ import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
-import OrganisationOverview from './components/OrganisationOverview/OrganisationOverview';
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
@@ -36,7 +34,8 @@ import UsersV2 from './components/Admin/UsersV2';
 import TenantProvider from './providers/TenantProvider';
 import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
-import MapTestDetail from './components/Maps/MapTestDetail';
+import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
+import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
 
 function App() {
   const navigate = useNavigate();
@@ -56,8 +55,7 @@ function App() {
                   {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
                   <Route element={<MainMenuLayout />}>
                     <Route path="/" element={<UserDashboard />} />
-                    <Route path="org/:orgAbbrev" element={<OrganisationOverview />} />
-                    <Route path="org/:orgAbbrev/:tab" element={<OrganisationOverview />} />
+                    <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
                     <Route path="upload" element={<Upload />} />
                     <Route path="users" element={<Users />} />
                     <Route path="usersV2" element={<UsersV2 />} />
@@ -67,8 +65,7 @@ function App() {
                     <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
                     <Route path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId" element={<TreeDetail />} />
                     <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
-                    <Route path="projects/:projectAbbrev/:tab" element={<ProjectOverview />} />
-                    <Route path="projects/:projectAbbrev" element={<ProjectOverview />} />
+                    <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
                     <Route path="records/:seqId" element={<OrgSampleDetail />} />
                     <Route path="proformas/:proformaAbbrev/:proformaVersion" element={<ProFormaDetail />} />
                     <Route path="fields" element={<Fields />} />

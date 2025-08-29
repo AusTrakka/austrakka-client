@@ -8,7 +8,6 @@ import {
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Paper,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Sample } from '../../types/sample.interface';
@@ -29,6 +28,7 @@ import {
 } from '../../app/groupMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -36,6 +36,7 @@ interface SamplesProps {
 
 function OrgSamplesTable(props: SamplesProps) {
   const { groupContext } = props;
+  const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -45,13 +46,13 @@ function OrgSamplesTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
 
   const { token, tokenLoading } = useApi();
-  const navigate = useNavigate();
   const metadata: GroupMetadataState | null =
       useAppSelector(state => selectGroupMetadata(state, groupContext));
   const isSamplesLoading : boolean = useAppSelector((state) =>

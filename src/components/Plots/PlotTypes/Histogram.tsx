@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
@@ -34,6 +35,7 @@ const defaultSpec: TopLevelSpec = {
 
 function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
+  const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
@@ -43,22 +45,27 @@ function Histogram(props: PlotTypeProps) {
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
+    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
+    navigate,
   );
   const [binMode, setBinMode] = useStateFromSearchParamsForPrimitive<string>(
     'binMode',
     'auto',
+    navigate,
   );
   const [stepSize, setStepSize] = useStateFromSearchParamsForPrimitive<number>(
     'stepSize',
     1,
+    navigate,
   );
 
   // Set spec on load

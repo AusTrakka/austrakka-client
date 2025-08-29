@@ -6,6 +6,7 @@ import { TopLevelSpec, compile } from 'vega-lite';
 import { Alert, Grid } from '@mui/material';
 import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
+import { useNavigate } from 'react-router-dom';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import {
@@ -23,8 +24,10 @@ interface VegaDataPlotProps {
   projectAbbrev: string | undefined,
 }
 
+// WIDGETS SHOULD NOT USE THIS
 function VegaDataPlot(props: VegaDataPlotProps) {
   const { spec, projectAbbrev } = props;
+  const navigate = useNavigate();
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -34,6 +37,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
+    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
@@ -50,7 +54,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       setErrorMsg('The plot could not be rendered. It may be too large for the browser. ' +
           'Consider filtering the data, or changing the selected fields.');
     } else {
-      setErrorMsg('An error occurred rendering the plot. Please contact AusTrakka Support.');
+      setErrorMsg(`An error occurred rendering the plot. Please contact ${import.meta.env.VITE_BRANDING_NAME} Support.`);
     }
 
     setErrorOccurred(true);
