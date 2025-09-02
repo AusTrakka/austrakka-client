@@ -13,19 +13,19 @@ import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { Sample } from '../../types/sample.interface';
-import { FeatureLookupField, FeatureLookupFieldType, MapJson, Maps } from './mapMeta';
+import { FeatureLookupFieldType, MapJson } from './mapMeta';
 import { filterGeoJsonByField } from '../../utilities/mapUtils';
 
-// Register the map once
-
-const setupECharts = (mapSpec: MapJson, geoLookUpField: FeatureLookupFieldType) => {
+const setupECharts = (mapSpec: MapJson, geoLookUpField: FeatureLookupFieldType) : MapJson => {
   const filteredGeoJson = filterGeoJsonByField(mapSpec, {
     matchValues: ['AU', 'NZ'],
     lookupField: geoLookUpField,
     matchPrefix: 'AU-',
   });
 
+  // Register the map once
   echarts.registerMap('aus-nz', filteredGeoJson as GeoJSONSourceInput);
+  return filteredGeoJson;
 };
 
 interface MapTestProps {
@@ -34,26 +34,27 @@ interface MapTestProps {
   mapSpec: MapJson;
   geoLookupField: FeatureLookupFieldType;
 }
-function MapTest(props: MapTestProps) {
+
+function MapChart(props: MapTestProps) {
   const { colourScheme, projectAbbrev, mapSpec, geoLookupField } = props;
-  setupECharts(mapSpec, geoLookupField);
-  
+  const filteredGeoJson = setupECharts(mapSpec, geoLookupField);
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
+  const { token, tokenLoading } = useApi();
+  const dispatch = useAppDispatch();
+  const data : ProjectMetadataState | null =
+      useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState(true);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState(false);
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
-  const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
-  const data : ProjectMetadataState | null =
-      useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-
+ 
   useEffect(() => {
     if (projectAbbrev &&
         tokenLoading !== LoadingState.LOADING &&
@@ -234,4 +235,4 @@ function MapTest(props: MapTestProps) {
   );
 }
 
-export default MapTest;
+export default MapChart;
