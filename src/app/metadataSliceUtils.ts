@@ -3,6 +3,34 @@ import { Sample } from '../types/sample.interface';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
+import { MapKey, MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
+
+// private
+function standardise(code: string): string | null {
+  if (!code) return null;
+  const upperCaseIso = code.trim().toUpperCase();
+
+  // Subdivision like AU-NSW → keep prefix
+  if (/^[A-Z]{2}-/.test(upperCaseIso)) {
+    return upperCaseIso.slice(0, 2);
+  }
+
+  // ISO2
+  if (/^[A-Z]{2}$/.test(upperCaseIso)) {
+    return upperCaseIso;
+  }
+
+  // ISO3
+  if (/^[A-Z]{3}$/.test(upperCaseIso)) {
+    return upperCaseIso;
+  }
+
+  return null; // unsupported/invalid
+}
+
+function isSubdivision(code: string): boolean {
+  return /^[A-Z]{2}-/.test(code.toUpperCase());
+}
 
 export function getFieldDetails(
   fieldNames: string[],
@@ -127,6 +155,58 @@ export function calculateUniqueValues(
   
   return uniqueValues;
 }
+
+// Calculate what Maps this project has access too
+
+export function calculateSupportedMaps(
+  uniqueValues: Record<string, string[]>,
+  geoFields: string[],
+): MapSupportInfo[] {
+  if (Object.keys(uniqueValues).length === 0) return [];
+  if (geoFields.length === 0) return [];
+
+  const uniqueGeoValues = Object.fromEntries(
+    Object.entries(uniqueValues).filter(([key]) => geoFields.includes(key)),
+  );
+
+  if (Object.keys(uniqueGeoValues).length === 0) return [];
+
+  const datasetKeys = new Set<string>();
+  const datasetRegions = new Set<string>();
+
+  for (const uniqueVals of Object.values(uniqueGeoValues)) {
+    for (const val of uniqueVals) {
+      if (isSubdivision(val)) {
+        datasetRegions.add(val.slice(0, 2)); // e.g. "AU" from "AU-NSW"
+      }
+      const standard = standardise(val);
+      if (standard) datasetKeys.add(standard);
+    }
+  }
+
+  if (datasetKeys.size === 0) return [];
+
+  const result: MapSupportInfo[] = [];
+
+  for (const entry of MapRegistry) {
+    if (entry.key === 'WORLD') continue;
+
+    // check if the map supports any of the dataset keys
+    const intersects = [...datasetKeys].some(k => entry.supports?.has(k));
+
+    if (intersects) {
+      // hasRegions = true if any of the datasetRegions intersect with the map's supported countries
+      const hasRegions = [...datasetRegions].some(r => entry.supports?.has(r));
+      result.push([entry.key, hasRegions]);
+    }
+  }
+
+  // Always add WORLD, but with hasRegions = false
+  result.push(['WORLD', false]);
+
+  return result;
+}
+
 // for project metadata specifically
 
 // Given a list of field names, calculate the viewFields for that field

@@ -13,13 +13,15 @@ import {
   calculateViewFieldNames,
   replaceDateStrings,
   replaceNullsWithEmpty,
-  replaceHasSequencesNullsWithFalse, getEmptyStringColumns,
+  replaceHasSequencesNullsWithFalse, getEmptyStringColumns, calculateSupportedMaps,
 } from './metadataSliceUtils';
+import { MapKey } from '../components/Maps/mapMeta';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
   mergeAlgorithm: string | null
-  loadingState: MetadataLoadingState,
+  supportedMaps: MapKey[]
+  loadingState: MetadataLoadingState
   projectFields: ProjectField[] | null
   fields: ProjectViewField[] | null
   fieldUniqueValues: Record<string, string[] | null> | null
@@ -35,6 +37,7 @@ export interface ProjectMetadataState {
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
   mergeAlgorithm: null,
+  supportedMaps: [],
   loadingState: MetadataLoadingState.IDLE,
   projectFields: null,
   fields: null,
@@ -325,9 +328,16 @@ export const projectMetadataSlice = createSlice({
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
       const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
+      
+      const geoFields = state.data[projectAbbrev].fields!
+        .filter(field => field.geoField)
+        .map(field => field.columnName!);
+      
+      const validMaps = calculateSupportedMaps(uniqueVals, geoFields);
       viewFields.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
+      
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       viewFields.forEach(field => {

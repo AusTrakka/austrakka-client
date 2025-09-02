@@ -252,6 +252,7 @@ export interface Field {
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
+  geoField: boolean,
   columnOrder: number,
 }
 
@@ -264,6 +265,7 @@ export interface MetaDataColumn extends Field {
   description: string
   nndssFieldLabel: string
   canVisualise: boolean
+  geoField: boolean
   columnOrder: number
   isDisplayedAsDefault: boolean
   isActive: boolean
@@ -282,6 +284,7 @@ export interface ProjectViewField extends Field {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  geoField: boolean,
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
 }
@@ -297,6 +300,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  geoField:boolean,
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
