@@ -19,7 +19,7 @@ export function isoDateLocalDateNoTime(datetime: string) {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
-  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric' });
 }
 
 export function formatDate(dateUTC: string): string {
