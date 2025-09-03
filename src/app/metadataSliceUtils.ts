@@ -75,7 +75,7 @@ export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: 
           const month = parseInt(dateString.slice(5, 7), 10) - 1; // Months are zero-based
           const day = parseInt(dateString.slice(8, 10), 10);
 
-          sample[field.columnName] = new Date(year, month, day, 0, 0, 0);
+          sample[field.columnName] = new Date(Date.UTC(year, month, day, 0, 0, 0));
         }
       } else {
         sample[field.columnName] = null;
