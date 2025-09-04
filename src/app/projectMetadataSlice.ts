@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
@@ -7,20 +7,22 @@ import { Sample } from '../types/sample.interface';
 import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { SAMPLE_ID_FIELD, HAS_SEQUENCES } from '../constants/metadataConsts';
+import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import {
+  calculateSupportedMaps,
   calculateUniqueValues,
   calculateViewFieldNames,
+  getEmptyStringColumns,
   replaceDateStrings,
+  replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
-  replaceHasSequencesNullsWithFalse, getEmptyStringColumns, calculateSupportedMaps,
 } from './metadataSliceUtils';
-import { MapKey } from '../components/Maps/mapMeta';
+import { MapSupportInfo } from '../components/Maps/mapMeta';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
   mergeAlgorithm: string | null
-  supportedMaps: MapKey[]
+  supportedMaps: MapSupportInfo[]
   loadingState: MetadataLoadingState
   projectFields: ProjectField[] | null
   fields: ProjectViewField[] | null
@@ -332,8 +334,9 @@ export const projectMetadataSlice = createSlice({
       const geoFields = state.data[projectAbbrev].fields!
         .filter(field => field.geoField)
         .map(field => field.columnName!);
+
+      state.data[projectAbbrev].supportedMaps = calculateSupportedMaps(uniqueVals, geoFields);
       
-      const validMaps = calculateSupportedMaps(uniqueVals, geoFields);
       viewFields.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
