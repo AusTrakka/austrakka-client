@@ -2,7 +2,8 @@ import React, { memo, useEffect, useState } from 'react';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { Paper } from '@mui/material';
+import { IconButton, Paper } from '@mui/material';
+import { Public } from '@mui/icons-material';
 import { PlotListing, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -59,6 +60,10 @@ function PlotList(props: PlotListProps) {
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
   };
+  
+  const goToMapsPage = () => {
+    navigate(`/projects/${projectDetails!.abbreviation}/map`);
+  };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -68,11 +73,18 @@ function PlotList(props: PlotListProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <SearchInput
         value={(globalFilter.global as DataTableFilterMetaData).value || ''}
         onChange={onGlobalFilterChange}
       />
+      <IconButton
+        aria-label="go to maps temp"
+        size="small"
+        onClick={() => goToMapsPage()}
+      >
+        <Public />
+      </IconButton>
     </div>
   );
   return (
