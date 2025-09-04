@@ -25,9 +25,6 @@ const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = 
   'BarChart': BarChart,
   'Histogram': Histogram,
   'HeatMap': HeatMap,
-  'MapWorld': MapWorld,
-  'MapAustralia': MapAustralia,
-  'MapMalaysia': MapMalaysia,
   'Custom': Custom,
 };
 
