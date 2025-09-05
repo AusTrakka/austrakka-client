@@ -179,10 +179,20 @@ function TreeDetail() {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
       const delimiter = '|';
-      // find the length of the longest label for each block
+
+      // Determine which leaf nodes are currently visible under the current rootId
+      // Prefer using the Phylocanvas API exposed via the ref; fallback to all keys if unavailable
+      const visibleLeafIDs: string[] =
+        (treeRef.current?.getVisibleLeafIDs && treeRef.current.getVisibleLeafIDs())
+        || Object.keys(phylocanvasMetadata);
+
+      const visibleSet = new Set(visibleLeafIDs);
+
+      // find the length of the longest label for each block, based only on visible leaves
       const blockLengths: Record<string, number> = {};
       blockLengths.id = 0;
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        if (!visibleSet.has(nodeId)) continue;
         const nodeIdLength = nodeId.length;
         if (nodeIdLength > blockLengths.id) {
           blockLengths.id = nodeIdLength;
@@ -204,7 +214,10 @@ function TreeDetail() {
           }
         }
       }
+
+      // build styles only for visible leaves
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        if (!visibleSet.has(nodeId)) continue;
         const label = state.labelBlocks.map(
           (block) => {
             let prefix = '';
@@ -246,6 +259,7 @@ function TreeDetail() {
     phylocanvasMetadata,
     state.alignLabels,
     state.showLeafLabels,
+    rootId, // have to check the performance of this dependency
     state.nodeColumn]);
 
   useEffect(() => {
