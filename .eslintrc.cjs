@@ -25,6 +25,7 @@ module.exports = {
     'import/prefer-default-export': 0, // allow single exports
     'no-param-reassign': 0,  // allow modifying function parameters in-place
     'no-trailing-spaces': ['error', { 'ignoreComments': true, 'skipBlankLines': true }],
+    'no-continue': 0,  // allow continue in loops
     '@typescript-eslint/no-unused-vars': ['error', {
       'argsIgnorePattern': '^_',
       'varsIgnorePattern': '^_',

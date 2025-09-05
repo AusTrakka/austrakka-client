@@ -254,6 +254,8 @@ function TreeDetail() {
       }
       setStyles(newStyles);
     }
+    // Don't include treeRef in deps:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.labelBlocks,
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
