@@ -29,6 +29,7 @@ import { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import {SAMPLE_ID_FIELD} from "../../constants/metadataConsts";
 
 const defaultState: TreeState = {
   blocks: [],
@@ -45,7 +46,7 @@ const defaultState: TreeState = {
   type: TreeTypes.Rectangular,
   showInternalLabels: false,
   showBranchLengths: false,
-  labelBlocks: [],
+  labelBlocks: [SAMPLE_ID_FIELD],
   keyValueLabelBlocks: false,
   showShapes: true,
 };
@@ -223,11 +224,16 @@ function TreeDetail() {
             return prefix + value[block].label;
           },
         );
-        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
-        if (state.alignLabels && formattedBlocksString.length > 0) {
-          newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
-        } else {
-          newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
+        const formattedBlocksString = `${label.join(delimiter)}`;
+        // If no labels were selected AND showLeafLabels is true, show the nodeId as the label
+        if (formattedBlocksString.length === 0) {
+          if (state.showLeafLabels) {
+            newStyles[nodeId] = { label: nodeId };
+          } else {
+            newStyles[nodeId] = { label: '' };
+          }
+        } else { // formattedBlocksString has length > 0, don't force showing nodeId
+          newStyles[nodeId] = {label: `${formattedBlocksString}`};
         }
         if (state.nodeColumn !== '') {
           newStyles[nodeId].fillColour = value[state.nodeColumn].colour;
@@ -239,6 +245,7 @@ function TreeDetail() {
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
     state.alignLabels,
+    state.showLeafLabels,
     state.nodeColumn]);
 
   useEffect(() => {
