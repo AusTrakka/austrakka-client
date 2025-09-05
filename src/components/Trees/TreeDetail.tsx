@@ -29,7 +29,7 @@ import { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
-import {SAMPLE_ID_FIELD} from "../../constants/metadataConsts";
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -233,7 +233,7 @@ function TreeDetail() {
             newStyles[nodeId] = { label: '' };
           }
         } else { // formattedBlocksString has length > 0, don't force showing nodeId
-          newStyles[nodeId] = {label: `${formattedBlocksString}`};
+          newStyles[nodeId] = { label: `${formattedBlocksString}` };
         }
         if (state.nodeColumn !== '') {
           newStyles[nodeId].fillColour = value[state.nodeColumn].colour;
