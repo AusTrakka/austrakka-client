@@ -1,67 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import { GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
+import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Stack } from '@mui/material';
-import { DataTable } from 'primereact/datatable';
-import { fetchProjectMetadata, ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import { aggregateGeoData, GeoCountRow } from '../../utilities/plotUtils';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
-import LoadingState from '../../constants/loadingState';
-import { useApi } from '../../app/ApiContext';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { Sample } from '../../types/sample.interface';
-import { FeatureLookupFieldType, MapJson } from './mapMeta';
-import { filterGeoJsonByField } from '../../utilities/mapUtils';
-
-const setupECharts = (mapSpec: MapJson, geoLookUpField: FeatureLookupFieldType) : MapJson => {
-  const filteredGeoJson = filterGeoJsonByField(mapSpec, {
-    matchValues: ['AU', 'NZ'],
-    lookupField: geoLookUpField,
-    matchPrefix: 'AU-',
-  });
-
-  // Register the map once
-  echarts.registerMap('aus-nz', filteredGeoJson as GeoJSONSourceInput);
-  return filteredGeoJson;
-};
+import { FeatureLookupFieldType, GeoCountRow, MapJson, Maps } from './mapMeta';
+import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
+import { Field } from '../../types/dtos';
 
 interface MapTestProps {
   colourScheme: string;
-  projectAbbrev: string;
+  regionViewToggle: boolean
   mapSpec: MapJson;
-  geoLookupField: FeatureLookupFieldType;
+  data: Sample[];
+  geoField: Field | null;
 }
 
 function MapChart(props: MapTestProps) {
-  const { colourScheme, projectAbbrev, mapSpec, geoLookupField } = props;
-  const filteredGeoJson = setupECharts(mapSpec, geoLookupField);
+  const { colourScheme, regionViewToggle, mapSpec, geoField, data } = props;
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
-  const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
-  const data : ProjectMetadataState | null =
-      useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const filteredMapSpec: GeoJSON | null = useMemo(() => {
+    if (!mapSpec) return null;
 
-  const [filteredData, setFilteredData] = useState<Sample[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState(true);
-  const [allFieldsLoaded, setAllFieldsLoaded] = useState(false);
+    return {
+      ...mapSpec,
+      features: mapSpec.features.filter(
+        f => regionViewToggle || !f.properties.is_region,
+      ),
+    };
+  }, [mapSpec, regionViewToggle]);
+  
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
-  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
-    'filters',
-    defaultState,
-  );
- 
-  useEffect(() => {
-    if (projectAbbrev &&
-        tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
-    }
-  }, [dispatch, projectAbbrev, token, tokenLoading]);
+  const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
+  const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
 
   useEffect(() => {
     if (!chartRef.current) {
@@ -88,44 +60,52 @@ function MapChart(props: MapTestProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Aggregate data when metadata finishes loading
-  useEffect(() => {
-    if (!data) return;
-    const state = data.loadingState;
-
-    if (
-      state !== MetadataLoadingState.DATA_LOADED &&
-        state !== MetadataLoadingState.ERROR &&
-        state !== MetadataLoadingState.PARTIAL_LOAD_ERROR
-    ) return;
-
-    if (!data.metadata) return;
-
-    setFilteredData(data.metadata);
-    setAllFieldsLoaded(true);
-  }, [data]);
-
   // 2. Whenever filtered data changes, re-aggregate
   useEffect(() => {
-    if (!filteredData || filteredData.length === 0) return;
+    if (!data || data.length === 0 || !geoField || !mapSpec) {
+      setAggregateData([]);
+      return;
+    }
+    
+    let isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
+    if (!isoCode) {
+      setMapRenderingError(true);
+      return;
+    }
+    
+    // if the data is regions but the region view is off aggregate by prefix
+    if (isoCode === 'iso_region' && !regionViewToggle) {
+      isoCode = 'iso_2_char';
+    }
 
     const aggregated = aggregateGeoData(
-      filteredData,
-      'State', // change if user selects a different field later
-      filteredGeoJson,
-      'iso_code',
+      data,
+      geoField, // change if user selects a different field later
+      mapSpec,
+      isoType,
     );
+    
+    setIsoType(isoCode);
 
     setAggregateData(aggregated);
-  }, [filteredData]);
+  }, [data, geoField, isoType, mapSpec]);
+
+  // Register map whenever filteredMapSpec changes
+  useEffect(() => {
+    console.log('filteredMapSpec changed', filteredMapSpec);
+    if (!filteredMapSpec) return;
+    echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
+  }, [filteredMapSpec]);
 
   // Update chart when aggregated data changes
   useEffect(() => {
     // if (!chartInstance.current || !aggregateData.length) return;
     if (!chartInstance.current) {
+      console.log('no chartInstance');
       return;
     }
     if (!aggregateData.length) {
+      console.log('no aggregateData');
       return;
     }
 
@@ -135,7 +115,7 @@ function MapChart(props: MapTestProps) {
 
     const option: echarts.EChartsOption = {
       title: {
-        text: 'TEST DATA ON AU AND NZ',
+        text: 'Choropleth Visualisation',
       },
       backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREY,
       tooltip: {
@@ -181,8 +161,8 @@ function MapChart(props: MapTestProps) {
             ],
           },
           roam: true,
-          map: 'aus-nz',
-          nameProperty: 'iso_code',
+          map: 'currentMap',
+          nameProperty: isoType,
           data: aggregateData.map(item => ({ name: item.geoFeature, value: item.count })),
           encode: {
             name: 'name',
@@ -198,14 +178,14 @@ function MapChart(props: MapTestProps) {
     };
 
     chartInstance.current.setOption(option);
-  }, [aggregateData, colourScheme]);
+  }, [aggregateData, colourScheme, isoType, filteredMapSpec]);
 
   return (
     <>
-      <Stack sx={{ height: 800 }} display="flex">
+      <Stack sx={{ height: '80vh' }} display="flex">
         <div ref={chartRef} style={{ width: '100%', height: '100%' }} />
       </Stack>
-      <Stack>
+      {/* <Stack>
         <DataFilters
           dataLength={data?.metadata?.length ?? 0}
           filteredDataLength={filteredData?.length ?? 0}
@@ -230,7 +210,7 @@ function MapChart(props: MapTestProps) {
             setFilteredData(e);
           }}
         />
-      </div>
+      </div> */}
     </>
   );
 }
