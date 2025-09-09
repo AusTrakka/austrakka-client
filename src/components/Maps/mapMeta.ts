@@ -1,6 +1,6 @@
 import { GeoJSON } from 'echarts/types/src/coord/geo/geoTypes';
-import MALAYSIA from '../../assets/maps/malaysia.json';
-import AUS_NZ from '../../assets/maps/au_nz_processed.json';
+import MALAYSIA from '../../assets/maps/my_processed.json';
+import AUS_NZ from '../../assets/maps/aus_nz_processed.json';
 
 export const Maps = {
   MALAYSIA: MALAYSIA as GeoJSON,
