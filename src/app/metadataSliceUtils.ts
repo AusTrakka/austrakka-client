@@ -5,8 +5,7 @@ import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { MapKey, MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
 
-// private
-function standardise(code: string): string | null {
+export function standardise(code: string): string | null {
   if (!code) return null;
   const upperCaseIso = code.trim().toUpperCase();
 
