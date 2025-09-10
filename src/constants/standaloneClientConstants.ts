@@ -27,10 +27,17 @@ export const localProjectAbbrev = LOCAL_PROJECT.abbreviation;
 //  need to add one for free-text, i.e. nominal-like but do not allow user to select categorical
 // X : free text, non-visualisable except as text
 
-export const typeCodes : Record<string, [string, boolean]> = {
-  // Represent (code) => (primitiveType, canVisualise)
-  'N': ['string', true],
-  'X': ['string', false],
-  'Q': ['double', true],
-  'T': ['date', true],
+// gives typeCode: (primitiveType, canVisualise, displayedFieldType)
+export const typeCodes : Record<string, [string, boolean, string]> = {
+  'N': ['string', true, 'Categorical'],
+  'X': ['string', false, 'Free text'],
+  'Q': ['double', true, 'Numeric'],
+  'T': ['date', true, 'Date'],
 };
+
+// gives displayedFieldType: (primitiveType, canVisualise)
+export const typesByName: Record<string, [string, boolean]> = Object.entries(typeCodes)
+  .reduce((acc, [_typeCode, [primitiveType, canVisualise, typeName]]) => {
+    acc[typeName] = [primitiveType, canVisualise];
+    return acc;
+  }, {} as Record<string, [string, boolean]>);

@@ -23,6 +23,8 @@ import { Sample } from '../../types/sample.interface';
 import { ResponseType } from '../../constants/responseType';
 import { buildFieldListAndUpdateData } from '../../utilities/standaloneClientUtils';
 import { addTree } from '../../app/treeSlice';
+import { DeducedField } from '../../types/dtos';
+import FieldUploadCheck from './FieldUploadCheck';
 
 interface Options {
   validate: boolean,
@@ -70,19 +72,51 @@ function LocalUpload() {
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [fileValidated, setFileValidated] = useState(false);
+  const [showFieldsTable, setShowFieldsTable] = useState(false);
+  const [parsedMetadata, setParsedMetadata] = useState<Sample[]>([]);
+  const [parsedFields, setParsedFields] = useState<DeducedField[]>([]);
+  const [parseError, setParseError] = useState<string | null>(null);
   const scrollRef = useRef<null | HTMLDivElement>(null);
 
-  const buttonLabel = () => {
-    if (files.length === 0) {
-      return 'Add data';
+  const submitButton = () => {
+    if (files.length > 0 && METADATA_FORMATS[getSuffix(files[0])]) {
+      // Metadata file
+      // TODO pay attention to options.validate if we use them
+      const metadataReady = fileValidated && parseError == null;
+      return (
+        <Button
+          variant="contained"
+          disabled={!metadataReady}
+          endIcon={<FileUpload />}
+          onClick={() => handleMetadataAdded(files[0].file)}
+        >
+          Add metadata
+        </Button>
+      );
     }
-    if (METADATA_FORMATS[getSuffix(files[0])]) {
-      return 'Add metadata';
+    if (files.length > 0 && TREE_FORMATS[getSuffix(files[0])]) {
+      // Tree file
+      const treeReady = fileValidated;
+      return (
+        <Button
+          variant="contained"
+          disabled={!treeReady}
+          endIcon={<FileUpload />}
+          onClick={() => handleTreeAdded(files[0].file)}
+        >
+          Add tree
+        </Button>
+      );
     }
-    if (TREE_FORMATS[getSuffix(files[0])]) {
-      return 'Add tree';
-    }
-    return 'Add data';
+    return (
+      <Button
+        variant="contained"
+        disabled
+        endIcon={<FileUpload />}
+      >
+        Add data
+      </Button>
+    );
   };
   
   useEffect(() => {
@@ -100,44 +134,56 @@ function LocalUpload() {
     });
   };
 
+  // When metadata file added, show and update fields table
+  // When metadata file removed, hide fields table
+  useEffect(() => {
+    function parseCSV(file :File) {
+      Papa.parse(file, {
+        header: true,
+        complete: (result :any) => {
+          console.log(result);
+
+          // TODO need to handle papaparse errors and set parseError
+
+          const csvData = result.data as Sample[];
+          const fieldNames: string[] = result.meta.fields;
+
+          if (csvData.length === 0) {
+            setParseError('File appears to contain no records');
+            // TODO if we have succeeded, but result.errors is non-empty, show warnings
+            return;
+          }
+
+          const fields: DeducedField[] = buildFieldListAndUpdateData(csvData, fieldNames);
+          setParsedMetadata(csvData);
+          setParsedFields(fields);
+        },
+      });
+    }
+    
+    const metadataFileAvailable: boolean = files.length > 0 &&
+      Object.keys(METADATA_FORMATS).includes(getSuffix(files[0])) &&
+      fileValidated;
+    if (metadataFileAvailable) {
+      parseCSV(files[0].file);
+    }
+    setShowFieldsTable(metadataFileAvailable);
+  }, [files, fileValidated]);
+  
   const handleMetadataAdded = async (file: File) => {
     // Needs to validate, and insert data into project redux state
-    Papa.parse(file, {
-      header: true,
-      complete: (result) => {
-        console.log(result);
+    dispatch(addMetadata({ uploadedData: parsedMetadata, uploadedFields: parsedFields }));
 
-        // TODO need to handle papaparse errors
-
-        const csvData = result.data as Sample[];
-        const fieldNames: string[] = result.meta.fields;
-
-        if (csvData.length === 0) {
-          setSubmission((oldSubmissionState) => ({
-            ...oldSubmissionState,
-            status: LoadingState.ERROR,
-            messages: [{
-              ResponseType: ResponseType.Error,
-              ResponseMessage: 'File appears to contain no records: no data loaded',
-            }],
-          }));
-          // TODO if we have succeeded, but result.errors is non-empty, show warnings
-          return;
-        }
-
-        const fields = buildFieldListAndUpdateData(csvData, fieldNames);
-        dispatch(addMetadata({ uploadedData: csvData, uploadedFields: fields }));
-
-        setSubmission((oldSubmissionState) => ({
-          ...oldSubmissionState,
-          status: LoadingState.SUCCESS, // TODO how to actually ensure success? check project state?
-          messages: [{
-            ResponseType: ResponseType.Success,
-            ResponseMessage: 'Data loaded',
-          }],
-        }));
-      },
-    });
+    // TODO is there a failure case here? handle ingestion errors resulting from e.g. wrong field types
+    setSubmission((oldSubmissionState) => ({
+      ...oldSubmissionState,
+      status: LoadingState.SUCCESS, // TODO how to actually ensure success? check project state?
+      messages: [{
+        ResponseType: ResponseType.Success,
+        ResponseMessage: 'Data loaded',
+      }],
+    }));
+    setFiles([]);
   };
   
   const handleTreeAdded = async (file: File) => {
@@ -158,34 +204,8 @@ function LocalUpload() {
         }],
       }));
     };
+    setFiles([]);
   };
-  
-  // Handle upload submission
-  // This component should do the CSV parsing and validation, 
-  // as it is async and we want to show errors locally.
-  // We should only call the redux action if the data is valid.
-  const handleSubmit = async () => {
-    // Check file type via suffix
-    if (files.length !== 1) {
-      throw new Error('Expect exactly one file on submission');
-    }
-    const suffix : string = getSuffix(files[0]);
-    if (METADATA_FORMATS[suffix]) {
-      handleMetadataAdded(files[0].file);
-    } else if (TREE_FORMATS[suffix]) {
-      handleTreeAdded(files[0].file);
-    }
-  };
-  
-  useEffect(() => {
-    // Every time file or option changes, reset loading state of submission to idle
-    setSubmission((oldSubmissionState) => ({
-      ...oldSubmissionState,
-      status: LoadingState.IDLE,
-      messages: [],
-    }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files, options]);
 
   return (
     <>
@@ -195,7 +215,7 @@ function LocalUpload() {
           <Typography variant="subtitle2" paddingBottom={1}>
             Drag-and-drop a sample metadata file or tree file to add it to your project.
             <br />
-            Metadata can be added in tabular (CSV) format. 
+            Metadata can be added in tabular (CSV) format.
             The Seq_ID column will be used as the unique identifier to match to tree nodes.
             <br />
             Trees can be added in newick format.
@@ -203,16 +223,21 @@ function LocalUpload() {
         </Grid>
       </Grid>
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
-        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">Select metadata file</Typography>
-          <FileDragDrop
-            files={files}
-            setFiles={setFiles}
-            validFormats={validFormats}
-            validated={fileValidated}
-            setValidated={setFileValidated}
-            multiple={false}
-          />
+        <Grid size={{ md: 6, xs: 12 }}>
+          <Grid size={12}>
+            <Typography variant="h4" color="primary">Select metadata or tree file</Typography>
+            <FileDragDrop
+              files={files}
+              setFiles={setFiles}
+              validFormats={validFormats}
+              validated={fileValidated}
+              setValidated={setFileValidated}
+              multiple={false}
+            />
+          </Grid>
+          <Grid container size={12} justifyContent="flex-end">
+            {submitButton()}
+          </Grid>
         </Grid>
         {/* <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}> */}
         {/*  <Typography variant="h4" color="primary">Select metadata options</Typography> */}
@@ -239,29 +264,16 @@ function LocalUpload() {
         {/*    ) } */}
         {/*  </FormGroup> */}
         {/* </Grid> */}
-      </Grid>
-      <Grid container justifyContent="flex-end">
-        { options.validate ? (
-          <Button
-            variant="contained"
-            disabled={files.length === 0}
-            endIcon={<Rule />}
-            onClick={() => handleSubmit()}
-          >
-            Validate metadata
-          </Button>
-        )
-          : (
-            <Button
-              variant="contained"
-              disabled={files.length === 0}
-              endIcon={<FileUpload />}
-              onClick={() => handleSubmit()}
-            >
-              {buttonLabel()}
-            </Button>
+        <Grid size={{ md: 6, xs: 12 }}>
+          {showFieldsTable && (
+            <FieldUploadCheck
+              fields={parsedFields}
+              setFields={setParsedFields}
+            />
           )}
+        </Grid>
       </Grid>
+      
       <div ref={scrollRef}>
         {(
           submission.status === LoadingState.SUCCESS ||

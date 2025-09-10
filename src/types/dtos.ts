@@ -179,6 +179,12 @@ export interface Field {
   columnOrder: number,
 }
 
+// Not a DTO: represents a field deduced from uploaded data
+export interface DeducedField extends Field {
+  displayedFieldType: string,
+  fieldTypeSource: string,
+}
+
 export interface MetaDataColumn extends Field {
   metaDataColumnId: number
   columnName: string

@@ -1,23 +1,41 @@
 import { typeCodes } from '../constants/standaloneClientConstants';
 import { Sample } from '../types/sample.interface';
-import { Field } from '../types/dtos';
+import { DeducedField, Field } from '../types/dtos';
+import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+
+// Special handling for Seq_ID
+const SAMPLE_ID_FIELD_OBJECT: DeducedField = {
+  columnName: SAMPLE_ID_FIELD,
+  primitiveType: 'string',
+  metaDataColumnTypeName: 'string',
+  metaDataColumnValidValues: null,
+  canVisualise: false,
+  columnOrder: 0,
+  displayedFieldType: 'Free text',
+  fieldTypeSource: 'Primary ID',
+};
 
 // TODO replace with makeStringField which looks at unique count
 // TODO and here or elsewhere, check if appears to be date, numeric, boolean
 // TODO if Seq_ID, make non-visualisable string field
-const makeVisualisableStringField = (fieldName: string, idx: number): Field => ({
+const makeVisualisableStringField = (fieldName: string, idx: number): DeducedField => ({
   columnName: fieldName,
   primitiveType: 'string',
   metaDataColumnTypeName: 'string',
   metaDataColumnValidValues: null,
   canVisualise: true,
   columnOrder: idx,
+  displayedFieldType: 'Categorical',
+  fieldTypeSource: 'Deduced',
 });
 
 function makeField(fieldName: string, idx: number, typeCode: string) {
-  // TODO if Seq_ID, warn if weird type code
+  if (fieldName === SAMPLE_ID_FIELD) {
+    // TODO if Seq_ID, warn if weird type code; we are ignoring it
+    return SAMPLE_ID_FIELD_OBJECT;
+  }
   if (typeCode in typeCodes) {
-    const [primitiveType, canVisualise] = typeCodes[typeCode];
+    const [primitiveType, canVisualise, displayedType] = typeCodes[typeCode];
     return {
       columnName: fieldName,
       primitiveType,
@@ -25,6 +43,8 @@ function makeField(fieldName: string, idx: number, typeCode: string) {
       metaDataColumnValidValues: null,
       canVisualise,
       columnOrder: idx,
+      displayedFieldType: displayedType,
+      fieldTypeSource: 'Header',
     };
   }
   // TODO should be user-facing error message
@@ -36,9 +56,9 @@ function makeField(fieldName: string, idx: number, typeCode: string) {
 export function buildFieldListAndUpdateData(
   data: Sample[],
   fieldNames: string[],
-) : Field[] {
+) : DeducedField[] {
   const fieldTypePattern = /^(\w+):(\w)$/;
-  const fields : Field[] = [];
+  const fields : DeducedField[] = [];
   const renamedFields : [string, string][] = [];
   fieldNames.forEach((fieldName, idx) => {
     const fieldTypeMatch = fieldName.match(fieldTypePattern);
@@ -47,8 +67,13 @@ export function buildFieldListAndUpdateData(
       fields.push(makeField(newFieldName, idx, typeCode));
       renamedFields.push([fieldName, newFieldName]);
     } else {
-      // For now defaulting to a visualisable string field if no type hint
-      fields.push(makeVisualisableStringField(fieldName, idx));
+      // No pattern match; no type code
+      if (fieldName === SAMPLE_ID_FIELD) {
+        fields.push(SAMPLE_ID_FIELD_OBJECT);
+      } else {
+        // For now defaulting to a visualisable string field if no type hint
+        fields.push(makeVisualisableStringField(fieldName, idx));
+      }
     }
   });
   if (renamedFields.length > 0) {
