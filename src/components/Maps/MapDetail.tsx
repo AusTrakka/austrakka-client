@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import {
   Alert,
-  Box,
+  Box, CircularProgress,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -12,8 +12,12 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
-import { defaultContinuousColorScheme, defaultDiscreteColorScheme } from '../../constants/schemes';
+import { DataTable } from 'primereact/datatable';
+import {
+  useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
+import { defaultContinuousColorScheme } from '../../constants/schemes';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
@@ -22,6 +26,7 @@ import MetadataLoadingState from '../../constants/metadataLoadingState';
 import MapChart from './MapChart';
 import { Sample } from '../../types/sample.interface';
 import { Field } from '../../types/dtos';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 
 interface MapDetailProps {
   navigateFunction: NavigateFunction
@@ -38,8 +43,11 @@ function MapDetail(props: MapDetailProps) {
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
   const [isRegionToggleDisabled, setIsRegionToggleDisabled] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
+  const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
   const [internalSelectedFieldObj, setInternalSelectedFieldObj] = useState<Field | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultContinuousColorScheme,
@@ -60,11 +68,11 @@ function MapDetail(props: MapDetailProps) {
     '',
     navigateFunction,
   );
-  /* const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
     navigateFunction,
-  ); */
+  );
 
   // This use effect will set the state of the region toggle and also if it's disabled
   useEffect(() => {
@@ -78,6 +86,12 @@ function MapDetail(props: MapDetailProps) {
       setIsRegionToggleDisabled(!isRegionPresent);
     }
   }, [data, selectedMap]);
+
+  useEffect(() => {
+    if (data && data.loadingState === MetadataLoadingState.DATA_LOADED) {
+      setLoading(false);
+    }
+  }, [data]);
 
   // if there are no maps to use, then we will show an error alert
   useEffect(() => {
@@ -205,6 +219,8 @@ function MapDetail(props: MapDetailProps) {
       />
     </Box>
   );
+  
+  if (loading) return <div><CircularProgress color="info" /></div>;
 
   return (
     <>
@@ -223,32 +239,32 @@ function MapDetail(props: MapDetailProps) {
             />
           </>
         )}
-        {/* <Stack>
+        <Stack>
           <DataFilters
-              dataLength={data?.metadata?.length ?? 0}
-              filteredDataLength={filteredData?.length ?? 0}
-              visibleFields={null}
-              allFields={data?.fields ?? []}
-              setPrimeReactFilters={setCurrentFilters}
-              primeReactFilters={currentFilters}
-              isOpen={isDataTableFilterOpen}
-              setIsOpen={setIsDataTableFilterOpen}
-              dataLoaded={loading || allFieldsLoaded}
-              setLoadingState={setLoading}
-              fieldUniqueValues={data?.fieldUniqueValues ?? null}
+            dataLength={data?.metadata?.length ?? 0}
+            filteredDataLength={filteredData?.length ?? 0}
+            visibleFields={null}
+            allFields={data?.fields ?? []}
+            setPrimeReactFilters={setCurrentFilters}
+            primeReactFilters={currentFilters}
+            isOpen={isDataTableFilterOpen}
+            setIsOpen={setIsDataTableFilterOpen}
+            dataLoaded={!loading}
+            setLoadingState={setLoading}
+            fieldUniqueValues={data?.fieldUniqueValues ?? null}
           />
         </Stack>
         <div style={{ display: 'none' }}>
           <DataTable
-              value={data?.metadata ?? []}
-              filters={allFieldsLoaded ? currentFilters : defaultState}
-              paginator
-              rows={1}
-              onValueChange={(e) => {
-                setFilteredData(e);
-              }}
+            value={data?.metadata ?? []}
+            filters={!loading ? currentFilters : defaultState}
+            paginator
+            rows={1}
+            onValueChange={(e) => {
+              setFilteredData(e);
+            }}
           />
-        </div> */}
+        </div>
       </Stack>
     </>
 
