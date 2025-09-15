@@ -1,6 +1,6 @@
-import { typeCodes } from '../constants/standaloneClientConstants';
+import { typeCodes, UNIQUE_VALUE_THRESHOLD } from '../constants/standaloneClientConstants';
 import { Sample } from '../types/sample.interface';
-import { DeducedField, Field } from '../types/dtos';
+import { DeducedField } from '../types/dtos';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 
 // Special handling for Seq_ID
@@ -15,21 +15,25 @@ const SAMPLE_ID_FIELD_OBJECT: DeducedField = {
   fieldTypeSource: 'Primary ID',
 };
 
-// TODO replace with makeStringField which looks at unique count
-// TODO and here or elsewhere, check if appears to be date, numeric, boolean
-// TODO if Seq_ID, make non-visualisable string field
-const makeVisualisableStringField = (fieldName: string, idx: number): DeducedField => ({
-  columnName: fieldName,
-  primitiveType: 'string',
-  metaDataColumnTypeName: 'string',
-  metaDataColumnValidValues: null,
-  canVisualise: true,
-  columnOrder: idx,
-  displayedFieldType: 'Categorical',
-  fieldTypeSource: 'Deduced',
-});
+function makeDeducedField(data: Sample[], fieldName: string, idx :number = 0) : DeducedField {
+  if (fieldName === SAMPLE_ID_FIELD) {
+    return SAMPLE_ID_FIELD_OBJECT;
+  }
+  const typeCode = deduceFieldType(data, fieldName);
+  const [primitiveType, canVisualise, displayedType] = typeCodes[typeCode];
+  return {
+    columnName: fieldName,
+    primitiveType,
+    metaDataColumnTypeName: primitiveType,
+    metaDataColumnValidValues: null,
+    canVisualise,
+    columnOrder: idx,
+    displayedFieldType: displayedType,
+    fieldTypeSource: 'Deduced',
+  };
+}
 
-function makeField(fieldName: string, idx: number, typeCode: string) {
+function makeField(data: Sample[], fieldName: string, idx: number, typeCode: string) {
   if (fieldName === SAMPLE_ID_FIELD) {
     // TODO if Seq_ID, warn if weird type code; we are ignoring it
     return SAMPLE_ID_FIELD_OBJECT;
@@ -49,7 +53,7 @@ function makeField(fieldName: string, idx: number, typeCode: string) {
   }
   // TODO should be user-facing error message
   console.error(`Ignoring unknown type code ${typeCode} on field ${fieldName}`);
-  return makeVisualisableStringField(fieldName, idx);
+  return makeDeducedField(data, fieldName, idx);
 }
 
 // Note this function is not pure; the original data is modified
@@ -64,7 +68,7 @@ export function buildFieldListAndUpdateData(
     const fieldTypeMatch = fieldName.match(fieldTypePattern);
     if (fieldTypeMatch) {
       const [_wholeName, newFieldName, typeCode] = fieldTypeMatch;
-      fields.push(makeField(newFieldName, idx, typeCode));
+      fields.push(makeField(data, newFieldName, idx, typeCode));
       renamedFields.push([fieldName, newFieldName]);
     } else {
       // No pattern match; no type code
@@ -72,7 +76,7 @@ export function buildFieldListAndUpdateData(
         fields.push(SAMPLE_ID_FIELD_OBJECT);
       } else {
         // For now defaulting to a visualisable string field if no type hint
-        fields.push(makeVisualisableStringField(fieldName, idx));
+        fields.push(makeDeducedField(data, fieldName, idx));
       }
     }
   });
@@ -88,4 +92,42 @@ export function buildFieldListAndUpdateData(
   }
   
   return fields;
+}
+
+function deduceFieldType(data: Sample[], fieldName: string): string {
+  let isNumeric = true;
+  let isDate = true;
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i][fieldName];
+    if (value === null || value === undefined || value === '') {
+      continue; // skip null/undefined/empty values
+    }
+    // Check for numeric
+    if (isNumeric && isNaN(Number(value))) {
+      isNumeric = false;
+    }
+    // Check for date (ISO 8601 format)
+    if (isDate && isNaN(Date.parse(value))) { // TODO check, risky if American dates?
+      isDate = false;
+    }
+    // Early exit if both are false
+    if (!isNumeric && !isDate) {
+      break;
+    }
+  }
+  if (isNumeric) return 'Q'; // Quantitative
+  if (isDate) return 'T'; // Temporal
+  if (countUniqueValues(data, fieldName) <= UNIQUE_VALUE_THRESHOLD) return 'N'; // Nominal
+  return 'X'; // Free-text; do not try to visualise as categorical
+}
+
+function countUniqueValues(data: Sample[], fieldName: string): number {
+  const uniqueValues = new Set<string>();
+  data.forEach((sample) => {
+    const value = sample[fieldName];
+    if (value !== null && value !== undefined && value !== '') {
+      uniqueValues.add(value);
+    }
+  });
+  return uniqueValues.size;
 }

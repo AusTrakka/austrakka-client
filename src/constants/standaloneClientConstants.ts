@@ -18,6 +18,9 @@ export const LOCAL_PROJECT: Project = {
 
 export const localProjectAbbrev = LOCAL_PROJECT.abbreviation;
 
+// Default a field to categorical if it has equal or fewer unique values
+export const UNIQUE_VALUE_THRESHOLD = 100;
+
 // Using Altair convention
 // Q : quantitative, a continuous real-valued quantity
 // O : ordinal, a discrete ordered quantity
