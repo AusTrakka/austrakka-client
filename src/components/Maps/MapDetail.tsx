@@ -131,7 +131,7 @@ function MapDetail(props: MapDetailProps) {
       setInternalSelectedFieldObj(selectedFieldObj);
     }
   }, [data, selectedField]);
-  
+
   const renderErrorAlert = () => (
     <div>
       <Alert severity="error">
@@ -206,7 +206,7 @@ function MapDetail(props: MapDetailProps) {
         </FormControl>
       </Box>
       {/* Right-aligned switch */}
-      <FormControlLabel
+      {/* <FormControlLabel
         control={(
           <Switch
             checked={regionToggle}
@@ -216,7 +216,7 @@ function MapDetail(props: MapDetailProps) {
             )}
         label="Region View"
         sx={{ margin: 1 }}
-      />
+      /> */}
     </Box>
   );
   
@@ -234,7 +234,7 @@ function MapDetail(props: MapDetailProps) {
               colourScheme={colourScheme}
               regionViewToggle={regionToggle}
               geoField={internalSelectedFieldObj}
-              mapSpec={Maps[selectedMap]}
+              mapSpec={selectedMap}
               projAbbrev={projectAbbrev}
               data={filteredData ?? []}
             />

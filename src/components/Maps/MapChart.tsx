@@ -5,14 +5,14 @@ import { Stack } from '@mui/material';
 import d3 from 'd3';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import { Sample } from '../../types/sample.interface';
-import { FeatureLookupFieldType, GeoCountRow, MapJson, Maps } from './mapMeta';
+import { FeatureLookupFieldType, GeoCountRow, MapJson, MapKey, Maps } from './mapMeta';
 import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
 import { Field } from '../../types/dtos';
 
 interface MapTestProps {
   colourScheme: string;
   regionViewToggle: boolean
-  mapSpec: MapJson;
+  mapSpec: MapKey;
   projAbbrev: string;
   data: Sample[];
   geoField: Field | null;
@@ -22,16 +22,22 @@ function MapChart(props: MapTestProps) {
   const { colourScheme, regionViewToggle, mapSpec, geoField, projAbbrev, data } = props;
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
+  const [regionView, setRegionView] = useState(false);
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
-
+    const mapJson = Maps[mapSpec];
+    if (!mapJson) return null;
+    if (mapSpec === 'WORLD') {
+      return mapJson;
+    }
+    
     return {
-      ...mapSpec,
-      features: mapSpec.features.filter(
-        f => regionViewToggle || !f.properties.is_region,
+      ...mapJson,
+      features: mapJson.features.filter(
+        f => regionView || !f.properties.is_region,
       ),
     };
-  }, [mapSpec, regionViewToggle]);
+  }, [mapSpec, regionView]);
 
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
@@ -69,21 +75,25 @@ function MapChart(props: MapTestProps) {
       return;
     }
 
-    let isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
+    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
     if (!isoCode) {
       setMapRenderingError(true);
       return;
     }
 
-    // if the data is regions but the region view is off aggregate by prefix
+    /* // if the data is regions but the region view is off aggregate by prefix
     if (isoCode === 'iso_region' && !regionViewToggle) {
       isoCode = 'iso_2_char';
+    } */
+    
+    if (isoCode === 'iso_region') {
+      setRegionView(true);
     }
 
     const aggregated = aggregateGeoData(
       data,
       geoField,
-      mapSpec,
+      Maps[mapSpec],
       isoCode,
     );
 
