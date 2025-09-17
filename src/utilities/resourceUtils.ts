@@ -15,7 +15,6 @@ import {
 import {
   Feedback,
   FeedbackPost,
-  InteractionWindowPost,
   RefinedLog,
   Plot,
   PlotListing,
@@ -125,8 +124,6 @@ export const uploadSubmissions = (
 // Sequence endpoints
 // TODO: this should parse the response
 export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
-export const requestInteractionWindow = async (tenantGlobalId: string, postDto: InteractionWindowPost, token: string) => callPost(`/api/v2/Tenant/${tenantGlobalId}/InteractionWindow`, token, postDto);
-export const disableInteractionWindow = async (tenantGlobalId: string, windowId: string, token: string) => callPATCH(`/api/v2/Tenant/${tenantGlobalId}/InteractionWindow/${windowId}/Disable`, token);
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
