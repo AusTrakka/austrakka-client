@@ -185,32 +185,6 @@ function MapChart(props: MapTestProps) {
       <Stack sx={{ height: '80vh' }} display="flex">
         <div ref={chartRef} style={{ width: '100%', height: '100%' }} />
       </Stack>
-      {/* <Stack>
-        <DataFilters
-          dataLength={data?.metadata?.length ?? 0}
-          filteredDataLength={filteredData?.length ?? 0}
-          visibleFields={null}
-          allFields={data?.fields ?? []}
-          setPrimeReactFilters={setCurrentFilters}
-          primeReactFilters={currentFilters}
-          isOpen={isDataTableFilterOpen}
-          setIsOpen={setIsDataTableFilterOpen}
-          dataLoaded={loading || allFieldsLoaded}
-          setLoadingState={setLoading}
-          fieldUniqueValues={data?.fieldUniqueValues ?? null}
-        />
-      </Stack>
-      <div style={{ display: 'none' }}>
-        <DataTable
-          value={data?.metadata ?? []}
-          filters={allFieldsLoaded ? currentFilters : defaultState}
-          paginator
-          rows={1}
-          onValueChange={(e) => {
-            setFilteredData(e);
-          }}
-        />
-      </div> */}
     </>
   );
 }
