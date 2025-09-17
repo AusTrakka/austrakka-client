@@ -58,7 +58,10 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
-import { uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
+import {
+  uploadSubmissions,
+  validateSubmissions,
+} from '../../utilities/resourceUtils';
 
 const validFormats = {
   '.fq': '',
@@ -118,10 +121,10 @@ const createAndShareSamples = async (
 
   // Validate and go no further if error
   // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token);
+  let response = await validateSubmissions(formData, '', token, dataOwnerAbbrev);
   if (response.status === ResponseType.Error) return response;
 
-  response = await uploadSubmissions(formData, '', token);
+  response = await uploadSubmissions(formData, '', token, dataOwnerAbbrev);
   return response;
 };
 
@@ -144,6 +147,10 @@ function UploadSequences() {
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
 
+  const canUpload = (selectedOwner: string) : boolean => selectedOwner !== 'unspecified'
+      && selectedOwner !== ''
+      && selectedOwner !== undefined;
+  
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
       if (newSur.id === sur.id) {
@@ -278,11 +285,6 @@ function UploadSequences() {
   
   // Data owner
   useEffect(() => {
-    if (!selectedCreateSampleRecords) {
-      setAvailableDataOwners([{ value: 'unspecified', label: 'Any' }]);
-      setSelectedDataOwner('unspecified');
-      return;
-    }
     if (user.loading !== LoadingState.SUCCESS) {
       setAvailableDataOwners([]);
       return;
@@ -359,17 +361,7 @@ function UploadSequences() {
         </Grid>
         <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
-            <FormControlLabel
-              id="create-sample-records-toggle"
-              control={(
-                <Switch
-                  checked={selectedCreateSampleRecords}
-                  onChange={(e) => setSelectedCreateSampleRecords(e.target.checked)}
-                />
-              )}
-              label="Create new sample records if required"
-            />
+            <Typography variant="h4" color="primary" marginTop={6} paddingBottom={2}>Data ownership</Typography>
             <FormControl
               size="small"
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
@@ -377,12 +369,12 @@ function UploadSequences() {
             >
               <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
               <Select
-                disabled={!selectedCreateSampleRecords}
                 labelId="select-data-owner-label"
                 id="select-data-owner"
                 name="Data Owner"
                 value={selectedDataOwner}
                 onChange={(e) => setSelectedDataOwner(e.target.value)}
+                disabled={uploadInProgress()}
               >
                 {
                   availableDataOwners.map((dataOwner: SelectItem) => (
@@ -396,6 +388,18 @@ function UploadSequences() {
                 }
               </Select>
             </FormControl>
+            <FormControlLabel
+              id="create-sample-records-toggle"
+              sx={{ marginTop: 8 }}
+              control={(
+                <Switch
+                  checked={selectedCreateSampleRecords}
+                  onChange={(e) => setSelectedCreateSampleRecords(e.target.checked)}
+                  disabled={uploadInProgress()}
+                />
+              )}
+              label="Create new sample records if required"
+            />
             <FormControl
               size="small"
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
@@ -438,6 +442,7 @@ function UploadSequences() {
                 name="fastq"
                 value={selectedSeqType}
                 onChange={(e) => handleSelectSeqType(e.target.value)}
+                disabled={uploadInProgress()}
               >
                 {Object.values(SeqType).map((seqType: SeqType) => (
                   <MenuItem
@@ -462,6 +467,7 @@ function UploadSequences() {
                       checked={selectedSkipForce === SkipForce.Skip}
                       onChange={(e) => handleSelectSkipForce(e, SkipForce.Skip)}
                       name={SkipForce.Skip}
+                      disabled={uploadInProgress()}
                     />
                 )}
                   label="Skip samples with sequences"
@@ -481,6 +487,7 @@ function UploadSequences() {
                       checked={selectedSkipForce === SkipForce.Force}
                       onChange={(e) => handleSelectSkipForce(e, SkipForce.Force)}
                       name={SkipForce.Force}
+                      disabled={uploadInProgress()}
                     />
                 )}
                   label="Overwrite existing sequences"
@@ -499,6 +506,7 @@ function UploadSequences() {
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
             <Typography variant="h4" color="primary">Select sequence files</Typography>
             <FileDragDrop
+              disabled={!canUpload(selectedDataOwner)}
               files={files}
               setFiles={setFiles}
               validFormats={validFormats}

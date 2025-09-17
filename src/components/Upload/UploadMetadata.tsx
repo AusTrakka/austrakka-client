@@ -11,6 +11,7 @@ import {
   InputLabel,
   LinearProgress,
   Link,
+  TextField,
   List,
   ListItemText,
   MenuItem,
@@ -80,6 +81,7 @@ function UploadMetadata() {
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [fileValidated, setFileValidated] = useState(false);
+  const [ownerOrgAbbrev, setOwnerOrgAbbrev] = useState('');
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const { token, tokenLoading } = useApi();
   
@@ -135,9 +137,9 @@ function UploadMetadata() {
     formData.append('file', files[0].file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
-    const submissionResponse : ResponseObject = options.validate ?
-      await validateSubmissions(formData, optionString, token)
-      : await uploadSubmissions(formData, optionString, token);
+    const submissionResponse : ResponseObject = options.validate
+      ? await validateSubmissions(formData, optionString, token, ownerOrgAbbrev)
+      : await uploadSubmissions(formData, optionString, token, ownerOrgAbbrev);
 
     const newMessages = [...submissionResponse.messages ?? []];
     if (submissionResponse.status === ResponseType.Success) {
@@ -256,6 +258,24 @@ function UploadMetadata() {
               />
             </List>
           ) : null}
+          <Grid>
+            <Typography variant="h4" color="primary" marginTop="50px">Owner Organisation</Typography>
+            <Tooltip
+              title="The owner organisation of every metadata record
+            in the csv. There can be only one owner. If multiple owners are
+            involved, the records need to be grouped into a file per owner
+            and uploaded separately."
+              placement="bottom"
+            >
+              <TextField
+                id="standard-basic"
+                label="Abbreviation"
+                variant="standard"
+                required
+                onChange={(e) => setOwnerOrgAbbrev(e.target.value)}
+              />
+            </Tooltip>
+          </Grid>
         </Grid>
         <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>

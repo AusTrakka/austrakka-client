@@ -16,6 +16,7 @@ interface FileDragDropProps {
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
   validated: boolean,
   setValidated: Dispatch<SetStateAction<boolean>>,
+  disabled?:boolean,
 }
 
 // eslint-disable-next-line react/function-component-definition
@@ -29,11 +30,15 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     customValidators = [],
     validated,
     setValidated,
+    disabled,
   },
 ) => {
   const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState<boolean>(false);
+  
+  const textColour = disabled ? 'text.disabled' : 'primary';
+  const iconColour = disabled ? 'disabled' : 'primary';
   
   const validateUpload = useCallback((uploadedFiles: File[]): boolean => {
     const validateFilesAreOfType = {
@@ -86,6 +91,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
   const handleDrag = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (disabled) { return; }
+    
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
@@ -96,6 +104,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    
+    if (disabled) { return; }
+    
     const uploadedFiles = Array.from(e.dataTransfer?.files ?? []);
     if (!validateUpload(uploadedFiles)) {
       return;
@@ -152,12 +163,12 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
         <Stack spacing={1} justifyContent="center" alignItems="center">
           {files.length === 0 ? (
             <>
-              <UploadFile fontSize="large" color="primary" />
-              <Typography variant="h5" color="primary">
+              <UploadFile fontSize="large" color={iconColour} />
+              <Typography variant="h5" color={textColour}>
                 {multiple ? 'Drag and drop files here' : 'Drag and drop file here'}
               </Typography>
-              <Typography variant="subtitle1">or</Typography>
-              <Button variant="outlined" component="label">
+              <Typography variant="subtitle1" color={textColour}>or</Typography>
+              <Button variant="outlined" component="label" disabled={disabled}>
                 Browse
                 <input
                   ref={fileInputRef}
@@ -173,7 +184,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
               {
                 Object.entries(validFormats).length > 0 &&
                   (
-                    <Typography variant="subtitle2">
+                    <Typography variant="subtitle2" color={textColour}>
                       Valid file types are:
                       {' '}
                       {Object.keys(validFormats).join(', ')}
