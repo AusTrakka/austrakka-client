@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Stack } from '@mui/material';
+import d3 from 'd3';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import { Sample } from '../../types/sample.interface';
 import { FeatureLookupFieldType, GeoCountRow, MapJson, Maps } from './mapMeta';
@@ -12,12 +13,13 @@ interface MapTestProps {
   colourScheme: string;
   regionViewToggle: boolean
   mapSpec: MapJson;
+  projAbbrev: string;
   data: Sample[];
   geoField: Field | null;
 }
 
 function MapChart(props: MapTestProps) {
-  const { colourScheme, regionViewToggle, mapSpec, geoField, data } = props;
+  const { colourScheme, regionViewToggle, mapSpec, geoField, projAbbrev, data } = props;
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
@@ -30,7 +32,7 @@ function MapChart(props: MapTestProps) {
       ),
     };
   }, [mapSpec, regionViewToggle]);
-  
+
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
   const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
@@ -60,19 +62,19 @@ function MapChart(props: MapTestProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 2. Whenever filtered data changes, re-aggregate
+  // Aggregate data whenever relevant inputs change
   useEffect(() => {
     if (!data || data.length === 0 || !geoField || !mapSpec) {
       setAggregateData([]);
       return;
     }
-    
+
     let isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
     if (!isoCode) {
       setMapRenderingError(true);
       return;
     }
-    
+
     // if the data is regions but the region view is off aggregate by prefix
     if (isoCode === 'iso_region' && !regionViewToggle) {
       isoCode = 'iso_2_char';
@@ -80,34 +82,52 @@ function MapChart(props: MapTestProps) {
 
     const aggregated = aggregateGeoData(
       data,
-      geoField, // change if user selects a different field later
+      geoField,
       mapSpec,
-      isoType,
+      isoCode,
     );
-    
+
     setIsoType(isoCode);
-
     setAggregateData(aggregated);
-  }, [data, geoField, isoType, mapSpec]);
+  }, [data, geoField, mapSpec, regionViewToggle]);
 
-  // Register map whenever filteredMapSpec changes
+  // Register map and update chart whenever filteredMapSpec or aggregateData changes
   useEffect(() => {
+    if (!filteredMapSpec || !chartInstance.current) return;
+
     console.log('filteredMapSpec changed', filteredMapSpec);
-    if (!filteredMapSpec) return;
-    echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
-  }, [filteredMapSpec]);
 
-  // Update chart when aggregated data changes
-  useEffect(() => {
-    // if (!chartInstance.current || !aggregateData.length) return;
-    if (!chartInstance.current) {
-      console.log('no chartInstance');
-      return;
+    // Clear existing map registration safely
+    try {
+      if (echarts.getMap('currentMap')) {
+        // Don't pass null, instead unregister by name
+        echarts.getMap('currentMap') && echarts.registerMap('currentMap', {
+          type: 'FeatureCollection',
+          features: [],
+        } as GeoJSONSourceInput);
+      }
+    } catch (error) {
+      console.warn('Error clearing existing map:', error);
     }
-    if (!aggregateData.length) {
-      console.log('no aggregateData');
-      return;
+
+    // Register new map with validation
+    try {
+      if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
+        echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
+
+        // Update chart if we have data
+        if (aggregateData.length) {
+          updateChart();
+        }
+      }
+    } catch (error) {
+      console.error('Error registering map:', error);
+      setMapRenderingError(true);
     }
+  }, [filteredMapSpec, aggregateData, colourScheme, isoType, geoField, projAbbrev]);
+
+  const updateChart = () => {
+    if (!chartInstance.current || !aggregateData.length) return;
 
     const counts = aggregateData.map(item => item.count);
     const minValue = counts.length > 0 ? Math.min(...counts) : 0;
@@ -120,7 +140,7 @@ function MapChart(props: MapTestProps) {
       backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREY,
       tooltip: {
         trigger: 'item',
-        formatter: '{b}: {c}',
+        formatter: (params: any) => `${params.name}: ${params.value ?? 'N/A'}`,
       },
       toolbox: {
         show: true,
@@ -128,7 +148,7 @@ function MapChart(props: MapTestProps) {
         feature: {
           saveAsImage: {
             type: 'png',
-            name: 'TESTDATA',
+            name: `choropleth_${geoField?.columnName}_${projAbbrev}_${Date.now()}`,
           },
           dataView: {
             readOnly: true,
@@ -177,8 +197,9 @@ function MapChart(props: MapTestProps) {
       ],
     };
 
-    chartInstance.current.setOption(option);
-  }, [aggregateData, colourScheme, isoType, filteredMapSpec]);
+    // Use notMerge: true to force complete re-render and ensure proper centering
+    chartInstance.current.setOption(option, true);
+  };
 
   return (
     <>

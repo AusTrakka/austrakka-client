@@ -235,6 +235,7 @@ function MapDetail(props: MapDetailProps) {
               regionViewToggle={regionToggle}
               geoField={internalSelectedFieldObj}
               mapSpec={Maps[selectedMap]}
+              projAbbrev={projectAbbrev}
               data={filteredData ?? []}
             />
           </>
