@@ -78,7 +78,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
       'seq-id': seqUploadRow.seqId,
       'filename': seqUploadRow.file.file.name,
       'filename-hash': seqUploadRow.file.hash,
-      'X-Interaction-Window-Global-Id': seqUploadRow.interactionWindowToken,
+      'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
     
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);

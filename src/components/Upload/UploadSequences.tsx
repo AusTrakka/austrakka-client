@@ -59,12 +59,9 @@ import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import {
-  disableInteractionWindow,
-  requestInteractionWindow,
   uploadSubmissions,
   validateSubmissions,
 } from '../../utilities/resourceUtils';
-import { InteractionWindowPost } from '../../types/dtos';
 
 const validFormats = {
   '.fq': '',
@@ -146,7 +143,6 @@ function UploadSequences() {
   const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
   const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
-  const [openedIw, setOpenedIw] = useState<boolean>(false);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
@@ -164,14 +160,13 @@ function UploadSequences() {
     }));
   };
 
-  const queueAllRows = (iwToken2: string) => {
+  const queueAllRows = (clientSessionId: string) => {
     const queuedRows = seqUploadRows.map((sur) => {
       sur.state = SeqUploadRowState.Queued;
-      sur.interactionWindowToken = iwToken2;
+      sur.clientSessionId = clientSessionId;
       return sur;
     });
     setSeqUploadRows(queuedRows);
-    setOpenedIw(true);
   };
   
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
@@ -200,14 +195,6 @@ function UploadSequences() {
     for (const row of calculated.slice(0, Math.abs(processing.length - 1))) {
       // Only upload 1 at a time
       updateRow({ ...row, state: SeqUploadRowState.Uploading });
-    }
-    if(uploadFinished() && openedIw) { 
-      disableInteractionWindow(
-        user.defaultTenantGlobalId,
-        seqUploadRows[0].interactionWindowToken,
-        token);
-      
-      setOpenedIw(false);
     }
   }, [seqUploadRows, seqUploadRowStates]);
 
@@ -282,41 +269,22 @@ function UploadSequences() {
     }
   };
   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const requestInteractionWindowToken = async (tenantGlobalId: string) => {
-    const specificityObj = {
-      'ownerOrgAbbrev': selectedDataOwner,
-      'seqType': selectedSeqType,
-    };
-    
-    const postDto : InteractionWindowPost = {
-      scopeAlias: 'sequence-upload-interaction',
-      specificityProps: specificityObj,
-    };
-    
-    const resp: ResponseObject = await requestInteractionWindow(tenantGlobalId, postDto, token);
-
-    if (resp.status === ResponseType.Success) {
-      return resp.data?.windowGlobalId as string;
-    } else {
-      return null;
-    }
-  };
-  
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
     // TODO this hacky code means we silently do nothing if we are not ready, 
     // and the user has to re-click
     if (tokenLoading !== LoadingState.SUCCESS) return;
    
+    const clientSessionId : string = crypto.randomUUID();
+    
     if (selectedCreateSampleRecords) {
+      // TODO: also pass the clientSessionId when creating samples
       const response: ResponseObject =
         await createAndShareSamples(selectedDataOwner, selectedProjectShare, seqUploadRows, token);
       showSampleCreationMessages(response);
       if (response.status === ResponseType.Error) return;
     }
-    const iwToken = await requestInteractionWindowToken(user.defaultTenantGlobalId);
-    queueAllRows(iwToken!);
+    queueAllRows(clientSessionId);
   };
   
   // Data owner
