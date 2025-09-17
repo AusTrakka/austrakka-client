@@ -261,7 +261,7 @@ function TreeDetail() {
     phylocanvasMetadata,
     state.alignLabels,
     state.showLeafLabels,
-    rootId, // have to check the performance of this dependency
+    rootId,
     state.nodeColumn]);
 
   useEffect(() => {
