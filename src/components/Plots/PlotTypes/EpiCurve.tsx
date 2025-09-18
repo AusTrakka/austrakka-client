@@ -42,6 +42,7 @@ const defaultSpec: TopLevelSpec = {
       },
       field: 'Date_coll',
       type: 'temporal',
+      axis: { labelAngle: 0 },
     },
     y: {
       aggregate: 'count',
@@ -106,6 +107,11 @@ function EpiCurve(props: PlotTypeProps) {
   const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetXAxisMode',
     'shared',
+    navigate,
+  );
+  const [axisLabelAngle, setAxisLabelAngle] = useStateFromSearchParamsForPrimitive<number>(
+    'axisLabelAngle',
+    0,
     navigate,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
@@ -174,6 +180,20 @@ function EpiCurve(props: PlotTypeProps) {
       setSpec(addDateFieldToSpec);
     }
   }, [dateField]);
+  
+  useEffect(() => {
+    const setAxisLabelAngleInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+      newSpec.encoding.x.axis = { ...(oldSpec as any).encoding.x.axis, labelAngle: axisLabelAngle };
+
+      return newSpec as TopLevelSpec;
+    };
+    
+    setSpec(setAxisLabelAngleInSpec);
+  }, [axisLabelAngle]);
 
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
@@ -251,7 +271,7 @@ function EpiCurve(props: PlotTypeProps) {
           size="small"
           inputProps={{ min: 1 }}
           value={dateBinStep}
-          onChange={(e) => setDateBinStep(parseInt(e.target.value, 10))}
+          onChange={(e) => setDateBinStep(parseInt(e.target.value, 10) || 1)}
         />
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -289,6 +309,18 @@ function EpiCurve(props: PlotTypeProps) {
             dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="axis-angle-select"
+          label="Axis angle"
+          size="small"
+          inputProps={{ min: -90, max: 90, step: 45 }}
+          value={axisLabelAngle}
+          onChange={(e) => setAxisLabelAngle(parseInt(e.target.value, 10) || 0)}
+        />
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="colour-field-select-label">Colour</InputLabel>
