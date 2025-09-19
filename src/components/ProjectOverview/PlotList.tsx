@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from 'react';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { IconButton, Paper } from '@mui/material';
+import { Button, IconButton, Paper } from '@mui/material';
 import { Public } from '@mui/icons-material';
 import { PlotListing, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
@@ -18,6 +18,13 @@ interface PlotListProps {
   projectDetails: Project | null
   setIsLoading: (isLoading: boolean) => void;
 }
+
+const mapRow = {
+  abbreviation: '__MAP__',
+  name: 'Project Map',
+  description: 'Access the full map',
+  created: null,
+};
 
 function PlotList(props: PlotListProps) {
   const { projectDetails, setIsLoading } = props;
@@ -43,7 +50,8 @@ function PlotList(props: PlotListProps) {
     async function getPlotList() {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === ResponseType.Success) {
-        setPlotList(plotsResponse.data as PlotListing[]);
+        const tableData: PlotListing[] = [...plotsResponse.data, mapRow];
+        setPlotList(tableData);
         setIsLoading(false);
       } else {
         setIsLoading(false);
@@ -58,11 +66,13 @@ function PlotList(props: PlotListProps) {
   }, [projectDetails, setIsLoading, token]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
-  };
-  
-  const goToMapsPage = () => {
-    navigate(`/projects/${projectDetails!.abbreviation}/map`);
+    if (row.data.abbreviation === '__MAP__') {
+      // Special logic for the map
+      navigate(`/projects/${projectDetails!.abbreviation}/map`);
+    } else {
+      // Regular plot row
+      navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
+    }
   };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,13 +88,6 @@ function PlotList(props: PlotListProps) {
         value={(globalFilter.global as DataTableFilterMetaData).value || ''}
         onChange={onGlobalFilterChange}
       />
-      <IconButton
-        aria-label="go to maps temp"
-        size="small"
-        onClick={() => goToMapsPage()}
-      >
-        <Public />
-      </IconButton>
     </div>
   );
   return (
