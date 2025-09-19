@@ -40,22 +40,23 @@ export function detectIsoType(validValues: string[]): FeatureLookupFieldType | n
   return null; // fallback
 }
 
-// This is wrong as hell brother.
 export const aggregateGeoData = (
   rawSamples: Sample[],
   sampleFieldToAgg: Field,
   geoJSON: MapJson,
   geoLookupField: FeatureLookupFieldType,
-): GeoCountRow[] => {
-  if (!geoJSON) return [];
-  if (!rawSamples || rawSamples.length === 0) return [];
-  if (geoJSON.features.length === 0) return [];
-  
+): { counts: GeoCountRow[]; missing: GeoCountRow[] } => {
+  if (!geoJSON) return { counts: [], missing: [] };
+  if (!rawSamples || rawSamples.length === 0) return { counts: [], missing: [] };
+  if (geoJSON.features.length === 0) return { counts: [], missing: [] };
+
   const lookupTable: Record<string, number> = {};
+  const missingTable: Record<string, number> = {};
 
   // Initialize lookup table with expected values from GeoJSON
-  const expectedValues = geoJSON.features.map((feature: any) =>
-    feature.properties[geoLookupField]).filter(Boolean) || [];
+  const expectedValues = geoJSON.features
+    .map((feature: any) => feature.properties[geoLookupField])
+    .filter(Boolean) || [];
 
   expectedValues.forEach((value: string) => {
     lookupTable[value] = 0;
@@ -67,16 +68,19 @@ export const aggregateGeoData = (
     if (geoFeature && lookupTable[geoFeature] !== undefined) {
       lookupTable[geoFeature] += 1;
     } else if (geoFeature) {
-      // eslint-disable-next-line no-console
-      console.warn(`Unexpected value ${geoFeature} in filtered data - not found in map`);
+      // Track unexpected values separately
+      missingTable[geoFeature] = (missingTable[geoFeature] || 0) + 1;
     }
   });
 
-  console.log(rawSamples);
-
-  // Convert to array format
-  return Object.entries(lookupTable).map(([geoFeature, count]) => ({
-    geoFeature,
-    count,
-  }));
+  return {
+    counts: Object.entries(lookupTable).map(([geoFeature, count]) => ({
+      geoFeature,
+      count,
+    })),
+    missing: Object.entries(missingTable).map(([geoFeature, count]) => ({
+      geoFeature,
+      count,
+    })),
+  };
 };
