@@ -7,10 +7,8 @@ import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
-import Counts from '../../Widgets/ProjectWidgets/Counts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
-import OrganisationsPieChart from '../../Widgets/ProjectWidgets/OrganisationsPieChart';
 
 // This dashboard is intended to be used for demo projects,
 // and to be updated without impacting real investigations

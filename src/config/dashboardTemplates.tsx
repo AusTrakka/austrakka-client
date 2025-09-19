@@ -7,7 +7,7 @@ import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.pro
 import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
-import DemoDashboard from "../components/Dashboards/Templates/DemoDashboard";
+import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
 
 const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'default': DefaultDashboard,

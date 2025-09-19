@@ -43,7 +43,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     title,
     colourScheme,
     colourMapping,
-    legendColumns=4,
+    legendColumns = 4,
   } = props;
   if (colourScheme && colourMapping) {
     // eslint-disable-next-line no-console
