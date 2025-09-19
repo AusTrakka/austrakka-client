@@ -1,8 +1,6 @@
 import {
-  FeatureLookupField,
   FeatureLookupFieldType,
   GeoCountRow,
-  MapFeatureWithStringProps,
   MapJson,
 } from '../components/Maps/mapMeta';
 import { Sample } from '../types/sample.interface';
@@ -18,12 +16,6 @@ export function parseGeoJson(geoJson: any, propertyName = 'iso_3166_2') {
     isoList.push(feature.properties[propertyName]);
   }
   return isoList;
-}
-
-export interface FilterGeoJsonOptions {
-  matchValues: string[],
-  lookupField: FeatureLookupFieldType,
-  matchPrefix?: string, // this may need to be expanded to a list one day
 }
 
 export function detectIsoType(validValues: string[]): FeatureLookupFieldType | null {

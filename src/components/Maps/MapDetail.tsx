@@ -147,8 +147,7 @@ function MapDetail(props: MapDetailProps) {
             sx={{ minWidth: '100px' }}
             value={selectedMap}
             onChange={(e) => {
-              const selectedMap = e.target.value as MapKey;
-              setSelectedMap(selectedMap);
+              setSelectedMap(e.target.value as MapKey);
             }}
             label="Map"
           >

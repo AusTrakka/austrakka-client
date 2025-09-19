@@ -3,7 +3,7 @@ import { Sample } from '../types/sample.interface';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-import { MapKey, MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
+import { MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
 
 export function standardise(code: string): string | null {
   if (!code) return null;

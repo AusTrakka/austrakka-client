@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import * as echarts from 'echarts';
 import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
-import { Alert, Box, Chip, ListItemText, Stack, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
-import { ShowChart } from '@mui/icons-material';
+import { Alert, Box, Chip, Stack, Typography } from '@mui/material';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import { Sample } from '../../types/sample.interface';
 import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
@@ -43,7 +42,6 @@ function MapChart(props: MapTestProps) {
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
   const [showAlert, setShowAlert] = useState(true);
   const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
-  const [mapRenderErrorMessage, setMapRenderErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return undefined;
@@ -204,7 +202,6 @@ function MapChart(props: MapTestProps) {
       }
     } catch (error) {
       setMapRenderingError(true);
-      console.warn('Error clearing existing map:', error);
     }
 
     // Register new map with validation
@@ -213,7 +210,6 @@ function MapChart(props: MapTestProps) {
         echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
       }
     } catch (error) {
-      console.error('Error registering map:', error);
       setMapRenderingError(true);
     }
   }, [filteredMapSpec]);
@@ -224,6 +220,16 @@ function MapChart(props: MapTestProps) {
 
     updateChart();
   }, [aggregateData, updateChart]);
+  
+  if (mapRenderingError) {
+    return (
+      <Alert severity="error">
+        <Typography>
+          There was an error rendering the map, please refresh.
+        </Typography>
+      </Alert>
+    );
+  }
 
   return (
     <Stack sx={{ height: '70vh' }} spacing={1}>
