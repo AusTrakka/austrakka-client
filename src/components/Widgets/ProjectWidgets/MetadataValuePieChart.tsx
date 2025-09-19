@@ -148,23 +148,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     },
     {
       mark: { type: 'text', radius: 67, color: 'black', tooltip: true, cursor: 'pointer' },
-      // encoding: {
-      //   text: { aggregate: 'count' },
-      //   theta: {
-      //     aggregate: 'count',
-      //     stack: 'zero',
-      //     bandPosition: 0.5,
-      //   },
-      //   detail: {
-      //     field: `${field}`,
-      //   },
-      // },
     }],
-    // title: {
-    //   text: `${field} counts`,
-    //   anchor: 'middle',
-    //   fontSize: 12,
-    // },
     usermeta: {
       dateCollField: field,
     },
