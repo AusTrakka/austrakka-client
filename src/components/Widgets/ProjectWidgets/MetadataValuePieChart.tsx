@@ -26,11 +26,12 @@ const DEFAULT_COLOUR_SCHEME = 'tableau10';
 interface MetadataValueWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
   filteredData: Sample[];
-  timeFilterObject: DataTableFilterMeta;
+  timeFilterObject?: DataTableFilterMeta;
   field: string; // This is the field parameter the widget will report on
   title?: string | undefined; // Optionally, a different title for the widget
   colourScheme?: string | undefined;
   colourMapping?: Record<string, string> | undefined;
+  legendColumns?: number | undefined;
 }
 
 export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
@@ -42,6 +43,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     title,
     colourScheme,
     colourMapping,
+    legendColumns=4,
   } = props;
   if (colourScheme && colourMapping) {
     // eslint-disable-next-line no-console
@@ -141,6 +143,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
           legend: {
             title: field,
             orient: 'bottom',
+            columns: legendColumns,
             labelExpr: "datum.label || 'unknown'",
           },
         },
