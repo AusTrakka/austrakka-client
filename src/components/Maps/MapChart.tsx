@@ -1,17 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import * as echarts from 'echarts';
 import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
-import { Stack } from '@mui/material';
-import d3 from 'd3';
+import { Alert, Box, Chip, ListItemText, Stack, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
+import { ShowChart } from '@mui/icons-material';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import { Sample } from '../../types/sample.interface';
-import { FeatureLookupFieldType, GeoCountRow, MapJson, MapKey, Maps } from './mapMeta';
+import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
 import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
 import { Field } from '../../types/dtos';
 
 interface MapTestProps {
   colourScheme: string;
-  regionViewToggle: boolean
   mapSpec: MapKey;
   projAbbrev: string;
   data: Sample[];
@@ -19,7 +18,7 @@ interface MapTestProps {
 }
 
 function MapChart(props: MapTestProps) {
-  const { colourScheme, regionViewToggle, mapSpec, geoField, projAbbrev, data } = props;
+  const { colourScheme, mapSpec, geoField, projAbbrev, data } = props;
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
   const [regionView, setRegionView] = useState(false);
@@ -40,17 +39,17 @@ function MapChart(props: MapTestProps) {
   }, [mapSpec, regionView]);
 
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
+  const [missingData, setMissingData] = useState<GeoCountRow[]>([]);
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
+  const [showAlert, setShowAlert] = useState(true);
   const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
+  const [mapRenderErrorMessage, setMapRenderErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!chartRef.current) {
-      return undefined;
-    }
+    if (!chartRef.current) return undefined;
 
     chartInstance.current = echarts.init(chartRef.current);
 
-    // Clean up on unmount
     return () => {
       if (chartInstance.current) {
         chartInstance.current.dispose();
@@ -60,83 +59,31 @@ function MapChart(props: MapTestProps) {
   }, []);
 
   useEffect(() => {
-    function handleResize() {
+    if (!chartRef.current) return undefined;
+
+    // Resize handler for window events
+    const handleResize = () => {
       chartInstance.current?.resize();
-    }
+    };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  // Aggregate data whenever relevant inputs change
-  useEffect(() => {
-    if (!data || data.length === 0 || !geoField || !mapSpec) {
-      setAggregateData([]);
-      return;
-    }
+    // ResizeObserver for container size changes
+    const observer = new ResizeObserver(() => {
+      chartInstance.current?.resize();
+    });
+    observer.observe(chartRef.current);
 
-    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
-    if (!isoCode) {
-      setMapRenderingError(true);
-      return;
-    }
+    // Force initial resize
+    setTimeout(() => chartInstance.current?.resize(), 100);
 
-    /* // if the data is regions but the region view is off aggregate by prefix
-    if (isoCode === 'iso_region' && !regionViewToggle) {
-      isoCode = 'iso_2_char';
-    } */
-    
-    if (isoCode === 'iso_region') {
-      setRegionView(true);
-    }
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+    };
+  }, [showAlert]); // <— rerun effect whenever alert visibility changes
 
-    const aggregated = aggregateGeoData(
-      data,
-      geoField,
-      Maps[mapSpec],
-      isoCode,
-    );
-
-    setIsoType(isoCode);
-    setAggregateData(aggregated);
-  }, [data, geoField, mapSpec, regionViewToggle]);
-
-  // Register map and update chart whenever filteredMapSpec or aggregateData changes
-  useEffect(() => {
-    if (!filteredMapSpec || !chartInstance.current) return;
-
-    console.log('filteredMapSpec changed', filteredMapSpec);
-
-    // Clear existing map registration safely
-    try {
-      if (echarts.getMap('currentMap')) {
-        // Don't pass null, instead unregister by name
-        echarts.getMap('currentMap') && echarts.registerMap('currentMap', {
-          type: 'FeatureCollection',
-          features: [],
-        } as GeoJSONSourceInput);
-      }
-    } catch (error) {
-      console.warn('Error clearing existing map:', error);
-    }
-
-    // Register new map with validation
-    try {
-      if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
-        echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
-
-        // Update chart if we have data
-        if (aggregateData.length) {
-          updateChart();
-        }
-      }
-    } catch (error) {
-      console.error('Error registering map:', error);
-      setMapRenderingError(true);
-    }
-  }, [filteredMapSpec, aggregateData, colourScheme, isoType, geoField, projAbbrev]);
-
-  const updateChart = () => {
+  const updateChart = useCallback(() => {
     if (!chartInstance.current || !aggregateData.length) return;
 
     const counts = aggregateData.map(item => item.count);
@@ -181,11 +128,11 @@ function MapChart(props: MapTestProps) {
           name: 'Region Data',
           type: 'map',
           projection: {
-            project: (point) => [
+            project: (point: [number, number]) => [
               (point[0] / 180) * Math.PI,
               -Math.log(Math.tan((Math.PI / 2 + (point[1] / 180) * Math.PI) / 2)),
             ],
-            unproject: (point) => [
+            unproject: (point: [number, number]) => [
               (point[0] * 180) / Math.PI,
               ((2 * 180) / Math.PI) * Math.atan(Math.exp(point[1])) - 90,
             ],
@@ -209,14 +156,129 @@ function MapChart(props: MapTestProps) {
 
     // Use notMerge: true to force complete re-render and ensure proper centering
     chartInstance.current.setOption(option, true);
-  };
+  }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
+
+  // Register map whenever filteredMapSpec changes
+  useEffect(() => {
+    if (!data || data.length === 0 || !geoField || !mapSpec) {
+      setAggregateData([]);
+      return;
+    }
+
+    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
+    if (!isoCode) {
+      setMapRenderingError(true);
+      return;
+    }
+
+    if (isoCode === 'iso_region') {
+      setRegionView(true);
+    } else {
+      setRegionView(false);
+    }
+
+    const { counts: aggregated, missing } = aggregateGeoData(
+      data,
+      geoField,
+      Maps[mapSpec],
+      isoCode,
+    );
+    
+    setIsoType(isoCode);
+    setAggregateData(aggregated);
+    setMissingData(missing);
+    setShowAlert(true);
+  }, [data, geoField, mapSpec]);
+
+  // Register map whenever filteredMapSpec changes
+  useEffect(() => {
+    if (!filteredMapSpec || !chartInstance.current) return; // Add chart check
+
+    // Clear existing map registration safely
+    try {
+      if (echarts.getMap('currentMap')) {
+        echarts.registerMap('currentMap', {
+          type: 'FeatureCollection',
+          features: [],
+        } as GeoJSONSourceInput);
+      }
+    } catch (error) {
+      setMapRenderingError(true);
+      console.warn('Error clearing existing map:', error);
+    }
+
+    // Register new map with validation
+    try {
+      if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
+        echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
+      }
+    } catch (error) {
+      console.error('Error registering map:', error);
+      setMapRenderingError(true);
+    }
+  }, [filteredMapSpec]);
+
+  // Update chart whenever data or styling changes
+  useEffect(() => {
+    if (!chartInstance.current || !aggregateData.length) return;
+
+    updateChart();
+  }, [aggregateData, updateChart]);
 
   return (
-    <>
-      <Stack sx={{ height: '80vh' }} display="flex">
-        <div ref={chartRef} style={{ width: '100%', height: '100%' }} />
-      </Stack>
-    </>
+    <Stack sx={{ height: '70vh' }} spacing={1}>
+      {/* Error alert */}
+      {regionView && mapSpec === 'WORLD' && (
+      <Alert severity="error">
+        <Typography>
+          Regional fields are not supported with the world map
+        </Typography>
+      </Alert>
+      )}
+
+      {/* Info alert for missing data */}
+      {showAlert && missingData.length > 0 && (
+      <Alert
+        severity="info"
+        onClose={() => setShowAlert(false)}
+      >
+        <Typography fontSize="small" gutterBottom>
+          Some data values are not shown on the map because they don’t match any map regions:
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            maxHeight: 120,
+            overflowY: 'auto',
+            p: 1,
+            borderRadius: 1,
+            backgroundColor: 'rgba(0,0,0,0.02)',
+          }}
+        >
+          {missingData.map((item) => (
+            <Chip
+              key={item.geoFeature}
+              label={`${item.geoFeature} (${item.count})`}
+              size="small"
+            />
+          ))}
+        </Box>
+      </Alert>
+      )}
+
+      {/* Chart container */}
+      <Box
+        ref={chartRef}
+        sx={{
+          flex: 1,
+          width: '100%',
+          marginTop: '10px',
+          display: regionView && mapSpec === 'WORLD' ? 'none' : 'block', // <— hide chart if error
+        }}
+      />
+    </Stack>
   );
 }
 

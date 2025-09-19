@@ -4,12 +4,10 @@ import {
   Alert,
   Box, CircularProgress,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   Stack,
-  Switch,
   Typography,
 } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
@@ -21,7 +19,7 @@ import { defaultContinuousColorScheme } from '../../constants/schemes';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import { MapKey, Maps } from './mapMeta';
+import { MapKey } from './mapMeta';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import MapChart from './MapChart';
 import { Sample } from '../../types/sample.interface';
@@ -41,7 +39,6 @@ function MapDetail(props: MapDetailProps) {
   
   // this I don't really needs to be in the url
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
-  const [isRegionToggleDisabled, setIsRegionToggleDisabled] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
   const [internalSelectedFieldObj, setInternalSelectedFieldObj] = useState<Field | null>(null);
@@ -53,14 +50,9 @@ function MapDetail(props: MapDetailProps) {
     defaultContinuousColorScheme,
     navigateFunction,
   );
-  const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey>(
+  const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey | null>(
     'map',
-    'WORLD',
-    navigateFunction,
-  );
-  const [regionToggle, setRegionToggle] = useStateFromSearchParamsForPrimitive<boolean>(
-    'regionToggle',
-    false,
+    null,
     navigateFunction,
   );
   const [selectedField, setSelectedField] = useStateFromSearchParamsForPrimitive<string>(
@@ -78,12 +70,7 @@ function MapDetail(props: MapDetailProps) {
   useEffect(() => {
     if (data &&
         data.loadingState === MetadataLoadingState.DATA_LOADED) {
-      const { supportedMaps } = data;
-      const isRegionPresent = supportedMaps
-        .find(([mapKey, _]) => mapKey === selectedMap)?.[1] ?? false;
-     
       setFilteredData(data.metadata ?? []);
-      setIsRegionToggleDisabled(!isRegionPresent);
     }
   }, [data, selectedMap]);
 
@@ -117,7 +104,7 @@ function MapDetail(props: MapDetailProps) {
       setSelectedField(firstGeoField);
       setGeoFields(geoFieldNames);
     }
-  }, [data]);
+  }, [data, setSelectedField]);
 
   useEffect(() => {
     if (data &&
@@ -157,6 +144,7 @@ function MapDetail(props: MapDetailProps) {
           <Select
             labelId="map-select-label"
             id="map-select"
+            sx={{ minWidth: '100px' }}
             value={selectedMap}
             onChange={(e) => {
               const selectedMap = e.target.value as MapKey;
@@ -205,41 +193,47 @@ function MapDetail(props: MapDetailProps) {
           </Select>
         </FormControl>
       </Box>
-      {/* Right-aligned switch */}
-      {/* <FormControlLabel
-        control={(
-          <Switch
-            checked={regionToggle}
-            onChange={(e) => setRegionToggle(e.target.checked)}
-            disabled={isRegionToggleDisabled}
-          />
-            )}
-        label="Region View"
-        sx={{ margin: 1 }}
-      /> */}
     </Box>
   );
+  
+  const renderMap = () => {
+    if (noSupportedMapsError) {
+      return renderErrorAlert();
+    }
+    
+    if (selectedMap === null) {
+      return (
+        <>
+          {renderControls()}
+          <Alert severity="info">
+            <Typography>
+              Please select a map
+            </Typography>
+          </Alert>
+        </>
+      );
+    }
+    
+    return (
+      <>
+        {renderControls()}
+        <MapChart
+          colourScheme={colourScheme}
+          mapSpec={selectedMap!}
+          projAbbrev={projectAbbrev}
+          data={filteredData ?? []}
+          geoField={internalSelectedFieldObj}
+        />
+      </>
+    );
+  };
   
   if (loading) return <div><CircularProgress color="info" /></div>;
 
   return (
     <>
       <Stack direction="column" spacing={2} display="flex">
-        {noSupportedMapsError ? (
-          renderErrorAlert()
-        ) : (
-          <>
-            {renderControls()}
-            <MapChart
-              colourScheme={colourScheme}
-              regionViewToggle={regionToggle}
-              geoField={internalSelectedFieldObj}
-              mapSpec={selectedMap}
-              projAbbrev={projectAbbrev}
-              data={filteredData ?? []}
-            />
-          </>
-        )}
+        {renderMap()}
         <Stack>
           <DataFilters
             dataLength={data?.metadata?.length ?? 0}
