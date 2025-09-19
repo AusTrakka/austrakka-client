@@ -172,12 +172,17 @@ export function calculateSupportedMaps(
 
   const datasetKeys = new Set<string>();
   const datasetRegions = new Set<string>();
+  let hasCountryValues = false;
 
   for (const uniqueVals of Object.values(uniqueGeoValues)) {
     for (const val of uniqueVals) {
+      if (val === null || val === '') continue;
       if (isSubdivision(val)) {
         datasetRegions.add(val.slice(0, 2)); // e.g. "AU" from "AU-NSW"
+      } else {
+        hasCountryValues = true; // found a top-level country
       }
+
       const standard = standardise(val);
       if (standard) datasetKeys.add(standard);
     }
@@ -190,23 +195,20 @@ export function calculateSupportedMaps(
   for (const entry of MapRegistry) {
     if (entry.key === 'WORLD') continue;
 
-    // check if the map supports any of the dataset keys
     const intersects = [...datasetKeys].some(k => entry.supports?.has(k));
-
     if (intersects) {
-      // hasRegions = true if any of the datasetRegions intersect with the map's supported countries
       const hasRegions = [...datasetRegions].some(r => entry.supports?.has(r));
       result.push([entry.key, hasRegions]);
     }
   }
 
-  // Always add WORLD, but with hasRegions = false
-  result.push(['WORLD', false]);
+  // Only add WORLD if there were actual country values
+  if (hasCountryValues) {
+    result.push(['WORLD', false]);
+  }
 
   return result;
 }
-
-// for project metadata specifically
 
 // Given a list of field names, calculate the viewFields for that field
 export function calculateViewFieldNames(
