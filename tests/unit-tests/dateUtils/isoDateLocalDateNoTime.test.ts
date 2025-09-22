@@ -23,7 +23,6 @@ describe('isoDateLocalDateNoTime', () => {
       expect(parsedResult.getUTCDate()).toEqual(date.getUTCDate());
       expect(result).toMatch(expected);
     });
-
     test('preserves date components correctly for different input dates', () => {
       const differentDate = new Date('2024-07-19T15:30:00Z');
       const result = isoDateLocalDateNoTime(differentDate.toISOString());

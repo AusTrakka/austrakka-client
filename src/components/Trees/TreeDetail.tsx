@@ -29,6 +29,7 @@ import { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -45,7 +46,7 @@ const defaultState: TreeState = {
   type: TreeTypes.Rectangular,
   showInternalLabels: false,
   showBranchLengths: false,
-  labelBlocks: [],
+  labelBlocks: [SAMPLE_ID_FIELD],
   keyValueLabelBlocks: false,
   showShapes: true,
 };
@@ -178,10 +179,20 @@ function TreeDetail() {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
       const delimiter = '|';
-      // find the length of the longest label for each block
+
+      // Determine which leaf nodes are currently visible under the current rootId
+      // Prefer using the Phylocanvas API exposed via the ref; fallback to all keys if unavailable
+      const visibleLeafIDs: string[] =
+        (treeRef.current?.getVisibleLeafIDs && treeRef.current.getVisibleLeafIDs())
+        || Object.keys(phylocanvasMetadata);
+
+      const visibleSet = new Set(visibleLeafIDs);
+
+      // find the length of the longest label for each block, based only on visible leaves
       const blockLengths: Record<string, number> = {};
       blockLengths.id = 0;
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        if (!visibleSet.has(nodeId)) continue;
         const nodeIdLength = nodeId.length;
         if (nodeIdLength > blockLengths.id) {
           blockLengths.id = nodeIdLength;
@@ -203,7 +214,10 @@ function TreeDetail() {
           }
         }
       }
+
+      // build styles only for visible leaves
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
+        if (!visibleSet.has(nodeId)) continue;
         const label = state.labelBlocks.map(
           (block) => {
             let prefix = '';
@@ -223,11 +237,16 @@ function TreeDetail() {
             return prefix + value[block].label;
           },
         );
-        const formattedBlocksString = `${label.length > 0 ? delimiter : ''}${label.join(delimiter)}`;
-        if (state.alignLabels && formattedBlocksString.length > 0) {
-          newStyles[nodeId] = { label: `${nodeId.padEnd(blockLengths.id, ' ')}${formattedBlocksString}` };
-        } else {
-          newStyles[nodeId] = { label: `${nodeId}${formattedBlocksString}` };
+        const formattedBlocksString = `${label.join(delimiter)}`;
+        // If no labels were selected AND showLeafLabels is true, show the nodeId as the label
+        if (formattedBlocksString.length === 0) {
+          if (state.showLeafLabels) {
+            newStyles[nodeId] = { label: nodeId };
+          } else {
+            newStyles[nodeId] = { label: '' };
+          }
+        } else { // formattedBlocksString has length > 0, don't force showing nodeId
+          newStyles[nodeId] = { label: `${formattedBlocksString}` };
         }
         if (state.nodeColumn !== '') {
           newStyles[nodeId].fillColour = value[state.nodeColumn].colour;
@@ -235,10 +254,14 @@ function TreeDetail() {
       }
       setStyles(newStyles);
     }
+    // Don't include treeRef in deps:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.labelBlocks,
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
     state.alignLabels,
+    state.showLeafLabels,
+    rootId,
     state.nodeColumn]);
 
   useEffect(() => {

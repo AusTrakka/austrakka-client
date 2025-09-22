@@ -32,8 +32,6 @@ export default function mapMetadataToPhylocanvas(
     const sampleName = sample[SAMPLE_ID_FIELD];
     result[sampleName] = {};
     fieldInformation.forEach((fi) => {
-      if (fi.columnName === SAMPLE_ID_FIELD) return;
-
       const value = sample[fi.columnName] ?? 'null';
       const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rgba(0,0,0,0)';
 
