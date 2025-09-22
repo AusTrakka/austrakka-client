@@ -17,9 +17,11 @@ const noToken = {
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
 
-export function buildOwnerOrgHeader(ownerOrgAbbrev: string): any {
+export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs: string[]): any {
   return {
     'X-Metadata-Owner-Org-Abbrev': ownerOrgAbbrev,
+    // TODO better model for multi headers?
+    'X-Metadata-Shared-Projects-Abbrev': sharedProjectAbbrevs.join(';'),
   };
 }
 

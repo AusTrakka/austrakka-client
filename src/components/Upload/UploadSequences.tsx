@@ -70,11 +70,6 @@ const validFormats = {
   '.fastq.gz': 'application/x-gzip',
 };
 
-interface SelectItem {
-  value: string;
-  label: string;
-}
-
 const uploadRowTypes = {
   [SeqType.FastqIllPe]: UploadPairedSequenceRow,
   [SeqType.FastqIllSe]: UploadSingleSequenceRow,
@@ -106,7 +101,7 @@ const createAndShareSamples = async (
   let csvFile: File;
   
   try {
-    const csv = createSampleCSV(dataOwnerAbbrev, shareProjectAbbrevs, seqUploadRows);
+    const csv = createSampleCSV(seqUploadRows);
     csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
   } catch (error) {
     return {
@@ -121,10 +116,10 @@ const createAndShareSamples = async (
 
   // Validate and go no further if error
   // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token, dataOwnerAbbrev);
+  let response = await validateSubmissions(formData, '', token, dataOwnerAbbrev, shareProjectAbbrevs);
   if (response.status === ResponseType.Error) return response;
 
-  response = await uploadSubmissions(formData, '', token, dataOwnerAbbrev);
+  response = await uploadSubmissions(formData, '', token, dataOwnerAbbrev, shareProjectAbbrevs);
   return response;
 };
 
@@ -139,17 +134,14 @@ function UploadSequences() {
   const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
   const [selectedSkipForce, setSelectedSkipForce] = useState<SkipForce>(SkipForce.None);
   const [selectedCreateSampleRecords, setSelectedCreateSampleRecords] = useState<boolean>(false);
-  const [availableDataOwners, setAvailableDataOwners] = useState<SelectItem[]>([{ value: 'unspecified', label: 'Any' }]);
-  const [selectedDataOwner, setSelectedDataOwner] = useState<string>('unspecified');
-  const [availableProjects, setAvailableProjects] = useState<SelectItem[]>([]);
+  const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
+  const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<string[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
+  const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
-
-  const canUpload = (selectedOwner: string) : boolean => selectedOwner !== 'unspecified'
-      && selectedOwner !== ''
-      && selectedOwner !== undefined;
   
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
@@ -273,6 +265,8 @@ function UploadSequences() {
     // TODO this hacky code means we silently do nothing if we are not ready, 
     // and the user has to re-click
     if (tokenLoading !== LoadingState.SUCCESS) return;
+    
+    if (!selectedDataOwner) return;
    
     if (selectedCreateSampleRecords) {
       const response: ResponseObject =
@@ -290,16 +284,17 @@ function UploadSequences() {
       return;
     }
     const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
-    // This mapping exists here so we can set "Any" as a value when disabled, regardless of 
-    // label format
-    // Displaying org abbreviations in the dropdown for now, but this can be easily changed
-    setAvailableDataOwners(
-      orgs.map((org: OrgDescriptor) => ({ value: org.abbreviation, label: org.abbreviation })),
-    );
+    setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
     if (orgs.some(org => org.abbreviation === user.orgAbbrev)) {
       setSelectedDataOwner(user.orgAbbrev);
+    } else if (orgs.length > 0) {
+      setSelectedDataOwner(orgs[0].abbreviation);
     }
-  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+    if (orgs.length === 0) {
+      setPageErrorMsg('Either you do not have uploader permissions in any organisation, or your permissions ' +
+        'could not be properly loaded. Please contact an admin.');
+    }
+  }, [user.groupRoles, user.loading, user.orgAbbrev]);
   
   // Projects
   useEffect(() => {
@@ -313,9 +308,7 @@ function UploadSequences() {
       return;
     }
     const projects: string[] = getSharableProjects(user.groupRoles ?? []);
-    setAvailableProjects(
-      projects.map((projectAbbrev: string) => ({ value: projectAbbrev, label: projectAbbrev })),
-    );
+    setAvailableProjects(projects);
   }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
   
   const renderUploadRow = (row: SeqUploadRow) => {
@@ -343,6 +336,13 @@ function UploadSequences() {
       <Box>
         <Typography variant="h2" paddingBottom={1} color="primary">Upload Sequences</Typography>
         <Grid container spacing={2} sx={{ paddingBottom: 1 }} justifyContent="space-between" alignItems="center">
+          { pageErrorMsg && (
+            <Grid size={12}>
+              <Alert severity="error">
+                { pageErrorMsg }
+              </Alert>
+            </Grid>
+          )}
           <Grid size={{ md: 12, lg: 9 }}>
             <Typography variant="subtitle2" paddingBottom={1}>
               Drag and drop files below, or click, to upload sequences.
@@ -361,10 +361,10 @@ function UploadSequences() {
         </Grid>
         <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" color="primary" marginTop={6} paddingBottom={2}>Data ownership</Typography>
+            <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
             <FormControl
               size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              sx={{ minWidth: 200, maxWidth: 400, marginBottom: 2 }}
               variant="standard"
             >
               <InputLabel id="select-data-owner-label">Data Owner</InputLabel>
@@ -372,17 +372,17 @@ function UploadSequences() {
                 labelId="select-data-owner-label"
                 id="select-data-owner"
                 name="Data Owner"
-                value={selectedDataOwner}
+                value={selectedDataOwner || ''}
                 onChange={(e) => setSelectedDataOwner(e.target.value)}
                 disabled={uploadInProgress()}
               >
                 {
-                  availableDataOwners.map((dataOwner: SelectItem) => (
+                  availableDataOwners.map((org: string) => (
                     <MenuItem
-                      value={dataOwner.value}
-                      key={dataOwner.value}
+                      value={org}
+                      key={org}
                     >
-                      {dataOwner.label}
+                      {org}
                     </MenuItem>
                   ))
                 }
@@ -390,7 +390,6 @@ function UploadSequences() {
             </FormControl>
             <FormControlLabel
               id="create-sample-records-toggle"
-              sx={{ marginTop: 8 }}
               control={(
                 <Switch
                   checked={selectedCreateSampleRecords}
@@ -416,12 +415,12 @@ function UploadSequences() {
                 onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
               >
                 {
-                  availableProjects.map((project: SelectItem) => (
+                  availableProjects.map((project: string) => (
                     <MenuItem
-                      value={project.value}
-                      key={project.value}
+                      value={project}
+                      key={project}
                     >
-                      {project.label}
+                      {project}
                     </MenuItem>
                   ))
                 }
@@ -506,7 +505,7 @@ function UploadSequences() {
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
             <Typography variant="h4" color="primary">Select sequence files</Typography>
             <FileDragDrop
-              disabled={!canUpload(selectedDataOwner)}
+              disabled={!selectedDataOwner}
               files={files}
               setFiles={setFiles}
               validFormats={validFormats}

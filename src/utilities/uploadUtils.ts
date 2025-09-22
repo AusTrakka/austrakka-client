@@ -120,17 +120,12 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
 };
 
 export const createSampleCSV = (
-  dataOwnerAbbrev: string,
-  shareProjectAbbrevs: string[],
   seqUploadRows: SeqUploadRow[],
 ): string => {
-  if (!dataOwnerAbbrev) {
-    throw new Error('Data owner abbreviation cannot be empty');
-  }
-  const projectGroups = shareProjectAbbrevs.map(abbrev => `${abbrev}-Group`);
-  const csvHeader = 'Seq_ID,Owner_group,Shared_groups';
+  // This is technically a CSV, but has just a single column
+  const csvHeader = 'Seq_ID';
   const csvRows = seqUploadRows.map(
-    row => `${row.seqId},${dataOwnerAbbrev}-Owner,${projectGroups.join(';')}`,
+    row => `${row.seqId}}`,
   );
   const csv = [csvHeader, ...csvRows].join('\n');
   return csv;

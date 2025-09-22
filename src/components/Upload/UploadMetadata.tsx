@@ -11,13 +11,13 @@ import {
   InputLabel,
   LinearProgress,
   Link,
-  TextField,
   List,
   ListItemText,
   MenuItem,
   Select,
   Tooltip,
   Typography,
+  Alert,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { FileUpload, Rule } from '@mui/icons-material';
@@ -33,6 +33,10 @@ import { DropFileUpload } from '../../types/DropFileUpload';
 import Validation from '../Validation/Validation';
 import HelpSidebar from '../Help/HelpSidebar';
 import UploadMetadataHelp from './UploadMetadataHelp';
+import { OrgDescriptor } from '../../types/sequploadtypes';
+import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
+import { selectUserState, UserSliceState } from '../../app/userSlice';
+import { useAppSelector } from '../../app/store';
 
 interface Options {
   validate: boolean,
@@ -53,8 +57,8 @@ const uploadOptions = [
   },
   {
     name: 'append',
-    label: 'Update existing samples',
-    description: 'Add or update metadata for existing samples. If this is selected, you cannot include new samples in the upload, but may use proformas that do not include Owner_group.',
+    label: 'Update only existing samples',
+    description: 'Add or update metadata for existing samples only; do not create new samples. Will check that all Seq_IDs in the upload are known.',
   },
 ];
 
@@ -81,9 +85,45 @@ function UploadMetadata() {
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [fileValidated, setFileValidated] = useState(false);
-  const [ownerOrgAbbrev, setOwnerOrgAbbrev] = useState('');
+  const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
+  const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<string[]>([]);
+  const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
+  const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const scrollRef = useRef<null | HTMLDivElement>(null);
+  const user: UserSliceState = useAppSelector(selectUserState);
   const { token, tokenLoading } = useApi();
+
+  const canUpload = selectedDataOwner && selectedProforma && files.length > 0;
+  
+  // Data owner
+  useEffect(() => {
+    if (user.loading !== LoadingState.SUCCESS) {
+      setAvailableDataOwners([]);
+      return;
+    }
+    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
+    if (orgs.some(org => org.abbreviation === user.orgAbbrev)) {
+      setSelectedDataOwner(user.orgAbbrev);
+    } else if (orgs.length > 0) {
+      setSelectedDataOwner(orgs[0].abbreviation);
+    }
+    if (orgs.length === 0) {
+      setPageErrorMsg('Either you do not have uploader permissions in any organisation, or your permissions ' +
+        'could not be properly loaded. Please contact an admin.');
+    }
+  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+
+  // Projects
+  useEffect(() => {
+    if (user.loading !== LoadingState.SUCCESS) {
+      setAvailableProjects([]);
+      return;
+    }
+    const projects: string[] = getSharableProjects(user.groupRoles ?? []);
+    setAvailableProjects(projects);
+  }, [user.groupRoles, user.loading, user.orgAbbrev]);
   
   useEffect(() => {
     setProformaStatus(LoadingState.LOADING);
@@ -105,7 +145,7 @@ function UploadMetadata() {
   }, [token, tokenLoading]);
 
   useEffect(() => {
-    // Scroll vaidation or upload response messages into view
+    // Scroll validation or upload response messages into view
     if (submission.messages?.length !== 0) {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -138,8 +178,20 @@ function UploadMetadata() {
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
     const submissionResponse : ResponseObject = options.validate
-      ? await validateSubmissions(formData, optionString, token, ownerOrgAbbrev)
-      : await uploadSubmissions(formData, optionString, token, ownerOrgAbbrev);
+      ? await validateSubmissions(
+        formData,
+        optionString,
+        token,
+        selectedDataOwner!,
+        selectedProjectShare,
+      )
+      : await uploadSubmissions(
+        formData,
+        optionString,
+        token,
+        selectedDataOwner!,
+        selectedProjectShare,
+      );
 
     const newMessages = [...submissionResponse.messages ?? []];
     if (submissionResponse.status === ResponseType.Success) {
@@ -165,7 +217,7 @@ function UploadMetadata() {
     setMessages(newMessages);
   };
   useEffect(() => {
-    // Every time file or option change, reset loading state of submission to idle
+    // Every time file or option changes, reset loading state of submission to idle
     setSubmission({
       ...submission,
       status: LoadingState.IDLE,
@@ -177,7 +229,15 @@ function UploadMetadata() {
   return (
     <>
       <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
+      {/* Top section */}
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
+        { pageErrorMsg && (
+          <Grid size={12}>
+            <Alert severity="error">
+              { pageErrorMsg }
+            </Alert>
+          </Grid>
+        )}
         <Grid size={{ md: 12, lg: 9 }}>
           <Typography variant="subtitle2" paddingBottom={1}>
             Please select a proforma for validation, and select a metadata file to upload.
@@ -201,17 +261,84 @@ function UploadMetadata() {
           />
         </Grid>
       </Grid>
+      {/* Main section of page, containing 3 columns and lower elements */}
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
-        <Grid size={{ lg: 3, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">Select proforma </Typography>
+        {/* Left column: org, projects, proforma */}
+        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
+          <FormControl
+            size="small"
+            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
+            variant="standard"
+          >
+            <InputLabel
+              id="select-data-owner-label"
+              sx={{ color: selectedDataOwner ? 'inherit' : import.meta.env.VITE_THEME_SECONDARY_RED }}
+            >
+              Data Owner
+            </InputLabel>
+            <Select
+              required
+              labelId="select-data-owner-label"
+              id="select-data-owner"
+              name="Data Owner"
+              value={selectedDataOwner || ''}
+              onChange={(e) => setSelectedDataOwner(e.target.value)}
+            >
+              {
+                availableDataOwners.map((org: string) => (
+                  <MenuItem
+                    value={org}
+                    key={org}
+                  >
+                    {org}
+                  </MenuItem>
+                ))
+              }
+            </Select>
+          </FormControl>
+          <Typography variant="h4" color="primary">Sharing</Typography>
+          <FormControl
+            size="small"
+            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
+            variant="standard"
+          >
+            <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
+            <Select
+              labelId="select-project-share-label"
+              id="select-project-share"
+              name="Share with Projects"
+              value={selectedProjectShare}
+              multiple
+              onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
+            >
+              {
+                availableProjects.map((project: string) => (
+                  <MenuItem
+                    value={project}
+                    key={project}
+                  >
+                    {project}
+                  </MenuItem>
+                ))
+              }
+            </Select>
+          </FormControl>
+          <Typography variant="h4" color="primary">Select proforma</Typography>
           <Tooltip title={proformaStatusMessage} placement="left" arrow>
             <FormControl
+              required
               error={proformaStatus === LoadingState.ERROR}
               size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
               variant="standard"
             >
-              <InputLabel id="proforma-simple-select-label">Proforma</InputLabel>
+              <InputLabel
+                id="proforma-simple-select-label"
+                sx={{ color: selectedProforma ? 'inherit' : import.meta.env.VITE_THEME_SECONDARY_RED }}
+              >
+                Proforma
+              </InputLabel>
               <Select
                 labelId="proforma-simple-select-label"
                 id="proforma-simple-select-label"
@@ -258,25 +385,8 @@ function UploadMetadata() {
               />
             </List>
           ) : null}
-          <Grid>
-            <Typography variant="h4" color="primary" marginTop="50px">Owner Organisation</Typography>
-            <Tooltip
-              title="The owner organisation of every metadata record
-            in the csv. There can be only one owner. If multiple owners are
-            involved, the records need to be grouped into a file per owner
-            and uploaded separately."
-              placement="bottom"
-            >
-              <TextField
-                id="standard-basic"
-                label="Abbreviation"
-                variant="standard"
-                required
-                onChange={(e) => setOwnerOrgAbbrev(e.target.value)}
-              />
-            </Tooltip>
-          </Grid>
         </Grid>
+        {/* Middle column: file selector */}
         <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select metadata file</Typography>
           <FileDragDrop
@@ -286,8 +396,39 @@ function UploadMetadata() {
             validated={fileValidated}
             setValidated={setFileValidated}
           />
+          {
+            canUpload && !options.validate && !options.append &&
+            selectedProjectShare.length === 0 && (
+              <Alert severity="warning" sx={{ marginBottom: 1 }}>
+                No projects selected; newly created sample records will not be part of any project.
+              </Alert>
+            )
+          }
+          { options.validate ? (
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+              disabled={!canUpload}
+              endIcon={<Rule />}
+              onClick={() => handleSubmit()}
+            >
+              Validate metadata
+            </Button>
+          )
+            : (
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                disabled={!canUpload}
+                endIcon={<FileUpload />}
+                onClick={() => handleSubmit()}
+              >
+                Upload metadata
+              </Button>
+            )}
         </Grid>
-        <Grid size={{ lg: 5, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Right column: upload options */}
+        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
           <FormGroup>
             { uploadOptions.map(
@@ -313,28 +454,7 @@ function UploadMetadata() {
           </FormGroup>
         </Grid>
       </Grid>
-      <Grid container justifyContent="flex-end">
-        { options.validate ? (
-          <Button
-            variant="contained"
-            disabled={!selectedProforma || files.length === 0}
-            endIcon={<Rule />}
-            onClick={() => handleSubmit()}
-          >
-            Validate metadata
-          </Button>
-        )
-          : (
-            <Button
-              variant="contained"
-              disabled={!selectedProforma || files.length === 0}
-              endIcon={<FileUpload />}
-              onClick={() => handleSubmit()}
-            >
-              Upload metadata
-            </Button>
-          )}
-      </Grid>
+      <Grid container justifyContent="flex-end" />
       <div ref={scrollRef}>
         {(
           submission.status === LoadingState.SUCCESS ||

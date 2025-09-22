@@ -2,7 +2,7 @@
 // ^ rule is broken for some typescript-specific syntax features
 import {
   callDELETE,
-  buildOwnerOrgHeader,
+  buildUploadHeaders,
   callGET,
   callPATCH,
   callPost,
@@ -106,8 +106,9 @@ export const validateSubmissions = (
   params: string,
   token: string,
   ownerOrgAbbrev: string,
+  shareProjectAbbrevs: string[] = [],
 ) => {
-  const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
+  const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
 };
 export const uploadSubmissions = (
@@ -115,8 +116,9 @@ export const uploadSubmissions = (
   params: string,
   token: string,
   ownerOrgAbbrev: string,
+  shareProjectAbbrevs: string[] = [],
 ) => {
-  const customHeaders = buildOwnerOrgHeader(ownerOrgAbbrev);
+  const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };
 
