@@ -8,6 +8,7 @@ import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
 import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
+import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 
 const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'default': DefaultDashboard,
@@ -18,5 +19,6 @@ const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps
   'vicdh-alerts': VicDHAlertsDashboard,
   'apg': ApgDashboard,
   'withqc': WithQC,
+  'se-demo': SEDemoDashboard,
 };
 export default DashboardTemplates;
