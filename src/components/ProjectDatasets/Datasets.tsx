@@ -1,8 +1,17 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect, memo } from 'react';
 import {
-  IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Tooltip,
-  Typography
+  IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
