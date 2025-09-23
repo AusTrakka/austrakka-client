@@ -21,6 +21,12 @@ function MapChart(props: MapTestProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
   const [regionView, setRegionView] = useState(false);
+  const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
+  const [missingData, setMissingData] = useState<GeoCountRow[]>([]);
+  const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
+  const [showAlert, setShowAlert] = useState(true);
+  const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
+  
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
     const mapJson = Maps[mapSpec];
@@ -36,12 +42,6 @@ function MapChart(props: MapTestProps) {
       ),
     };
   }, [mapSpec, regionView]);
-
-  const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
-  const [missingData, setMissingData] = useState<GeoCountRow[]>([]);
-  const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
-  const [showAlert, setShowAlert] = useState(true);
-  const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
 
   useEffect(() => {
     if (!chartRef.current) return undefined;
