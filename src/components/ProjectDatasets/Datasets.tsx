@@ -1,6 +1,9 @@
 /* eslint-disable react/jsx-pascal-case */
 import React, { useState, useEffect, memo } from 'react';
-import { IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Tooltip } from '@mui/material';
+import {
+  IconButton, Snackbar, Alert, Dialog, Button, DialogActions, DialogContent, DialogTitle, Paper, Tooltip,
+  Typography
+} from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -175,6 +178,10 @@ function Datasets(props: DatasetProps) {
     )
       : (
         <div>
+          <Typography variant="subtitle2" paddingBottom={1}>
+            This page lists metadata sets added to the project by project analysts. These may
+            represent analysis results or other project-owned data.
+          </Typography>
           <Paper elevation={2} sx={{ marginBottom: 10 }}>
             <DataTable
               value={rows}
