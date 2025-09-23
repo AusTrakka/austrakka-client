@@ -175,17 +175,28 @@ function MapChart(props: MapTestProps) {
       setRegionView(false);
     }
 
-    const { counts: aggregated, missing } = aggregateGeoData(
-      data,
-      geoField,
-      Maps[mapSpec],
-      isoCode,
-    );
-    
-    setIsoType(isoCode);
-    setAggregateData(aggregated);
-    setMissingData(missing);
-    setShowAlert(true);
+    let aggregated: GeoCountRow[] = [];
+    let missing: GeoCountRow[] = [];
+
+    try {
+      const result = aggregateGeoData(
+        data,
+        geoField,
+        Maps[mapSpec],
+        isoCode,
+      );
+      aggregated = result.counts;
+      missing = result.missing;
+
+      setIsoType(isoCode);
+      setAggregateData(aggregated);
+      setMissingData(missing);
+      setShowAlert(true);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error aggregating geo data:', err);
+      setMapRenderingError(true);
+    }
   }, [data, geoField, mapSpec]);
 
   // Register map whenever filteredMapSpec changes

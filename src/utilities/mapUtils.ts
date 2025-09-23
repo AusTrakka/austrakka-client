@@ -7,17 +7,6 @@ import { Sample } from '../types/sample.interface';
 import { Field } from '../types/dtos';
 import { standardise } from '../app/metadataSliceUtils';
 
-/**
- * @deprecated This needs to be removed
- */
-export function parseGeoJson(geoJson: any, propertyName = 'iso_3166_2') {
-  const isoList = [];
-  for (const feature of geoJson.features) {
-    isoList.push(feature.properties[propertyName]);
-  }
-  return isoList;
-}
-
 export function detectIsoType(validValues: string[]): FeatureLookupFieldType | null {
   if (!validValues || validValues.length === 0) return null;
 
@@ -51,6 +40,11 @@ export const aggregateGeoData = (
     .filter(Boolean) || [];
 
   expectedValues.forEach((value: string) => {
+    if (lookupTable[value] !== undefined) {
+      throw new Error(
+        `Duplicate geoLookupField value "${value}" found in GeoJSON features`,
+      );
+    }
     lookupTable[value] = 0;
   });
 
