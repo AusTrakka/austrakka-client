@@ -45,10 +45,9 @@
     .p-datatable .p-column-resizer-helper {
         background: var(--secondary-main);
     }
-
-
+    
 
   .p-datatable-header {
-    height: 60px;
+    height: 50px;
   }
     
