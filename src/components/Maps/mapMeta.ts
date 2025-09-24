@@ -9,8 +9,7 @@ export const Maps = {
   WORLD: WORLD as GeoJSON,
   // 1. Maybe an Australia only map?
   // 2. I don't think New Zealand will need a standalone
-  // 3. Need to add a WorldMap [regions will not be hard to support with this one]
-  // 4. More to come...
+  // 3. More to come...
 } as const;
 
 // Type that holds the correct values for the keys
