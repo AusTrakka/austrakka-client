@@ -262,9 +262,9 @@ function UploadMetadata() {
         </Grid>
       </Grid>
       {/* Main section of page, containing 3 columns and lower elements */}
-      <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 6 }}>
+      <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
         {/* Left column: org, projects, proforma */}
-        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
           <FormControl
             size="small"
@@ -386,49 +386,8 @@ function UploadMetadata() {
             </List>
           ) : null}
         </Grid>
-        {/* Middle column: file selector */}
-        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">Select metadata file</Typography>
-          <FileDragDrop
-            files={files}
-            setFiles={setFiles}
-            validFormats={validFormats}
-            validated={fileValidated}
-            setValidated={setFileValidated}
-          />
-          {
-            canUpload && !options.validate && !options.append &&
-            selectedProjectShare.length === 0 && (
-              <Alert severity="warning" sx={{ marginBottom: 1 }}>
-                No projects selected; newly created sample records will not be part of any project.
-              </Alert>
-            )
-          }
-          { options.validate ? (
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
-              disabled={!canUpload}
-              endIcon={<Rule />}
-              onClick={() => handleSubmit()}
-            >
-              Validate metadata
-            </Button>
-          )
-            : (
-              <Button
-                variant="contained"
-                sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
-                disabled={!canUpload}
-                endIcon={<FileUpload />}
-                onClick={() => handleSubmit()}
-              >
-                Upload metadata
-              </Button>
-            )}
-        </Grid>
         {/* Right column: upload options */}
-        <Grid size={{ lg: 4, md: 12, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
           <FormGroup>
             { uploadOptions.map(
@@ -453,6 +412,49 @@ function UploadMetadata() {
             ) }
           </FormGroup>
         </Grid>
+      </Grid>
+      {/* Lower section: file selector */}
+      <Grid container alignItems="center" justifyContent="center">
+        <Box sx={{ minWidth: 350, maxWidth: 600}}>
+          <Typography variant="h4" color="primary">Select metadata file</Typography>
+          <FileDragDrop
+            files={files}
+            setFiles={setFiles}
+            validFormats={validFormats}
+            validated={fileValidated}
+            setValidated={setFileValidated}
+          />
+          {
+            canUpload && !options.validate && !options.append &&
+            selectedProjectShare.length === 0 && (
+              <Alert severity="warning" sx={{ marginBottom: 1 }}>
+                No projects selected; newly created sample records will not be part of any project.
+              </Alert>
+            )
+          }
+          { options.validate ? (
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                disabled={!canUpload}
+                endIcon={<Rule />}
+                onClick={() => handleSubmit()}
+              >
+                Validate metadata
+              </Button>
+            )
+            : (
+              <Button
+                variant="contained"
+                sx={{ width: "100%", backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                disabled={!canUpload}
+                endIcon={<FileUpload />}
+                onClick={() => handleSubmit()}
+              >
+                Upload metadata
+              </Button>
+            )}
+        </Box>
       </Grid>
       <Grid container justifyContent="flex-end" />
       <div ref={scrollRef}>

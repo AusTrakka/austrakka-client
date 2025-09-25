@@ -360,6 +360,7 @@ function UploadSequences() {
           </Grid>
         </Grid>
         <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
+          {/* Left column: data ownership and sharing */}
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
             <FormControl
@@ -427,6 +428,7 @@ function UploadSequences() {
               </Select>
             </FormControl>
           </Grid>
+          {/* Right column: upload options */}
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4" color="primary">Upload options</Typography>
             <FormControl
@@ -501,6 +503,7 @@ function UploadSequences() {
             </FormGroup>
           </Grid>
         </Grid>
+        {/* File upload and table */}
         <Grid container alignItems="center" justifyContent="center" paddingTop={1}>
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
             <Typography variant="h4" color="primary">Select sequence files</Typography>
@@ -517,7 +520,7 @@ function UploadSequences() {
             />
           </Box>
           {files.length > 0 && (
-            <Stack>
+            <Stack paddingTop={1}>
               {seqUploadRowStates.some(state => activeSeqUploadStates.includes(state)) && (
                 <Alert severity="warning">
                   <Typography variant="body2">
@@ -561,31 +564,31 @@ function UploadSequences() {
                   </TableBody>
                 </Table>
               </TableContainer>
+              {files.length !== 0 && filesValidated && (
+                <Grid container alignItems="center" justifyContent="right" size={12} paddingTop={2} paddingBottom={6}>
+                  <>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={handleUpload}
+                      disabled={uploadInProgress() || uploadFinished()}
+                    >
+                      Upload All
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={handleClearFiles}
+                      disabled={uploadInProgress()}
+                    >
+                      Clear Files
+                    </Button>
+                  </>
+                </Grid>
+              )}
             </Stack>
           )}
         </Grid>
-        {files.length !== 0 && filesValidated && (
-          <Grid container alignItems="right" justifyContent="right" paddingTop={2} paddingBottom={6}>
-            <>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={handleUpload}
-                disabled={uploadInProgress() || uploadFinished()}
-              >
-                Upload All
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleClearFiles}
-                disabled={uploadInProgress()}
-              >
-                Clear Files
-              </Button>
-            </>
-          </Grid>
-        )}
       </Box>
     </>
   );
