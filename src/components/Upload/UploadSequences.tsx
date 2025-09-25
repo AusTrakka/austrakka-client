@@ -474,7 +474,7 @@ function UploadSequences() {
                   label="Skip samples with sequences"
                 />
                 <Box sx={{ paddingLeft: 4 }}>
-                  <Typography variant="subtitle2">
+                  <Typography variant="body2">
                     Silently skip samples which already have sequences of the same data type,
                     without displaying any errors.
                   </Typography>
@@ -494,7 +494,7 @@ function UploadSequences() {
                   label="Overwrite existing sequences"
                 />
                 <Box sx={{ paddingLeft: 4 }}>
-                  <Typography variant="subtitle2">
+                  <Typography variant="body2">
                     For any samples with existing sequences of the same data type,
                     disable the old files and upload the new files as replacements.
                   </Typography>

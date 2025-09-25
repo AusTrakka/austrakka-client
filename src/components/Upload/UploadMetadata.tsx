@@ -402,10 +402,10 @@ function UploadMetadata() {
                         name={uploadOption.name}
                       />
                 )}
-                    label={<b>{uploadOption.label}</b>}
+                    label={uploadOption.label}
                   />
                   <Box sx={{ paddingLeft: 4 }}>
-                    {uploadOption.description}
+                    <Typography variant="body2">{uploadOption.description}</Typography>
                   </Box>
                 </Box>
               ),
@@ -415,8 +415,8 @@ function UploadMetadata() {
       </Grid>
       {/* Lower section: file selector */}
       <Grid container alignItems="center" justifyContent="center">
-        <Box sx={{ minWidth: 350, maxWidth: 600}}>
-          <Typography variant="h4" color="primary">Select metadata file</Typography>
+        <Box sx={{ minWidth: 350, maxWidth: 600 }}>
+          <Typography variant="h4" color="primary" paddingTop={1}>Select metadata file</Typography>
           <FileDragDrop
             files={files}
             setFiles={setFiles}
@@ -433,20 +433,20 @@ function UploadMetadata() {
             )
           }
           { options.validate ? (
-              <Button
-                variant="contained"
-                sx={{ backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
-                disabled={!canUpload}
-                endIcon={<Rule />}
-                onClick={() => handleSubmit()}
-              >
-                Validate metadata
-              </Button>
-            )
+            <Button
+              variant="contained"
+              sx={{ width: '100%', backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+              disabled={!canUpload}
+              endIcon={<Rule />}
+              onClick={() => handleSubmit()}
+            >
+              Validate metadata
+            </Button>
+          )
             : (
               <Button
                 variant="contained"
-                sx={{ width: "100%", backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                sx={{ width: '100%', backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
                 disabled={!canUpload}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
