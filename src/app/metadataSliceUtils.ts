@@ -5,7 +5,7 @@ import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import { MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
 
-export function standardise(code: string): string | null {
+export function getCountryCode(code: string): string | null {
   if (!code) return null;
   const upperCaseIso = code.trim().toUpperCase();
 
@@ -183,7 +183,7 @@ export function calculateSupportedMaps(
         hasCountryValues = true; // found a top-level country
       }
 
-      const standard = standardise(val);
+      const standard = getCountryCode(val);
       if (standard) datasetKeys.add(standard);
     }
   }

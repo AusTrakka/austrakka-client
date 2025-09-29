@@ -80,14 +80,16 @@ function MapDetail(props: MapDetailProps) {
     }
   }, [data]);
 
-  // if there are no maps to use, then we will show an error alert
+  // If there are no maps to use, then we will show an error alert... 
+  // If there is only one, auto select it
   useEffect(() => {
     if (data &&
-        data.loadingState === MetadataLoadingState.DATA_LOADED &&
-        data.supportedMaps.length === 0) {
-      setNoSupportedMapsError(true);
+        data.loadingState === MetadataLoadingState.DATA_LOADED
+    ) {
+      if (data.supportedMaps.length === 0) setNoSupportedMapsError(true);
+      else if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
     }
-  }, [data]);
+  }, [data, setSelectedMap]);
   
   useEffect(() => {
     if (data &&
