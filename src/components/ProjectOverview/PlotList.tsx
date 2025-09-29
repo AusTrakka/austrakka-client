@@ -21,7 +21,7 @@ interface PlotListProps {
 const mapRow = {
   abbreviation: '__MAP__',
   name: 'Project Map',
-  description: 'Access the full map',
+  description: 'Geographic distribution of samples',
   created: null,
 };
 

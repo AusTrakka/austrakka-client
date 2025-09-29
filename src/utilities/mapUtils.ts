@@ -5,13 +5,13 @@ import {
 } from '../components/Maps/mapMeta';
 import { Sample } from '../types/sample.interface';
 import { Field } from '../types/dtos';
-import { standardise } from '../app/metadataSliceUtils';
+import { getCountryCode } from '../app/metadataSliceUtils';
 
 export function detectIsoType(validValues: string[]): FeatureLookupFieldType | null {
   if (!validValues || validValues.length === 0) return null;
 
   // Take the first non-null standardised value
-  const sampleIso = validValues.map(standardise).find(v => v !== null);
+  const sampleIso = validValues.map(getCountryCode).find(v => v !== null);
   if (!sampleIso) return null;
 
   if (/^[A-Z]{2}-/.test(validValues[0].toUpperCase())) return 'iso_region';
