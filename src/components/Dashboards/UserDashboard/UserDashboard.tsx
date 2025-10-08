@@ -16,7 +16,14 @@ function UserDashboard(props: UserDashboardProps) {
         <Grid container size={12} justifyContent="space-between">
           <Typography variant="h2" color="primary">Dashboard</Typography>
         </Grid>
-        <Grid container size={12} spacing={2} sx={{ marginTop: 1, padding: 2, backgroundColor: 'var(--primary-main-bg)' }}>
+        <Grid
+          container
+          size={12}
+          spacing={2}
+          sx={{ marginTop: 1,
+            padding: 2,
+            backgroundColor: 'var(--primary-main-bg)' }}
+        >
           <Card sx={cardStyle}>
             <CardContent>
               <UserOverview />

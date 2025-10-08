@@ -10,6 +10,7 @@ describe('calculateUniqueValues', () => {
       metaDataColumnTypeName: 'string',
       metaDataColumnValidValues: [],
       canVisualise: true,
+      geoField: false,
       columnOrder: 1,
     },
     {
@@ -18,6 +19,7 @@ describe('calculateUniqueValues', () => {
       metaDataColumnTypeName: 'date',
       metaDataColumnValidValues: [],
       canVisualise: false,
+      geoField: false,
       columnOrder: 2,
     },
     {
@@ -26,6 +28,7 @@ describe('calculateUniqueValues', () => {
       metaDataColumnTypeName: 'date',
       metaDataColumnValidValues: [],
       canVisualise: true,
+      geoField: false,
       columnOrder: 3,
     },
     {
@@ -34,6 +37,7 @@ describe('calculateUniqueValues', () => {
       metaDataColumnTypeName: 'CategoricalFieldType',
       metaDataColumnValidValues: ['val1', 'val2', 'val3'],
       canVisualise: true,
+      geoField: false,
       columnOrder: 4,
     },
   ];
