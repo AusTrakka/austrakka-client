@@ -6,6 +6,7 @@ import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 import { defaultDiscreteColorScheme } from '../constants/schemes';
+import { renderValue } from './renderUtils';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
@@ -34,14 +35,7 @@ export default function mapMetadataToPhylocanvas(
     fieldInformation.forEach((fi) => {
       const value = sample[fi.columnName] ?? 'null';
       const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rgba(0,0,0,0)';
-
-      let label: string | undefined;
-      if (fi.primitiveType === 'date') {
-        label = fi.columnName === 'Date_coll' ? isoDateLocalDateNoTime(value) : isoDateLocalDate(value);
-      } else {
-        label = value;
-      }
-
+      const label: string | undefined = renderValue(value, fi.columnName, fi.primitiveType!);
       result[sampleName][fi.columnName] = {
         colour,
         label: label ?? '',
