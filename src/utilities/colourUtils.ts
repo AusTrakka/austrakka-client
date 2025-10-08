@@ -57,6 +57,33 @@ export function createColourMapping(uniqueValues: string[], colorScheme: string)
   return mapping;
 }
 
+export function getColorArrayFromScheme(schemeName: string, count: number): string[] {
+  if (!allColorSchemes[schemeName]) {
+    throw new Error(`Color scheme ${schemeName} not found`);
+  }
+
+  // Range schemes (sequential, diverging, cyclic)
+  if (rangeColorSchemes[schemeName]) {
+    const scale = rangeColorSchemes[schemeName];
+    return d3.quantize(scale, count);
+  }
+
+  // Discrete schemes (ordinal)
+  if (discreteColorSchemes[schemeName]) {
+    const scale = discreteColorSchemes[schemeName];
+
+    // If it's not pre-mapped, generate a domain of dummy values to populate the range
+    if (!valueMappedColorSchemes.has(schemeName)) {
+      const dummyValues = Array.from({ length: count }, (_, i) => `_${i}`);
+      scale.domain(dummyValues);
+    }
+
+    return Array.from({ length: count }, (_, i) => scale(`_${i}`));
+  }
+
+  return [];
+}
+
 export function generateColorSchemeThumbnail(schemeName: string): string[] {
   if (!allColorSchemes[schemeName]) return [];
   
