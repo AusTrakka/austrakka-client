@@ -1,4 +1,4 @@
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { ColorScheme } from 'vega';
@@ -43,7 +43,10 @@ const defaultSpec: TopLevelSpec = {
     x: {
       field: 'Date_coll',
       type: 'temporal',
-      axis: { grid: false },
+      axis: {
+        grid: false,
+        labelAngle: 0,
+      },
     },
     y: {
       field: 'cgMLST',
@@ -87,6 +90,11 @@ function ClusterTimeline(props: PlotTypeProps) {
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
+    navigate,
+  );
+  const [axisLabelAngle, setAxisLabelAngle] = useStateFromSearchParamsForPrimitive<number>(
+    'axisLabelAngle',
+    0,
     navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
@@ -184,6 +192,20 @@ function ClusterTimeline(props: PlotTypeProps) {
     setSpec(addTimeAggregationToSpec);
   }, [dateBinUnit, yAxisField, colourField, dateField]);
 
+  useEffect(() => {
+    const setAxisLabelAngleInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+      newSpec.encoding.x.axis = { ...(oldSpec as any).encoding.x.axis, labelAngle: axisLabelAngle };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setAxisLabelAngleInSpec);
+  }, [axisLabelAngle]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -236,6 +258,18 @@ function ClusterTimeline(props: PlotTypeProps) {
             dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
           }
         </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="axis-angle-select"
+          label="Axis angle"
+          size="small"
+          inputProps={{ min: -90, max: 90, step: 45 }}
+          value={axisLabelAngle}
+          onChange={(e) => setAxisLabelAngle(parseInt(e.target.value, 10) || 0)}
+        />
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
