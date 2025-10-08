@@ -18,6 +18,13 @@ interface PlotListProps {
   setIsLoading: (isLoading: boolean) => void;
 }
 
+const mapRow = {
+  abbreviation: '__MAP__',
+  name: 'Project Map',
+  description: 'Geographic distribution of samples',
+  created: null,
+};
+
 function PlotList(props: PlotListProps) {
   const { projectDetails, setIsLoading } = props;
   const { navigate } = useStableNavigate();
@@ -42,7 +49,8 @@ function PlotList(props: PlotListProps) {
     async function getPlotList() {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === ResponseType.Success) {
-        setPlotList(plotsResponse.data as PlotListing[]);
+        const tableData: PlotListing[] = [...plotsResponse.data, mapRow];
+        setPlotList(tableData);
         setIsLoading(false);
       } else {
         setIsLoading(false);
@@ -57,7 +65,13 @@ function PlotList(props: PlotListProps) {
   }, [projectDetails, setIsLoading, token]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
+    if (row.data.abbreviation === '__MAP__') {
+      // Special logic for the map
+      navigate(`/projects/${projectDetails!.abbreviation}/map`);
+    } else {
+      // Regular plot row
+      navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
+    }
   };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +82,7 @@ function PlotList(props: PlotListProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <SearchInput
         value={(globalFilter.global as DataTableFilterMetaData).value || ''}
         onChange={onGlobalFilterChange}
