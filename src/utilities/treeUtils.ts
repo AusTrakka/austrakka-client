@@ -4,7 +4,6 @@ import { Field } from '../types/dtos';
 import { createColourMapping } from './colourUtils';
 import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 import { defaultDiscreteColorScheme } from '../constants/schemes';
 import { renderValue } from './renderUtils';
 
