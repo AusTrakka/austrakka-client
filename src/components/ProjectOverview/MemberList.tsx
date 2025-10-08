@@ -17,7 +17,7 @@ import sortIcon from '../TableComponents/SortIcon';
 import { generateFilename } from '../../utilities/file';
 import { useStableNavigate } from '../../app/NavigationContext';
 
-interface MembersProps {
+interface MemberListProps {
   projectDetails: Project | null
   setIsLoading: (isLoading: boolean) => void;
 }
@@ -25,7 +25,7 @@ interface MembersProps {
 function renderList(cell : any): JSX.Element[] {
   const roles = cell;
   if (Array.isArray(roles)) {
-    return roles.map((r) => (
+    return roles.sort().map((r) => (
       <Chip key={r} label={r} variant="filled" color="secondary" size="small" style={{ margin: '3px' }} />
     ));
   }
@@ -33,7 +33,7 @@ function renderList(cell : any): JSX.Element[] {
   return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
 
-function MemberList(props: MembersProps) {
+function MemberList(props: MemberListProps) {
   const {
     projectDetails,
     setIsLoading,

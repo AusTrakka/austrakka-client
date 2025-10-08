@@ -53,7 +53,7 @@ export default function ProjectsTotal() {
       if (projectResponse.data && projectResponse.status === ResponseType.Success) {
         const { data } = projectResponse;
         const processedProjs = data
-          .filter((p:ProjectSummary) =>
+          .filter((p: ProjectSummary) =>
             p.clientType === import.meta.env.VITE_BRANDING_ID)
           .sort((a: ProjectSummary, b: ProjectSummary) =>
             compareProperties(a, b, [
@@ -92,6 +92,8 @@ export default function ProjectsTotal() {
           value={projects}
           size="small"
           onRowClick={rowClickHandler}
+          scrollable
+          scrollHeight="calc(100vh - 600px)"
           removableSort
           sortIcon={sortIcon}
           selectionMode="single"

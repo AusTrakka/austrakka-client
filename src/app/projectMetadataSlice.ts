@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { PayloadAction, createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
@@ -7,19 +7,23 @@ import { Sample } from '../types/sample.interface';
 import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { SAMPLE_ID_FIELD, HAS_SEQUENCES } from '../constants/metadataConsts';
+import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import {
+  calculateSupportedMaps,
   calculateUniqueValues,
   calculateViewFieldNames,
+  getEmptyStringColumns,
   replaceDateStrings,
+  replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
-  replaceHasSequencesNullsWithFalse, getEmptyStringColumns,
 } from './metadataSliceUtils';
+import { MapSupportInfo } from '../components/Maps/mapMeta';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
   mergeAlgorithm: string | null
-  loadingState: MetadataLoadingState,
+  supportedMaps: MapSupportInfo[]
+  loadingState: MetadataLoadingState
   projectFields: ProjectField[] | null
   fields: ProjectViewField[] | null
   fieldUniqueValues: Record<string, string[] | null> | null
@@ -35,6 +39,7 @@ export interface ProjectMetadataState {
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
   mergeAlgorithm: null,
+  supportedMaps: [],
   loadingState: MetadataLoadingState.IDLE,
   projectFields: null,
   fields: null,
@@ -325,9 +330,17 @@ export const projectMetadataSlice = createSlice({
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
       const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
+      
+      const geoFields = state.data[projectAbbrev].fields!
+        .filter(field => field.geoField)
+        .map(field => field.columnName!);
+
+      state.data[projectAbbrev].supportedMaps = calculateSupportedMaps(uniqueVals, geoFields);
+      
       viewFields.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
+      
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       viewFields.forEach(field => {
