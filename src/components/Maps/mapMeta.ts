@@ -48,7 +48,7 @@ export const MapRegistry: MapRegistryEntry[] = [
   },
   {
     key: 'AUS_NZ',
-    supports: new Set(['AU', 'NZ', 'AUS', 'NZ']),
+    supports: new Set(['AU', 'NZ', 'AUS', 'NZL']),
   },
   {
     key: 'WORLD', // no supports needed, always included 
