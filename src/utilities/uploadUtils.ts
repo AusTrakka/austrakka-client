@@ -125,7 +125,7 @@ export const createSampleCSV = (
   // This is technically a CSV, but has just a single column
   const csvHeader = 'Seq_ID';
   const csvRows = seqUploadRows.map(
-    row => `${row.seqId}}`,
+    row => `${row.seqId}`,
   );
   const csv = [csvHeader, ...csvRows].join('\n');
   return csv;
