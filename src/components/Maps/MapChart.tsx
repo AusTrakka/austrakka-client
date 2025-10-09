@@ -152,52 +152,38 @@ function MapChart(props: MapTestProps) {
       ],
     };
 
-    // Use notMerge: true to force complete re-render and ensure proper centering
     chartInstance.current.setOption(option, true);
   }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
-
-  // Register map whenever filteredMapSpec changes
+  
   useEffect(() => {
-    if (!data || data.length === 0 || !geoField || !mapSpec) {
+    if (!geoField) return;
+    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
+
+    if (!isoCode) {
+      setMapRenderingError(true); // set error if isoCode is missing
+      return;
+    }
+
+    setMapRenderingError(false); // clear error if valid
+    setIsoType(isoCode);
+    setRegionView(isoCode === 'iso_region');
+  }, [geoField]);
+  
+  useEffect(() => {
+    if (!data || data.length === 0 || !geoField || !filteredMapSpec || !isoType) {
       setAggregateData([]);
       return;
     }
 
-    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
-    if (!isoCode) {
-      setMapRenderingError(true);
-      return;
-    }
-
-    if (isoCode === 'iso_region') {
-      setRegionView(true);
-    } else {
-      setRegionView(false);
-    }
-
-    let aggregated: GeoCountRow[] = [];
-    let missing: GeoCountRow[] = [];
-
     try {
-      const result = aggregateGeoData(
-        data,
-        geoField,
-        Maps[mapSpec],
-        isoCode,
-      );
-      aggregated = result.counts;
-      missing = result.missing;
-
-      setIsoType(isoCode);
-      setAggregateData(aggregated);
+      const { counts, missing } = aggregateGeoData(data, geoField, filteredMapSpec, isoType);
+      setAggregateData(counts);
       setMissingData(missing);
       setShowAlert(true);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error aggregating geo data:', err);
       setMapRenderingError(true);
     }
-  }, [data, geoField, mapSpec]);
+  }, [data, geoField, filteredMapSpec, isoType]);
 
   // Register map whenever filteredMapSpec changes
   useEffect(() => {
