@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import * as echarts from 'echarts';
 import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Alert, Box, Chip, Stack, Typography } from '@mui/material';
-import Geo from 'echarts/types/src/coord/geo/Geo';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
 import { Sample } from '../../types/sample.interface';
 import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
