@@ -75,6 +75,7 @@ function UserV2DetailOverview() {
     'objectId': 'Object ID',
     'globalId': 'Global ID',
     'displayName': 'Display Name',
+    'position': 'Position',
     'orgName': 'Organisation',
     'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
@@ -237,6 +238,8 @@ function UserV2DetailOverview() {
       displayName: otherValues.displayName,
       contactEmail: otherValues.contactEmail,
       analysisServerUsername: otherValues.analysisServerUsername,
+      position: otherValues.position,
+      noDownloadQuota: otherValues.noDownloadQuota,
     };
     
     const editedActiveState = user?.isActive !== isActive;

@@ -43,6 +43,7 @@ function UserDetail() {
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
     'displayName': 'Display Name',
+    'position': 'Position',
     'orgName': 'Organisation',
     'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
@@ -212,9 +213,11 @@ function UserDetail() {
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat = {
       displayName: otherValues.displayName,
+      position: otherValues.position,
       contactEmail: otherValues.contactEmail,
       orgAbbrev: otherValues.orgAbbrev,
       isActive: otherValues.isActive,
+      noDownloadQuota: otherValues.noDownloadQuota,
       analysisServerUsername: otherValues.analysisServerUsername,
     };
 

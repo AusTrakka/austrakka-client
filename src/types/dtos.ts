@@ -100,6 +100,7 @@ export interface PlotListing {
   // also projectName, and isActive. projectAbbrev??
 }
 
+// may need to add the property position here perchance
 export interface Member {
   objectId: string,
   roles: string[],
@@ -121,6 +122,7 @@ export interface User {
   isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
+  position: string,
   created: Date,
   lastLogIn: Date,
   lastActive: Date,
@@ -143,6 +145,7 @@ export interface UserV2 {
   orgName: string,
   isAusTrakkaAdmin: boolean,
   displayName: string,
+  position: string,
   created: Date,
   lastLogIn: Date,
   lastActive: Date,
@@ -220,6 +223,7 @@ export interface UserList {
 
 export interface UserListV2 {
   name: string,
+  position: string,
   id: string,
   organisation: string,
   contactEmail: string,
@@ -447,6 +451,8 @@ export interface UserPatchV2 {
   displayName: string,
   contactEmail: string,
   analysisServerUsername: string,
+  position: string,
+  noDownloadQuota: boolean,
 }
 
 export interface UserRoleRecordPrivilegePost {
