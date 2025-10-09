@@ -30,7 +30,6 @@ export const aggregateGeoData = (
   if (!geoJSON) return { counts: [], missing: [] };
   if (!rawSamples || rawSamples.length === 0) return { counts: [], missing: [] };
   if (geoJSON.features.length === 0) return { counts: [], missing: [] };
-
   const lookupTable: Record<string, number> = {};
   const missingTable: Record<string, number> = {};
 
