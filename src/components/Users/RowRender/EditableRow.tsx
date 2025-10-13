@@ -31,7 +31,6 @@ function EditableRow(props : EditableRowProps) {
     'lastLogIn',
     'lastActive',
     'monthlyBytesUsed',
-    'lastDownloadDate',
     'monthlyBytesQuota',
     'noDownloadQuota',
   ];

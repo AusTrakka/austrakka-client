@@ -131,7 +131,6 @@ export interface User {
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
   monthlyBytesUsed: number,
-  lastDownloadDate: Date,
   monthlyBytesQuota: number,
   noDownloadQuota: boolean
 }
@@ -154,7 +153,6 @@ export interface UserV2 {
   analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
   monthlyBytesUsed: number,
-  lastDownloadDate: Date,
   monthlyBytesQuota: number,
   noDownloadQuota: boolean
 }

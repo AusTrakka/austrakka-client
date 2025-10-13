@@ -85,7 +85,6 @@ function UserV2DetailOverview() {
     'isAusTrakkaProcess': 'Austrakka Process',
     'analysisServerUsername': 'Linux Username',
     'monthlyBytesUsed': 'Monthly Bytes Used',
-    'lastDownloadDate': 'Last Downloaded Date',
     'monthlyBytesQuota': 'Monthly Bytes Quota',
     'noDownloadQuota': 'No Download Quota',
   };

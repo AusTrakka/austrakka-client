@@ -48,7 +48,6 @@ function EditableRow(props : EditableRowProps) {
     'globalId',
     'orgName',
     'monthlyBytesUsed',
-    'lastDownloadDate',
     'monthlyBytesQuota',
     'noDownloadQuota',
   ];

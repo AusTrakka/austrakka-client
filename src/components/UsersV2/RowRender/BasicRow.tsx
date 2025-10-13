@@ -39,7 +39,7 @@ function BasicRow(props: BasicRowProps) {
       <TableCell className="value-cell">
         {(() => {
           switch (true) {
-            case field === 'created' || field === 'lastDownloadDate':
+            case field === 'created':
               return isoDateLocalDate(value);
            
             case immutableGuids.includes(field):
