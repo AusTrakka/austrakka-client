@@ -254,21 +254,26 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
-            <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
-              <Grid item>
-                <AccountCircle color="primary" />
-              </Grid>
-              {drawer ? (
-                <Grid item width="100%" textAlign="center">
-                  <Typography noWrap color="primary.main">
-                    {user.displayName}
-                  </Typography>
+          <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
+            <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
+              <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
+                <Grid item>
+                  
+                    <IconButton color="primary">
+                      <AccountCircle  />
+                    </IconButton>
                 </Grid>
-              )
-                : null}
-            </Grid>
-          </Tooltip>
+                {drawer ? (
+                  <Grid item width="100%" textAlign="center">
+                    <Typography noWrap color="primary.main">
+                      {user.displayName}
+                    </Typography>
+                  </Grid>
+                )
+                  : null}
+              </Grid>
+            </Tooltip>
+          </Link>
           <Divider />
           <List>
             {settings.map((setting) => (
