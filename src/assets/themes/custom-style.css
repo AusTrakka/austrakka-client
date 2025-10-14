@@ -86,3 +86,12 @@
 .activity-row-expander button > tr:hover {
   background-color: rgba(var(--primary-main-bg), 1) !important;
 }
+
+.p-datatable .p-column-resizer-helper {
+    background: var(--secondary-main);
+}
+
+.p-datatable-header {
+height: 50px;
+}
+    

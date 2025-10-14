@@ -3,6 +3,33 @@ import { Sample } from '../types/sample.interface';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
+import { MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
+
+export function getCountryCode(code: string): string | null {
+  if (!code) return null;
+  const upperCaseIso = code.trim().toUpperCase();
+
+  // Subdivision like AU-NSW → keep prefix
+  if (/^[A-Z]{2}-/.test(upperCaseIso)) {
+    return upperCaseIso.slice(0, 2);
+  }
+
+  // ISO2
+  if (/^[A-Z]{2}$/.test(upperCaseIso)) {
+    return upperCaseIso;
+  }
+
+  // ISO3
+  if (/^[A-Z]{3}$/.test(upperCaseIso)) {
+    return upperCaseIso;
+  }
+
+  return null; // unsupported/invalid
+}
+
+function isSubdivision(code: string): boolean {
+  return /^[A-Z]{2}-/.test(code.toUpperCase());
+}
 
 export function getFieldDetails(
   fieldNames: string[],
@@ -75,7 +102,7 @@ export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: 
           const month = parseInt(dateString.slice(5, 7), 10) - 1; // Months are zero-based
           const day = parseInt(dateString.slice(8, 10), 10);
 
-          sample[field.columnName] = new Date(year, month, day, 0, 0, 0);
+          sample[field.columnName] = new Date(Date.UTC(year, month, day, 0, 0, 0));
         }
       } else {
         sample[field.columnName] = null;
@@ -128,7 +155,60 @@ export function calculateUniqueValues(
   return uniqueValues;
 }
 
-// for project metadata specifically
+// Calculate what Maps this project has access too
+
+export function calculateSupportedMaps(
+  uniqueValues: Record<string, string[]>,
+  geoFields: string[],
+): MapSupportInfo[] {
+  if (Object.keys(uniqueValues).length === 0) return [];
+  if (geoFields.length === 0) return [];
+
+  const uniqueGeoValues = Object.fromEntries(
+    Object.entries(uniqueValues).filter(([key]) => geoFields.includes(key)),
+  );
+
+  if (Object.keys(uniqueGeoValues).length === 0) return [];
+
+  const datasetKeys = new Set<string>();
+  const datasetRegions = new Set<string>();
+  let hasCountryValues = false;
+
+  for (const uniqueVals of Object.values(uniqueGeoValues)) {
+    for (const val of uniqueVals) {
+      if (val === null || val === '') continue;
+      if (isSubdivision(val)) {
+        datasetRegions.add(val.slice(0, 2)); // e.g. "AU" from "AU-NSW"
+      } else {
+        hasCountryValues = true; // found a top-level country
+      }
+
+      const standard = getCountryCode(val);
+      if (standard) datasetKeys.add(standard);
+    }
+  }
+
+  if (datasetKeys.size === 0) return [];
+
+  const result: MapSupportInfo[] = [];
+
+  for (const entry of MapRegistry) {
+    if (entry.key === 'WORLD') continue;
+
+    const intersects = [...datasetKeys].some(k => entry.supports?.has(k));
+    if (intersects) {
+      const hasRegions = [...datasetRegions].some(r => entry.supports?.has(r));
+      result.push([entry.key, hasRegions]);
+    }
+  }
+
+  // Only add WORLD if there were actual country values
+  if (hasCountryValues) {
+    result.push(['WORLD', false]);
+  }
+
+  return result;
+}
 
 // Given a list of field names, calculate the viewFields for that field
 export function calculateViewFieldNames(

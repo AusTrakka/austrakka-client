@@ -21,12 +21,14 @@ module.exports = {
 	'no-plusplus': 'off',	// allow i++
     'operator-linebreak': 0,  // allow linebreak near = (and near logical operators)
     'implicit-arrow-linebreak': 0,  // allows linebreak after =>
+    'no-continue': 0,
     'object-curly-newline': ['error', { 'consistent': true }],   // one-line {} or newlines, just be consistent
     'arrow-parens': 0,   // allow a => a+b. Alternatively could use ['error','as-needed']
     'quote-props': ['error', 'consistent'],  // enforce quotes on all properties, or none
     'import/prefer-default-export': 0, // allow single exports
     'no-param-reassign': 0,  // allow modifying function parameters in-place
     'no-trailing-spaces': ['error', { 'ignoreComments': true, 'skipBlankLines': true }],
+    'no-continue': 0,  // allow continue in loops
     '@typescript-eslint/no-unused-vars': ['error', {
       'argsIgnorePattern': '^_',
       'varsIgnorePattern': '^_',

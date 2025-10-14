@@ -38,6 +38,8 @@ import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOve
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
 import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
 
+import MapPage from './components/Maps/MapPage';
+
 function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
@@ -69,6 +71,7 @@ function App() {
                     <Route path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId" element={<TreeDetail />} />
                     <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
                     <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
+                    <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
                     <Route path="records/:seqId" element={<OrgSampleDetail />} />
                     <Route path="proformas/:proformaAbbrev/:proformaVersion" element={<ProFormaDetail />} />
                     <Route path="fields" element={<Fields />} />

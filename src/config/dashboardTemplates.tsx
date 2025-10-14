@@ -7,14 +7,18 @@ import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.pro
 import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
+import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
+import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 
 const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'default': DefaultDashboard,
+  'demo': DemoDashboard,
   'basic': BasicDashboard,
   'snap': SnapDashboard,
   'vicdh': VicDHDashboard,
   'vicdh-alerts': VicDHAlertsDashboard,
   'apg': ApgDashboard,
   'withqc': WithQC,
+  'se-demo': SEDemoDashboard,
 };
 export default DashboardTemplates;
