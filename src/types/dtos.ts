@@ -145,16 +145,16 @@ export interface UserV2 {
   isAusTrakkaAdmin: boolean,
   displayName: string,
   position: string,
-  created: Date,
+  analysisServerUsername: string,
   lastLogIn: Date,
   lastActive: Date,
   contactEmail: string,
   IsAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
   privileges: GroupedPrivilegesByRecordType[],
   monthlyBytesUsed: number,
   monthlyBytesQuota: number,
-  noDownloadQuota: boolean
+  noDownloadQuota: boolean,
+  created: Date,
 }
 
 export interface UserMe {
@@ -451,6 +451,7 @@ export interface UserPatchV2 {
   analysisServerUsername: string,
   position: string,
   noDownloadQuota: boolean,
+  monthlyBytesQuota: number,
 }
 
 export interface UserRoleRecordPrivilegePost {

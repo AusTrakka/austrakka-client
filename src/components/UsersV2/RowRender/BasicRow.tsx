@@ -9,6 +9,7 @@ import { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
+import { bytesToMB } from '../../../utilities/renderUtils';
 
 interface BasicRowProps {
   field: keyof UserV2;
@@ -66,6 +67,10 @@ function BasicRow(props: BasicRowProps) {
                       <Cancel style={{ fontSize: '1rem' }} />}
                   </Tooltip>
                 </div>
+              );
+            case typeof value === 'number':
+              return (
+                `${bytesToMB(value)} MB per month`
               );
             default:
               return value;
