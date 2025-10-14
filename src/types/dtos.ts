@@ -154,6 +154,7 @@ export interface UserV2 {
   monthlyBytesUsed: number,
   monthlyBytesQuota: number,
   noDownloadQuota: boolean,
+  lastDownloadDate: Date,
   created: Date,
 }
 

@@ -98,6 +98,7 @@ function UserV2DetailOverview() {
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
     'monthlyBytesUsed',
+    'lastDownloadDate',
   ];
 
   if (user && user.noDownloadQuota) {
