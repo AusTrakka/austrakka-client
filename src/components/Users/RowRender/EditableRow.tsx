@@ -1,8 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Dispatch, SetStateAction } from 'react';
-import { Autocomplete, Switch, TableCell, TableRow, TextField } from '@mui/material';
+import { Autocomplete, InputAdornment, Switch, TableCell, TableRow, TextField, Typography } from '@mui/material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { FieldLabelWithTooltip } from '../../UsersV2/RowRender/FieldLabelWithToolTip';
+import { bytesToMB } from '../../../utilities/renderUtils';
 
 interface EditableRowProps {
   field: keyof User;
@@ -24,6 +26,7 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
+  
   const nonEditableFields = [
     'created',
     'objectId',
@@ -31,8 +34,6 @@ function EditableRow(props : EditableRowProps) {
     'lastLogIn',
     'lastActive',
     'monthlyBytesUsed',
-    'monthlyBytesQuota',
-    'noDownloadQuota',
   ];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -56,6 +57,17 @@ function EditableRow(props : EditableRowProps) {
       };
     });
   };
+  
+  const handleMBChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const mbValue = parseFloat(e.target.value) || 0;
+    const bytes = Math.round(mbValue * 1024 * 1024);
+
+    setEditedValues(prevValues => {
+      if (!prevValues) return null;
+      return { ...prevValues, [field]: bytes };
+    });
+  };
+  
   switch (typeof detailValue) {
     case 'string':
      
@@ -151,6 +163,57 @@ function EditableRow(props : EditableRowProps) {
               size="small"
               checked={editedValues?.[field] as boolean || false}
               onChange={handleChangeBoolean}
+            />
+          </TableCell>
+        </TableRow>
+      );
+    case 'number':
+      if (nonEditableFields.includes(field)) {
+        return (
+          <TableRow key={field}>
+            <TableCell width="200em">
+              {readableNames[field] || field}
+            </TableCell>
+            <TableCell>
+              {`${bytesToMB(detailValue as number)} MB`}
+            </TableCell>
+          </TableRow>
+        );
+      }
+      return (
+        <TableRow key={field}>
+          <TableCell>
+            <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+          </TableCell>
+          <TableCell>
+            <TextField
+              value={bytesToMB(editedValues?.[field] as number)}
+              onChange={handleMBChange}
+              variant="filled"
+              fullWidth
+              size="small"
+              hiddenLabel
+              sx={{ 'width': '100%',
+                'padding': '0',
+                'flexWrap': 'nowrap !important',
+                '& .MuiFilledInput-root.Mui-focused': {
+                  flexWrap: 'nowrap !important',
+                } }}
+              slotProps={{
+                input: {
+                  style: {
+                    fontSize: '.9rem',
+                    whiteSpace: 'nowrap',
+                    flexWrap: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                  endAdornment:
+  <InputAdornment position="end">
+    <Typography fontSize="0.9rem">MB per month</Typography>
+  </InputAdornment>,
+                },
+              }}
             />
           </TableCell>
         </TableRow>

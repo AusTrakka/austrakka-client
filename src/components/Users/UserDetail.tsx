@@ -55,7 +55,7 @@ function UserDetail() {
     'isAusTrakkaProcess': 'Austrakka Process',
     'analysisServerUsername': 'Analysis Server Username',
     'monthlyBytesUsed': 'Monthly Bytes Used',
-    'monthlyBytesQuota': 'Monthly Bytes Quota',
+    'monthlyBytesQuota': 'Download Quota',
     'noDownloadQuota': 'No Download Quota',
   };
 
@@ -66,6 +66,10 @@ function UserDetail() {
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
   ];
+  
+  if (user && user.noDownloadQuota) {
+    nonDisplayFields.push('monthlyBytesUsed', 'monthlyBytesQuota');
+  }
 
   if (loading === LoadingState.SUCCESS && admin) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
@@ -218,6 +222,7 @@ function UserDetail() {
       isActive: otherValues.isActive,
       noDownloadQuota: otherValues.noDownloadQuota,
       analysisServerUsername: otherValues.analysisServerUsername,
+      monthlyBytesQuota: otherValues.monthlyBytesQuota,
     };
 
     try {
