@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   FormGroup,
   InputLabel,
+  Link,
   MenuItem,
   Paper,
   Select,
@@ -347,8 +348,15 @@ function UploadSequences() {
             <Typography variant="subtitle2" paddingBottom={1}>
               Drag and drop files below, or click, to upload sequences.
               <br />
-              Only FASTQ uploads are handled via the portal currently. Please
-              use the CLI for any FASTA uploads.
+              Only FASTQ uploads are handled via the portal currently. Please&nbsp;
+              <Link
+                href={`${import.meta.env.VITE_DOCS_URL}/docs/AusTrakka CLI/CLI-sequence-upload`}
+                target="_blank"
+                color="primary.light"
+              >
+                use the CLI
+              </Link>
+              for any FASTA uploads.
             </Typography>
           </Grid>
           <Grid>
@@ -362,7 +370,9 @@ function UploadSequences() {
         <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
           {/* Left column: data ownership and sharing */}
           <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
+            <Typography variant="h4" color="primary" paddingBottom={2}>
+              Data ownership and validation
+            </Typography>
             <FormControl
               size="small"
               sx={{ minWidth: 200, maxWidth: 400, marginBottom: 2 }}
@@ -402,7 +412,7 @@ function UploadSequences() {
             />
             <FormControl
               size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginTop: 2, marginBottom: 2 }}
+              sx={{ minWidth: 200, maxWidth: 400, marginBottom: 2 }}
               variant="standard"
             >
               <InputLabel id="select-project-share-label">Share with Projects</InputLabel>

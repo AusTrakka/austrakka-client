@@ -265,7 +265,7 @@ function UploadMetadata() {
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
         {/* Left column: org, projects, proforma */}
         <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership</Typography>
+          <Typography variant="h4" color="primary" paddingBottom={2}>Data ownership and validation</Typography>
           <FormControl
             size="small"
             sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
@@ -435,7 +435,7 @@ function UploadMetadata() {
           { options.validate ? (
             <Button
               variant="contained"
-              sx={{ width: '100%', backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+              sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
               disabled={!canUpload}
               endIcon={<Rule />}
               onClick={() => handleSubmit()}
@@ -446,7 +446,7 @@ function UploadMetadata() {
             : (
               <Button
                 variant="contained"
-                sx={{ width: '100%', backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
                 disabled={!canUpload}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
