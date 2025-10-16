@@ -18,9 +18,11 @@ import {
   Tooltip,
   Typography,
   Alert,
+  FormHelperText,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { FileUpload, Rule } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
 import { Proforma } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
@@ -93,6 +95,7 @@ function UploadMetadata() {
   const scrollRef = useRef<null | HTMLDivElement>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { token, tokenLoading } = useApi();
+  const theme = useTheme();
 
   const canUpload = selectedDataOwner && selectedProforma && files.length > 0;
   
@@ -273,15 +276,13 @@ function UploadMetadata() {
           >
             <InputLabel
               id="select-data-owner-label"
-              sx={{ color: selectedDataOwner ? 'inherit' : import.meta.env.VITE_THEME_SECONDARY_RED }}
+              sx={{ color: selectedProforma ? 'inherit' : theme.palette.error.main }}
             >
               Data Owner
             </InputLabel>
             <Select
-              required
               labelId="select-data-owner-label"
               id="select-data-owner"
-              name="Data Owner"
               value={selectedDataOwner || ''}
               onChange={(e) => setSelectedDataOwner(e.target.value)}
             >
@@ -296,6 +297,9 @@ function UploadMetadata() {
                 ))
               }
             </Select>
+            <FormHelperText>
+              Required
+            </FormHelperText>
           </FormControl>
           <Typography variant="h4" color="primary">Sharing</Typography>
           <FormControl
@@ -327,7 +331,6 @@ function UploadMetadata() {
           <Typography variant="h4" color="primary">Select proforma</Typography>
           <Tooltip title={proformaStatusMessage} placement="left" arrow>
             <FormControl
-              required
               error={proformaStatus === LoadingState.ERROR}
               size="small"
               sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
@@ -335,7 +338,7 @@ function UploadMetadata() {
             >
               <InputLabel
                 id="proforma-simple-select-label"
-                sx={{ color: selectedProforma ? 'inherit' : import.meta.env.VITE_THEME_SECONDARY_RED }}
+                sx={{ color: selectedProforma ? 'inherit' : theme.palette.error.main }}
               >
                 Proforma
               </InputLabel>
@@ -366,6 +369,9 @@ function UploadMetadata() {
                   />
                 )
                 : null }
+              <FormHelperText>
+                Required
+              </FormHelperText>
             </FormControl>
           </Tooltip>
           { selectedProforma ? (
@@ -473,7 +479,7 @@ function UploadMetadata() {
       <Backdrop
         sx={{
           color: 'var(--background-colour)',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: theme.zIndex.drawer + 1,
         }}
         open={submission.status === LoadingState.LOADING}
       >
