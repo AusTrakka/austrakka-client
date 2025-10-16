@@ -11,11 +11,12 @@ import { generateFilename } from '../../utilities/file';
 interface ExportTableDataProps {
   dataToExport: any[]
   disabled: boolean
+  fileNamePrefix?: string
   headers?: string[]
 }
 
 function ExportTableData(props: ExportTableDataProps) {
-  const { dataToExport, disabled, headers } = props;
+  const { dataToExport, disabled, fileNamePrefix, headers } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
@@ -28,7 +29,7 @@ function ExportTableData(props: ExportTableDataProps) {
         const url = URL.createObjectURL(blob);
 
         csvLink.current?.link.setAttribute('href', url);
-        csvLink.current?.link.setAttribute('download', generateFilename());
+        csvLink.current?.link.setAttribute('download', generateFilename(fileNamePrefix));
 
         // Trigger click to download
         csvLink.current?.link.click();
