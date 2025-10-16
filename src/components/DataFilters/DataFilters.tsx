@@ -1,5 +1,6 @@
 import {
-  Alert, Autocomplete,
+  Alert,
+  Autocomplete,
   Box,
   Button,
   Chip,
@@ -21,14 +22,14 @@ import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/i
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
-import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
   CustomFilterOperators,
   dateConditions,
   numberConditions,
-  stringConditions,
+  stringConditions, stringInConditions,
 } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/filterUtils';
@@ -46,7 +47,7 @@ export const defaultState = {
 type EventLike = {
   target:{
     name: string;
-    value: string;
+    value: string | any[];
   };
 };
 
@@ -69,6 +70,37 @@ function isEmptyFilter(value: any, filters: boolean | null) {
   }
   // If includeEmpty is false, return true for non-empty strings and false for empty strings
   return value !== '' && value !== null;
+}
+
+// Determine the display-friendly condition name
+function getConditionName(
+  constraint: DataTableFilterMetaData,
+  conditions: { value: string; name: string }[],
+) {
+  const found = conditions.find(c => c.value === constraint.matchMode)?.name;
+  if (found) return found;
+
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) {
+    if (constraint.value === true || constraint.value === 'true') return 'Null or Empty';
+    if (constraint.value === false || constraint.value === 'false') return 'Not Null or Empty';
+  }
+
+  return 'Unknown';
+}
+
+// Determine how to display the value
+function getDisplayValue(
+  constraint: DataTableFilterMetaData,
+  conditionName: string,
+  dateConds: { value: string; name: string }[],
+) {
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
+
+  const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
+
+  if (Array.isArray(raw)) return raw.join(', ');
+  if (dateConds.some(c => c.name === conditionName)) return new Date(raw).toLocaleDateString('en-CA');
+  return String(raw);
 }
 
 interface DataFiltersProps {
@@ -157,7 +189,7 @@ function DataFilters(props: DataFiltersProps) {
   
   const handleFilterChange = (event: SelectChangeEvent | EventLike) => {
     const { name, value } = event.target;
-    if (name === 'field') {
+    if (name === 'field' && typeof value === 'string') {
       setDateError(null);
 
       const targetFieldProps = fields.find((field: Field) =>
@@ -183,8 +215,14 @@ function DataFilters(props: DataFiltersProps) {
         fieldType = FieldTypes.BOOLEAN;
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
-        setConditions(stringConditions);
-        fieldType = FieldTypes.STRING;
+        if (targetFieldProps &&
+            targetFieldProps.metaDataColumnValidValues &&
+            targetFieldProps.metaDataColumnValidValues.length > 0) {
+          setConditions([...stringConditions, ...stringInConditions]);
+        } else {
+          setConditions(stringConditions);
+        }
+        
         defaultCondition = FilterMatchMode.CONTAINS;
       }
 
@@ -213,6 +251,7 @@ function DataFilters(props: DataFiltersProps) {
       }
       ));
     } else {
+      console.log(value);
       setFilterFormValues((prevState) => ({
         ...prevState,
         [name]: value,
@@ -257,7 +296,7 @@ function DataFilters(props: DataFiltersProps) {
       uniqueValues = fromMetaData;
     }
     
-    // only show drop-down if it has valid values and the condition in a direct comparison
+    // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (uniqueValues && uniqueValues.length > 0 &&
         (filterFormValues.condition === FilterMatchMode.EQUALS ||
             filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
@@ -270,6 +309,7 @@ function DataFilters(props: DataFiltersProps) {
             options={uniqueValues ?? []}
             value={filterFormValues.value || ''}
             onChange={(_, newValue) => {
+              console.log(newValue);
               handleFilterChange({
                 target: {
                   name: 'value',
@@ -288,6 +328,38 @@ function DataFilters(props: DataFiltersProps) {
             sx={{ minWidth: 200, maxHeight: 300 }}
           />
         </>
+      );
+    }
+    if (uniqueValues && uniqueValues.length > 0 &&
+        (filterFormValues.condition === FilterMatchMode.IN ||
+        filterFormValues.condition === FilterMatchMode.NOT_IN)
+    ) {
+      return (
+        <Autocomplete
+          id="value-autocomplete"
+          size="small"
+          multiple
+          options={uniqueValues ?? []}
+          value={filterFormValues.value || []}
+          onChange={(_, newValues) => {
+            console.log(newValues);
+            handleFilterChange({
+              target: {
+                name: 'value',
+                value: newValues ?? [],
+              },
+            });
+          }}
+          renderInput={(params) => (
+            <TextField
+                /* eslint-disable-next-line react/jsx-props-no-spreading */
+              {...params}
+              label="Value"
+              name="value"
+            />
+          )}
+          sx={{ minWidth: 200, maxHeight: 300 }}
+        />
       );
     }
     
@@ -627,55 +699,43 @@ function DataFilters(props: DataFiltersProps) {
                   { !isDataTableFiltersEqual(primeReactFilters, defaultState) && (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     {/* Chips area (takes 70% of the width, wraps when overflowing) */}
-                    <div
-                      style={{
-                        flex: '0 0 70%',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 8,
-                      }}
-                    >
+                    
+                    <div style={{ flex: '0 0 70%', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
                         if (!isOperatorFilterMetaData(filterData)) return [];
 
                         return filterData.constraints.map((constraint) => {
-                        // Determine condition name
-                          const conditionName = (() => {
-                            const findConditionName =
-                              (_conditions: { value: string; name: string }[]) =>
-                                _conditions.find((c) => c.value === constraint.matchMode)?.name ||
-                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                      (constraint.value === true || constraint.value === 'true') &&
-                                      'Null or Empty') ||
-                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                      (constraint.value === false || constraint.value === 'false') &&
-                                      'Not Null or Empty') ||
-                                  'Unknown';
+                          const conditionName = getConditionName(constraint, [
+                            ...dateConditions,
+                            ...numberConditions,
+                            ...stringConditions,
+                            ...stringInConditions,
+                          ]);
 
-                            return findConditionName(
-                              [...dateConditions, ...numberConditions, ...stringConditions],
-                            );
-                          })();
-
-                          const displayValue = (() => {
-                            if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
-                            return dateConditions.some((c) => c.name === conditionName)
-                              ? new Date(constraint.value).toLocaleDateString('en-CA')
-                              : `${constraint.value}`;
-                          })();
+                          const displayValue = getDisplayValue(
+                            constraint,
+                            conditionName,
+                            dateConditions,
+                          );
 
                           return (
                             <Chip
-                              key={`${field}-${constraint.matchMode}-${constraint.value}`}
+                              key={`${field}-${constraint.matchMode}-${String(constraint.value)}`}
                               label={(
-                                <>
-                                  {field}
-                                  {' '}
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    whiteSpace: 'pre',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                  }}
+                                >
+                                  <span>{field}</span>
                                   <b>{conditionName}</b>
-                                  {' '}
-                                  {displayValue}
-                                </>
-                                    )}
+                                  <span>{displayValue}</span>
+                                </Box>
+          )}
                               onDelete={() =>
                                 handleFilterDelete(field, {
                                   value: constraint.value,
