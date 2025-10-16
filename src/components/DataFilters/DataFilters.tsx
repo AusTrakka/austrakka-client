@@ -339,6 +339,8 @@ function DataFilters(props: DataFiltersProps) {
           id="value-autocomplete"
           size="small"
           multiple
+          limitTags={3}
+          disableCloseOnSelect
           options={uniqueValues ?? []}
           value={filterFormValues.value || []}
           onChange={(_, newValues) => {
@@ -720,22 +722,16 @@ function DataFilters(props: DataFiltersProps) {
 
                           return (
                             <Chip
-                              key={`${field}-${constraint.matchMode}-${String(constraint.value)}`}
+                              key={`${field}-${constraint.matchMode}-${constraint.value}`}
                               label={(
-                                <Box
-                                  component="span"
-                                  sx={{
-                                    whiteSpace: 'pre',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.25rem',
-                                  }}
-                                >
-                                  <span>{field}</span>
+                                <>
+                                  {field}
+                                  {' '}
                                   <b>{conditionName}</b>
-                                  <span>{displayValue}</span>
-                                </Box>
-          )}
+                                  {' '}
+                                  {displayValue}
+                                </>
+                                  )}
                               onDelete={() =>
                                 handleFilterDelete(field, {
                                   value: constraint.value,
