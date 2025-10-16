@@ -276,7 +276,7 @@ function UploadMetadata() {
           >
             <InputLabel
               id="select-data-owner-label"
-              sx={{ color: selectedProforma ? 'inherit' : theme.palette.error.main }}
+              sx={{ color: selectedDataOwner ? 'inherit' : theme.palette.error.main }}
             >
               Data Owner
             </InputLabel>
