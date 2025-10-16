@@ -22,7 +22,7 @@ import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/i
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
-import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
