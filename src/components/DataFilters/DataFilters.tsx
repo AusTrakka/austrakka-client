@@ -32,7 +32,12 @@ import {
   stringConditions, stringInConditions,
 } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
-import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/filterUtils';
+import {
+  getConditionName,
+  getDisplayValue,
+  isDataTableFiltersEqual,
+  isOperatorFilterMetaData,
+} from '../../utilities/filterUtils';
 
 export const defaultState = {
   global: {
@@ -73,35 +78,6 @@ function isEmptyFilter(value: any, filters: boolean | null) {
 }
 
 // Determine the display-friendly condition name
-function getConditionName(
-  constraint: DataTableFilterMetaData,
-  conditions: { value: string; name: string }[],
-) {
-  const found = conditions.find(c => c.value === constraint.matchMode)?.name;
-  if (found) return found;
-
-  if (constraint.matchMode === FilterMatchMode.CUSTOM) {
-    if (constraint.value === true || constraint.value === 'true') return 'Null or Empty';
-    if (constraint.value === false || constraint.value === 'false') return 'Not Null or Empty';
-  }
-
-  return 'Unknown';
-}
-
-// Determine how to display the value
-function getDisplayValue(
-  constraint: DataTableFilterMetaData,
-  conditionName: string,
-  dateConds: { value: string; name: string }[],
-) {
-  if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
-
-  const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
-
-  if (Array.isArray(raw)) return raw.join(', ');
-  if (dateConds.some(c => c.name === conditionName)) return new Date(raw).toLocaleDateString('en-CA');
-  return String(raw);
-}
 
 interface DataFiltersProps {
   dataLength: number

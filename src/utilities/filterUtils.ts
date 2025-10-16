@@ -121,3 +121,33 @@ isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
 
   return true;
 }
+
+export function getConditionName(
+  constraint: DataTableFilterMetaData,
+  conditions: { value: string; name: string }[],
+) {
+  const found = conditions.find(c => c.value === constraint.matchMode)?.name;
+  if (found) return found;
+
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) {
+    if (constraint.value === true || constraint.value === 'true') return 'Null or Empty';
+    if (constraint.value === false || constraint.value === 'false') return 'Not Null or Empty';
+  }
+
+  return 'Unknown';
+}
+
+// Determine how to display the value
+export function getDisplayValue(
+  constraint: DataTableFilterMetaData,
+  conditionName: string,
+  dateConditions: { value: string; name: string }[],
+) {
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
+
+  const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
+
+  if (Array.isArray(raw)) return raw.join(', ');
+  if (dateConditions.some(c => c.name === conditionName)) return new Date(raw).toLocaleDateString('en-CA');
+  return String(raw);
+}
