@@ -251,7 +251,6 @@ function DataFilters(props: DataFiltersProps) {
       }
       ));
     } else {
-      console.log(value);
       setFilterFormValues((prevState) => ({
         ...prevState,
         [name]: value,
@@ -309,7 +308,6 @@ function DataFilters(props: DataFiltersProps) {
             options={uniqueValues ?? []}
             value={filterFormValues.value || ''}
             onChange={(_, newValue) => {
-              console.log(newValue);
               handleFilterChange({
                 target: {
                   name: 'value',
@@ -344,7 +342,6 @@ function DataFilters(props: DataFiltersProps) {
           options={uniqueValues ?? []}
           value={filterFormValues.value || []}
           onChange={(_, newValues) => {
-            console.log(newValues);
             handleFilterChange({
               target: {
                 name: 'value',
