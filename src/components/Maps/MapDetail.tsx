@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import {
   Alert,
-  Box, CircularProgress,
+  Box,
   FormControl,
   InputLabel,
   MenuItem,
@@ -202,6 +202,18 @@ function MapDetail(props: MapDetailProps) {
       return renderErrorAlert();
     }
     
+    if (loading) {
+      return (
+        <Stack direction="column" spacing={2} display="flex">
+          <Alert severity="warning">
+            <Typography>
+              Project Data is not setup, please contact an admin.
+            </Typography>
+          </Alert>
+        </Stack>
+      );
+    }
+    
     if (selectedMap === null) {
       return (
         <>
@@ -228,8 +240,6 @@ function MapDetail(props: MapDetailProps) {
       </>
     );
   };
-  
-  if (loading) return <div><CircularProgress color="info" /></div>;
 
   return (
     <>
