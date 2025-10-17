@@ -2,6 +2,7 @@
 // ^ rule is broken for some typescript-specific syntax features
 import {
   callDELETE,
+  buildUploadHeaders,
   callGET,
   callPATCH,
   callPost,
@@ -98,8 +99,26 @@ export const getUserDashboardProjects =
         callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
-export const validateSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token);
-export const uploadSubmissions = (formData: FormData, params: string, token: string) => callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token);
+export const validateSubmissions = (
+  formData: FormData,
+  params: string,
+  token: string,
+  ownerOrgAbbrev: string,
+  shareProjectAbbrevs: string[] = [],
+) => {
+  const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
+  return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
+};
+export const uploadSubmissions = (
+  formData: FormData,
+  params: string,
+  token: string,
+  ownerOrgAbbrev: string,
+  shareProjectAbbrevs: string[] = [],
+) => {
+  const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
+  return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
+};
 
 // Sequence endpoints
 // TODO: this should parse the response
