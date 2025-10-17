@@ -9,6 +9,8 @@ export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = 
   [FilterMatchMode.GREATER_THAN_OR_EQUAL_TO]: '>=',
   [FilterMatchMode.LESS_THAN_OR_EQUAL_TO]: '<=',
   [FilterMatchMode.CONTAINS]: '@=',
+  [FilterMatchMode.IN]: undefined, // Not sure if this will work with dates
+  [FilterMatchMode.NOT_IN]: undefined, // Same with this
   [FilterMatchMode.STARTS_WITH]: '_=',
   [FilterMatchMode.ENDS_WITH]: '_-=',
   [FilterMatchMode.NOT_CONTAINS]: '!@=',

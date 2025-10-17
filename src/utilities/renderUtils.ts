@@ -41,3 +41,8 @@ export const renderValue = (value: any, field: string, type: string): string => 
   // Possibly not needed; this fallthrough case is currently strings and numbers
   return renderValueOrEmptyString(value);
 };
+
+export function bytesToMB(bytes?: number): string {
+  if (!bytes || bytes <= 0) return '0';
+  return (bytes / (1024 * 1024)).toString();
+}
