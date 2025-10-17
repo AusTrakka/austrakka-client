@@ -29,7 +29,8 @@ import {
   CustomFilterOperators,
   dateConditions,
   numberConditions,
-  stringConditions, stringInConditions,
+  stringConditions,
+  stringInConditions,
 } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 import {
@@ -173,6 +174,8 @@ function DataFilters(props: DataFiltersProps) {
 
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
+      
+      const uniqueValuesForField = fieldUniqueValues && fieldUniqueValues[value];
 
       // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
@@ -192,8 +195,8 @@ function DataFilters(props: DataFiltersProps) {
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
         if (targetFieldProps &&
-            targetFieldProps.metaDataColumnValidValues &&
-            targetFieldProps.metaDataColumnValidValues.length > 0) {
+            uniqueValuesForField &&
+            uniqueValuesForField.length > 0) {
           setConditions([...stringConditions, ...stringInConditions]);
         } else {
           setConditions(stringConditions);
@@ -258,18 +261,8 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const matchedField = fields.find(f => f.columnName === filterFormValues.field);
-
-    let uniqueValues: string[] | null = null;
-
-    const fromFieldUnique = fieldUniqueValues && fieldUniqueValues[filterFormValues.field];
-    const fromMetaData = matchedField?.metaDataColumnValidValues;
-
-    if (fromFieldUnique && Array.isArray(fromFieldUnique) && fromFieldUnique.length > 0) {
-      uniqueValues = fromFieldUnique;
-    } else if (Array.isArray(fromMetaData) && fromMetaData.length > 0) {
-      uniqueValues = fromMetaData;
-    }
+    const uniqueValues: string[] | null = fieldUniqueValues &&
+        fieldUniqueValues[filterFormValues.field];
     
     // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (uniqueValues && uniqueValues.length > 0 &&
