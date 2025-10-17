@@ -16,9 +16,15 @@ export function encodeFilterObj(filterObj: DataTableFilterMeta): string {
                             constraint.matchMode?.includes('custom'))) {
             return `${encodeURIComponent(constraint.value.toISOString())}:${constraint.matchMode || ''}`;
           }
+          if (Array.isArray(constraint.value)) {
+            return `${encodeURIComponent(JSON.stringify(constraint.value))}:${constraint.matchMode || ''}`;
+          }
           return `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`;
         }).join(',');
         return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
+      }
+      if (Array.isArray(value.value)) {
+        return `${encodeURIComponent(key)}:${encodeURIComponent(JSON.stringify(value.value))}:${value.matchMode || ''}`;
       }
       return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
     });
@@ -28,7 +34,15 @@ export function encodeFilterObj(filterObj: DataTableFilterMeta): string {
   return `(${result})`;
 }
 
-export function parseUrlValue(value: string): string | Date | boolean {
+export function parseUrlValue(value: string): string | Date | boolean | any[] {
+  if (value.startsWith('[') && value.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      // Not valid JSON, treat as string
+    }
+  }
   // If the value is a date, parse it as a date
   if (isISODateString(value)) return new Date(value);
   // If the value is a boolean, parse it as a boolean

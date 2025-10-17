@@ -41,7 +41,7 @@ describe('decodeUrlToFilterObj', () => {
   describe('when given special characters in values', () => {
     test('handles the special characters correctly', () => {
       const encodedStr = '(name:John%20Doe%20%26%20Co.:equals,address:' +
-        '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)';
+          '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)';
 
       const result = decodeUrlToFilterObj(encodedStr);
 
@@ -54,7 +54,7 @@ describe('decodeUrlToFilterObj', () => {
 
     test('encoded outer brackets should be decodable', () => {
       const encodedStr = '%28name:John%20Doe%20%26%20Co.:equals,address:' +
-        '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom%29';
+          '123%20Main%20St.%20Apt%20%234A:contains,notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom%29';
 
       const result = decodeUrlToFilterObj(encodedStr);
 
@@ -75,6 +75,55 @@ describe('decodeUrlToFilterObj', () => {
           constraints: [
             { value: 'John', matchMode: 'equals' },
             { value: '(Doe)', matchMode: 'equals' },
+          ],
+        },
+      });
+    });
+  });
+
+  describe('when given arrays as values', () => {
+    test('decodes a JSON-encoded array correctly', () => {
+      // JSON.stringify(['tag1','tag2']) → ["tag1","tag2"]
+      // encodeURIComponent → %5B%22tag1%22%2C%22tag2%22%5D
+      const encodedStr = '(tags:%5B%22tag1%22%2C%22tag2%22%5D:in)';
+      const result = decodeUrlToFilterObj(encodedStr);
+
+      expect(result).toEqual({
+        tags: { value: ['tag1', 'tag2'], matchMode: 'in' },
+      });
+    });
+
+    test('decodes an array with mixed types (numbers, strings, booleans)', () => {
+      const arrayValue = encodeURIComponent(JSON.stringify(['a', 1, true, 'b']));
+      const encodedStr = `(mixed:${arrayValue}:in)`;
+      const result = decodeUrlToFilterObj(encodedStr);
+
+      expect(result).toEqual({
+        mixed: { value: ['a', 1, true, 'b'], matchMode: 'in' },
+      });
+    });
+
+    test('gracefully handles invalid JSON array strings', () => {
+      const encodedStr = '(tags:%5Binvalid%5D:in)';
+      const result = decodeUrlToFilterObj(encodedStr);
+
+      // Should fallback to treating as a string
+      expect(result).toEqual({
+        tags: { value: '[invalid]', matchMode: 'in' },
+      });
+    });
+
+    test('decodes arrays inside operator constraints', () => {
+      const arrayEncoded = encodeURIComponent(JSON.stringify(['one', 'two']));
+      const encodedStr = `(tags:or:(${arrayEncoded}:in,${arrayEncoded}:notIn))`;
+
+      const result = decodeUrlToFilterObj(encodedStr);
+      expect(result).toEqual({
+        tags: {
+          operator: 'or',
+          constraints: [
+            { value: ['one', 'two'], matchMode: 'in' },
+            { value: ['one', 'two'], matchMode: 'notIn' },
           ],
         },
       });
