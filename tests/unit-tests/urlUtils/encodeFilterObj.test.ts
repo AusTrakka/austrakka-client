@@ -47,6 +47,23 @@ describe('encodeFilterObj', () => {
       const result = encodeFilterObj(filterObj);
       expect(result).toBe('(name:and:(John:equals,Mc:contains))');
     });
+
+    test('correctly encodes array values inside operator constraints', () => {
+      const filterObj: DataTableFilterMeta = {
+        tags: {
+          operator: 'or',
+          constraints: [
+            { value: ['tag1', 'tag2'], matchMode: 'in' },
+            { value: ['x', 'y', 'z'], matchMode: 'notIn' },
+          ],
+        },
+      };
+      const result = encodeFilterObj(filterObj);
+      // Arrays are JSON-stringified and URI-encoded
+      expect(result).toBe(
+        '(tags:or:(%5B%22tag1%22%2C%22tag2%22%5D:in,%5B%22x%22%2C%22y%22%2C%22z%22%5D:notIn))',
+      );
+    });
   });
 
   describe('when given special characters in values', () => {
@@ -68,7 +85,7 @@ describe('encodeFilterObj', () => {
       const result = encodeFilterObj(filterObj);
       expect(result).toBe(
         '(name:John%20Doe%20%26%20Co.:equals,address:123%20Main%20St.%20Apt%20%234A:contains,'
-        + 'notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)',
+          + 'notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)',
       );
     });
   });
@@ -138,8 +155,71 @@ describe('encodeFilterObj', () => {
           matchMode: 'in',
         },
       };
+
       const result = encodeFilterObj(filterObj);
-      expect(result).toBe('(name:John:equals,age:30:gt,active:true:equals,tags:tag1%2Ctag2:in)');
+
+      // Arrays are now JSON-encoded, then URI-encoded.
+      // JSON.stringify(['tag1','tag2']) → '["tag1","tag2"]'
+      // encodeURIComponent → '%5B%22tag1%22%2C%22tag2%22%5D'
+      expect(result).toBe(
+        '(name:John:equals,age:30:gt,active:true:equals,tags:%5B%22tag1%22%2C%22tag2%22%5D:in)',
+      );
+    });
+  });
+
+  describe('when given date values', () => {
+    test('encodes valid Date objects as ISO strings for date-related match modes', () => {
+      const filterObj: DataTableFilterMeta = {
+        createdAt: {
+          operator: 'and',
+          constraints: [
+            {
+              value: new Date('2024-05-01T12:00:00Z'),
+              matchMode: FilterMatchMode.DATE_IS,
+            },
+            {
+              value: new Date('2024-05-10T12:00:00Z'),
+              matchMode: FilterMatchMode.DATE_BEFORE,
+            },
+          ],
+        },
+      };
+      const result = encodeFilterObj(filterObj);
+      expect(result).toBe(
+        `(createdAt:and:(${encodeURIComponent('2024-05-01T12:00:00.000Z')}:dateIs,${encodeURIComponent('2024-05-10T12:00:00.000Z')}:dateBefore))`,
+      );
+    });
+
+    test('does not ISO-encode invalid Date objects', () => {
+      const filterObj: DataTableFilterMeta = {
+        createdAt: {
+          operator: 'or',
+          constraints: [
+            {
+              value: new Date('invalid-date'),
+              matchMode: FilterMatchMode.DATE_IS,
+            },
+          ],
+        },
+      };
+      const result = encodeFilterObj(filterObj);
+      expect(result).toBe('(createdAt:or:(Invalid%20Date:dateIs))');
+    });
+
+    test('encodes arrays of Date objects as JSON strings', () => {
+      const filterObj: DataTableFilterMeta = {
+        schedule: {
+          value: [new Date('2024-01-01'), new Date('2024-02-01')],
+          matchMode: 'in',
+        },
+      };
+      const result = encodeFilterObj(filterObj);
+
+      // JSON.stringify([...]) → ["2024-01-01T00:00:00.000Z","2024-02-01T00:00:00.000Z"]
+      const encodedDates = encodeURIComponent(
+        JSON.stringify(['2024-01-01T00:00:00.000Z', '2024-02-01T00:00:00.000Z']),
+      );
+      expect(result).toBe(`(schedule:${encodedDates}:in)`);
     });
   });
 });
