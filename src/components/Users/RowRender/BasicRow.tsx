@@ -3,6 +3,7 @@ import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material'
 import { ContentCopy } from '@mui/icons-material';
 import { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { bytesToMB } from '../../../utilities/renderUtils';
 
 interface BasicRowProps {
   field: keyof User;
@@ -50,7 +51,8 @@ function BasicRow(props: BasicRowProps) {
 
             case typeof value === 'boolean':
               return <Switch disabled checked={value} size="small" />;
-
+            case typeof value === 'number': // just for now all numbers are referring to bytes
+              return (`${bytesToMB(value)} MB per month`);
             default:
               return value;
           }

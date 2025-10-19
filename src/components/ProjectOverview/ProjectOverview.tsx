@@ -124,7 +124,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
           />
           <TabPanel
             value={tabValue}
-            index={PROJ_TABS.summary.index}
+            index={PROJ_TABS.dashboard.index}
           >
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}

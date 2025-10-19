@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   Alert,
   AlertColor,
+  Paper,
   Snackbar,
   Stack,
   Typography,
@@ -42,6 +43,7 @@ import {
 } from '../../../utilities/privilegeUtils';
 import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
 import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { bytesToMB } from '../../../utilities/renderUtils';
   
 function UserV2DetailOverview() {
   const { userGlobalId } = useParams();
@@ -74,21 +76,19 @@ function UserV2DetailOverview() {
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
     'globalId': 'Global ID',
-    'displayName': 'Display Name',
-    'orgName': 'Organisation',
-    'orgAbbrev': 'Organisation Abbreviation',
-    'created': 'Created Date',
-    'contactEmail': 'Email',
-    'isAusTrakkaAdmin': 'Austrakka Admin',
-    'isActive': 'Active',
-    'isAusTrakkaProcess': 'Austrakka Process',
+    'position': 'Position',
+    'displayName': 'Name',
     'analysisServerUsername': 'Linux Username',
-    'monthlyBytesUsed': 'Monthly Bytes Used',
-    'lastDownloadDate': 'Last Downloaded Date',
-    'monthlyBytesQuota': 'Monthly Bytes Quota',
+    'orgName': 'Organisation',
+    'contactEmail': 'Email',
+    'isActive': 'Active',
     'noDownloadQuota': 'No Download Quota',
+    'monthlyBytesQuota': 'Download Quota',
+    'created': 'Joined',
   };
 
+  // 'monthlyBytesUsed': 'Monthly Bytes Used',
+  //     'monthlyBytesQuota': 'Monthly Bytes Quota',
   let nonDisplayFields = [
     'objectId',
     'orgAbbrev',
@@ -97,8 +97,14 @@ function UserV2DetailOverview() {
     'lastActive',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
+    'monthlyBytesUsed',
+    'lastDownloadDate',
   ];
 
+  if (user && user.noDownloadQuota) {
+    nonDisplayFields.push('monthlyBytesQuota');
+  }
+  
   // Add a boolean constant to determine if the user can see this page.
   // Currently, access is only granted to adminV2 (the root super user).
   // Instead, the visibility and editability of the page should be checked separately
@@ -237,6 +243,9 @@ function UserV2DetailOverview() {
       displayName: otherValues.displayName,
       contactEmail: otherValues.contactEmail,
       analysisServerUsername: otherValues.analysisServerUsername,
+      position: otherValues.position,
+      noDownloadQuota: otherValues.noDownloadQuota,
+      monthlyBytesQuota: otherValues.monthlyBytesQuota,
     };
     
     const editedActiveState = user?.isActive !== isActive;
@@ -360,41 +369,91 @@ function UserV2DetailOverview() {
             </Typography>
           </div>
 
-          {/* Right: Stacked Dates */}
-          <Stack direction="column" spacing={0.2} marginRight={2}>
-            <Stack direction="row" justifyContent="space-between" minWidth={220}>
-              <Typography
-                variant="caption"
-                fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
-              >
-                Last Active:
-              </Typography>
-              <Typography
-                variant="caption"
-                fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
-              >
-                {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
-              </Typography>
+          {/* Right: Quota + Dates */}
+          
+          <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
+            
+            <Stack direction="row" spacing={3}>
+              {/* Left Column: Quota Info */}
+              {!user.noDownloadQuota &&
+                  (
+                  <Stack direction="column" spacing={0.2} minWidth={200}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                      >
+                        Monthly Quota:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                      >
+                        {bytesToMB(user.monthlyBytesQuota)}
+                        {' '}
+                        MB
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                      >
+                        Quota Used:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                      >
+                        {bytesToMB(user.monthlyBytesUsed)}
+                        {' '}
+                        MB
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                  )}
+
+              {/* Right Column: Dates */}
+              <Stack direction="column" spacing={0.2} minWidth={200}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                  >
+                    Last Active:
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                  >
+                    {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                  >
+                    Last Login:
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                  >
+                    {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
+                  </Typography>
+                </Stack>
+              </Stack>
             </Stack>
-            <Stack direction="row" justifyContent="space-between" minWidth={220}>
-              <Typography
-                variant="caption"
-                fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
-              >
-                Last Login:
-              </Typography>
-              <Typography
-                variant="caption"
-                fontSize=".9rem"
-                color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
-              >
-                {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
-              </Typography>
-            </Stack>
-          </Stack>
+          </Paper>
         </div>
         {errMsg && (
           <Alert severity="error" onClose={() => setErrMsg(null)}>

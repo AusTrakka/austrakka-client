@@ -1,5 +1,6 @@
 import {
-  Alert, Autocomplete,
+  Alert,
+  Autocomplete,
   Box,
   Button,
   Chip,
@@ -29,9 +30,15 @@ import {
   dateConditions,
   numberConditions,
   stringConditions,
+  stringInConditions,
 } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
-import { isDataTableFiltersEqual, isOperatorFilterMetaData } from '../../utilities/filterUtils';
+import {
+  getConditionName,
+  getDisplayValue,
+  isDataTableFiltersEqual,
+  isOperatorFilterMetaData,
+} from '../../utilities/filterUtils';
 
 export const defaultState = {
   global: {
@@ -46,7 +53,7 @@ export const defaultState = {
 type EventLike = {
   target:{
     name: string;
-    value: string;
+    value: string | any[];
   };
 };
 
@@ -70,6 +77,8 @@ function isEmptyFilter(value: any, filters: boolean | null) {
   // If includeEmpty is false, return true for non-empty strings and false for empty strings
   return value !== '' && value !== null;
 }
+
+// Determine the display-friendly condition name
 
 interface DataFiltersProps {
   dataLength: number
@@ -157,7 +166,7 @@ function DataFilters(props: DataFiltersProps) {
   
   const handleFilterChange = (event: SelectChangeEvent | EventLike) => {
     const { name, value } = event.target;
-    if (name === 'field') {
+    if (name === 'field' && typeof value === 'string') {
       setDateError(null);
 
       const targetFieldProps = fields.find((field: Field) =>
@@ -165,6 +174,8 @@ function DataFilters(props: DataFiltersProps) {
 
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
+      
+      const uniqueValuesForField = fieldUniqueValues && fieldUniqueValues[value];
 
       // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
@@ -183,8 +194,14 @@ function DataFilters(props: DataFiltersProps) {
         fieldType = FieldTypes.BOOLEAN;
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
-        setConditions(stringConditions);
-        fieldType = FieldTypes.STRING;
+        if (targetFieldProps &&
+            uniqueValuesForField &&
+            uniqueValuesForField.length > 0) {
+          setConditions([...stringConditions, ...stringInConditions]);
+        } else {
+          setConditions(stringConditions);
+        }
+        
         defaultCondition = FilterMatchMode.CONTAINS;
       }
 
@@ -244,20 +261,10 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const matchedField = fields.find(f => f.columnName === filterFormValues.field);
-
-    let uniqueValues: string[] | null = null;
-
-    const fromFieldUnique = fieldUniqueValues && fieldUniqueValues[filterFormValues.field];
-    const fromMetaData = matchedField?.metaDataColumnValidValues;
-
-    if (fromFieldUnique && Array.isArray(fromFieldUnique) && fromFieldUnique.length > 0) {
-      uniqueValues = fromFieldUnique;
-    } else if (Array.isArray(fromMetaData) && fromMetaData.length > 0) {
-      uniqueValues = fromMetaData;
-    }
+    const uniqueValues: string[] | null = fieldUniqueValues &&
+        fieldUniqueValues[filterFormValues.field];
     
-    // only show drop-down if it has valid values and the condition in a direct comparison
+    // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (uniqueValues && uniqueValues.length > 0 &&
         (filterFormValues.condition === FilterMatchMode.EQUALS ||
             filterFormValues.condition === FilterMatchMode.NOT_EQUALS)
@@ -288,6 +295,39 @@ function DataFilters(props: DataFiltersProps) {
             sx={{ minWidth: 200, maxHeight: 300 }}
           />
         </>
+      );
+    }
+    if (uniqueValues && uniqueValues.length > 0 &&
+        (filterFormValues.condition === FilterMatchMode.IN ||
+        filterFormValues.condition === FilterMatchMode.NOT_IN)
+    ) {
+      return (
+        <Autocomplete
+          id="value-autocomplete"
+          size="small"
+          multiple
+          limitTags={3}
+          disableCloseOnSelect
+          options={uniqueValues ?? []}
+          value={filterFormValues.value || []}
+          onChange={(_, newValues) => {
+            handleFilterChange({
+              target: {
+                name: 'value',
+                value: newValues ?? [],
+              },
+            });
+          }}
+          renderInput={(params) => (
+            <TextField
+                /* eslint-disable-next-line react/jsx-props-no-spreading */
+              {...params}
+              label="Value"
+              name="value"
+            />
+          )}
+          sx={{ minWidth: 200, maxHeight: 300 }}
+        />
       );
     }
     
@@ -627,42 +667,24 @@ function DataFilters(props: DataFiltersProps) {
                   { !isDataTableFiltersEqual(primeReactFilters, defaultState) && (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     {/* Chips area (takes 70% of the width, wraps when overflowing) */}
-                    <div
-                      style={{
-                        flex: '0 0 70%',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 8,
-                      }}
-                    >
+                    
+                    <div style={{ flex: '0 0 70%', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {Object.entries(primeReactFilters).flatMap(([field, filterData]) => {
                         if (!isOperatorFilterMetaData(filterData)) return [];
 
                         return filterData.constraints.map((constraint) => {
-                        // Determine condition name
-                          const conditionName = (() => {
-                            const findConditionName =
-                              (_conditions: { value: string; name: string }[]) =>
-                                _conditions.find((c) => c.value === constraint.matchMode)?.name ||
-                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                      (constraint.value === true || constraint.value === 'true') &&
-                                      'Null or Empty') ||
-                                  (constraint.matchMode === FilterMatchMode.CUSTOM &&
-                                      (constraint.value === false || constraint.value === 'false') &&
-                                      'Not Null or Empty') ||
-                                  'Unknown';
+                          const conditionName = getConditionName(constraint, [
+                            ...dateConditions,
+                            ...numberConditions,
+                            ...stringConditions,
+                            ...stringInConditions,
+                          ]);
 
-                            return findConditionName(
-                              [...dateConditions, ...numberConditions, ...stringConditions],
-                            );
-                          })();
-
-                          const displayValue = (() => {
-                            if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
-                            return dateConditions.some((c) => c.name === conditionName)
-                              ? new Date(constraint.value).toLocaleDateString('en-CA')
-                              : `${constraint.value}`;
-                          })();
+                          const displayValue = getDisplayValue(
+                            constraint,
+                            conditionName,
+                            dateConditions,
+                          );
 
                           return (
                             <Chip
@@ -675,7 +697,7 @@ function DataFilters(props: DataFiltersProps) {
                                   {' '}
                                   {displayValue}
                                 </>
-                                    )}
+                                  )}
                               onDelete={() =>
                                 handleFilterDelete(field, {
                                   value: constraint.value,
