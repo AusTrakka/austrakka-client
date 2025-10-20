@@ -1,9 +1,9 @@
 import { TabObjectRecord } from '../Common/CustomTabs';
 
-export const PROJ_HOME_TAB = 'summary';
+export const PROJ_HOME_TAB = 'dashboard';
 
 export const PROJ_TABS: TabObjectRecord = {
-  summary: { index: 0, title: 'Summary' },
+  dashboard: { index: 0, title: 'Dashboard' },
   samples: { index: 1, title: 'Samples' },
   trees: { index: 2, title: 'Trees' },
   plots: { index: 3, title: 'Plots' },
