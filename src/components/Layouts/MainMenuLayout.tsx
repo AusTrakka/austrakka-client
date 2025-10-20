@@ -258,10 +258,9 @@ function MainMenuLayout() {
             <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
               <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
                 <Grid item>
-                  
-                    <IconButton color="primary">
-                      <AccountCircle  />
-                    </IconButton>
+                  <IconButton color="primary">
+                    <AccountCircle />
+                  </IconButton>
                 </Grid>
                 {drawer ? (
                   <Grid item width="100%" textAlign="center">
