@@ -11,7 +11,7 @@ import { generateFilename } from '../../utilities/file';
 interface ExportTableDataProps {
   dataToExport: any[]
   disabled: boolean
-  fileNamePrefix?: string
+  fileNamePrefix: string
   headers?: string[]
 }
 
