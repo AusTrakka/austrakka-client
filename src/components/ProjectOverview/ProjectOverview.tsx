@@ -18,8 +18,7 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
-  fetchProjectMetadata,
-  selectAwaitingProjectMetadata,
+  fetchProjectMetadata, selectAwaitingPartialProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -90,7 +89,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
   }, [dispatch, projectAbbrev, token, tokenLoading]);
 
   const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+    selectAwaitingPartialProjectMetadata(state, projectDetails?.abbreviation));
   const mergeAlgorithm = useAppSelector((state) =>
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 

@@ -17,14 +17,17 @@ import {
 } from '../../utilities/stateUtils';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
-import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import {
+  ProjectMetadataState,
+  selectProjectMetadata, selectProjectMetadataError,
+} from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
 import { MapKey } from './mapMeta';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
 import MapChart from './MapChart';
 import { Sample } from '../../types/sample.interface';
 import { Field } from '../../types/dtos';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
 
 interface MapDetailProps {
   navigateFunction: NavigateFunction
@@ -33,8 +36,12 @@ interface MapDetailProps {
 
 function MapDetail(props: MapDetailProps) {
   const { navigateFunction, projectAbbrev } = props;
+  
   const data: ProjectMetadataState | null = useAppSelector(
     state => selectProjectMetadata(state, projectAbbrev),
+  );
+  const errorMessage = useAppSelector(
+    state => selectProjectMetadataError(state, projectAbbrev),
   );
   
   // this I don't really needs to be in the url
@@ -123,7 +130,7 @@ function MapDetail(props: MapDetailProps) {
 
   const renderErrorAlert = () => (
     <div>
-      <Alert severity="error">
+      <Alert severity="warning">
         <Typography>
           This project has no compatible fields for map visualisations
         </Typography>
@@ -198,6 +205,18 @@ function MapDetail(props: MapDetailProps) {
   );
   
   const renderMap = () => {
+    if (errorMessage) {
+      return (
+        <Stack direction="column" spacing={2} display="flex">
+          <Alert severity="error">
+            <Typography>
+              Project Data is not setup, please contact an admin.
+            </Typography>
+          </Alert>
+        </Stack>
+      );
+    }
+    
     if (noSupportedMapsError) {
       return renderErrorAlert();
     }
@@ -205,9 +224,9 @@ function MapDetail(props: MapDetailProps) {
     if (loading) {
       return (
         <Stack direction="column" spacing={2} display="flex">
-          <Alert severity="warning">
+          <Alert severity="info">
             <Typography>
-              Project Data is not setup, please contact an admin.
+              Loading data...
             </Typography>
           </Alert>
         </Stack>
