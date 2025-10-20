@@ -132,7 +132,7 @@ function OrgSamplesTable(props: SamplesProps) {
               : filteredSampleList ?? []
           }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
-          fileNamePrefix={groupContextName}
+          fileNamePrefix={groupContextName || 'org_samples'}
         />
       </div>
     </div>
