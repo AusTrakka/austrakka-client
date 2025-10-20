@@ -17,6 +17,14 @@ const noToken = {
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
 
+export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs: string[]): any {
+  return {
+    'X-Metadata-Owner-Org-Abbrev': ownerOrgAbbrev,
+    // TODO better model for multi headers?
+    'X-Metadata-Shared-Projects-Abbrev': sharedProjectAbbrevs.join(';'),
+  };
+}
+
 function getHeaders(token: string): any {
   return {
     'Accept': 'application/json',
@@ -83,6 +91,7 @@ function tokenExpired(response: Response) {
 function tokenExpiredResponse(response: Response): ResponseObject {
   return {
     status: ResponseType.Error,
+    httpStatusCode: response.status,
     type: response.statusText,
     message: expiredTokenErrorMessage,
   };
@@ -91,6 +100,7 @@ function tokenExpiredResponse(response: Response): ResponseObject {
 function successResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Success,
+    httpStatusCode: response.status,
     message: apiResp.messages[0]?.ResponseMessage,
     data: apiResp.data,
     headers: response.headers,
@@ -101,6 +111,7 @@ function successResponse<T = any>(response: Response, apiResp: ApiResponse<T>): 
 function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): ResponseObject {
   return {
     status: ResponseType.Error,
+    httpStatusCode: response.status,
     type: response.statusText,
     message: apiResp.messages[0]?.ResponseMessage || genericErrorMessage,
     messages: apiResp.messages || [genericErrorMessage],
@@ -214,16 +225,23 @@ export async function callPostMultipart(
   });
 }
 
-export async function callPOSTForm(url: string, formData: FormData, token: string)
+export async function callPOSTForm(
+  url: string,
+  formData: FormData,
+  token: string,
+  customHeaders: any = {},
+)
   : Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
 
+  const tokenHeaders = getHeaders(token);
+  const headers = Object.assign(tokenHeaders, customHeaders);
   return callApi(url, {
     method: 'POST',
     body: formData,
-    headers: getHeaders(token),
+    headers,
   });
 }
 

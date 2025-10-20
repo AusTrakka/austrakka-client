@@ -54,9 +54,9 @@ function MainMenuLayout() {
     org: 'Organisation',
     sequences: 'Sequences',
     metadata: 'Metadata',
-    summary: 'Summary',
+    dashboard: 'Dashboard',
     samples: 'Samples',
-    proformas: 'ProFormas',
+    proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
     usersV2: 'Users (V2)',
@@ -75,7 +75,7 @@ function MainMenuLayout() {
    */
 
   const noBreadCrumbIfLast: string[] =
-    ['summary', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
+    ['dashboard', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 

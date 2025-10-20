@@ -4,6 +4,7 @@ import { ResponseType } from '../constants/responseType';
 
 export interface ResponseObject<TData = any> {
   status: ResponseType,
+  httpStatusCode?: number,
   data?: TData,
   message: string,
   messages?: ResponseMessage[],
