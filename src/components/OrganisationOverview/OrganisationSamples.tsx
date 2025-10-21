@@ -112,6 +112,7 @@ function OrganisationSamples(props: OrganisationSampleProps) {
       />
       <OrgSamplesTable
         groupContext={selectedGroup!.groupId}
+        groupContextName={selectedGroup!.name}
       />
     </Box>
   );

@@ -421,10 +421,11 @@ export const selectProjectMetadataError = (state: RootState, projectAbbrev: stri
 // Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
 // data. This includes idle and awaiting fields states.
 // Returns false if any (including partial) data loaded, or if error state
-export const selectAwaitingProjectMetadata =
+export const selectAwaitingPartialProjectMetadata =
   (state: RootState, projectAbbrev: string | undefined) => {
     if (!projectAbbrev) return true;
     const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
+    if (!loadingState) return true;
     return loadingState === MetadataLoadingState.IDLE ||
           loadingState === MetadataLoadingState.FETCH_REQUESTED ||
           loadingState === MetadataLoadingState.AWAITING_FIELDS ||

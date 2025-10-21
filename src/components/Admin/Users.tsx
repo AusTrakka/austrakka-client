@@ -117,6 +117,7 @@ function Users() {
             dataToExport={exportData}
             disabled={false}
             headers={columns.map((col) => (col.field))}
+            fileNamePrefix="users"
           />
         </div>
       </div>
