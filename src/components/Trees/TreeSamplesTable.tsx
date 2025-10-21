@@ -33,6 +33,7 @@ interface TreeTableProps {
   selectedIds: string[],
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
   tableMetadata: Sample[],
+  treeName: string,
 }
 
 interface BodyComponentProps {
@@ -59,6 +60,7 @@ export default function TreeSamplesTable(props: TreeTableProps) {
     metadataLoadingState,
     fieldLoadingState,
     emptyColumns,
+    treeName,
   } = props;
   const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
@@ -212,6 +214,7 @@ export default function TreeSamplesTable(props: TreeTableProps) {
           <ExportTableData
             dataToExport={filteredData}
             disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
+            fileNamePrefix={treeName}
           />
         </div>
       </div>
