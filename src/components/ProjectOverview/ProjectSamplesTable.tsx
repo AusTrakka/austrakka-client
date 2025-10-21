@@ -155,6 +155,7 @@ function ProjectSamplesTable(props: SamplesProps) {
               : filteredData ?? []
           }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+          fileNamePrefix={projectAbbrev}
         />
       </div>
     </div>

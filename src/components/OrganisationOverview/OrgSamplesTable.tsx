@@ -32,10 +32,11 @@ import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   groupContext: number | undefined,
+  groupContextName: string | undefined,
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { groupContext } = props;
+  const { groupContext, groupContextName } = props;
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -131,6 +132,7 @@ function OrgSamplesTable(props: SamplesProps) {
               : filteredSampleList ?? []
           }
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+          fileNamePrefix={groupContextName || 'org_samples'}
         />
       </div>
     </div>
