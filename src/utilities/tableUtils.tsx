@@ -2,13 +2,16 @@ import React from 'react';
 import { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
+export type PrimeReactColumnDefinition = {
+  field: string,
+  header: string,
+  dataType?: string,
+  hidden?: boolean,
+  body?: (rowData: any) => React.ReactNode,
+};
+
 export function buildPrimeReactColumnDefinitions(fields: Field[]) {
-  const columnBuilder: {
-    field: string,
-    header: string,
-    dataType?: string,
-    hidden?: boolean,
-    body?: (rowData: any) => React.ReactNode, }[] = [];
+  const columnBuilder: PrimeReactColumnDefinition[] = [];
 
   fields.forEach((field: Field) => {
     if (field.columnName in fieldRenderFunctions) {
@@ -35,12 +38,7 @@ export function buildPrimeReactColumnDefinitions(fields: Field[]) {
 }
 
 export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) {
-  const columnBuilder: {
-    field: string,
-    header: string,
-    dataType?: string,
-    hidden?: boolean,
-    body?: (rowData: any) => React.ReactNode, }[] = [];
+  const columnBuilder: PrimeReactColumnDefinition[] = [];
 
   fields.forEach((field: ProjectViewField) => {
     if (field.columnName in fieldRenderFunctions) {
