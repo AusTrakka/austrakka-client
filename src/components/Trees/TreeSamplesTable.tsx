@@ -9,7 +9,6 @@ import {
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { display } from 'html2canvas/dist/types/css/property-descriptors/display';
 import { ProjectViewField } from '../../types/dtos';
 import {
   buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition,
