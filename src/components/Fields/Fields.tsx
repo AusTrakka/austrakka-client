@@ -288,6 +288,7 @@ function Fields() {
                 hidden={col.hidden}
                 headerClassName="custom-title"
                 style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
+                bodyStyle={{ verticalAlign: 'top' }}
                 onCellEditComplete={onCellEditComplete}
                 onBeforeCellEditShow={(e) => (!col.editable ?
                   e.originalEvent.preventDefault() : undefined)}
