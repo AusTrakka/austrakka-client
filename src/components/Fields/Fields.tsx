@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Paper, Typography } from '@mui/material';
+import { Alert, Paper, Typography, Chip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
@@ -19,6 +19,8 @@ import { NumericEditable, TextEditable } from './EditableFields';
 import { ScopeDefinitions } from '../../constants/scopes';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import AllowedValues from './AllowedValues';
+import { FieldType, FIELD_TYPE_COLORS } from '../../styles/fieldTypeColours';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
@@ -27,10 +29,29 @@ function Fields() {
       <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
     </div>
   );
+
+  const renderFieldType = (rowData: any, field: string) => {
+    const type: string = rowData[field];
+    const bgColor = FIELD_TYPE_COLORS[type as FieldType]?.light ?? FIELD_TYPE_COLORS.default.light;
+    const textColor = FIELD_TYPE_COLORS[type as FieldType]?.dark ?? FIELD_TYPE_COLORS.default.dark;
+    return (
+      <Chip
+        size="small"
+        sx={{
+          backgroundColor: bgColor,
+          color: textColor,
+          fontWeight: 'bold',
+        }}
+        label={type}
+      />
+    );
+  };
   
-  const renderAllowedValues = (allowedValues: string[] | null): string => {
+  const renderAllowedValues = (allowedValues: string[] | null, field:string) => {
     if (allowedValues === null || allowedValues.length === 0) return '';
-    return allowedValues.join(', ');
+    return (
+      <AllowedValues allowedValues={allowedValues} field={field} />
+    );
   };
   
   const interactiveColumns = [
@@ -42,6 +63,7 @@ function Fields() {
     {
       field: 'primitiveType',
       header: 'Type',
+      body: (rowData: any) => renderFieldType(rowData, 'primitiveType'),
       hidden: false,
     },
     {
@@ -61,7 +83,10 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
     {
@@ -97,7 +122,10 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
   ];
