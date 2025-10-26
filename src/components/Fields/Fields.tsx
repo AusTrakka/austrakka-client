@@ -11,7 +11,6 @@ import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { ScopeDefinitions } from '../../constants/scopes';
-import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 
 function Fields() {
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -20,15 +19,13 @@ function Fields() {
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
   const user: UserSliceState = useAppSelector(selectUserState);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   // The scope should be in scope constant file somewhere in the future.
   // So it can be synced with the backend.
   const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
+
   const interactionPermission = hasPermissionV2(
     user,
-    tenant.defaultTenantGlobalId,
-    tenant.defaultTenantName,
-    scope,
+    ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN,
   );
 
   // get all AT fields

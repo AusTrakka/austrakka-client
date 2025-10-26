@@ -21,7 +21,6 @@ export interface UserSliceState {
 interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
   scopes: GroupedPrivilegesByRecordTypeWithScopes[]
-  defaultTenant: string,
   displayName: string,
   isAusTrakkaAdmin: boolean,
   orgAbbrev: string,
@@ -68,7 +67,7 @@ const fetchUserRoles = createAsyncThunk(
             roleName: 'SuperUser',
             privilegeLevel: 1,
             privilegeGlobalId: 'privilege-1',
-            scopes: ['*/*'],
+            scopes: ['*/*'], // TODO probably need scope name
           }],
         }],
       }];

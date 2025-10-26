@@ -17,13 +17,11 @@ import LocalUpload from './components/Upload/LocalUpload';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Fields from './components/Fields/Fields';
 import UserProvider from './providers/UserProvider';
-import TenantProvider from './providers/TenantProvider';
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <TenantProvider>
           <UserProvider>
             <Routes>
               {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
@@ -39,8 +37,7 @@ function App() {
               </Route>
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
-          </UserProvider>
-        </TenantProvider>
+        </UserProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

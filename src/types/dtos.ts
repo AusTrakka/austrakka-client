@@ -329,7 +329,6 @@ export interface UserPatchV2 {
 }
 
 export interface UserRoleRecordPrivilegePost {
-  owningTenantGlobalId: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
 }
