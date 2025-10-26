@@ -47,8 +47,8 @@ export function hasPermission(
 export function hasPermissionV2(
   user: UserSliceState,
   scope: string,
-  recordName: string = "",
-  recordType = "Tenant",
+  recordName: string = '',
+  recordType = 'Tenant',
 ): boolean {
   if (!user) return false;
   // This is if they are admin

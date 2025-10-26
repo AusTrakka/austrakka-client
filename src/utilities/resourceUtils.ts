@@ -152,7 +152,7 @@ export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost(`/api/Tenant/Privilege`, token, privilegeBody);
+) => callPost('/api/Tenant/Privilege', token, privilegeBody);
 
 export const deleteTenantPrivilege = (
   _: string,
@@ -165,7 +165,7 @@ export const deleteTenantPrivilege = (
   );
 
 // User
-export const getMeV2 = (token: string) => callGET(`/api/UserV2/Me`, token);
+export const getMeV2 = (token: string) => callGET('/api/UserV2/Me', token);
 export const getUserListV2 = (
   includeAll: boolean,
   token: string,
@@ -239,7 +239,7 @@ export const deleteOrgPrivilege = (
 export const getFieldsV2 = (
   token: string,
 ) =>
-  callGET(`/api/MetaDataColumnsV2`, token);
+  callGET('/api/MetaDataColumnsV2', token);
 export const patchFieldV2 = (
   metaDataColumnName: string,
   token: string,

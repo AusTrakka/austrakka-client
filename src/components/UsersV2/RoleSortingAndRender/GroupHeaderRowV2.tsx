@@ -58,12 +58,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const { token, tokenLoading } = useApi();
 
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
-  const tenantName = "Default Tenant"
-  const tenantDefaultRecord = {
-    id: "", // No required for tenant
-    abbrev: tenantName,
-    name: tenantName,
-  }
+  const tenantName = 'Default Tenant';
 
   useEffect(() => {
     async function fetchRecords() {
@@ -102,6 +97,11 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       if (recordType !== 'Tenant') {
         fetchRecords();
       } else {
+        const tenantDefaultRecord = {
+          id: '', // No required for tenant
+          abbrev: tenantName,
+          name: tenantName,
+        };
         setSelectedRecords([tenantDefaultRecord]);
         setRecords([tenantDefaultRecord]);
       }
