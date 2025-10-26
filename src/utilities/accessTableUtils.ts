@@ -15,23 +15,24 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
 
 export function hasScopeInRecord(
   groups: GroupedPrivilegesByRecordTypeWithScopes[],
-  recordName: string,
   scope: string,
-  defaultTenantName: string,
+  recordName: string = "",
+  recordType = "Tenant",
 ): boolean {
-  // Find the record with the matching recordId
-  let targetGroup = groups.find(group =>
-    group.recordRoles.some(recordRole => recordRole.recordName === recordName));
-
+  if (recordType === "Tenant" && recordName !== '') {
+    throw new Error("Cannot provide recordName with recordType of Tenant")
+  }
+  if (recordType !== "Tenant" && recordName === '') {
+    throw new Error("Must provide recordName")
+  }
   let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
-  
-  if (!targetGroup) {
-    targetGroup = groups.find(group => group.recordType === 'Tenant');
-    targetRecordRole = targetGroup?.recordRoles
-      .find(recordRole => recordRole.recordName === defaultTenantName);
+  const targetGroup = groups.find(group => group.recordType === recordType);
+  if (recordType === 'Tenant') {
+    targetRecordRole = targetGroup?.recordRoles[0]
   } else {
-    targetRecordRole = targetGroup.recordRoles
+    targetRecordRole = targetGroup?.recordRoles
       .find(recordRole => recordRole.recordName === recordName);
+
   }
   if (!targetRecordRole) {
     return false; // recordId not found within the specified group
