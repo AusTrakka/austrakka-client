@@ -43,6 +43,7 @@ function Fields() {
           fontWeight: 'bold',
         }}
         label={type}
+        key={rowData.id + type}
       />
     );
   };
