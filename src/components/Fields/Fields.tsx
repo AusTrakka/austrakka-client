@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Paper, Typography, Chip } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
@@ -20,7 +21,7 @@ import { ScopeDefinitions } from '../../constants/scopes';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import AllowedValues from './AllowedValues';
-import { FieldType, FIELD_TYPE_COLORS } from '../../styles/fieldTypeColours';
+import { FieldType, FIELD_TYPE_COLOURS } from '../../styles/fieldTypeColours';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
@@ -32,14 +33,14 @@ function Fields() {
 
   const renderFieldType = (rowData: any, field: string) => {
     const type: string = rowData[field];
-    const bgColor = FIELD_TYPE_COLORS[type as FieldType]?.light ?? FIELD_TYPE_COLORS.default.light;
-    const textColor = FIELD_TYPE_COLORS[type as FieldType]?.dark ?? FIELD_TYPE_COLORS.default.dark;
+    const colour = FIELD_TYPE_COLOURS[type as FieldType] ?? FIELD_TYPE_COLOURS.default;
+    
     return (
       <Chip
         size="small"
         sx={{
-          backgroundColor: bgColor,
-          color: textColor,
+          color: 'white',
+          backgroundColor: colour,
           fontWeight: 'bold',
         }}
         label={type}
