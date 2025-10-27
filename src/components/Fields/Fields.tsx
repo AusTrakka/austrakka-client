@@ -20,7 +20,7 @@ import { ScopeDefinitions } from '../../constants/scopes';
 import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import AllowedValues from './AllowedValues';
-import { FieldType, FIELD_TYPE_COLOURS } from '../../styles/fieldTypeColours';
+import { FieldType, FIELD_TYPE_COLOURS } from './fieldsMeta';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
