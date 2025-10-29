@@ -52,7 +52,7 @@
     "@types/react-dom": "^18.0.6",
     "@types/tabulator-tables": "^5.5.2",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
+    "@typescript-eslint/parser": "^8.46.2",
     "@vitejs/plugin-react": "^4.0.0",
     "@welldone-software/why-did-you-render": "^8.0.3",
     "eslint": "^8.35.0",
