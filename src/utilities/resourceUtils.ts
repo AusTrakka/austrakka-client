@@ -119,6 +119,14 @@ export const uploadSubmissions = (
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };
+export const createSample = (
+  token: string,
+  name: string,
+  owner: string,
+  sharedProjects: string[] = [],
+) => {
+  return callPost(`/api/Submissions/Sample`, token, { name, owner, sharedProjects})
+};
 
 // Sequence endpoints
 // TODO: this should parse the response

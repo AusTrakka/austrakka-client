@@ -28,18 +28,18 @@ import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import { ResponseObject } from '../../types/responseObject.interface';
 import {
-  seqTypeNames,
-  SkipForce,
+  OrgDescriptor,
   SeqPairedUploadRow,
   SeqSingleUploadRow,
-  OrgDescriptor,
   SeqType,
-  SeqUploadRowState,
+  seqTypeNames,
   SeqUploadRow,
+  SeqUploadRowState,
+  SkipForce,
 } from '../../types/sequploadtypes';
 import {
   activeSeqUploadStates,
-  createPairedSeqUploadRows, createSampleCSV,
+  createPairedSeqUploadRows,
   createSingleSeqUploadRows,
   getSharableProjects,
   getUploadableOrgs,
@@ -59,10 +59,7 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
 import { ResponseMessage } from '../../types/apiResponse.interface';
-import {
-  uploadSubmissions,
-  validateSubmissions,
-} from '../../utilities/resourceUtils';
+import { createSample } from '../../utilities/resourceUtils';
 
 const validFormats = {
   '.fq': '',
@@ -99,29 +96,22 @@ const createAndShareSamples = async (
   seqUploadRows: SeqUploadRow[],
   token: string,
 ): Promise<ResponseObject> => {
-  let csvFile: File;
-  
-  try {
-    const csv = createSampleCSV(seqUploadRows);
-    csvFile = new File([csv], 'samples_from_seq_submission.csv', { type: 'text/csv' });
-  } catch (error) {
-    return {
-      status: ResponseType.Error,
-      message: 'Error creating sample records',
-    };
+  console.dir(seqUploadRows)
+  let messages: ResponseMessage[] = [];
+  let status = ResponseType.Success
+  for (const row of seqUploadRows) {
+    console.log("SEQ_ID: " + row.seqId)
+    let resp = await createSample(token, row.seqId, dataOwnerAbbrev, shareProjectAbbrevs);
+    if (
+      resp.httpStatusCode !== 200 &&
+      resp.messages?.find(m => m.ResponseMessage === `Sample ${row.seqId} already exists`) === undefined
+    ) {
+      status = ResponseType.Error
+    }
+    messages = messages.concat(resp.messages)
+    console.log(messages)
   }
-
-  const formData = new FormData();
-  formData.append('file', csvFile);
-  formData.append('proforma-abbrev', 'min');
-
-  // Validate and go no further if error
-  // TODO if we get a warning from validation, consider getting user confirmation
-  let response = await validateSubmissions(formData, '', token, dataOwnerAbbrev, shareProjectAbbrevs);
-  if (response.status === ResponseType.Error) return response;
-
-  response = await uploadSubmissions(formData, '', token, dataOwnerAbbrev, shareProjectAbbrevs);
-  return response;
+  return { status: status, messages: messages, message: messages[0].ResponseMessage } as ResponseObject;
 };
 
 function UploadSequences() {
@@ -143,7 +133,7 @@ function UploadSequences() {
   const user: UserSliceState = useAppSelector(selectUserState);
   const { enqueueSnackbar } = useSnackbar();
   const { token, tokenLoading } = useApi();
-  
+
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
       if (newSur.id === sur.id) {
@@ -160,21 +150,21 @@ function UploadSequences() {
     });
     setSeqUploadRows(queuedRows);
   };
-  
+
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
-      sur.state === SeqUploadRowState.Errored ||
-      sur.state === SeqUploadRowState.Waiting);
-  
+    sur.state === SeqUploadRowState.Errored ||
+    sur.state === SeqUploadRowState.Waiting);
+
   const uploadFinished = (): boolean => seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
-      sur.state === SeqUploadRowState.Errored);
+    sur.state === SeqUploadRowState.Errored);
 
   useEffect(() => {
     const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
       sur => sur.state === state,
     );
-    
+
     const calculated = getRowsOfState(SeqUploadRowState.CalculatedHash);
     const calculating = getRowsOfState(SeqUploadRowState.CalculatingHash);
     const queued = getRowsOfState(SeqUploadRowState.Queued);
@@ -222,7 +212,7 @@ function UploadSequences() {
     };
     return (responseMessageVariants[responseType] ?? 'info') as VariantType;
   };
-  
+
   const showSampleCreationMessages = (response: ResponseObject) => {
     const baseMessages = {
       [ResponseType.Success]: 'Samples created successfully',
@@ -236,7 +226,7 @@ function UploadSequences() {
       [ResponseType.Warning]: 8000,
       [ResponseType.Error]: 8000,
     };
-    
+
     if (!response?.messages || response?.messages?.length === 0) {
       enqueueSnackbar(baseMessage, {
         variant: variantTypeForResponse(response.status),
@@ -260,15 +250,15 @@ function UploadSequences() {
       });
     }
   };
-  
+
   const handleUpload = async () => {
     // TODO need to use state for this really, to await tokenLoading if necessary
     // TODO this hacky code means we silently do nothing if we are not ready, 
     // and the user has to re-click
     if (tokenLoading !== LoadingState.SUCCESS) return;
-    
+
     if (!selectedDataOwner) return;
-   
+
     if (selectedCreateSampleRecords) {
       const response: ResponseObject =
         await createAndShareSamples(selectedDataOwner, selectedProjectShare, seqUploadRows, token);
@@ -277,7 +267,7 @@ function UploadSequences() {
     }
     queueAllRows();
   };
-  
+
   // Data owner
   useEffect(() => {
     if (user.loading !== LoadingState.SUCCESS) {
@@ -296,7 +286,7 @@ function UploadSequences() {
         'could not be properly loaded. Please contact an admin.');
     }
   }, [user.groupRoles, user.loading, user.orgAbbrev]);
-  
+
   // Projects
   useEffect(() => {
     if (!selectedCreateSampleRecords) {
@@ -311,7 +301,7 @@ function UploadSequences() {
     const projects: string[] = getSharableProjects(user.groupRoles ?? []);
     setAvailableProjects(projects);
   }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
-  
+
   const renderUploadRow = (row: SeqUploadRow) => {
     if (uploadRowTypes[row.seqType] === UploadPairedSequenceRow) {
       return (
@@ -331,16 +321,16 @@ function UploadSequences() {
       />
     );
   };
-  
+
   return (
     <>
       <Box>
         <Typography variant="h2" paddingBottom={1} color="primary">Upload Sequences</Typography>
         <Grid container spacing={2} sx={{ paddingBottom: 1 }} justifyContent="space-between" alignItems="center">
-          { pageErrorMsg && (
+          {pageErrorMsg && (
             <Grid size={12}>
               <Alert severity="error">
-                { pageErrorMsg }
+                {pageErrorMsg}
               </Alert>
             </Grid>
           )}
@@ -480,7 +470,7 @@ function UploadSequences() {
                       name={SkipForce.Skip}
                       disabled={uploadInProgress()}
                     />
-                )}
+                  )}
                   label="Skip samples with sequences"
                 />
                 <Box sx={{ paddingLeft: 4 }}>
@@ -500,7 +490,7 @@ function UploadSequences() {
                       name={SkipForce.Force}
                       disabled={uploadInProgress()}
                     />
-                )}
+                  )}
                   label="Overwrite existing sequences"
                 />
                 <Box sx={{ paddingLeft: 4 }}>
@@ -544,23 +534,23 @@ function UploadSequences() {
                   <TableHead>
                     {seqUploadRows.length > 0 && filesValidated &&
                       uploadRowTypes[selectedSeqType] === UploadPairedSequenceRow && (
-                      <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 1</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 2</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
-                      </TableRow>
-                    )}
+                        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 1</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Read 2</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
+                        </TableRow>
+                      )}
                     {seqUploadRows.length > 0 && filesValidated &&
                       uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow && (
-                      <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>File</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
-                        <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
-                      </TableRow>
-                    )}
+                        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Seq ID</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>File</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
+                          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
+                        </TableRow>
+                      )}
                   </TableHead>
                   <TableBody>
                     {filesValidated && seqUploadRows.map(sur => (
