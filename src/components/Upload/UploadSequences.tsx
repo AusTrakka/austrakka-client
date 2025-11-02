@@ -98,11 +98,14 @@ const createAndShareSamples = async (
 ): Promise<ResponseObject> => {
   let messages: ResponseMessage[] = [];
   let status = ResponseType.Success;
-  for (const row of seqUploadRows) {
-    const resp = await createSample(token, row.seqId, dataOwnerAbbrev, shareProjectAbbrevs);
+  const promises = [] as Promise<ResponseObject<any>>[];
+  seqUploadRows.forEach(r =>
+    promises.push(createSample(token, r.seqId, dataOwnerAbbrev, shareProjectAbbrevs)));
+  const resps = await Promise.all(promises);
+  for (const resp of resps) {
     if (
       resp.httpStatusCode !== 200 &&
-      resp.messages?.find(m => m.ResponseMessage === `Sample ${row.seqId} already exists`) === undefined
+      resp.messages?.find(m => m.ResponseMessage.match('Sample [^ ]* already exists')) === undefined
     ) {
       status = ResponseType.Error;
     }
@@ -538,7 +541,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                      )}
+                    )}
                     {seqUploadRows.length > 0 && filesValidated &&
                       uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow && (
                         <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
@@ -547,7 +550,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                      )}
+                    )}
                   </TableHead>
                   <TableBody>
                     {filesValidated && seqUploadRows.map(sur => (
