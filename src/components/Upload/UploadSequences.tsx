@@ -96,22 +96,19 @@ const createAndShareSamples = async (
   seqUploadRows: SeqUploadRow[],
   token: string,
 ): Promise<ResponseObject> => {
-  console.dir(seqUploadRows)
   let messages: ResponseMessage[] = [];
-  let status = ResponseType.Success
+  let status = ResponseType.Success;
   for (const row of seqUploadRows) {
-    console.log("SEQ_ID: " + row.seqId)
-    let resp = await createSample(token, row.seqId, dataOwnerAbbrev, shareProjectAbbrevs);
+    const resp = await createSample(token, row.seqId, dataOwnerAbbrev, shareProjectAbbrevs);
     if (
       resp.httpStatusCode !== 200 &&
       resp.messages?.find(m => m.ResponseMessage === `Sample ${row.seqId} already exists`) === undefined
     ) {
-      status = ResponseType.Error
+      status = ResponseType.Error;
     }
-    messages = messages.concat(resp.messages)
-    console.log(messages)
+    messages = messages.concat(resp.messages ?? []);
   }
-  return { status: status, messages: messages, message: messages[0].ResponseMessage } as ResponseObject;
+  return { status, messages, message: messages[0].ResponseMessage } as ResponseObject;
 };
 
 function UploadSequences() {
