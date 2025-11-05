@@ -11,7 +11,7 @@ import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } f
 import { useNavigate } from 'react-router-dom';
 import { ProjectViewField } from '../../types/dtos';
 import {
-  buildPrimeReactColumnDefinitionsPVF,
+  buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
@@ -64,7 +64,7 @@ export default function TreeSamplesTable(props: TreeTableProps) {
   } = props;
   const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
-  const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [columnError, setColumnError] = useState(false);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
@@ -212,7 +212,13 @@ export default function TreeSamplesTable(props: TreeTableProps) {
             </IconButton>
           </Tooltip>
           <ExportTableData
-            dataToExport={filteredData}
+              // if the displays rows are less than the filtered data it means that
+              // the table has hidden unselected rows.
+            dataToExport={displayRows.length < filteredDataLength ? displayRows : filteredData}
+            // pass in only the unhidden rows to the maps function.
+            headers={sampleTableColumns
+              .filter((column: PrimeReactColumnDefinition) => column.hidden === false)
+              .map((column: PrimeReactColumnDefinition) => column.field)}
             disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
             fileNamePrefix={treeName}
           />
