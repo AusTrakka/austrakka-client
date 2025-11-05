@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableRowClickEvent, DataTableValue } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useAppSelector } from '../../../app/store';
@@ -58,14 +58,14 @@ export default function Organisations(props: ProjectWidgetProps) {
   }, [data]);
   
   const rowClickHandler = (row: DataTableRowClickEvent) => {
-    const selectedRow = row.data;
+    const selectedRow: DataTableValue = row.data;
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [ORG_FIELD_NAME]: {
         operator: FilterOperator.AND,
         constraints: [
           {
             matchMode: FilterMatchMode.EQUALS,
-            value: selectedRow.Owner_group,
+            value: selectedRow.value,
           },
         ],
       },

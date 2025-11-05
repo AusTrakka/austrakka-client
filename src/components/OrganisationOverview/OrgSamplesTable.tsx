@@ -12,7 +12,7 @@ import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Sample } from '../../types/sample.interface';
 import LoadingState from '../../constants/loadingState';
-import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import sortIcon from '../TableComponents/SortIcon';
@@ -38,7 +38,7 @@ interface SamplesProps {
 function OrgSamplesTable(props: SamplesProps) {
   const { groupContext, groupContextName } = props;
   const { navigate } = useStableNavigate();
-  const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -131,6 +131,7 @@ function OrgSamplesTable(props: SamplesProps) {
               ? []
               : filteredSampleList ?? []
           }
+          headers={sampleTableColumns.filter(col => !col.hidden).map(col => col.header)}
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
           fileNamePrefix={groupContextName || 'org_samples'}
         />
