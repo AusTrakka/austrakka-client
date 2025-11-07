@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertTitle, Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography } from '@mui/material';
-import { Group, Organisation } from '../../../types/dtos';
+import { Group, GroupRole, Organisation } from '../../../types/dtos';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, UserSliceState } from '../../../app/userSlice';
 import { fetchGroupMetadata, GroupMetadataState, selectGroupMetadata } from '../../../app/groupMetadataSlice';
@@ -12,7 +12,8 @@ import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import OrganisationSampleShareTable from './OrganisationSampleShareTable';
-import SampleShareDialog from './SampleShareDialog'; // New separate dialog component
+import SampleShareDialog from './SampleShareDialog';
+import { hasPermission, PermissionLevel } from '../../../permissions/accessTable'; // New separate dialog component
 
 function OrganisationSampleShareOverview() {
   const { orgAbbrev } = useParams();
@@ -24,6 +25,7 @@ function OrganisationSampleShareOverview() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [selectedSamples, setSelectedSamples] = useState<string[]>([]);
   const [noTargetError, setNoTargetError] = useState<boolean>(false);
+  const [canShare, setCanShare] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -52,6 +54,22 @@ function OrganisationSampleShareOverview() {
       dispatch(fetchGroupMetadata({ groupId: organisationGroup.groupId, token }));
     }
   }, [token, tokenLoading, dispatch, organisationGroup]);
+
+  useEffect(() => {
+    const checkSharingPermissions = (ownerGroupName: string) => hasPermission(
+      user,
+      ownerGroupName,
+      'organisation/sample/share',
+      PermissionLevel.CanShow,
+    );
+    const ownerOrgGroupName: string | undefined = user.groupRoles
+      .find((groupRole: GroupRole) => groupRole.group.name === `${orgAbbrev}-Owner`)?.group.name;
+    if (user.loading === LoadingState.SUCCESS &&
+        (ownerOrgGroupName || user.admin)
+    ) {
+      setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
+    }
+  }, [orgAbbrev, user]);
 
   useEffect(() => {
     if (user && user.groupRolesByGroup) {
@@ -187,6 +205,14 @@ function OrganisationSampleShareOverview() {
   );
 
   const renderWarning = () => {
+    if (!canShare) {
+      return (
+        <Alert severity="warning">
+          <AlertTitle>Warning</AlertTitle>
+          You do not have permission to share samples.
+        </Alert>
+      );
+    }
     if (metadata?.loadingState === MetadataLoadingState.ERROR ||
         metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       return (
@@ -199,8 +225,6 @@ function OrganisationSampleShareOverview() {
     return null;
   };
 
-  console.log(metadata?.loadingState);
-  console.log(metadata);
   return (
     <>
       <Stack direction="column" spacing={2} display="flex">
@@ -211,8 +235,8 @@ function OrganisationSampleShareOverview() {
           <Typography />
         </Box>
         {renderWarning()}
-        {renderControls()}
-        {organisationGroup ?
+        {canShare && renderControls()}
+        {organisationGroup && canShare ?
           (
             <OrganisationSampleShareTable
               selectedIds={selectedSamples}
