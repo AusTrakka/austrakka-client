@@ -74,6 +74,7 @@ function OrganisationSampleShareOverview() {
       const projectsThatCanBeSelected = Object.entries(user.groupRolesByGroup)
         .filter(([_, roles]) =>
           roles.some(role => role.toLowerCase() === 'uploader'))
+        .filter(([key]) => key !== `${orgAbbrev}-Owner` && key !== `${orgAbbrev}-Everyone`)
         .map(([key]) => key)
         .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
