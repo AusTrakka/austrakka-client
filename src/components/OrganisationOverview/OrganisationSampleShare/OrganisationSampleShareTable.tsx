@@ -1,31 +1,22 @@
-/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
-import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
-import {
-  DataTable,
-  DataTableSelectAllChangeEvent,
-  DataTableSelectionMultipleChangeEvent,
-} from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { ProjectViewField } from '../../types/dtos';
-import {
-  buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition,
-} from '../../utilities/tableUtils';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import ExportTableData from '../Common/ExportTableData';
-import LoadingState from '../../constants/loadingState';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { Sample } from '../../types/sample.interface';
-import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
-import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
-import sortIcon from '../TableComponents/SortIcon';
-import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { DataTable, DataTableSelectAllChangeEvent, DataTableSelectionMultipleChangeEvent } from 'primereact/datatable';
+import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
+import { Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { Column } from 'primereact/column';
+import { MetaDataColumn } from '../../../types/dtos';
+import LoadingState from '../../../constants/loadingState';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { Sample } from '../../../types/sample.interface';
+import { useStateFromSearchParamsForFilterObject } from '../../../utilities/stateUtils';
+import DataFilters, { defaultState } from '../../DataFilters/DataFilters';
+import { buildPrimeReactColumnDefinitions } from '../../../utilities/tableUtils';
+import { isDataTableFiltersEqual } from '../../../utilities/filterUtils';
+import ColumnVisibilityMenu from '../../TableComponents/ColumnVisibilityMenu';
+import sortIcon from '../../TableComponents/SortIcon';
 
-interface TreeSampleTableProps {
-  displayFields: ProjectViewField[],
+interface OrgSampleShareTableProps {
+  displayFields: MetaDataColumn[],
   uniqueValues: Record<string, string[] | null> | null,
   emptyColumns: string[],
   fieldLoadingState: Record<string, LoadingState>,
@@ -33,7 +24,6 @@ interface TreeSampleTableProps {
   selectedIds: string[],
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>,
   tableMetadata: Sample[],
-  treeName: string,
 }
 
 interface BodyComponentProps {
@@ -50,21 +40,21 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-export default function TreeSamplesTable(props: TreeSampleTableProps) {
+export default function OrganisationSampleShareTable(props: OrgSampleShareTableProps) {
   const {
-    selectedIds,
-    setSelectedIds,
     displayFields,
     uniqueValues,
-    tableMetadata,
-    metadataLoadingState,
-    fieldLoadingState,
     emptyColumns,
-    treeName,
+    fieldLoadingState,
+    metadataLoadingState,
+    selectedIds,
+    setSelectedIds,
+    tableMetadata,
   } = props;
+
   const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
-  const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<Sample[]>([]);
   const [columnError, setColumnError] = useState(false);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
@@ -80,16 +70,12 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
-  const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-
-  const { maxHeight, getHeaderRef } =
-    useMaxHeaderHeight(metadataLoadingState ?? MetadataLoadingState.IDLE);
 
   // Format display fields into column headers
   useEffect(() => {
     const formatTableHeaders = () => {
-      const columnBuilder = buildPrimeReactColumnDefinitionsPVF(displayFields);
+      const columnBuilder = buildPrimeReactColumnDefinitions(displayFields);
       setSampleTableColumns(columnBuilder);
       setColumnError(false);
     };
@@ -110,8 +96,8 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
     };
 
     if (metadataLoadingState === MetadataLoadingState.IDLE ||
-      metadataLoadingState === MetadataLoadingState.AWAITING_FIELDS ||
-      metadataLoadingState === MetadataLoadingState.AWAITING_DATA) {
+        metadataLoadingState === MetadataLoadingState.AWAITING_FIELDS ||
+        metadataLoadingState === MetadataLoadingState.AWAITING_DATA) {
       setLoading(true);
       return;
     }
@@ -120,7 +106,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
       processTableValues();
     }
   }, [currentFilters, metadataLoadingState, tableMetadata]);
-  
+
   useEffect(() => {
     if (fieldLoadingState && displayRows.length > 0) {
       if (Object.values(fieldLoadingState)
@@ -203,25 +189,6 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
             }}
             emptyColumnNames={emptyColumns}
           />
-          <Tooltip title="Toggle Vertical Headers" placement="top">
-            <IconButton
-              onClick={() => setVerticalHeaders(!verticalHeaders)}
-              aria-label="toggle vertical headers"
-            >
-              {verticalHeaders ? (<TextRotateVertical />) : (<TextRotateUp />)}
-            </IconButton>
-          </Tooltip>
-          <ExportTableData
-              // if the displays rows are less than the filtered data it means that
-              // the table has hidden unselected rows.
-            dataToExport={displayRows.length < filteredDataLength ? displayRows : filteredData}
-            // pass in only the unhidden rows to the maps function.
-            headers={sampleTableColumns
-              .filter((column: PrimeReactColumnDefinition) => column.hidden === false)
-              .map((column: PrimeReactColumnDefinition) => column.field)}
-            disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
-            fileNamePrefix={treeName}
-          />
         </div>
       </div>
     </div>
@@ -262,12 +229,11 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
             filters={allFieldsLoaded ?
               currentFilters : defaultState}
             scrollable
-            scrollHeight="calc(100vh - 300px)"
+            scrollHeight="calc(100vh - 450px)"
             paginator
-            rows={10}
+            rows={25}
             resizableColumns
-            columnResizeMode="expand"
-            rowsPerPageOptions={[10, 50, 100, 500]}
+            rowsPerPageOptions={[25, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
@@ -284,26 +250,22 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
             sortIcon={sortIcon}
-            className={verticalHeaders ? 'vertical-table-mode' : undefined}
+            className="my-flexible-table"
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
-            {sampleTableColumns.map((col: Sample, index: any) => (
+            {sampleTableColumns.map((col: Sample) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={(
-                  !verticalHeaders ? <div>{col.header}</div> : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
-                      {col.header}
-                    </div>
-                  )
-                )}
+                header={col.header}
                 body={BodyComponent({ col, readyFields: fieldLoadingState })}
                 hidden={col.hidden}
                 sortable
                 resizeable
-                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
+                style={{ minWidth: '150px' }}
+                className="flexible-column"
                 headerClassName="custom-title"
+                bodyClassName="value-cells"
               />
             ))}
           </DataTable>
