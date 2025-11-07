@@ -31,7 +31,7 @@ export enum SeqUploadRowState {
   CalculatedHash = 'Calculated Hash',
   Uploading = 'Uploading',
   Complete = 'Complete',
-  Issues = 'Issues', // TODO: Not sure about this name
+  Incomplete = 'Incomplete', // TODO: Not sure about this name
   Errored = 'Errored',
 }
 

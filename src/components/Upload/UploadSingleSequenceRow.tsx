@@ -128,7 +128,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
       });
       if (seqSubmission.messages.some(m => m.ResponseType === ResponseType.Error)) {
         // If any other api requests returned errors, users need to know
-        updateState(SeqUploadRowState.Issues);
+        updateState(SeqUploadRowState.Incomplete);
       } else {
         updateState(SeqUploadRowState.Complete);
       }
@@ -145,7 +145,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
   const disableResponse = (): boolean =>
     seqUploadRow.state !== SeqUploadRowState.Complete
     && seqUploadRow.state !== SeqUploadRowState.Errored
-    && seqUploadRow.state !== SeqUploadRowState.Issues;
+    && seqUploadRow.state !== SeqUploadRowState.Incomplete;
 
   const requestCompleted = (): boolean | undefined =>
     seqUploadRow.state === SeqUploadRowState.Complete;
@@ -156,7 +156,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     SeqUploadRowState.Waiting,
     SeqUploadRowState.Complete,
     SeqUploadRowState.Errored,
-    SeqUploadRowState.Issues,
+    SeqUploadRowState.Incomplete,
   ].includes(seqUploadRow.state);
 
   useEffect(() => {

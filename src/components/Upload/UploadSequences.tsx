@@ -125,12 +125,12 @@ function UploadSequences() {
     sur.state === SeqUploadRowState.Complete ||
     sur.state === SeqUploadRowState.Errored ||
     sur.state === SeqUploadRowState.Waiting ||
-    sur.state === SeqUploadRowState.Issues);
+    sur.state === SeqUploadRowState.Incomplete);
 
   const uploadFinished = (): boolean => seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
     sur.state === SeqUploadRowState.Errored ||
-    sur.state === SeqUploadRowState.Issues);
+    sur.state === SeqUploadRowState.Incomplete);
 
   useEffect(() => {
     const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
@@ -467,7 +467,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                    )}
+                      )}
                     {seqUploadRows.length > 0 && filesValidated &&
                       uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow && (
                         <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
@@ -476,7 +476,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                    )}
+                      )}
                   </TableHead>
                   <TableBody>
                     {filesValidated && seqUploadRows.map(sur => (
