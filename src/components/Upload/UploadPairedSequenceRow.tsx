@@ -1,5 +1,4 @@
 import {
-  Button,
   Chip,
   CircularProgress,
   FormControl,
@@ -19,7 +18,7 @@ import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
 import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
-import ValidationModal from '../Validation/ValidationModal';
+import { ValidationPopupButton } from '../Validation/ValidationModal';
 import { generateHash } from '../../utilities/file';
 import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -39,7 +38,6 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   const { owner } = props;
   const { sharedProjects } = props;
 
-  const [showValidation, setShowValidation] = useState(false);
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[],
@@ -158,7 +156,12 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
         status: LoadingState.SUCCESS,
         messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
-      updateState(SeqUploadRowState.Complete);
+      if (seqSubmission.messages.some(m => m.ResponseType == ResponseType.Error)) {
+        // If any other api requests returned errors, users need to know
+        updateState(SeqUploadRowState.Issues);
+      } else {
+        updateState(SeqUploadRowState.Complete);
+      }
     } else {
       setSeqSubmission({
         ...seqSubmission,
@@ -169,9 +172,10 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     }
   };
 
-  const disableResponse = (): boolean | undefined =>
+  const disableResponse = (): boolean =>
     seqUploadRow.state !== SeqUploadRowState.Complete
-    && seqUploadRow.state !== SeqUploadRowState.Errored;
+    && seqUploadRow.state !== SeqUploadRowState.Errored
+    && seqUploadRow.state !== SeqUploadRowState.Issues;
 
   const requestCompleted = (): boolean | undefined =>
     seqUploadRow.state === SeqUploadRowState.Complete;
@@ -182,6 +186,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     SeqUploadRowState.Waiting,
     SeqUploadRowState.Complete,
     SeqUploadRowState.Errored,
+    SeqUploadRowState.Issues,
   ].includes(seqUploadRow.state);
 
   useEffect(() => {
@@ -295,26 +300,17 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
             <CircularProgress size={20} />
           ) : (
             requestWaiting() || (
-              <Button
-                size="small"
-                variant="outlined"
-                color="primary"
-                onClick={() => {
-                  setShowValidation(!showValidation);
-                }}
-                disabled={disableResponse()}
-              >
-                Show Response
-              </Button>
+              <>
+                <ValidationPopupButton
+                  messages={seqSubmission.messages ?? []}
+                  title="Response Messages"
+                  disabled={disableResponse()}
+
+                />
+              </>
             ))}
         </>
       </TableCell>
-      <ValidationModal
-        messages={seqSubmission.messages ?? []}
-        title="Response Messages"
-        openModal={showValidation}
-        handleModalClose={() => setShowValidation(!showValidation)}
-      />
     </>
   );
 }
