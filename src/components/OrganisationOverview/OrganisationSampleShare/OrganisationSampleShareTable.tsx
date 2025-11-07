@@ -71,11 +71,7 @@ export default function OrganisationSampleShareTable(props: OrgSampleShareTableP
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
-  const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-
-  const { maxHeight, getHeaderRef } =
-      useMaxHeaderHeight(metadataLoadingState ?? MetadataLoadingState.IDLE);
 
   // Format display fields into column headers
   useEffect(() => {
@@ -194,14 +190,6 @@ export default function OrganisationSampleShareTable(props: OrgSampleShareTableP
             }}
             emptyColumnNames={emptyColumns}
           />
-          <Tooltip title="Toggle Vertical Headers" placement="top">
-            <IconButton
-              onClick={() => setVerticalHeaders(!verticalHeaders)}
-              aria-label="toggle vertical headers"
-            >
-              {verticalHeaders ? (<TextRotateVertical />) : (<TextRotateUp />)}
-            </IconButton>
-          </Tooltip>
         </div>
       </div>
     </div>
@@ -242,11 +230,10 @@ export default function OrganisationSampleShareTable(props: OrgSampleShareTableP
             filters={allFieldsLoaded ?
               currentFilters : defaultState}
             scrollable
-            scrollHeight="calc(100vh - 300px)"
+            scrollHeight="calc(100vh - 450px)"
             paginator
             rows={25}
             resizableColumns
-            columnResizeMode="expand"
             rowsPerPageOptions={[25, 50, 100, 500]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
@@ -264,26 +251,22 @@ export default function OrganisationSampleShareTable(props: OrgSampleShareTableP
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
             sortIcon={sortIcon}
-            className={verticalHeaders ? 'vertical-table-mode' : undefined}
+            className="my-flexible-table"
           >
             <Column selectionMode="multiple" style={{ width: '3em' }} />
-            {sampleTableColumns.map((col: Sample, index: any) => (
+            {sampleTableColumns.map((col: Sample) => (
               <Column
                 key={col.field}
                 field={col.field}
-                header={(
-                          !verticalHeaders ? <div>{col.header}</div> : (
-                            <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
-                              {col.header}
-                            </div>
-                          )
-                      )}
+                header={col.header}
                 body={BodyComponent({ col, readyFields: fieldLoadingState })}
                 hidden={col.hidden}
                 sortable
                 resizeable
-                headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
+                style={{ minWidth: '150px' }}
+                className="flexible-column"
                 headerClassName="custom-title"
+                bodyClassName="value-cells"
               />
             ))}
           </DataTable>
