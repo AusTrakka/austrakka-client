@@ -24,7 +24,7 @@ import sortIcon from '../TableComponents/SortIcon';
 import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 
-interface TreeTableProps {
+interface TreeSampleTableProps {
   displayFields: ProjectViewField[],
   uniqueValues: Record<string, string[] | null> | null,
   emptyColumns: string[],
@@ -50,7 +50,7 @@ function BodyComponent(props: BodyComponentProps) {
   );
 }
 
-export default function TreeSamplesTable(props: TreeTableProps) {
+export default function TreeSamplesTable(props: TreeSampleTableProps) {
   const {
     selectedIds,
     setSelectedIds,
