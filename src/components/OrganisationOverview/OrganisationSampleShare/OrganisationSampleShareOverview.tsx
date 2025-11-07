@@ -225,6 +225,41 @@ function OrganisationSampleShareOverview() {
     return null;
   };
 
+  // Show error if organisation group cannot be loaded
+  if (orgShareError) {
+    return (
+      <Stack direction="column" spacing={2} display="flex">
+        <Box>
+          <Typography variant="h2" color="primary">
+            {`Share ${orgAbbrev} Organisation Samples`}
+          </Typography>
+        </Box>
+        <Alert severity="error">
+          <AlertTitle>Error Loading Organisation</AlertTitle>
+          {orgShareErrorMessage || 'Unable to load organisation group. Please try again later.'}
+        </Alert>
+      </Stack>
+    );
+  }
+
+  // Show error if user has no target groups to share to
+  if (noTargetError) {
+    return (
+      <Stack direction="column" spacing={2} display="flex">
+        <Box>
+          <Typography variant="h2" color="primary">
+            {`Share ${orgAbbrev} Organisation Samples`}
+          </Typography>
+        </Box>
+        <Alert severity="warning">
+          <AlertTitle>No Target Groups Available</AlertTitle>
+          You do not have 'Uploader' permissions in any groups.
+          You need to be an Uploader in at least one group to share samples.
+        </Alert>
+      </Stack>
+    );
+  }
+
   return (
     <>
       <Stack direction="column" spacing={2} display="flex">
