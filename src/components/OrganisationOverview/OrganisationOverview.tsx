@@ -52,7 +52,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const { navigate } = useStableNavigate();
   const [organisation, setOrganisation] = useState<Organisation>();
-  const [ownerOrg, setOwnerOrg] = useState<Group>();
   const [orgEveryone, setOrgEveryone] = useState<Group>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE); const [groupStatusMessage, setGroupStatusMessage] = useState('');
@@ -83,7 +82,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       // give it an empty string if only the admin check passed in the or condition above
       setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
     }
-  }, [orgAbbrev, ownerOrg, user]);
+  }, [orgAbbrev, user]);
 
   useEffect(() => {
     function getMyOrgDetails() {
