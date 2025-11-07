@@ -23,10 +23,8 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { useSnackbar, VariantType } from 'notistack';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { DropFileUpload } from '../../types/DropFileUpload';
-import { ResponseObject } from '../../types/responseObject.interface';
 import {
   OrgDescriptor,
   SeqPairedUploadRow,
@@ -56,9 +54,7 @@ import UploadSequencesHelp from './UploadSequencesHelp';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
-import { ResponseType } from '../../constants/responseType';
 import { useApi } from '../../app/ApiContext';
-import { ResponseMessage } from '../../types/apiResponse.interface';
 
 const validFormats = {
   '.fq': '',
@@ -106,7 +102,6 @@ function UploadSequences() {
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const { enqueueSnackbar } = useSnackbar();
   const { tokenLoading } = useApi();
 
   const updateRow = (newSur: SeqUploadRow) => {
@@ -129,11 +124,13 @@ function UploadSequences() {
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
     sur.state === SeqUploadRowState.Errored ||
-    sur.state === SeqUploadRowState.Waiting);
+    sur.state === SeqUploadRowState.Waiting ||
+    sur.state === SeqUploadRowState.Issues);
 
   const uploadFinished = (): boolean => seqUploadRows.every(sur =>
     sur.state === SeqUploadRowState.Complete ||
-    sur.state === SeqUploadRowState.Errored);
+    sur.state === SeqUploadRowState.Errored ||
+    sur.state === SeqUploadRowState.Issues);
 
   useEffect(() => {
     const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
@@ -181,53 +178,6 @@ function UploadSequences() {
 
   const handleClearFiles = () => {
     setFiles([]);
-  };
-
-  const variantTypeForResponse = (responseType: ResponseType): VariantType => {
-    const responseMessageVariants = {
-      [ResponseType.Success]: 'success',
-      [ResponseType.Warning]: 'warning',
-      [ResponseType.Error]: 'error',
-    };
-    return (responseMessageVariants[responseType] ?? 'info') as VariantType;
-  };
-
-  const showSampleCreationMessages = (response: ResponseObject) => {
-    const baseMessages = {
-      [ResponseType.Success]: 'Samples created successfully',
-      [ResponseType.Warning]: 'Samples created with warnings',
-      [ResponseType.Error]: 'Error creating samples',
-    };
-    const baseMessage = baseMessages[response.status] ?? 'Unknown error creating samples';
-
-    const responseMessageTimeouts = {
-      [ResponseType.Success]: 3000,
-      [ResponseType.Warning]: 8000,
-      [ResponseType.Error]: 8000,
-    };
-
-    if (!response?.messages || response?.messages?.length === 0) {
-      enqueueSnackbar(baseMessage, {
-        variant: variantTypeForResponse(response.status),
-        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
-      });
-    } else if (response?.messages?.length === 1) {
-      enqueueSnackbar(`${baseMessage}: ${response.message}`, {
-        variant: variantTypeForResponse(response.status),
-        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
-      });
-    } else {
-      enqueueSnackbar(baseMessage, {
-        variant: variantTypeForResponse(response.status),
-        autoHideDuration: responseMessageTimeouts[response.status] ?? 5000,
-      });
-      response.messages.forEach((message: ResponseMessage) => {
-        enqueueSnackbar(message.ResponseMessage, {
-          variant: variantTypeForResponse(message.ResponseType),
-          autoHideDuration: responseMessageTimeouts[message.ResponseType] ?? 5000,
-        });
-      });
-    }
   };
 
   const handleUpload = async () => {
@@ -292,6 +242,8 @@ function UploadSequences() {
         seqUploadRow={row as SeqSingleUploadRow}
         updateRow={updateRow}
         modeOption={selectedSkipForce}
+        owner={selectedDataOwner}
+        sharedProjects={selectedProjectShare}
       />
     );
   };
@@ -515,7 +467,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                      )}
+                    )}
                     {seqUploadRows.length > 0 && filesValidated &&
                       uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow && (
                         <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
@@ -524,7 +476,7 @@ function UploadSequences() {
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>State</TableCell>
                           <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>Actions</TableCell>
                         </TableRow>
-                      )}
+                    )}
                   </TableHead>
                   <TableBody>
                     {filesValidated && seqUploadRows.map(sur => (

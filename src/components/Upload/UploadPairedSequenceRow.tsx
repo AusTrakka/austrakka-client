@@ -18,7 +18,7 @@ import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
 import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
-import { ValidationPopupButton } from '../Validation/ValidationModal';
+import { ValidationPopupButton } from '../Validation/Validation';
 import { generateHash } from '../../utilities/file';
 import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
 import { ResponseObject } from '../../types/responseObject.interface';
@@ -99,12 +99,12 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
         ...seqSubmission,
         messages: [
           ...seqSubmission.messages,
-          { ResponseMessage: 'Owner is null', ResponseType: ResponseType.Error } as ResponseMessage
+          { ResponseMessage: 'Owner is null', ResponseType: ResponseType.Error } as ResponseMessage,
         ],
       });
       return;
     }
-    let messages = [] as ResponseMessage[];
+    const messages = [] as ResponseMessage[];
     const sampleResp = await createSample(token, seqUploadRow.seqId, owner, sharedProjects);
     if (sampleResp.httpStatusCode === 409) {
       // If it's a conflict, display this as a warning.
@@ -112,7 +112,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       message.ResponseType = ResponseType.Warning;
       messages.push(message);
     } else {
-      messages.push(...sampleResp.messages)
+      messages.push(...sampleResp.messages);
     }
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
@@ -120,7 +120,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId])));
 
     for (const resp of (await Promise.all(sampleSharePromises))) {
-      messages.push(...resp.messages)
+      messages.push(...resp.messages);
     }
     setSeqSubmission({
       ...seqSubmission,
@@ -156,7 +156,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
         status: LoadingState.SUCCESS,
         messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
-      if (seqSubmission.messages.some(m => m.ResponseType == ResponseType.Error)) {
+      if (seqSubmission.messages.some(m => m.ResponseType === ResponseType.Error)) {
         // If any other api requests returned errors, users need to know
         updateState(SeqUploadRowState.Issues);
       } else {
@@ -300,14 +300,12 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
             <CircularProgress size={20} />
           ) : (
             requestWaiting() || (
-              <>
-                <ValidationPopupButton
-                  messages={seqSubmission.messages ?? []}
-                  title="Response Messages"
-                  disabled={disableResponse()}
+              <ValidationPopupButton
+                messages={seqSubmission.messages ?? []}
+                title="Response Messages"
+                disabled={disableResponse()}
 
-                />
-              </>
+              />
             ))}
         </>
       </TableCell>
