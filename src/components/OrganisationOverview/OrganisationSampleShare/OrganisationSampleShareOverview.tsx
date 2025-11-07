@@ -86,7 +86,7 @@ function OrganisationSampleShareOverview() {
       setNoTargetError(false);
       setSelectableProjects(projectsThatCanBeSelected);
     }
-  }, [user]);
+  }, [orgAbbrev, user]);
 
   useEffect(() => {
     async function getOwnerOrgGroupAsync() {
