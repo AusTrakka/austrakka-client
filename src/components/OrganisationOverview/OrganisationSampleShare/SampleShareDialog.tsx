@@ -12,7 +12,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { Share, CheckCircle } from '@mui/icons-material';
+import { CheckCircle, IosShare } from '@mui/icons-material';
 
 interface SampleShareDialogProps {
   open: boolean;
@@ -71,7 +71,7 @@ export default function SampleShareDialog({
           onClick={onConfirm}
           variant="contained"
           color="success"
-          startIcon={<Share />}
+          startIcon={<IosShare />}
         >
           Confirm Share
         </Button>

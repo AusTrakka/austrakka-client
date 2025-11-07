@@ -150,7 +150,7 @@ function OrganisationSampleShareOverview() {
       setSelectedProject(null);
       setSnackbar({
         open: true,
-        message: shareResponse.message || 'Samples shared successfully!',
+        message: 'Samples shared successfully!',
         severity: 'success',
       });
     } catch (error: any) {
