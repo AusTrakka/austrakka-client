@@ -38,8 +38,8 @@ import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview
 import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
 
 import MapPage from './components/Maps/MapPage';
-import OrgansationSampleShareOverview
-  from './components/OrganisationOverview/OrganisationSampleShare/OrgansationSampleShareOverview';
+import OrganisationSampleShareOverview
+  from './components/OrganisationOverview/OrganisationSampleShare/OrganisationSampleShareOverview';
 
 function App() {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ function App() {
                   <Route element={<MainMenuLayout />}>
                     <Route path="/" element={<UserDashboard />} />
                     <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
-                    <Route path="org/:orgAbbrev/share" element={<OrgansationSampleShareOverview />} />
+                    <Route path="org/:orgAbbrev/share" element={<OrganisationSampleShareOverview />} />
                     <Route path="upload" element={<Upload />} />
                     <Route path="users" element={<Users />} />
                     <Route path="usersV2" element={<UsersV2 />} />
