@@ -30,25 +30,25 @@ import { ResponseObject } from '../types/responseObject.interface';
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string) :
+export const getProjectList = (token: string):
   Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
-export const getProjectDetails = (abbrev: string, token: string) :
+export const getProjectDetails = (abbrev: string, token: string):
   Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
 
 // Plots endpoints
-export const getPlots = (projectId: number, token: string) :
+export const getPlots = (projectId: number, token: string):
   Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
-export const getPlotDetails = (abbrev: string, token: string) :
+export const getPlotDetails = (abbrev: string, token: string):
   Promise<ResponseObject<Plot>> => callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Tree endpoints
-export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string) :
+export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string):
   Promise<ResponseObject<Tree[]>> => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (treeVersionId: number, token: string) :
+export const getTreeData = (treeVersionId: number, token: string):
   Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
-export const getLatestTreeData = (treeId: number, token: string) :
+export const getLatestTreeData = (treeId: number, token: string):
   Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
-export const getTreeVersions = (treeId: number, token: string) :
+export const getTreeVersions = (treeId: number, token: string):
   Promise<ResponseObject<TreeVersion[]>> => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
@@ -95,8 +95,8 @@ export const getUserDashboardOverview = (token: string) => callGET('/api/Dashboa
 
 // has to be split to 3 different lines as it was getting too long
 export const getUserDashboardProjects =
-    (token: string) : Promise<ResponseObject<ProjectSummary[]>> =>
-        callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
+  (token: string): Promise<ResponseObject<ProjectSummary[]>> =>
+    callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
 export const validateSubmissions = (
@@ -145,11 +145,12 @@ export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/a
 export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) => callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
-export const getSampleGroups = (sampleName:string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const shareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples });
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
-export const getOrganisation = (abbrev: string, token: string) : Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
+export const getOrganisation = (abbrev: string, token: string): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
 export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
 
@@ -167,7 +168,7 @@ export const deleteTenantPrivilege = (
   tenantGlobalId: string,
   privilegeGlobalId: string,
   defaultTenantGlobalId: string,
-  token:string,
+  token: string,
 ) =>
   callDELETE(
     `/api/V2/Tenant/${tenantGlobalId}/Privilege/${privilegeGlobalId}?owningTenantGlobalId=${defaultTenantGlobalId}`,
@@ -239,14 +240,14 @@ export const patchUserOrganisationV2 = (
 export const postOrgPrivilege = (
   recordGlobalId: string,
   privilegeBody: UserRoleRecordPrivilegePost,
-  token:string,
+  token: string,
 ) => callPost(`/api/V2/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
   privilegeGlobalId: string,
   defaultTenantGlobalId: string,
-  token:string,
+  token: string,
 ) => callDELETE(
   `/api/V2/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}/?owningTenantGlobalId=${defaultTenantGlobalId}`,
   token,

@@ -26,6 +26,7 @@ export enum SkipForce {
 export enum SeqUploadRowState {
   Waiting = 'Waiting',
   Queued = 'Queued',
+  CreateSample = 'Create Sample',
   CalculatingHash = 'Calculating Hash',
   CalculatedHash = 'Calculated Hash',
   Uploading = 'Uploading',
