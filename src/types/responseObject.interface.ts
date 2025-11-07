@@ -7,7 +7,7 @@ export interface ResponseObject<TData = any> {
   httpStatusCode?: number,
   data?: TData,
   message: string,
-  messages?: ResponseMessage[],
+  messages: ResponseMessage[],
   headers?: Headers,
   error?: any,
   type?: string;

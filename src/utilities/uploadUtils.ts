@@ -5,7 +5,6 @@ import {
   SeqPairedUploadRow,
   SeqSingleUploadRow,
   SeqType,
-  SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 
@@ -117,18 +116,6 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
     .filter((groupRole) => groupRole.group.name.split('-').pop()! === 'Group')
     .map((groupRole) => groupRole.group.name.split('-').slice(0, -1).join('-'));
   return projectAbbrevs;
-};
-
-export const createSampleCSV = (
-  seqUploadRows: SeqUploadRow[],
-): string => {
-  // This is technically a CSV, but has just a single column
-  const csvHeader = 'Seq_ID';
-  const csvRows = seqUploadRows.map(
-    row => `${row.seqId}`,
-  );
-  const csv = [csvHeader, ...csvRows].join('\n');
-  return csv;
 };
 
 export const createPairedSeqUploadRows = (
