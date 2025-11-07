@@ -211,8 +211,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   
   if (tabValue === null) { return null; }
 
-  console.log(canShare);
-  
   // NB alternate return() calls above
   return (
     <>

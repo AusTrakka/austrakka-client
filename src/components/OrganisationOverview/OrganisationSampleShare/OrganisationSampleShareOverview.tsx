@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, AlertTitle, Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography } from '@mui/material';
-import { Group, GroupRole, Organisation } from '../../../types/dtos';
+import { Group, GroupRole } from '../../../types/dtos';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, UserSliceState } from '../../../app/userSlice';
-import { fetchGroupMetadata, GroupMetadataState, selectGroupMetadata } from '../../../app/groupMetadataSlice';
+import { fetchGroupMetadata, selectGroupMetadata } from '../../../app/groupMetadataSlice';
 import { useApi } from '../../../app/ApiContext';
-import { getGroup, getGroupList, getOrganisation, patchSampleShare } from '../../../utilities/resourceUtils';
+import { getGroup, patchSampleShare } from '../../../utilities/resourceUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
@@ -19,7 +19,7 @@ function OrganisationSampleShareOverview() {
   const { orgAbbrev } = useParams();
 
   const [organisationGroup, setOrganisationGroup] = useState<Group>();
-  const [orgShareError, setorgShareError] = useState<boolean>(false);
+  const [orgShareError, setOrgShareError] = useState<boolean>(false);
   const [orgShareErrorMessage, setOrgShareErrorMessage] = useState<string | null>(null);
   const [selectableProjects, setSelectableProjects] = useState<string[]>([]);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -41,11 +41,9 @@ function OrganisationSampleShareOverview() {
   const dispatch = useAppDispatch();
   const user: UserSliceState = useAppSelector(selectUserState);
   const metadata = useAppSelector(state => {
-    console.log(organisationGroup);
     if (!organisationGroup) return null;
     return selectGroupMetadata(state, organisationGroup.groupId);
   });
-  console.log(metadata, 'this is the state metadata');
 
   useEffect(() => {
     if (organisationGroup &&
@@ -96,10 +94,10 @@ function OrganisationSampleShareOverview() {
 
         if (orgResp.status === ResponseType.Success) {
           setOrganisationGroup(orgResp.data);
-          setorgShareError(false);
+          setOrgShareError(false);
           setOrgShareErrorMessage(null);
         } else {
-          setorgShareError(true);
+          setOrgShareError(true);
           setOrgShareErrorMessage(orgResp.message);
         }
       }
@@ -253,7 +251,7 @@ function OrganisationSampleShareOverview() {
         </Box>
         <Alert severity="warning">
           <AlertTitle>No Target Groups Available</AlertTitle>
-          You do not have 'Uploader' permissions in any groups.
+          You do not have Uploader permissions in any groups.
           You need to be an Uploader in at least one group to share samples.
         </Alert>
       </Stack>
