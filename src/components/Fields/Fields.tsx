@@ -108,6 +108,7 @@ function Fields() {
     {
       field: 'primitiveType',
       header: 'Type',
+      body: (rowData: any) => renderFieldType(rowData, 'primitiveType'),
       hidden: false,
     },
     {
