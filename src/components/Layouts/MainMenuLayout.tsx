@@ -18,7 +18,7 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission, hasScopes } from '../../permissions/accessTable';
+import {PermissionLevel, hasPermission, hasPermissionV2} from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
@@ -56,9 +56,9 @@ function MainMenuLayout() {
     org: 'Organisation',
     sequences: 'Sequences',
     metadata: 'Metadata',
-    summary: 'Summary',
+    dashboard: 'Dashboard',
     samples: 'Samples',
-    proformas: 'ProFormas',
+    proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
     usersV2: 'Users (V2)',
@@ -78,7 +78,7 @@ function MainMenuLayout() {
    */
 
   const noBreadCrumbIfLast: string[] =
-    ['summary', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
+    ['dashboard', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -131,7 +131,7 @@ function MainMenuLayout() {
       icon: <Domain />,
       requirePermission: true,
       permissionDomain: null,
-      requiredTenantScopes: [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG],
+      requiredTenantScope: ScopeDefinitions.GET_TENANT_ACTIVITY_LOG,
     },
     {
       title: 'Users',
@@ -156,16 +156,15 @@ function MainMenuLayout() {
     PermissionLevel.CanShow,
   );
 
-  const hasTenantPerm = () : boolean => hasScopes(
+  const hasV2TenantPerm = (scope : string | undefined) : boolean => hasPermissionV2(
     user,
-    user.defaultTenantGlobalId,
-    [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS],
+    scope,
   );
 
   const visiblePages = pages.filter((page) =>
     !page.requirePermission
       || hasV1Perm(page.permissionDomain)
-      || hasTenantPerm());
+      || hasV2TenantPerm(page.requiredTenantScope));
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
@@ -271,21 +270,25 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
-            <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
-              <Grid item>
-                <AccountCircle color="primary" />
-              </Grid>
-              {drawer ? (
-                <Grid item width="100%" textAlign="center">
-                  <Typography noWrap color="primary.main">
-                    {user.displayName}
-                  </Typography>
+          <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
+            <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
+              <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
+                <Grid item>
+                  <IconButton color="primary">
+                    <AccountCircle />
+                  </IconButton>
                 </Grid>
-              )
-                : null}
-            </Grid>
-          </Tooltip>
+                {drawer ? (
+                  <Grid item width="100%" textAlign="center">
+                    <Typography noWrap color="primary.main">
+                      {user.displayName}
+                    </Typography>
+                  </Grid>
+                )
+                  : null}
+              </Grid>
+            </Tooltip>
+          </Link>
           <Divider />
           <List>
             {settings.map((setting) => (

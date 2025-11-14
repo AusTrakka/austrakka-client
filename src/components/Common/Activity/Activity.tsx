@@ -14,15 +14,14 @@ import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
 import { ActivityField, RefinedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
-import { buildPrimeReactColumnDefinitions, ColumnBuilder } from '../../../utilities/tableUtils';
+import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
 import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
 
 interface ActivityProps {
   recordType: string,
-  rGuid: string,
-  owningTenantGlobalId: string,
+  rGuid?: string,
 }
 
 const emptyDetailInfo: ActivityDetailInfo = {
@@ -91,22 +90,22 @@ export const defaultState = {
   } as DataTableOperatorFilterMetaData,
 };
 
-function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): JSX.Element {
+function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<any[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
   
-  const routeSegment = recordType === 'tenant'
+  const routeSegment = recordType === 'Tenant'
     ? recordType
     : `${recordType}V2`;
-    
+  
   const {
     refinedLogs,
     httpStatusCode,
     dataLoading,
-  } = useActivityLogs(routeSegment, rGuid, owningTenantGlobalId);
+  } = useActivityLogs(routeSegment, rGuid ?? "");
 
   const transformData = (data: RefinedLog[]): RefinedLog[] => {
     const nodesByKey: { [key: string]: RefinedLog } = {};
@@ -170,7 +169,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
-  }, [recordType, rGuid, owningTenantGlobalId, columns.length]);
+  }, [recordType, rGuid, columns.length]);
 
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const row = event.data;
@@ -393,7 +392,7 @@ function Activity({ recordType, rGuid, owningTenantGlobalId }: ActivityProps): J
         An error occurred while fetching the activity log.
       </Alert>
     );
-  } else if (!rGuid || !owningTenantGlobalId) {
+  } else if (!rGuid && recordType !== 'Tenant') {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Error</AlertTitle>

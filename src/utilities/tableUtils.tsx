@@ -2,20 +2,17 @@ import React from 'react';
 import { Field, PrimeReactField, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
-export const compareFields = (field1: Field, field2: Field) =>
-  field1.columnOrder - field2.columnOrder;
-
-export interface ColumnBuilder {
-  field: string;
-  header: string;
-  dataType?: string;
-  hidden?: boolean;
-  body?: (rowData: any) => React.ReactNode;
+export type PrimeReactColumnDefinition = {
+  field: string,
+  header: string,
+  dataType?: string,
+  hidden?: boolean,
+  body?: (rowData: any) => React.ReactNode,
   isDecorated?: boolean;
-}
-
-export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]): ColumnBuilder[] {
-  const columnBuilders: ColumnBuilder[] = [];
+};
+  
+export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]): PrimeReactColumnDefinition[] {
+  const columnBuilders: PrimeReactColumnDefinition[] = [];
 
   const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 
@@ -43,13 +40,7 @@ export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]): Col
 }
 
 export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) {
-  const columnBuilder: {
-    field: string,
-    header: string,
-    dataType?: string,
-    hidden?: boolean,
-    body?: (rowData: any) => React.ReactNode,
-  }[] = [];
+  const columnBuilder: PrimeReactColumnDefinition[] = [];
 
   fields.forEach((field: ProjectViewField) => {
     if (field.columnName in fieldRenderFunctions) {

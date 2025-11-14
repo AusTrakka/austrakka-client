@@ -339,6 +339,7 @@ function TreeDetail() {
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
           fieldLoadingState={projectMetadata?.fieldLoadingStates || {}}
           emptyColumns={projectMetadata?.emptyColumns || []}
+          treeName={tree.treeName}
         />
       );
     }

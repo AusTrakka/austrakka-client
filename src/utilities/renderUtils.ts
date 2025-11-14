@@ -1,6 +1,6 @@
 import { formatDate, isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 
-export const renderValueWithEmptyNull = (value: any): string => {
+export const renderValueOrEmptyString = (value: any): string => {
   if (value === null || value === undefined) {
     return '';
   }
@@ -29,7 +29,7 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 export const typeRenderFunctions: { [index: string]: Function } = {
-  'boolean': (value: boolean): string => renderValueWithEmptyNull(value),
+  'boolean': (value: boolean): string => renderValueOrEmptyString(value),
   'date': (value: string): string => isoDateLocalDateNoTime(value),
 };
 export const renderValue = (value: any, field: string, type: string): string => {
@@ -40,5 +40,10 @@ export const renderValue = (value: any, field: string, type: string): string => 
     return typeRenderFunctions[type](value);
   }
   // Possibly not needed; this fallthrough case is currently strings and numbers
-  return renderValueWithEmptyNull(value);
+  return renderValueOrEmptyString(value);
 };
+
+export function bytesToMB(bytes?: number): string {
+  if (!bytes || bytes <= 0) return '0';
+  return (bytes / (1024 * 1024)).toString();
+}

@@ -215,9 +215,8 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <Activity
-          recordType="organisation"
+          recordType="Organisation"
           rGuid={organisation.globalId}
-          owningTenantGlobalId={user.defaultTenantGlobalId}
         />
       </TabPanel>
     </>

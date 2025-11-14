@@ -6,7 +6,6 @@ import TabPanel from '../Common/TabPanel';
 import { useAppSelector } from '../../app/store';
 import Activity from '../Common/Activity/Activity';
 import { NavigationProvider } from '../../app/NavigationContext';
-import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 
 interface PlatformProps {
   tab: string,
@@ -15,7 +14,6 @@ interface PlatformProps {
 function Platform(props: PlatformProps) {
   const { tab } = props;
   const [tabValue, setTabValue] = useState<number | null>(null);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
@@ -35,9 +33,8 @@ function Platform(props: PlatformProps) {
       </Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
         <Activity
-          recordType="tenant"
-          rGuid={tenant.defaultTenantGlobalId}
-          owningTenantGlobalId={tenant.defaultTenantGlobalId}
+          recordType="Tenant"
+          rGuid=""
         />
       </TabPanel>
     </>

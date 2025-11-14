@@ -32,7 +32,6 @@ import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
 import Platform from './components/Platform/Platform';
-import TenantProvider from './providers/TenantProvider';
 import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
@@ -48,47 +47,45 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <TenantProvider>
-          <UserProvider>
-            <AuthenticatedTemplate>
-              <MsalAuthenticationTemplate
-                interactionType={InteractionType.Redirect}
-              >
-                <Routes>
-                  {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
-                  <Route element={<MainMenuLayout />}>
-                    <Route path="/" element={<UserDashboard />} />
-                    <Route path="platform" element={<Platform />} />
-                    <Route path="platform/:tab" element={<Platform />} />
-                    <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
-                    <Route path="upload" element={<Upload />} />
-                    <Route path="users" element={<Users />} />
-                    <Route path="usersV2" element={<UsersV2 />} />
-                    <Route path="upload/metadata" element={<UploadMetadata />} />
-                    <Route path="upload/sequences" element={<UploadSequences />} />
-                    <Route path="projects" element={<ProjectsList />} />
-                    <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                    <Route path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId" element={<TreeDetail />} />
-                    <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
-                    <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
-                    <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
-                    <Route path="records/:seqId" element={<OrgSampleDetail />} />
-                    <Route path="proformas/:proformaAbbrev/:proformaVersion" element={<ProFormaDetail />} />
-                    <Route path="fields" element={<Fields />} />
-                    <Route path="users/:userObjectId" element={<UserDetail />} />
-                    <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
-                  </Route>
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </MsalAuthenticationTemplate>
-            </AuthenticatedTemplate>
-            <UnauthenticatedTemplate>
+        <UserProvider>
+          <AuthenticatedTemplate>
+            <MsalAuthenticationTemplate
+              interactionType={InteractionType.Redirect}
+            >
               <Routes>
-                <Route path="*" element={<Login />} />
+                {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+                <Route element={<MainMenuLayout />}>
+                  <Route path="/" element={<UserDashboard />} />
+                  <Route path="platform" element={<Platform />} />
+                  <Route path="platform/:tab" element={<Platform />} />
+                  <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
+                  <Route path="upload" element={<Upload />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="usersV2" element={<UsersV2 />} />
+                  <Route path="upload/metadata" element={<UploadMetadata />} />
+                  <Route path="upload/sequences" element={<UploadSequences />} />
+                  <Route path="projects" element={<ProjectsList />} />
+                  <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
+                  <Route path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId" element={<TreeDetail />} />
+                  <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
+                  <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
+                  <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
+                  <Route path="records/:seqId" element={<OrgSampleDetail />} />
+                  <Route path="proformas/:proformaAbbrev/:proformaVersion" element={<ProFormaDetail />} />
+                  <Route path="fields" element={<Fields />} />
+                  <Route path="users/:userObjectId" element={<UserDetail />} />
+                  <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" />} />
               </Routes>
-            </UnauthenticatedTemplate>
-          </UserProvider>
-        </TenantProvider>
+            </MsalAuthenticationTemplate>
+          </AuthenticatedTemplate>
+          <UnauthenticatedTemplate>
+            <Routes>
+              <Route path="*" element={<Login />} />
+            </Routes>
+          </UnauthenticatedTemplate>
+        </UserProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

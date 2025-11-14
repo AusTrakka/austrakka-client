@@ -6,7 +6,7 @@ import { Sample } from '../../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingPartialProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { renderValue } from '../../utilities/renderUtils';
 
@@ -20,7 +20,7 @@ function SampleDetail() {
   const projectMetadata : ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
   const awaitingMetadata : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectAbbrev));
+    selectAwaitingPartialProjectMetadata(state, projectAbbrev));
   // If not awaiting metadata, at least one view and therefore Seq_ID should be loaded
   const sample = !awaitingMetadata &&
     projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS ?
