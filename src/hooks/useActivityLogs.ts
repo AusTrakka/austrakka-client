@@ -6,10 +6,11 @@ import { getActivities } from '../utilities/resourceUtils';
 import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
 
+// TODO look at this structure; it mimics a hook but is not one
+
 export default function useActivityLogs(
   recordType: string,
   rguid: string,
-  owningTenantGlobalId: string,
 ) {
   const [refinedLogs, setRefinedLogs] = useState<RefinedLog[]>([]);
   const { token, tokenLoading } = useApi();
@@ -23,7 +24,6 @@ export default function useActivityLogs(
       const resp: ResponseObject<RefinedLog[]> = await getActivities(
         recordType,
         rguid,
-        owningTenantGlobalId,
         token,
       );
             
@@ -41,7 +41,7 @@ export default function useActivityLogs(
       setDataLoading(true);
       getData();
     }
-  }, [recordType, rguid, token, tokenLoading, owningTenantGlobalId]);
+  }, [recordType, rguid, token, tokenLoading]);
 
   return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
 }

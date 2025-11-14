@@ -33,9 +33,8 @@ function Platform(props: PlatformProps) {
       </Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
         <Activity
-          recordType="tenant"
-          rGuid={tenant.defaultTenantGlobalId}
-          owningTenantGlobalId={tenant.defaultTenantGlobalId}
+          recordType="Tenant"
+          rGuid=""
         />
       </TabPanel>
     </>

@@ -45,29 +45,14 @@ export function hasPermission(
   return userRoles.some(role => allowedRoles.includes(role));
 }
 
-export function hasScopes(
-  user: UserSliceState,
-  recordId: string,
-  scopes: string[] = [],
-): boolean {
-  if (!user || !user.scopes) return false;
-  
-  const tenantScopes = user.scopes
-    .filter(scope => scope.recordType === RecordType.TENANT)
-    .filter(scope => scope.recordRoles
-      ?.some(recordRole => recordRole.recordGlobalId === recordId
-        && recordRole.roles.some(role => scopes.some(s => role.scopes.includes(s)))));
-
-  return tenantScopes.length > 0;
-}
-
 export function hasPermissionV2(
   user: UserSliceState,
-  scope: string,
+  scope?: string,
   recordName: string = '',
   recordType = 'Tenant',
 ): boolean {
   if (!user) return false;
+  if (!scope) return false;
   // This is if they are admin
   if (user.adminV2) {
     return true;

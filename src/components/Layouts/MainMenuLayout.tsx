@@ -18,7 +18,7 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission, hasScopes } from '../../permissions/accessTable';
+import {PermissionLevel, hasPermission, hasPermissionV2} from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
@@ -131,7 +131,7 @@ function MainMenuLayout() {
       icon: <Domain />,
       requirePermission: true,
       permissionDomain: null,
-      requiredTenantScopes: [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG],
+      requiredTenantScope: ScopeDefinitions.GET_TENANT_ACTIVITY_LOG,
     },
     {
       title: 'Users',
@@ -156,16 +156,15 @@ function MainMenuLayout() {
     PermissionLevel.CanShow,
   );
 
-  const hasTenantPerm = () : boolean => hasScopes(
+  const hasV2TenantPerm = (scope : string | undefined) : boolean => hasPermissionV2(
     user,
-    user.defaultTenantGlobalId,
-    [ScopeDefinitions.GET_TENANT_ACTIVITY_LOG, ScopeDefinitions.ALL_ACCESS],
+    scope,
   );
 
   const visiblePages = pages.filter((page) =>
     !page.requirePermission
       || hasV1Perm(page.permissionDomain)
-      || hasTenantPerm());
+      || hasV2TenantPerm(page.requiredTenantScope));
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {

@@ -26,7 +26,6 @@ export interface UserSliceState {
 
 interface FetchUserRolesResponse {
   groupRoles: GroupRole[],
-  defaultTenantGlobalId: string,
   scopes: GroupedPrivilegesByRecordTypeWithScopes[]
   displayName: string,
   isAusTrakkaAdmin: boolean,
@@ -66,9 +65,7 @@ const fetchUserRoles = createAsyncThunk(
       // Fulfill with user role data
       return {
         groupRoles,
-        defaultTenantGlobalId: tenant.defaultTenantGlobalId,
         scopes,
-        defaultTenant: tenant.defaultTenantName,
         displayName,
         isAusTrakkaAdmin,
         orgAbbrev,
@@ -114,8 +111,6 @@ const userSlice = createSlice({
         state.orgName = holder.orgName;
         state.orgGlobalId = holder.orgGlobalId;
         state.scopes = holder.scopes;
-        state.defaultTenantGlobalId = holder.defaultTenantGlobalId;
-        state.defaultTenantName = holder.defaultTenant;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;

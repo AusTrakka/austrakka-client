@@ -198,9 +198,8 @@ function ProjectOverview(props: ProjectOverviewProps) {
             index={PROJ_TABS.activity.index}
           >
             <Activity
-              recordType="project"
+              recordType="Project"
               rGuid={projectDetails?.globalId ?? ''}
-              owningTenantGlobalId={projectDetails?.owningTenantGlobalId ?? ''}
             />
           </TabPanel>
         </>
