@@ -229,59 +229,53 @@ function MapChart(props: MapTestProps) {
   }
 
   return (
-    <Stack sx={{ height: '70vh' }} spacing={1}>
-      {/* Error alert */}
+    <Stack spacing={1}>
       {regionView && mapSpec === 'WORLD' && (
-      <Alert severity="error">
-        <Typography>
-          Regional fields are not supported with the world map
-        </Typography>
-      </Alert>
+        <Alert severity="error">
+          <Typography>
+            Regional fields are not supported with the world map
+          </Typography>
+        </Alert>
       )}
 
-      {/* Info alert for missing data */}
       {showAlert && missingData.length > 0 && (
-      <Alert
-        severity="info"
-        onClose={() => setShowAlert(false)}
-      >
-        <Typography fontSize="small" gutterBottom>
-          Some data values are not shown on the map because they don’t match any map regions:
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-            maxHeight: 120,
-            overflowY: 'auto',
-            p: 1,
-            borderRadius: 1,
-            backgroundColor: 'rgba(0,0,0,0.02)',
-          }}
+        <Alert
+          severity="info"
+          onClose={() => setShowAlert(false)}
         >
-          {missingData.map((item) => (
-            <Chip
-              key={item.geoFeature}
-              label={`${item.geoFeature} (${item.count})`}
-              size="small"
-            />
-          ))}
-        </Box>
-      </Alert>
+          <Typography fontSize="small" gutterBottom>
+            Some data values are not shown on the map because they don’t match any map regions:
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 1,
+              maxHeight: 120,
+              overflowY: 'auto',
+              p: 1,
+              borderRadius: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            {missingData.map((item) => (
+              <Chip key={item.geoFeature} label={`${item.geoFeature} (${item.count})`} size="small" />
+            ))}
+          </Box>
+        </Alert>
       )}
 
-      {/* Chart container */}
       <Box
         ref={chartRef}
         sx={{
-          flex: 1,
           width: '100%',
+          height: '70vh', // chart itself has height, not the wrapper
           marginTop: '10px',
-          display: regionView && mapSpec === 'WORLD' ? 'none' : 'block', // <— hide chart if error
+          display: regionView && mapSpec === 'WORLD' ? 'none' : 'block',
         }}
       />
     </Stack>
+
   );
 }
 

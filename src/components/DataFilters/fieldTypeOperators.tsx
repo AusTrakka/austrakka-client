@@ -5,6 +5,11 @@ export enum CustomFilterOperators {
   NOT_NULL_OR_EMPTY = 'not_null_or_empty',
 }
 
+export const stringInConditions = [
+  { value: FilterMatchMode.IN, name: 'In' },
+  { value: FilterMatchMode.NOT_IN, name: 'Not In' },
+];
+
 export const stringConditions = [
   { value: FilterMatchMode.CONTAINS, name: 'Contains' },
   { value: FilterMatchMode.NOT_CONTAINS, name: 'Doesn\'t Contain' },

@@ -150,7 +150,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
           backgroundColor: dragActive ? '' : 'var(--primary-main-bg)',
           marginTop: 2,
           marginBottom: 2,
-          height: '100%',
+          height: '250px',
           border: dragActive ? 4 : 0,
           borderColor: 'var(--primary-main-bg)',
           borderStyle: dragActive ? 'dashed' : 'solid',

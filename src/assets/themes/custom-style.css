@@ -41,14 +41,6 @@
   box-shadow: inset 0 0 0 1px var(primary-grey-700);
   border-color: var(--secondary-light-green);
 }
-
-.p-datatable .p-column-resizer-helper {
-  background: var(--secondary-main);
-}
-
-.p-datatable-header {
-  height: 60px;
-}
   
 #activity-table .p-datatable-tbody > tr {
   line-height: 40px;
@@ -94,4 +86,4 @@
 .p-datatable-header {
 height: 50px;
 }
-    
+  

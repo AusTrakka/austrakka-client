@@ -19,7 +19,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildPrimeReactColumnDefinitionsPVF } from '../../utilities/tableUtils';
+import { buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
@@ -56,7 +56,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   } = props;
   
   const { navigate } = useStableNavigate();
-  const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
@@ -152,7 +152,9 @@ function ProjectSamplesTable(props: SamplesProps) {
               ? []
               : filteredData ?? []
           }
+          headers={sampleTableColumns.filter(col => !col.hidden).map(col => col.header)}
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+          fileNamePrefix={projectAbbrev}
         />
       </div>
     </div>

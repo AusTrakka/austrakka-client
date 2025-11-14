@@ -63,9 +63,9 @@ export function hasScopes(
 
 export function hasPermissionV2(
   user: UserSliceState,
-  defaultTenantGlobalId: string,
-  recordId: string,
   scope: string,
+  recordName: string = '',
+  recordType = 'Tenant',
 ): boolean {
   if (!user) return false;
   // This is if they are admin
@@ -77,5 +77,5 @@ export function hasPermissionV2(
     return false;
   }
   
-  return hasScopeInRecord(user.scopes, recordId, scope, defaultTenantGlobalId);
+  return hasScopeInRecord(user.scopes, scope, recordName, recordType);
 }

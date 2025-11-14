@@ -17,7 +17,6 @@ import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import renderIcon from './UserIconRenderer';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
-import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 
 function renderDisplayName(rowData: UserList) {
@@ -42,7 +41,6 @@ function UsersV2() {
   });
   const [dataLoading, setDataLoading] = useState<boolean>(true);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
 
   const emailBodyTemplate = (rowData: UserList) => (
     (!rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined) ?
@@ -78,7 +76,6 @@ function UsersV2() {
     const getUsers = async () => {
       const getUsersResponse: ResponseObject = await getUserListV2(
         includeAll,
-        tenant.defaultTenantGlobalId,
         token,
       );
       if (getUsersResponse.status === ResponseType.Success) {
@@ -92,12 +89,11 @@ function UsersV2() {
     };
 
     if (tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE &&
-        tenant.loading === LoadingState.SUCCESS) {
+        tokenLoading !== LoadingState.IDLE) {
       setDataLoading(true);
       getUsers();
     }
-  }, [includeAll, token, tokenLoading, tenant]);
+  }, [includeAll, token, tokenLoading]);
 
   const rowClickHandler = (selectedRow: DataTableRowClickEvent) => {
     const { globalId } = selectedRow.data;
@@ -133,6 +129,7 @@ function UsersV2() {
             dataToExport={exportData}
             disabled={false}
             headers={columns.map((col) => (col.field))}
+            fileNamePrefix="users"
           />
         </div>
       </div>

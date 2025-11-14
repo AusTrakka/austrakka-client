@@ -43,6 +43,7 @@ function UserDetail() {
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
     'displayName': 'Display Name',
+    'position': 'Position',
     'orgName': 'Organisation',
     'orgAbbrev': 'Organisation Abbreviation',
     'created': 'Created Date',
@@ -54,8 +55,7 @@ function UserDetail() {
     'isAusTrakkaProcess': 'Austrakka Process',
     'analysisServerUsername': 'Analysis Server Username',
     'monthlyBytesUsed': 'Monthly Bytes Used',
-    'lastDownloadDate': 'Last Downloaded Date',
-    'monthlyBytesQuota': 'Monthly Bytes Quota',
+    'monthlyBytesQuota': 'Download Quota',
     'noDownloadQuota': 'No Download Quota',
   };
 
@@ -65,7 +65,12 @@ function UserDetail() {
     'orgId',
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
+    'lastDownloadDate',
   ];
+  
+  if (user && user.noDownloadQuota) {
+    nonDisplayFields.push('monthlyBytesUsed', 'monthlyBytesQuota');
+  }
 
   if (loading === LoadingState.SUCCESS && admin) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
@@ -212,10 +217,13 @@ function UserDetail() {
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat = {
       displayName: otherValues.displayName,
+      position: otherValues.position,
       contactEmail: otherValues.contactEmail,
       orgAbbrev: otherValues.orgAbbrev,
       isActive: otherValues.isActive,
+      noDownloadQuota: otherValues.noDownloadQuota,
       analysisServerUsername: otherValues.analysisServerUsername,
+      monthlyBytesQuota: otherValues.monthlyBytesQuota,
     };
 
     try {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Paper, Typography } from '@mui/material';
+import { Alert, Paper, Typography, Chip } from '@mui/material';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
@@ -17,20 +17,41 @@ import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { NumericEditable, TextEditable } from './EditableFields';
 import { ScopeDefinitions } from '../../constants/scopes';
-import { selectTenantState, TenantSliceState } from '../../app/tenantSlice';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import AllowedValues from './AllowedValues';
+import { FieldType, FIELD_TYPE_COLOURS } from './fieldsMeta';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
-    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
       <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
     </div>
   );
+
+  const renderFieldType = (rowData: any, field: string) => {
+    const type: string = rowData[field];
+    const colour = FIELD_TYPE_COLOURS[type as FieldType] ?? FIELD_TYPE_COLOURS.default;
+    
+    return (
+      <Chip
+        size="small"
+        sx={{
+          color: 'white',
+          backgroundColor: colour,
+          fontWeight: 'bold',
+        }}
+        label={type}
+        key={rowData.id + type}
+      />
+    );
+  };
   
-  const renderAllowedValues = (allowedValues: string[] | null): string => {
+  const renderAllowedValues = (allowedValues: string[] | null, field:string) => {
     if (allowedValues === null || allowedValues.length === 0) return '';
-    return allowedValues.join(', ');
+    return (
+      <AllowedValues allowedValues={allowedValues} field={field} />
+    );
   };
   
   const interactiveColumns = [
@@ -42,6 +63,7 @@ function Fields() {
     {
       field: 'primitiveType',
       header: 'Type',
+      body: (rowData: any) => renderFieldType(rowData, 'primitiveType'),
       hidden: false,
     },
     {
@@ -61,7 +83,10 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
     {
@@ -97,21 +122,17 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) => renderAllowedValues(rowData.metaDataColumnValidValues),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
   ];
-  // The scope should be in scope constant file somewhere in the future.
-  // So it can be synced with the backend.
-  const scope = ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN;
-
   const user: UserSliceState = useAppSelector(selectUserState);
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   const interactionPermission = hasPermissionV2(
     user,
-    tenant.defaultTenantGlobalId,
-    tenant.defaultTenantName,
-    scope,
+    ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN,
   );
   
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
@@ -138,7 +159,7 @@ function Fields() {
 
     const retrieveFields = async () => {
       try {
-        const response: ResponseObject = await getFieldsV2(tenant.defaultTenantGlobalId, token);
+        const response: ResponseObject = await getFieldsV2(token);
         if (response.status === ResponseType.Success) {
           const responseFields: MetaDataColumn[] = response.data;
           responseFields.sort((a, b) => a.columnOrder - b.columnOrder);
@@ -157,7 +178,7 @@ function Fields() {
         await retrieveFields(); // Await the promise to avoid unhandled rejection warnings
       })();
     }
-  }, [token, tokenLoading, tenant.defaultTenantGlobalId]);
+  }, [token, tokenLoading]);
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
@@ -216,7 +237,7 @@ function Fields() {
     const fieldName = rowData.columnName;
     const fieldData = { [field]: newValue };
 
-    const response = await patchFieldV2(tenant.defaultTenantGlobalId, fieldName, token, fieldData);
+    const response = await patchFieldV2(fieldName, token, fieldData);
     if (response.status === ResponseType.Success) {
       setFields(fields.map((fieldMetadata: MetaDataColumn) =>
         (fieldMetadata.columnName === fieldName ?
@@ -288,6 +309,7 @@ function Fields() {
                 hidden={col.hidden}
                 headerClassName="custom-title"
                 style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
+                bodyStyle={{ verticalAlign: 'top' }}
                 onCellEditComplete={onCellEditComplete}
                 onBeforeCellEditShow={(e) => (!col.editable ?
                   e.originalEvent.preventDefault() : undefined)}

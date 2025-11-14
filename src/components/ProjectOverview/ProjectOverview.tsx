@@ -1,7 +1,7 @@
 import React, {
   useEffect, useMemo, useState,
 } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
 import { NavigationProvider } from '../../app/NavigationContext';
 import { getProjectDetails } from '../../utilities/resourceUtils';
@@ -18,8 +18,7 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
-  fetchProjectMetadata,
-  selectAwaitingProjectMetadata,
+  fetchProjectMetadata, selectAwaitingPartialProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -43,7 +42,7 @@ const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).r
 function ProjectOverview(props: ProjectOverviewProps) {
   const { projectAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
-  
+  const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
 
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
@@ -91,7 +90,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
   }, [dispatch, projectAbbrev, token, tokenLoading]);
 
   const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
+    selectAwaitingPartialProjectMetadata(state, projectDetails?.abbreviation));
   const mergeAlgorithm = useAppSelector((state) =>
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
@@ -125,7 +124,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
           />
           <TabPanel
             value={tabValue}
-            index={PROJ_TABS.summary.index}
+            index={PROJ_TABS.dashboard.index}
           >
             <ProjectDashboard
               projectDesc={projectDetails ? projectDetails.description : ''}
@@ -137,6 +136,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
             index={PROJ_TABS.samples.index}
           >
             <ProjectSamplesTable
+              key={location.search}
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
