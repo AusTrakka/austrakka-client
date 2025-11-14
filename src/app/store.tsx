@@ -4,14 +4,12 @@ import { listenerMiddleware } from './listenerMiddleware';
 import projectMetadataReducer from './projectMetadataSlice';
 import groupMetadataReducer from './groupMetadataSlice';
 import userReducer from './userSlice';
-import tenantReducer from './tenantSlice';
 
 const store = configureStore({
   reducer: {
     projectMetadataState: projectMetadataReducer,
     groupMetadataState: groupMetadataReducer,
     userState: userReducer,
-    tenantSliceState: tenantReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })

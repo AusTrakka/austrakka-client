@@ -3,8 +3,7 @@ import LoadingState from '../constants/loadingState';
 import { logoOnlyUrl } from '../constants/logoPaths';
 import './UserProvider.css';
 import { useApi } from '../app/ApiContext';
-import { useAppDispatch, useAppSelector } from '../app/store';
-import { selectTenantState, TenantSliceState } from '../app/tenantSlice';
+import { useAppDispatch } from '../app/store';
 import { fetchUserRoles } from '../app/userSlice';
 
 interface UserProviderProps {
@@ -14,7 +13,6 @@ interface UserProviderProps {
 function UserProvider({ children }: UserProviderProps) {
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   const [rolesLoading, setRolesLoading] = useState(true);
   const [transitioning, setTransitioning] = useState(false);
   const [showChildren, setShowChildren] = useState(false);
@@ -32,13 +30,11 @@ function UserProvider({ children }: UserProviderProps) {
     
     if (
       tokenLoading !== LoadingState.IDLE &&
-        tokenLoading !== LoadingState.LOADING &&
-        tenant.loading !== LoadingState.IDLE &&
-        tenant.loading !== LoadingState.LOADING
+      tokenLoading !== LoadingState.LOADING
     ) {
       fetchRolesData();
     }
-  }, [token, tokenLoading, tenant, rolesLoading, dispatch]);
+  }, [token, tokenLoading, rolesLoading, dispatch]);
 
   return (
     <>
