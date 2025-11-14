@@ -23,7 +23,8 @@ import {
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
-import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
+import Activity from '../Common/Activity/Activity';
+import { PROJ_HOME_TAB, PROJ_TABS } from "./projTabConstants";
 
 interface ProjectOverviewProps {
   tab: string,
@@ -130,7 +131,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-
           <TabPanel
             value={tabValue}
             index={PROJ_TABS.samples.index}
@@ -138,7 +138,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <ProjectSamplesTable
               key={location.search}
               projectAbbrev={projectAbbrev!}
-              isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
           <TabPanel
@@ -192,6 +191,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <Datasets
               projectDetails={projectDetails}
               mergeAlgorithm={mergeAlgorithm}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="Project"
+              rGuid={projectDetails?.globalId ?? ''}
             />
           </TabPanel>
         </>

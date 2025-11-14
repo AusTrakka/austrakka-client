@@ -34,7 +34,6 @@ import { useStableNavigate } from '../../app/NavigationContext';
 
 interface SamplesProps {
   projectAbbrev: string,
-  isSamplesLoading: boolean,
 }
 
 interface BodyComponentProps {
@@ -54,7 +53,6 @@ function BodyComponent(props: BodyComponentProps) {
 function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
-    isSamplesLoading,
   } = props;
   
   const { navigate } = useStableNavigate();
@@ -162,7 +160,6 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading) return null;
   return (
     <div className="datatable-container-proj">
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
