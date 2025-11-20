@@ -54,7 +54,7 @@ function HasSeq(props: HasSeqWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const dateStatusTransform = {
-    calculate: `datum['${HAS_SEQ}'] === true ? 'Available' : 'Missing'`,
+    calculate: `datum['${HAS_SEQ}'] === 'True' ? 'Available' : 'Missing'`,
     as: `${HAS_SEQ}_status`,
   };
   

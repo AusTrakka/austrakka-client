@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Chip, Tooltip, Drawer, Typography } from '@mui/material';
 import CopyChip from '../Common/CopyChip';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
 
 interface AllowedValuesProps {
   field: string,
@@ -45,7 +46,7 @@ export default function AllowedValues(props: AllowedValuesProps) {
           <Typography variant="subtitle2" paddingTop={2} color="textDisabled" gutterBottom>
             Allowed values
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%' }} className={columnStyleRules[field]}>
             {allowedValues.map((value) => (
               <CopyChip
                 key={value}
@@ -57,7 +58,9 @@ export default function AllowedValues(props: AllowedValuesProps) {
       </Drawer>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', overflow: 'hidden', width: '100%' }}>
         {visibleValues.map((value) => (
-          <CopyChip key={value} value={value} />
+          <Box className={columnStyleRules[field]}>
+            <CopyChip key={value} value={value} />
+          </Box>
         ))}
         {remainingCount > 0 && (
           <Tooltip title="View all" arrow>

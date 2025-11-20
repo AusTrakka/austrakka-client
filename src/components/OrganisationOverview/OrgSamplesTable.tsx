@@ -29,6 +29,7 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
+import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -254,7 +255,7 @@ function OrgSamplesTable(props: SamplesProps) {
               style={{ minWidth: '150px' }}
               headerClassName="custom-title"
               className="flexible-column"
-              bodyClassName="value-cells"
+              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
             />
           ))}
         </DataTable>

@@ -29,7 +29,6 @@ import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../RowRender/RowAndCell.css';
-import { selectTenantState } from '../../../app/tenantSlice';
 import { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
@@ -71,7 +70,6 @@ function UserV2DetailOverview() {
     adminV2,
     scopes,
   } = useAppSelector(selectUserState);
-  const { defaultTenantGlobalId } = useAppSelector(selectTenantState);
 
   const readableNames: Record<string, string> = {
     'objectId': 'Object ID',
@@ -171,7 +169,6 @@ function UserV2DetailOverview() {
     const updateUser = async () => {
       const userResponse: ResponseObject = await getUserV2(
         userGlobalId!,
-        defaultTenantGlobalId!,
         token,
       );
 
@@ -188,15 +185,14 @@ function UserV2DetailOverview() {
     if (tokenLoading !== LoadingState.IDLE &&
         tokenLoading !== LoadingState.LOADING &&
         loading === LoadingState.SUCCESS &&
-        userGlobalId && defaultTenantGlobalId) {
+        userGlobalId) {
       updateUser();
     }
-  }, [defaultTenantGlobalId, loading, token, tokenLoading, userGlobalId]);
+  }, [loading, token, tokenLoading, userGlobalId]);
   
   async function fetchUserDto(): Promise<UserV2> {
     const userFetchResponse: ResponseObject = await getUserV2(
       userGlobalId!,
-      defaultTenantGlobalId,
       token,
     );
 
@@ -210,7 +206,6 @@ function UserV2DetailOverview() {
   const processPendingChanges = async () => {
     const failedRequests = await processPrivilegeChanges(
       pendingChanges,
-      defaultTenantGlobalId,
       userGlobalId!,
       token,
     );
@@ -254,7 +249,6 @@ function UserV2DetailOverview() {
       const userResponse: ResponseObject = await patchUserV2(
         userGlobalId!,
         editedValuesDtoFormat,
-        defaultTenantGlobalId,
         token,
       );
       
@@ -264,13 +258,11 @@ function UserV2DetailOverview() {
         if (isActive) {
           userActivateResponse = await enableUserV2(
             userGlobalId!,
-            defaultTenantGlobalId,
             token,
           );
         } else {
           userActivateResponse = await disableUserV2(
             userGlobalId!,
-            defaultTenantGlobalId,
             token,
           );
         }
