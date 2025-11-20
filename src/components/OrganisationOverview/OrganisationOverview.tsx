@@ -1,8 +1,7 @@
 // first lets make the get organisation information
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, Button, Stack, Typography } from '@mui/material';
+import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { IosShare } from '@mui/icons-material';
 import LoadingState from '../../constants/loadingState';
 import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
@@ -16,7 +15,7 @@ import { selectUserState, UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import TabPanel from '../Common/TabPanel';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
-import { NavigationProvider, useStableNavigate } from '../../app/NavigationContext';
+import { NavigationProvider } from '../../app/NavigationContext';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
 
 const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
@@ -50,7 +49,6 @@ interface OrganisationOverviewProps {
 
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
-  const { navigate } = useStableNavigate();
   const [organisation, setOrganisation] = useState<Organisation>();
   const [orgEveryone, setOrgEveryone] = useState<Group>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
@@ -179,10 +177,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       setTabValue(tabObj.index);
     }
   }, [tab]);
-  
-  const handleShareRedirect = () => {
-    navigate(`/org/${orgAbbrev}/share`);
-  };
 
   // If groupStatus is error, or orgDetailsError is true, or the user is not in any groups, 
   // we cannot show the page. Give a generic message
@@ -219,17 +213,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           <Typography variant="h2" color="primary">
             {`${organisation.name} (${organisation?.abbreviation})`}
           </Typography>
-          {(canShare ? (
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
-              startIcon={<IosShare />}
-              onClick={() => handleShareRedirect()}
-            >
-              Share Samples
-            </Button>
-          ) : null)}
         </Stack>
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
@@ -239,6 +222,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           groups={userGroups!}
           groupStatus={groupsStatus}
           groupStatusMessage={groupStatusMessage}
+          canShare={canShare}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>

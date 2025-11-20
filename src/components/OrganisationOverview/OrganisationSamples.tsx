@@ -10,6 +10,7 @@ interface OrganisationSampleProps {
   groups: Group[];
   groupStatus: LoadingState;
   groupStatusMessage: string;
+  canShare: boolean;
 }
 
 interface OrgGroupSelectorProps {
@@ -78,7 +79,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
 }
 
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const { defaultGroup, groups, groupStatus, groupStatusMessage } = props;
+  const { defaultGroup, groups, groupStatus, groupStatusMessage, canShare } = props;
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
   if (groupStatus === LoadingState.ERROR) {
@@ -113,6 +114,7 @@ function OrganisationSamples(props: OrganisationSampleProps) {
       <OrgSamplesTable
         groupContext={selectedGroup!.groupId}
         groupContextName={selectedGroup!.name}
+        canShare={canShare}
       />
     </Box>
   );
