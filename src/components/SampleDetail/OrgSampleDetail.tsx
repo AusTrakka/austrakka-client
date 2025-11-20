@@ -11,6 +11,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { renderValue } from '../../utilities/renderUtils';
 import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
 
 function SampleDetail() {
   const { seqId } = useParams();
@@ -149,7 +150,9 @@ function SampleDetail() {
   const renderRow = (field: Field, value: string) => (
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
-      <TableCell>{renderValue(value, field.columnName, field.primitiveType ?? 'category')}</TableCell>
+      <TableCell className={columnStyleRules[field.columnName]}>
+        {renderValue(value, field.columnName, field.primitiveType ?? 'category')}
+      </TableCell>
     </TableRow>
   );
 

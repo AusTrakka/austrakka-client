@@ -13,8 +13,6 @@ import {
   KeyboardArrowDown,
   KeyboardArrowRight,
 } from '@mui/icons-material';
-import { selectTenantState, TenantSliceState } from '../../../app/tenantSlice';
-import { useAppSelector } from '../../../app/store';
 import { getOrganisations } from '../../../utilities/resourceUtils';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
@@ -52,7 +50,6 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     onSelectionChange,
   } = props;
   
-  const tenant: TenantSliceState = useAppSelector(selectTenantState);
   const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
   const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
   const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
@@ -61,6 +58,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const { token, tokenLoading } = useApi();
 
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
+  const tenantName = 'Default Tenant';
 
   useEffect(() => {
     async function fetchRecords() {
@@ -99,19 +97,16 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       if (recordType !== 'Tenant') {
         fetchRecords();
       } else {
-        setSelectedRecords([{
-          id: tenant.defaultTenantGlobalId,
-          abbrev: tenant.defaultTenantName,
-          name: tenant.defaultTenantName,
-        }]);
-        setRecords([{
-          id: tenant.defaultTenantGlobalId,
-          abbrev: tenant.defaultTenantName,
-          name: tenant.defaultTenantName,
-        }]);
+        const tenantDefaultRecord = {
+          id: '', // No required for tenant
+          abbrev: tenantName,
+          name: tenantName,
+        };
+        setSelectedRecords([tenantDefaultRecord]);
+        setRecords([tenantDefaultRecord]);
       }
     }
-  }, [recordType, tenant, token, tokenLoading]);
+  }, [recordType, token, tokenLoading]);
 
   useEffect(() => {
     if (rolesErrorMessage || recordFetchError) {
