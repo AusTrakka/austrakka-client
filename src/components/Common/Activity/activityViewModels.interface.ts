@@ -1,5 +1,5 @@
 export interface ActivityDetailInfo {
-  'Operation name': string,
+  'Event': string,
   'Time stamp': string,
   'Event initiated by': string,
   Resource: string,

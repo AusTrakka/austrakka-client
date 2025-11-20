@@ -25,7 +25,7 @@ interface ActivityProps {
 }
 
 const emptyDetailInfo: ActivityDetailInfo = {
-  'Operation name': '',
+  'Event': '',
   'Time stamp': '',
   'Event initiated by': '',
   'Resource': '',
@@ -33,12 +33,12 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Details': null,
 };
 
-const OPERATION_NAME_COLUMN: string = 'operationName';
+const EVENT_NAME_COLUMN: string = 'eventType';
 
 export const supportedColumns: ActivityField[] = [
   {
-    columnName: OPERATION_NAME_COLUMN,
-    columnDisplayName: 'Operation name',
+    columnName: EVENT_NAME_COLUMN,
+    columnDisplayName: 'Event',
     primitiveType: 'string',
     columnOrder: 1,
     hidden: false,
@@ -160,10 +160,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   useEffect(() => {
     if (columns.length > 0) return;
 
-    const firstCol = supportedColumns.filter(c => c.columnName === OPERATION_NAME_COLUMN)[0];
+    const firstCol = supportedColumns.filter(c => c.columnName === EVENT_NAME_COLUMN)[0];
     const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
     firstColBuilder.isDecorated = true;
-    const remainingCols = supportedColumns.filter(c => c.columnName !== OPERATION_NAME_COLUMN);
+    const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
         
     const columnBuilder = [firstColBuilder];
@@ -175,7 +175,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     const row = event.data;
         
     const info: ActivityDetailInfo = {
-      'Operation name': row[OPERATION_NAME_COLUMN],
+      'Event': row[EVENT_NAME_COLUMN],
       'Time stamp': row.eventTime,
       'Event initiated by': row.submitterDisplayName,
       'Resource': row.resourceUniqueString,
@@ -270,7 +270,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             verticalAlign: 'middle',
           }}
           />
-          {rowData[OPERATION_NAME_COLUMN]}
+          {rowData[EVENT_NAME_COLUMN]}
         </span>
       )
                 
@@ -284,7 +284,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             verticalAlign: 'middle',
           }}
           />
-          {rowData[OPERATION_NAME_COLUMN]}
+          {rowData[EVENT_NAME_COLUMN]}
         </span>
       )
   );
@@ -346,9 +346,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               className="activity-row-expander"
             />
             <Column
-              key={OPERATION_NAME_COLUMN}
-              field={OPERATION_NAME_COLUMN}
-              header="Operation name"
+              key={EVENT_NAME_COLUMN}
+              field={EVENT_NAME_COLUMN}
+              header="Event"
               hidden={false}
               body={firstColumnTemplate}
               sortable={false}
@@ -356,7 +356,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               style={{ minWidth: '150px', paddingLeft: '16px' }}
               headerClassName="custom-title"
             />
-            {columns ? columns.filter((col: ColumnBuilder) => col.field !== OPERATION_NAME_COLUMN)
+            {columns ? columns.filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
               .map((col: any) => (
                 <Column
                   key={col.field}

@@ -473,9 +473,13 @@ export interface UserRoleRecordPrivilegePost {
 
 export interface RefinedLog {
   // Server fields
-  refinedLogGlobalId: string,
-  eventSpecGlobalId: string,
-  operationName: string,
+  globalId: string,
+  refinedLogId: number,
+  rawLogGlobalId: string,
+  clientSessionId: string,
+  callId: string,
+  eventSpec: string,
+  eventType: string
   resourceGlobalId: string,
   resourceUniqueString: string,
   resourceType: string,
