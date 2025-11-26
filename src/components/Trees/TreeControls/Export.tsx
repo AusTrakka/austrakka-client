@@ -109,8 +109,7 @@ export default function ExportButton(
         // Convert the captured canvas to a data URL
         const imgDataUrl = capturedCanvas.toDataURL('image/png');
 
-        // Open the image in a new window
-        window.open(imgDataUrl);
+        return imgDataUrl;
       } catch (error) {
         console.error('Error converting HTML to PNG data URL:', error);
       } finally {
