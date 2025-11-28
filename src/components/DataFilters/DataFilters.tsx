@@ -92,6 +92,7 @@ interface DataFiltersProps {
   setIsOpen: React.Dispatch<SetStateAction<boolean>>
   dataLoaded: boolean
   setLoadingState: React.Dispatch<SetStateAction<boolean>>
+  contentType?: string | null
 }
 
 const defaultFormState = {
@@ -114,9 +115,10 @@ function DataFilters(props: DataFiltersProps) {
     setIsOpen,
     dataLoaded,
     setLoadingState,
+    contentType,
   } = props;
-  const [sampleCount, setSampleCount] = useState<number | undefined>();
-  const [totalSamples, setTotalSamples] = useState<number | undefined>();
+  const [rowCount, setRowCount] = useState<number | undefined>();
+  const [totalRows, setTotalRows] = useState<number | undefined>();
   const [filterFormValues, setFilterFormValues] =
       useState<InternalFormProperties>(defaultFormState);
   const [conditions, setConditions] = useState(stringConditions);
@@ -128,8 +130,8 @@ function DataFilters(props: DataFiltersProps) {
   const [fields, setFields] = useState<Field[]>([]);
   
   useEffect(() => {
-    setSampleCount(filteredDataLength);
-    setTotalSamples(dataLength);
+    setRowCount(filteredDataLength);
+    setTotalRows(dataLength);
   }, [dataLength, filteredDataLength]);
 
   function filterFieldsByVisibility<T extends Field>(
@@ -566,7 +568,7 @@ function DataFilters(props: DataFiltersProps) {
                   </Stack>
                 </Grid>
                 <Grid item sx={{ paddingLeft: 8 }}>
-                  {`Showing ${sampleCount} of ${totalSamples} samples.`}
+                  {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
                 </Grid>
               </Grid>
             </Button>
@@ -585,7 +587,7 @@ function DataFilters(props: DataFiltersProps) {
             {isOpen ? (
               <Box width="100%">
                 <Snackbar
-                  open={sampleCount === 0 &&
+                  open={rowCount === 0 &&
                     !isDataTableFiltersEqual(primeReactFilters, defaultState)}
                   autoHideDuration={3000}
                   message={filterErrorMessage}

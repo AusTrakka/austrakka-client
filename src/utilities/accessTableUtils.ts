@@ -1,7 +1,8 @@
 import { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
+import RecordTypes from '../constants/record-type.enum';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
-  const targetGroup = groups.find(group => group.recordType === 'Tenant');
+  const targetGroup = groups.find(group => group.recordType === RecordTypes.TENANT);
   if (!targetGroup) {
     return false; // recordType not found
   }
@@ -9,6 +10,9 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
   return targetGroup.recordRoles.some(
     recordRole =>
       recordRole.roles?.some(roleWithScopes =>
+      // TODO: This is not how you check for super user role.
+      // Instead of looking at the method pattern, check for
+      // privilegeLevel === 1.
         roleWithScopes.scopes.includes('method=*,/**')),
   );
 }

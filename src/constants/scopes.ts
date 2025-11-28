@@ -35,6 +35,7 @@ export const ScopeDefinitions = {
   RENAME_TENANT_METADATA_COLUMN_TYPE_VALID_VALUES: 'method=post,api/V2/Tenant/{tenantGlobalId}/MetaDataColumnType/renameValues/{typeName}',
   UPDATE_TENANT_METADATA_COLUMN_TYPE: 'method=put,api/V2/Tenant/{tenantGlobalId}/MetaDataColumnType/{columnTypeGlobalId}',
   GET_TENANT_METADATA_COLUMN_TYPE_BY_NAME: 'method=get,api/V2/Tenant/{tenantGlobalId}/MetaDataColumnType/Name/{name}',
+  GET_TENANT_ACTIVITY_LOG: 'method=get,api/V2/Tenant/{recordGlobalId}/ActivityLog',
   GET_YOUR_USER_ACCOUNT_INFO: 'method=get,api/V2/UserV2/Me',
   GET_USER_BY_GLOBAL_ID: 'method=get,api/V2/UserV2/{userGlobalId}',
   LIST_TENANT_USERS: 'method=get,api/V2/Tenant/{tenantGlobalId}/Users',
