@@ -9,6 +9,7 @@ import LoadingState from '../../constants/loadingState';
 import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingPartialProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { renderValue } from '../../utilities/renderUtils';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
 
 function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
@@ -48,7 +49,7 @@ function SampleDetail() {
   const renderRow = (field: Field, value: any) => (
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
-      <TableCell>
+      <TableCell className={columnStyleRules[field.columnName]}>
         {(projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.IDLE ||
           projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.LOADING) ?
             <Skeleton variant="text" animation="wave" width="20em" /> :
