@@ -11,6 +11,7 @@ interface OrganisationSampleProps {
   groupStatus: LoadingState;
   groupStatusMessage: string;
   canShare: boolean;
+  orgAbbrev: string;
 }
 
 interface OrgGroupSelectorProps {
@@ -79,7 +80,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
 }
 
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const { defaultGroup, groups, groupStatus, groupStatusMessage, canShare } = props;
+  const { defaultGroup, groups, groupStatus, groupStatusMessage, canShare, orgAbbrev } = props;
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
   if (groupStatus === LoadingState.ERROR) {
@@ -115,6 +116,7 @@ function OrganisationSamples(props: OrganisationSampleProps) {
         groupContext={selectedGroup!.groupId}
         groupContextName={selectedGroup!.name}
         canShare={canShare}
+        orgAbbrev={orgAbbrev}
       />
     </Box>
   );

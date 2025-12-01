@@ -33,10 +33,11 @@ interface OrgSampleShareProps {
   onClose: () => void;
   selectedSamples: Sample[];
   selectedIds: string[];
+  orgAbbrev: string;
 }
 
 function OrgSampleShare(props: OrgSampleShareProps) {
-  const { open, onClose, selectedSamples, selectedIds } = props;
+  const { open, onClose, selectedSamples, selectedIds, orgAbbrev } = props;
   const { token, tokenLoading } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
   const [destType, setDestType] = useState<DestinationType>('project');
@@ -64,12 +65,12 @@ function OrgSampleShare(props: OrgSampleShareProps) {
   useEffect(() => {
     if (user && user.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
-      const orgGroupsThatCanBeSelected = getShareableOrgGroups(user.orgAbbrev, user.groupRoles);
+      const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
       setSelectableProjects(projectsThatCanBeSelected);
       setSelectableOrgGroups(orgGroupsThatCanBeSelected);
     }
-  }, [user]);
+  }, [user, orgAbbrev]);
 
   const handleDestinationChange = async (selectedDestination: string) => {
     if (selectedDestination) {

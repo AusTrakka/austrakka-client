@@ -223,6 +223,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           groupStatus={groupsStatus}
           groupStatusMessage={groupStatusMessage}
           canShare={canShare}
+          orgAbbrev={orgAbbrev}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>

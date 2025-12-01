@@ -35,11 +35,12 @@ import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 interface SamplesProps {
   groupContext: number | undefined,
   groupContextName: string | undefined,
-  canShare: boolean
+  canShare: boolean,
+  orgAbbrev: string
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { groupContext, groupContextName, canShare } = props;
+  const { groupContext, groupContextName, canShare, orgAbbrev } = props;
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -304,6 +305,7 @@ function OrgSamplesTable(props: SamplesProps) {
           onClose={() => setOpenShareDialog(false)}
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
+          orgAbbrev={orgAbbrev}
         />
       )}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
