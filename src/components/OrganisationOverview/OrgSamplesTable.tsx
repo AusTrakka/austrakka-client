@@ -31,6 +31,7 @@ import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUt
 import { useStableNavigate } from '../../app/NavigationContext';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
+import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -392,7 +393,7 @@ function OrgSamplesTable(props: SamplesProps) {
               style={{ minWidth: '150px' }}
               headerClassName="custom-title"
               className="flexible-column"
-              bodyClassName="value-cells"
+              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
             />
           ))}
         </DataTable>

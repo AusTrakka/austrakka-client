@@ -23,6 +23,7 @@ import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
 import { isDataTableFiltersEqual } from '../../utilities/filterUtils';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
 
 interface TreeSampleTableProps {
   displayFields: ProjectViewField[],
@@ -304,6 +305,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
                 resizeable
                 headerStyle={verticalHeaders ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } : { width: `${maxHeight}px` }}
                 headerClassName="custom-title"
+                bodyClassName={columnStyleRules[col.field]}
               />
             ))}
           </DataTable>
