@@ -124,7 +124,7 @@ export const createSample = (
   name: string,
   owner: string,
   sharedProjects: string[] = [],
-) => callPost('/api/Submissions/Sample', token, { name, owner, sharedProjects });
+) => callPost('/api/Sample', token, { name, owner, sharedProjects });
 
 // Sequence endpoints
 // TODO: this should parse the response

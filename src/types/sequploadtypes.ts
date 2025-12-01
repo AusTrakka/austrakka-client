@@ -32,6 +32,7 @@ export enum SeqUploadRowState {
   Uploading = 'Uploading',
   Complete = 'Complete',
   Incomplete = 'Incomplete', // TODO: Not sure about this name
+  Skipped = 'Skipped', // TODO use if skipped
   Errored = 'Errored',
 }
 
