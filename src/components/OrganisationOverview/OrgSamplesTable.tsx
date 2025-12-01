@@ -12,7 +12,7 @@ import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Sample } from '../../types/sample.interface';
 import LoadingState from '../../constants/loadingState';
-import { buildPrimeReactColumnDefinitions } from '../../utilities/tableUtils';
+import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import sortIcon from '../TableComponents/SortIcon';
@@ -29,6 +29,7 @@ import {
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
+import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 
 interface SamplesProps {
   groupContext: number | undefined,
@@ -38,7 +39,7 @@ interface SamplesProps {
 function OrgSamplesTable(props: SamplesProps) {
   const { groupContext, groupContextName } = props;
   const { navigate } = useStableNavigate();
-  const [sampleTableColumns, setSampleTableColumns] = useState<any>([]);
+  const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -131,6 +132,7 @@ function OrgSamplesTable(props: SamplesProps) {
               ? []
               : filteredSampleList ?? []
           }
+          headers={sampleTableColumns.filter(col => !col.hidden).map(col => col.header)}
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
           fileNamePrefix={groupContextName || 'org_samples'}
         />
@@ -253,7 +255,7 @@ function OrgSamplesTable(props: SamplesProps) {
               style={{ minWidth: '150px' }}
               headerClassName="custom-title"
               className="flexible-column"
-              bodyClassName="value-cells"
+              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
             />
           ))}
         </DataTable>
