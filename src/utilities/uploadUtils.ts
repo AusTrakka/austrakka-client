@@ -120,10 +120,16 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
 };
 
 export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]): string[] => {
-  // Only "everyone" groups which have an associated organisation matching the org abbrev
   const orgGroupNames: string[] = groupRoles
+    // Must match the current org
     .filter((groupRole) => groupRole.group.organisation?.abbreviation === orgAbbrev)
-    .filter((groupRole) => groupRole.role.name === 'Uploader')
+    // Needs to have an Uploader role in the owner group
+    .filter(() =>
+      groupRoles.some((groupRole) =>
+        groupRole.group.organisation?.abbreviation === orgAbbrev &&
+        groupRole.role.name === 'Uploader' &&
+        groupRole.group.name.split('-').pop() === 'Owner'))
+    // Filter out all groups other than Everyone group
     .filter((groupRole) => ['Everyone'].includes(groupRole.group.name.split('-').pop()!))
     .map((groupRole) => groupRole.group.name)
     .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
