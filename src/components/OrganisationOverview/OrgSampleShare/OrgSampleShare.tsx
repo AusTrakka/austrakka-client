@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import {
+  Alert,
   Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, Grid2, InputLabel, MenuItem, Select, Skeleton, Typography,
 } from '@mui/material';
@@ -197,10 +198,20 @@ function OrgSampleShare(props: OrgSampleShareProps) {
               <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
                 Share Organisation Samples
               </Typography>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ marginBottom: 1 }}>
                 Please note you can only share samples to projects or
                 organisation groups in which you have Uploader permissions in.
               </Typography>
+              <Alert severity="warning">
+                Sharing these sample records will register the sample as being a
+                <b> part of the target project. </b>
+                This will share any associated
+                <b> sequence files </b>
+                with project analysts, and will share
+                <b> existing metadata values </b>
+                with project members if those metadata variables appear
+                in the target project.
+              </Alert>
             </DialogTitle>
             <DialogContent>
               <Grid2 container spacing={4}>
