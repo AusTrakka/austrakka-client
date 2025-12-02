@@ -119,6 +119,12 @@ export const uploadSubmissions = (
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };
+export const createSample = (
+  token: string,
+  name: string,
+  owner: string,
+  sharedProjects: string[] = [],
+) => callPost('/api/Sample', token, { name, owner, sharedProjects });
 
 // Sequence endpoints
 // TODO: this should parse the response
@@ -140,6 +146,7 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const shareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples });
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);

@@ -30,6 +30,10 @@ export const seqStateStyles: Record<string, object> = {
     color: 'white',
     backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
   },
+  [SeqUploadRowState.Incomplete]: {
+    color: 'black',
+    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
+  },
   [SeqUploadRowState.Skipped]: {
     color: 'black',
     backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,

@@ -26,10 +26,12 @@ export enum SkipForce {
 export enum SeqUploadRowState {
   Waiting = 'Waiting',
   Queued = 'Queued',
+  CreateSample = 'Create Sample',
   CalculatingHash = 'Calculating Hash',
   CalculatedHash = 'Calculated Hash',
   Uploading = 'Uploading',
   Complete = 'Complete',
+  Incomplete = 'Incomplete', // TODO: Not sure about this name
   Skipped = 'Skipped', // TODO use if skipped
   Errored = 'Errored',
 }
