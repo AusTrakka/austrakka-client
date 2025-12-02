@@ -8,7 +8,7 @@ import { CheckCircle, Error, IosShare, Send } from '@mui/icons-material';
 import { Sample } from '../../../types/sample.interface';
 import { selectUserState, UserSliceState } from '../../../app/userSlice';
 import { useAppSelector } from '../../../app/store';
-import { getDisplayFields, getGroup, getProjectFields, patchSampleShare } from '../../../utilities/resourceUtils';
+import { getDisplayFields, getGroup, getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
 import { useApi } from '../../../app/ApiContext';
 import { ResponseType } from '../../../constants/responseType';
 import { ResponseObject } from '../../../types/responseObject.interface';
@@ -126,7 +126,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
   const handleSharingSamples = async () => {
     try {
       setStatus(LoadingState.LOADING);
-      const shareResponse: ResponseObject = await patchSampleShare(
+      const shareResponse: ResponseObject = await shareSamples(
         destination!,
         selectedIds,
         token,
