@@ -13,6 +13,7 @@ const base = import.meta.env.VITE_REACT_API_URL;
 const noToken = {
   status: ResponseType.Error,
   message: 'There has been an error, please try reloading the page or logging in again.',
+  messages: [],
 };
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
@@ -94,6 +95,7 @@ function tokenExpiredResponse(response: Response): ResponseObject {
     httpStatusCode: response.status,
     type: response.statusText,
     message: expiredTokenErrorMessage,
+    messages: [],
   };
 }
 
@@ -119,7 +121,7 @@ function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): Re
 }
 
 function fatalResponse(error: any): ResponseObject {
-  return ({ status: ResponseType.Error, message: genericErrorMessage, error });
+  return ({ status: ResponseType.Error, message: genericErrorMessage, error, messages: [] });
 }
 
 async function callApi<T = any>(url: string, options: HTTPOptions): Promise<ResponseObject<T>> {
