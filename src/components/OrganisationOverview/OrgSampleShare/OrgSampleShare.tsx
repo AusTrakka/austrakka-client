@@ -127,9 +127,9 @@ function OrgSampleShare(props: OrgSampleShareProps) {
     try {
       setStatus(LoadingState.LOADING);
       const shareResponse: ResponseObject = await shareSamples(
+        token,
         destination!,
         selectedIds,
-        token,
       );
       if (shareResponse.status === ResponseType.Success) {
         setStatus(LoadingState.SUCCESS);
