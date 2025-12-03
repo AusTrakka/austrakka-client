@@ -210,7 +210,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                 Please note you can only share samples to projects or
                 organisation groups in which you have Uploader permissions in.
               </Typography>
-              <Alert severity="warning">
+              <Alert severity="info">
                 Sharing these sample records will register the sample as being a
                 <b> part of the target project. </b>
                 This will share any associated
