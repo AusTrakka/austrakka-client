@@ -153,9 +153,7 @@ listenerMiddleware.startListening({
 
 // Launch fetchGroupFields in response to metadata reload request
 listenerMiddleware.startListening({
-  predicate: (action, currentState, previousState) => {
-    return (action.type === 'groupMetadata/reloadGroupMetadata');
-  },
+  predicate: (action) => (action.type === 'groupMetadata/reloadGroupMetadata'),
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
       fetchGroupFields({ groupId: (action as any).payload.groupId }),

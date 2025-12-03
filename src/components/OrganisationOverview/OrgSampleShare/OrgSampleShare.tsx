@@ -14,8 +14,7 @@ import { ResponseType } from '../../../constants/responseType';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
 import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
-import { reloadGroupMetadata } from "../../../app/groupMetadataSlice";
-
+import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
 
 type DestinationType = 'project' | 'orgGroup';
 type ShareStatusProps = {
@@ -142,7 +141,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         setStatusMessage('Samples shared successfully.');
         // Refresh to get updated Shared_groups
         // Delay to allow sampleFlat to update; required while sample sharing comes via sampleFlat
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise<void>((resolve) => { setTimeout(resolve, 500); });
         dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
       } else {
         setStatus(LoadingState.ERROR);
