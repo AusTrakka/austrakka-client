@@ -7,13 +7,15 @@ import {
 import { CheckCircle, Error, IosShare, Send } from '@mui/icons-material';
 import { Sample } from '../../../types/sample.interface';
 import { selectUserState, UserSliceState } from '../../../app/userSlice';
-import { useAppSelector } from '../../../app/store';
+import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { getDisplayFields, getGroup, getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
 import { useApi } from '../../../app/ApiContext';
 import { ResponseType } from '../../../constants/responseType';
 import { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
 import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
+import { reloadGroupMetadata } from "../../../app/groupMetadataSlice";
+
 
 type DestinationType = 'project' | 'orgGroup';
 type ShareStatusProps = {
@@ -35,10 +37,11 @@ interface OrgSampleShareProps {
   selectedSamples: Sample[];
   selectedIds: string[];
   orgAbbrev: string;
+  groupContext: number;
 }
 
 function OrgSampleShare(props: OrgSampleShareProps) {
-  const { open, onClose, selectedSamples, selectedIds, orgAbbrev } = props;
+  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, groupContext } = props;
   const { token, tokenLoading } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
   const [destType, setDestType] = useState<DestinationType>('project');
@@ -52,6 +55,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
   const [previewError, setPreviewError] = useState<boolean>(false);
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const dispatch = useAppDispatch();
 
   // Update options when destination type changes
   useEffect(() => {
@@ -135,6 +140,10 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         setStatus(LoadingState.SUCCESS);
         // TODO: Improve how success message is shown from shareResponse.messages array
         setStatusMessage('Samples shared successfully.');
+        // Refresh to get updated Shared_groups
+        // Delay to allow sampleFlat to update; required while sample sharing comes via sampleFlat
+        await new Promise(r => setTimeout(r, 500));
+        dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
       } else {
         setStatus(LoadingState.ERROR);
         setStatusMessage(shareResponse.message || 'Error sharing samples.');
