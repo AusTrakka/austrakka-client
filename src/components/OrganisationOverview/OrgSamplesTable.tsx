@@ -34,7 +34,7 @@ import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 
 interface SamplesProps {
-  groupContext: number | undefined,
+  groupContext: number,
   groupContextName: string | undefined,
   canShare: boolean,
   orgAbbrev: string
@@ -307,6 +307,7 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
+          groupContext={groupContext}
         />
       )}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
