@@ -471,27 +471,24 @@ export interface UserRoleRecordPrivilegePost {
   roleGlobalId: string,
 }
 
-export interface RefinedLog {
+export interface Log {
   // Server fields
   globalId: string,
-  refinedLogId: number,
   rawLogGlobalId: string,
   clientSessionId: string,
   callId: string,
-  eventSpec: string,
   eventType: string
+  eventTime: string,
   resourceGlobalId: string,
   resourceUniqueString: string,
   resourceType: string,
   submitterGlobalId: string,
   submitterDisplayName: string,
   eventStatus: string,
-  eventTime: string,
-  tenantGlobalId: string,
-  aggregationKey: string | null,
-  aggregationMemberKey: string | null,
+  data: string,
+  displayData: string,
 
   // UI-specific fields
-  children: RefinedLog[] | null,
+  children: Log[] | null,
   level: number | null,
 }

@@ -12,7 +12,7 @@ import { Column } from 'primereact/column';
 import { Cancel, Info } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
-import { ActivityField, RefinedLog } from '../../../types/dtos';
+import { ActivityField, Log } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
@@ -93,9 +93,9 @@ export const defaultState = {
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<any[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<RefinedLog | null>(null);
+  const [selectedRow, setSelectedRow] = useState<Log | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
-  const [localLogs, setLocalLogs] = useState<RefinedLog[]>([]);
+  const [localLogs, setLocalLogs] = useState<Log[]>([]);
   
   const routeSegment = recordType === 'Tenant'
     ? recordType
@@ -107,11 +107,11 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     dataLoading,
   } = useActivityLogs(routeSegment, rGuid ?? "");
 
-  const transformData = (data: RefinedLog[]): RefinedLog[] => {
-    const nodesByKey: { [key: string]: RefinedLog } = {};
-    const rootNodes: RefinedLog[] = [];
+  const transformData = (data: Log[]): Log[] => {
+    const nodesByKey: { [key: string]: Log } = {};
+    const rootNodes: Log[] = [];
 
-    const addChildren = (node: RefinedLog, parentLevel: number): void => {
+    const addChildren = (node: Log, parentLevel: number): void => {
       node.level = parentLevel; // Set the level of the current node
       node.children?.forEach((child) => {
         addChildren(child, parentLevel + 1); // Recursively assign level to children
@@ -196,7 +196,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   };
 
   const toggleRow = (e: DataTableRowToggleEvent) => {
-    const row = (e.data as any[])[0] as RefinedLog;
+    const row = (e.data as any[])[0] as Log;
 
     const firstChildIdx = localLogs.findIndex((node) =>
       node.aggregationMemberKey
@@ -215,9 +215,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       // Traverse the tree of row recursively to fine all the descendants.
       // Compile the nodes into a flat array. Using this information, remove
       // each member of the array from currentRows.
-      const targets: RefinedLog[] = [];
+      const targets: Log[] = [];
 
-      const findDescendants = (node: RefinedLog) => {
+      const findDescendants = (node: Log) => {
         targets.push(node);
         node.children?.forEach((child) => findDescendants(child));
       };
@@ -341,7 +341,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                         )}
           >
             <Column
-              expander={(rowData: RefinedLog) => (rowData.children?.length ?? 0) > 0}
+              expander={(rowData: Log) => (rowData.children?.length ?? 0) > 0}
               style={{ width: '3em' }}
               className="activity-row-expander"
             />
