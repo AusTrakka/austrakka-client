@@ -5,6 +5,7 @@ import {
   SeqPairedUploadRow,
   SeqSingleUploadRow,
   SeqType,
+  SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 
@@ -116,6 +117,35 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
     .filter((groupRole) => groupRole.group.name.split('-').pop()! === 'Group')
     .map((groupRole) => groupRole.group.name.split('-').slice(0, -1).join('-'));
   return projectAbbrevs;
+};
+
+export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]): string[] => {
+  const orgGroupNames: string[] = groupRoles
+    // Must match the current org
+    .filter((groupRole) => groupRole.group.organisation?.abbreviation === orgAbbrev)
+    // Needs to have an Uploader role in the owner group
+    .filter(() =>
+      groupRoles.some((groupRole) =>
+        groupRole.group.organisation?.abbreviation === orgAbbrev &&
+        groupRole.role.name === 'Uploader' &&
+        groupRole.group.name.split('-').pop() === 'Owner'))
+    // Filter out all groups other than Everyone group
+    .filter((groupRole) => ['Everyone'].includes(groupRole.group.name.split('-').pop()!))
+    .map((groupRole) => groupRole.group.name)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  return orgGroupNames;
+};
+
+export const createSampleCSV = (
+  seqUploadRows: SeqUploadRow[],
+): string => {
+  // This is technically a CSV, but has just a single column
+  const csvHeader = 'Seq_ID';
+  const csvRows = seqUploadRows.map(
+    row => `${row.seqId}`,
+  );
+  const csv = [csvHeader, ...csvRows].join('\n');
+  return csv;
 };
 
 export const createPairedSeqUploadRows = (

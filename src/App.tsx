@@ -35,7 +35,6 @@ import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
 import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
-
 import MapPage from './components/Maps/MapPage';
 
 function App() {

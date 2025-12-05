@@ -62,9 +62,10 @@ function MainMenuLayout() {
     usersV2: 'Users (V2)',
     fields: 'Fields',
     datasets: 'Datasets',
+    share: 'Share',
   };
 
-  const breadcrumbNoLink: string[] = ['versions', 'records'];
+  const breadcrumbNoLink: string[] = ['versions', 'records', 'org'];
 
   /**
    * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
@@ -334,7 +335,7 @@ function MainMenuLayout() {
           </div>
         </div>
         {pathnames.map((value, index) => {
-          const last = index === pathnames.length - 1;
+          const last: boolean = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 
           return last ? (
