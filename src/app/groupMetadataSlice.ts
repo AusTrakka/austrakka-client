@@ -15,14 +15,9 @@ import {
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
 
-// These are hard-coded desired field sets, used as an interim measure
-// until we have project data views implemented server-side.
-// Since we don't know that the project will contain all specified fields, we will have to
-// request the intersection of the fields here and the actual project fields.
-// In addition to views listed here, an all-of-project dataset will be retrieved.
+// These are hard-coded views mimicking project views. The "full view" will be added automatically.
 const DATA_VIEWS = [
   [SAMPLE_ID_FIELD],
-  [SAMPLE_ID_FIELD, 'Date_coll', 'Owner_group', 'Jurisdiction'],
 ];
 
 // This is an interim function based on hard-coded views
@@ -93,7 +88,7 @@ interface FetchDataViewParams {
   fields: string[],
   viewIndex: number,
 }
-interface FetchDataViewsResponse {
+interface FetchDataViewResponse {
   data: Sample[],
 }
 
@@ -120,12 +115,12 @@ const fetchDataView = createAsyncThunk(
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<FetchDataViewsResponse | unknown > => {
+  ):Promise<FetchDataViewResponse | unknown > => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).groupMetadataState;
     const response = await getMetadata(groupId, fields, token!);
     if (response.status === 'Success') {
-      return fulfillWithValue<FetchDataViewsResponse>({
+      return fulfillWithValue<FetchDataViewResponse>({
         data: response.data as Sample[],
       });
     }
@@ -136,7 +131,7 @@ const fetchDataView = createAsyncThunk(
 // These listeners launch thunks in response to state changes or actions
 // The state update triggered by the listener will be the thunk's pending action
 
-// Launch fetchProjectFields in response to metadata fetch request
+// Launch fetchGroupFields in response to metadata fetch request
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Return early if wrong action; don't try to read groupId
@@ -149,6 +144,16 @@ listenerMiddleware.startListening({
     return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
            loadingState === MetadataLoadingState.FETCH_REQUESTED;
   },
+  effect: (action, listenerApi) => {
+    listenerApi.dispatch(
+      fetchGroupFields({ groupId: (action as any).payload.groupId }),
+    );
+  },
+});
+
+// Launch fetchGroupFields in response to metadata reload request
+listenerMiddleware.startListening({
+  predicate: (action) => (action.type === 'groupMetadata/reloadGroupMetadata'),
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
       fetchGroupFields({ groupId: (action as any).payload.groupId }),
@@ -204,6 +209,13 @@ export const groupMetadataSlice = createSlice({
         state.token = token;
       }
     },
+    reloadGroupMetadata: (state, action: PayloadAction<FetchGroupMetadataParams>) => {
+      const { groupId, token } = action.payload;
+      // Clear state and start again
+      state.data[groupId] = groupMetadataInitialStateCreator(groupId);
+      state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
+      state.token = token;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchGroupFields.pending, (state, action) => {
@@ -253,7 +265,7 @@ export const groupMetadataSlice = createSlice({
     });
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
       const { groupId, fields, viewIndex } = action.meta.arg;
-      const { data } = action.payload as FetchDataViewsResponse;
+      const { data } = action.payload as FetchDataViewResponse;
       const viewFields = state.data[groupId].views[viewIndex];
       // Each returned view is a superset of the previous; we always replace the data
       if (viewFields.includes(HAS_SEQUENCES)) {
@@ -359,7 +371,7 @@ export const groupMetadataSlice = createSlice({
 export default groupMetadataSlice.reducer;
 
 // actions only. Thunks are for internal state machine use
-export const { fetchGroupMetadata } = groupMetadataSlice.actions;
+export const { fetchGroupMetadata, reloadGroupMetadata } = groupMetadataSlice.actions;
 
 // selectors
 
