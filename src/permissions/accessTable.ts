@@ -1,6 +1,7 @@
 import { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
 import { hasScopeInRecord } from '../utilities/accessTableUtils';
+import RecordType from '../constants/record-type.enum';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
@@ -36,10 +37,10 @@ const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
 export function hasPermission(
   user: UserSliceState,
   group: string,
-  domain: string,
+  domain: string | null,
   permission: PermissionLevel,
 ): boolean {
-  if (!user) return false;
+  if (!user || !domain) return false;
   if (user.admin) {
     return true;
   }
@@ -50,11 +51,12 @@ export function hasPermission(
 
 export function hasPermissionV2(
   user: UserSliceState,
-  scope: string,
+  scope?: string,
   recordName: string = '',
   recordType = 'Tenant',
 ): boolean {
   if (!user) return false;
+  if (!scope) return false;
   // This is if they are admin
   if (user.adminV2) {
     return true;
