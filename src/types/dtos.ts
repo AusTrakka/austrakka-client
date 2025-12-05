@@ -17,6 +17,7 @@ export interface Project {
   }[],
   isActive: boolean,
   created: Date,
+  mergeAlgorithm: string,
   // could add auditable fields - created, createdBy
 }
 
@@ -27,7 +28,7 @@ export interface ProjectSummary {
   globalId: string,
   abbreviation: string,
   name: string,
-  sampleCount : number,
+  sampleCount: number,
   sequencedSampleCount: number,
   latestSampleDate: string, // TODO date?
   latestSequenceDate: string,
@@ -104,7 +105,7 @@ export interface PlotListing {
 export interface Member {
   objectId: string,
   roles: string[],
-  organization:{
+  organization: {
     id: number,
     abbreviation: string,
   },
@@ -139,7 +140,7 @@ export interface UserV2 {
   objectId: string,
   globalId: string,
   isActive: boolean,
-  orgGlobalId:string,
+  orgGlobalId: string,
   orgAbbrev: string,
   orgName: string,
   isAusTrakkaAdmin: boolean,
@@ -303,7 +304,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
-  geoField:boolean,
+  geoField: boolean,
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
@@ -346,7 +347,7 @@ export interface ProFormaVersion {
   fileName: string,
   columnMappings: MetaDataColumnMapping[],
   isCurrent: boolean,
-  assetId : number,
+  assetId: number,
   created: Date,
   createdBy: string,
 }
