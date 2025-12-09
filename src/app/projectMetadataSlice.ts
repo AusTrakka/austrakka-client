@@ -92,7 +92,7 @@ interface FetchDataViewResponse {
 
 // Fetch project fields and views
 const fetchProjectInfo = createAsyncThunk(
-  'projectMetadata/fetchProjectFields',
+  'projectMetadata/fetchProjectInfo',
   async (
     params: FetchProjectInfoParams,
     { rejectWithValue, fulfillWithValue, getState },
