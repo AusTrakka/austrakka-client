@@ -1,5 +1,4 @@
 import {
-  Button,
   Chip,
   CircularProgress,
   FormControl,
@@ -17,27 +16,31 @@ import {
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
-import { uploadFastqSequence } from '../../utilities/resourceUtils';
+import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
-import ValidationModal from '../Validation/ValidationModal';
+import { ValidationPopupButton } from '../Validation/Validation';
 import { generateHash } from '../../utilities/file';
 import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqPairedUploadRow,
   updateRow: (newSur: SeqPairedUploadRow) => void,
   modeOption: SkipForce,
+  owner: string | null,
+  sharedProjects: string[],
 }
 
 export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   const { seqUploadRow } = props;
   const { updateRow } = props;
   const { modeOption } = props;
-  
-  const [showValidation, setShowValidation] = useState(false);
+  const { owner } = props;
+  const { sharedProjects } = props;
+
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
-    messages: [] as ResponseMessage[] | undefined,
+    messages: [] as ResponseMessage[],
   });
   const { token } = useApi();
 
@@ -90,6 +93,42 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     } as SeqPairedUploadRow);
   };
 
+  const handleSampleCreate = async () => {
+    if (owner == null) {
+      setSeqSubmission({
+        ...seqSubmission,
+        messages: [
+          ...seqSubmission.messages,
+          { ResponseMessage: 'Owner is null', ResponseType: ResponseType.Error } as ResponseMessage,
+        ],
+      });
+      return;
+    }
+    const messages = [] as ResponseMessage[];
+    const sampleResp = await createSample(token, seqUploadRow.seqId, owner, sharedProjects);
+    if (sampleResp.httpStatusCode === 409) {
+      // If it's a conflict, display this as a warning.
+      const message = sampleResp.messages[0];
+      message.ResponseType = ResponseType.Warning;
+      messages.push(message);
+    } else {
+      messages.push(...sampleResp.messages);
+    }
+    const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
+
+    sharedProjects.forEach(r =>
+      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId])));
+
+    for (const resp of (await Promise.all(sampleSharePromises))) {
+      messages.push(...resp.messages);
+    }
+    setSeqSubmission({
+      ...seqSubmission,
+      messages: [...seqSubmission.messages, ...messages],
+    });
+    updateState(SeqUploadRowState.CalculatingHash);
+  };
+
   const handleSubmit = async () => {
     setSeqSubmission({
       ...seqSubmission,
@@ -110,28 +149,34 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       'filename2-hash': seqUploadRow.read2.hash,
       'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
-    
+
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
     if (sequenceResponse.status === ResponseType.Success) {
       setSeqSubmission({
         ...seqSubmission,
         status: LoadingState.SUCCESS,
-        messages: sequenceResponse.messages,
+        messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
-      updateState(SeqUploadRowState.Complete);
+      if (seqSubmission.messages.some(m => m.ResponseType === ResponseType.Error)) {
+        // If any other api requests returned errors, users need to know
+        updateState(SeqUploadRowState.Incomplete);
+      } else {
+        updateState(SeqUploadRowState.Complete);
+      }
     } else {
       setSeqSubmission({
         ...seqSubmission,
         status: LoadingState.ERROR,
-        messages: sequenceResponse.messages,
+        messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
       updateState(SeqUploadRowState.Errored);
     }
   };
 
-  const disableResponse = (): boolean | undefined =>
+  const disableResponse = (): boolean =>
     seqUploadRow.state !== SeqUploadRowState.Complete
-      && seqUploadRow.state !== SeqUploadRowState.Errored;
+    && seqUploadRow.state !== SeqUploadRowState.Errored
+    && seqUploadRow.state !== SeqUploadRowState.Incomplete;
 
   const requestCompleted = (): boolean | undefined =>
     seqUploadRow.state === SeqUploadRowState.Complete;
@@ -142,23 +187,27 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     SeqUploadRowState.Waiting,
     SeqUploadRowState.Complete,
     SeqUploadRowState.Errored,
+    SeqUploadRowState.Incomplete,
   ].includes(seqUploadRow.state);
 
   useEffect(() => {
+    if (seqUploadRow.state === SeqUploadRowState.CreateSample) {
+      handleSampleCreate();
+    }
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
       calculateHash();
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.state]);
 
   useEffect(() => {
     if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash]);
 
   return (
@@ -252,26 +301,15 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
             <CircularProgress size={20} />
           ) : (
             requestWaiting() || (
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                setShowValidation(!showValidation);
-              }}
-              disabled={disableResponse()}
-            >
-              Show Response
-            </Button>
+              <ValidationPopupButton
+                messages={seqSubmission.messages ?? []}
+                title="Response Messages"
+                disabled={disableResponse()}
+
+              />
             ))}
         </>
       </TableCell>
-      <ValidationModal
-        messages={seqSubmission.messages ?? []}
-        title="Response Messages"
-        openModal={showValidation}
-        handleModalClose={() => setShowValidation(!showValidation)}
-      />
     </>
   );
 }

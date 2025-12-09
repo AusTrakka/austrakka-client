@@ -119,6 +119,23 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
+export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]): string[] => {
+  const orgGroupNames: string[] = groupRoles
+    // Must match the current org
+    .filter((groupRole) => groupRole.group.organisation?.abbreviation === orgAbbrev)
+    // Needs to have an Uploader role in the owner group
+    .filter(() =>
+      groupRoles.some((groupRole) =>
+        groupRole.group.organisation?.abbreviation === orgAbbrev &&
+        groupRole.role.name === 'Uploader' &&
+        groupRole.group.name.split('-').pop() === 'Owner'))
+    // Filter out all groups other than Everyone group
+    .filter((groupRole) => ['Everyone'].includes(groupRole.group.name.split('-').pop()!))
+    .map((groupRole) => groupRole.group.name)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  return orgGroupNames;
+};
+
 export const createSampleCSV = (
   seqUploadRows: SeqUploadRow[],
 ): string => {

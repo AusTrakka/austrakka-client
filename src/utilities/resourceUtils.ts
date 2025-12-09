@@ -24,7 +24,7 @@ import {
   Tree,
   TreeVersion,
   UserPatchV2,
-  UserRoleRecordPrivilegePost,
+  UserRoleRecordPrivilegePost, Group,
 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
@@ -67,6 +67,7 @@ export const getSamples = (token: string, groupId: number, searchParams?: URLSea
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
+export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> => callGET(`/api/Group/${groupName}`, token);
 export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma and field endpoints
@@ -120,6 +121,12 @@ export const uploadSubmissions = (
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };
+export const createSample = (
+  token: string,
+  name: string,
+  owner: string,
+  sharedProjects: string[] = [],
+) => callPost('/api/Sample', token, { name, owner, sharedProjects });
 
 // Sequence endpoints
 // TODO: this should parse the response
@@ -146,6 +153,7 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const shareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples });
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);

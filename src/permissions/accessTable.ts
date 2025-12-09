@@ -25,6 +25,10 @@ const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
     [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
     [PermissionLevel.CanClick]: [RoleName.ProjectAnalyst],
   },
+  'organisation/sample/share': {
+    // if a button is hidden then when it is shown we expect it to be clickable
+    [PermissionLevel.CanShow]: [RoleName.Uploader, RoleName.AusTrakkaAdmin],
+  },
 };
 
 // Currently all roles are allocated via some group

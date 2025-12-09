@@ -32,7 +32,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { ResponseType } from '../../constants/responseType';
 import { DropFileUpload } from '../../types/DropFileUpload';
-import Validation from '../Validation/Validation';
+import { Validation } from '../Validation/Validation';
 import HelpSidebar from '../Help/HelpSidebar';
 import UploadMetadataHelp from './UploadMetadataHelp';
 import { OrgDescriptor } from '../../types/sequploadtypes';
@@ -98,7 +98,7 @@ function UploadMetadata() {
   const theme = useTheme();
 
   const canUpload = selectedDataOwner && selectedProforma && files.length > 0;
-  
+
   // Data owner
   useEffect(() => {
     if (user.loading !== LoadingState.SUCCESS) {
@@ -127,7 +127,7 @@ function UploadMetadata() {
     const projects: string[] = getSharableProjects(user.groupRoles ?? []);
     setAvailableProjects(projects);
   }, [user.groupRoles, user.loading, user.orgAbbrev]);
-  
+
   useEffect(() => {
     setProformaStatus(LoadingState.LOADING);
     const getProformas = async () => {
@@ -180,7 +180,7 @@ function UploadMetadata() {
     formData.append('file', files[0].file!);
     formData.append('proforma-abbrev', selectedProforma!.abbreviation);
 
-    const submissionResponse : ResponseObject = options.validate
+    const submissionResponse: ResponseObject = options.validate
       ? await validateSubmissions(
         formData,
         optionString,
@@ -226,7 +226,7 @@ function UploadMetadata() {
       status: LoadingState.IDLE,
       messages: [],
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files, options]);
 
   return (
@@ -234,10 +234,10 @@ function UploadMetadata() {
       <Typography variant="h2" paddingBottom={1} color="primary">Upload Metadata</Typography>
       {/* Top section */}
       <Grid container spacing={2} sx={{ paddingBottom: 4 }} justifyContent="space-between" alignItems="center">
-        { pageErrorMsg && (
+        {pageErrorMsg && (
           <Grid size={12}>
             <Alert severity="error">
-              { pageErrorMsg }
+              {pageErrorMsg}
             </Alert>
           </Grid>
         )}
@@ -350,15 +350,15 @@ function UploadMetadata() {
                 value={selectedProforma?.abbreviation || ''}
                 onChange={(e) => handleSelectProforma(e.target.value)}
               >
-                { proformas.map((proforma: Proforma) => (
+                {proformas.map((proforma: Proforma) => (
                   <MenuItem
                     value={proforma.abbreviation}
                     key={proforma.abbreviation}
                   >
                     {`${proforma.abbreviation} : ${proforma.name}`}
                   </MenuItem>
-                )) }
-                { proformas.length === 0 ? (
+                ))}
+                {proformas.length === 0 ? (
                   <MenuItem disabled>No proformas available</MenuItem>
                 ) : null}
               </Select>
@@ -368,13 +368,13 @@ function UploadMetadata() {
                     color="secondary"
                   />
                 )
-                : null }
+                : null}
               <FormHelperText>
                 Required
               </FormHelperText>
             </FormControl>
           </Tooltip>
-          { selectedProforma ? (
+          {selectedProforma ? (
             <List>
               <Link href={`/proformas/${selectedProforma?.abbreviation}/${selectedProforma?.version}`} color="secondary.dark">
                 View or download proforma
@@ -396,7 +396,7 @@ function UploadMetadata() {
         <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" color="primary">Select upload options</Typography>
           <FormGroup>
-            { uploadOptions.map(
+            {uploadOptions.map(
               (uploadOption: { name: string; label: string; description: string; }) => (
                 <Box sx={{ paddingBottom: 1 }} key={uploadOption.name}>
                   <FormControlLabel
@@ -407,7 +407,7 @@ function UploadMetadata() {
                         onChange={handleOptionChange}
                         name={uploadOption.name}
                       />
-                )}
+                    )}
                     label={uploadOption.label}
                   />
                   <Box sx={{ paddingLeft: 4 }}>
@@ -415,7 +415,7 @@ function UploadMetadata() {
                   </Box>
                 </Box>
               ),
-            ) }
+            )}
           </FormGroup>
         </Grid>
       </Grid>
@@ -438,7 +438,7 @@ function UploadMetadata() {
               </Alert>
             )
           }
-          { options.validate ? (
+          {options.validate ? (
             <Button
               variant="contained"
               sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
