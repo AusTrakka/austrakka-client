@@ -27,7 +27,7 @@ function ActivityDetails({ onClose, detailInfo }: ActivityDetailProps): JSX.Elem
     >
       {/* Title and Date (on the left) */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <PageTitle title={detailInfo['Operation name']} />
+        <PageTitle title={detailInfo.Event} />
         <DetailedText text={friendlyEventDate} isSubHeading />
         <ActivityContentBox entry={detailInfo} marginTop="45px" />
       </Box>

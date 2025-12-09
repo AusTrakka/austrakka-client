@@ -108,46 +108,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   } = useActivityLogs(routeSegment, rGuid ?? "");
 
   const transformData = (data: Log[]): Log[] => {
-    const nodesByKey: { [key: string]: Log } = {};
-    const rootNodes: Log[] = [];
-
-    const addChildren = (node: Log, parentLevel: number): void => {
-      node.level = parentLevel; // Set the level of the current node
-      node.children?.forEach((child) => {
-        addChildren(child, parentLevel + 1); // Recursively assign level to children
-      });
-    };
-
-    data.forEach((item) => {
-      if (item.aggregationKey) nodesByKey[item.aggregationKey!] = item;
-    });
-
-    data.forEach((item) => {
-      if (item.aggregationMemberKey
-        /*
-        * An aggregate can be a member of a parent aggregate. However, if
-        * the root level being displayed does not contain the parent aggregate,
-        * then the child aggregate should be displayed at the root level.
-        * Eg, tenant (agg) -> org (agg1) -> sample
-        * 
-        * If displaying platform(tenant) level, org should be displayed as a child 
-        * of tenant. However, if displaying at the org level (get activity log for org),
-        * org should be displayed at the root level. The server would not return
-        * information about the parent. Therefore, this is the check for the parent.
-        * */
-        && nodesByKey[item.aggregationMemberKey]) {
-        const parentNode = nodesByKey[item.aggregationMemberKey];
-        if (parentNode) {
-          if (!parentNode.children) parentNode.children = [];
-          parentNode.children?.push(item); // Add child to parent node
-        }
-      } else {
-        rootNodes.push(item); // Root node has no parent
-      }
-    });
-
-    rootNodes.forEach((node) => addChildren(node, 0));
-    return rootNodes;
+    // This previously aggregated logs by aggregation keys, which no longer exist
+    // Currently a placeholder for client-side log transforms
+    return data;
   };
 
   useEffect(() => {
@@ -195,49 +158,50 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setSelectedRow(e.data);
   };
 
-  const toggleRow = (e: DataTableRowToggleEvent) => {
-    const row = (e.data as any[])[0] as Log;
-
-    const firstChildIdx = localLogs.findIndex((node) =>
-      node.aggregationMemberKey
-            && row.aggregationKey
-            && node.aggregationMemberKey === row.aggregationKey);
-
-    const clonedRows = [...localLogs];
-
-    if (firstChildIdx === -1) {
-      // Add
-      const rowIdx = localLogs.indexOf(row);
-      // Insert row.children at position rowIdx + 1
-      clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
-    } else {
-      // Remove
-      // Traverse the tree of row recursively to fine all the descendants.
-      // Compile the nodes into a flat array. Using this information, remove
-      // each member of the array from currentRows.
-      const targets: Log[] = [];
-
-      const findDescendants = (node: Log) => {
-        targets.push(node);
-        node.children?.forEach((child) => findDescendants(child));
-      };
-
-      if (row.children) {
-        for (let i = 0; i < row.children.length; i++) {
-          findDescendants(row.children[i]);
-        }
-      }
-
-      // Remove the targets from the currentRows
-      targets.forEach((target) => {
-        const idx = clonedRows.indexOf(target);
-        if (idx !== -1) {
-          clonedRows.splice(idx, 1);
-        }
-      });
-    }
-    setLocalLogs(clonedRows);
-  };
+  // TODO very similar logic can be used to expand/collapse bundled logs when re-implemented
+  // const toggleRow = (e: DataTableRowToggleEvent) => {
+  //   const row = (e.data as any[])[0] as Log;
+  //
+  //   const firstChildIdx = localLogs.findIndex((node) =>
+  //     node.aggregationMemberKey
+  //           && row.aggregationKey
+  //           && node.aggregationMemberKey === row.aggregationKey);
+  //
+  //   const clonedRows = [...localLogs];
+  //
+  //   if (firstChildIdx === -1) {
+  //     // Add
+  //     const rowIdx = localLogs.indexOf(row);
+  //     // Insert row.children at position rowIdx + 1
+  //     clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
+  //   } else {
+  //     // Remove
+  //     // Traverse the tree of row recursively to find all the descendants.
+  //     // Compile the nodes into a flat array. Using this information, remove
+  //     // each member of the array from currentRows.
+  //     const targets: Log[] = [];
+  //
+  //     const findDescendants = (node: Log) => {
+  //       targets.push(node);
+  //       node.children?.forEach((child) => findDescendants(child));
+  //     };
+  //
+  //     if (row.children) {
+  //       for (let i = 0; i < row.children.length; i++) {
+  //         findDescendants(row.children[i]);
+  //       }
+  //     }
+  //
+  //     // Remove the targets from the currentRows
+  //     targets.forEach((target) => {
+  //       const idx = clonedRows.indexOf(target);
+  //       if (idx !== -1) {
+  //         clonedRows.splice(idx, 1);
+  //       }
+  //     });
+  //   }
+  //   setLocalLogs(clonedRows);
+  // };
     
   const friendlyHeaders: FriendlyHeader[] = supportedColumns
     .sort((a, b) => a.columnOrder - b.columnOrder)
@@ -324,7 +288,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             onRowClick={rowClickHandler}
             selection={selectedRow}
             onRowSelect={onRowSelect}
-            onRowToggle={toggleRow}
+            //onRowToggle={toggleRow}
             selectionMode="single"
             rows={25}
             rowClassName={selectRowClassName}
