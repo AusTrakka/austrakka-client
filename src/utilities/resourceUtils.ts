@@ -11,6 +11,7 @@ import {
   callPUT,
   callSimpleGET,
   downloadFile,
+  previewFile,
 } from './api';
 import {
   Feedback,
@@ -246,3 +247,27 @@ export const patchFieldV2 = (
   field: any,
 ) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
+
+// Project documents endpoints 
+export const getDocuments = (projectAbbrev: string, token: string) => callGET(`/api/ProjectV2/${projectAbbrev}/documents`, token);
+export const uploadDocument = (projectAbbrev: string, formData: FormData, token: string) => callPOSTForm(`/api/ProjectV2/${projectAbbrev}/documents`, formData, token);
+export const deleteDocument = (projectAbbrev: string, documentId: number, token: string) => callDELETE(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/delete`, token);
+// TODO: Fix this and maybe have "default file name" as a parameter to "downloadFile" function
+export const downloadDocument = async (
+  projectAbbrev: string,
+  documentId: number,
+  token: string,
+) => {
+  const response = await downloadFile(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`, token);
+  return response;
+};
+
+// TODO: make sure preview is calling its own endpoint
+export const previewDocument = async (
+  projectAbbrev: string,
+  documentId: number,
+  token: string,
+) => {
+  const response = await previewFile(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`, token);
+  return response;
+};

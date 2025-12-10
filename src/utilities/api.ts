@@ -32,6 +32,13 @@ function getHeaders(token: string): any {
     'Access-Control-Expose-Headers': '*',
   };
 }
+function getHeadersPreviewFile(token: string): any {
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+  };
+}
 
 function getHeadersPut(token: string): any {
   return {
@@ -274,6 +281,39 @@ export async function downloadFile(url: string, token: string) {
   const options: HTTPOptions = {
     method: 'GET',
     headers: getHeaders(token),
+  };
+
+  let filename = 'no-file-name.xlsx'; // Default filename
+  const response = await fetch(base + url, options);
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok.');
+  }
+
+  const contentDisposition = response.headers.get('Content-Disposition');
+  if (contentDisposition) {
+    try {
+      const parts = contentDisposition.split(';');
+      const filenamePart = parts.find(part => part.trim().startsWith('filename='));
+      if (filenamePart) {
+        filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
+      }
+    } catch {
+      filename = 'no-file-name.xlsx';
+    }
+  }
+  const blob = await response.blob();
+  return { blob, suggestedFilename: filename };
+}
+
+export async function previewFile(url: string, token: string) {
+  if (!token) {
+    throw new Error('Authentication error: Unable to retrieve access token.');
+  }
+
+  const options: HTTPOptions = {
+    method: 'GET',
+    headers: getHeadersPreviewFile(token),
   };
 
   let filename = 'no-file-name.xlsx'; // Default filename

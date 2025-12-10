@@ -46,3 +46,20 @@ export function bytesToMB(bytes?: number): string {
   if (!bytes || bytes <= 0) return '0';
   return (bytes / (1024 * 1024)).toString();
 }
+
+export function formatFileSize(bytes: number, useBinary: boolean = false): string {
+  const unitThreshold = useBinary ? 1024 : 1000;
+  if (bytes < unitThreshold) return `${bytes} B`;
+
+  const units = useBinary ? ['KB', 'MB', 'GB', 'TB'] : ['kB', 'MB', 'GB', 'TB'];
+
+  let size = bytes / unitThreshold;
+  let i = 0;
+
+  while (size >= unitThreshold && i < units.length - 1) {
+    size /= unitThreshold;
+    i += 1;
+  }
+
+  return `${size.toFixed(2)} ${units[i]}`;
+}

@@ -24,6 +24,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
+import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 
 interface ProjectOverviewProps {
   tab: string,
@@ -192,6 +193,14 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <Datasets
               projectDetails={projectDetails}
               mergeAlgorithm={mergeAlgorithm}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.documents.index}
+          >
+            <ProjectDocuments
+              projectDetails={projectDetails}
             />
           </TabPanel>
         </>

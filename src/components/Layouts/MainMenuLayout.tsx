@@ -62,6 +62,7 @@ function MainMenuLayout() {
     usersV2: 'Users (V2)',
     fields: 'Fields',
     datasets: 'Datasets',
+    documents: 'Documents',
   };
 
   const breadcrumbNoLink: string[] = ['versions', 'records'];
@@ -75,7 +76,7 @@ function MainMenuLayout() {
    */
 
   const noBreadCrumbIfLast: string[] =
-    ['dashboard', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
+    ['dashboard', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets', 'documents'];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
