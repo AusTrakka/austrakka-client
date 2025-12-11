@@ -18,7 +18,7 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import {PermissionLevel, hasPermission, hasPermissionV2} from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';

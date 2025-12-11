@@ -4,7 +4,6 @@ import {
   DataTable,
   DataTableOperatorFilterMetaData,
   DataTableRowClickEvent,
-  DataTableRowToggleEvent,
   DataTableSelectEvent,
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
@@ -105,14 +104,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     refinedLogs,
     httpStatusCode,
     dataLoading,
-  } = useActivityLogs(routeSegment, rGuid ?? "");
+  } = useActivityLogs(routeSegment, rGuid ?? '');
 
-  const transformData = (data: Log[]): Log[] => {
+  const transformData = (data: Log[]): Log[] =>
     // This previously aggregated logs by aggregation keys, which no longer exist
     // Currently a placeholder for client-side log transforms
-    return data;
-  };
-
+    data;
   useEffect(() => {
     if (refinedLogs.length > 0) {
       const transformedData = transformData(refinedLogs);
@@ -288,7 +285,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             onRowClick={rowClickHandler}
             selection={selectedRow}
             onRowSelect={onRowSelect}
-            //onRowToggle={toggleRow}
+            // onRowToggle={toggleRow}
             selectionMode="single"
             rows={25}
             rowClassName={selectRowClassName}
@@ -320,7 +317,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               style={{ minWidth: '150px', paddingLeft: '16px' }}
               headerClassName="custom-title"
             />
-            {columns ? columns.filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+            {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
+              col.field !== EVENT_NAME_COLUMN)
               .map((col: any) => (
                 <Column
                   key={col.field}

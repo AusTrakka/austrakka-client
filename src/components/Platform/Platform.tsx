@@ -3,7 +3,6 @@ import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
 import TabPanel from '../Common/TabPanel';
-import { useAppSelector } from '../../app/store';
 import Activity from '../Common/Activity/Activity';
 import { NavigationProvider } from '../../app/NavigationContext';
 

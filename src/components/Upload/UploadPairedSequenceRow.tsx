@@ -305,7 +305,6 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
                 messages={seqSubmission.messages ?? []}
                 title="Response Messages"
                 disabled={disableResponse()}
-
               />
             ))}
         </>

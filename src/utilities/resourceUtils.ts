@@ -136,11 +136,6 @@ export const uploadFastqSequence = (formData: FormData, params: string, token: s
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
-export const getActivities = (recordType: string, rguid: string, token: string): Promise<ResponseObject<Log[]>> => {
-  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  var resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog`, token);
-};
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
 export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
 
@@ -260,3 +255,14 @@ export const patchFieldV2 = (
   field: any,
 ) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
+
+// Activity log
+export const getActivities = (
+  recordType: string,
+  rguid: string,
+  token: string,
+): Promise<ResponseObject<Log[]>> => {
+  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
+  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
+  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+};
