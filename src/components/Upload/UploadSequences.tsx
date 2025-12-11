@@ -113,9 +113,10 @@ function UploadSequences() {
     }));
   };
 
-  const queueAllRows = () => {
+  const queueAllRows = (clientSessionId: string) => {
     const queuedRows = seqUploadRows.map((sur) => {
       sur.state = SeqUploadRowState.Queued;
+      sur.clientSessionId = clientSessionId;
       return sur;
     });
     setSeqUploadRows(queuedRows);
@@ -187,7 +188,13 @@ function UploadSequences() {
     if (tokenLoading !== LoadingState.SUCCESS) return;
 
     if (!selectedDataOwner) return;
-    queueAllRows();
+
+    // UI elements are also disabled to guard against this
+    if (uploadInProgress()) return;
+
+    const clientSessionId : string = crypto.randomUUID();
+
+    queueAllRows(clientSessionId);
   };
 
   // Data owner

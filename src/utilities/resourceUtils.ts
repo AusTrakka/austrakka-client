@@ -126,11 +126,18 @@ export const createSample = (
   name: string,
   owner: string,
   sharedProjects: string[] = [],
-) => callPost('/api/Sample', token, { name, owner, sharedProjects });
+  clientSessionId?: string,
+) => callPost('/api/Sample', token, { name, owner, sharedProjects }, clientSessionId);
 
 // Sequence endpoints
 // TODO: this should parse the response
-export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
+export const uploadFastqSequence = (
+  formData: FormData,
+  params: string,
+  token: string,
+  headers: any,
+  clientSessionId?: string,
+) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers, clientSessionId);
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
@@ -148,7 +155,12 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
-export const shareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples });
+export const shareSamples = (
+  token: string,
+  groupName: string,
+  samples: string[],
+  clientSessionId?: string,
+) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
