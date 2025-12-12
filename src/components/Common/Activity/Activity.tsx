@@ -65,7 +65,7 @@ export const supportedColumns: ActivityField[] = [
   {
     columnName: 'eventTime',
     columnDisplayName: 'Time stamp',
-    primitiveType: 'string',
+    primitiveType: 'date',
     columnOrder: 5,
     hidden: false,
   },
