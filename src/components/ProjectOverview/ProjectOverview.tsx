@@ -18,11 +18,12 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
-  fetchProjectMetadata, selectAwaitingPartialProjectMetadata,
+  fetchProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
+import Activity from '../Common/Activity/Activity';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
 
 interface ProjectOverviewProps {
@@ -87,9 +88,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
       getProject();
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);
-
-  const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingPartialProjectMetadata(state, projectDetails?.abbreviation));
+  
   const mergeAlgorithm = useAppSelector((state) =>
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
@@ -130,7 +129,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-
           <TabPanel
             value={tabValue}
             index={PROJ_TABS.samples.index}
@@ -138,7 +136,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <ProjectSamplesTable
               key={location.search}
               projectAbbrev={projectAbbrev!}
-              isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
           <TabPanel
@@ -192,6 +189,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <Datasets
               projectDetails={projectDetails}
               mergeAlgorithm={mergeAlgorithm}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="Project"
+              rGuid={projectDetails?.globalId ?? ''}
             />
           </TabPanel>
         </>

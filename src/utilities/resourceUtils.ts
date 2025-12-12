@@ -15,6 +15,7 @@ import {
 import {
   Feedback,
   FeedbackPost,
+  DerivedLog,
   Plot,
   PlotListing,
   Organisation,
@@ -254,3 +255,14 @@ export const patchFieldV2 = (
   field: any,
 ) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
+
+// Activity log
+export const getActivities = (
+  recordType: string,
+  rguid: string,
+  token: string,
+): Promise<ResponseObject<DerivedLog[]>> => {
+  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
+  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
+  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+};

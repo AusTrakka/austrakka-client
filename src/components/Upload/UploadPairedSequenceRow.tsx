@@ -147,6 +147,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       'filename1-hash': seqUploadRow.read1.hash,
       'filename2': seqUploadRow.read2.file.name,
       'filename2-hash': seqUploadRow.read2.hash,
+      'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
 
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
@@ -304,7 +305,6 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
                 messages={seqSubmission.messages ?? []}
                 title="Response Messages"
                 disabled={disableResponse()}
-
               />
             ))}
         </>
