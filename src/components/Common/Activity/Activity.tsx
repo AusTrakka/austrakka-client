@@ -15,7 +15,7 @@ import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '..
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
 import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
-import {defaultState} from "../../DataFilters/DataFilters";
+import { defaultState } from '../../DataFilters/DataFilters';
 
 interface ActivityProps {
   recordType: string,

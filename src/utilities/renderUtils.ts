@@ -1,4 +1,4 @@
-import { formatDate, isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 
 export const renderValueOrEmptyString = (value: any): string => {
   if (value === null || value === undefined) {

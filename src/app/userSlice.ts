@@ -16,6 +16,7 @@ export interface UserSliceState {
   adminV2: boolean,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
   errorMessage: string,
   loading: LoadingState,
   scopes: GroupedPrivilegesByRecordTypeWithScopes[],
