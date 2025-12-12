@@ -84,7 +84,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       const groupSet = new Set<string>();
       selectedSamples.forEach(sample => {
         try {
-          JSON.parse(sample.Shared_groups).forEach((group: string) => groupSet.add(group));
+          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => groupSet.add(group));
         } catch { /* empty */ }
       });
       const unique = Array.from(groupSet);
@@ -103,18 +103,18 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     // Check how many of selected samples exist in selected source
     if (canValidate && source) {
       const count = selectedSamples.reduce((acc, sample) => {
-        const groups: string[] = JSON.parse(sample.Shared_groups);
+        const groups: string[] = JSON.parse(sample.Shared_groups || '[]');
         return acc + (groups.includes(source) ? 1 : 0);
       }, 0);
       if (count < selectedSamples.length) {
         setValidationMessage(
-          `${count} out of ${selectedSamples.length} selected sample${selectedSamples.length - count > 1 ? 's' : ''} ` +
+          `${count} out of ${selectedSamples.length} selected samples ` +
           `are currently shared with "${source.replace(/-Group$/, '')}". ` +
           `No changes will be made to the other ${selectedSamples.length - count} sample${selectedSamples.length - count > 1 ? 's' : ''}.`,
         );
       } else {
         setValidationMessage(
-          `${count} out of ${selectedSamples.length} selected sample${selectedSamples.length - count > 1 ? 's' : ''} are currently shared with "${source.replace(/-Group$/, '')}".`,
+          `${count} out of ${selectedSamples.length} selected samples are currently shared with "${source.replace(/-Group$/, '')}".`,
         );
       }
     }
