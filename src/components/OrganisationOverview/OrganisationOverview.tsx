@@ -61,6 +61,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
+  // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);

@@ -1,12 +1,17 @@
 import React, {
   memo, useEffect, useState,
 } from 'react';
-import { Close, IosShare, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { Close, IosShare, RemoveCircleOutline, Settings, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import {
   IconButton,
   CircularProgress, Dialog,
   Backdrop, Alert, AlertTitle, Paper,
   Tooltip,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Box,
+  MenuList,
 } from '@mui/material';
 import { DataTable, DataTableRowClickEvent, DataTableSelectAllChangeEvent, DataTableSelectionMultipleChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -32,6 +37,11 @@ import { useStableNavigate } from '../../app/NavigationContext';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
+import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
+
+// TODO: 
+// - Check if there is a clean way to make sure openShareDialog && openUnshareDialog != true
+// - 
 
 interface SamplesProps {
   groupContext: number,
@@ -66,7 +76,9 @@ function OrgSamplesTable(props: SamplesProps) {
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   // Sharing samples
   const [showShare, setShowShare] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openShareDialog, setOpenShareDialog] = useState<boolean>(false);
+  const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
   const [shareBlocked, setShareBlocked] = useState(false);
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
 
@@ -202,6 +214,14 @@ function OrgSamplesTable(props: SamplesProps) {
     }
   };
 
+  const handleUnshareClick = () => {
+    if (shareBlocked) {
+      setOpenShareBlocked(true);
+    } else {
+      setOpenUnshareDialog(true);
+    }
+  };
+
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -216,13 +236,61 @@ function OrgSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          {(showShare ? (
-            <Tooltip title="Share samples" placement="top" arrow>
-              <IconButton onClick={() => handleShareClick()}>
-                <IosShare />
+          {showShare && (
+          <>
+            <Tooltip title="Share or unshare samples" placement="top" arrow>
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                  <IosShare sx={{ fontSize: 24 }} />
+                  <Settings
+                    sx={{
+                      position: 'absolute',
+                      bottom: -5,
+                      right: -5,
+                      fontSize: 16,
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                    }}
+                  />
+                </Box>
               </IconButton>
             </Tooltip>
-          ) : null)}
+
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+              
+            >
+              <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
+                <MenuItem onClick={() => { setAnchorEl(null); handleShareClick(); }}>
+                  <ListItemIcon>
+                    <IosShare fontSize="small" />
+                  </ListItemIcon>
+                  Share samples
+                </MenuItem>
+                <MenuItem onClick={() => { setAnchorEl(null); handleUnshareClick(); }}>
+                  <ListItemIcon>
+                    <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                      <IosShare sx={{ fontSize: 24 }} />
+                      <RemoveCircleOutline
+                        sx={{
+                          position: 'absolute',
+                          bottom: -5,
+                          right: -5,
+                          transform: 'scale(0.7)',
+                          backgroundColor: 'white',
+                          borderRadius: '50%',
+                        }}
+                      />
+                    </Box>
+                  </ListItemIcon>
+                  Unshare samples
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </>
+          )}
           <ColumnVisibilityMenu
             columns={sampleTableColumns}
             onColumnVisibilityChange={(selectedCols) => {
@@ -304,6 +372,16 @@ function OrgSamplesTable(props: SamplesProps) {
         <OrgSampleShare
           open={openShareDialog}
           onClose={() => setOpenShareDialog(false)}
+          selectedSamples={selectedSamples}
+          selectedIds={selectedIds}
+          orgAbbrev={orgAbbrev}
+          groupContext={groupContext}
+        />
+      )}
+      {openUnshareDialog && (
+        <OrgSampleUnshare
+          open={openUnshareDialog}
+          onClose={() => setOpenUnshareDialog(false)}
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}

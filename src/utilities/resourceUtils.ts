@@ -148,6 +148,7 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
 export const shareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples });
+export const unshareSamples = (token: string, groupName: string, samples: string[]) => callPATCH('/api/Sample/UnShare', token, { 'groupName': groupName, 'seqIds': samples });
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
