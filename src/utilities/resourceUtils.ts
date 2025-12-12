@@ -15,7 +15,7 @@ import {
 import {
   Feedback,
   FeedbackPost,
-  Log,
+  DerivedLog,
   Plot,
   PlotListing,
   Organisation,
@@ -261,7 +261,7 @@ export const getActivities = (
   recordType: string,
   rguid: string,
   token: string,
-): Promise<ResponseObject<Log[]>> => {
+): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
   const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
   return callGET(`/api/${resourcePath}/ActivityLog`, token);
