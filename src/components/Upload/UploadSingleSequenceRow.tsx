@@ -96,7 +96,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
     sharedProjects.forEach(r =>
-      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId])), seqUploadRow.clientSessionId);
+      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId)));
 
     for (const resp of (await Promise.all(sampleSharePromises))) {
       messages.push(...resp.messages);
