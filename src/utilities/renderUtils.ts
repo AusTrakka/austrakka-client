@@ -1,4 +1,4 @@
-import { formatDate, isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 
 export const renderValueOrEmptyString = (value: any): string => {
   if (value === null || value === undefined) {
@@ -24,7 +24,7 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
 
   'Date_created': (value: string) => isoDateLocalDate(value),
   'Date_updated': (value: string) => isoDateLocalDate(value),
-  'eventTime': (value: string) => formatDate(value),
+  'eventTime': (value: string) => isoDateLocalDate(value),
 };
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller

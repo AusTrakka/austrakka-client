@@ -17,16 +17,6 @@ const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
   return csvRows;
 };
 
-export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
-  const csvRows = [];
-  const csvHeader = headers.map(header => header.displayName).join(',');
-  const dataHeaders = headers.map(header => header.name);
-  const csvContent = formatCsvBody(data, dataHeaders);
-  csvRows.push(csvHeader);
-  csvRows.push(...csvContent);
-  return csvRows.join('\n');
-};
-
 export const formatDataAsCSV = (
   data: any[],
   headerString: string[],
@@ -34,6 +24,16 @@ export const formatDataAsCSV = (
   const csvRows = [];
   csvRows.push(headerString.join(','));
   const csvContent = formatCsvBody(data, headerString);
+  csvRows.push(...csvContent);
+  return csvRows.join('\n');
+};
+
+export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const csvRows = [];
+  const csvHeader = headers.map(header => header.displayName).join(',');
+  const dataHeaders = headers.map(header => header.name);
+  const csvContent = formatCsvBody(data, dataHeaders);
+  csvRows.push(csvHeader);
   csvRows.push(...csvContent);
   return csvRows.join('\n');
 };

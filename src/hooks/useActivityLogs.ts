@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Log } from '../types/dtos';
+import { DerivedLog } from '../types/dtos';
 import { useApi } from '../app/ApiContext';
 import { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
@@ -12,16 +12,16 @@ export default function useActivityLogs(
   recordType: string,
   rguid: string,
 ) {
-  const [refinedLogs, setRefinedLogs] = useState<Log[]>([]);
+  const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
-  const [exportData, setExportData] = useState<Log[]>([]);
+  const [exportData, setExportData] = useState<DerivedLog[]>([]);
   const [httpStatusCode, setHttpStatusCode] = useState<number>(-1);
   const [isLoadingErrorMsg, setIsLoadingErrorMsg] = useState<string>('');
   const [dataLoading, setDataLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getData = async () => {
-      const resp: ResponseObject<Log[]> = await getActivities(
+      const resp: ResponseObject<DerivedLog[]> = await getActivities(
         recordType,
         rguid,
         token,

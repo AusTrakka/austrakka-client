@@ -19,8 +19,6 @@ export interface UserSliceState {
   orgGlobalId: string,
   errorMessage: string,
   loading: LoadingState,
-  defaultTenantGlobalId: string,
-  defaultTenantName: string,
   scopes: GroupedPrivilegesByRecordTypeWithScopes[],
 }
 

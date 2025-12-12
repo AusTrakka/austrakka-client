@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FilterMatchMode } from 'primereact/api';
 import {
   DataTable,
-  DataTableOperatorFilterMetaData,
   DataTableRowClickEvent,
   DataTableSelectEvent,
 } from 'primereact/datatable';
@@ -11,12 +9,13 @@ import { Column } from 'primereact/column';
 import { Cancel, Info } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
-import { ActivityField, Log } from '../../../types/dtos';
+import { ActivityField, DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 import FriendlyHeader from '../../../types/friendlyHeader.interface';
 import TableToolbar from './TableToolbar';
 import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
+import { defaultState } from '../../DataFilters/DataFilters';
 
 interface ActivityProps {
   recordType: string,
@@ -66,7 +65,7 @@ export const supportedColumns: ActivityField[] = [
   {
     columnName: 'eventTime',
     columnDisplayName: 'Time stamp',
-    primitiveType: 'string',
+    primitiveType: 'date',
     columnOrder: 5,
     hidden: false,
   },
@@ -79,22 +78,12 @@ export const supportedColumns: ActivityField[] = [
   },
 ];
 
-export const defaultState = {
-  global: {
-    operator: 'and',
-    constraints: [{
-      value: null,
-      matchMode: FilterMatchMode.CONTAINS,
-    }],
-  } as DataTableOperatorFilterMetaData,
-};
-
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<any[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<Log | null>(null);
+  const [selectedRow, setSelectedRow] = useState<DerivedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
-  const [localLogs, setLocalLogs] = useState<Log[]>([]);
+  const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
   
   const routeSegment = recordType === 'Tenant'
     ? recordType
@@ -106,7 +95,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     dataLoading,
   } = useActivityLogs(routeSegment, rGuid ?? '');
 
-  const transformData = (data: Log[]): Log[] =>
+  const transformData = (data: DerivedLog[]): DerivedLog[] =>
     // This previously aggregated logs by aggregation keys, which no longer exist
     // Currently a placeholder for client-side log transforms
     data;
@@ -302,7 +291,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                         )}
           >
             <Column
-              expander={(rowData: Log) => (rowData.children?.length ?? 0) > 0}
+              expander={(rowData: DerivedLog) => (rowData.children?.length ?? 0) > 0}
               style={{ width: '3em' }}
               className="activity-row-expander"
             />

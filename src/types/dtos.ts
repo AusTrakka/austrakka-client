@@ -470,7 +470,7 @@ export interface UserRoleRecordPrivilegePost {
   roleGlobalId: string,
 }
 
-export interface Log {
+export interface DerivedLog {
   // Server fields
   globalId: string,
   rawLogGlobalId: string,
@@ -484,10 +484,9 @@ export interface Log {
   submitterGlobalId: string,
   submitterDisplayName: string,
   eventStatus: string,
-  data: string,
-  displayData: string,
+  data: string, // TODO needs to be parsed
 
   // UI-specific fields
-  children: Log[] | null,
+  children: DerivedLog[] | null,
   level: number | null,
 }

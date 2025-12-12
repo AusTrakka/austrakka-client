@@ -55,8 +55,7 @@ function App() {
                 {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
-                  <Route path="platform" element={<Platform />} />
-                  <Route path="platform/:tab" element={<Platform />} />
+                  <Route path="platform/:tab?" element={<Platform />} />
                   <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
