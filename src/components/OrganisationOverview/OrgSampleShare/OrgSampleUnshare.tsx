@@ -143,13 +143,13 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
         dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
       } else {
         setStatus(LoadingState.ERROR);
-        setStatusMessage(unshareResponse.message || 'Error sharing samples.');
+        setStatusMessage(unshareResponse.message || 'Error unsharing samples.');
       }
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while unsharing samples. Please try again.');
       // eslint-disable-next-line no-console
-      console.error('Unexpected error sharing samples:', error);
+      console.error('Unexpected error unsharing samples:', error);
     }
   };
 
@@ -276,7 +276,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                       {options.length > 0 ? (
                         options.map((opt) => (
                           // For projects, append "-Group" to match group naming convention
-                          // Prevents added complexity when checking perms for data preview/sharing
+                          // Prevents added complexity when checking perms for validation/unsharing
                           <MenuItem key={opt} value={sourceType === 'project' ? `${opt}-Group` : opt}>
                             {opt}
                           </MenuItem>
