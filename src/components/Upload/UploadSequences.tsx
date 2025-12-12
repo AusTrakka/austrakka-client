@@ -114,12 +114,12 @@ function UploadSequences() {
   };
 
   const queueAllRows = (clientSessionId: string) => {
-    const queuedRows = seqUploadRows.map((sur) => {
+    const rowUpdateFunction = (sur: SeqUploadRow) => {
       sur.state = SeqUploadRowState.Queued;
       sur.clientSessionId = clientSessionId;
       return sur;
-    });
-    setSeqUploadRows(queuedRows);
+    };
+    setSeqUploadRows((rows) => rows.map(rowUpdateFunction));
   };
 
   const uploadInProgress = (): boolean => !seqUploadRows.every(sur =>
