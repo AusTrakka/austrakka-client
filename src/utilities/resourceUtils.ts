@@ -161,6 +161,12 @@ export const shareSamples = (
   samples: string[],
   clientSessionId?: string,
 ) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
+export const unshareSamples = (
+  token: string,
+  groupName: string,
+  samples: string[],
+  clientSessionId?: string,
+) => callPATCH('/api/Sample/UnShare', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);

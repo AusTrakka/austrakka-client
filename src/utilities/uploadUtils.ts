@@ -133,7 +133,9 @@ export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]
     .filter((groupRole) => ['Everyone'].includes(groupRole.group.name.split('-').pop()!))
     .map((groupRole) => groupRole.group.name)
     .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-  return orgGroupNames;
+  
+  const uniqueOrgGroupNames = [...new Set(orgGroupNames)];
+  return uniqueOrgGroupNames;
 };
 
 export const createSampleCSV = (
