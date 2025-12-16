@@ -21,6 +21,7 @@ import {
   fetchProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
 import Activity from '../Common/Activity/Activity';
@@ -46,6 +47,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const [tabValue, setTabValue] = useState<number | null>(null);
 
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
+  const user: UserSliceState = useAppSelector(selectUserState);
+
+  // Temporarily hiding activity tab for non SuperUsers
+  // If long-term, can drive tab visibility
+  // based on V2 permission similarly to <MainMenuLayout/>
+  const isSuperUser = Boolean(user?.adminV2);
+  const visibleProjTabs = isSuperUser
+    ? Object.values(PROJ_TABS)
+    : Object.values(PROJ_TABS).filter(projectTab => projectTab !== PROJ_TABS.activity);
 
   const tabLoadingSetters = useMemo(() => (
     Object.values(PROJ_TABS).reduce((acc, pt) => {
@@ -117,7 +127,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
           </Typography>
           <CustomTabs
             value={tabValue}
-            tabContent={Object.values(PROJ_TABS)}
+            tabContent={visibleProjTabs}
             setValue={setTabValue}
           />
           <TabPanel
@@ -191,15 +201,18 @@ function ProjectOverview(props: ProjectOverviewProps) {
               mergeAlgorithm={mergeAlgorithm}
             />
           </TabPanel>
-          <TabPanel
-            value={tabValue}
-            index={PROJ_TABS.activity.index}
-          >
-            <Activity
-              recordType="Project"
-              rGuid={projectDetails?.globalId ?? ''}
-            />
-          </TabPanel>
+          {/* Temporarily hiding activity tab for non SuperUsers */}
+          {isSuperUser && (
+            <TabPanel
+              value={tabValue}
+              index={PROJ_TABS.activity.index}
+            >
+              <Activity
+                recordType="Project"
+                rGuid={projectDetails?.globalId ?? ''}
+              />
+            </TabPanel>
+          )}
         </>
       )
   );
