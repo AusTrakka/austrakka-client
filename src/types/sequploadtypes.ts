@@ -51,6 +51,7 @@ export interface SeqPairedUploadRow extends SeqUploadRow {
   read2: DropFileUpload
   seqType: SeqType
   state: SeqUploadRowState
+  clientSessionId?: string
 }
 
 export interface SeqSingleUploadRow extends SeqUploadRow {
@@ -59,4 +60,5 @@ export interface SeqSingleUploadRow extends SeqUploadRow {
   file: DropFileUpload
   seqType: SeqType
   state: SeqUploadRowState
+  clientSessionId?: string
 }
