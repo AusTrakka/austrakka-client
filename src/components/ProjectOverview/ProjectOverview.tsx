@@ -201,18 +201,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
               mergeAlgorithm={mergeAlgorithm}
             />
           </TabPanel>
-          {/* Temporarily hiding activity tab for non SuperUsers */}
-          {isSuperUser && (
-            <TabPanel
-              value={tabValue}
-              index={PROJ_TABS.activity.index}
-            >
-              <Activity
-                recordType="Project"
-                rGuid={projectDetails?.globalId ?? ''}
-              />
-            </TabPanel>
-          )}
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="Project"
+              rGuid={projectDetails?.globalId ?? ''}
+            />
+          </TabPanel>
         </>
       )
   );
