@@ -13,6 +13,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import Activity from '../Common/Activity/Activity';
 import TabPanel from '../Common/TabPanel';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
 import { NavigationProvider } from '../../app/NavigationContext';
@@ -61,6 +62,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
+  // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);
@@ -91,6 +93,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         abbreviation: orgAbbrev,
         name: user.orgName,
         isActive: true,
+        globalId: user.orgGlobalId,
       } as Organisation);
     }
     
@@ -172,7 +175,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
     const tabObj = ORG_TABS[tabKey];
-
     if (tabObj) {
       setTabValue(tabObj.index);
     }
@@ -232,6 +234,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           memberList={projectMembers}
           memberListError={memberListError}
           memberListErrorMessage={memberListErrorMessage}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        <Activity
+          recordType="Organisation"
+          rGuid={organisation.globalId}
         />
       </TabPanel>
     </>

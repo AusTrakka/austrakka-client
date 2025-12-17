@@ -17,6 +17,8 @@ module.exports = {
     }
   },
   rules: {
+	"react/require-default-props": "off",	// this rule does not apply to typescript. The linter is confused.
+	'no-plusplus': 'off',	// allow i++
     'operator-linebreak': 0,  // allow linebreak near = (and near logical operators)
     'implicit-arrow-linebreak': 0,  // allows linebreak after =>
     'no-continue': 0,
