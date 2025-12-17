@@ -31,6 +31,7 @@ import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
 import Users from './components/Admin/Users';
 import Fields from './components/Fields/Fields';
 import UsersV2 from './components/Admin/UsersV2';
+import Platform from './components/Platform/Platform';
 import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
@@ -54,6 +55,7 @@ function App() {
                 {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
+                  <Route path="platform/:tab?" element={<Platform />} />
                   <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />

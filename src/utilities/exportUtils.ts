@@ -1,19 +1,9 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
+import FriendlyHeader from '../types/friendlyHeader.interface';
 
-export const formatDataAsCSV = (data: any[], headerString: string[]) => {
-  // Format data array as CSV string
-
+const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
   const csvRows = [];
-  // if there are more headers than data,
-  // it will throw an error when it tries to query the data below
-  
-  // if there are fewer headers than data,
-  // that means it is selecting a subset of the data
 
-  // Add headers
-  csvRows.push(headerString.join(','));
-
-  // Add data rows
   for (const row of data) {
     const values = headerString.map(header => {
       const value = row[header];
@@ -24,7 +14,27 @@ export const formatDataAsCSV = (data: any[], headerString: string[]) => {
     });
     csvRows.push(values.join(','));
   }
+  return csvRows;
+};
 
+export const formatDataAsCSV = (
+  data: any[],
+  headerString: string[],
+) => {
+  const csvRows = [];
+  csvRows.push(headerString.join(','));
+  const csvContent = formatCsvBody(data, headerString);
+  csvRows.push(...csvContent);
+  return csvRows.join('\n');
+};
+
+export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const csvRows = [];
+  const csvHeader = headers.map(header => header.displayName).join(',');
+  const dataHeaders = headers.map(header => header.name);
+  const csvContent = formatCsvBody(data, dataHeaders);
+  csvRows.push(csvHeader);
+  csvRows.push(...csvContent);
   return csvRows.join('\n');
 };
 
@@ -51,6 +61,11 @@ export const formatCSVValues = (row: any) => {
     }
   }
   return formattedRow;
+};
+
+export const generateCSV2 = (data: any[], headers: FriendlyHeader[]) => {
+  const formattedData = data.map((row: any) => formatCSVValues(row));
+  return formatDataAsCSV2(formattedData, headers);
 };
 
 export const generateCSV = (data: any[], headers?:string[]) => {

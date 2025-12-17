@@ -78,7 +78,13 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
       return;
     }
     const messages = [] as ResponseMessage[];
-    const sampleResp = await createSample(token, seqUploadRow.seqId, owner, sharedProjects);
+    const sampleResp = await createSample(
+      token,
+      seqUploadRow.seqId,
+      owner,
+      sharedProjects,
+      seqUploadRow.clientSessionId,
+    );
     if (sampleResp.httpStatusCode === 409) {
       // If it's a conflict, display this as a warning.
       const message = sampleResp.messages[0];
@@ -90,7 +96,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
     sharedProjects.forEach(r =>
-      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId])));
+      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId)));
 
     for (const resp of (await Promise.all(sampleSharePromises))) {
       messages.push(...resp.messages);
@@ -117,6 +123,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
       'seq-id': seqUploadRow.seqId,
       'filename': seqUploadRow.file.file.name,
       'filename-hash': seqUploadRow.file.hash,
+      'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
 
     const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
