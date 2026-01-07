@@ -31,10 +31,10 @@ import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import { ProjectField } from '../../types/dtos';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
+import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 
 interface SamplesProps {
   projectAbbrev: string,
-  isSamplesLoading: boolean,
 }
 
 interface BodyComponentProps {
@@ -54,7 +54,6 @@ function BodyComponent(props: BodyComponentProps) {
 function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
-    isSamplesLoading,
   } = props;
   
   const { navigate } = useStableNavigate();
@@ -162,7 +161,6 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
-  if (isSamplesLoading) return null;
   return (
     <div className="datatable-container-proj">
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
@@ -277,7 +275,7 @@ function ProjectSamplesTable(props: SamplesProps) {
                 { width: `${maxHeight}px` }}
               headerClassName="custom-title"
               className="flexible-column"
-              bodyClassName="value-cells"
+              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
             />
           )) : null}
         </DataTable>

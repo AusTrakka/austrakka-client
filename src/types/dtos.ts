@@ -1,8 +1,8 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
-  globalId: string,
   abbreviation: string,
+  globalId: string,
   name: string,
   description: string,
   type: string,
@@ -120,6 +120,7 @@ export interface User {
   orgId: number,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
   isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
@@ -237,6 +238,17 @@ export interface UserListV2 {
   analysisServerUsername: string,
 }
 
+export interface PrimeReactField {
+  columnName: string,
+  columnDisplayName?: string;
+  primitiveType: string | null,
+}
+
+export interface ActivityField extends PrimeReactField {
+  columnOrder: number,
+  hidden: boolean,
+}
+
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -250,9 +262,7 @@ export interface MetaDataColumnMapping {
 
 // this is a common interface representing metadata fields,
 // with information about types and display order
-export interface Field {
-  columnName: string,
-  primitiveType: string | null,
+export interface Field extends PrimeReactField {
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
@@ -459,4 +469,25 @@ export interface UserPatchV2 {
 export interface UserRoleRecordPrivilegePost {
   assigneeGlobalId: string,
   roleGlobalId: string,
+}
+
+export interface DerivedLog {
+  // Server fields
+  globalId: string,
+  rawLogGlobalId: string,
+  clientSessionId: string,
+  callId: string,
+  eventType: string
+  eventTime: string,
+  resourceGlobalId: string,
+  resourceUniqueString: string,
+  resourceType: string,
+  submitterGlobalId: string,
+  submitterDisplayName: string,
+  eventStatus: string,
+  data: string, // TODO needs to be parsed
+
+  // UI-specific fields
+  children: DerivedLog[] | null,
+  level: number | null,
 }

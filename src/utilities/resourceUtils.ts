@@ -15,6 +15,7 @@ import {
 import {
   Feedback,
   FeedbackPost,
+  DerivedLog,
   Plot,
   PlotListing,
   Organisation,
@@ -23,7 +24,7 @@ import {
   Tree,
   TreeVersion,
   UserPatchV2,
-  UserRoleRecordPrivilegePost,
+  UserRoleRecordPrivilegePost, Group,
 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
@@ -66,6 +67,7 @@ export const getSamples = (token: string, groupId: number, searchParams?: URLSea
 export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
+export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> => callGET(`/api/Group/${groupName}`, token);
 export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
 
 // Proforma and field endpoints
@@ -118,10 +120,23 @@ export const uploadSubmissions = (
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
   return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
 };
+export const createSample = (
+  token: string,
+  name: string,
+  owner: string,
+  sharedProjects: string[] = [],
+  clientSessionId?: string,
+) => callPost('/api/Sample', token, { name, owner, sharedProjects }, clientSessionId);
 
 // Sequence endpoints
 // TODO: this should parse the response
-export const uploadFastqSequence = (formData: FormData, params: string, token: string, headers: any) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers);
+export const uploadFastqSequence = (
+  formData: FormData,
+  params: string,
+  token: string,
+  headers: any,
+  clientSessionId?: string,
+) => callPostMultipart(`/api/Sequence${params}`, formData, token, headers, clientSessionId);
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
@@ -139,6 +154,18 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const shareSamples = (
+  token: string,
+  groupName: string,
+  samples: string[],
+  clientSessionId?: string,
+) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
+export const unshareSamples = (
+  token: string,
+  groupName: string,
+  samples: string[],
+  clientSessionId?: string,
+) => callPATCH('/api/Sample/UnShare', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
 
 // Organisation endpoints
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
@@ -245,3 +272,14 @@ export const patchFieldV2 = (
   field: any,
 ) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
+
+// Activity log
+export const getActivities = (
+  recordType: string,
+  rguid: string,
+  token: string,
+): Promise<ResponseObject<DerivedLog[]>> => {
+  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
+  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
+  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+};

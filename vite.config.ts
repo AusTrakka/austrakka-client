@@ -228,7 +228,7 @@ enum ThemeDefaultValues {
   PrimaryGrey700 = '#616161', 
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
-  PrimaryMainBackground = '#eef2f6'
+  PrimaryMainBackground = '#eef2f6',
 }
 
 enum LogoDefaultValues {

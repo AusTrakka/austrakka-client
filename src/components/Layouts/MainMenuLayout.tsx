@@ -1,12 +1,12 @@
 /* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet, useNavigate,
 } from 'react-router-dom';
 import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn,
+  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn, Domain,
 } from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
@@ -18,9 +18,11 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
+import useUsername from '../../hooks/useUsername';
+import { ScopeDefinitions } from '../../constants/scopes';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -60,11 +62,13 @@ function MainMenuLayout() {
     members: 'Members',
     users: 'Users',
     usersV2: 'Users (V2)',
+    platform: 'Platform',
     fields: 'Fields',
     datasets: 'Datasets',
+    share: 'Share',
   };
 
-  const breadcrumbNoLink: string[] = ['versions', 'records'];
+  const breadcrumbNoLink: string[] = ['versions', 'records', 'org'];
 
   /**
    * The proj tab breadcrumbs are not working as we cannot access the underlying state of the url
@@ -90,10 +94,10 @@ function MainMenuLayout() {
     pathnames.pop();
   }
 
-  const [username, setUsername] = useState('');
   const { accounts } = useMsal();
 
   const account = useAccount(accounts[0] || {});
+  const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages = [
     {
@@ -122,34 +126,48 @@ function MainMenuLayout() {
       icon: <ViewColumn />,
     },
     {
+      // TODO: Drive content pane visibility based on V2 permission.
+      title: 'Platform',
+      link: '/platform',
+      icon: <Domain />,
+      requirePermission: true,
+      permissionDomain: null,
+      requiredTenantScope: ScopeDefinitions.GET_TENANT_ACTIVITY_LOG,
+    },
+    {
       title: 'Users',
       link: '/users',
       icon: <People />,
+      requirePermission: true,
       permissionDomain: 'users',
     },
     {
       title: 'Users (V2)',
       link: '/usersV2',
       icon: <People color="warning" />,
+      requirePermission: true,
       permissionDomain: 'usersV2',
     },
   ];
+
+  const hasV1Perm = (domain: string | null) : boolean => hasPermission(
+    user,
+    'AusTrakka-Owner',
+    domain,
+    PermissionLevel.CanShow,
+  );
+
+  const hasV2TenantPerm = (scope : string | undefined) : boolean => hasPermissionV2(
+    user,
+    scope,
+  );
+
   const visiblePages = pages.filter((page) =>
-    !page.permissionDomain || hasPermission(
-      user,
-      'AusTrakka-Owner',
-      page.permissionDomain,
-      PermissionLevel.CanShow,
-    ));
+    !page.requirePermission
+      || hasV1Perm(page.permissionDomain)
+      || hasV2TenantPerm(page.requiredTenantScope));
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
-
-  useEffect(() => {
-    if (account && account.username) {
-      setUsername(account.username); // seems to be login email
-    }
-  }, [account]);
-
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
@@ -164,7 +182,6 @@ function MainMenuLayout() {
     setDrawer(!drawer);
     handlePadding(!drawer);
   };
-
   return (
     <>
       <Box sx={{ display: 'flex' }}>
@@ -334,7 +351,7 @@ function MainMenuLayout() {
           </div>
         </div>
         {pathnames.map((value, index) => {
-          const last = index === pathnames.length - 1;
+          const last: boolean = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 
           return last ? (
