@@ -7,13 +7,13 @@ import ProjectDashboardTemplateProps from '../../../types/projectdashboardtempla
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
-function BasicDashboard(props: ProjectDashboardTemplateProps) {
+function DefaultDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
     timeFilterObject,
   } = props;
-  
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
@@ -50,7 +50,7 @@ function BasicDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
       </Grid>
     </Box>
-    
+
   );
 }
-export default BasicDashboard;
+export default DefaultDashboard;

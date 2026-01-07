@@ -10,13 +10,13 @@ import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 
 // TODO: Set a max card height and handle scroll overflow
-function DefaultDashboard(props: ProjectDashboardTemplateProps) {
+function PublicHealthDefaultDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
     timeFilterObject,
   } = props;
-  
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
@@ -86,4 +86,4 @@ function DefaultDashboard(props: ProjectDashboardTemplateProps) {
     </Box>
   );
 }
-export default DefaultDashboard;
+export default PublicHealthDefaultDashboard;
