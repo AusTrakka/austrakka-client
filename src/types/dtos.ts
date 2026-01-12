@@ -1,8 +1,8 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number,
-  globalId: string,
   abbreviation: string,
+  globalId: string,
   name: string,
   description: string,
   type: string,
@@ -17,6 +17,7 @@ export interface Project {
   }[],
   isActive: boolean,
   created: Date,
+  mergeAlgorithm: string,
   // could add auditable fields - created, createdBy
 }
 
@@ -27,7 +28,7 @@ export interface ProjectSummary {
   globalId: string,
   abbreviation: string,
   name: string,
-  sampleCount : number,
+  sampleCount: number,
   sequencedSampleCount: number,
   latestSampleDate: string, // TODO date?
   latestSequenceDate: string,
@@ -104,7 +105,7 @@ export interface PlotListing {
 export interface Member {
   objectId: string,
   roles: string[],
-  organization:{
+  organization: {
     id: number,
     abbreviation: string,
   },
@@ -119,6 +120,7 @@ export interface User {
   orgId: number,
   orgAbbrev: string,
   orgName: string,
+  orgGlobalId: string,
   isAusTrakkaAdmin: boolean,
   groupRoles: GroupRole[],
   displayName: string,
@@ -139,7 +141,7 @@ export interface UserV2 {
   objectId: string,
   globalId: string,
   isActive: boolean,
-  orgGlobalId:string,
+  orgGlobalId: string,
   orgAbbrev: string,
   orgName: string,
   isAusTrakkaAdmin: boolean,
@@ -236,6 +238,17 @@ export interface UserListV2 {
   analysisServerUsername: string,
 }
 
+export interface PrimeReactField {
+  columnName: string,
+  columnDisplayName?: string;
+  primitiveType: string | null,
+}
+
+export interface ActivityField extends PrimeReactField {
+  columnOrder: number,
+  hidden: boolean,
+}
+
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -249,9 +262,7 @@ export interface MetaDataColumnMapping {
 
 // this is a common interface representing metadata fields,
 // with information about types and display order
-export interface Field {
-  columnName: string,
-  primitiveType: string | null,
+export interface Field extends PrimeReactField {
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
@@ -303,7 +314,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
-  geoField:boolean,
+  geoField: boolean,
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
@@ -346,7 +357,7 @@ export interface ProFormaVersion {
   fileName: string,
   columnMappings: MetaDataColumnMapping[],
   isCurrent: boolean,
-  assetId : number,
+  assetId: number,
   created: Date,
   createdBy: string,
 }
@@ -458,4 +469,25 @@ export interface UserPatchV2 {
 export interface UserRoleRecordPrivilegePost {
   assigneeGlobalId: string,
   roleGlobalId: string,
+}
+
+export interface DerivedLog {
+  // Server fields
+  globalId: string,
+  rawLogGlobalId: string,
+  clientSessionId: string,
+  callId: string,
+  eventType: string
+  eventTime: string,
+  resourceGlobalId: string,
+  resourceUniqueString: string,
+  resourceType: string,
+  submitterGlobalId: string,
+  submitterDisplayName: string,
+  eventStatus: string,
+  data: string, // TODO needs to be parsed
+
+  // UI-specific fields
+  children: DerivedLog[] | null,
+  level: number | null,
 }

@@ -1,21 +1,23 @@
 // first lets make the get organisation information
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, Typography } from '@mui/material';
+import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-import { Member, GroupRole, Group, Organisation } from '../../types/dtos';
+import { Group, GroupRole, Member, Organisation } from '../../types/dtos';
 import CustomTabs from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
 import { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { selectUserState, UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import Activity from '../Common/Activity/Activity';
 import TabPanel from '../Common/TabPanel';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
 import { NavigationProvider } from '../../app/NavigationContext';
+import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
 
 const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
   groupRoles.filter((groupRole: GroupRole) =>
@@ -49,11 +51,10 @@ interface OrganisationOverviewProps {
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const [organisation, setOrganisation] = useState<Organisation>();
-  const [userGroups, setUserGroups] = useState<Group[]>([]);
-  const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
-  const [groupStatusMessage, setGroupStatusMessage] = useState('');
-  const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
   const [orgEveryone, setOrgEveryone] = useState<Group>();
+  const [userGroups, setUserGroups] = useState<Group[]>([]);
+  const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE); const [groupStatusMessage, setGroupStatusMessage] = useState('');
+  const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
   const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [projectMembers, setProjectMembers] = useState<Member[]>([]);
@@ -61,8 +62,27 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
+  // canShare is used for share and unshare checks
+  const [canShare, setCanShare] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);
+
+  useEffect(() => {
+    const checkSharingPermissions = (ownerGroupName: string) => hasPermission(
+      user,
+      ownerGroupName,
+      'organisation/sample/share',
+      PermissionLevel.CanShow,
+    );
+    const ownerOrgGroupName: string | undefined = user.groupRoles
+      .find((groupRole: GroupRole) => groupRole.group.name === `${orgAbbrev}-Owner`)?.group.name;
+    if (user.loading === LoadingState.SUCCESS &&
+        (ownerOrgGroupName || user.admin)
+    ) {
+      // give it an empty string if only the admin check passed in the or condition above
+      setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
+    }
+  }, [orgAbbrev, user]);
 
   useEffect(() => {
     function getMyOrgDetails() {
@@ -73,6 +93,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         abbreviation: orgAbbrev,
         name: user.orgName,
         isActive: true,
+        globalId: user.orgGlobalId,
       } as Organisation);
     }
     
@@ -154,7 +175,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
     const tabObj = ORG_TABS[tabKey];
-
     if (tabObj) {
       setTabValue(tabObj.index);
     }
@@ -186,14 +206,16 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   }
   
   if (tabValue === null) { return null; }
-  
+
   // NB alternate return() calls above
   return (
     <>
       <Box>
-        <Typography variant="h2" color="primary">
-          {`${organisation.name} (${organisation?.abbreviation})`}
-        </Typography>
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="h2" color="primary">
+            {`${organisation.name} (${organisation?.abbreviation})`}
+          </Typography>
+        </Stack>
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
@@ -202,6 +224,8 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           groups={userGroups!}
           groupStatus={groupsStatus}
           groupStatusMessage={groupStatusMessage}
+          canShare={canShare}
+          orgAbbrev={orgAbbrev}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
@@ -210,6 +234,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           memberList={projectMembers}
           memberListError={memberListError}
           memberListErrorMessage={memberListErrorMessage}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        <Activity
+          recordType="Organisation"
+          rGuid={organisation.globalId}
         />
       </TabPanel>
     </>

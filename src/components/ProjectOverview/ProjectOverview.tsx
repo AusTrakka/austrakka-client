@@ -18,11 +18,13 @@ import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
 import { useApi } from '../../app/ApiContext';
 import {
-  fetchProjectMetadata, selectAwaitingPartialProjectMetadata,
+  fetchProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
+import Activity from '../Common/Activity/Activity';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
 import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 
@@ -46,6 +48,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const [tabValue, setTabValue] = useState<number | null>(null);
 
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
+  const user: UserSliceState = useAppSelector(selectUserState);
+
+  // Temporarily hiding activity tab for non SuperUsers
+  // If long-term, can drive tab visibility
+  // based on V2 permission similarly to <MainMenuLayout/>
+  const isSuperUser = Boolean(user?.adminV2);
+  const visibleProjTabs = isSuperUser
+    ? Object.values(PROJ_TABS)
+    : Object.values(PROJ_TABS).filter(projectTab => projectTab !== PROJ_TABS.activity);
 
   const tabLoadingSetters = useMemo(() => (
     Object.values(PROJ_TABS).reduce((acc, pt) => {
@@ -88,9 +99,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
       getProject();
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);
-
-  const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingPartialProjectMetadata(state, projectDetails?.abbreviation));
+  
   const mergeAlgorithm = useAppSelector((state) =>
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
@@ -119,7 +128,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
           </Typography>
           <CustomTabs
             value={tabValue}
-            tabContent={Object.values(PROJ_TABS)}
+            tabContent={visibleProjTabs}
             setValue={setTabValue}
           />
           <TabPanel
@@ -131,7 +140,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
               projectAbbrev={projectAbbrev!}
             />
           </TabPanel>
-
           <TabPanel
             value={tabValue}
             index={PROJ_TABS.samples.index}
@@ -139,7 +147,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <ProjectSamplesTable
               key={location.search}
               projectAbbrev={projectAbbrev!}
-              isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
           <TabPanel
@@ -193,6 +200,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
             <Datasets
               projectDetails={projectDetails}
               mergeAlgorithm={mergeAlgorithm}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="Project"
+              rGuid={projectDetails?.globalId ?? ''}
             />
           </TabPanel>
           <TabPanel

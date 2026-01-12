@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field, ProjectViewField } from '../types/dtos';
+import { PrimeReactField, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export type PrimeReactColumnDefinition = {
@@ -8,33 +8,36 @@ export type PrimeReactColumnDefinition = {
   dataType?: string,
   hidden?: boolean,
   body?: (rowData: any) => React.ReactNode,
+  isDecorated?: boolean;
 };
+  
+export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]):
+PrimeReactColumnDefinition[] {
+  const columnBuilders: PrimeReactColumnDefinition[] = [];
 
-export function buildPrimeReactColumnDefinitions(fields: Field[]) {
-  const columnBuilder: PrimeReactColumnDefinition[] = [];
+  const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 
-  fields.forEach((field: Field) => {
-    if (field.columnName in fieldRenderFunctions) {
-      columnBuilder.push({
-        field: field.columnName,
-        header: field.columnName,
-        body: (rowData: any) => fieldRenderFunctions[field.columnName](rowData[field.columnName]),
-      });
-    } else if (field.primitiveType && field.primitiveType in typeRenderFunctions) {
-      columnBuilder.push({
-        field: field.columnName,
-        header: field.columnName,
-        body: (rowData: any) =>
-          typeRenderFunctions[field.primitiveType!](rowData[field.columnName]),
-      });
-    } else {
-      columnBuilder.push({
-        field: field.columnName,
-        header: `${field.columnName}`,
-      });
+  fields.forEach(({ columnName, primitiveType, columnDisplayName }: PrimeReactField) => {
+    let c = {
+      field: columnName,
+      header: columnDisplayName || columnName,
+      isDecorated: false,
+    };
+    
+    if (columnName in fieldRenderFunctions) {
+      const body = {
+        body: (rowData: any) => fieldRenderFunctions[columnName](rowData[columnName]),
+      };
+      c = assign(c, body);
+    } else if (primitiveType && primitiveType in typeRenderFunctions) {
+      const body = {
+        body: (rowData: any) => typeRenderFunctions[primitiveType!](rowData[columnName]),
+      };
+      c = assign(c, body);
     }
+    columnBuilders.push(c);
   });
-  return columnBuilder;
+  return columnBuilders;
 }
 
 export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) {

@@ -13,6 +13,7 @@ const base = import.meta.env.VITE_REACT_API_URL;
 const noToken = {
   status: ResponseType.Error,
   message: 'There has been an error, please try reloading the page or logging in again.',
+  messages: [],
 };
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
@@ -101,6 +102,7 @@ function tokenExpiredResponse(response: Response): ResponseObject {
     httpStatusCode: response.status,
     type: response.statusText,
     message: expiredTokenErrorMessage,
+    messages: [],
   };
 }
 
@@ -126,7 +128,14 @@ function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): Re
 }
 
 function fatalResponse(error: any): ResponseObject {
-  return ({ status: ResponseType.Error, message: genericErrorMessage, error });
+  return ({ status: ResponseType.Error, message: genericErrorMessage, error, messages: [] });
+}
+
+function addClientSessionId(headers: any, clientSessionId?: string | null): any {
+  if (clientSessionId) {
+    return { ...headers, 'X-Client-Session-ID': clientSessionId };
+  }
+  return headers;
 }
 
 async function callApi<T = any>(url: string, options: HTTPOptions): Promise<ResponseObject<T>> {
@@ -156,18 +165,22 @@ export async function callSimpleGET(url: string, token: string): Promise<Respons
 }
 
 // NEW: Token passed as prop via endpoint calls
-export async function callGET(url: string, token: string): Promise<ResponseObject> {
+export async function callGET(
+  url: string,
+  token: string,
+  clientSessionId?: string,
+): Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
     return noToken;
   }
   return callApi(url, {
     method: 'GET',
-    headers: getHeaders(token),
+    headers: addClientSessionId(getHeaders(token), clientSessionId),
   });
 }
 
-export async function callPATCH(url: string, token: string, body?: any):
+export async function callPATCH(url: string, token: string, body?: any, clientSessionId?: string):
 Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
@@ -177,18 +190,18 @@ Promise<ResponseObject> {
   if (!body) {
     return callApi(url, {
       method: 'PATCH',
-      headers: getHeaders(token),
+      headers: addClientSessionId(getHeaders(token), clientSessionId),
     });
   }
 
   return callApi(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
-    headers: getHeadersPatch(token),
+    headers: addClientSessionId(getHeadersPatch(token), clientSessionId),
   });
 }
 
-export async function callPUT(url: string, token: string, body: any):
+export async function callPUT(url: string, token: string, body: any, clientSessionId?: string):
 Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
@@ -197,11 +210,11 @@ Promise<ResponseObject> {
   return callApi(url, {
     method: 'PUT',
     body: JSON.stringify(body),
-    headers: getHeadersPut(token),
+    headers: addClientSessionId(getHeadersPut(token), clientSessionId),
   });
 }
 
-export async function callPost<T>(url: string, token: string, body: any):
+export async function callPost<T>(url: string, token: string, body: any, clientSessionId?: string):
 Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
@@ -210,7 +223,7 @@ Promise<ResponseObject> {
   return callApi<T>(url, {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: getHeadersPost(token),
+    headers: addClientSessionId(getHeadersPost(token), clientSessionId),
   });
 }
 
@@ -219,12 +232,14 @@ export async function callPostMultipart(
   formData: FormData,
   token: string,
   customHeaders: any = {},
+  clientSessionId?: string,
 )
   : Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
   const headers = { ...getHeadersMultipartPost(token), ...customHeaders };
+  addClientSessionId(headers, clientSessionId);
   return callApi(url, {
     method: 'POST',
     body: formData,
@@ -237,6 +252,7 @@ export async function callPOSTForm(
   formData: FormData,
   token: string,
   customHeaders: any = {},
+  clientSessionId?: string,
 )
   : Promise<ResponseObject> {
   if (!token) {
@@ -245,6 +261,7 @@ export async function callPOSTForm(
 
   const tokenHeaders = getHeaders(token);
   const headers = Object.assign(tokenHeaders, customHeaders);
+  addClientSessionId(headers, clientSessionId);
   return callApi(url, {
     method: 'POST',
     body: formData,
@@ -252,7 +269,7 @@ export async function callPOSTForm(
   });
 }
 
-export async function callDELETE(url: string, token: string, body?: any):
+export async function callDELETE(url: string, token: string, body?: any, clientSessionId?: string):
 Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
@@ -262,25 +279,25 @@ Promise<ResponseObject> {
   if (!body) {
     return callApi(url, {
       method: 'DELETE',
-      headers: getHeaders(token),
+      headers: addClientSessionId(getHeaders(token), clientSessionId),
     });
   }
 
   return callApi(url, {
     method: 'DELETE',
     body: JSON.stringify(body),
-    headers: getHeadersPatch(token),
+    headers: addClientSessionId(getHeadersPatch(token), clientSessionId),
   });
 }
 
-export async function downloadFile(url: string, token: string) {
+export async function downloadFile(url: string, token: string, clientSessionId?: string) {
   if (!token) {
     throw new Error('Authentication error: Unable to retrieve access token.');
   }
 
   const options: HTTPOptions = {
     method: 'GET',
-    headers: getHeaders(token),
+    headers: addClientSessionId(getHeaders(token), clientSessionId),
   };
 
   let filename = 'no-file-name.xlsx'; // Default filename
