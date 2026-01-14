@@ -4,9 +4,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import ActivityContentBox from './ActivityContentBox';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import { formatDate } from '../../../utilities/dateUtils';
-import PageTitle from '../PageTitle';
 import DetailedText from '../Page/DetailedText';
 import ATDrawer from '../ATDrawer';
+import BannerTitle from './ActivityBannerTitle';
+import { Theme } from '../../../assets/themes/theme';
 
 interface ActivityDetailProps {
   onClose: () => void,
@@ -27,7 +28,7 @@ function ActivityDetails({ onClose, detailInfo }: ActivityDetailProps): JSX.Elem
     >
       {/* Title and Date (on the left) */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <PageTitle title={detailInfo.Event} />
+        <BannerTitle title={detailInfo.Event} />
         <DetailedText text={friendlyEventDate} isSubHeading />
         <ActivityContentBox entry={detailInfo} marginTop="45px" />
       </Box>
@@ -38,7 +39,7 @@ function ActivityDetails({ onClose, detailInfo }: ActivityDetailProps): JSX.Elem
         onClick={onClose}
         sx={{
           alignSelf: 'flex-start', // Align the close button to the top
-          color: 'rgb(0,0,0,0.54)',
+          color: Theme.PrimaryGrey900,
         }}
       >
         <CloseIcon />
