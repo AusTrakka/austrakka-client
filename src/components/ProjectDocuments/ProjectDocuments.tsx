@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { IconButton, Paper, Menu, MenuItem, ListItemIcon, ListItemText, MenuList, Divider, Drawer, Box, Typography, Button, Stack, Collapse, CircularProgress } from '@mui/material';
+import { IconButton, Paper, Menu, MenuItem, ListItemIcon, ListItemText, MenuList, Divider, Drawer, Box, Typography, Button, Stack, DialogTitle, CircularProgress, Dialog, DialogContent, DialogActions } from '@mui/material';
 import { DeleteOutline, DescriptionRounded, ErrorOutline, FileDownloadOutlined, MoreHoriz, OpenInNew, PreviewOutlined } from '@mui/icons-material';
 import { FilterMatchMode } from 'primereact/api';
 import Grid from '@mui/material/Grid2';
@@ -25,9 +25,9 @@ import { formatFileSize } from '../../utilities/renderUtils';
 // - Update previewFile, preview, activeRow to something slightly cleaner
 // - Add download and delete buttons in file preview
 // - Permissions check 
-// - Clean up all styles and colour references
-// - "Are you sure you want to delete this file" alert prior to delete
+// - Clean up all styles and colour references (no --var(--primary-main) in components)
 // - Check loading/error states are present in all relevant locations
+// - Use proper DTOs for documents
 
 interface PreviewFileState {
   name: string;
@@ -59,6 +59,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
   );
   const [preview, setPreview] = useState<PreviewFileState | null>(null);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   const PREVIEWABLE_EXTENSIONS = [
     'pdf',
@@ -158,7 +159,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
       setDownloading(false);
     }
   };
-  // TODO: Only allow "previewable types" to be previewed in new tab or in side drawer
+
   const handlePreviewNewTab = async () => {
     try {
       const { blob } = await previewDocument(
@@ -251,6 +252,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
 
       setError(false);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setError(true);
 
@@ -323,6 +325,42 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
 
   return (
     <>
+      <Dialog open={deleteAlertOpen} onClose={() => setDeleteAlertOpen(false)}>
+        <DialogTitle>
+          <DeleteOutline fontSize="large" color="error" />
+          <Typography variant="h4" color="error" sx={{ marginBottom: 1 }}>
+            Confirm Delete
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ marginBottom: 1 }}>
+            Are you sure you want to delete this document? This action cannot be undone.
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              padding: 1,
+            }}
+          >
+            <FileIcon filename={activeRow?.fileName} size={18} />
+            <Typography variant="body2" fontWeight="bold">
+              {activeRow?.fileName}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="primary" onClick={() => setDeleteAlertOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={() => { handleDelete(); setDeleteAlertOpen(false); }}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Drawer
         anchor="right"
         open={drawerOpen}
@@ -377,9 +415,15 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
             <>
               {!previewLoading && preview.type === 'file' && preview.url && (
               <Box sx={{ flex: 1, mt: 1, border: '1px solid #ccc', margin: 2, borderRadius: 1 }}>
-                <iframe
+                {/* TODO: Try use <embed> with Blob instead of iframe */}
+                {/* <iframe
                   title={preview.row.fileName}
                   src={preview.url}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                /> */}
+                <embed
+                  src={preview.url}
+                  type="application/pdf"
                   style={{ width: '100%', height: '100%', border: 'none' }}
                 />
               </Box>
@@ -425,6 +469,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           filters={globalFilter}
           // onRowClick={(e) => handleRowSelect(e)}
           // selectionMode="single"
+          showGridlines
           selection={activeRow}
           globalFilterFields={columns.map((col) => col.field)}
           sortIcon={sortIcon}
@@ -457,6 +502,8 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
             className="flexible-column"
             headerClassName="custom-title"
             bodyClassName="value-cells"
+            frozen
+            alignFrozen="right"
           />
         </DataTable>
       </Paper>
@@ -476,7 +523,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           <MenuItem onClick={() => handleDownload()} disabled={downloading}>
             <ListItemIcon>
               { downloading ?
-                <CircularProgress />
+                <CircularProgress size={8} />
                 :
                 <FileDownloadOutlined fontSize="small" sx={{ color: 'var(--primary-main)' }} />}
             </ListItemIcon>
@@ -494,7 +541,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
             <ListItemText sx={{ color: 'var(--primary-main)' }}>Preview in new tab</ListItemText>
           </MenuItem>
           <Divider />
-          <MenuItem onClick={() => handleDelete()}>
+          <MenuItem onClick={() => setDeleteAlertOpen(true)}>
             <ListItemIcon><DeleteOutline fontSize="small" sx={{ color: 'var(--secondary-red)' }} /></ListItemIcon>
             <ListItemText sx={{ color: 'var(--secondary-red)' }}>Delete</ListItemText>
           </MenuItem>
