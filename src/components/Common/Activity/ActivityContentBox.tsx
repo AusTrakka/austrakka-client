@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box, Tab, Table, TableBody, TableCell, TableRow, Tabs, Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import DetailedText from '../Page/DetailedText';
 import { formatDate } from '../../../utilities/dateUtils';
-import { Theme } from '../../../assets/themes/theme';
 
 interface ContentBoxProps {
   entry: ActivityDetailInfo,
