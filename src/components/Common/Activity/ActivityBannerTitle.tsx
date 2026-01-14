@@ -6,7 +6,7 @@ interface PageTitleProps {
   fontWeight?: string,
 }
 
-function PageTitle({ title, fontWeight }: PageTitleProps): any {
+function BannerTitle({ title, fontWeight }: PageTitleProps): any {
   const weight = fontWeight !== undefined ? fontWeight : 'normal';
   return (
     <Typography
@@ -22,4 +22,4 @@ function PageTitle({ title, fontWeight }: PageTitleProps): any {
   );
 }
 
-export default PageTitle;
+export default BannerTitle;
