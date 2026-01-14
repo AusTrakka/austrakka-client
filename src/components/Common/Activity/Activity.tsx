@@ -12,10 +12,10 @@ import ActivityDetails from './ActivityDetails';
 import { ActivityField, DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
-import FriendlyHeader from '../../../types/friendlyHeader.interface';
-import TableToolbar from './TableToolbar';
-import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
 import { defaultState } from '../../DataFilters/DataFilters';
+import sortIcon from '../../TableComponents/SortIcon';
+import { Theme } from '../../../assets/themes/theme';
+import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 
 interface ActivityProps {
   recordType: string,
@@ -229,7 +229,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
           <Cancel style={{
             marginRight: '10px',
             cursor: 'pointer',
-            color: 'rgb(198, 40, 40)',
+            color: Theme.SecondaryRed,
             fontSize: '14px',
             verticalAlign: 'middle',
           }}
