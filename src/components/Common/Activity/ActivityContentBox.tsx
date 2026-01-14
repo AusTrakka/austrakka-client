@@ -110,7 +110,7 @@ function ActivityContentBox({ entry, marginTop = '0px' } : ContentBoxProps): JSX
 
   return (
     <>
-      <Tabs value={0} sx={{ color: 'var(--primary-main)', marginTop }}>
+      <Tabs value={0} sx={{ color: Theme.PrimaryMain, marginTop }}>
         <Tab
           key={0}
           tabIndex={0}

@@ -6,7 +6,7 @@ import {
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
-import { Cancel, Info } from '@mui/icons-material';
+import { Cancel } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
 import { ActivityField, DerivedLog } from '../../../types/dtos';
@@ -34,6 +34,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
 const EVENT_NAME_COLUMN: string = 'eventType';
 
 export const supportedColumns: ActivityField[] = [
+  // I don't think this first column is used in any meaningful way
   {
     columnName: EVENT_NAME_COLUMN,
     columnDisplayName: 'Event',
@@ -41,6 +42,7 @@ export const supportedColumns: ActivityField[] = [
     columnOrder: 1,
     hidden: false,
   },
+  // maybe this can have a background colour or replaced with an icon.
   {
     columnName: 'eventStatus',
     columnDisplayName: 'Status',
@@ -84,25 +86,20 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [selectedRow, setSelectedRow] = useState<DerivedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
-  
+
   const routeSegment = recordType === 'Tenant'
     ? recordType
     : `${recordType}V2`;
-  
+
   const {
     refinedLogs,
     httpStatusCode,
     dataLoading,
   } = useActivityLogs(routeSegment, rGuid ?? '');
 
-  const transformData = (data: DerivedLog[]): DerivedLog[] =>
-    // This previously aggregated logs by aggregation keys, which no longer exist
-    // Currently a placeholder for client-side log transforms
-    data;
   useEffect(() => {
     if (refinedLogs.length > 0) {
-      const transformedData = transformData(refinedLogs);
-      setLocalLogs(transformedData);
+      setLocalLogs(refinedLogs);
     }
   }, [refinedLogs]);
 
@@ -114,7 +111,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     firstColBuilder.isDecorated = true;
     const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
-        
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
@@ -122,7 +118,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const row = event.data;
-        
+
     const info: ActivityDetailInfo = {
       'Event': row[EVENT_NAME_COLUMN],
       'Time stamp': row.eventTime,
@@ -134,7 +130,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setDetailInfo(info);
     setOpenDetails(true);
   };
-    
+
   const closeDetailsHandler = () => {
     setOpenDetails(false);
     setSelectedRow(null);
@@ -144,7 +140,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setSelectedRow(e.data);
   };
 
-  // TODO very similar logic can be used to expand/collapse bundled logs when re-implemented
+  // TODO: very similar logic can be used to expand/collapse bundled logs when re-implemented
+  // 
   // const toggleRow = (e: DataTableRowToggleEvent) => {
   //   const row = (e.data as any[])[0] as Log;
   //
@@ -188,19 +185,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   //   }
   //   setLocalLogs(clonedRows);
   // };
-    
-  const friendlyHeaders: FriendlyHeader[] = supportedColumns
-    .sort((a, b) => a.columnOrder - b.columnOrder)
-    .map((col) => ({ name: col.columnName, displayName: col.columnDisplayName || col.columnName }));
-    
-  const header = (
-    <TableToolbar
-      filteredData={refinedLogs}
-      rowDataHeaders={friendlyHeaders}
-      showDisplayHeader
-      showExportButton={refinedLogs.length > 0}
-    />
-  );
 
   const getIndentStyle = (level: number) => ({
     paddingLeft: `${level * 25}px`, // Indent by 20px per level
@@ -212,18 +196,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     rowData.eventStatus === 'Success'
       ? (
         <span style={getIndentStyle(rowData.level ?? 0)}>
-          <Info style={{
-            marginRight: '10px',
-            cursor: 'pointer',
-            color: 'rgb(21,101,192)',
-            fontSize: '14px',
-            verticalAlign: 'middle',
-          }}
-          />
           {rowData[EVENT_NAME_COLUMN]}
         </span>
       )
-                
       : (
         <span style={getIndentStyle(rowData.level ?? 0)}>
           <Cancel style={{
@@ -244,7 +219,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     if (level <= 0 || level > 5) return '';
     return `indent-level-${level}-tint`;
   };
-  
+
   const tableContent = (
     <>
       {
@@ -254,80 +229,77 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             detailInfo={detailInfo}
           />
         )
-}
+      }
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
-        <div>
-          <DataTable
-            id="activity-table"
-            value={localLogs}
-            filters={defaultState}
-            size="small"
-            columnResizeMode="expand"
-            resizableColumns
-            showGridlines
-            reorderableColumns
-            removableSort
-            header={header}
-            scrollable
-            scrollHeight="calc(100vh - 300px)"
-            paginator
-            onRowClick={rowClickHandler}
-            selection={selectedRow}
-            onRowSelect={onRowSelect}
-            // onRowToggle={toggleRow}
-            selectionMode="single"
-            rows={25}
-            rowClassName={selectRowClassName}
-            loading={false}
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight
-            emptyMessage={(
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No activity found
-              </Typography>
-                        )}
-          >
-            <Column
-              expander={(rowData: DerivedLog) => (rowData.children?.length ?? 0) > 0}
-              style={{ width: '3em' }}
-              className="activity-row-expander"
-            />
-            <Column
-              key={EVENT_NAME_COLUMN}
-              field={EVENT_NAME_COLUMN}
-              header="Event"
-              hidden={false}
-              body={firstColumnTemplate}
-              sortable={false}
-              resizeable
-              style={{ minWidth: '150px', paddingLeft: '16px' }}
-              headerClassName="custom-title"
-            />
-            {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-              col.field !== EVENT_NAME_COLUMN)
-              .map((col: any) => (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
-                  hidden={false}
-                  body={col.body}
-                  sortable={false}
-                  resizeable
-                  style={{ minWidth: '150px', paddingLeft: '16px' }}
-                  headerClassName="custom-title"
-                />
-              )) : null}
-          </DataTable>
-        </div>
+        <DataTable
+          className="my-flexible-table"
+          value={localLogs}
+          filters={defaultState}
+          size="small"
+          columnResizeMode="expand"
+          resizableColumns
+          showGridlines
+          reorderableColumns
+          header={<div />}
+          removableSort
+          scrollable
+          sortIcon={sortIcon}
+          scrollHeight="calc(100vh - 300px)"
+          paginator
+          onRowClick={rowClickHandler}
+          selection={selectedRow}
+          onRowSelect={onRowSelect}
+          // onRowToggle={toggleRow}
+          selectionMode="single"
+          rows={25}
+          rowClassName={selectRowClassName}
+          loading={false}
+          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+          paginatorPosition="bottom"
+          paginatorRight
+          emptyMessage={(
+            <Typography variant="subtitle1" color="textSecondary" align="center">
+              No activity found
+            </Typography>
+          )}
+        >
+          <Column
+            key={EVENT_NAME_COLUMN}
+            field={EVENT_NAME_COLUMN}
+            header="Event"
+            hidden={false}
+            body={firstColumnTemplate}
+            sortable
+            resizeable
+            style={{ minWidth: '150px', paddingLeft: '16px' }}
+            headerClassName="custom-title"
+            className="flexible-column"
+          />
+          {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
+            col.field !== EVENT_NAME_COLUMN)
+            .map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                hidden={false}
+                body={col.body}
+                sortable
+                resizeable
+                style={{ minWidth: '150px', paddingLeft: '16px' }}
+                headerClassName="custom-title"
+                className="flexible-column"
+              />
+            )) : null}
+        </DataTable>
       </Paper>
       <div style={{ height: '10px' }} />
     </>
   );
-    
+
+  // TODO: Need to fix this, this can be refactored differently
   let contentPane = <></>;
   if (httpStatusCode === 401 || httpStatusCode === 403) {
     contentPane = (
@@ -357,7 +329,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       ? tableContent
       : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.InTray} />;
   }
-    
+
   return (
     <>
       {contentPane}
