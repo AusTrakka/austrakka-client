@@ -1,6 +1,7 @@
 import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { Info } from '@mui/icons-material';
+import { Theme } from '../../../assets/themes/theme';
 
 export function InfoTooltip(title: string) {
   return (
@@ -10,7 +11,7 @@ export function InfoTooltip(title: string) {
           size="small"
           style={{ padding: 0, marginLeft: '0.5rem' }}
         >
-          <Info fontSize="small" style={{ color: 'var(--primary-grey-500)' }} />
+          <Info fontSize="small" style={{ color: Theme.PrimaryGrey500 }} />
         </IconButton>
       </span>
     </Tooltip>

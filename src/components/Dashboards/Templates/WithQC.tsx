@@ -9,6 +9,7 @@ import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import { Theme } from '../../../assets/themes/theme';
 
 function WithQC(props: ProjectDashboardTemplateProps) {
   const {
@@ -16,7 +17,7 @@ function WithQC(props: ProjectDashboardTemplateProps) {
     filteredData,
     timeFilterObject,
   } = props;
-  
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
@@ -51,9 +52,9 @@ function WithQC(props: ProjectDashboardTemplateProps) {
                 <MetadataValuePieChart
                   field="QC"
                   colourMapping={{
-                    'FAIL': '#bf1515',
-                    'FLAG': '#fac45a',
-                    'PASS': '#78c95d',
+                    'FAIL': Theme.SecondaryRed,
+                    'FLAG': Theme.SecondaryYellow,
+                    'PASS': Theme.SecondaryMain,
                   }}
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}

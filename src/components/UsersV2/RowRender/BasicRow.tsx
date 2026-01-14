@@ -10,6 +10,7 @@ import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import { bytesToMB } from '../../../utilities/renderUtils';
+import { Theme } from '../../../assets/themes/theme';
 
 interface BasicRowProps {
   field: keyof UserV2;
@@ -63,7 +64,7 @@ function BasicRow(props: BasicRowProps) {
                   <Switch disabled checked={value} size="small" />
                   <Tooltip title={value ? 'Active' : 'Disabled'} arrow placement="top">
                     {value ?
-                      <CheckCircleOutlined fontSize="small" style={{ color: 'var(--secondary-light-green)' }} /> :
+                      <CheckCircleOutlined fontSize="small" style={{ color: Theme.SecondaryLightGreen }} /> :
                       <Cancel style={{ fontSize: '1rem' }} />}
                   </Tooltip>
                 </div>

@@ -42,7 +42,7 @@ function UserCard({ user }: { user: Member }) {
             width: 80,
             height: 80,
             borderRadius: '50%',
-            border: '2px solid #000',
+            border: '2px solid black',
             position: 'absolute',
             backgroundColor: 'green',
             top: '50px',

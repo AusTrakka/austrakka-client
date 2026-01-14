@@ -18,6 +18,7 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { Sample } from '../../../types/sample.interface';
 import { useStableNavigate } from '../../../app/NavigationContext';
+import { Theme } from '../../../assets/themes/theme';
 
 // Parameterised widget; field must be specified
 
@@ -31,8 +32,8 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
 }
 
 const CHART_COLORS = {
-  AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
-  MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
+  AVAILABLE: Theme.SecondaryMain,
+  MISSING: Theme.PrimaryGrey300,
 } as const;
 
 function MetadataCounts(props: MetadataCountWidgetProps) {
@@ -42,19 +43,19 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     field,
     title,
     categoryField } = props;
-  
+
   const { navigate } = useStableNavigate();
   const categoryFieldStable = categoryField ?? 'Owner_group';
   const axisTitleStable = categoryField ?? 'Organisation';
-  
+
   const data: ProjectMetadataState | null = useAppSelector(state =>
     selectProjectMetadata(state, projectAbbrev), shallowEqual);
- 
+
   const plotDiv = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const tooltipTitle = `Samples with populated ${field} values`;
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
-  
+
   const dateStatusTransform = React.useMemo(() => ({
     calculate: `datum['${field}'] ? 'Available' : 'Missing'`,
     as: `${field}_status`,
@@ -89,12 +90,12 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     };
 
     const combinedFilters: DataTableFilterMeta =
-        timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
-          { ...drillDownTableMetaFilters, ...timeFilterObject }
-          : drillDownTableMetaFilters;
+      timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
+        { ...drillDownTableMetaFilters, ...timeFilterObject }
+        : drillDownTableMetaFilters;
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
-  
+
   const creatSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
@@ -187,12 +188,12 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      
+
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => handleItemClick(item))
         .runAsync();
-    
+
       setVegaView(view);
     };
 
@@ -207,7 +208,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     <Box>
       <Tooltip title={tooltipTitle} arrow placement="top">
         <Typography variant="h5" paddingBottom={3} color="primary">
-          { title ?? `${field} counts` }
+          {title ?? `${field} counts`}
         </Typography>
       </Tooltip>
       {errorMessage ? (
@@ -217,24 +218,24 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
         </Alert>
       ) :
         (data?.fieldLoadingStates[categoryFieldStable] === LoadingState.SUCCESS && (
-        <Grid container spacing={2}>
-          <Grid size={11}>
-            <div
-              id="#plot-container"
-              ref={plotDiv}
-              style={{ width: '100%' }}
-            />
+          <Grid container spacing={2}>
+            <Grid size={11}>
+              <div
+                id="#plot-container"
+                ref={plotDiv}
+                style={{ width: '100%' }}
+              />
+            </Grid>
+            <Grid size={1}>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-          <Grid size={1}>
-            <ExportVegaPlot vegaView={vegaView} />
-          </Grid>
-        </Grid>
         ))}
       {(!(data?.loadingState) ||
-                !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-                    data.loadingState === MetadataLoadingState.ERROR ||
-                    data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-                    <div>Loading...</div>
+        !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+          <div>Loading...</div>
       )}
     </Box>
   );

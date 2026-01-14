@@ -53,7 +53,6 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   errorMessage: null,
 });
 
-// TODO This needs to be cleaned up as this has become a monster to work with card added | AB#7258
 interface ProjectMetadataSliceState {
   data: { [projectAbbrev: string]: ProjectMetadataState },
   token: string | null, // must be provided by calling component along with each fetch request
@@ -96,7 +95,7 @@ const fetchProjectInfo = createAsyncThunk(
   async (
     params: FetchProjectInfoParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<FetchProjectInfoResponse | unknown> => {
+  ): Promise<FetchProjectInfoResponse | unknown> => {
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
@@ -124,7 +123,7 @@ const fetchDataView = createAsyncThunk(
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<FetchDataViewResponse | unknown > => {
+  ): Promise<FetchDataViewResponse | unknown> => {
     const { projectAbbrev, viewIndex } = params;
     const state = getState() as RootState;
     const { token } = state.projectMetadataState;
@@ -157,7 +156,7 @@ listenerMiddleware.startListening({
     const loadingState = (currentState as RootState).projectMetadataState
       .data[(action as any).payload.projectAbbrev]?.loadingState;
     return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
-           loadingState === MetadataLoadingState.FETCH_REQUESTED;
+      loadingState === MetadataLoadingState.FETCH_REQUESTED;
   },
   effect: (action, listenerApi) => {
     listenerApi.dispatch(
@@ -204,8 +203,8 @@ export const projectMetadataSlice = createSlice({
       }
       // Only initialise fetch if in allowed state; do not reload loading data
       if (state.data[projectAbbrev].loadingState === MetadataLoadingState.IDLE ||
-          state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR ||
-          state.data[projectAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+        state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR ||
+        state.data[projectAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
         // If we were in an error state and are refreshing, clear data
         if (state.data[projectAbbrev].loadingState !== MetadataLoadingState.IDLE) {
           state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
@@ -232,7 +231,7 @@ export const projectMetadataSlice = createSlice({
         }
         return a.fieldName.localeCompare(b.fieldName, undefined, { sensitivity: 'base' });
       });
-      
+
       state.data[projectAbbrev].projectFields = fields;
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
@@ -319,7 +318,7 @@ export const projectMetadataSlice = createSlice({
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (state.data[projectAbbrev].metadata!.length > 0 &&
-          state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
+        state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         state.data[projectAbbrev].metadata!.sort((a, b) =>
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
@@ -330,17 +329,17 @@ export const projectMetadataSlice = createSlice({
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
       const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
-      
+
       const geoFields = state.data[projectAbbrev].fields!
         .filter(field => field.geoField)
         .map(field => field.columnName!);
 
       state.data[projectAbbrev].supportedMaps = calculateSupportedMaps(uniqueVals, geoFields);
-      
+
       viewFields.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
-      
+
       // Set SUCCESS states
       state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
       viewFields.forEach(field => {
@@ -427,10 +426,10 @@ export const selectAwaitingPartialProjectMetadata =
     const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
     if (!loadingState) return true;
     return loadingState === MetadataLoadingState.IDLE ||
-          loadingState === MetadataLoadingState.FETCH_REQUESTED ||
-          loadingState === MetadataLoadingState.AWAITING_FIELDS ||
-          loadingState === MetadataLoadingState.FIELDS_LOADED ||
-          loadingState === MetadataLoadingState.AWAITING_DATA;
+      loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+      loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+      loadingState === MetadataLoadingState.FIELDS_LOADED ||
+      loadingState === MetadataLoadingState.AWAITING_DATA;
   };
 
 export const selectProjectMergeAlgorithm =

@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Backdrop, Box, Drawer } from '@mui/material';
+import { Theme } from '../../assets/themes/theme';
 
 interface ATDrawerProps {
   onClose: () => void,
@@ -33,7 +34,7 @@ function ATDrawer({ onClose, children }: ATDrawerProps): JSX.Element {
             right: 0, // Position on the right side of the screen
             border: 'none',
             boxShadow: 'none',
-            backgroundColor: 'var(--background-colour)', // Or any color you prefer
+            backgroundColor: Theme.Background,
             padding: '16px 25px',
           },
         }}

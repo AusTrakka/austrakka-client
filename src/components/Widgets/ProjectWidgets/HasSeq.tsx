@@ -18,6 +18,7 @@ import { Sample } from '../../../types/sample.interface';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import { genericErrorMessage } from '../../../utilities/api';
 import { useStableNavigate } from '../../../app/NavigationContext';
+import { Theme } from '../../../assets/themes/theme';
 
 // Takes y-axis field as an optional parameter; 
 // defaults to Owner_group, which gets special handling
@@ -25,8 +26,8 @@ import { useStableNavigate } from '../../../app/NavigationContext';
 const HAS_SEQ = 'Has_sequences';
 
 const CHART_COLORS = {
-  AVAILABLE: import.meta.env.VITE_THEME_SECONDARY_MAIN,
-  MISSING: import.meta.env.VITE_THEME_PRIMARY_GREY_300,
+  AVAILABLE: Theme.SecondaryMain,
+  MISSING: Theme.PrimaryGrey300,
 } as const;
 
 interface HasSeqWidgetProps extends ProjectWidgetProps {
@@ -52,20 +53,20 @@ function HasSeq(props: HasSeqWidgetProps) {
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
   const dateStatusTransform = {
     calculate: `datum['${HAS_SEQ}'] === 'True' ? 'Available' : 'Missing'`,
     as: `${HAS_SEQ}_status`,
   };
-  
+
   function handleItemClick(item: any) {
     if (!navigate) { setErrorMessage(genericErrorMessage); return; }
     if (!item || !item.datum) return;
-    
+
     const status = item.datum[`${HAS_SEQ}_status`];
     let category = item.datum[categoryField!];
     if (categoryField === 'Owner_group') category = `${category}-Owner`;
-    
+
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [HAS_SEQ]: {
         operator: FilterOperator.AND,
@@ -96,7 +97,7 @@ function HasSeq(props: HasSeqWidgetProps) {
       updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
     }
   }
-  
+
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
@@ -168,7 +169,7 @@ function HasSeq(props: HasSeqWidgetProps) {
     }
     if (categoryField && data?.loadingState && (
       data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-            data.loadingState === MetadataLoadingState.DATA_LOADED
+      data.loadingState === MetadataLoadingState.DATA_LOADED
     )) {
       const fields = data.fields!.map(field => field.columnName);
       if (!fields.includes(categoryField!)) {
@@ -179,7 +180,7 @@ function HasSeq(props: HasSeqWidgetProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState, data?.fieldLoadingStates, categoryField]);
-  
+
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
@@ -190,13 +191,13 @@ function HasSeq(props: HasSeqWidgetProps) {
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       (compiledSpec.data![0] as InlineData).values =
-          filteredData!.map((item: any) => ({ ...item }));
+        filteredData!.map((item: any) => ({ ...item }));
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => handleItemClick(item))
         .runAsync();
-      
+
       setVegaView(view);
     };
 
@@ -218,23 +219,23 @@ function HasSeq(props: HasSeqWidgetProps) {
         </Alert>
       ) :
         (data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
-        <Grid container spacing={2}>
-          <Grid size={11}>
-            <div
-              id="#plot-container"
-              ref={plotDiv}
-            />
+          <Grid container spacing={2}>
+            <Grid size={11}>
+              <div
+                id="#plot-container"
+                ref={plotDiv}
+              />
+            </Grid>
+            <Grid size={1}>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-          <Grid size={1}>
-            <ExportVegaPlot vegaView={vegaView} />
-          </Grid>
-        </Grid>
         ))}
       {(!(data?.loadingState) ||
-                !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-                    data.loadingState === MetadataLoadingState.ERROR ||
-                    data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-                    <div>Loading...</div>
+        !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+          <div>Loading...</div>
       )}
     </Box>
   );
