@@ -4,7 +4,7 @@ import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
 import { Sample } from '../types/sample.interface';
-import { getProjectFields, getProjectSettings, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
+import { getProjectDetails, getProjectFields, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
@@ -91,7 +91,7 @@ interface FetchDataViewResponse {
 
 // Fetch project fields and views
 const fetchProjectInfo = createAsyncThunk(
-  'projectMetadata/fetchProjectFields',
+  'projectMetadata/fetchProjectInfo',
   async (
     params: FetchProjectInfoParams,
     { rejectWithValue, fulfillWithValue, getState },
@@ -106,12 +106,12 @@ const fetchProjectInfo = createAsyncThunk(
     if (viewsResponse.status !== 'Success') {
       return rejectWithValue(viewsResponse.error);
     }
-    const projectSettingsResponse = await getProjectSettings(projectAbbrev, token!);
+    const projectSettingsResponse = await getProjectDetails(projectAbbrev, token!);
     if (projectSettingsResponse.status !== 'Success') {
       return rejectWithValue(projectSettingsResponse.error);
     }
     return fulfillWithValue<FetchProjectInfoResponse>({
-      mergeAlgorithm: projectSettingsResponse.data.mergeAlgorithm,
+      mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
       views: viewsResponse.data as ProjectView[],
     });
