@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import ActivityContentBox from './ActivityContentBox';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import { formatDate } from '../../../utilities/dateUtils';
-import DetailedText from '../Page/DetailedText';
 import BannerTitle from './ActivityBannerTitle';
 import CustomDrawer from '../CustomDrawer';
 
@@ -32,7 +31,9 @@ function ActivityDetails(props: ActivityDetailProps): JSX.Element {
         {/* Title and Date (on the left) */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <BannerTitle title={detailInfo.Event} />
-          <DetailedText text={friendlyEventDate} isSubHeading />
+          <Typography variant="subtitle2" fontWeight={600}>
+            {friendlyEventDate}
+          </Typography>
           <ActivityContentBox entry={detailInfo} marginTop="45px" />
         </Box>
       </Box>

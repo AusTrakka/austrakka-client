@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
-import DetailedText from '../Page/DetailedText';
 import { formatDate } from '../../../utilities/dateUtils';
 
 interface ContentBoxProps {
@@ -9,77 +8,9 @@ interface ContentBoxProps {
   marginTop?: string,
 }
 
-interface SummarySection {
-  Title: string,
-  Description: string,
-  Values: string[] | null,
-  DynamicProperties: any | null
-}
-
-interface GenericDetails {
-  InitialEventDateTime: string,
-  RecentEventDateTime: string,
-  Sections: SummarySection[] | null,
-}
-
 const fieldOrder: string[] = ['Event', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
 
 function ActivityContentBox({ entry, marginTop = '0px' }: ContentBoxProps): JSX.Element {
-  const genericDetails: GenericDetails | null = entry.Details ? JSON.parse(entry.Details) : null;
-
-  const details = () => (
-    <TableRow>
-      <TableCell
-        style={{
-          padding: '8px 0px',
-          verticalAlign: 'top',
-        }}
-      >
-        <DetailedText text="Details" isSubHeading />
-      </TableCell>
-
-      <TableCell
-        style={{
-          padding: '8px 0px 8px 100px',
-          verticalAlign: 'top',
-        }}
-      >
-        <Box>
-          <Box style={{ marginBottom: '15px' }}>
-            <DetailedText text="Event start date" isSubHeading />
-            <DetailedText text={formatDate(genericDetails!.InitialEventDateTime)} />
-          </Box>
-
-          <Box style={{ marginBottom: '15px' }}>
-            <DetailedText text="Recent event date" isSubHeading />
-            <DetailedText text={formatDate(genericDetails!.RecentEventDateTime)} />
-          </Box>
-
-          {genericDetails?.Sections?.map((section: SummarySection) => (
-            <Box key={section.Title} style={{ marginBottom: '15px' }}>
-              <DetailedText text={section.Title} isSubHeading />
-              <DetailedText text={section.Description} />
-              {section?.Values?.map((value: string) => (
-                <DetailedText
-                  key={section.Title + value}
-                  text={value}
-                />
-              ))}
-
-              {section?.DynamicProperties &&
-                Object.keys(section.DynamicProperties).map((key: string) => (
-                  <DetailedText
-                    key={key}
-                    text={`${key}: ${section.DynamicProperties[key]}`}
-                  />
-                ))}
-            </Box>
-          ))}
-        </Box>
-      </TableCell>
-    </TableRow>
-  );
-
   const renderDetailTab = () => (
     <Table sx={{ 'width': '100%',
       'borderCollapse': 'collapse',
@@ -87,25 +18,23 @@ function ActivityContentBox({ entry, marginTop = '0px' }: ContentBoxProps): JSX.
       '& td, & th': { borderBottom: 'none' } }}
     >
       <TableBody>
-        {fieldOrder.map(f => (
-          <TableRow key={f}>
-            <TableCell sx={{ p: '8px 0px', verticalAlign: 'top' }}>
-              <DetailedText text={f} isSubHeading />
-            </TableCell>
-
-            <TableCell sx={{ p: '8px 8px 8px 100px', verticalAlign: 'top' }}>
-              <DetailedText
-                text={
-                f === 'Time stamp'
-                  ? formatDate(entry[f as keyof ActivityDetailInfo])
-                  : entry[f as keyof ActivityDetailInfo]
-              }
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-
-        {genericDetails && details()}
+        {fieldOrder.map(f => {
+          const value =
+          f === 'Time stamp'
+            ? formatDate(entry[f as keyof ActivityDetailInfo])
+            : entry[f as keyof ActivityDetailInfo];
+          
+          return (
+            <TableRow key={f}>
+              <TableCell sx={{ p: '8px 0px', verticalAlign: 'top' }}>
+                <Typography sx={{ fontWeight: 600 }}>{f}</Typography>
+              </TableCell>
+              <TableCell sx={{ p: '8px 8px 8px 100px', verticalAlign: 'top' }}>
+                <Typography>{value}</Typography>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
