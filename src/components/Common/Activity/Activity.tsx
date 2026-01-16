@@ -123,10 +123,11 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setOpenDetails(true);
   };
 
-  const closeDetailsHandler = () => {
-    setOpenDetails(false);
-    setSelectedRow(null);
-  };
+  useEffect(() => {
+    if (openDetails === false) {
+      setSelectedRow(null);
+    }
+  }, [openDetails]);
 
   const onRowSelect = (e: DataTableSelectEvent) => {
     setSelectedRow(e.data);
@@ -202,14 +203,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   const tableContent = (
     <>
-      {
-        openDetails && (
-          <ActivityDetails
-            onClose={closeDetailsHandler}
-            detailInfo={detailInfo}
-          />
-        )
-      }
+      <ActivityDetails
+        // onClose={closeDetailsHandler}
+        drawerOpen={openDetails}
+        setDrawerOpen={setOpenDetails}
+        detailInfo={detailInfo}
+      />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
           className="my-flexible-table"
