@@ -1,18 +1,18 @@
 @import "../../../node_modules/primereact/resources/themes/fluent-light/theme.css";
 
 .p-datatable.p-datatable-gridlines {
-  --data-table-border-color: var(--primary-grey-300); /* This will change the border 
+  --data-table-border-color: var(--primary-grey-300);
+  /* This will change the border 
                                                 colours should be some sort of grey */
 }
 
-.p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th,
-.p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td,
-.p-datatable.p-datatable-gridlines .p-datatable-tfoot > tr > td {
+.p-datatable.p-datatable-gridlines .p-datatable-thead>tr>th,
+.p-datatable.p-datatable-gridlines .p-datatable-tbody>tr>td,
+.p-datatable.p-datatable-gridlines .p-datatable-tfoot>tr>td {
   border-color: var(--data-table-border-color) !important;
 }
 
-.p-datatable-wrapper
-{
+.p-datatable-wrapper {
   min-height: 80px;
 }
 
@@ -27,63 +27,20 @@
   border-color: var(--secondary-light-green);
   background: var(--secondary-light-green);
 }
+
 .p-checkbox:not(.p-disabled):has(.p-checkbox-input:hover) .p-checkbox-box {
   border-color: var(--secondary-dark-grey);
 }
+
 .p-checkbox:not(.p-disabled):has(.p-checkbox-input:hover).p-highlight .p-checkbox-box {
   border-color: var(--secondary-dark-green);
   background: var(--secondary-dark-green);
   color: #ffffff;
 }
+
 .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
   outline: 0 none;
   outline-offset: 0;
   box-shadow: inset 0 0 0 1px var(primary-grey-700);
   border-color: var(--secondary-light-green);
 }
-  
-#activity-table .p-datatable-tbody > tr {
-  line-height: 40px;
-}
-
-/*#activity-table .p-datatable th,*/
-#activity-table .p-datatable-tbody td
-{
-  border-left: none !important;
-  border-right: none !important;
-  border-top: none !important;
-}
-
-#activity-table .p-datatable-thead th {
-  border-left: none !important;
-  border-right: none !important;
-  height: 56px;
-}
-/* Indent only the ID column for child rows */
-.child-table-container .p-datatable .p-column-id {
-  padding-left: 20px; /* Indentation for the ID column */
-}
-
-/* Remove the header for the child table */
-.child-table-container .p-datatable .p-datatable-thead {
-  display: none;
-}
-
-.indent-level-1-tint { background-color: rgba(0,0,0,0.05); }
-.indent-level-2-tint { background-color: rgba(0,0,0,0.1); }
-.indent-level-3-tint { background-color: rgba(0,0,0,0.15); }
-.indent-level-4-tint { background-color: rgba(0,0,0,0.2); }
-.indent-level-5-tint { background-color: rgba(0,0,0,0.25); }
-
-.activity-row-expander button > tr:hover {
-  background-color: rgba(var(--primary-main-bg), 1) !important;
-}
-
-.p-datatable .p-column-resizer-helper {
-    background: var(--secondary-main);
-}
-
-.p-datatable-header {
-height: 50px;
-}
-  

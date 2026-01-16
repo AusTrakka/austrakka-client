@@ -22,7 +22,7 @@ interface GenericDetails {
   Sections: SummarySection[] | null,
 }
 
-const fieldOrder: string[] = ['Operation name', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
+const fieldOrder: string[] = ['Event', 'Time stamp', 'Event initiated by', 'Resource', 'Resource Type'];
 
 function ActivityContentBox({ entry, marginTop = '0px' }: ContentBoxProps): JSX.Element {
   const genericDetails: GenericDetails | null = entry.Details ? JSON.parse(entry.Details) : null;

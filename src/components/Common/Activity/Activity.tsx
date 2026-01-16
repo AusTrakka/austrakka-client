@@ -42,14 +42,6 @@ export const supportedColumns: ActivityField[] = [
     columnOrder: 1,
     hidden: false,
   },
-  // maybe this can have a background colour or replaced with an icon.
-  {
-    columnName: 'eventStatus',
-    columnDisplayName: 'Status',
-    primitiveType: 'string',
-    columnOrder: 2,
-    hidden: false,
-  },
   {
     columnName: 'resourceUniqueString',
     columnDisplayName: 'Resource',
@@ -186,21 +178,15 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   //   setLocalLogs(clonedRows);
   // };
 
-  const getIndentStyle = (level: number) => ({
-    paddingLeft: `${level * 25}px`, // Indent by 20px per level
-    display: 'inline-flex', // Use inline-flex to align both the icon and the ID in a row
-    alignItems: 'center',
-  });
-
   const firstColumnTemplate = (rowData: any) => (
     rowData.eventStatus === 'Success'
       ? (
-        <span style={getIndentStyle(rowData.level ?? 0)}>
+        <div>
           {rowData[EVENT_NAME_COLUMN]}
-        </span>
+        </div>
       )
       : (
-        <span style={getIndentStyle(rowData.level ?? 0)}>
+        <span>
           <Cancel style={{
             marginRight: '10px',
             cursor: 'pointer',
@@ -213,12 +199,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         </span>
       )
   );
-
-  const selectRowClassName = (rowData: any) => {
-    const level = rowData.level ?? 0;
-    if (level <= 0 || level > 5) return '';
-    return `indent-level-${level}-tint`;
-  };
 
   const tableContent = (
     <>
@@ -240,7 +220,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
           resizableColumns
           showGridlines
           reorderableColumns
-          header={<div />}
+          header={<div style={{ margin: '20px' }} />}
           removableSort
           scrollable
           sortIcon={sortIcon}
@@ -252,7 +232,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
           // onRowToggle={toggleRow}
           selectionMode="single"
           rows={25}
-          rowClassName={selectRowClassName}
           loading={false}
           rowsPerPageOptions={[25, 50, 100, 500, 2000]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
@@ -273,9 +252,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             body={firstColumnTemplate}
             sortable
             resizeable
-            style={{ minWidth: '150px', paddingLeft: '16px' }}
             headerClassName="custom-title"
             className="flexible-column"
+            bodyClassName="value-cells"
           />
           {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
             col.field !== EVENT_NAME_COLUMN)
@@ -288,14 +267,13 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 body={col.body}
                 sortable
                 resizeable
-                style={{ minWidth: '150px', paddingLeft: '16px' }}
                 headerClassName="custom-title"
                 className="flexible-column"
+                bodyClassName="value-cells"
               />
             )) : null}
         </DataTable>
       </Paper>
-      <div style={{ height: '10px' }} />
     </>
   );
 
