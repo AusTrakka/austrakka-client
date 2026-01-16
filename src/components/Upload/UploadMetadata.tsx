@@ -39,6 +39,7 @@ import { OrgDescriptor } from '../../types/sequploadtypes';
 import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import { Theme } from '../../assets/themes/theme';
 
 interface Options {
   validate: boolean,
@@ -441,7 +442,7 @@ function UploadMetadata() {
           {options.validate ? (
             <Button
               variant="contained"
-              sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+              sx={{ width: '100%', marginBottom: 3, backgroundColor: Theme.SecondaryLightGreen }}
               disabled={!canUpload}
               endIcon={<Rule />}
               onClick={() => handleSubmit()}
@@ -452,7 +453,7 @@ function UploadMetadata() {
             : (
               <Button
                 variant="contained"
-                sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                sx={{ width: '100%', marginBottom: 3, backgroundColor: Theme.SecondaryLightGreen }}
                 disabled={!canUpload}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
@@ -478,7 +479,7 @@ function UploadMetadata() {
       </div>
       <Backdrop
         sx={{
-          color: 'var(--background-colour)',
+          color: Theme.Background,
           zIndex: theme.zIndex.drawer + 1,
         }}
         open={submission.status === LoadingState.LOADING}

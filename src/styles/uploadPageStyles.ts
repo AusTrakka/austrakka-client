@@ -1,3 +1,4 @@
+import { Theme } from '../assets/themes/theme';
 import { SeqUploadRowState } from '../types/sequploadtypes';
 
 export const tableCellStyle = { padding: '0px', paddingLeft: '4px', paddingRight: '4px' };
@@ -7,39 +8,35 @@ export const seqStateStyles: Record<string, object> = {
   [SeqUploadRowState.Waiting]: {
     color: 'black',
     backgroundColor: 'white',
-    borderColor: import.meta.env.VITE_THEME_SECONDARY_DARK_GREY,
+    borderColor: Theme.SecondaryDarkGrey,
     border: '1px solid',
   },
   [SeqUploadRowState.Queued]: {
     color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREY,
+    backgroundColor: Theme.SecondaryLightGrey,
   },
   [SeqUploadRowState.CalculatingHash]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
-  },
-  [SeqUploadRowState.CalculatedHash]: {
-    color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
+    backgroundColor: Theme.SecondaryBlue,
   },
   [SeqUploadRowState.Uploading]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_BLUE,
+    backgroundColor: Theme.SecondaryBlue,
   },
   [SeqUploadRowState.Complete]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN,
+    backgroundColor: Theme.SecondaryLightGreen,
   },
   [SeqUploadRowState.Incomplete]: {
     color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
+    backgroundColor: Theme.SecondaryYellow,
   },
   [SeqUploadRowState.Skipped]: {
     color: 'black',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_YELLOW,
+    backgroundColor: Theme.SecondaryYellow,
   },
   [SeqUploadRowState.Errored]: {
     color: 'white',
-    backgroundColor: import.meta.env.VITE_THEME_SECONDARY_RED,
+    backgroundColor: Theme.SecondaryRed,
   },
 };

@@ -24,36 +24,6 @@ import { isoDateLocalDate } from '../../utilities/dateUtils';
 import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
 import { Project } from '../../types/dtos';
 
-//* * will not be used for now **//
-// function renderTagChip(cell: string): JSX.Element {
-//   const tag = cell;
-//   if (cell === null || cell === undefined || cell === '') {
-//     return (
-//       <Typography
-//         variant="body2"
-//         color="textDisabled"
-//         sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-//       >
-//         No Type Set
-//       </Typography>
-//     );
-//   }
-//   return (
-//     <Chip
-//       key={tag}
-//       label={tag}
-//       variant="outlined"
-//       size="small"
-//       style={{ margin: '3px',
-//         display: 'flex',
-//         justifyContent: 'center',
-//         color: 'var(--secondary-dark-green)',
-//         width: '100%',
-//         borderRadius: '0px' }}
-//     />
-//   );
-// }
-
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },

@@ -26,6 +26,7 @@ import { ResponseType } from '../../../constants/responseType';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import { ProjectDashboardDetails } from '../../../types/dtos';
+import { Theme } from '../../../assets/themes/theme';
 
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
@@ -159,7 +160,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               sx={{
                 marginTop: 1,
                 padding: 2,
-                backgroundColor: 'var(--primary-main-bg)',
+                backgroundColor: Theme.PrimaryMainBackground,
               }}
             >
               {dashBoardElements}

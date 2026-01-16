@@ -23,6 +23,7 @@ import { RolesV2 } from '../../../types/dtos';
 import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
+import { Theme } from '../../../assets/themes/theme';
 
 interface GroupHeaderRowProps {
   recordType: string;
@@ -156,7 +157,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     <TableRow
       key={recordType}
       style={{
-        backgroundColor: 'var(--primary-grey)',
+        backgroundColor: Theme.PrimaryGrey,
         borderRadius: '6px',
         border: 'none',
       }}

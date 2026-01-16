@@ -10,7 +10,7 @@ export type PrimeReactColumnDefinition = {
   body?: (rowData: any) => React.ReactNode,
   isDecorated?: boolean;
 };
-  
+
 export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]):
 PrimeReactColumnDefinition[] {
   const columnBuilders: PrimeReactColumnDefinition[] = [];
@@ -23,7 +23,7 @@ PrimeReactColumnDefinition[] {
       header: columnDisplayName || columnName,
       isDecorated: false,
     };
-    
+
     if (columnName in fieldRenderFunctions) {
       const body = {
         body: (rowData: any) => fieldRenderFunctions[columnName](rowData[columnName]),

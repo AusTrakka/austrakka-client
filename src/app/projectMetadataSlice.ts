@@ -53,7 +53,6 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   errorMessage: null,
 });
 
-// TODO This needs to be cleaned up as this has become a monster to work with card added | AB#7258
 interface ProjectMetadataSliceState {
   data: { [projectAbbrev: string]: ProjectMetadataState },
   token: string | null, // must be provided by calling component along with each fetch request

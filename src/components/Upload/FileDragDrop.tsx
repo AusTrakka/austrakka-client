@@ -2,7 +2,7 @@ import React, { DragEvent, useState, useEffect, useRef, ChangeEvent, SetStateAct
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import theme from '../../assets/themes/theme';
+import muiTheme, { Theme } from '../../assets/themes/theme';
 import { DropFileUpload } from '../../types/DropFileUpload';
 import { generateHash } from '../../utilities/file';
 import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
@@ -16,7 +16,7 @@ interface FileDragDropProps {
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
   validated: boolean,
   setValidated: Dispatch<SetStateAction<boolean>>,
-  disabled?:boolean,
+  disabled?: boolean,
 }
 
 // eslint-disable-next-line react/function-component-definition
@@ -36,10 +36,10 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
   const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState<boolean>(false);
-  
+
   const textColour = disabled ? 'text.disabled' : 'primary';
   const iconColour = disabled ? 'disabled' : 'primary';
-  
+
   const validateUpload = useCallback((uploadedFiles: File[]): boolean => {
     const validateFilesAreOfType = {
       func: (_files: File[]) => ({
@@ -55,7 +55,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
         message: 'Only one file can be selected',
       } as CustomUploadValidatorReturn),
     } as CustomUploadValidator;
-    
+
     const getBuiltInValidators = (): CustomUploadValidator[] => {
       const validators: CustomUploadValidator[] = [];
       if (!multiple) {
@@ -66,7 +66,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
       }
       return validators;
     };
-    
+
     for (const validator of [...getBuiltInValidators(), ...customValidators]) {
       const validatorReturn = validator.func(uploadedFiles);
       if (!validatorReturn.success) {
@@ -91,9 +91,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
   const handleDrag = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (disabled) { return; }
-    
+
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
@@ -104,9 +104,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (disabled) { return; }
-    
+
     const uploadedFiles = Array.from(e.dataTransfer?.files ?? []);
     if (!validateUpload(uploadedFiles)) {
       return;
@@ -125,7 +125,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     }
     await handleFiles(uploadedFiles);
   };
-  
+
   const handleClearFiles = () => {
     setFiles([]);
   };
@@ -147,16 +147,16 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
         sx={{
           p: 3,
           borderRadius: 2,
-          backgroundColor: dragActive ? '' : 'var(--primary-main-bg)',
+          backgroundColor: dragActive ? '' : Theme.PrimaryMainBackground,
           marginTop: 2,
           marginBottom: 2,
           height: '250px',
           border: dragActive ? 4 : 0,
-          borderColor: 'var(--primary-main-bg)',
+          borderColor: Theme.PrimaryMainBackground,
           borderStyle: dragActive ? 'dashed' : 'solid',
-          transition: theme.transitions?.create!(
+          transition: muiTheme.transitions?.create!(
             ['background-color', 'border'],
-            { duration: theme.transitions.duration?.standard },
+            { duration: muiTheme.transitions.duration?.standard },
           ),
         }}
       >
@@ -183,13 +183,13 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
               </Button>
               {
                 Object.entries(validFormats).length > 0 &&
-                  (
-                    <Typography variant="subtitle2" color={textColour}>
-                      Valid file types are:
-                      {' '}
-                      {Object.keys(validFormats).join(', ')}
-                    </Typography>
-                  )
+                (
+                  <Typography variant="subtitle2" color={textColour}>
+                    Valid file types are:
+                    {' '}
+                    {Object.keys(validFormats).join(', ')}
+                  </Typography>
+                )
               }
             </>
           ) : (

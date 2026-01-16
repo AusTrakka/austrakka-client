@@ -31,6 +31,7 @@ import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { Theme } from '../../assets/themes/theme';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -67,7 +68,7 @@ function Datasets(props: DatasetProps) {
       sx={{ color: 'gray' }}
       size="small"
     >
-      <DeleteOutlineIcon sx={{ '&:hover': { color: 'var(--secondary-red)' } }} />
+      <DeleteOutlineIcon sx={{ '&:hover': { color: Theme.SecondaryRed } }} />
     </IconButton>
   );
 

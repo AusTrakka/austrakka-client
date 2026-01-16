@@ -7,7 +7,6 @@ import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
 
 // TODO look at this structure; it mimics a hook but is not one
-
 export default function useActivityLogs(
   recordType: string,
   rguid: string,
@@ -26,7 +25,6 @@ export default function useActivityLogs(
         rguid,
         token,
       );
-            
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);

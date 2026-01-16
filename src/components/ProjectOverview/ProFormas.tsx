@@ -12,6 +12,7 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import { useStableNavigate } from '../../app/NavigationContext';
+import { Theme } from '../../assets/themes/theme';
 
 // Local Proforma Props
 interface ProFormasListProps {
@@ -92,7 +93,7 @@ function ProFormaList(props: ProFormasListProps) {
 
   // Sorting function
   const StyledAccordion = styled(Accordion)(({ theme }) => ({
-    backgroundColor: 'var(--primary-grey-100)',
+    backgroundColor: Theme.PrimaryGrey100,
     color: theme.palette.text.secondary,
     flexDirection: 'column',
   }));
@@ -125,7 +126,7 @@ function ProFormaList(props: ProFormasListProps) {
             sx={{ minWidth: '350px',
               maxWidth: '350px',
               minHeight: '352px',
-              backgroundColor: 'var(--primary-grey-100)' }}
+              backgroundColor: Theme.PrimaryGrey100 }}
           >
             <StyledAccordion sx={{ pointerEvents: 'none', margin: '0px' }}>
               <AccordionSummary
