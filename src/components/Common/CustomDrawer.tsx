@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react';
-import { Box, Drawer } from '@mui/material';
+import React, { ReactNode, useState, useRef } from 'react';
+import { Box, Drawer, IconButton, Tooltip } from '@mui/material';
+import { KeyboardDoubleArrowUp } from '@mui/icons-material';
 import { Theme } from '../../assets/themes/theme';
 
 interface CustomDrawerProps {
@@ -9,6 +10,19 @@ interface CustomDrawerProps {
 }
 
 function CustomDrawer({ drawerOpen, setDrawerOpen, children }: CustomDrawerProps): JSX.Element {
+  const [showButton, setShowButton] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      setShowButton(scrollRef.current.scrollTop > 50);
+    }
+  };
+
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -18,15 +32,46 @@ function CustomDrawer({ drawerOpen, setDrawerOpen, children }: CustomDrawerProps
         paper: {
           sx: {
             maxWidth: 600,
-            padding: 6,
             borderLeft: 6,
             borderColor: Theme.SecondaryMain,
           },
         },
       }}
     >
-      <Box>
+      <Box
+        ref={scrollRef}
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflowY: 'auto',
+          position: 'relative',
+          padding: 6,
+            
+        }}
+        onScroll={handleScroll}
+      >
         {children}
+        {showButton && (
+          <Tooltip title="Scroll to top" placement="left" arrow>
+            <IconButton
+              onClick={scrollToTop}
+              sx={{
+                'position': 'fixed',
+                'bottom': 20,
+                'right': 20,
+                'zIndex': 1000,
+                'color': Theme.PrimaryMain,
+                'backgroundColor': Theme.PrimaryMainBackground,
+                '&:hover': {
+                  backgroundColor: Theme.PrimaryMain,
+                  color: 'white',
+                },
+              }}
+            >
+              <KeyboardDoubleArrowUp />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
     </Drawer>
   );
