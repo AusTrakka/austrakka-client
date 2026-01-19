@@ -255,11 +255,12 @@ export interface Field {
   columnName: string,
   // INFO: this is the only field that is not actually part of any dto
   // this is needed for activity log compatibility
-  headerName: string | null,
+  headerName?: string,
   primitiveType: string | null,
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
+  geoField: boolean,
   columnOrder: number,
 }
 

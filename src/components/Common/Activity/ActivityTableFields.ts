@@ -10,6 +10,7 @@ export const supportedColumns: Field[] = [
     primitiveType: 'string',
     columnOrder: 1,
     canVisualise: false,
+    geoField: false,
   },
   {
     columnName: 'resourceUniqueString',
@@ -19,6 +20,7 @@ export const supportedColumns: Field[] = [
     primitiveType: 'string',
     columnOrder: 3,
     canVisualise: false,
+    geoField: false,
   },
   {
     columnName: 'resourceType',
@@ -28,6 +30,7 @@ export const supportedColumns: Field[] = [
     primitiveType: 'string',
     columnOrder: 4,
     canVisualise: false,
+    geoField: false,
   },
   {
     columnName: 'eventTime',
@@ -37,6 +40,7 @@ export const supportedColumns: Field[] = [
     primitiveType: 'date',
     columnOrder: 5,
     canVisualise: false,
+    geoField: false,
   },
   {
     columnName: 'submitterDisplayName',
@@ -46,5 +50,6 @@ export const supportedColumns: Field[] = [
     primitiveType: 'string',
     columnOrder: 6,
     canVisualise: false,
+    geoField: false,
   },
 ];

@@ -22,8 +22,8 @@ export default function useActivityLogs(
     const getData = async () => {
       const resp: ResponseObject<DerivedLog[]> = await getActivities(
         recordType,
-        rguid,
         token,
+        rguid,
       );
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
