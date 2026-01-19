@@ -9,7 +9,7 @@ import LoadingState from '../constants/loadingState';
 // TODO look at this structure; it mimics a hook but is not one
 export default function useActivityLogs(
   recordType: string,
-  rguid: string,
+  rguid?: string,
 ) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
@@ -35,7 +35,9 @@ export default function useActivityLogs(
       setDataLoading(false);
     };
 
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       setDataLoading(true);
       getData();
     }
