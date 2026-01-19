@@ -84,7 +84,7 @@ interface DataFiltersProps {
   dataLength: number
   filteredDataLength: number
   visibleFields: any[] | null
-  allFields: Field[]
+  allFields: Field[],
   fieldUniqueValues: Record<string, string[] | null> | null
   setPrimeReactFilters: React.Dispatch<SetStateAction<DataTableFilterMeta>>
   primeReactFilters: DataTableFilterMeta
@@ -171,7 +171,7 @@ function DataFilters(props: DataFiltersProps) {
     if (name === 'field' && typeof value === 'string') {
       setDateError(null);
 
-      const targetFieldProps = fields.find((field: Field) =>
+      const targetFieldProps = fields.find((field:Field) =>
         field.columnName === value);
 
       let defaultCondition = '';
@@ -613,7 +613,7 @@ function DataFilters(props: DataFiltersProps) {
                         >
                           {fields.map((field: Field) => (
                             <MenuItem key={field.columnName} value={field.columnName}>
-                              {field.columnName}
+                              {field.headerName ?? field.columnName}
                             </MenuItem>
                           ))}
                           ;
@@ -693,7 +693,9 @@ function DataFilters(props: DataFiltersProps) {
                               key={`${field}-${constraint.matchMode}-${constraint.value}`}
                               label={(
                                 <>
-                                  {field}
+                                  {allFields.find(
+                                    f => f.columnName === field,
+                                  )?.headerName ?? field}
                                   {' '}
                                   <b>{conditionName}</b>
                                   {' '}
