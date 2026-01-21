@@ -117,7 +117,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       'Event initiated by': row.submitterDisplayName,
       'Resource': row.resourceUniqueString,
       'Resource Type': row.resourceType,
-      'Details': row.displayJsonData || null,
+      'Details': row.data || null,
     };
     setDetailInfo(info);
     setOpenDetails(true);
