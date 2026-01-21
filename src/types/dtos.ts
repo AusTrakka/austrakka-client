@@ -238,17 +238,6 @@ export interface UserListV2 {
   analysisServerUsername: string,
 }
 
-export interface PrimeReactField {
-  columnName: string,
-  columnDisplayName?: string;
-  primitiveType: string | null,
-}
-
-export interface ActivityField extends PrimeReactField {
-  columnOrder: number,
-  hidden: boolean,
-}
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -260,9 +249,14 @@ export interface MetaDataColumnMapping {
   canVisualise: boolean,
 }
 
-// this is a common interface representing metadata fields,
+// INFO: this is a common interface representing metadata fields and general table fields,
 // with information about types and display order
-export interface Field extends PrimeReactField {
+export interface Field {
+  columnName: string,
+  // INFO: this is the only field that is not actually part of any dto
+  // this is needed for activity log compatibility
+  headerName?: string,
+  primitiveType: string | null,
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
