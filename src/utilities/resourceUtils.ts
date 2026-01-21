@@ -276,8 +276,8 @@ export const patchFieldV2 = (
 // Activity log
 export const getActivities = (
   recordType: string,
-  rguid: string,
   token: string,
+  rguid?: string,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
   const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PrimeReactField, ProjectViewField } from '../types/dtos';
+import { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export type PrimeReactColumnDefinition = {
@@ -11,16 +11,15 @@ export type PrimeReactColumnDefinition = {
   isDecorated?: boolean;
 };
 
-export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]):
+export function buildPrimeReactColumnDefinitions(fields: Field[]):
 PrimeReactColumnDefinition[] {
   const columnBuilders: PrimeReactColumnDefinition[] = [];
-
   const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 
-  fields.forEach(({ columnName, primitiveType, columnDisplayName }: PrimeReactField) => {
+  fields.forEach(({ columnName, primitiveType, headerName }: Field) => {
     let c = {
       field: columnName,
-      header: columnDisplayName || columnName,
+      header: headerName ?? columnName,
       isDecorated: false,
     };
 
