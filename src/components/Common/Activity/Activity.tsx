@@ -92,16 +92,17 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       'Event initiated by': row.submitterDisplayName,
       'Resource': row.resourceUniqueString,
       'Resource Type': row.resourceType,
-      'Details': row.displayJsonData || null,
+      'Details': row.data || null,
     };
     setDetailInfo(info);
     setOpenDetails(true);
   };
 
-  const closeDetailsHandler = () => {
-    setOpenDetails(false);
-    setSelectedRow(null);
-  };
+  useEffect(() => {
+    if (openDetails === false) {
+      setSelectedRow(null);
+    }
+  }, [openDetails]);
 
   const onRowSelect = (e: DataTableSelectEvent) => {
     setSelectedRow(e.data);
@@ -177,14 +178,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   const tableContent = (
     <>
-      {
-        openDetails && (
-          <ActivityDetails
-            onClose={closeDetailsHandler}
-            detailInfo={detailInfo}
-          />
-        )
-      }
+      <ActivityDetails
+        // onClose={closeDetailsHandler}
+        drawerOpen={openDetails}
+        setDrawerOpen={setOpenDetails}
+        detailInfo={detailInfo}
+      />
       <DataFilters
         dataLength={localLogs.length ?? 0}
         filteredDataLength={filteredDataLength}
