@@ -23,8 +23,8 @@ import {
 import Grid from '@mui/material/Grid2';
 import { FileUpload, Rule } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { getUserProformas, uploadSubmissions, validateSubmissions } from '../../utilities/resourceUtils';
-import { Proforma } from '../../types/dtos';
+import { getUserProformas, uploadSubmissions, validateSubmissions, getProjectList } from '../../utilities/resourceUtils';
+import { Proforma, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
 import { useApi } from '../../app/ApiContext';
@@ -39,6 +39,7 @@ import { OrgDescriptor } from '../../types/sequploadtypes';
 import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
+import { Theme } from '../../assets/themes/theme';
 
 interface Options {
   validate: boolean,
@@ -89,7 +90,8 @@ function UploadMetadata() {
   const [fileValidated, setFileValidated] = useState(false);
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
-  const [availableProjects, setAvailableProjects] = useState<string[]>([]);
+  const [projectAbbrevs, setProjectAbbrevs] = useState<string[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const scrollRef = useRef<null | HTMLDivElement>(null);
@@ -124,9 +126,31 @@ function UploadMetadata() {
       setAvailableProjects([]);
       return;
     }
-    const projects: string[] = getSharableProjects(user.groupRoles ?? []);
-    setAvailableProjects(projects);
+    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    setProjectAbbrevs(abbrevs);
   }, [user.groupRoles, user.loading, user.orgAbbrev]);
+
+  useEffect(() => {
+    async function getProjects() {
+      const projectResponse : ResponseObject<Project[]> = await getProjectList(token);
+      if (projectResponse.status === ResponseType.Success) {
+        const filteredProjects = projectResponse.data?.filter(
+          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
+        );
+
+        const abbrevs = new Set(projectAbbrevs);
+        const projects = filteredProjects?.filter(project => abbrevs.has(project.abbreviation));
+        setAvailableProjects(projects ?? []);
+      }
+    }
+    if (
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING &&
+      projectAbbrevs.length > 0
+    ) {
+      getProjects();
+    }
+  }, [token, tokenLoading, projectAbbrevs]);
 
   useEffect(() => {
     setProformaStatus(LoadingState.LOADING);
@@ -316,16 +340,24 @@ function UploadMetadata() {
               multiple
               onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
             >
-              {
-                availableProjects.map((project: string) => (
+              {/* If detailed project list isn't populated, use abbreviation list only */}
+              {availableProjects && availableProjects.length > 0
+                ? availableProjects.map((project: Project) => (
+                  <MenuItem
+                    value={project.abbreviation}
+                    key={project.abbreviation}
+                  >
+                    {`${project.abbreviation} : ${project.name}`}
+                  </MenuItem>
+                ))
+                : projectAbbrevs.map((project: string) => (
                   <MenuItem
                     value={project}
                     key={project}
                   >
                     {project}
                   </MenuItem>
-                ))
-              }
+                ))}
             </Select>
           </FormControl>
           <Typography variant="h4" color="primary">Select proforma</Typography>
@@ -441,7 +473,7 @@ function UploadMetadata() {
           {options.validate ? (
             <Button
               variant="contained"
-              sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+              sx={{ width: '100%', marginBottom: 3, backgroundColor: Theme.SecondaryLightGreen }}
               disabled={!canUpload}
               endIcon={<Rule />}
               onClick={() => handleSubmit()}
@@ -452,7 +484,7 @@ function UploadMetadata() {
             : (
               <Button
                 variant="contained"
-                sx={{ width: '100%', marginBottom: 3, backgroundColor: import.meta.env.VITE_THEME_SECONDARY_LIGHT_GREEN }}
+                sx={{ width: '100%', marginBottom: 3, backgroundColor: Theme.SecondaryLightGreen }}
                 disabled={!canUpload}
                 endIcon={<FileUpload />}
                 onClick={() => handleSubmit()}
@@ -478,7 +510,7 @@ function UploadMetadata() {
       </div>
       <Backdrop
         sx={{
-          color: 'var(--background-colour)',
+          color: Theme.Background,
           zIndex: theme.zIndex.drawer + 1,
         }}
         open={submission.status === LoadingState.LOADING}

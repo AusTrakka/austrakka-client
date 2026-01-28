@@ -18,6 +18,7 @@ import { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { bytesToMB } from '../../../utilities/renderUtils';
+import { Theme } from '../../../assets/themes/theme';
 
 interface EditableRowProps {
   field: keyof UserV2;
@@ -151,11 +152,11 @@ function EditableRow(props : EditableRowProps) {
                 {(editedValues?.[field] as boolean || false) ? (
                   <CheckCircleOutlined
                     fontSize="small"
-                    style={{ color: 'var(--secondary-light-green)' }}
+                    style={{ color: Theme.SecondaryLightGreen }}
                   />
                 )
                   :
-                  <CancelOutlined fontSize="small" style={{ color: 'var(--secondary-orange)' }} />}
+                  <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />}
               </Tooltip>
             </div>
           </TableCell>

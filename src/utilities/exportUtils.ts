@@ -1,5 +1,4 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
-import FriendlyHeader from '../types/friendlyHeader.interface';
 
 const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
   const csvRows = [];
@@ -28,16 +27,6 @@ export const formatDataAsCSV = (
   return csvRows.join('\n');
 };
 
-export const formatDataAsCSV2 = (data: any[], headers: FriendlyHeader[]) => {
-  const csvRows = [];
-  const csvHeader = headers.map(header => header.displayName).join(',');
-  const dataHeaders = headers.map(header => header.name);
-  const csvContent = formatCsvBody(data, dataHeaders);
-  csvRows.push(csvHeader);
-  csvRows.push(...csvContent);
-  return csvRows.join('\n');
-};
-
 export const formatCSVValues = (row: any) => {
   const formattedRow: any = {};
   for (const [key, value] of Object.entries(row)) {
@@ -61,11 +50,6 @@ export const formatCSVValues = (row: any) => {
     }
   }
   return formattedRow;
-};
-
-export const generateCSV2 = (data: any[], headers: FriendlyHeader[]) => {
-  const formattedData = data.map((row: any) => formatCSVValues(row));
-  return formatDataAsCSV2(formattedData, headers);
 };
 
 export const generateCSV = (data: any[], headers?:string[]) => {

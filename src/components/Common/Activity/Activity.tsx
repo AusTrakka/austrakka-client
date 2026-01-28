@@ -2,20 +2,24 @@ import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableRowClickEvent,
+  DataTableRowDataArray,
   DataTableSelectEvent,
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
-import { Cancel, Info } from '@mui/icons-material';
+import { Cancel } from '@mui/icons-material';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
-import { ActivityField, DerivedLog } from '../../../types/dtos';
+import { DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
-import FriendlyHeader from '../../../types/friendlyHeader.interface';
-import TableToolbar from './TableToolbar';
-import EmptyContentPane, { ContentIcon } from '../EmptyContentPane';
-import { defaultState } from '../../DataFilters/DataFilters';
+import DataFilters, { defaultState } from '../../DataFilters/DataFilters';
+import sortIcon from '../../TableComponents/SortIcon';
+import { Theme } from '../../../assets/themes/theme';
+import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
+import { useStateFromSearchParamsForFilterObject } from '../../../utilities/stateUtils';
+import { useStableNavigate } from '../../../app/NavigationContext';
+import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 
 interface ActivityProps {
   recordType: string,
@@ -31,79 +35,39 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Details': null,
 };
 
-const EVENT_NAME_COLUMN: string = 'eventType';
-
-export const supportedColumns: ActivityField[] = [
-  {
-    columnName: EVENT_NAME_COLUMN,
-    columnDisplayName: 'Event',
-    primitiveType: 'string',
-    columnOrder: 1,
-    hidden: false,
-  },
-  {
-    columnName: 'eventStatus',
-    columnDisplayName: 'Status',
-    primitiveType: 'string',
-    columnOrder: 2,
-    hidden: false,
-  },
-  {
-    columnName: 'resourceUniqueString',
-    columnDisplayName: 'Resource',
-    primitiveType: 'string',
-    columnOrder: 3,
-    hidden: false,
-  },
-  {
-    columnName: 'resourceType',
-    columnDisplayName: 'Resource type',
-    primitiveType: 'string',
-    columnOrder: 4,
-    hidden: false,
-  },
-  {
-    columnName: 'eventTime',
-    columnDisplayName: 'Time stamp',
-    primitiveType: 'date',
-    columnOrder: 5,
-    hidden: false,
-  },
-  {
-    columnName: 'submitterDisplayName',
-    columnDisplayName: 'Event initiated by',
-    primitiveType: 'string',
-    columnOrder: 6,
-    hidden: false,
-  },
-];
-
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
-  const [columns, setColumns] = useState<any[]>([]);
+  const { navigate } = useStableNavigate();
+  const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedRow, setSelectedRow] = useState<DerivedLog | null>(null);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
+  const [loadingState, setLoadingState] = useState<boolean>(false);
   const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
-  
+  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState<boolean>(true);
+  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
+  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
+    'filter',
+    defaultState,
+    navigate,
+  );
+
   const routeSegment = recordType === 'Tenant'
     ? recordType
     : `${recordType}V2`;
-  
+
   const {
     refinedLogs,
     httpStatusCode,
     dataLoading,
-  } = useActivityLogs(routeSegment, rGuid ?? '');
+  } = useActivityLogs(routeSegment, rGuid);
 
-  const transformData = (data: DerivedLog[]): DerivedLog[] =>
-    // This previously aggregated logs by aggregation keys, which no longer exist
-    // Currently a placeholder for client-side log transforms
-    data;
   useEffect(() => {
-    if (refinedLogs.length > 0) {
-      const transformedData = transformData(refinedLogs);
-      setLocalLogs(transformedData);
-    }
+    setLoadingState(dataLoading);
+  }, [dataLoading]);
+
+  useEffect(() => {
+    setLocalLogs(refinedLogs);
+    setFilteredDataLength(refinedLogs.length);
   }, [refinedLogs]);
 
   useEffect(() => {
@@ -114,7 +78,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     firstColBuilder.isDecorated = true;
     const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
-        
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
@@ -122,29 +85,31 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const row = event.data;
-        
+
     const info: ActivityDetailInfo = {
       'Event': row[EVENT_NAME_COLUMN],
       'Time stamp': row.eventTime,
       'Event initiated by': row.submitterDisplayName,
       'Resource': row.resourceUniqueString,
       'Resource Type': row.resourceType,
-      'Details': row.displayJsonData || null,
+      'Details': row.data || null,
     };
     setDetailInfo(info);
     setOpenDetails(true);
   };
-    
-  const closeDetailsHandler = () => {
-    setOpenDetails(false);
-    setSelectedRow(null);
-  };
+
+  useEffect(() => {
+    if (openDetails === false) {
+      setSelectedRow(null);
+    }
+  }, [openDetails]);
 
   const onRowSelect = (e: DataTableSelectEvent) => {
     setSelectedRow(e.data);
   };
 
-  // TODO very similar logic can be used to expand/collapse bundled logs when re-implemented
+  // TODO: very similar logic can be used to expand/collapse bundled logs when re-implemented
+  // 
   // const toggleRow = (e: DataTableRowToggleEvent) => {
   //   const row = (e.data as any[])[0] as Log;
   //
@@ -188,48 +153,20 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   //   }
   //   setLocalLogs(clonedRows);
   // };
-    
-  const friendlyHeaders: FriendlyHeader[] = supportedColumns
-    .sort((a, b) => a.columnOrder - b.columnOrder)
-    .map((col) => ({ name: col.columnName, displayName: col.columnDisplayName || col.columnName }));
-    
-  const header = (
-    <TableToolbar
-      filteredData={refinedLogs}
-      rowDataHeaders={friendlyHeaders}
-      showDisplayHeader
-      showExportButton={refinedLogs.length > 0}
-    />
-  );
-
-  const getIndentStyle = (level: number) => ({
-    paddingLeft: `${level * 25}px`, // Indent by 20px per level
-    display: 'inline-flex', // Use inline-flex to align both the icon and the ID in a row
-    alignItems: 'center',
-  });
 
   const firstColumnTemplate = (rowData: any) => (
     rowData.eventStatus === 'Success'
       ? (
-        <span style={getIndentStyle(rowData.level ?? 0)}>
-          <Info style={{
-            marginRight: '10px',
-            cursor: 'pointer',
-            color: 'rgb(21,101,192)',
-            fontSize: '14px',
-            verticalAlign: 'middle',
-          }}
-          />
+        <div>
           {rowData[EVENT_NAME_COLUMN]}
-        </span>
+        </div>
       )
-                
       : (
-        <span style={getIndentStyle(rowData.level ?? 0)}>
+        <span>
           <Cancel style={{
             marginRight: '10px',
             cursor: 'pointer',
-            color: 'rgb(198, 40, 40)',
+            color: Theme.SecondaryRed,
             fontSize: '14px',
             verticalAlign: 'middle',
           }}
@@ -239,95 +176,99 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       )
   );
 
-  const selectRowClassName = (rowData: any) => {
-    const level = rowData.level ?? 0;
-    if (level <= 0 || level > 5) return '';
-    return `indent-level-${level}-tint`;
-  };
-  
   const tableContent = (
     <>
-      {
-        openDetails && (
-          <ActivityDetails
-            onClose={closeDetailsHandler}
-            detailInfo={detailInfo}
-          />
-        )
-}
+      <ActivityDetails
+        // onClose={closeDetailsHandler}
+        drawerOpen={openDetails}
+        setDrawerOpen={setOpenDetails}
+        detailInfo={detailInfo}
+      />
+      <DataFilters
+        dataLength={localLogs.length ?? 0}
+        filteredDataLength={filteredDataLength}
+        visibleFields={columns}
+        allFields={supportedColumns}
+        fieldUniqueValues={null}
+        setPrimeReactFilters={setCurrentFilters}
+        primeReactFilters={currentFilters}
+        isOpen={isDataFiltersOpen}
+        setIsOpen={setIsDataFiltersOpen}
+        dataLoaded={!loadingState}
+        setLoadingState={setLoadingState}
+      />
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
-        <div>
-          <DataTable
-            id="activity-table"
-            value={localLogs}
-            filters={defaultState}
-            size="small"
-            columnResizeMode="expand"
-            resizableColumns
-            showGridlines
-            reorderableColumns
-            removableSort
-            header={header}
-            scrollable
-            scrollHeight="calc(100vh - 300px)"
-            paginator
-            onRowClick={rowClickHandler}
-            selection={selectedRow}
-            onRowSelect={onRowSelect}
-            // onRowToggle={toggleRow}
-            selectionMode="single"
-            rows={25}
-            rowClassName={selectRowClassName}
-            loading={false}
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight
-            emptyMessage={(
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No activity found
-              </Typography>
-                        )}
-          >
-            <Column
-              expander={(rowData: DerivedLog) => (rowData.children?.length ?? 0) > 0}
-              style={{ width: '3em' }}
-              className="activity-row-expander"
-            />
-            <Column
-              key={EVENT_NAME_COLUMN}
-              field={EVENT_NAME_COLUMN}
-              header="Event"
-              hidden={false}
-              body={firstColumnTemplate}
-              sortable={false}
-              resizeable
-              style={{ minWidth: '150px', paddingLeft: '16px' }}
-              headerClassName="custom-title"
-            />
-            {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-              col.field !== EVENT_NAME_COLUMN)
-              .map((col: any) => (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
-                  hidden={false}
-                  body={col.body}
-                  sortable={false}
-                  resizeable
-                  style={{ minWidth: '150px', paddingLeft: '16px' }}
-                  headerClassName="custom-title"
-                />
-              )) : null}
-          </DataTable>
-        </div>
+        <DataTable
+          className="my-flexible-table"
+          value={localLogs}
+          onValueChange={(e: DataTableRowDataArray<DerivedLog[]>) => {
+            setFilteredDataLength(e.length);
+            setLoadingState(false);
+          }}
+          filters={loadingState ? defaultState : currentFilters}
+          size="small"
+          columnResizeMode="expand"
+          resizableColumns
+          showGridlines
+          reorderableColumns
+          header={<div style={{ margin: '20px' }} />}
+          removableSort
+          scrollable
+          sortIcon={sortIcon}
+          scrollHeight="calc(100vh - 400px)"
+          paginator
+          loading={loadingState}
+          onRowClick={rowClickHandler}
+          selection={selectedRow}
+          onRowSelect={onRowSelect}
+          // onRowToggle={toggleRow}
+          selectionMode="single"
+          rows={25}
+          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+          paginatorPosition="bottom"
+          paginatorRight
+          emptyMessage={(
+            <Typography variant="subtitle1" color="textSecondary" align="center">
+              No activity found
+            </Typography>
+          )}
+        >
+          <Column
+            key={EVENT_NAME_COLUMN}
+            field={EVENT_NAME_COLUMN}
+            header="Event"
+            hidden={false}
+            body={firstColumnTemplate}
+            sortable
+            resizeable
+            headerClassName="custom-title"
+            className="flexible-column"
+            bodyClassName="value-cells"
+          />
+          {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
+            col.field !== EVENT_NAME_COLUMN)
+            .map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                hidden={false}
+                body={col.body}
+                sortable
+                resizeable
+                headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName="value-cells"
+              />
+            )) : null}
+        </DataTable>
       </Paper>
-      <div style={{ height: '10px' }} />
     </>
   );
-    
+
+  // TODO: Need to fix this, this can be refactored differently
   let contentPane = <></>;
   if (httpStatusCode === 401 || httpStatusCode === 403) {
     contentPane = (
@@ -357,7 +298,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       ? tableContent
       : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.InTray} />;
   }
-    
+
   return (
     <>
       {contentPane}

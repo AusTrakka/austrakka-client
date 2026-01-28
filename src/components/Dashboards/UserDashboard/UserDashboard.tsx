@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid2';
 import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
 import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
 import { cardStyle } from '../../../styles/dashboardStyles';
+import { Theme } from '../../../assets/themes/theme';
 
 interface UserDashboardProps {
 }
@@ -22,7 +23,7 @@ function UserDashboard(props: UserDashboardProps) {
           spacing={2}
           sx={{ marginTop: 1,
             padding: 2,
-            backgroundColor: 'var(--primary-main-bg)' }}
+            backgroundColor: Theme.PrimaryMainBackground }}
         >
           <Card sx={cardStyle}>
             <CardContent>

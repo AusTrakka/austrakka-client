@@ -38,6 +38,7 @@ import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
+import { Theme } from '../../assets/themes/theme';
 
 // TODO: 
 // - Check if there is a clean way to make sure openShareDialog && openUnshareDialog != true
@@ -354,7 +355,7 @@ function OrgSamplesTable(props: SamplesProps) {
   return (
     <div className="datatable-container-org">
       <Backdrop
-        sx={{ color: 'var(--background-colour)', zIndex: 2000 }} // TODO: Find a better way to set index higher then top menu
+        sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
       >
         <CircularProgress color="inherit" />

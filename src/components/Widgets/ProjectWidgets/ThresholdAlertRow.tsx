@@ -5,7 +5,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
 import { ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
-import theme from '../../../assets/themes/theme';
+import muiTheme from '../../../assets/themes/theme';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // Render a single alert
@@ -14,14 +14,14 @@ interface ThresholdAlertRowProps {
   alertRow: ThresholdAlert;
 }
 
-const alertColours:{ [key: string]: string } = {
+const alertColours: { [key: string]: string } = {
   'No Alert': 'white',
   // @ts-ignore
-  'Monitor': alpha(theme.palette.info.light, 0.3),
+  'Monitor': alpha(muiTheme.palette.info.light, 0.3),
   // @ts-ignore
-  'Review': alpha(theme.palette.warning.light, 0.3),
+  'Review': alpha(muiTheme.palette.warning.light, 0.3),
   // @ts-ignore
-  'Investigate': alpha(theme.palette.error.light, 0.3),
+  'Investigate': alpha(muiTheme.palette.error.light, 0.3),
 };
 
 export default function ThresholdAlertRow(props: ThresholdAlertRowProps) {

@@ -3,6 +3,7 @@ import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mu
 import { Cancel, Lock } from '@mui/icons-material';
 import { GroupRole } from '../../../types/dtos';
 import { GroupHeadings } from '../Enums/GroupHeadings';
+import { Theme } from '../../../assets/themes/theme';
 
 interface UserGroupRolesRowProps {
   groupName: string;
@@ -58,7 +59,7 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
 
   return (
     isOpen ? (
-      <TableRow style={{ backgroundColor: 'var(--primary-grey)' }}>
+      <TableRow style={{ backgroundColor: Theme.PrimaryGrey }}>
         <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
           <Box sx={{ width: '100%' }}>
             <Collapse in={isOpen} timeout="auto" unmountOnExit>

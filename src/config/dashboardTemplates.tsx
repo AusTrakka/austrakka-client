@@ -1,19 +1,19 @@
 import React from 'react';
-import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
+import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
 import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlertsDashboard';
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
 import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
-import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
+import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
 import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 
-const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
-  'default': DefaultDashboard,
+const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
+  'public-health-default': PublicHealthDefaultDashboard,
   'demo': DemoDashboard,
-  'basic': BasicDashboard,
+  'default': DefaultDashboard,
   'snap': SnapDashboard,
   'vicdh': VicDHDashboard,
   'vicdh-alerts': VicDHAlertsDashboard,

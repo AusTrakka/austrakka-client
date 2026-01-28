@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Chip, Drawer, Typography } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import { HelpOutline, ListAlt } from '@mui/icons-material';
+import CustomDrawer from '../Common/CustomDrawer';
 
 interface HelpSidebarProps {
   content: React.ReactElement,
@@ -30,26 +31,14 @@ export default function HelpSidebar(props: HelpSidebarProps) {
         label={chipLabel}
         onClick={toggleDrawer(true)}
       />
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-      >
-
-        <Box
-          sx={{ maxWidth: 600, padding: 6, borderLeft: 6, borderColor: 'secondary.main', height: '100%' }}
-          role="presentation"
-          onClick={() => setDrawerOpen(false)}
-          onKeyDown={() => setDrawerOpen(false)}
-        >
-          <ListAlt fontSize="large" color="primary" />
-          <Typography variant="h4" color="primary">
-            {title}
-          </Typography>
-          <br />
-          {content}
-        </Box>
-      </Drawer>
+      <CustomDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
+        <ListAlt fontSize="large" color="primary" />
+        <Typography variant="h4" color="primary">
+          {title}
+        </Typography>
+        <br />
+        {content}
+      </CustomDrawer>
     </>
   );
 }
