@@ -84,7 +84,6 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
 };
 
 // Project metadata
-export const getProjectSettings = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-settings`, token);
 export const getProjectFields = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
 export const getProjectViews = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
 export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`, token);
@@ -277,8 +276,8 @@ export const patchFieldV2 = (
 // Activity log
 export const getActivities = (
   recordType: string,
-  rguid: string,
   token: string,
+  rguid?: string,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
   const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;

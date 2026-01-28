@@ -6,12 +6,11 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
-import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
-import { Theme } from '../../../assets/themes/theme';
 
-function WithQC(props: ProjectDashboardTemplateProps) {
+// TODO: Set a max card height and handle scroll overflow
+function PublicHealthDefaultDashboard(props: ProjectDashboardTemplateProps) {
   const {
     projectAbbrev,
     filteredData,
@@ -45,25 +44,8 @@ function WithQC(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
         </Grid>
-        <Grid container sx={{ alignItems: 'flex-start' }} size={{ lg: 4, md: 12 }}>
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            <Card sx={cardStyle}>
-              <CardContent>
-                <MetadataValuePieChart
-                  field="QC"
-                  colourMapping={{
-                    'FAIL': Theme.SecondaryRed,
-                    'FLAG': Theme.SecondaryYellow,
-                    'PASS': Theme.SecondaryMain,
-                  }}
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
+        <Grid container sx={{ alignItems: 'flex-start' }} size={{ lg: 4, md: 6, xs: 8 }}>
+          <Grid size={12}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <Organisations
@@ -104,4 +86,4 @@ function WithQC(props: ProjectDashboardTemplateProps) {
     </Box>
   );
 }
-export default WithQC;
+export default PublicHealthDefaultDashboard;

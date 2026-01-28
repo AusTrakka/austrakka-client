@@ -15,6 +15,7 @@ import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter
 import { Sample } from '../../../types/sample.interface';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
+import { Theme } from '../../../assets/themes/theme';
 
 const TIME_AXIS_FIELD = 'Date_coll';
 
@@ -27,12 +28,12 @@ const FIELDS_AND_COLOURS: string[][] = [
 ];
 const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
-const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
+const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 
 interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
 }
- 
+
 /** Widget displaying a basic Epi Curve
 * Requires Date_coll for x-axis
 * Colour by Jurisdiction-style field if these fields present; otherwise dark green
@@ -69,7 +70,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       color: colourSpec,
     },
   });
-  
+
   useEffect(() => {
     const setColourSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
@@ -81,14 +82,14 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       };
       setColourSpec(colSpec);
     };
-    
+
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
       return;
     }
-    
+
     // If preferred colour field specified and available, use it, otherwise go through list
     if (preferredColourField &&
-        data.fields.map(fld => fld.columnName).includes(preferredColourField)
+      data.fields.map(fld => fld.columnName).includes(preferredColourField)
     ) {
       const colourSchemePair = FIELDS_AND_COLOURS.find(fld => fld[0] === preferredColourField) ?? ['', DEFAULT_COLOUR_SCHEME];
       setColourSpecFromField(preferredColourField, colourSchemePair[1]);
@@ -113,7 +114,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.fields, data?.loadingState]);
-  
+
   useEffect(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
       const { value } =
@@ -124,7 +125,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       setTimeFilterDescription('all time');
     }
   }, [timeFilterObject]);
-  
+
   useEffect(() => {
     // If there is no data, we cannot update range, so check filteredData length, not loadingState
     if (data?.fields && filteredData && filteredData.length > 0) {
@@ -159,35 +160,35 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
-  
+
   return (
     <Box>
       <Typography variant="h5" paddingBottom={5} color="primary">
         {`Samples (${timeFilterDescription})`}
       </Typography>
-      { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
-      <Grid container direction="row" spacing={0}>
-        <Grid item xs={11}>
-          <div id="#plot-container" ref={plotDiv} />
+      {data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
+        <Grid container direction="row" spacing={0}>
+          <Grid item xs={11}>
+            <div id="#plot-container" ref={plotDiv} />
+          </Grid>
+          <Grid item xs={1}>
+            <ExportVegaPlot
+              vegaView={vegaView}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={1}>
-          <ExportVegaPlot
-            vegaView={vegaView}
-          />
-        </Grid>
-      </Grid>
       )}
-      { errorMessage && (
+      {errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       )}
-      { (!data?.loadingState ||
-          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-            data.loadingState === MetadataLoadingState.ERROR ||
-            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-            <div>Loading...</div>
+      {(!data?.loadingState ||
+        !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
+          <div>Loading...</div>
       )}
     </Box>
   );

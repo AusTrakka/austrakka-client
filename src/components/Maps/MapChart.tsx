@@ -7,6 +7,7 @@ import { Sample } from '../../types/sample.interface';
 import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
 import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
 import { Field } from '../../types/dtos';
+import { Theme } from '../../assets/themes/theme';
 
 interface MapTestProps {
   colourScheme: string;
@@ -26,7 +27,7 @@ function MapChart(props: MapTestProps) {
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
   const [showAlert, setShowAlert] = useState(true);
   const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
-  
+
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
     const mapJson = Maps[mapSpec];
@@ -34,7 +35,7 @@ function MapChart(props: MapTestProps) {
     if (mapSpec === 'WORLD') {
       return mapJson;
     }
-    
+
     return {
       ...mapJson,
       features: mapJson.features.filter(
@@ -92,7 +93,7 @@ function MapChart(props: MapTestProps) {
       title: {
         text: 'Choropleth Visualisation',
       },
-      backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREY,
+      backgroundColor: Theme.PrimaryGrey,
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => `${params.name}: ${params.value ?? 'N/A'}`,
@@ -154,7 +155,7 @@ function MapChart(props: MapTestProps) {
 
     chartInstance.current.setOption(option, true);
   }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
-  
+
   useEffect(() => {
     if (!geoField) return;
     const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
@@ -168,7 +169,7 @@ function MapChart(props: MapTestProps) {
     setIsoType(isoCode);
     setRegionView(isoCode === 'iso_region');
   }, [geoField]);
-  
+
   useEffect(() => {
     if (!data || data.length === 0 || !geoField || !filteredMapSpec || !isoType) {
       setAggregateData([]);
@@ -217,7 +218,7 @@ function MapChart(props: MapTestProps) {
 
     updateChart();
   }, [aggregateData, updateChart]);
-  
+
   if (mapRenderingError) {
     return (
       <Alert severity="error">

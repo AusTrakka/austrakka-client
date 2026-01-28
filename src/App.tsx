@@ -17,7 +17,7 @@ import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectsList from './components/ProjectsList/ProjectsList';
 import Upload from './components/Upload/Upload';
 import Login from './components/Login/Login';
-import theme from './assets/themes/theme';
+import muiTheme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
@@ -42,9 +42,9 @@ function App() {
   const navigate = useNavigate();
   const navigationClient = new CustomNavigationClient(navigate);
   msalInstance.setNavigationClient(navigationClient);
-  
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={muiTheme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
         <UserProvider>
           <AuthenticatedTemplate>

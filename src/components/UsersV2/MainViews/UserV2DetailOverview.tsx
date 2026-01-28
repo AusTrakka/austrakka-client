@@ -43,7 +43,8 @@ import {
 import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
 import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 import { bytesToMB } from '../../../utilities/renderUtils';
-  
+import { Theme } from '../../../assets/themes/theme';
+
 function UserV2DetailOverview() {
   const { userGlobalId } = useParams();
   const { token, tokenLoading } = useApi();
@@ -53,7 +54,7 @@ function UserV2DetailOverview() {
   const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
   const [editedPrivileges, setEditedPrivileges] =
-      useState<GroupedPrivilegesByRecordType[] | null>(null);
+    useState<GroupedPrivilegesByRecordType[] | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -102,15 +103,15 @@ function UserV2DetailOverview() {
   if (user && user.noDownloadQuota) {
     nonDisplayFields.push('monthlyBytesQuota');
   }
-  
+
   // Add a boolean constant to determine if the user can see this page.
   // Currently, access is only granted to adminV2 (the root super user).
   // Instead, the visibility and editability of the page should be checked separately
   // based on the required scopes.
-  
+
   const canFetch = checkFetchUserScope(scopes);
   const canEdit = checkEditUserScopes(scopes);
-  
+
   // this should check if it has loaded then if its super user and
   // lastly if they have the scope for fetching the user
   if (loading === LoadingState.SUCCESS && (adminV2 || canFetch)) {
@@ -183,13 +184,13 @@ function UserV2DetailOverview() {
     };
 
     if (tokenLoading !== LoadingState.IDLE &&
-        tokenLoading !== LoadingState.LOADING &&
-        loading === LoadingState.SUCCESS &&
-        userGlobalId) {
+      tokenLoading !== LoadingState.LOADING &&
+      loading === LoadingState.SUCCESS &&
+      userGlobalId) {
       updateUser();
     }
   }, [loading, token, tokenLoading, userGlobalId]);
-  
+
   async function fetchUserDto(): Promise<UserV2> {
     const userFetchResponse: ResponseObject = await getUserV2(
       userGlobalId!,
@@ -228,7 +229,7 @@ function UserV2DetailOverview() {
   const handleConfirmPrivileges = async () => {
     await processPendingChanges();
   };
-  
+
   const editUserDetails = async () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
@@ -242,7 +243,7 @@ function UserV2DetailOverview() {
       noDownloadQuota: otherValues.noDownloadQuota,
       monthlyBytesQuota: otherValues.monthlyBytesQuota,
     };
-    
+
     const editedActiveState = user?.isActive !== isActive;
     try {
       // basic patch
@@ -251,7 +252,7 @@ function UserV2DetailOverview() {
         editedValuesDtoFormat,
         token,
       );
-      
+
       // enable user
       if (editedActiveState) {
         let userActivateResponse: ResponseObject;
@@ -270,11 +271,11 @@ function UserV2DetailOverview() {
           throw new Error('User could not be activated/deactivated');
         }
       }
-      
+
       if (userResponse.status !== ResponseType.Success) {
         throw new Error('User could not be accessed/changed');
       }
-      
+
       const userDto = await fetchUserDto();
       setUser(userDto);
       setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
@@ -306,13 +307,13 @@ function UserV2DetailOverview() {
       editedPrivileges,
       pendingChanges,
     );
-    
+
     setEditedPrivileges(prev => updateEditedPrivileges(
       prev,
       recordType,
       filteredAssignedRoles,
     ));
-    
+
     setPendingChanges(prev => updatePendingChanges(
       prev,
       recordType,
@@ -362,26 +363,26 @@ function UserV2DetailOverview() {
           </div>
 
           {/* Right: Quota + Dates */}
-          
+
           <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
-            
+
             <Stack direction="row" spacing={3}>
               {/* Left Column: Quota Info */}
               {!user.noDownloadQuota &&
-                  (
+                (
                   <Stack direction="column" spacing={0.2} minWidth={200}>
                     <Stack direction="row" justifyContent="space-between">
                       <Typography
                         variant="caption"
                         fontSize=".8rem"
-                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                        color={Theme.PrimaryGrey700}
                       >
                         Monthly Quota:
                       </Typography>
                       <Typography
                         variant="caption"
                         fontSize=".8rem"
-                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                        color={Theme.PrimaryGrey700}
                       >
                         {bytesToMB(user.monthlyBytesQuota)}
                         {' '}
@@ -392,14 +393,14 @@ function UserV2DetailOverview() {
                       <Typography
                         variant="caption"
                         fontSize=".8rem"
-                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                        color={Theme.PrimaryGrey700}
                       >
                         Quota Used:
                       </Typography>
                       <Typography
                         variant="caption"
                         fontSize=".8rem"
-                        color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                        color={Theme.PrimaryGrey700}
                       >
                         {bytesToMB(user.monthlyBytesUsed)}
                         {' '}
@@ -407,7 +408,7 @@ function UserV2DetailOverview() {
                       </Typography>
                     </Stack>
                   </Stack>
-                  )}
+                )}
 
               {/* Right Column: Dates */}
               <Stack direction="column" spacing={0.2} minWidth={200}>
@@ -415,14 +416,14 @@ function UserV2DetailOverview() {
                   <Typography
                     variant="caption"
                     fontSize=".8rem"
-                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                    color={Theme.PrimaryGrey700}
                   >
                     Last Active:
                   </Typography>
                   <Typography
                     variant="caption"
                     fontSize=".8rem"
-                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                    color={Theme.PrimaryGrey700}
                   >
                     {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
                   </Typography>
@@ -431,14 +432,14 @@ function UserV2DetailOverview() {
                   <Typography
                     variant="caption"
                     fontSize=".8rem"
-                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                    color={Theme.PrimaryGrey700}
                   >
                     Last Login:
                   </Typography>
                   <Typography
                     variant="caption"
                     fontSize=".8rem"
-                    color={import.meta.env.VITE_THEME_PRIMARY_GREY_700}
+                    color={Theme.PrimaryGrey700}
                   >
                     {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
                   </Typography>

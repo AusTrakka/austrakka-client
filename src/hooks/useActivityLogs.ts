@@ -7,10 +7,9 @@ import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
 
 // TODO look at this structure; it mimics a hook but is not one
-
 export default function useActivityLogs(
   recordType: string,
-  rguid: string,
+  rguid?: string,
 ) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
@@ -23,10 +22,9 @@ export default function useActivityLogs(
     const getData = async () => {
       const resp: ResponseObject<DerivedLog[]> = await getActivities(
         recordType,
-        rguid,
         token,
+        rguid,
       );
-            
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
@@ -37,7 +35,9 @@ export default function useActivityLogs(
       setDataLoading(false);
     };
 
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       setDataLoading(true);
       getData();
     }

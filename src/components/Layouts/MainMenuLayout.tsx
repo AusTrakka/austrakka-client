@@ -23,6 +23,7 @@ import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
 import { ScopeDefinitions } from '../../constants/scopes';
+import { Theme } from '../../assets/themes/theme';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -234,7 +235,7 @@ function MainMenuLayout() {
                   to={page.link}
                   end={page.link === '/'}
                   style={({ isActive }) => ({
-                    backgroundColor: isActive ? 'var(--primary-grey-300)' : '',
+                    backgroundColor: isActive ? Theme.PrimaryGrey300 : '',
                     borderRight: isActive ? 'solid 3px var(--secondary-main)' : '',
                     fontWeight: isActive ? 'bold' : '',
                   })}
@@ -248,7 +249,7 @@ function MainMenuLayout() {
                       key={page.title}
                       sx={{
                         '&:hover': {
-                          backgroundColor: 'var(--primary-grey-300)',
+                          backgroundColor: Theme.PrimaryGrey300,
                         },
                         'width': '100%',
                       }}

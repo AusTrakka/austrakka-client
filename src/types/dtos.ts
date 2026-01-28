@@ -17,6 +17,7 @@ export interface Project {
   }[],
   isActive: boolean,
   created: Date,
+  mergeAlgorithm: string,
   // could add auditable fields - created, createdBy
 }
 
@@ -27,7 +28,7 @@ export interface ProjectSummary {
   globalId: string,
   abbreviation: string,
   name: string,
-  sampleCount : number,
+  sampleCount: number,
   sequencedSampleCount: number,
   latestSampleDate: string, // TODO date?
   latestSequenceDate: string,
@@ -104,7 +105,7 @@ export interface PlotListing {
 export interface Member {
   objectId: string,
   roles: string[],
-  organization:{
+  organization: {
     id: number,
     abbreviation: string,
   },
@@ -140,7 +141,7 @@ export interface UserV2 {
   objectId: string,
   globalId: string,
   isActive: boolean,
-  orgGlobalId:string,
+  orgGlobalId: string,
   orgAbbrev: string,
   orgName: string,
   isAusTrakkaAdmin: boolean,
@@ -237,17 +238,6 @@ export interface UserListV2 {
   analysisServerUsername: string,
 }
 
-export interface PrimeReactField {
-  columnName: string,
-  columnDisplayName?: string;
-  primitiveType: string | null,
-}
-
-export interface ActivityField extends PrimeReactField {
-  columnOrder: number,
-  hidden: boolean,
-}
-
 export interface MetaDataColumnMapping {
   metaDataColumnMappingId: number,
   metaDataColumnName: string,
@@ -259,9 +249,14 @@ export interface MetaDataColumnMapping {
   canVisualise: boolean,
 }
 
-// this is a common interface representing metadata fields,
+// INFO: this is a common interface representing metadata fields and general table fields,
 // with information about types and display order
-export interface Field extends PrimeReactField {
+export interface Field {
+  columnName: string,
+  // INFO: this is the only field that is not actually part of any dto
+  // this is needed for activity log compatibility
+  headerName?: string,
+  primitiveType: string | null,
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
@@ -313,7 +308,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
-  geoField:boolean,
+  geoField: boolean,
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
@@ -356,7 +351,7 @@ export interface ProFormaVersion {
   fileName: string,
   columnMappings: MetaDataColumnMapping[],
   isCurrent: boolean,
-  assetId : number,
+  assetId: number,
   created: Date,
   createdBy: string,
 }

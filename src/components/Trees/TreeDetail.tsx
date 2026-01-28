@@ -30,6 +30,7 @@ import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUt
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { Theme } from '../../assets/themes/theme';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -470,7 +471,7 @@ function TreeDetail() {
                     bgcolor={color}
                     marginRight="10px"
                     border={1}
-                    borderColor="var(--primary-grey-300)"
+                    borderColor={Theme.PrimaryGrey300}
                   />
                   <Typography variant="caption">{label || 'null'}</Typography>
                 </Box>
