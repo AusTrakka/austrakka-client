@@ -55,6 +55,10 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { useApi } from '../../app/ApiContext';
+import { Project } from '../../types/dtos';
+import { getProjectList } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 const validFormats = {
   '.fq': '',
@@ -98,11 +102,12 @@ function UploadSequences() {
   const [selectedCreateSampleRecords, setSelectedCreateSampleRecords] = useState<boolean>(false);
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
-  const [availableProjects, setAvailableProjects] = useState<string[]>([]);
+  const [projectAbbrevs, setProjectAbbrevs] = useState<string[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const { tokenLoading } = useApi();
+  const { token, tokenLoading } = useApi();
 
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) => st.map((sur) => {
@@ -227,9 +232,31 @@ function UploadSequences() {
       setAvailableProjects([]);
       return;
     }
-    const projects: string[] = getSharableProjects(user.groupRoles ?? []);
-    setAvailableProjects(projects);
+    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    setProjectAbbrevs(abbrevs);
   }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+
+  useEffect(() => {
+    async function getProjects() {
+      const projectResponse : ResponseObject<Project[]> = await getProjectList(token);
+      if (projectResponse.status === ResponseType.Success) {
+        const filteredProjects = projectResponse.data?.filter(
+          ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
+        );
+
+        const abbrevs = new Set(projectAbbrevs);
+        const projects = filteredProjects?.filter(project => abbrevs.has(project.abbreviation));
+        setAvailableProjects(projects ?? []);
+      }
+    }
+    if (
+      tokenLoading !== LoadingState.IDLE &&
+        tokenLoading !== LoadingState.LOADING &&
+        projectAbbrevs.length > 0
+    ) {
+      getProjects();
+    }
+  }, [token, tokenLoading, projectAbbrevs]);
 
   const renderUploadRow = (row: SeqUploadRow) => {
     if (uploadRowTypes[row.seqType] === UploadPairedSequenceRow) {
@@ -348,16 +375,24 @@ function UploadSequences() {
                 multiple
                 onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
               >
-                {
-                  availableProjects.map((project: string) => (
+                {/* If detailed project list isn't populated, use abbreviation list only */}
+                {availableProjects && availableProjects.length > 0
+                  ? availableProjects.map((project: Project) => (
+                    <MenuItem
+                      value={project.abbreviation}
+                      key={project.abbreviation}
+                    >
+                      {`${project.abbreviation} : ${project.name}`}
+                    </MenuItem>
+                  ))
+                  : projectAbbrevs.map((project: string) => (
                     <MenuItem
                       value={project}
                       key={project}
                     >
                       {project}
                     </MenuItem>
-                  ))
-                }
+                  ))}
               </Select>
             </FormControl>
           </Grid>
