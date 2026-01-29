@@ -86,8 +86,6 @@ function UserV2DetailOverview() {
     'created': 'Joined',
   };
 
-  // 'monthlyBytesUsed': 'Monthly Bytes Used',
-  //     'monthlyBytesQuota': 'Monthly Bytes Quota',
   let nonDisplayFields = [
     'objectId',
     'orgAbbrev',
