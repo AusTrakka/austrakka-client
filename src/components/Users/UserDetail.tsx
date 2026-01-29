@@ -66,6 +66,7 @@ function UserDetail() {
     'isAusTrakkaAdmin',
     'isAusTrakkaProcess',
     'lastDownloadDate',
+    'orgGlobalId',
   ];
   
   if (user && user.noDownloadQuota) {
