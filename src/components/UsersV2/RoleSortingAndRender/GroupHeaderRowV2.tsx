@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import {
   AddCircle,
-  KeyboardArrowDown,
   KeyboardArrowRight,
 } from '@mui/icons-material';
 import { getOrganisations } from '../../../utilities/resourceUtils';
