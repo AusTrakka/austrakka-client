@@ -70,7 +70,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             response = await getOrganisations(false, token);
             break;
           default:
-            // Will need to add more calls once endpoints have been added
+            // TODO: Will need to add more calls once endpoints have been added
             // I think project is technically there but I dont think roles can be added for it.
             // for the cli
             return;
@@ -168,10 +168,14 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             disabled={empty}
             aria-label="expand row"
             size="small"
+            disableRipple
             onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :
-            <KeyboardArrowRight />}
+            <KeyboardArrowRight
+              sx={{ 'transform': openGroupRoles.includes(recordType) ?
+                'rotate(90deg)' : 'rotate(0deg)',
+              'transition': 'transform 0.125s ease-in-out' }}
+            />
           </IconButton>
           <Typography variant="body2">{recordType}</Typography>
         </div>
