@@ -69,7 +69,7 @@ function App() {
                   <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
                   <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
-                  <Route path="proformas/:proformaAbbrev/:proformaVersion" element={<ProFormaDetail />} />
+                  <Route path="proformas/:proformaAbbrev/:proformaVersion?" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />
                   <Route path="users/:userObjectId" element={<UserDetail />} />
                   <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Alert,
   CardContent,
@@ -33,6 +33,7 @@ function ProFormaDetail() {
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
+  const navigate = useNavigate();
 
   const handleDownload = async (abbrev: string | null, version:number | null = null) => {
     if (!abbrev) return;
@@ -66,10 +67,15 @@ function ProFormaDetail() {
           .sort((a, b) => b.version - a.version);
         setProformaVersionList(keepVersions);
         if (keepVersions.length > 0) {
-          setSelectedVersion(
-            keepVersions.find(v => v.version.toString() === proformaVersion) ??
-              keepVersions[0],
-          );
+          // If no valid version in the URL redirect to latest (after sorting)
+          const [latestVersion] = keepVersions;
+          const versionToSelect: ProFormaVersion
+            = keepVersions.find(v => v.version.toString() === proformaVersion) ?? latestVersion;
+
+          if (!proformaVersion || versionToSelect.version.toString() !== proformaVersion) {
+            navigate(`/proformas/${proformaAbbrev}/${versionToSelect.version}`, { replace: true });
+          }
+          setSelectedVersion(versionToSelect);
           return;
         }
       }
@@ -82,7 +88,7 @@ function ProFormaDetail() {
       getCurrentProformaDetails();
       getProformas();
     }
-  }, [proformaAbbrev, proformaVersion, token, tokenLoading]);
+  }, [proformaAbbrev, proformaVersion, token, tokenLoading, navigate]);
 
   const renderDownloadCard = () => {
     // Only show card if current proforma version is selected
@@ -166,10 +172,15 @@ function ProFormaDetail() {
           id="version-select-label"
           label="Version"
           value={selectedVersion?.version.toString() ?? ''}
-          onChange={(e) =>
-            setSelectedVersion(proformaVersionList.find(
+          onChange={(e) => {
+            const newVersion = proformaVersionList.find(
               v => v.version.toString() === e.target.value,
-            ))}
+            );
+            if (newVersion) {
+              setSelectedVersion(newVersion);
+              navigate(`/proformas/${proformaAbbrev}/${newVersion.version}`);
+            }
+          }}
         >
           {proformaVersionList.map((version) => (
             <MenuItem key={version.version} value={version.version.toString()}>
