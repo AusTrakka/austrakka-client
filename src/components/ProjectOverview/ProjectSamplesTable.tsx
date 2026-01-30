@@ -198,12 +198,10 @@ function ProjectSamplesTable(props: SamplesProps) {
     const source = getFieldSource(column.field);
     let headerColour: string | undefined;
 
-    if (source.includes('Sample Record')) {
-      headerColour = alpha(Theme.SecondaryLightGrey, 0.2);
-    } else if (source.includes('Dataset')) {
-      headerColour = alpha(Theme.SecondaryMain, 0.3);
-    } else if (source.includes('Both')) {
+    if (source.includes('Dataset')) {
       headerColour = alpha(Theme.SecondaryTeal, 0.3);
+    } else if (source.includes('Both')) {
+      headerColour = alpha(Theme.SecondaryMain, 0.3);
     }
 
     const headerStyle = vertical
