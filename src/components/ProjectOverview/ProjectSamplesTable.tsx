@@ -4,14 +4,11 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Close, InfoOutlined, TextRotateUp, TextRotateVertical } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
-  IconButton,
-  Dialog,
-  Alert, AlertTitle, Paper, Tooltip,
-  Typography,
+  IconButton, Dialog, Alert, AlertTitle, Paper, Tooltip, Typography, alpha,
 } from '@mui/material';
 import './Samples.css';
 import { Skeleton } from 'primereact/skeleton';
@@ -32,6 +29,7 @@ import { ProjectField } from '../../types/dtos';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
+import { Theme } from '../../assets/themes/theme';
 
 interface SamplesProps {
   projectAbbrev: string,
@@ -111,7 +109,8 @@ function ProjectSamplesTable(props: SamplesProps) {
 
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find(f => f.columnName === field);
-    return `${fieldObj?.fieldSource}`;
+    // Field Object returned from the server ideally shouldn't include "Source From" string
+    return `${fieldObj?.fieldSource.replace(/^Source From\s*/i, '')}`;
   };
 
   const header = (
@@ -161,6 +160,59 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
+  const getColumnHeader = (column:any, index: number, vertical: boolean) => {
+    const source = getFieldSource(column.field);
+
+    let icon: React.ReactElement = (
+      <InfoOutlined fontSize="inherit" color="disabled" />
+    );
+    if (source.includes('Sample Record')) {
+      icon = (<Description fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
+    } else if (source.includes('Dataset')) {
+      icon = (<Insights fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
+    } else if (source.includes('Both')) {
+      icon = (<MergeType fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
+    }
+
+    return !vertical ? (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {column.header}
+        <Tooltip title={`Source from ${source}`} placement="top" arrow>
+          {icon}
+        </Tooltip>
+      </div>
+    ) : (
+      <div
+        ref={(ref) => getHeaderRef(ref, index)}
+        className="custom-vertical-header"
+      >
+        <span className="vertical-text">{column.header}</span>
+        <Tooltip title={`Source from ${source}`} placement="top" arrow>
+          {icon}
+        </Tooltip>
+      </div>
+    );
+  };
+
+  const getColumnHeaderStyle = (vertical: boolean, column: any) => {
+    const source = getFieldSource(column.field);
+    let headerColour: string | undefined;
+
+    if (source.includes('Sample Record')) {
+      headerColour = alpha(Theme.SecondaryLightGrey, 0.2);
+    } else if (source.includes('Dataset')) {
+      headerColour = alpha(Theme.SecondaryMain, 0.3);
+    } else if (source.includes('Both')) {
+      headerColour = alpha(Theme.SecondaryTeal, 0.3);
+    }
+
+    const headerStyle = vertical
+      ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
+      : { width: `${maxHeight}px`, backgroundColor: headerColour };
+
+    return headerStyle;
+  };
+
   return (
     <div className="datatable-container-proj">
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
@@ -180,9 +232,9 @@ function ProjectSamplesTable(props: SamplesProps) {
             </strong>
           </AlertTitle>
           {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-            `An error occured loading project metadata. Some fields will be null, and 
+            `An error occurred loading project metadata. Some fields will be null, and 
           CSV export will not be available. Refresh to reload.` :
-            'An error occured loading project metadata. Refresh to reload.'}
+            'An error occurred loading project metadata. Refresh to reload.'}
           <br />
           Please contact the
           {' '}
@@ -249,30 +301,12 @@ function ProjectSamplesTable(props: SamplesProps) {
             <Column
               key={col.field}
               field={col.field}
-              header={
-                  !verticalHeaders ? (
-                    <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
-                      {col.header}
-                      <Tooltip title={getFieldSource(col.field)} placement="top">
-                        <InfoOutlined fontSize="inherit" color="disabled" style={{ margin: 5 }} />
-                      </Tooltip>
-                    </div>
-                  ) : (
-                    <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
-                      <span className="vertical-text">{col.header}</span>
-                      <Tooltip title={getFieldSource(col.field)} placement="top">
-                        <InfoOutlined fontSize="inherit" color="disabled" style={{ marginBottom: 4 }} />
-                      </Tooltip>
-                    </div>
-                  )
-                }
+              header={getColumnHeader(col, index, verticalHeaders)}
               body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
               hidden={col.hidden}
               sortable
               resizeable
-              headerStyle={verticalHeaders ?
-                { maxHeight: `${maxHeight}px`, width: `${maxHeight}px` } :
-                { width: `${maxHeight}px` }}
+              headerStyle={getColumnHeaderStyle(verticalHeaders, col)}
               headerClassName="custom-title"
               className="flexible-column"
               bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
