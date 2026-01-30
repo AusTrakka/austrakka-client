@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType, Palette } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
@@ -70,6 +70,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [filteredDataLength, setFilteredDataLength] =
     useState<number>(0);
+  const [colourBySource, setColourBySource] = useState<boolean>(true);
 
   const metadata: ProjectMetadataState | null =
     useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
@@ -116,6 +117,15 @@ function ProjectSamplesTable(props: SamplesProps) {
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Tooltip title={colourBySource ? 'Hide column header colours' : 'Colour column headers by field source'} placement="top" arrow>
+          <IconButton
+            onClick={() => setColourBySource(!colourBySource)}
+            aria-label="toggle coloured headers"
+            sx={{ color: colourBySource ? Theme.SecondaryMain : null }}
+          >
+            <Palette />
+          </IconButton>
+        </Tooltip>
         <KeyValuePopOver
           data={metadata?.projectFields || []}
           keyExtractor={(field: ProjectField) => field.fieldName}
@@ -197,13 +207,14 @@ function ProjectSamplesTable(props: SamplesProps) {
   const getColumnHeaderStyle = (vertical: boolean, column: any) => {
     const source = getFieldSource(column.field);
     let headerColour: string | undefined;
-
-    if (source.includes('Dataset')) {
-      headerColour = alpha(Theme.SecondaryTeal, 0.3);
-    } else if (source.includes('Both')) {
-      headerColour = alpha(Theme.SecondaryMain, 0.3);
+    if (colourBySource) {
+      if (source.includes('Dataset')) {
+        headerColour = alpha(Theme.SecondaryTeal, 0.3);
+      } else if (source.includes('Both')) {
+        headerColour = alpha(Theme.SecondaryMain, 0.3);
+      }
     }
-
+    
     const headerStyle = vertical
       ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
       : { width: `${maxHeight}px`, backgroundColor: headerColour };
