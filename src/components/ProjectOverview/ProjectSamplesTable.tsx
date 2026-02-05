@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType, Palette } from '@mui/icons-material';
+import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType } from '@mui/icons-material';
 import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
@@ -21,6 +21,7 @@ import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
+import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
@@ -117,15 +118,10 @@ function ProjectSamplesTable(props: SamplesProps) {
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Tooltip title={colourBySource ? 'Hide column header colours' : 'Colour column headers by field source'} placement="top" arrow>
-          <IconButton
-            onClick={() => setColourBySource(!colourBySource)}
-            aria-label="toggle coloured headers"
-            sx={{ color: colourBySource ? Theme.SecondaryMain : null }}
-          >
-            <Palette />
-          </IconButton>
-        </Tooltip>
+        <HeaderColourToggle
+          colourBySource={colourBySource}
+          setColourBySource={setColourBySource}
+        />
         <KeyValuePopOver
           data={metadata?.projectFields || []}
           keyExtractor={(field: ProjectField) => field.fieldName}
@@ -171,18 +167,24 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
 
   const getColumnHeader = (column:any, index: number, vertical: boolean) => {
-    const source = getFieldSource(column.field);
+    const source = getFieldSource(column.field).toLowerCase();
+    const iconColour = Theme.PrimaryGrey500;
+    
+    const icon = (() => {
+      switch (source?.toLowerCase()) {
+        case 'sample record':
+          return <Description fontSize="inherit" sx={{ color: iconColour }} />;
 
-    let icon: React.ReactElement = (
-      <InfoOutlined fontSize="inherit" color="disabled" />
-    );
-    if (source.includes('Sample Record')) {
-      icon = (<Description fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
-    } else if (source.includes('Dataset')) {
-      icon = (<Insights fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
-    } else if (source.includes('Both')) {
-      icon = (<MergeType fontSize="inherit" sx={{ color: Theme.SecondaryDarkGrey }} />);
-    }
+        case 'dataset':
+          return <Insights fontSize="inherit" sx={{ color: iconColour }} />;
+
+        case 'both':
+          return <MergeType fontSize="inherit" sx={{ color: iconColour }} />;
+
+        default:
+          return <InfoOutlined fontSize="inherit" sx={{ color: iconColour }} />;
+      }
+    })();
 
     return !vertical ? (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
