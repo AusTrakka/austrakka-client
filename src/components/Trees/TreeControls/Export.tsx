@@ -8,13 +8,6 @@ import { Menu } from '@mui/material';
 import html2canvas from 'html2canvas';
 import { TreeExportFuctions } from '../Tree';
 
-interface Option {
-  exportFunction: CallableFunction
-  label: string
-  fileName: string
-  encode: boolean
-}
-
 const base64toBlob = (base64Image: string) => {
   // Remove the data URL prefix
 
@@ -140,20 +133,24 @@ export default function ExportButton(
     }
   };
 
-  const options: Option[] = [
-    {
-      exportFunction: () => phylocanvasRef.current?.exportSVG(),
-      label: 'Export tree as SVG',
-      fileName: `${treeName}.svg`,
-      encode: false,
-    },
-    {
-      exportFunction: () => phylocanvasRef.current?.exportPNG(),
-      label: 'Export tree as PNG',
-      fileName: `${treeName}.png`,
-      encode: true,
-    },
-  ];
+  const getSVGBlob = async () => {
+    const svgBlob = phylocanvasRef.current?.exportSVG();
+
+    if (!svgBlob) {
+      throw new Error('SVG export failed');
+    }
+    const svgText = await svgBlob.text();
+
+    const fixedSvgText = svgText
+      .replace(/<text(?![^>]*xml:space)/g, '<text xml:space="preserve"')
+      .replace(/<tspan(?![^>]*xml:space)/g, '<tspan xml:space="preserve"');
+
+    const svg = new Blob(
+      [fixedSvgText],
+      { type: 'image/svg+xml' },
+    );
+    return svg;
+  };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -181,14 +178,24 @@ export default function ExportButton(
         onClose={handleClose}
         onClick={handleClose}
       >
-        {options.map((option) => (
-          <MenuItem
-            key={option.label}
-            onClick={() => download(option.exportFunction(), option.fileName, option.encode)}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
+        <MenuItem
+          key="Export tree as SVG"
+          onClick={async () => {
+            const blob = await getSVGBlob();
+            if (blob) download(blob, `${treeName}.svg`, false);
+          }}
+        >
+          Export tree as SVG
+        </MenuItem>
+        <MenuItem
+          key="Export tree as PNG"
+          onClick={async () => {
+            const blob = phylocanvasRef.current?.exportPNG();
+            if (blob) download(blob, `${treeName}.png`, true);
+          }}
+        >
+          Export tree as PNG
+        </MenuItem>
         <MenuItem onClick={() => handleTipExport()}>
           Export leaves
         </MenuItem>
