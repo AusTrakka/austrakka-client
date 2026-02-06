@@ -9,17 +9,18 @@ import { PendingChange } from '../../types/userDetailEdit.interface';
 import { ResponseType } from '../../constants/responseType';
 
 const postApiMap: Record<string,
-(recordGlobalId: string,
-  body: UserRoleRecordPrivilegePost,
-  token: string) => Promise<ResponseObject<any>>> = {
+  (recordGlobalId: string,
+    body: UserRoleRecordPrivilegePost,
+    token: string) => Promise<ResponseObject<any>>> = {
   'Organisation': postOrgPrivilege,
   'Tenant': postTenantPrivilege,
 };
 
 const deleteApiMap: Record<string,
-(recordGlobalId: string,
-  privilegeGlobalId: string,
-  token: string) => Promise<ResponseObject<any>>> = {
+  (recordGlobalId: string,
+    assigneeGlobalId: string,
+    roleGlobalId: string,
+    token: string) => Promise<ResponseObject<any>>> = {
   'Organisation': deleteOrgPrivilege,
   'Tenant': deleteTenantPrivilege,
 };
@@ -28,7 +29,7 @@ export async function processPrivilegeChanges(
   pendingChanges: PendingChange[],
   userGlobalId: string,
   token: string,
-): Promise<[ string | null, PendingChange][]> {
+): Promise<[string | null, PendingChange][]> {
   const failedChanges: [string | null, PendingChange][] = [];
 
   const processChange = async (change: PendingChange) => {
@@ -48,8 +49,9 @@ export async function processPrivilegeChanges(
         }
       } else if (change.type === 'DELETE' && deleteApiMap[change.recordType]) {
         const response = await deleteApiMap[change.recordType](
-          change.payload.recordGlobalId!,
-          change.payload.privilegeGlobalId!,
+          change.payload.recordName,
+          userGlobalId,
+          change.payload.roleName,
           token,
         );
         if (response.status !== ResponseType.Success) {

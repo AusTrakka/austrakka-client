@@ -182,11 +182,12 @@ export const postTenantPrivilege = (
 
 export const deleteTenantPrivilege = (
   _: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
 ) =>
   callDELETE(
-    `/api/Tenant/Privilege/${privilegeGlobalId}`,
+    `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
   );
 
@@ -254,10 +255,11 @@ export const postOrgPrivilege = (
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
 ) => callDELETE(
-  `/api/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}`,
+  `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
   token,
 );
 
