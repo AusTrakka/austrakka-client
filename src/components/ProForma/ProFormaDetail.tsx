@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Alert,
   CardContent,
@@ -26,14 +26,14 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 
 function ProFormaDetail() {
-  const { proformaAbbrev, proformaVersion } = useParams();
+  const { proformaAbbrev } = useParams();
   const [proforma, setProforma] = useState<Proforma | null>();
   const [selectedVersion, setSelectedVersion] = useState<ProFormaVersion | null>();
   const [proformaVersionList, setProformaVersionList] = useState<ProFormaVersion[]>([]);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleDownload = async (abbrev: string | null, version:number | null = null) => {
     if (!abbrev) return;
@@ -67,15 +67,7 @@ function ProFormaDetail() {
           .sort((a, b) => b.version - a.version);
         setProformaVersionList(keepVersions);
         if (keepVersions.length > 0) {
-          // If no valid version in the URL redirect to latest (after sorting)
-          const [latestVersion] = keepVersions;
-          const versionToSelect: ProFormaVersion
-            = keepVersions.find(v => v.version.toString() === proformaVersion) ?? latestVersion;
-
-          if (!proformaVersion || versionToSelect.version.toString() !== proformaVersion) {
-            navigate(`/proformas/${proformaAbbrev}/${versionToSelect.version}`, { replace: true });
-          }
-          setSelectedVersion(versionToSelect);
+          setSelectedVersion(keepVersions[0]);
           return;
         }
       }
@@ -88,7 +80,7 @@ function ProFormaDetail() {
       getCurrentProformaDetails();
       getProformas();
     }
-  }, [proformaAbbrev, proformaVersion, token, tokenLoading, navigate]);
+  }, [proformaAbbrev, token, tokenLoading]);
 
   const renderDownloadCard = () => {
     // Only show card if current proforma version is selected
@@ -173,13 +165,9 @@ function ProFormaDetail() {
           label="Version"
           value={selectedVersion?.version.toString() ?? ''}
           onChange={(e) => {
-            const newVersion = proformaVersionList.find(
+            setSelectedVersion(proformaVersionList.find(
               v => v.version.toString() === e.target.value,
-            );
-            if (newVersion) {
-              setSelectedVersion(newVersion);
-              navigate(`/proformas/${proformaAbbrev}/${newVersion.version}`);
-            }
+            ));
           }}
         >
           {proformaVersionList.map((version) => (
