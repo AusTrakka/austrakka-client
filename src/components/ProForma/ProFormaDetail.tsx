@@ -26,13 +26,14 @@ import { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 
 function ProFormaDetail() {
-  const { proformaAbbrev, proformaVersion } = useParams();
+  const { proformaAbbrev } = useParams();
   const [proforma, setProforma] = useState<Proforma | null>();
   const [selectedVersion, setSelectedVersion] = useState<ProFormaVersion | null>();
   const [proformaVersionList, setProformaVersionList] = useState<ProFormaVersion[]>([]);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
+  // const navigate = useNavigate();
 
   const handleDownload = async (abbrev: string | null, version:number | null = null) => {
     if (!abbrev) return;
@@ -66,10 +67,7 @@ function ProFormaDetail() {
           .sort((a, b) => b.version - a.version);
         setProformaVersionList(keepVersions);
         if (keepVersions.length > 0) {
-          setSelectedVersion(
-            keepVersions.find(v => v.version.toString() === proformaVersion) ??
-              keepVersions[0],
-          );
+          setSelectedVersion(keepVersions[0]);
           return;
         }
       }
@@ -82,7 +80,7 @@ function ProFormaDetail() {
       getCurrentProformaDetails();
       getProformas();
     }
-  }, [proformaAbbrev, proformaVersion, token, tokenLoading]);
+  }, [proformaAbbrev, token, tokenLoading]);
 
   const renderDownloadCard = () => {
     // Only show card if current proforma version is selected
@@ -166,10 +164,11 @@ function ProFormaDetail() {
           id="version-select-label"
           label="Version"
           value={selectedVersion?.version.toString() ?? ''}
-          onChange={(e) =>
+          onChange={(e) => {
             setSelectedVersion(proformaVersionList.find(
               v => v.version.toString() === e.target.value,
-            ))}
+            ));
+          }}
         >
           {proformaVersionList.map((version) => (
             <MenuItem key={version.version} value={version.version.toString()}>
