@@ -146,7 +146,7 @@ export const patchUserContactEmail = (userObjectId: string, token: string, email
 export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/Roles', token);
+export const getRoles = (token: string) => callGET('/api/RolesV2', token);
 
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);

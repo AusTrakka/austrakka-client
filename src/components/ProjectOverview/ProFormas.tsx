@@ -1,8 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, { memo, useEffect, useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
-  AccordionSummary, AccordionDetails, Icon, Stack, Alert } from '@mui/material';
-import { ExpandMore } from '@mui/icons-material';
+  AccordionSummary, Alert } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { ProFormaVersion, Project } from '../../types/dtos';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
@@ -59,8 +58,8 @@ function ProFormaList(props: ProFormasListProps) {
   };
 
   const handleRedirect = (pVersion: ProFormaVersion) => {
-    const { abbreviation, version } = pVersion;
-    const url = `/proformas/${abbreviation}/${version}`;
+    const { abbreviation } = pVersion;
+    const url = `/proformas/${abbreviation}`;
     navigate(url);
   };
 
@@ -131,11 +130,7 @@ function ProFormaList(props: ProFormasListProps) {
             <StyledAccordion sx={{ pointerEvents: 'none', margin: '0px' }}>
               <AccordionSummary
                 sx={{ flexDirection: 'column', margin: 0, minHeight: '352px' }}
-                expandIcon={groupedObjects[index].length === 1
-                  ?
-                    <Icon />
-                  :
-                    <ExpandMore sx={{ pointerEvents: 'auto' }} />}
+                expandIcon={null}
               >
                 <Box sx={{ flexDirection: 'column', margin: '0px' }}>
                   <Typography variant="h4" sx={{ padding: '10px' }}>
@@ -154,25 +149,6 @@ function ProFormaList(props: ProFormasListProps) {
                     )}
                 </Box>
               </AccordionSummary>
-              <AccordionDetails sx={{ flexDirection: 'column',
-                paddingLeft: '35px',
-                paddingBottom: 5,
-                paddingTop: 3 }}
-              >
-                <Stack spacing={3} sx={{ justifyContent: 'space-evenly' }}>
-                  <Typography variant="overline">
-                    Previous Version
-                  </Typography>
-                  {GenerateCards(
-                    groupedObjects[index].slice(1),
-                    handleFileDownload,
-                    CardType.Historical,
-                    loadingState,
-                    setLoadingState,
-                    handleRedirect,
-                  )}
-                </Stack>
-              </AccordionDetails>
             </StyledAccordion>
           </Paper>
         ))}

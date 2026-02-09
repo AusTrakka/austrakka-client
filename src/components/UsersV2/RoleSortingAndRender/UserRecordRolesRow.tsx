@@ -36,34 +36,49 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
   // create a payload item for deletion.
   
   return (
-    isOpen ? (
-      <TableRow key={recordName} style={{ borderRadius: '6px' }}>
-        <TableCell style={{ padding: 0, margin: 0, border: 'none' }} colSpan={2} hidden={!isOpen}>
+    <TableRow key={recordName}>
+      <TableCell
+        style={{ padding: 0, margin: 0, border: 'none' }}
+        colSpan={2}
+      >
+        <Collapse in={isOpen} timeout="auto" unmountOnExit>
           <Box sx={{ width: '100%' }}>
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
-                <Typography variant="body2" width="15em">
-                  {recordName}
-                </Typography>
-                {recordRoles.map((role) => (
-                  <Chip
-                    key={`${recordName}-${role.roleName}`}
-                    label={role.roleName}
-                    color={editing ? 'error' : 'primary'}
-                    variant={editing ? 'filled' : 'outlined'}
-                    onDelete={editing ?
-                      () => onSelectionRemove(role, recordType, recordName, recordGlobalId) :
-                      undefined}
-                    deleteIcon={<Cancel />}
-                  />
-                ))}
-              </Stack>
-            </Collapse>
+            <Stack
+              direction="row"
+              spacing={2}
+              padding={2}
+              alignItems="center"
+              marginLeft="3em"
+            >
+              <Typography variant="body2" width="15em">
+                {recordName}
+              </Typography>
+
+              {recordRoles.map((role) => (
+                <Chip
+                  key={`${recordName}-${role.roleName}`}
+                  label={role.roleName}
+                  color={editing ? 'error' : 'primary'}
+                  variant={editing ? 'filled' : 'outlined'}
+                  onDelete={
+                editing
+                  ? () =>
+                    onSelectionRemove(
+                      role,
+                      recordType,
+                      recordName,
+                      recordGlobalId,
+                    )
+                  : undefined
+              }
+                  deleteIcon={<Cancel />}
+                />
+              ))}
+            </Stack>
           </Box>
-        </TableCell>
-      </TableRow>
-    )
-      : null
+        </Collapse>
+      </TableCell>
+    </TableRow>
   );
 }
 
