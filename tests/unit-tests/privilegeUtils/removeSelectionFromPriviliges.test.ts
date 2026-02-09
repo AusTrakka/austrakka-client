@@ -4,7 +4,7 @@ import { removeSelectionFromPrivileges } from '../../../src/utilities/privilegeU
 describe('removeSelectionFromPrivileges', () => {
   const mockRecordType = 'User';
   const mockRecordName = 'User1';
-  const mockRole: RecordRole = { roleName: 'Admin', privilegeLevel: 1 };
+  const mockRole: RecordRole = { roleName: 'Admin', privilegeLevel: 'Root' };
 
   const mockPrev: GroupedPrivilegesByRecordType[] = [
     {
@@ -14,15 +14,15 @@ describe('removeSelectionFromPrivileges', () => {
           recordName: 'User1',
           recordGlobalId: '1',
           roles: [
-            { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
-            { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+            { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
+            { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
           ],
         },
         {
           recordName: 'User2',
           recordGlobalId: '2',
           roles: [
-            { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
+            { roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
           ],
         },
       ],
@@ -34,7 +34,7 @@ describe('removeSelectionFromPrivileges', () => {
           recordName: 'Role1',
           recordGlobalId: '3',
           roles: [
-            { roleName: 'Manager', privilegeLevel: 4, privilegeGlobalId: undefined },
+            { roleName: 'Manager', privilegeLevel: 'User', privilegeGlobalId: undefined },
           ],
         },
       ],
@@ -57,14 +57,14 @@ describe('removeSelectionFromPrivileges', () => {
             recordName: 'User1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+              { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
           },
           {
             recordName: 'User2',
             recordGlobalId: '2',
             roles: [
-              { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
+              { roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
             ],
           },
         ],
@@ -76,7 +76,7 @@ describe('removeSelectionFromPrivileges', () => {
             recordName: 'Role1',
             recordGlobalId: '3',
             roles: [
-              { roleName: 'Manager', privilegeLevel: 4, privilegeGlobalId: undefined },
+              { roleName: 'Manager', privilegeLevel: 'User', privilegeGlobalId: undefined },
             ],
           },
         ],
@@ -122,7 +122,7 @@ describe('removeSelectionFromPrivileges', () => {
       mockPrev,
       mockRecordType,
       mockRecordName,
-      { roleName: 'NonExistentRole', privilegeLevel: 5 },
+      { roleName: 'NonExistentRole', privilegeLevel: 'NotReal' },
     );
 
     expect(result).toEqual(mockPrev);
@@ -138,7 +138,7 @@ describe('removeSelectionFromPrivileges', () => {
               recordName: 'User1',
               recordGlobalId: '1',
               roles: [
-                { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
+                { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
               ],
             },
           ],
@@ -162,15 +162,15 @@ describe('removeSelectionFromPrivileges', () => {
               recordName: 'User1',
               recordGlobalId: '1',
               roles: [
-                { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
-                { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+                { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
+                { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
               ],
             },
             {
               recordName: 'User2',
               recordGlobalId: '2',
               roles: [
-                { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
+                { roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
               ],
             },
           ],
@@ -189,14 +189,14 @@ describe('removeSelectionFromPrivileges', () => {
             recordName: 'User1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+              { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
           },
           {
             recordName: 'User2',
             recordGlobalId: '2',
             roles: [
-              { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
+              { roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
             ],
           },
         ],

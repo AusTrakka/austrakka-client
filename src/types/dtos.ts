@@ -184,7 +184,7 @@ export interface PrivilegeWithRolesWithScopes {
 
 export interface RecordRoleWithScopes {
   roleName: string,
-  privilegeLevel: number,
+  privilegeLevel: string,
   privilegeGlobalId: string,
   scopes: string[],
 }
@@ -202,7 +202,7 @@ export interface PrivilegeWithRoles {
 
 export interface RecordRole {
   roleName: string,
-  privilegeLevel: number,
+  privilegeLevel: string,
   privilegeGlobalId?: string,
 }
 
@@ -418,7 +418,7 @@ export interface RolesV2 {
   name: string,
   globalId: string,
   allowedRootResourceTypes: AllowedResourceTypes[]
-  privilegeLevel: number,
+  privilegeLevel: string,
 }
 
 export interface AllowedResourceTypes {
