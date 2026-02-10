@@ -11,7 +11,7 @@ describe('hasScopeInRecord', () => {
           recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: ['read:users', 'write:users'],
           }],
@@ -31,13 +31,13 @@ describe('hasScopeInRecord', () => {
           roles: [
             {
               roleName: 'Viewer',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             },
             {
               roleName: 'Admin',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             },
@@ -57,7 +57,7 @@ describe('hasScopeInRecord', () => {
           recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: ['read:basic'],
           }],
@@ -78,7 +78,7 @@ describe('hasScopeInRecord', () => {
           recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: ['read:users'],
           }],
@@ -121,7 +121,7 @@ describe('hasScopeInRecord', () => {
             recordGlobalId: 'record-id-1',
             roles: [{
               roleName: 'User',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
@@ -131,7 +131,7 @@ describe('hasScopeInRecord', () => {
             recordGlobalId: 'record-id-2',
             roles: [{
               roleName: 'Admin',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
@@ -154,7 +154,7 @@ describe('hasScopeInRecord', () => {
             recordGlobalId: 'record-id-1',
             roles: [{
               roleName: 'User',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-1',
               scopes: ['read:basic'],
             }],
@@ -164,7 +164,7 @@ describe('hasScopeInRecord', () => {
             recordGlobalId: 'record-id-2',
             roles: [{
               roleName: 'Admin',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-2',
               scopes: ['read:users', 'write:users'],
             }],
@@ -184,7 +184,7 @@ describe('hasScopeInRecord', () => {
           recordGlobalId: 'record-id-1',
           roles: [{
             roleName: 'User',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: [],
           }],

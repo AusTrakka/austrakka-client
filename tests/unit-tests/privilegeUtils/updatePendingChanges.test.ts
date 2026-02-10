@@ -8,14 +8,14 @@ describe('updatePendingChanges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
-        { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 2 },
+        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
+        { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
-        { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 3 },
+        { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 'Admin' },
       ],
     },
   ];
@@ -134,7 +134,7 @@ describe('updatePendingChanges', () => {
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
           roles: [
-            { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
+            { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
           ],
         },
       ],
@@ -170,7 +170,7 @@ describe('updatePendingChanges', () => {
       mockRecordType,
       mockFilteredAssignedRoles,
     );
-    
+
     expect(result).toEqual([
       {
         type: 'POST',
