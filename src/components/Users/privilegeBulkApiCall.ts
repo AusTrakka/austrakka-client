@@ -9,18 +9,18 @@ import { PendingChange } from '../../types/userDetailEdit.interface';
 import { ResponseType } from '../../constants/responseType';
 
 const postApiMap: Record<string,
-  (recordGlobalId: string,
-    body: UserRoleRecordPrivilegePost,
-    token: string) => Promise<ResponseObject<any>>> = {
+(recordGlobalId: string,
+  body: UserRoleRecordPrivilegePost,
+  token: string) => Promise<ResponseObject<any>>> = {
   'Organisation': postOrgPrivilege,
   'Tenant': postTenantPrivilege,
 };
 
 const deleteApiMap: Record<string,
-  (recordGlobalId: string,
-    assigneeGlobalId: string,
-    roleGlobalId: string,
-    token: string) => Promise<ResponseObject<any>>> = {
+(recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string) => Promise<ResponseObject<any>>> = {
   'Organisation': deleteOrgPrivilege,
   'Tenant': deleteTenantPrivilege,
 };
