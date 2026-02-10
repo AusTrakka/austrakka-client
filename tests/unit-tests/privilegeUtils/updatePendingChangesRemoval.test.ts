@@ -8,7 +8,6 @@ describe('updatePendingChangesForRemoval', () => {
   const mockRecordName = 'User1';
   const mockRole: RecordRole = {
     roleName: 'Admin',
-    privilegeLevel: 'Admin',
     privilegeGlobalId: 'privilege1',
   };
 

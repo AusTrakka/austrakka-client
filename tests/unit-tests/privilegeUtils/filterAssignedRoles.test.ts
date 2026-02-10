@@ -33,7 +33,7 @@ describe('filterAssignedRoles', () => {
           recordName: 'User1',
           recordGlobalId: '1',
           roles: [
-            { roleName: 'Admin', privilegeLevel: 'Root' },
+            { roleName: 'Admin' },
           ],
         },
       ],

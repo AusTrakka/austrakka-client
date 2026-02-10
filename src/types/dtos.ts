@@ -202,7 +202,6 @@ export interface PrivilegeWithRoles {
 
 export interface RecordRole {
   roleName: string,
-  privilegeLevel: string,
   privilegeGlobalId?: string,
 }
 
