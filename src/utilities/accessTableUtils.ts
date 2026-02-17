@@ -1,5 +1,6 @@
 import { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
 import RecordTypes from '../constants/record-type.enum';
+import { ScopeDefinitions } from '../constants/scopes';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
   const targetGroup = groups.find(group => group.recordType === RecordTypes.TENANT);
@@ -10,10 +11,10 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
   return targetGroup.recordRoles.some(
     recordRole =>
       recordRole.roles?.some(roleWithScopes =>
-      // TODO: This is not how you check for super user role.
-      // Instead of looking at the method pattern, check for
-      // privilegeLevel === 1.
-        roleWithScopes.scopes.includes('method=*,/**')),
+        // TODO: This is not how you check for super user role.
+        // Instead of looking at the method pattern, check for
+        // privilegeLevel === 1.
+        roleWithScopes.scopes.includes(ScopeDefinitions.Everything)),
   );
 }
 
@@ -40,7 +41,7 @@ export function hasScopeInRecord(
   if (!targetRecordRole) {
     return false; // recordId not found within the specified group
   }
-  
+
   // Check if any role within this recordRole contains the specified scope
   return targetRecordRole.roles.some(roleWithScopes =>
     roleWithScopes.scopes.includes(scope));
