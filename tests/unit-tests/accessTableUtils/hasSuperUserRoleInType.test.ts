@@ -11,7 +11,7 @@ describe('hasSuperUserRoleInType', () => {
           recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'SuperUser',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: ['method=*,/**'],
           }],
@@ -29,7 +29,7 @@ describe('hasSuperUserRoleInType', () => {
           recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'RegularUser',
-            privilegeLevel: 30000,
+            privilegeLevel: 'User',
             privilegeGlobalId: 'global-id-1',
             scopes: ['method=*,/**'],
           }],
@@ -47,7 +47,7 @@ describe('hasSuperUserRoleInType', () => {
           recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'RegularUser',
-            privilegeLevel: 30000,
+            privilegeLevel: 'User',
             privilegeGlobalId: 'global-id-1',
             scopes: ['some-other-scope'],
           }],
@@ -67,7 +67,7 @@ describe('hasSuperUserRoleInType', () => {
           recordGlobalId: 'record-global-id-1',
           roles: [{
             roleName: 'SuperUser',
-            privilegeLevel: 0,
+            privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
             scopes: [],
           }],
@@ -114,7 +114,7 @@ describe('hasSuperUserRoleInType', () => {
             recordGlobalId: 'record-global-id-1',
             roles: [{
               roleName: 'RegularUser',
-              privilegeLevel: 30000,
+              privilegeLevel: 'User',
               privilegeGlobalId: 'global-id-1',
               scopes: ['some-scope'],
             }],
@@ -124,7 +124,7 @@ describe('hasSuperUserRoleInType', () => {
             recordGlobalId: 'record-global-id-2',
             roles: [{
               roleName: 'SuperUser',
-              privilegeLevel: 0,
+              privilegeLevel: '',
               privilegeGlobalId: 'global-id-2',
               scopes: ['method=*,/**'],
             }],
