@@ -43,11 +43,11 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     onSelectionAdd,
     onSelectionRemove,
   }
-    = props;
+      = props;
 
   const [rolesForV2, setRolesForV2] = useState<RolesV2[] | null>(null);
   const [ugpFilledAndSorted, setUgpFilledAndSorted] =
-    useState<GroupedPrivilegesByRecordType[]>(userGroupedPrivileges ?? []);
+      useState<GroupedPrivilegesByRecordType[]>(userGroupedPrivileges ?? []);
   const { token, tokenLoading } = useApi();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -67,7 +67,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     }
 
     if (token !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+        tokenLoading !== LoadingState.IDLE) {
       fetchRoles();
     }
   }, [token, tokenLoading]);
@@ -105,7 +105,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     processedPrivileges.sort(
       (a, b) =>
         REQUIRED_RECORD_TYPES.indexOf(a.recordType)
-        - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
+          - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
     );
 
     setUgpFilledAndSorted(processedPrivileges);
@@ -113,17 +113,17 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
 
   const handleGroupRoleToggle = (groupName: string) => {
     setOpenGroupRoles((prevOpenGroupRoles) =>
-    (prevOpenGroupRoles.includes(groupName)
-      ? prevOpenGroupRoles.filter((name) => name !== groupName)
-      : [...prevOpenGroupRoles, groupName]));
+      (prevOpenGroupRoles.includes(groupName)
+        ? prevOpenGroupRoles.filter((name) => name !== groupName)
+        : [...prevOpenGroupRoles, groupName]));
   };
 
   const getRolesForRecordType = (recordType: string) => {
     if (!rolesForV2) return [];
     return rolesForV2.filter((role) =>
       role.allowedRootResourceTypes
-        .some((rt) => rt === recordType ||
-          rt === 'All'));
+        .some((rt) => rt.name === recordType ||
+                rt.name === 'All'));
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {

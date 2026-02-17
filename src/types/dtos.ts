@@ -416,8 +416,14 @@ export interface Role {
 export interface RolesV2 {
   name: string,
   globalId: string,
-  allowedRootResourceTypes: string[]
+  allowedRootResourceTypes: AllowedResourceTypes[]
   privilegeLevel: string,
+}
+
+export interface AllowedResourceTypes {
+  globalId: string
+  name: string,
+  isAggregateRoot: boolean,
 }
 
 export interface FeedbackPost {
