@@ -122,8 +122,8 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     if (!rolesForV2) return [];
     return rolesForV2.filter((role) =>
       role.allowedRootResourceTypes
-        .some((rt) => rt.name === recordType ||
-                rt.name === 'All'));
+        .some((rt) => rt === recordType ||
+                rt === 'All'));
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {
