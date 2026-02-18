@@ -9,6 +9,9 @@ import LoadingState from '../constants/loadingState';
 // TODO look at this structure; it mimics a hook but is not one
 export default function useActivityLogs(
   recordType: string,
+  filters: any, // TODO: Fix typing
+  startDateTime: Date | null,
+  endDateTime: Date | null,
   rguid?: string,
 ) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
@@ -20,15 +23,23 @@ export default function useActivityLogs(
 
   useEffect(() => {
     const getData = async () => {
+      const params = new URLSearchParams();
+      if (filters) params.append('filters', JSON.stringify(filters));
+      if (startDateTime) params.append('startDateTime', startDateTime.toISOString());
+      if (endDateTime) params.append('endDateTime', endDateTime.toISOString());
+
       const resp: ResponseObject<DerivedLog[]> = await getActivities(
         recordType,
         token,
         rguid,
+        params,
       );
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
+        setHttpStatusCode(resp.httpStatusCode || -1);
       } else {
+        setRefinedLogs([]);
         setHttpStatusCode(resp.httpStatusCode || -1);
         setIsLoadingErrorMsg(resp.message);
       }
@@ -41,7 +52,7 @@ export default function useActivityLogs(
       setDataLoading(true);
       getData();
     }
-  }, [recordType, rguid, token, tokenLoading]);
+  }, [startDateTime, endDateTime, filters, recordType, rguid, token, tokenLoading]);
 
   return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
 }

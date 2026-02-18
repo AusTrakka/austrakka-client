@@ -15,27 +15,32 @@ import {
   Snackbar,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React, { SetStateAction, useEffect, useState } from 'react';
-import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
+import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox, WarningRounded } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import dayjs from 'dayjs';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
   CustomFilterOperators,
   dateConditions,
+  FilterCondition,
   numberConditions,
   stringConditions,
   stringInConditions,
 } from './fieldTypeOperators';
 import { Field } from '../../types/dtos';
 import {
+  getClientConditions,
   getConditionName,
   getDisplayValue,
+  getServerConditions,
   isDataTableFiltersEqual,
   isOperatorFilterMetaData,
 } from '../../utilities/filterUtils';
@@ -81,6 +86,9 @@ function isEmptyFilter(value: any, filters: boolean | null) {
 // Determine the display-friendly condition name
 
 interface DataFiltersProps {
+  filterType?: 'client' | 'server'
+  hideTotalCount?: boolean,
+  minDateFilter?: any,
   dataLength: number
   filteredDataLength: number
   visibleFields: any[] | null
@@ -102,8 +110,14 @@ const defaultFormState = {
   value: '',
 };
 
+// TODO: Handle default filter selection when there are no active conditions for a certain type
+// I.e. when no available conditions for date (because it is server side) we cant set a default 
+
 function DataFilters(props: DataFiltersProps) {
   const {
+    filterType = 'client',
+    hideTotalCount = false,
+    minDateFilter = null,
     dataLength,
     filteredDataLength,
     visibleFields,
@@ -121,14 +135,31 @@ function DataFilters(props: DataFiltersProps) {
   const [totalRows, setTotalRows] = useState<number | undefined>();
   const [filterFormValues, setFilterFormValues] =
       useState<InternalFormProperties>(defaultFormState);
-  const [conditions, setConditions] = useState(stringConditions);
+  
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
-  const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occured in the filters.');
+  const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occurred in the filters.');
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [dateError, setDateError] = useState<DateValidationError>(null);
   const [fields, setFields] = useState<Field[]>([]);
-  
+
+  // Filter conditions depending on if filtering is client or server side
+  const isServerSide = filterType === 'server';
+  const getActiveConditions = (conditions: FilterCondition[]) => {
+    if (isServerSide) {
+      return getServerConditions(conditions);
+    }
+    return getClientConditions(conditions);
+  };
+
+  const activeBooleanConditions = getActiveConditions(booleanConditions);
+  const activeDateConditions = getActiveConditions(dateConditions);
+  const activeStringConditions = getActiveConditions(stringConditions);
+  const activeNumberConditions = getActiveConditions(numberConditions);
+  const activeStringInConditions = getActiveConditions(stringInConditions);
+
+  const [conditions, setConditions] = useState(activeStringConditions);
+
   useEffect(() => {
     setRowCount(filteredDataLength);
     setTotalRows(dataLength);
@@ -181,27 +212,27 @@ function DataFilters(props: DataFiltersProps) {
 
       // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
-        setConditions(dateConditions);
+        setConditions(activeDateConditions);
         fieldType = FieldTypes.DATE;
         defaultCondition = FilterMatchMode.DATE_IS;
       } else if (
         targetFieldProps?.primitiveType === FieldTypes.NUMBER ||
           targetFieldProps?.primitiveType === FieldTypes.DOUBLE
       ) {
-        setConditions(numberConditions);
+        setConditions(activeNumberConditions);
         fieldType = targetFieldProps.primitiveType;
         defaultCondition = FilterMatchMode.EQUALS;
       } else if (targetFieldProps?.primitiveType === FieldTypes.BOOLEAN) {
-        setConditions(booleanConditions);
+        setConditions(activeBooleanConditions);
         fieldType = FieldTypes.BOOLEAN;
         defaultCondition = FilterMatchMode.EQUALS;
       } else {
         if (targetFieldProps &&
             uniqueValuesForField &&
             uniqueValuesForField.length > 0) {
-          setConditions([...stringConditions, ...stringInConditions]);
+          setConditions([...activeStringConditions, ...activeStringInConditions]);
         } else {
-          setConditions(stringConditions);
+          setConditions(activeStringConditions);
         }
         
         defaultCondition = FilterMatchMode.CONTAINS;
@@ -478,27 +509,36 @@ function DataFilters(props: DataFiltersProps) {
     switch (selectedFieldType) {
       case FieldTypes.DATE:
         return (
-          <DatePicker
-            label="Value"
-            value={filterFormValues.value === '' ? null : filterFormValues.value}
-            onError={(newError) => setDateError(newError)}
-            onChange={(newValue) => handleFilterDateChange(newValue)}
-            format="YYYY-MM-DD"
-            slotProps={{
-              textField: {
-                size: 'small',
-                sx: {
-                  'width': '200',
-                  '& .MuiInputBase-input': {
-                    flex: 1,
-                    minWidth: 0,
+          <Box display="flex" alignItems="center" gap={1}>
+            <DatePicker
+              label="Value"
+              value={filterFormValues.value === '' ? null : filterFormValues.value}
+              onError={(newError) => setDateError(newError)}
+              onChange={(newValue) => handleFilterDateChange(newValue)}
+              format="YYYY-MM-DD"
+              slotProps={{
+                textField: {
+                  size: 'small',
+                  sx: {
+                    'width': '200',
+                    '& .MuiInputBase-input': {
+                      flex: 1,
+                      minWidth: 0,
+                    },
                   },
                 },
-              },
-            }}
-            disabled={nullOrEmptyFlag}
-            disableFuture
-          />
+              }}
+              disabled={nullOrEmptyFlag}
+              disableFuture
+              minDate={dayjs(minDateFilter)}
+            />
+            {minDateFilter ? (
+              <Tooltip title="Date selection restricted by other table filters" arrow>
+                <WarningRounded color="warning" />
+              </Tooltip>
+            )
+              : null}
+          </Box>
         );
       case FieldTypes.BOOLEAN:
         return (
@@ -568,7 +608,7 @@ function DataFilters(props: DataFiltersProps) {
                   </Stack>
                 </Grid>
                 <Grid item sx={{ paddingLeft: 8 }}>
-                  {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
+                  {`Showing ${rowCount} ${hideTotalCount ? '' : `of ${totalRows}`} ${contentType ?? 'samples'}.`}
                 </Grid>
               </Grid>
             </Button>
@@ -588,7 +628,8 @@ function DataFilters(props: DataFiltersProps) {
               <Box width="100%">
                 <Snackbar
                   open={rowCount === 0 &&
-                    !isDataTableFiltersEqual(primeReactFilters, defaultState)}
+                    !isDataTableFiltersEqual(primeReactFilters, defaultState) &&
+                    dataLength > 0}
                   autoHideDuration={3000}
                   message={filterErrorMessage}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -629,7 +670,7 @@ function DataFilters(props: DataFiltersProps) {
                           value={filterFormValues.condition}
                           onChange={handleFilterChange}
                         >
-                          {conditions.map((condition) => (
+                          {conditions.map((condition: FilterCondition) => (
                             <MenuItem key={condition.name} value={condition.value}>
                               {condition.name}
                             </MenuItem>
@@ -676,16 +717,16 @@ function DataFilters(props: DataFiltersProps) {
 
                         return filterData.constraints.map((constraint) => {
                           const conditionName = getConditionName(constraint, [
-                            ...dateConditions,
-                            ...numberConditions,
-                            ...stringConditions,
-                            ...stringInConditions,
+                            ...activeDateConditions,
+                            ...activeNumberConditions,
+                            ...activeStringConditions,
+                            ...activeStringInConditions,
                           ]);
 
                           const displayValue = getDisplayValue(
                             constraint,
                             conditionName,
-                            dateConditions,
+                            activeDateConditions,
                           );
 
                           return (
