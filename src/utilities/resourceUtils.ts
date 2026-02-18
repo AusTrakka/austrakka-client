@@ -146,7 +146,7 @@ export const patchUserContactEmail = (userObjectId: string, token: string, email
 export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/Roles', token);
+export const getRoles = (token: string) => callGET('/api/RolesV2', token);
 
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
@@ -182,11 +182,12 @@ export const postTenantPrivilege = (
 
 export const deleteTenantPrivilege = (
   _: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
 ) =>
   callDELETE(
-    `/api/Tenant/Privilege/${privilegeGlobalId}`,
+    `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
   );
 
@@ -254,10 +255,11 @@ export const postOrgPrivilege = (
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
 ) => callDELETE(
-  `/api/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}`,
+  `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
   token,
 );
 
