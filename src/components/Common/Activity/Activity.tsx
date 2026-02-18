@@ -57,10 +57,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       defaultState,
     );
 
-  useEffect(() => {
-    console.log(dateRange);
-  }, [dateRange]);
-
   const routeSegment = recordType === 'Tenant'
     ? recordType
     : `${recordType}V2`;
