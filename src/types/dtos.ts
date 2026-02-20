@@ -416,7 +416,7 @@ export interface Role {
 export interface RolesV2 {
   name: string,
   globalId: string,
-  allowedRootResourceTypes: string[]
+  resourceTypes: string[]
   privilegeLevel: string,
 }
 

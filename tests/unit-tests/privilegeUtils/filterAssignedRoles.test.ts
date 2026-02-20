@@ -13,14 +13,14 @@ describe('filterAssignedRoles', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' } as MinifiedRecord,
       roles: [
-        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
-        { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
+        { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
-        { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 'Admin' },
+        { name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
       ],
     },
   ];
@@ -65,7 +65,7 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
     ]);
@@ -78,7 +78,7 @@ describe('filterAssignedRoles', () => {
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
           roles: [
-            { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
+            { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
           ],
         },
       ],
@@ -112,8 +112,8 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
     ]);
@@ -131,13 +131,13 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
       {
         record: { id: '2', name: 'User2', abbrev: 'U2' },
         roles: [
-          { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 'Admin' },
+          { name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
         ],
       },
     ]);
