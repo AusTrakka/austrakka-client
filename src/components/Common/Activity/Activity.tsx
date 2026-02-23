@@ -20,7 +20,6 @@ import { Theme } from '../../../assets/themes/theme';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 import { DateRange, DateRangeSelector, DateRangeValues, getDateRangeFromSelector } from '../DateRangeSelector';
-import '../../ProjectOverview/Samples.css';
 
 interface ActivityProps {
   recordType: string,
