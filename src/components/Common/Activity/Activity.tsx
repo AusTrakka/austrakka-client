@@ -4,7 +4,6 @@ import {
   DataTableRowClickEvent,
   DataTableRowDataArray,
   DataTableSelectEvent,
-  DataTableFilterMeta,
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Box, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
@@ -14,7 +13,6 @@ import ActivityDetails from './ActivityDetails';
 import { DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
-import DataFilters, { defaultState } from '../../DataFilters/DataFilters';
 import sortIcon from '../../TableComponents/SortIcon';
 import { Theme } from '../../../assets/themes/theme';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
@@ -42,7 +40,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
-  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [dateRange, setDateRange] = useState<DateRange>(
     getDateRangeFromSelector(DateRangeValues.last_week),
@@ -50,11 +47,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [dateRangeString, setDateRangeString] = useState<DateRangeValues>(
     DateRangeValues.last_week,
   );
-
-  const [currentFilters, setCurrentFilters] =
-    useState<DataTableFilterMeta>(
-      defaultState,
-    );
 
   const routeSegment = recordType === 'Tenant'
     ? recordType
@@ -67,7 +59,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     dataLoading,
   } = useActivityLogs(
     routeSegment,
-    currentFilters,
     dateRange?.startDate ?? null,
     dateRange?.endDate ?? null,
     rGuid,
@@ -79,7 +70,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   useEffect(() => {
     setLocalLogs(refinedLogs);
-    setFilteredDataLength(refinedLogs.length);
   }, [refinedLogs]);
 
   useEffect(() => {
@@ -205,23 +195,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
-      />
-      <DataFilters
-        filterType="server"
-        hideTotalCount
-        minDateFilter={dateRange.startDate}
-        dataLength={localLogs.length ?? 0}
-        filteredDataLength={filteredDataLength}
-        visibleFields={columns}
-        allFields={supportedColumns}
-        fieldUniqueValues={null}
-        setPrimeReactFilters={setCurrentFilters}
-        primeReactFilters={currentFilters}
-        isOpen={isDataFiltersOpen}
-        setIsOpen={setIsDataFiltersOpen}
-        dataLoaded={!loadingState}
-        setLoadingState={setLoadingState}
-        contentType="activity records"
       />
       {httpStatusCode >= 400 && httpStatusCode !== 413 ? (
         <Alert severity="error" style={{ marginBottom: '20px' }}>

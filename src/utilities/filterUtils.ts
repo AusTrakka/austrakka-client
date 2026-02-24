@@ -153,8 +153,3 @@ export function getDisplayValue(
   if (dateConditions.some(c => c.name === conditionName)) return new Date(raw).toLocaleDateString('en-CA');
   return String(raw);
 }
-
-export const getClientConditions = (filters: any) => filters;
-
-export const getServerConditions = (filters: any) =>
-  filters.filter((f: any) => f.serverSupported);

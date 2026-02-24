@@ -9,7 +9,6 @@ import LoadingState from '../constants/loadingState';
 // TODO look at this structure; it mimics a hook but is not one
 export default function useActivityLogs(
   recordType: string,
-  filters: any, // TODO: Fix typing
   startDateTime: Date | null,
   endDateTime: Date | null,
   rguid?: string,
@@ -24,7 +23,6 @@ export default function useActivityLogs(
   useEffect(() => {
     const getData = async () => {
       const params = new URLSearchParams();
-      if (filters) params.append('filters', JSON.stringify(filters));
       if (startDateTime) params.append('startDateTime', startDateTime.toISOString());
       if (endDateTime) params.append('endDateTime', endDateTime.toISOString());
 
@@ -52,7 +50,7 @@ export default function useActivityLogs(
       setDataLoading(true);
       getData();
     }
-  }, [startDateTime, endDateTime, filters, recordType, rguid, token, tokenLoading]);
+  }, [startDateTime, endDateTime, recordType, rguid, token, tokenLoading]);
 
   return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
 }

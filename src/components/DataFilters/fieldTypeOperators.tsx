@@ -1,41 +1,36 @@
 import { FilterMatchMode } from 'primereact/api';
 
-export type FilterCondition = {
-  value: FilterMatchMode | CustomFilterOperators;
-  name: string;
-  serverSupported?: boolean; };
-
 export enum CustomFilterOperators {
   NULL_OR_EMPTY = 'null_or_empty',
   NOT_NULL_OR_EMPTY = 'not_null_or_empty',
 }
 
-export const stringInConditions: FilterCondition[] = [
+export const stringInConditions = [
   { value: FilterMatchMode.IN, name: 'In' },
   { value: FilterMatchMode.NOT_IN, name: 'Not In' },
 ];
 
-export const stringConditions: FilterCondition[] = [
-  { value: FilterMatchMode.CONTAINS, name: 'Contains', serverSupported: true },
-  { value: FilterMatchMode.NOT_CONTAINS, name: 'Doesn\'t Contain', serverSupported: true },
-  { value: FilterMatchMode.EQUALS, name: 'Equals', serverSupported: true },
-  { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t Equal', serverSupported: true },
+export const stringConditions = [
+  { value: FilterMatchMode.CONTAINS, name: 'Contains' },
+  { value: FilterMatchMode.NOT_CONTAINS, name: 'Doesn\'t Contain' },
+  { value: FilterMatchMode.EQUALS, name: 'Equals' },
+  { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t Equal' },
   { value: FilterMatchMode.STARTS_WITH, name: 'Starts With' },
   { value: FilterMatchMode.ENDS_WITH, name: 'Ends With' },
   { value: CustomFilterOperators.NULL_OR_EMPTY, name: 'Is null or empty' },
   { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
 ];
 
-export const dateConditions: FilterCondition[] = [
-  { value: FilterMatchMode.DATE_IS, name: 'On', serverSupported: true },
-  { value: FilterMatchMode.DATE_BEFORE, name: 'Before', serverSupported: true },
-  { value: FilterMatchMode.DATE_AFTER, name: 'After', serverSupported: true },
+export const dateConditions = [
+  { value: FilterMatchMode.DATE_IS, name: 'On' },
+  { value: FilterMatchMode.DATE_BEFORE, name: 'Before' },
+  { value: FilterMatchMode.DATE_AFTER, name: 'After' },
   { value: FilterMatchMode.DATE_IS_NOT, name: 'Is not' },
   { value: CustomFilterOperators.NULL_OR_EMPTY, name: 'Is null or empty' },
   { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
 ];
 
-export const numberConditions: FilterCondition[] = [
+export const numberConditions = [
   { value: FilterMatchMode.EQUALS, name: 'Equals' },
   { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t equal' },
   { value: FilterMatchMode.LESS_THAN, name: 'Less than' },
@@ -46,9 +41,9 @@ export const numberConditions: FilterCondition[] = [
   { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
 ];
 
-export const booleanConditions: FilterCondition[] = [
-  { value: FilterMatchMode.EQUALS, name: 'Equals', serverSupported: true },
-  { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t Equal', serverSupported: true },
+export const booleanConditions = [
+  { value: FilterMatchMode.EQUALS, name: 'Equals' },
+  { value: FilterMatchMode.NOT_EQUALS, name: 'Doesn\'t Equal' },
   { value: CustomFilterOperators.NULL_OR_EMPTY, name: 'Is null or empty' },
   { value: CustomFilterOperators.NOT_NULL_OR_EMPTY, name: 'Is not null or empty' },
 ];
