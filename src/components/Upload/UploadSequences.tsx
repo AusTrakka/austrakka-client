@@ -31,6 +31,7 @@ import {
   SeqSingleUploadRow,
   SeqType,
   seqTypeNames,
+  validFormats,
   SeqUploadRow,
   SeqUploadRowState,
   SkipForce,
@@ -60,17 +61,12 @@ import { getProjectList } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import { ResponseObject } from '../../types/responseObject.interface';
 
-const validFormats = {
-  '.fq': '',
-  '.fastq': '',
-  '.fq.gz': 'application/x-gzip',
-  '.fastq.gz': 'application/x-gzip',
-};
-
-const uploadRowTypes = {
+const uploadRowTypes : Record<SeqType, Function> = {
   [SeqType.FastqIllPe]: UploadPairedSequenceRow,
   [SeqType.FastqIllSe]: UploadSingleSequenceRow,
   [SeqType.FastqOnt]: UploadSingleSequenceRow,
+  [SeqType.FastaAsm]: UploadSingleSequenceRow,
+  // TODO SeqType.FastaCns is a single sequence row but we have to parse the file to get it
 };
 
 const validatorsPerSeqType = {
@@ -84,6 +80,10 @@ const validatorsPerSeqType = {
     validateAllHaveSampleNamesWithOneFileOnly,
   ],
   [SeqType.FastqOnt]: [
+    validateNoDuplicateFilenames,
+    validateAllHaveSampleNamesWithOneFileOnly,
+  ],
+  [SeqType.FastaAsm]: [
     validateNoDuplicateFilenames,
     validateAllHaveSampleNamesWithOneFileOnly,
   ],
@@ -163,9 +163,9 @@ function UploadSequences() {
   }, [seqUploadRows, seqUploadRowStates, selectedCreateSampleRecords]);
 
   useEffect(() => {
-    if (selectedSeqType === SeqType.FastqIllPe) {
+    if (uploadRowTypes[selectedSeqType] === UploadPairedSequenceRow) {
       setSeqUploadRows(createPairedSeqUploadRows(files, selectedSeqType));
-    } else if (selectedSeqType === SeqType.FastqIllSe || selectedSeqType === SeqType.FastqOnt) {
+    } else if (uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow) {
       setSeqUploadRows(createSingleSeqUploadRows(files, selectedSeqType));
     }
   }, [files, selectedSeqType]);
@@ -404,7 +404,7 @@ function UploadSequences() {
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 1, marginBottom: 1 }}
               variant="standard"
             >
-              <InputLabel id="fastq-simple-select-label">FASTQ Type</InputLabel>
+              <InputLabel id="fastq-simple-select-label">Sequence Type</InputLabel>
               <Select
                 labelId="fastq-simple-select-label"
                 id="fastq-simple-select-label"
@@ -479,7 +479,7 @@ function UploadSequences() {
               disabled={!selectedDataOwner}
               files={files}
               setFiles={setFiles}
-              validFormats={validFormats}
+              validFormats={validFormats(selectedSeqType)}
               multiple
               calculateHash={false}
               customValidators={validatorsPerSeqType[selectedSeqType]}

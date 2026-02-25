@@ -189,7 +189,7 @@ export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
 ): SeqSingleUploadRow[] => {
-  if (![SeqType.FastqIllSe, SeqType.FastqOnt].includes(seqType)) {
+  if (![SeqType.FastqIllSe, SeqType.FastqOnt, SeqType.FastaAsm].includes(seqType)) {
     throw new Error('Invalid seqType for creating single-end sequence upload rows');
   }
   const singleFiles = files.map((file) => ({
