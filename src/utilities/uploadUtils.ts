@@ -50,7 +50,8 @@ export const validateNoDuplicateFilenames = {
   },
 } as CustomUploadValidator;
 
-export const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
+export const getSampleNameFromFile = (filename: string) =>
+  filename.split(/[_.]+/)[0];
 
 function countElements(array: any[]): Record<string, number> {
   const count: Record<string, number> = {};
