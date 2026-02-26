@@ -61,7 +61,7 @@ describe('updateEditedPrivileges', () => {
             recordName: 'U1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Admin',  },
+              { roleName: 'Admin' },
               { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
               { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
