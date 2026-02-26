@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableRowClickEvent,
-  DataTableRowDataArray,
   DataTableSelectEvent,
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Box, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel } from '@mui/icons-material';
+import dayjs from 'dayjs';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
 import { DerivedLog } from '../../../types/dtos';
@@ -17,7 +17,7 @@ import sortIcon from '../../TableComponents/SortIcon';
 import { Theme } from '../../../assets/themes/theme';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
-import { DateRange, DateRangeSelector, DateRangeValues, getDateRangeFromSelector } from '../DateRangeSelector';
+import ActivityFilters, { Filters } from './ActivityFilters';
 
 interface ActivityProps {
   recordType: string,
@@ -40,14 +40,20 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
-  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
-  const [dateRange, setDateRange] = useState<DateRange>(
-    getDateRangeFromSelector(DateRangeValues.last_week),
-  );
-  const [dateRangeString, setDateRangeString] = useState<DateRangeValues>(
-    DateRangeValues.last_week,
-  );
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
 
+  const today = dayjs();
+  const lastWeek = dayjs().subtract(7, 'day');
+
+  const [filters, setFilters] = useState<Filters>({
+    startDate: lastWeek.toDate(),
+    endDate: today.toDate(),
+    resourceUniqueString: null,
+    resourceType: null,
+    eventType: null,
+    submitterDisplayName: null,
+  });
+  
   const routeSegment = recordType === 'Tenant'
     ? recordType
     : `${recordType}V2`;
@@ -59,8 +65,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     dataLoading,
   } = useActivityLogs(
     routeSegment,
-    dateRange?.startDate ?? null,
-    dateRange?.endDate ?? null,
+    filters,
     rGuid,
   );
 
@@ -178,16 +183,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       )
   );
 
-  const dateSelectorTemplate = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: 6 }}>
-      <DateRangeSelector
-        setDateRange={setDateRange}
-        dateRangeString={dateRangeString}
-        setDateRangeString={setDateRangeString}
-      />
-    </div>
-  );
-
   const tableContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
       <ActivityDetails
@@ -196,6 +191,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
       />
+      <ActivityFilters
+        isOpen={filtersOpen}
+        setIsOpen={setFiltersOpen}
+        filters={filters}
+        setFilters={setFilters}
+      />
       {httpStatusCode >= 400 && httpStatusCode !== 413 ? (
         <Alert severity="error" style={{ marginBottom: '20px' }}>
           <AlertTitle>Error</AlertTitle>
@@ -203,76 +204,82 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         </Alert>
       ) : (
         <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-          <DataTable
-            className="my-flexible-table"
-            value={localLogs}
-            onValueChange={(e: DataTableRowDataArray<DerivedLog[]>) => {
-              setFilteredDataLength(e.length);
-              setLoadingState(false);
-            }}
-            size="small"
-            columnResizeMode="expand"
-            resizableColumns
-            showGridlines
-            reorderableColumns
-            header={<div style={{ margin: '20px' }} />}
-            removableSort
-            scrollable
-            sortIcon={sortIcon}
-            scrollHeight="flex"
-            paginator
-            rows={25}
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-            paginatorPosition="bottom"
-            paginatorRight={dateSelectorTemplate}
-            loading={loadingState}
-            onRowClick={rowClickHandler}
-            selection={selectedRow}
-            onRowSelect={onRowSelect}
-            // onRowToggle={toggleRow}
-            selectionMode="single"
-            emptyMessage={httpStatusCode === 413 ? (
-              <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                <AlertTitle>Error</AlertTitle>
-                {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
-              </Alert>
-            ) : (
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No activity found
-              </Typography>
-            )}
-          >
-            <Column
-              key={EVENT_NAME_COLUMN}
-              field={EVENT_NAME_COLUMN}
-              header="Event"
-              hidden={false}
-              body={firstColumnTemplate}
-              sortable
-              resizeable
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName="value-cells"
-            />
-            {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-              col.field !== EVENT_NAME_COLUMN)
-              .map((col: any) => (
+          {dataLoading ? (
+            <Box sx={{ p: 4 }}>
+              <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
+            </Box>
+          ) :
+            (
+              <DataTable
+                className="my-flexible-table"
+                value={localLogs}
+                onValueChange={() => {
+                  setLoadingState(false);
+                }}
+                size="small"
+                columnResizeMode="expand"
+                resizableColumns
+                showGridlines
+                reorderableColumns
+                header={<div style={{ margin: '20px' }} />}
+                removableSort
+                scrollable
+                sortIcon={sortIcon}
+                scrollHeight="flex"
+                paginator
+                rows={25}
+                rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+                currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+                paginatorPosition="bottom"
+                paginatorRight
+                loading={loadingState}
+                onRowClick={rowClickHandler}
+                selection={selectedRow}
+                onRowSelect={onRowSelect}
+                // onRowToggle={toggleRow}
+                selectionMode="single"
+                emptyMessage={httpStatusCode === 413 ? (
+                  <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                    <AlertTitle>Error</AlertTitle>
+                    {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
+                  </Alert>
+                ) : (
+                  <Typography variant="subtitle1" color="textSecondary" align="center">
+                    No activity found
+                  </Typography>
+                )}
+              >
                 <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
+                  key={EVENT_NAME_COLUMN}
+                  field={EVENT_NAME_COLUMN}
+                  header="Event"
                   hidden={false}
-                  body={col.body}
+                  body={firstColumnTemplate}
                   sortable
                   resizeable
                   headerClassName="custom-title"
                   className="flexible-column"
                   bodyClassName="value-cells"
                 />
-              )) : null}
-          </DataTable>
+                {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
+                  col.field !== EVENT_NAME_COLUMN)
+                  .map((col: any) => (
+                    <Column
+                      key={col.field}
+                      field={col.field}
+                      header={col.header}
+                      hidden={false}
+                      body={col.body}
+                      sortable
+                      resizeable
+                      headerClassName="custom-title"
+                      className="flexible-column"
+                      bodyClassName="value-cells"
+                    />
+                  )) : null}
+              </DataTable>
+            )}
         </Paper>
       )}
     </Box>
@@ -294,8 +301,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         Missing record information.
       </Alert>
     );
-  } else if (dataLoading) {
-    contentPane = <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />;
   } else {
     contentPane = tableContent;
   }
