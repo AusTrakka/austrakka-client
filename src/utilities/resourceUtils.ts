@@ -34,7 +34,7 @@ import { ResponseObject } from '../types/responseObject.interface';
 export const getProjectList = (token: string):
   Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
 export const getProjectDetails = (abbrev: string, token: string):
-  Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+  Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
 
 // Plots endpoints
 export const getPlots = (projectId: number, token: string):
