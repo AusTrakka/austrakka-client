@@ -206,7 +206,7 @@ export async function splitFastaByContig(files: File[]) : Promise<File[]> {
       const untrimmedName = contig.split(/\s/)[0];
       let errorMsg = `Duplicate Seq_ID found in upload: ${contigName}.`;
       if (contigName !== untrimmedName) {
-        errorMsg += ` Seq_IDs trimmed from ${untrimmedName} due to invalid characters.`;
+        errorMsg += ` Note Seq_ID trimmed from ${untrimmedName} due to invalid characters.`;
       }
       throw new Error(errorMsg);
     }
