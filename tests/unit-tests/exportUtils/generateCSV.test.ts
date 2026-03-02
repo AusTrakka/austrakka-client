@@ -199,7 +199,7 @@ describe('generateCSV', () => {
         {
           key1: '\'DDS-*&^%$#@![}[]po-=><<>',
           // all special characters next
-          // eslint-disable-next-line no-useless-escape
+          // biome-ignore lint/suspicious/noUselessEscapeInString: historic
           key2: '\"\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^',
         },
       ];

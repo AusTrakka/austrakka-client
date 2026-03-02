@@ -1,4 +1,4 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 
 import { isDataTableFiltersEqual } from '../../../src/utilities/filterUtils';
 

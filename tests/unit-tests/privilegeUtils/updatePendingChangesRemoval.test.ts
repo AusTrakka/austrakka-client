@@ -1,6 +1,6 @@
 import { updatePendingChangesForRemoval } from '../../../src/utilities/privilegeUtils';
-import { RecordRole } from '../../../src/types/dtos';
-import { PendingChange } from '../../../src/types/userDetailEdit.interface';
+import type { RecordRole } from '../../../src/types/dtos';
+import type { PendingChange } from '../../../src/types/userDetailEdit.interface';
 
 describe('updatePendingChangesForRemoval', () => {
   const mockRecordType = 'User';

@@ -1,11 +1,13 @@
-import React, { SyntheticEvent, createRef, useEffect, useState } from 'react';
+/** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
+import type React from 'react';
+import { type SyntheticEvent, createRef, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, type SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { TreeVersion } from '../../types/dtos';
-import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
+import type { TreeVersion } from '../../types/dtos';
+import type { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
 import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
-import Tree, { TreeExportFuctions } from './Tree';
+import Tree, { type TreeExportFuctions } from './Tree';
 import { TreeTypes } from './PhylocanvasGL';
 import MetadataControls from './TreeControls/Metadata';
 import ExportButton from './TreeControls/Export';
@@ -13,19 +15,19 @@ import Search from './TreeControls/Search';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
 import TreeNavigation from './TreeControls/TreeNavigation';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import TreeState from '../../types/tree.interface';
+import type TreeState from '../../types/tree.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import ColorSchemeSelector from './TreeControls/SchemeSelector';
 import TreeSamplesTable from './TreeSamplesTable';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import {
-  selectProjectMetadata, ProjectMetadataState, fetchProjectMetadata,
+  selectProjectMetadata, type ProjectMetadataState, fetchProjectMetadata,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { Sample } from '../../types/sample.interface';
+import type { Sample } from '../../types/sample.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
@@ -176,6 +178,7 @@ function TreeDetail() {
   }, [treeId, token, tokenLoading]);
 
   // Set tree properties from metadata and selected fields
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (phylocanvasMetadata) {
       const newStyles: Record<string, Style> = {};
@@ -184,7 +187,7 @@ function TreeDetail() {
       // Determine which leaf nodes are currently visible under the current rootId
       // Prefer using the Phylocanvas API exposed via the ref; fallback to all keys if unavailable
       const visibleLeafIDs: string[] =
-        (treeRef.current?.getVisibleLeafIDs && treeRef.current.getVisibleLeafIDs())
+        (treeRef.current?.getVisibleLeafIDs?.())
         || Object.keys(phylocanvasMetadata);
 
       const visibleSet = new Set(visibleLeafIDs);
@@ -256,7 +259,6 @@ function TreeDetail() {
       setStyles(newStyles);
     }
     // Don't include treeRef in deps:
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.labelBlocks,
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
@@ -319,12 +321,10 @@ function TreeDetail() {
           onSelectedIdsChange={setSelectedIds}
           rootId={rootId}
           styles={styles}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...state}
         />
       );
     }
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <></>;
   };
 
@@ -344,12 +344,11 @@ function TreeDetail() {
         />
       );
     }
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <></>;
   };
 
   const handleSearch = (
-    event: SyntheticEvent<Element, Event>,
+    _event: SyntheticEvent<Element, Event>,
     value: string[],
   ) => {
     setSelectedIds(value);
@@ -447,7 +446,6 @@ function TreeDetail() {
 
       );
     }
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <></>;
   };
 
@@ -537,7 +535,6 @@ function TreeDetail() {
         </Alert>
       );
     }
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <></>;
   };
 

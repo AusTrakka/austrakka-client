@@ -1,4 +1,4 @@
-import { TabObjectRecord } from '../Common/CustomTabs';
+import type { TabObjectRecord } from '../Common/CustomTabs';
 
 export const ORG_HOME_TAB = 'samples';
 

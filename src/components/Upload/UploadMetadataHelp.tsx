@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-one-expression-per-line */
-import React from 'react';
+
 import { Typography } from '@mui/material';
 
 export default function UploadMetadataHelp() {

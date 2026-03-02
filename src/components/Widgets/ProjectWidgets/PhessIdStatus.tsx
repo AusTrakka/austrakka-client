@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +9,8 @@ import LoadingState from '../../../constants/loadingState';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import { countPresentOrMissing } from '../../../utilities/dataProcessingUtils';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 
 const PHESS_ID_FIELD_NAME = 'PHESS_ID';
 

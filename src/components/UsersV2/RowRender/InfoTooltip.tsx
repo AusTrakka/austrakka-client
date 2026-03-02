@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { IconButton, Tooltip } from '@mui/material';
 import { Info } from '@mui/icons-material';
 import { Theme } from '../../../assets/themes/theme';

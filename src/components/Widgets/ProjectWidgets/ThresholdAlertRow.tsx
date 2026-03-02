@@ -1,10 +1,10 @@
-import React from 'react';
+
 import { Card, Typography, Stack, CardActionArea, CardContent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
-import { ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
+import type { ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
 import muiTheme from '../../../assets/themes/theme';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
@@ -16,11 +16,11 @@ interface ThresholdAlertRowProps {
 
 const alertColours: { [key: string]: string } = {
   'No Alert': 'white',
-  // @ts-ignore
+  // @ts-expect-error
   'Monitor': alpha(muiTheme.palette.info.light, 0.3),
-  // @ts-ignore
+  // @ts-expect-error
   'Review': alpha(muiTheme.palette.warning.light, 0.3),
-  // @ts-ignore
+  // @ts-expect-error
   'Investigate': alpha(muiTheme.palette.error.light, 0.3),
 };
 

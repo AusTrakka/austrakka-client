@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Paper, Typography, Chip } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
-import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
+import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData } from 'primereact/datatable';
+import { Column, type ColumnEditorOptions, type ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { EditOutlined } from '@mui/icons-material';
-import { MetaDataColumn } from '../../types/dtos';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { MetaDataColumn } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
 import { hasPermissionV2 } from '../../permissions/accessTable';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { type UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -19,7 +20,7 @@ import { NumericEditable, TextEditable } from './EditableFields';
 import { ScopeDefinitions } from '../../constants/scopes';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import AllowedValues from './AllowedValues';
-import { FieldType, FIELD_TYPE_COLOURS } from './fieldsMeta';
+import { type FieldType, FIELD_TYPE_COLOURS } from './fieldsMeta';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
@@ -169,7 +170,7 @@ function Fields() {
         } else if (response.status === ResponseType.Error) {
           setError(response.message);
         }
-      } catch (e) {
+      } catch (_e) {
         setError('An unexpected error occurred.');
       }
     };

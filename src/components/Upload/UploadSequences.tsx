@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -24,14 +24,14 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { getEnumByValue } from '../../utilities/enumUtils';
-import { DropFileUpload } from '../../types/DropFileUpload';
+import type { DropFileUpload } from '../../types/DropFileUpload';
 import {
-  OrgDescriptor,
-  SeqPairedUploadRow,
-  SeqSingleUploadRow,
+  type OrgDescriptor,
+  type SeqPairedUploadRow,
+  type SeqSingleUploadRow,
   SeqType,
   seqTypeNames,
-  SeqUploadRow,
+  type SeqUploadRow,
   SeqUploadRowState,
   SkipForce,
 } from '../../types/sequploadtypes';
@@ -52,13 +52,13 @@ import FileDragDrop from './FileDragDrop';
 import HelpSidebar from '../Help/HelpSidebar';
 import UploadSequencesHelp from './UploadSequencesHelp';
 import { useAppSelector } from '../../app/store';
-import { selectUserState, UserSliceState } from '../../app/userSlice';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { useApi } from '../../app/ApiContext';
-import { Project } from '../../types/dtos';
+import type { Project } from '../../types/dtos';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 
 const validFormats = {
   '.fq': '',
@@ -138,6 +138,7 @@ function UploadSequences() {
     sur.state === SeqUploadRowState.Errored ||
     sur.state === SeqUploadRowState.Incomplete);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: don't want to trigger on updateRow
   useEffect(() => {
     const getRowsOfState = (state: SeqUploadRowState) => seqUploadRows.filter(
       sur => sur.state === state,
@@ -160,7 +161,7 @@ function UploadSequences() {
       // Only upload 1 at a time
       updateRow({ ...row, state: SeqUploadRowState.Uploading });
     }
-  }, [seqUploadRows, seqUploadRowStates, selectedCreateSampleRecords]);
+  }, [seqUploadRows, seqUploadRowStates, selectedCreateSampleRecords ]);
 
   useEffect(() => {
     if (selectedSeqType === SeqType.FastqIllPe) {
@@ -234,7 +235,7 @@ function UploadSequences() {
     }
     const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
     setProjectAbbrevs(abbrevs);
-  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [selectedCreateSampleRecords, user.groupRoles, user.loading ]);
 
   useEffect(() => {
     async function getProjects() {

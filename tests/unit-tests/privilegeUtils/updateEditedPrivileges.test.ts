@@ -1,6 +1,6 @@
-import { RoleAssignments } from '../../../src/types/userDetailEdit.interface';
+import type { RoleAssignments } from '../../../src/types/userDetailEdit.interface';
 import { updateEditedPrivileges } from '../../../src/utilities/privilegeUtils';
-import { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
+import type { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
 
 describe('updateEditedPrivileges', () => {
   const mockRecordType = 'User';

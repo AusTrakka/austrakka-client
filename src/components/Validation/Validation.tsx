@@ -1,7 +1,7 @@
-import React, { ReactElement, useState } from 'react';
+import { type ReactElement, useState } from 'react';
 import {
   Alert,
-  AlertColor,
+  type AlertColor,
   Box,
   Button,
   Dialog,
@@ -14,7 +14,7 @@ import {
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { ResponseMessage } from '../../types/apiResponse.interface';
+import type { ResponseMessage } from '../../types/apiResponse.interface';
 import { ResponseType } from '../../constants/responseType';
 
 interface ValidationProps {
@@ -27,7 +27,7 @@ interface ValidationModalProps {
   messages: ResponseMessage[],
   title: string,
   openModal: boolean,
-  handleModalClose: ((event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void)
+  handleModalClose: ((event: object, reason: 'backdropClick' | 'escapeKeyDown') => void)
 }
 
 interface ValidationPopupProps {

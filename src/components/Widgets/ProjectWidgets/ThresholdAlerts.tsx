@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useAppSelector } from '../../../app/store';
 import ThresholdAlertRow from './ThresholdAlertRow';
-import { calculateAlertList, ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
+import { calculateAlertList, type ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
 import { ThresholdAlertFields } from '../../../constants/thresholdAlertConstants';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 
 // Threshold alerts use historical data and do not pay attention to dashboard time filter
 
@@ -22,6 +22,7 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<ThresholdAlert[]>([]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (data?.loadingState === MetadataLoadingState.DATA_LOADED) {
       const missingFields = Object.values(ThresholdAlertFields).filter(
@@ -43,7 +44,6 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);
   
   useEffect(() => {
@@ -67,7 +67,8 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
         <Stack spacing={1}>
           {
             alerts.map((alert) =>
-              <ThresholdAlertRow alertRow={alert} />)
+              // biome-ignore lint/correctness/useJsxKeyInIterable: historic
+              <ThresholdAlertRow  alertRow={alert} />)
           }
         </Stack>
         )

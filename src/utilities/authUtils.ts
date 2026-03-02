@@ -1,5 +1,5 @@
 import {
-  PublicClientApplication, EventType, EventMessage, AuthenticationResult,
+  PublicClientApplication, EventType, type EventMessage, type AuthenticationResult,
 } from '@azure/msal-browser';
 import { msalConfig } from '../config/authConfig';
 

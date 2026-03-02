@@ -1,9 +1,9 @@
-import {
+import type {
   MinifiedRecord,
   PendingChange,
   RoleAssignments,
 } from '../../../src/types/userDetailEdit.interface';
-import { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
+import type { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
 import { filterAssignedRoles } from '../../../src/utilities/privilegeUtils';
 
 describe('filterAssignedRoles', () => {

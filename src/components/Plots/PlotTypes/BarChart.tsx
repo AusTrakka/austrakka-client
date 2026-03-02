@@ -1,14 +1,14 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { TopLevelSpec } from 'vega-lite';
+import { useEffect, useState } from 'react';
+import type { TopLevelSpec } from 'vega-lite';
 import { useNavigate } from 'react-router-dom';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { ProjectViewField } from '../../../types/dtos';
+import type { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 
@@ -73,6 +73,7 @@ function BarChart(props: PlotTypeProps) {
     }
   }, [plot]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
       const localCatFields : ProjectViewField[] = fields
@@ -90,7 +91,6 @@ function BarChart(props: PlotTypeProps) {
         setXAxisField(getStartingField(preferredCatFields, localCatFields));
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {

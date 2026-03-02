@@ -1,17 +1,16 @@
-// first lets make the get organisation information
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
 import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
-import { Group, GroupRole, Member, Organisation } from '../../types/dtos';
+import type { Group, GroupRole, Member, Organisation } from '../../types/dtos';
 import CustomTabs from '../Common/CustomTabs';
 import OrganisationSamples from './OrganisationSamples';
 import OrgSimpleMemberList from './OrgSimpleMemberList';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
-import { selectUserState, UserSliceState } from '../../app/userSlice';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import Activity from '../Common/Activity/Activity';
 import TabPanel from '../Common/TabPanel';

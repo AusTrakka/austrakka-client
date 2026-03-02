@@ -1,5 +1,5 @@
-import { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
-import {
+import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
+import type {
   GroupedPrivilegesByRecordType, GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRoles,
   RecordRole,
 } from '../types/dtos';
@@ -141,7 +141,7 @@ export const updatePendingChanges = (
   recordType: string,
   filteredAssignedRoles: RoleAssignments[],
 ): PendingChange[] => filteredAssignedRoles.reduce((acc, assignedRole) => {
-  const changes = [...acc];
+  const changes = acc.slice();
 
   assignedRole.roles.forEach(role => {
     const deleteIndex = changes.findIndex(

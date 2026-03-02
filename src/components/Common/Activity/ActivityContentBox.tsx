@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
-import { ActivityDetailInfo } from './activityViewModels.interface';
+import type { ActivityDetailInfo } from './activityViewModels.interface';
 import { formatDate } from '../../../utilities/dateUtils';
 import JsonTreeView from '../JsonTreeView';
 

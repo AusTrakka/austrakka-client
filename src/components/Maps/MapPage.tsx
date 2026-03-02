@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAppDispatch } from '../../app/store';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';

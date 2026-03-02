@@ -1,9 +1,8 @@
-/* eslint-disable no-param-reassign */
-import { createAsyncThunk, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
-import { Sample } from '../types/sample.interface';
+import type { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 import { getProjectDetails, getProjectFields, getProjectViewData, getProjectViews } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
@@ -17,7 +16,7 @@ import {
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
-import { MapSupportInfo } from '../components/Maps/mapMeta';
+import type { MapSupportInfo } from '../components/Maps/mapMeta';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null
@@ -134,7 +133,7 @@ const fetchDataView = createAsyncThunk(
       try {
         const data: Sample[] = await response.json();
         return fulfillWithValue<FetchDataViewResponse>({ data });
-      } catch (e) {
+      } catch (_e) {
         return rejectWithValue('An error occurred parsing project metadata');
       }
     }
@@ -264,7 +263,7 @@ export const projectMetadataSlice = createSlice({
       eligibleViews.sort((a, b) => a.fields.length - b.fields.length);
       // Calculate view fields for each view
       eligibleViews.forEach((view) => {
-        view.viewFields = view.fields.map(field => viewFieldMap[field]).flat();
+        view.viewFields = view.fields.flatMap(field => viewFieldMap[field]);
       });
       state.data[projectAbbrev].views = {};
       eligibleViews.forEach((view, index) => {

@@ -1,4 +1,4 @@
-import React, {
+import {
   useEffect, useMemo, useState,
 } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -12,7 +12,7 @@ import MemberList from './MemberList';
 import Datasets from '../ProjectDatasets/Datasets';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
-import { Project } from '../../types/dtos';
+import type { Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import ProFormas from './ProFormas';
@@ -21,7 +21,7 @@ import {
   fetchProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { type UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
 import Activity from '../Common/Activity/Activity';

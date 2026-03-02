@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
-import { User } from '../../../types/dtos';
+import type { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 import { bytesToMB } from '../../../utilities/renderUtils';
 

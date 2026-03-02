@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './TypeFilterSelect.css';
 import {
   FormControl,
@@ -6,7 +6,7 @@ import {
   MenuItem,
   Typography,
   InputAdornment,
-  IconButton, SelectChangeEvent,
+  IconButton, type SelectChangeEvent,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 

@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Autocomplete, AutocompleteChangeDetails, AutocompleteChangeReason, TextField } from '@mui/material';
+import type * as React from 'react';
+import { Autocomplete, type AutocompleteChangeDetails, type AutocompleteChangeReason, TextField } from '@mui/material';
 
 export default function Search(
   { options, selectedIds, onChange }: {
@@ -51,7 +51,6 @@ export default function Search(
         const { startAdornment, ...restInputProps } = InputProps;
         return (
           <TextField
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...restParams}
             label="Search"
             placeholder="..."

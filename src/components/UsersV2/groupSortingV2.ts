@@ -1,4 +1,4 @@
-import { Group, GroupRole, User } from '../../types/dtos';
+import type { Group, GroupRole, User } from '../../types/dtos';
 
 // TODO: come back to this, as this may be unnecessary in the future and deleted
 

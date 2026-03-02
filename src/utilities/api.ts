@@ -1,6 +1,6 @@
 import { ResponseType } from '../constants/responseType';
-import { ApiResponse } from '../types/apiResponse.interface';
-import { ResponseObject } from '../types/responseObject.interface';
+import type { ApiResponse } from '../types/apiResponse.interface';
+import type { ResponseObject } from '../types/responseObject.interface';
 
 interface HTTPOptions {
   [key: string]: any

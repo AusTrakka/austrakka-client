@@ -1,20 +1,20 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { parse, Spec, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { parse, type Spec, View as VegaView } from 'vega';
+import { type TopLevelSpec, compile } from 'vega-lite';
 import { Alert, Grid } from '@mui/material';
-import { InlineData } from 'vega-lite/build/src/data';
 import { DataTable } from 'primereact/datatable';
 import { useNavigate } from 'react-router-dom';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import ExportVegaPlot from './ExportVegaPlot';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import {
-  selectProjectMetadata, ProjectMetadataState,
+  selectProjectMetadata, type ProjectMetadataState,
 } from '../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 import { useAppSelector } from '../../app/store';
-import { Sample } from '../../types/sample.interface';
+import type { Sample } from '../../types/sample.interface';
 
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useGlobalErrorListener } from './globalErrorListener';
@@ -65,12 +65,13 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata!);
+      setFilteredData(metadata?.metadata ?? []);
       setAllFieldsLoaded(true);
     }
-  }, [metadata?.fieldLoadingStates, metadata?.loadingState, metadata?.metadata]);
+  }, [ metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     setErrorOccurred(false);
     // Modifies compiledSpec in place
@@ -99,7 +100,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       }
       // Don't compile if spec is vega. If unspecified, assume vega-lite
       let compiledSpec: Spec;
-      if (spec?.$schema && spec.$schema.includes('schema/vega/')) {
+      if (spec?.$schema?.includes('schema/vega/')) {
         compiledSpec = spec as Spec;
       } else {
         compiledSpec = compile((spec as TopLevelSpec)!).spec;
@@ -107,7 +108,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
       // TODO show a warning on the UI as well
       if (dataIndex === -1) {
-        // eslint-disable-next-line no-console
         console.error('Bad plot spec: inputdata slot not found in spec');
         return;
       }
@@ -140,9 +140,9 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     // Review: old vegaView is just being cleaned up and should NOT be a dependency?
     // loadingState is not a dependency as we only care about changes that co-occur with
     // filteredData
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec, mutableFilteredData, plotDiv]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (metadata?.loadingState &&
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
@@ -152,7 +152,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata?.metadata]);
 
   return (

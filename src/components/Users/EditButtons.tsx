@@ -1,6 +1,6 @@
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import { Button } from '@mui/material';
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
 interface EditButtonsProps {
   editing: boolean;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import CopyChip from '../Common/CopyChip';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
@@ -46,8 +46,8 @@ export default function AllowedValues(props: AllowedValuesProps) {
       </CustomDrawer>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', overflow: 'hidden', width: '100%' }}>
         {visibleValues.map((value) => (
-          <Box className={columnStyleRules[field]}>
-            <CopyChip key={value} value={value} />
+          <Box key={value} className={columnStyleRules[field]}>
+            <CopyChip value={value} />
           </Box>
         ))}
         {remainingCount > 0 && (

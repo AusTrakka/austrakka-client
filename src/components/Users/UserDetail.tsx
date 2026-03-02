@@ -1,13 +1,13 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
+import { Alert, type AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
 import { getGroupList, getOrganisations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
-import { Group, GroupRole, Role, User } from '../../types/dtos';
+import type { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
 import renderIcon from '../Admin/UserIconRenderer';
@@ -69,7 +69,7 @@ function UserDetail() {
     'orgGlobalId',
   ];
   
-  if (user && user.noDownloadQuota) {
+  if (user?.noDownloadQuota) {
     nonDisplayFields.push('monthlyBytesUsed', 'monthlyBytesQuota');
   }
 
@@ -162,7 +162,7 @@ function UserDetail() {
 
   const canSee = () => (loading === LoadingState.SUCCESS && admin);
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -170,7 +170,7 @@ function UserDetail() {
     setOpenSnackbar(false);
   };
 
-  const handleDupClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleDupClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }

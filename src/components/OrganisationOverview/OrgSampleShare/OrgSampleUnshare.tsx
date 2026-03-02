@@ -1,17 +1,17 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   Alert,
   Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, Grid2, InputLabel, MenuItem, Select, Typography,
 } from '@mui/material';
-import { CheckCircle, Error, IosShare, RemoveCircleOutline, Send } from '@mui/icons-material';
-import { Sample } from '../../../types/sample.interface';
-import { selectUserState, UserSliceState } from '../../../app/userSlice';
+import { CheckCircle, Error as ErrorIcon, IosShare, RemoveCircleOutline, Send } from '@mui/icons-material';
+import type { Sample } from '../../../types/sample.interface';
+import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { unshareSamples } from '../../../utilities/resourceUtils';
 import { useApi } from '../../../app/ApiContext';
 import { ResponseType } from '../../../constants/responseType';
-import { ResponseObject } from '../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
 import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
 import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
@@ -64,7 +64,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
-    if (user && user.groupRoles) {
+    if (user?.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
       const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
@@ -84,7 +84,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       const groupSet = new Set<string>();
       selectedSamples.forEach(sample => {
         try {
-          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => groupSet.add(group));
+          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => {groupSet.add(group)});
         } catch { /* empty */ }
       });
       const unique = Array.from(groupSet);
@@ -148,7 +148,6 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while unsharing samples. Please try again.');
-      // eslint-disable-next-line no-console
       console.error('Unexpected error unsharing samples:', error);
     }
   };
@@ -183,7 +182,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       >
         {status === LoadingState.ERROR &&
           renderUnshareStatus({
-            icon: <Error fontSize="large" color="error" />,
+            icon: <ErrorIcon fontSize="large" color="error" />,
             iconColor: 'error',
             title: 'Error unsharing samples',
             message: statusMessage,

@@ -1,10 +1,10 @@
-import {
+import type {
   FeatureLookupFieldType,
   GeoCountRow,
   MapJson,
 } from '../components/Maps/mapMeta';
-import { Sample } from '../types/sample.interface';
-import { Field } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
+import type { Field } from '../types/dtos';
 import { getCountryCode } from '../app/metadataSliceUtils';
 
 export function detectIsoType(validValues: string[]): FeatureLookupFieldType | null {

@@ -1,5 +1,5 @@
 import { ScopeDefinitions } from '../../../src/constants/scopes';
-import { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
+import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasSuperUserRoleInType } from '../../../src/utilities/accessTableUtils';
 
 describe('hasSuperUserRoleInType', () => {

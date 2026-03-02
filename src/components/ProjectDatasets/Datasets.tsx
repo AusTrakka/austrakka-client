@@ -1,5 +1,5 @@
-/* eslint-disable react/jsx-pascal-case */
-import React, { useState, useEffect, memo } from 'react';
+import type React from 'react';
+import { useState, useEffect, memo } from 'react';
 import {
   IconButton,
   Snackbar,
@@ -14,18 +14,18 @@ import {
   Typography,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import { HelpOutline } from '@mui/icons-material';
 import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
-import { DataSetEntry, Project } from '../../types/dtos';
+import type { DataSetEntry, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { type UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
@@ -104,9 +104,7 @@ function Datasets(props: DatasetProps) {
       setRows(updatedData);
       setOpenSnackbar(true); // Open toast on success
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error disabling dataset:', error);
-      // Handle error appropriately
     } finally {
       setDataSetIdToDelete(null); // Clear the dataset ID after the operation
     }

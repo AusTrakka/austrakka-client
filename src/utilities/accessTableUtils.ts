@@ -1,4 +1,4 @@
-import { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
+import type { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
 

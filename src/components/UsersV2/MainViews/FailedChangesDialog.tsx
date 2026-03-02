@@ -1,4 +1,4 @@
-import React from 'react';
+
 import {
   Box, Button,
   Dialog, DialogActions,
@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { ErrorOutline } from '@mui/icons-material';
-import { PendingChange } from '../../../types/userDetailEdit.interface';
+import type { PendingChange } from '../../../types/userDetailEdit.interface';
 import {
   groupFailedChangesByType,
 } from '../../../utilities/privilegeUtils';

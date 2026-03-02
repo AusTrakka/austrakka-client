@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { TopLevelSpec } from 'vega-lite';
+import { useState, useEffect } from 'react';
+import type { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 import { useAppSelector } from '../../../app/store';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
-import { ProjectViewField } from '../../../types/dtos';
+import type { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
@@ -79,6 +79,7 @@ function Histogram(props: PlotTypeProps) {
     }
   }, [plot]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
       const localNumericFields : ProjectViewField[] = fields
@@ -99,7 +100,6 @@ function Histogram(props: PlotTypeProps) {
         setXAxisField(getStartingField(preferredXAxisFields, localNumericFields));
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -134,7 +134,6 @@ function Histogram(props: PlotTypeProps) {
       } else if (binMode === 'fixed') {
         newSpec.encoding.x.bin = { step: stepSize };
       } else {
-        // eslint-disable-next-line no-console
         console.error(`Unknown bin mode ${binMode}`);
       }
       return newSpec as TopLevelSpec;

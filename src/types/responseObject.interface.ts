@@ -1,6 +1,6 @@
 // TODO: Refine this type definition
-import { ResponseMessage } from './apiResponse.interface';
-import { ResponseType } from '../constants/responseType';
+import type { ResponseMessage } from './apiResponse.interface';
+import type { ResponseType } from '../constants/responseType';
 
 export interface ResponseObject<TData = any> {
   status: ResponseType,

@@ -1,4 +1,5 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import type React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import {
   Card,
   CardContent,
@@ -13,7 +14,7 @@ import {
   Grid, // need to import Grid2 for the future.
 } from '@mui/material';
 import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
-import { ProFormaVersion } from '../../types/dtos';
+import type { ProFormaVersion } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { Theme } from '../../assets/themes/theme';
 

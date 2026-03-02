@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { allColorSchemes, discreteColorSchemes, rangeColorSchemes, valueMappedColorSchemes } from '../constants/schemes';
-import { Legend } from '../types/phylocanvas.interface';
+import type { Legend } from '../types/phylocanvas.interface';
 import { Theme } from '../assets/themes/theme';
 
 export const NULL_COLOUR = Theme.PrimaryGrey500;

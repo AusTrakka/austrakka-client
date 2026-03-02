@@ -1,4 +1,4 @@
-import { ProjectField } from '../../../src/types/dtos';
+import type { ProjectField } from '../../../src/types/dtos';
 import { MergeAlgorithm } from '../../../src/constants/mergeAlgorithm';
 import { FieldSource } from '../../../src/constants/fieldSource';
 import { calculateViewFieldNames } from '../../../src/app/metadataSliceUtils';

@@ -1,7 +1,6 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import UserGroupRolesRow from './UserGroupRolesRow';
-import { User, GroupRole, Group, Role } from '../../../types/dtos';
+import type { User, GroupRole, Group, Role } from '../../../types/dtos';
 import GroupHeaderRow from './GroupHeaderRow';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 import { sortGroupRoles } from '../groupSorting';

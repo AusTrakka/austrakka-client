@@ -1,11 +1,11 @@
-import { DropFileUpload } from '../types/DropFileUpload';
-import { GroupRole } from '../types/dtos';
+import type { DropFileUpload } from '../types/DropFileUpload';
+import type { GroupRole } from '../types/dtos';
 import {
-  OrgDescriptor,
-  SeqPairedUploadRow,
-  SeqSingleUploadRow,
+  type OrgDescriptor,
+  type SeqPairedUploadRow,
+  type SeqSingleUploadRow,
   SeqType,
-  SeqUploadRow,
+  type SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 

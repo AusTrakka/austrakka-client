@@ -1,10 +1,10 @@
 import { Box, Card, CardContent } from '@mui/material';
-import React, { memo } from 'react';
+import { memo } from 'react';
 import Grid from '@mui/material/Grid2';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
-import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';

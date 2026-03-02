@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { InfoTooltip } from './InfoTooltip';
 
 export function FieldLabelWithTooltip({ field, readableNames }:

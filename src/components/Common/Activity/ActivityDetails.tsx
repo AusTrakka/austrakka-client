@@ -1,8 +1,8 @@
-import React from 'react';
+
 import { Box, Typography } from '@mui/material';
 import { EventNote } from '@mui/icons-material';
 import ActivityContentBox from './ActivityContentBox';
-import { ActivityDetailInfo } from './activityViewModels.interface';
+import type { ActivityDetailInfo } from './activityViewModels.interface';
 import { formatDate } from '../../../utilities/dateUtils';
 import CustomDrawer from '../CustomDrawer';
 

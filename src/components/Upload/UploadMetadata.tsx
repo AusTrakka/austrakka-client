@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import {
   Backdrop,
   Box,
@@ -24,20 +24,20 @@ import Grid from '@mui/material/Grid2';
 import { FileUpload, Rule } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { getUserProformas, uploadSubmissions, validateSubmissions, getProjectList } from '../../utilities/resourceUtils';
-import { Proforma, Project } from '../../types/dtos';
+import type { Proforma, Project } from '../../types/dtos';
 import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseMessage } from '../../types/apiResponse.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseMessage } from '../../types/apiResponse.interface';
 import { ResponseType } from '../../constants/responseType';
-import { DropFileUpload } from '../../types/DropFileUpload';
+import type { DropFileUpload } from '../../types/DropFileUpload';
 import { Validation } from '../Validation/Validation';
 import HelpSidebar from '../Help/HelpSidebar';
 import UploadMetadataHelp from './UploadMetadataHelp';
-import { OrgDescriptor } from '../../types/sequploadtypes';
+import type { OrgDescriptor } from '../../types/sequploadtypes';
 import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
-import { selectUserState, UserSliceState } from '../../app/userSlice';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
 
@@ -128,7 +128,7 @@ function UploadMetadata() {
     }
     const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
     setProjectAbbrevs(abbrevs);
-  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [user.groupRoles, user.loading]);
 
   useEffect(() => {
     async function getProjects() {
@@ -243,6 +243,8 @@ function UploadMetadata() {
     }
     setMessages(newMessages);
   };
+  
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     // Every time file or option changes, reset loading state of submission to idle
     setSubmission({
@@ -250,7 +252,6 @@ function UploadMetadata() {
       status: LoadingState.IDLE,
       messages: [],
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files, options]);
 
   return (

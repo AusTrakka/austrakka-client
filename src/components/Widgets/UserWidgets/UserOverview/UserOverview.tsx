@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import LoadingState from '../../../../constants/loadingState';
 import { useApi } from '../../../../app/ApiContext';
 import { formatDateAsTwoStrings } from '../../../../utilities/dateUtils';
-import { ResponseObject } from '../../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
-import { UserDashboardOverview } from '../../../../types/dtos';
+import type { UserDashboardOverview } from '../../../../types/dtos';
 
 export default function UserOverview() {
   const { token, tokenLoading } = useApi();

@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import {
   Paper,
   Stack,
@@ -9,7 +9,7 @@ import {
   Box,
   Alert,
 } from '@mui/material';
-import { UserV2 } from '../../../types/dtos';
+import type { UserV2 } from '../../../types/dtos';
 import EditButtonsV2 from '../EditButtonsV2';
 import EditableRow from '../RowRender/EditableRow';
 import BasicRow from '../RowRender/BasicRow';

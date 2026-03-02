@@ -7,25 +7,25 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent, Stack,
+  type SelectChangeEvent, Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import dayjs from 'dayjs';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import { DashboardTimeFilter, DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import { useApi } from '../../../app/ApiContext';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import { getProjectDashboard } from '../../../utilities/resourceUtils';
 import { ResponseType } from '../../../constants/responseType';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import { ProjectDashboardDetails } from '../../../types/dtos';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import type { ProjectDashboardDetails } from '../../../types/dtos';
 import { Theme } from '../../../assets/themes/theme';
 
 // NB this is a tab; project metadata is requested in ProjectOverview page;
@@ -120,8 +120,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   };
   
   const renderDateSelector = () => {
-    const enabled = (data?.projectFields &&
-      data.projectFields.some(field => field.fieldName === DashboardTimeFilterField));
+    const enabled = (data?.projectFields?.some(field => field.fieldName === DashboardTimeFilterField));
     
     return (
       <Tooltip title={enabled ? '' : `${DashboardTimeFilterField} field not found`}>

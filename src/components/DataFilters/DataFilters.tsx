@@ -11,18 +11,19 @@ import {
   LinearProgress,
   MenuItem,
   Select,
-  SelectChangeEvent,
+  type SelectChangeEvent,
   Snackbar,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import React, { SetStateAction, useEffect, useState } from 'react';
+import type React from 'react';
+import { type SetStateAction, useEffect, useState } from 'react'
 import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DateValidationError } from '@mui/x-date-pickers';
+import type { DateValidationError } from '@mui/x-date-pickers';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
-import { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import FieldTypes from '../../constants/fieldTypes';
 import {
   booleanConditions,
@@ -32,7 +33,7 @@ import {
   stringConditions,
   stringInConditions,
 } from './fieldTypeOperators';
-import { Field } from '../../types/dtos';
+import type { Field } from '../../types/dtos';
 import {
   getConditionName,
   getDisplayValue,
@@ -149,6 +150,7 @@ function DataFilters(props: DataFiltersProps) {
     });
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: we don't care if the registerFilterHandlers changes
   useEffect(() => {
     if (allFields.length > 0) {
       if (visibleFields === null) {
@@ -177,7 +179,7 @@ function DataFilters(props: DataFiltersProps) {
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
       
-      const uniqueValuesForField = fieldUniqueValues && fieldUniqueValues[value];
+      const uniqueValuesForField = fieldUniqueValues?.[value];
 
       // this changes the filter options based on the field type
       if (targetFieldProps?.primitiveType === FieldTypes.DATE) {
@@ -263,8 +265,7 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const uniqueValues: string[] | null = fieldUniqueValues &&
-        fieldUniqueValues[filterFormValues.field];
+    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field];
     
     // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (uniqueValues && uniqueValues.length > 0 &&
@@ -288,7 +289,6 @@ function DataFilters(props: DataFiltersProps) {
             }}
             renderInput={(params) => (
               <TextField
-                /* eslint-disable-next-line react/jsx-props-no-spreading */
                 {...params}
                 label="Value"
                 name="value"
@@ -322,7 +322,6 @@ function DataFilters(props: DataFiltersProps) {
           }}
           renderInput={(params) => (
             <TextField
-                /* eslint-disable-next-line react/jsx-props-no-spreading */
               {...params}
               label="Value"
               name="value"
@@ -467,7 +466,6 @@ function DataFilters(props: DataFiltersProps) {
         }
       } else {
         // Handle case where the filter types don't match
-        // eslint-disable-next-line no-console
         console.error('Filter type mismatch');
       }
     });
@@ -530,7 +528,7 @@ function DataFilters(props: DataFiltersProps) {
     }
   };
 
-  const closeSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const closeSnackbar = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }

@@ -21,7 +21,6 @@ export const handleProformaDownload = async (
     URL.revokeObjectURL(blobUrl);
     link.remove();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error:', error);
   }
 };

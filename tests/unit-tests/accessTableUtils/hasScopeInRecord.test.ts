@@ -1,4 +1,4 @@
-import { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
+import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasScopeInRecord } from '../../../src/utilities/accessTableUtils';
 
 describe('hasScopeInRecord', () => {

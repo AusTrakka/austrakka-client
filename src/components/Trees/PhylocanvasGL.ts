@@ -1,5 +1,5 @@
 import { PhylocanvasGL, plugins } from '@phylocanvas/phylocanvas.gl';
-import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
+import type { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
 
 export const TreeTypes: Record<string, string> = {
   Circular: 'cr',
@@ -30,13 +30,15 @@ export class Phylocanvas extends PhylocanvasGL {
     });
   }
 
+  // biome-ignore lint/complexity/noBannedTypes: legacy code, not worth refactoring right now
   addClickHandler(fn: Function) {
     this.clickHandlers.push(fn);
   }
 
   handleClick(info: any, event: any) {
     super.handleClick(info, event);
-    this.clickHandlers.forEach((fn: Function) => fn(info, event));
+    // biome-ignore lint/complexity/noBannedTypes: legacy code, not worth refactoring right now
+    this.clickHandlers.forEach((fn: Function) => {fn(info, event)});
   }
 
   static getLeafNodeIds(node: any) {

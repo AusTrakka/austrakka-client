@@ -91,7 +91,6 @@ export function compareProperties(
   for (const [transform, sign] of transformFunctions) {
     const transformedA = transform(a);
     const transformedB = transform(b);
-    // eslint-disable-next-line no-continue
     if (isNullOrEmpty(transformedA) && isNullOrEmpty(transformedB)) continue; // next transform
     if (isNullOrEmpty(transformedA)) return 1; // nulls last, regardless of asc/desc
     if (isNullOrEmpty(transformedB)) return -1;

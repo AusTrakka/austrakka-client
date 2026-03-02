@@ -4,7 +4,7 @@ import {
   ThresholdAlertFields,
   OrderedAlertLevels,
 } from '../constants/thresholdAlertConstants';
-import { Sample } from '../types/sample.interface';
+import type { Sample } from '../types/sample.interface';
 import { isNullOrEmpty } from './dataProcessingUtils';
 
 export interface ThresholdAlert {

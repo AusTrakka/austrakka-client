@@ -1,25 +1,25 @@
-import React, { DragEvent, useState, useEffect, useRef, ChangeEvent, SetStateAction, Dispatch, useCallback } from 'react';
+import type React from 'react';
+import { type DragEvent, useState, useEffect, useRef, type ChangeEvent, type SetStateAction, type Dispatch, useCallback } from 'react'
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import muiTheme, { Theme } from '../../assets/themes/theme';
-import { DropFileUpload } from '../../types/DropFileUpload';
+import type { DropFileUpload } from '../../types/DropFileUpload';
 import { generateHash } from '../../utilities/file';
-import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
+import type { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
   validFormats: Record<string, string>, // TODO when FASTA, must revalidate when this changes
-  multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
-  calculateHash?: boolean | undefined, // eslint-disable-line react/require-default-props
-  customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
+  multiple?: boolean | undefined, 
+  calculateHash?: boolean | undefined,
+  customValidators?: CustomUploadValidator[] | undefined, 
   validated: boolean,
   setValidated: Dispatch<SetStateAction<boolean>>,
   disabled?: boolean,
 }
 
-// eslint-disable-next-line react/function-component-definition
 const FileDragDrop: React.FC<FileDragDropProps> = (
   {
     files,
@@ -134,10 +134,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     if (files.length > 0 && !validated) {
       validateUpload(files.map(f => f.file));
     }
-  }, [validated, validateUpload, setFiles, files]);
+  }, [validated, validateUpload, files]);
 
   return (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
       <Box
         onDragEnter={handleDrag}
@@ -154,9 +153,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
           border: dragActive ? 4 : 0,
           borderColor: Theme.PrimaryMainBackground,
           borderStyle: dragActive ? 'dashed' : 'solid',
-          transition: muiTheme.transitions?.create!(
+          transition: muiTheme.transitions?.create?.(
             ['background-color', 'border'],
-            { duration: muiTheme.transitions.duration?.standard },
+            { duration: muiTheme.transitions?.duration?.standard },
           ),
         }}
       >

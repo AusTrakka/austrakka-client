@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material';
-import { ThemeOptions } from '@mui/material/styles';
+import type { ThemeOptions } from '@mui/material/styles';
 
 export const Theme = Object.freeze({
   PrimaryMain: import.meta.env.VITE_THEME_PRIMARY_MAIN,
@@ -58,7 +58,7 @@ const muiTheme: ThemeOptions = createTheme({
       main: Theme.SecondaryMain,
     },
     background: {
-      // @ts-ignore
+      // @ts-expect-error
       main: Theme.Background,
     },
     success: {

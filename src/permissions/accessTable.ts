@@ -1,4 +1,4 @@
-import { UserSliceState } from '../app/userSlice';
+import type { UserSliceState } from '../app/userSlice';
 import { RoleName } from './roles';
 import { hasScopeInRecord } from '../utilities/accessTableUtils';
 

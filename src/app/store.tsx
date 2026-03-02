@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { type TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
 import projectMetadataReducer from './projectMetadataSlice';
 import groupMetadataReducer from './groupMetadataSlice';

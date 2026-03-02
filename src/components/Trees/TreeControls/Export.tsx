@@ -1,12 +1,10 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Menu } from '@mui/material';
 import html2canvas from 'html2canvas';
-import { TreeExportFuctions } from '../Tree';
+import type { TreeExportFuctions } from '../Tree';
 
 const base64toBlob = (base64Image: string) => {
   // Remove the data URL prefix
@@ -111,7 +109,7 @@ export default function ExportButton(
       }
 
       return null; // Returning null since we opened the image in a new window
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };

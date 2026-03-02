@@ -1,4 +1,4 @@
-import { GroupedPrivilegesByRecordType, RecordRole } from '../../../src/types/dtos';
+import type { GroupedPrivilegesByRecordType, RecordRole } from '../../../src/types/dtos';
 import { removeSelectionFromPrivileges } from '../../../src/utilities/privilegeUtils';
 
 describe('removeSelectionFromPrivileges', () => {

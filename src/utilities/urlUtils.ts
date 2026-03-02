@@ -1,33 +1,41 @@
-import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { isOperatorFilterMetaData } from './filterUtils';
+import type { FilterMatchMode, FilterOperator } from 'primereact/api';
+import type {
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableOperatorFilterMetaData,
+} from 'primereact/datatable';
 import { isISODateString } from './dateUtils';
+import { isOperatorFilterMetaData } from './filterUtils';
 
 export function encodeFilterObj(filterObj: DataTableFilterMeta): string {
-  const encoded = Object.entries(filterObj)
-    .map(([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
+  const encoded = Object.entries(filterObj).map(
+    ([key, value]: [string, DataTableFilterMetaData | DataTableOperatorFilterMetaData]) => {
       if (isOperatorFilterMetaData(value)) {
-        const conditions = value.constraints.map(constraint => {
-          // if the value to be encoded is part of a date condition or is itself a date
-          // then encode it as an ISO string
-          if (constraint.value instanceof Date &&
-                        !Number.isNaN(constraint.value.getTime()) &&
-                        (constraint.matchMode?.includes('date') ||
-                            constraint.matchMode?.includes('custom'))) {
-            return `${encodeURIComponent(constraint.value.toISOString())}:${constraint.matchMode || ''}`;
-          }
-          if (Array.isArray(constraint.value)) {
-            return `${encodeURIComponent(JSON.stringify(constraint.value))}:${constraint.matchMode || ''}`;
-          }
-          return `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`;
-        }).join(',');
+        const conditions = value.constraints
+          .map((constraint) => {
+            // if the value to be encoded is part of a date condition or is itself a date
+            // then encode it as an ISO string
+            if (
+              constraint.value instanceof Date &&
+              !Number.isNaN(constraint.value.getTime()) &&
+              (constraint.matchMode?.includes('date') || constraint.matchMode?.includes('custom'))
+            ) {
+              return `${encodeURIComponent(constraint.value.toISOString())}:${constraint.matchMode || ''}`;
+            }
+            if (Array.isArray(constraint.value)) {
+              return `${encodeURIComponent(JSON.stringify(constraint.value))}:${constraint.matchMode || ''}`;
+            }
+            return `${encodeURIComponent(constraint.value)}:${constraint.matchMode || ''}`;
+          })
+          .join(',');
         return `${encodeURIComponent(key)}:${encodeURIComponent(value.operator)}:(${conditions})`;
       }
       if (Array.isArray(value.value)) {
         return `${encodeURIComponent(key)}:${encodeURIComponent(JSON.stringify(value.value))}:${value.matchMode || ''}`;
       }
       return `${encodeURIComponent(key)}:${encodeURIComponent(value.value)}:${value.matchMode || ''}`;
-    });
+    },
+  );
 
   // Join the encoded pairs with commas and add parentheses
   const result = encoded.join(',');
@@ -39,7 +47,7 @@ export function parseUrlValue(value: string): string | Date | boolean | any[] {
     try {
       const parsed = JSON.parse(value);
       if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
+    } catch (_e) {
       // Not valid JSON, treat as string
     }
   }
@@ -63,7 +71,7 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
   }
   // Remove the outer parentheses and split on commas not within parentheses
   const pairs = cleanedString.split(/,\s*(?![^(]*\))/);
-  pairs.forEach(pair => {
+  pairs.forEach((pair) => {
     const [encodedKey, ...rest] = pair.split(':');
     const key = decodeURIComponent(encodedKey);
     if (rest.length === 2) {
@@ -74,13 +82,13 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
       };
     } else if (rest.length > 2) {
       // Operator filter
-      const operator = rest[0];
+      const [operator] = rest;
       const constraintsString = rest.slice(1).join(':');
       const constraints = constraintsString.slice(1, -1).split(/,(?![^()]*\))/); // Remove parentheses and split
 
       decodedObj[key] = {
         operator: operator as FilterOperator,
-        constraints: constraints.map(constraint => {
+        constraints: constraints.map((constraint) => {
           const [value, matchMode] = constraint.split(':');
           const decodedValue = decodeURIComponent(value);
           return {
@@ -95,8 +103,9 @@ export function decodeUrlToFilterObj(encodedString: string): DataTableFilterMeta
 }
 
 export function getRawQueryParams(url: any) {
-  const queryParams: { [key: string]: string } = {};
-  const queryString = url.split('?')[1];
+  const queryParams: Record<string, string> = {};
+  const [, second] = url.split('?');
+  const queryString = second;
   if (!queryString) {
     return queryParams;
   }
@@ -105,18 +114,17 @@ export function getRawQueryParams(url: any) {
   for (const pair of pairs) {
     const [key, value] = pair.split('=');
     // Decode only the key, but keep the value as is
-    queryParams[(key)] = value;
+    queryParams[key] = value;
   }
 
   return queryParams;
 }
 
-export const getFilterObjFromSearchParams =
-    (paramName: string, defaultState: DataTableFilterMeta) => {
-      const params = getRawQueryParams(window.location.search);
-      const filterString = params[paramName];
-      if (filterString === null || filterString === undefined) return defaultState;
-      return decodeUrlToFilterObj(filterString);
-    };
+export const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTableFilterMeta) => {
+  const params = getRawQueryParams(window.location.search);
+  const filterString = params[paramName];
+  if (filterString === null || filterString === undefined) return defaultState;
+  return decodeUrlToFilterObj(filterString);
+};
 
 // Decodes a URL value to a string, number, or boolean

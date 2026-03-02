@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../app/store';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import { type CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
-import { Sample } from '../../../types/sample.interface';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
+import type { Sample } from '../../../types/sample.interface';
 
 // Counts table for specified field
 
@@ -23,7 +23,6 @@ interface CountsWidgetProps extends ProjectWidgetProps {
   timeFilterObject: DataTableFilterMeta;
   field: string;
   title: string;
-  // eslint-disable-next-line react/require-default-props
   fieldTitle?: string;
 }
 

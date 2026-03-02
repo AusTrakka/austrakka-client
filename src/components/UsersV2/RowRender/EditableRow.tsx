@@ -1,5 +1,5 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import type React from 'react';
+import { type Dispatch, type SetStateAction, useState } from 'react'
 import {
   IconButton, InputAdornment,
   Switch,
@@ -14,7 +14,7 @@ import {
   ContentCopy,
 } from '@mui/icons-material';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
-import { UserV2 } from '../../../types/dtos';
+import type { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { bytesToMB } from '../../../utilities/renderUtils';

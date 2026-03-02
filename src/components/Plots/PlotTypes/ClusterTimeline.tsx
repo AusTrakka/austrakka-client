@@ -1,16 +1,16 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { TopLevelSpec } from 'vega-lite';
-import { ColorScheme } from 'vega';
+import { useEffect, useState } from 'react';
+import type { TopLevelSpec } from 'vega-lite';
+import type { ColorScheme } from 'vega';
 import { useNavigate } from 'react-router-dom';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
 import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { ProjectViewField } from '../../../types/dtos';
+import type { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 
@@ -115,6 +115,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   }, [plot]);
 
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
       // Note this does not include numerical or date fields
@@ -135,7 +136,6 @@ function ClusterTimeline(props: PlotTypeProps) {
       if (yAxisField === '') setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
       if (dateField === '') setDateField(getStartingField(preferredDateFields, localDateFields));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {

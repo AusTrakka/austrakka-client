@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -11,9 +11,9 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import { Location } from 'react-router-dom';
+import type { Location } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { FeedbackPost } from '../../types/dtos';
+import type { FeedbackPost } from '../../types/dtos';
 import { postFeedback } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
@@ -21,8 +21,8 @@ import LoadingState from '../../constants/loadingState';
 
 interface FeedbackProps {
   help: boolean;
-  handleHelpClose: ((event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void);
-  location: Location<any>;
+  handleHelpClose: ((event: object, reason: 'backdropClick' | 'escapeKeyDown') => void);
+  location: Location;
 }
 
 function Feedback(props: FeedbackProps) {

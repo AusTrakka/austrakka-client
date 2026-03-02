@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Chip, Tooltip } from '@mui/material';
 
 export default function CopyChip({ value }: { value: string }) {

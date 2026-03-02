@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet, useNavigate,
@@ -17,7 +16,7 @@ import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { type UserSliceState, selectUserState } from '../../app/userSlice';
 import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
@@ -351,7 +350,7 @@ function MainMenuLayout() {
             </Breadcrumbs>
           </div>
         </div>
-        {pathnames.map((value, index) => {
+        {pathnames.map((_value, index) => {
           const last: boolean = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 

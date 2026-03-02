@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Alert,
@@ -17,12 +17,12 @@ import {
   Typography,
 } from '@mui/material';
 import { MoveToInbox } from '@mui/icons-material';
-import { ProFormaVersion, Proforma } from '../../types/dtos';
+import type { ProFormaVersion, Proforma } from '../../types/dtos';
 import { getProformaDetails, getProformaVersions } from '../../utilities/resourceUtils';
 import { handleProformaDownload } from './proformaUtils';
 import LoadingState from '../../constants/loadingState';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
 
 function ProFormaDetail() {

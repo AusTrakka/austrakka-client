@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel } from '@mui/icons-material';
-import { RecordRole } from '../../../types/dtos';
+import type { RecordRole } from '../../../types/dtos';
 
 interface UserGroupRolesRowProps {
   recordType: string;

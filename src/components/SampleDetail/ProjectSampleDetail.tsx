@@ -1,12 +1,12 @@
 import { Alert, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-import { Field } from '../../types/dtos';
-import { Sample } from '../../types/sample.interface';
+import { useEffect, useState } from 'react';
+import type { Field } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ProjectMetadataState, fetchProjectMetadata, selectAwaitingPartialProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { type ProjectMetadataState, fetchProjectMetadata, selectAwaitingPartialProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { renderValue } from '../../utilities/renderUtils';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';

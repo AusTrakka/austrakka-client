@@ -10,6 +10,7 @@ export const renderValueOrEmptyString = (value: any): string => {
 // Note that some datetime fields are included here in order to render them as datetime,
 // not just dates, which is the type default below. Ideally the server should tell us
 // whether a field is a date or a datetime.
+// biome-ignore lint/complexity/noBannedTypes: historic
 export const fieldRenderFunctions: { [index: string]: Function } = {
   'Shared_groups': (value: any) => {
     if (value === null || value === undefined) return '';
@@ -28,6 +29,7 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
 };
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
+// biome-ignore lint/complexity/noBannedTypes: historic
 export const typeRenderFunctions: { [index: string]: Function } = {
   'boolean': (value: boolean): string => renderValueOrEmptyString(value),
   'date': (value: string): string => isoDateLocalDateNoTime(value),

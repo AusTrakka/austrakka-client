@@ -1,5 +1,5 @@
 import { FilterMatchMode } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { encodeFilterObj } from '../../../src/utilities/urlUtils';
 
 describe('encodeFilterObj', () => {

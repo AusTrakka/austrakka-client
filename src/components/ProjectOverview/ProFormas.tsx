@@ -1,13 +1,12 @@
-/* eslint-disable react/no-unescaped-entities */
-import React, { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Typography, Box, Paper, Accordion, styled,
   AccordionSummary, Alert } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
-import { ProFormaVersion, Project } from '../../types/dtos';
+import type { ProFormaVersion, Project } from '../../types/dtos';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { handleProformaDownload } from '../ProForma/proformaUtils';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import { useStableNavigate } from '../../app/NavigationContext';
@@ -72,17 +71,14 @@ function ProFormaList(props: ProFormasListProps) {
     return 0;
   };
 
-  // eslint-disable-next-line max-len
-  const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
-    const group = obj.abbreviation;
-    const result: { [p: string]: ProFormaVersion[] } = { ...acc };
-
-    if (!result[group]) {
-      result[group] = [];
-    }
-    result[group].push(obj);
-    return result;
-  }, {} as { [group: string]: ProFormaVersion[] });
+const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
+  const group = obj.abbreviation;
+  if (!acc[group]) {
+    acc[group] = [];
+  }
+  acc[group].push(obj);
+  return acc;
+}, {} as { [group: string]: ProFormaVersion[] });
 
   // Iterate over each group
   Object.keys(groupedObjects).forEach(group => {

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useImperativeHandle } from 'react';
 import { Phylocanvas } from './PhylocanvasGL';
-import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
+import type { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
@@ -54,7 +54,7 @@ const Tree = React.forwardRef(
     useEffect(() => {
       function handleResize() {
         const gridRef = document.querySelector(resizeWidthTo!);
-        const width = gridRef?.getBoundingClientRect().width!;
+        const width = gridRef?.getBoundingClientRect().width;
         if (width) {
           setSize({ height: size.height, width: width - 10 });
         }
@@ -76,6 +76,7 @@ const Tree = React.forwardRef(
       return () => {
         window.removeEventListener('resize', handleResize);
       };
+      // biome-ignore lint/correctness/useExhaustiveDependencies: historic otherProps used
     }, [onSelectedIdsChange, otherProps, resizeWidthTo, size]);
 
     useEffect(() => {
@@ -84,6 +85,7 @@ const Tree = React.forwardRef(
       // update the props on change
         tree.current.setProps({ ...updatedProps });
       }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: historic otherProps used
     }, [otherProps, size]);
 
     return <div ref={treeDiv} />;

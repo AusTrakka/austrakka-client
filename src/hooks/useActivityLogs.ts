@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DerivedLog } from '../types/dtos';
+import type { DerivedLog } from '../types/dtos';
 import { useApi } from '../app/ApiContext';
-import { ResponseObject } from '../types/responseObject.interface';
+import type { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
 import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
