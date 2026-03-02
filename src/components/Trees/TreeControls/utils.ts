@@ -14,8 +14,8 @@ export const MenuProps = {
 export default function getStyles(column: string, selectedColumns: string[], theme: Theme) {
   return {
     fontWeight:
-        selectedColumns.indexOf(column) === -1
-          ? theme.typography.fontWeightRegular
-          : theme.typography.fontWeightMedium,
+      selectedColumns.indexOf(column) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
   };
 }

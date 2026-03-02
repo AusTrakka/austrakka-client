@@ -1,9 +1,13 @@
-import type { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import type { Field } from '../types/dtos';
-import { createColourMapping } from './colourUtils';
-import type { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { defaultDiscreteColorScheme } from '../constants/schemes';
+import type { Field } from '../types/dtos';
+import type {
+  FieldAndColourScheme,
+  PhylocanvasLegends,
+  PhylocanvasMetadata,
+} from '../types/phylocanvas.interface';
+import type { Sample } from '../types/sample.interface';
+import { createColourMapping } from './colourUtils';
 import { renderValue } from './renderUtils';
 
 export default function mapMetadataToPhylocanvas(

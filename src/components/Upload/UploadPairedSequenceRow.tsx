@@ -8,27 +8,31 @@ import {
   TextField,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useApi } from '../../app/ApiContext';
+import LoadingState from '../../constants/loadingState';
+import { ResponseType } from '../../constants/responseType';
+import {
+  seqStateStyles,
+  tableCellStyle,
+  tableFormControlStyle,
+} from '../../styles/uploadPageStyles';
+import type { ResponseMessage } from '../../types/apiResponse.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import {
   type SeqPairedUploadRow,
   SeqUploadRowState,
   type SkipForce,
 } from '../../types/sequploadtypes';
-import LoadingState from '../../constants/loadingState';
-import type { ResponseMessage } from '../../types/apiResponse.interface';
-import { useApi } from '../../app/ApiContext';
-import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
-import { ResponseType } from '../../constants/responseType';
-import { ValidationPopupButton } from '../Validation/Validation';
 import { generateHash } from '../../utilities/file';
-import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
-import type { ResponseObject } from '../../types/responseObject.interface';
+import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
+import { ValidationPopupButton } from '../Validation/Validation';
 
 interface UploadSequenceRowProps {
-  seqUploadRow: SeqPairedUploadRow,
-  updateRow: (newSur: SeqPairedUploadRow) => void,
-  modeOption: SkipForce,
-  owner: string | null,
-  sharedProjects: string[],
+  seqUploadRow: SeqPairedUploadRow;
+  updateRow: (newSur: SeqPairedUploadRow) => void;
+  modeOption: SkipForce;
+  owner: string | null;
+  sharedProjects: string[];
 }
 
 export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
@@ -122,10 +126,13 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     }
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
-    sharedProjects.forEach(r =>
-    {sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId))});
+    sharedProjects.forEach((r) => {
+      sampleSharePromises.push(
+        shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId),
+      );
+    });
 
-    for (const resp of (await Promise.all(sampleSharePromises))) {
+    for (const resp of await Promise.all(sampleSharePromises)) {
       messages.push(...resp.messages);
     }
     setSeqSubmission({
@@ -146,12 +153,12 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     formData.append('file', seqUploadRow.read2.file);
 
     const headers = {
-      'mode': modeOption,
+      mode: modeOption,
       'seq-type': seqUploadRow.seqType,
       'seq-id': seqUploadRow.seqId,
-      'filename1': seqUploadRow.read1.file.name,
+      filename1: seqUploadRow.read1.file.name,
       'filename1-hash': seqUploadRow.read1.hash,
-      'filename2': seqUploadRow.read2.file.name,
+      filename2: seqUploadRow.read2.file.name,
       'filename2-hash': seqUploadRow.read2.hash,
       'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
@@ -163,7 +170,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
         status: LoadingState.SUCCESS,
         messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
-      if (seqSubmission.messages.some(m => m.ResponseType === ResponseType.Error)) {
+      if (seqSubmission.messages.some((m) => m.ResponseType === ResponseType.Error)) {
         // If any other api requests returned errors, users need to know
         updateState(SeqUploadRowState.Incomplete);
       } else {
@@ -180,21 +187,22 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   };
 
   const disableResponse = (): boolean =>
-    seqUploadRow.state !== SeqUploadRowState.Complete
-    && seqUploadRow.state !== SeqUploadRowState.Errored
-    && seqUploadRow.state !== SeqUploadRowState.Incomplete;
+    seqUploadRow.state !== SeqUploadRowState.Complete &&
+    seqUploadRow.state !== SeqUploadRowState.Errored &&
+    seqUploadRow.state !== SeqUploadRowState.Incomplete;
 
   const requestCompleted = (): boolean | undefined =>
     seqUploadRow.state === SeqUploadRowState.Complete;
 
   const requestWaiting = (): boolean => seqUploadRow.state === SeqUploadRowState.Waiting;
 
-  const rowInProgress = (): boolean => ![
-    SeqUploadRowState.Waiting,
-    SeqUploadRowState.Complete,
-    SeqUploadRowState.Errored,
-    SeqUploadRowState.Incomplete,
-  ].includes(seqUploadRow.state);
+  const rowInProgress = (): boolean =>
+    ![
+      SeqUploadRowState.Waiting,
+      SeqUploadRowState.Complete,
+      SeqUploadRowState.Errored,
+      SeqUploadRowState.Incomplete,
+    ].includes(seqUploadRow.state);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -219,28 +227,20 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   return (
     <>
       <TableCell sx={tableCellStyle}>
-        <FormControl
-          size="small"
-          sx={tableFormControlStyle}
-          variant="standard"
-        >
+        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
           <TextField
             id={`seqid-select-${seqUploadRow.id}`}
             name="seqid"
             variant="standard"
             slotProps={{ input: { disableUnderline: requestCompleted() } }}
             value={seqUploadRow?.seqId ?? ''}
-            onChange={e => handleSeqId(e.target.value)}
+            onChange={(e) => handleSeqId(e.target.value)}
             disabled={requestCompleted()}
           />
         </FormControl>
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <FormControl
-          size="small"
-          sx={tableFormControlStyle}
-          variant="standard"
-        >
+        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
           <Select
             id={`read1-select-${seqUploadRow.id}`}
             name="read1"
@@ -249,27 +249,17 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
             onChange={(e) => handleSelectRead1(e.target.value)}
             disabled={requestCompleted()}
           >
-            <MenuItem
-              value={seqUploadRow?.read1?.file.name}
-              key={seqUploadRow?.read1?.file.name}
-            >
+            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
               {`${seqUploadRow?.read1?.file.name}`}
             </MenuItem>
-            <MenuItem
-              value={seqUploadRow?.read2?.file.name}
-              key={seqUploadRow?.read2?.file.name}
-            >
+            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
               {`${seqUploadRow?.read2?.file.name}`}
             </MenuItem>
           </Select>
         </FormControl>
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <FormControl
-          size="small"
-          sx={tableFormControlStyle}
-          variant="standard"
-        >
+        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
           <Select
             id={`read2-select-${seqUploadRow.id}`}
             name="read2"
@@ -278,16 +268,10 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
             onChange={(e) => handleSelectRead2(e.target.value)}
             disabled={requestCompleted()}
           >
-            <MenuItem
-              value={seqUploadRow?.read1?.file.name}
-              key={seqUploadRow?.read1?.file.name}
-            >
+            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
               {`${seqUploadRow?.read1?.file.name}`}
             </MenuItem>
-            <MenuItem
-              value={seqUploadRow?.read2?.file.name}
-              key={seqUploadRow?.read2?.file.name}
-            >
+            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
               {`${seqUploadRow?.read2?.file.name}`}
             </MenuItem>
           </Select>
@@ -312,7 +296,8 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
                 title="Response Messages"
                 disabled={disableResponse()}
               />
-            ))}
+            )
+          )}
         </>
       </TableCell>
     </>

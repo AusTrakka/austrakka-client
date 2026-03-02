@@ -1,43 +1,63 @@
-import type React from 'react';
-import { memo, useEffect, useRef, useState, type JSX } from 'react'
-import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
-import { CSVLink } from 'react-csv';
-import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData, type DataTableRowClickEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import {
+  Alert,
+  AlertTitle,
+  Chip,
+  CircularProgress,
+  Dialog,
+  IconButton,
+  Paper,
+  Tooltip,
+} from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import LoadingState from '../../constants/loadingState';
-import type { Member, Project } from '../../types/dtos';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import type React from 'react';
+import { type JSX, memo, useEffect, useRef, useState } from 'react';
+import { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupMembers } from '../../utilities/resourceUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
+import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
+import type { Member, Project } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { generateFilename } from '../../utilities/file';
+import { getGroupMembers } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { generateFilename } from '../../utilities/file';
-import { useStableNavigate } from '../../app/NavigationContext';
 
 interface MemberListProps {
-  projectDetails: Project | null
+  projectDetails: Project | null;
   setIsLoading: (isLoading: boolean) => void;
 }
 
-function renderList(cell : any): JSX.Element[] {
+function renderList(cell: any): JSX.Element[] {
   const roles = cell;
   if (Array.isArray(roles)) {
-    return roles.sort().map((r) => (
-      <Chip key={r} label={r} variant="filled" color="secondary" size="small" style={{ margin: '3px' }} />
-    ));
+    return roles
+      .sort()
+      .map((r) => (
+        <Chip
+          key={r}
+          label={r}
+          variant="filled"
+          color="secondary"
+          size="small"
+          style={{ margin: '3px' }}
+        />
+      ));
   }
 
   return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
 
 function MemberList(props: MemberListProps) {
-  const {
-    projectDetails,
-    setIsLoading,
-  } = props;
+  const { projectDetails, setIsLoading } = props;
 
   const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
@@ -46,20 +66,31 @@ function MemberList(props: MemberListProps) {
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
     { field: 'displayName', header: 'Name' },
-    { field: 'contactEmail', header: 'Email', body: (rowData: any) => rowData.contactEmail ?? 'Unavailable' },
-    { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
+    {
+      field: 'contactEmail',
+      header: 'Email',
+      body: (rowData: any) => rowData.contactEmail ?? 'Unavailable',
+    },
+    {
+      field: 'organization.abbreviation',
+      header: 'Organizations',
+      body: (rowData: any) => rowData.organization?.abbreviation,
+    },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
   ];
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   const { token } = useApi();
 
   useEffect(() => {
     async function getMemberList() {
-      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
+      const memberListResponse: ResponseObject = await getGroupMembers(
+        projectDetails!.projectMembers.id,
+        token,
+      );
       if (memberListResponse.status === ResponseType.Success) {
         setMemberList(memberListResponse.data as Member[]);
         setMemberListError(false);
@@ -136,18 +167,16 @@ function MemberList(props: MemberListProps) {
           onClick={handleExportCSV}
           disabled={exportCSVStatus === LoadingState.LOADING || memberList.length < 1}
         >
-          {exportCSVStatus === LoadingState.LOADING
-            ? (
-              <CircularProgress
-                color="secondary"
-                size={40}
-                sx={{
-                  position: 'absolute',
-                  zIndex: 1,
-                }}
-              />
-            )
-            : null}
+          {exportCSVStatus === LoadingState.LOADING ? (
+            <CircularProgress
+              color="secondary"
+              size={40}
+              sx={{
+                position: 'absolute',
+                zIndex: 1,
+              }}
+            />
+          ) : null}
           <FileDownload />
         </IconButton>
       </Tooltip>
@@ -175,13 +204,11 @@ function MemberList(props: MemberListProps) {
       </div>
     </div>
   );
-  
+
   return (
     <>
       {memberListError ? (
-        <Alert severity="error">
-          {memberListErrorMessage}
-        </Alert>
+        <Alert severity="error">{memberListErrorMessage}</Alert>
       ) : (
         <>
           <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
@@ -198,11 +225,7 @@ function MemberList(props: MemberListProps) {
               </AlertTitle>
               There has been an error exporting your data to CSV.
               <br />
-              Please try again later, or contact the
-              {' '}
-              {import.meta.env.VITE_BRANDING_NAME}
-              {' '}
-              team.
+              Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
             </Alert>
           </Dialog>
           <Paper elevation={2} sx={{ marginBottom: 10 }}>

@@ -7,7 +7,7 @@ export const styleRules: Record<string, string> = {
 // Metadata column style map:
 // Map specific metadata field names to style rules
 export const columnStyleRules: Record<string, string> = {
-  'Species': styleRules.italic,
+  Species: styleRules.italic,
 };
 
 export function combineClasses(...classes: (string | undefined | null)[]) {

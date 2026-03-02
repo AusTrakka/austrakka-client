@@ -1,30 +1,31 @@
-import type React from 'react';
-import { useTheme } from '@mui/material/styles';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import type React from 'react';
 import InputSlider from './Slider';
 import getStyles, { MenuProps } from './utils';
 
 interface MetadataState {
-  blocks: string[]
-  showBlockHeaders: boolean
-  blockHeaderFontSize: number,
-  blockPadding: number,
-  blockSize: number,
+  blocks: string[];
+  showBlockHeaders: boolean;
+  blockHeaderFontSize: number;
+  blockPadding: number;
+  blockSize: number;
 }
 
-export default function MetadataControls(
-  { columns, state, onChange }: {
-    columns: string[],
-    state: MetadataState,
-    onChange: (
-      event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
-    ) => void; },
-) {
+export default function MetadataControls({
+  columns,
+  state,
+  onChange,
+}: {
+  columns: string[];
+  state: MetadataState;
+  onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
+}) {
   const theme = useTheme();
 
   return (
@@ -42,11 +43,7 @@ export default function MetadataControls(
           MenuProps={MenuProps}
         >
           {columns.map((column) => (
-            <MenuItem
-              key={column}
-              value={column}
-              style={getStyles(column, state.blocks, theme)}
-            >
+            <MenuItem key={column} value={column} style={getStyles(column, state.blocks, theme)}>
               {column}
             </MenuItem>
           ))}
@@ -56,8 +53,12 @@ export default function MetadataControls(
         <FormGroup>
           <FormControlLabel
             control={
-              <Switch checked={state.showBlockHeaders} onChange={onChange} name="showBlockHeaders" />
-          }
+              <Switch
+                checked={state.showBlockHeaders}
+                onChange={onChange}
+                name="showBlockHeaders"
+              />
+            }
             label="Show headers"
           />
         </FormGroup>

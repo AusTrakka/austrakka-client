@@ -1,20 +1,32 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useEffect, useState } from 'react';
-import type { TopLevelSpec } from 'vega-lite';
 import { useNavigate } from 'react-router-dom';
+import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import type PlotTypeProps from '../../../types/plottypeprops.interface';
-import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
-import VegaDataPlot from '../VegaDataPlot';
-import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import type { ProjectViewField } from '../../../types/dtos';
-import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
+import type { ProjectViewField } from '../../../types/dtos';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
+import {
+  getStartingField,
+  setColorInSpecToValue,
+  setFieldInSpec,
+} from '../../../utilities/plotUtils';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
+import VegaDataPlot from '../VegaDataPlot';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
+const preferredCatFields = [
+  'cgMLST',
+  'MLST',
+  'ST',
+  'Serotype',
+  'SNP_cluster',
+  'Lineage_family',
+  'Jurisdiction',
+];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -37,8 +49,8 @@ function BarChart(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const navigate = useNavigate();
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
@@ -76,10 +88,11 @@ function BarChart(props: PlotTypeProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields : ProjectViewField[] = fields
-        .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null));
-      setCategoricalFields(localCatFields.map(field => field.columnName));
+      const localCatFields: ProjectViewField[] = fields.filter(
+        (field) =>
+          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+      );
+      setCategoricalFields(localCatFields.map((field) => field.columnName));
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
@@ -142,9 +155,11 @@ function BarChart(props: PlotTypeProps) {
           label="X-Axis"
           onChange={(e) => setXAxisField(e.target.value)}
         >
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -157,9 +172,11 @@ function BarChart(props: PlotTypeProps) {
           onChange={(e) => setColourField(e.target.value)}
         >
           <MenuItem value="none">None</MenuItem>
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       {colourField !== 'none' && (
@@ -189,10 +206,7 @@ function BarChart(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={plot?.projectAbbreviation}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
     </>
   );
 }

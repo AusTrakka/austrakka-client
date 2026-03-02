@@ -16,14 +16,8 @@ interface EditButtonsProps {
 }
 
 // Define the EditButtons component outside the UserDetail component
-export default function EditButtonsV2(props : EditButtonsProps) {
-  const { editing,
-    setEditing,
-    onSave,
-    hasSavedChanges,
-    onCancel,
-    canSee,
-    onSaveLoading } = props;
+export default function EditButtonsV2(props: EditButtonsProps) {
+  const { editing, setEditing, onSave, hasSavedChanges, onCancel, canSee, onSaveLoading } = props;
 
   if (editing) {
     return (
@@ -47,12 +41,7 @@ export default function EditButtonsV2(props : EditButtonsProps) {
           </Tooltip>
         )}
         <Tooltip title="Cancel" placement="top" arrow>
-          <IconButton
-            size="small"
-            color="error"
-            disabled={onSaveLoading}
-            onClick={onCancel}
-          >
+          <IconButton size="small" color="error" disabled={onSaveLoading} onClick={onCancel}>
             <Cancel />
           </IconButton>
         </Tooltip>
@@ -61,11 +50,7 @@ export default function EditButtonsV2(props : EditButtonsProps) {
   }
   return canSee() ? (
     <Tooltip title="Edit" placement="top" arrow>
-      <IconButton
-        size="small"
-        color="primary"
-        onClick={() => setEditing(true)}
-      >
+      <IconButton size="small" color="primary" onClick={() => setEditing(true)}>
         <Edit />
       </IconButton>
     </Tooltip>

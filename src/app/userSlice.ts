@@ -1,34 +1,39 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import type { ResponseObject } from '../types/responseObject.interface';
-import { ResponseType } from '../constants/responseType';
-import type { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, User, UserMe } from '../types/dtos';
-import { getMe, getMeV2 } from '../utilities/resourceUtils';
 import LoadingState from '../constants/loadingState';
-import type { RootState } from './store';
+import { ResponseType } from '../constants/responseType';
+import type {
+  GroupedPrivilegesByRecordTypeWithScopes,
+  GroupRole,
+  User,
+  UserMe,
+} from '../types/dtos';
+import type { ResponseObject } from '../types/responseObject.interface';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
+import { getMe, getMeV2 } from '../utilities/resourceUtils';
+import type { RootState } from './store';
 
 export interface UserSliceState {
-  groupRolesByGroup: Record<string, string[]>,
-  groupRoles: GroupRole[],
-  displayName: string,
-  admin: boolean,
-  adminV2: boolean,
-  orgAbbrev: string,
-  orgName: string,
-  orgGlobalId: string,
-  errorMessage: string,
-  loading: LoadingState,
-  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
+  groupRolesByGroup: Record<string, string[]>;
+  groupRoles: GroupRole[];
+  displayName: string;
+  admin: boolean;
+  adminV2: boolean;
+  orgAbbrev: string;
+  orgName: string;
+  orgGlobalId: string;
+  errorMessage: string;
+  loading: LoadingState;
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[];
 }
 
 interface FetchUserRolesResponse {
-  groupRoles: GroupRole[],
-  scopes: GroupedPrivilegesByRecordTypeWithScopes[]
-  displayName: string,
-  isAusTrakkaAdmin: boolean,
-  orgAbbrev: string,
-  orgName: string,
-  orgGlobalId: string,
+  groupRoles: GroupRole[];
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[];
+  displayName: string;
+  isAusTrakkaAdmin: boolean;
+  orgAbbrev: string;
+  orgName: string;
+  orgGlobalId: string;
 }
 
 const fetchUserRoles = createAsyncThunk(
@@ -41,22 +46,14 @@ const fetchUserRoles = createAsyncThunk(
         return thunkAPI.rejectWithValue(groupResponse.message);
       }
 
-      const scopeResponse: ResponseObject = await getMeV2(
-        token,
-      );
+      const scopeResponse: ResponseObject = await getMeV2(token);
       if (scopeResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(scopeResponse.message);
       }
 
       // Destructure the response data
-      const {
-        groupRoles,
-        isAusTrakkaAdmin,
-        displayName,
-        orgAbbrev,
-        orgName,
-        orgGlobalId,
-      } = groupResponse.data as User;
+      const { groupRoles, isAusTrakkaAdmin, displayName, orgAbbrev, orgName, orgGlobalId } =
+        groupResponse.data as User;
       const { scopes } = scopeResponse.data as UserMe;
 
       // Fulfill with user role data
@@ -117,6 +114,6 @@ const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
-export const selectUserState = (state: RootState) : UserSliceState => state.userState;
+export const selectUserState = (state: RootState): UserSliceState => state.userState;
 
 export { fetchUserRoles };

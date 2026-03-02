@@ -1,12 +1,12 @@
-import { type ReactNode, useState, useRef } from 'react';
-import { Box, Drawer, IconButton, Tooltip } from '@mui/material';
 import { KeyboardDoubleArrowUp } from '@mui/icons-material';
+import { Box, Drawer, IconButton, Tooltip } from '@mui/material';
+import { type ReactNode, useRef, useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 
 interface CustomDrawerProps {
-  drawerOpen: boolean,
-  setDrawerOpen: (open: boolean) => void,
-  children: ReactNode,
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
+  children: ReactNode;
 }
 
 function CustomDrawer({ drawerOpen, setDrawerOpen, children }: CustomDrawerProps): JSX.Element {
@@ -46,7 +46,6 @@ function CustomDrawer({ drawerOpen, setDrawerOpen, children }: CustomDrawerProps
           overflowY: 'auto',
           position: 'relative',
           padding: 6,
-            
         }}
         onScroll={handleScroll}
       >
@@ -56,12 +55,12 @@ function CustomDrawer({ drawerOpen, setDrawerOpen, children }: CustomDrawerProps
             <IconButton
               onClick={scrollToTop}
               sx={{
-                'position': 'fixed',
-                'bottom': 20,
-                'right': 20,
-                'zIndex': 1000,
-                'color': Theme.PrimaryMain,
-                'backgroundColor': Theme.PrimaryMainBackground,
+                position: 'fixed',
+                bottom: 20,
+                right: 20,
+                zIndex: 1000,
+                color: Theme.PrimaryMain,
+                backgroundColor: Theme.PrimaryMainBackground,
                 '&:hover': {
                   backgroundColor: Theme.PrimaryMain,
                   color: 'white',

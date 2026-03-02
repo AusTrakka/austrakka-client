@@ -1,7 +1,16 @@
-import type React from 'react';
-import { useState, useMemo } from 'react';
-import { IconButton, Popover, List, ListItem, Typography, Box, TextField, Tooltip } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import {
+  Box,
+  IconButton,
+  List,
+  ListItem,
+  Popover,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 
 interface KeyValueInfoPopoverProps<T> {
   data: T[];
@@ -42,7 +51,7 @@ function KeyValueInfoPopover<T>({
 
   const filteredData = useMemo(() => {
     const searchQueryLower = searchQuery.toLowerCase();
-    return data.filter(item => {
+    return data.filter((item) => {
       const keyLower = keyExtractor(item).toLowerCase();
       const valueLower = valueExtractor(item).toLowerCase();
 
@@ -90,9 +99,9 @@ function KeyValueInfoPopover<T>({
           </Box>
           <List
             sx={{
-              'overflow': 'scroll',
-              'flex': 1,
-              'padding': 0,
+              overflow: 'scroll',
+              flex: 1,
+              padding: 0,
               '& .MuiListItem-root': {
                 borderBottom: '1px solid lightgray',
                 py: 0.5,
@@ -104,13 +113,8 @@ function KeyValueInfoPopover<T>({
           >
             {filteredData.map((item) => (
               <ListItem key={keyExtractor(item)}>
-                <Typography sx={{ fontWeight: 'bold', mr: 2 }}>
-                  {keyExtractor(item)}
-                  :
-                </Typography>
-                <Typography>
-                  {valueFormatter(valueExtractor(item))}
-                </Typography>
+                <Typography sx={{ fontWeight: 'bold', mr: 2 }}>{keyExtractor(item)}:</Typography>
+                <Typography>{valueFormatter(valueExtractor(item))}</Typography>
               </ListItem>
             ))}
           </List>

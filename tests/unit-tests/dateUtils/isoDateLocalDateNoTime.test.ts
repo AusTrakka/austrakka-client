@@ -1,5 +1,5 @@
-import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 import { isoDateLocalDateNoTime } from '../../../src/utilities/dateUtils';
+import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 
 describe('isoDateLocalDateNoTime', () => {
   beforeAll(() => {
@@ -72,7 +72,7 @@ describe('isoDateLocalDateNoTime', () => {
         new Date().toISOString().replace('.000Z', 'Z'),
         new Date().toISOString().replace('T', ' '),
       ];
-      const results = formats.map(f => isoDateLocalDateNoTime(f));
+      const results = formats.map((f) => isoDateLocalDateNoTime(f));
 
       results.forEach((result, index) => {
         if (index >= 0) {
@@ -84,12 +84,9 @@ describe('isoDateLocalDateNoTime', () => {
 
   describe('when handling extreme dates', () => {
     test('processes dates from 1900 to 2100 without errors', () => {
-      const extremeDates = [
-        new Date('1900-01-01T00:00:00Z'),
-        new Date('2100-12-31T23:59:59Z'),
-      ];
+      const extremeDates = [new Date('1900-01-01T00:00:00Z'), new Date('2100-12-31T23:59:59Z')];
 
-      extremeDates.forEach(date => {
+      extremeDates.forEach((date) => {
         const result = isoDateLocalDateNoTime(date.toISOString());
         expect(result).not.toEqual('Invalid Date');
         const parsed = parseTestDate(result);

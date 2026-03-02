@@ -27,11 +27,8 @@ function UserProvider({ children }: UserProviderProps) {
         setShowChildren(true);
       }, 400);
     };
-    
-    if (
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
+
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       fetchRolesData();
     }
   }, [token, tokenLoading, dispatch]);

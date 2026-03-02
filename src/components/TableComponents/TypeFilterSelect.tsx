@@ -1,18 +1,18 @@
-
 import './TypeFilterSelect.css';
+import { Clear } from '@mui/icons-material';
 import {
   FormControl,
-  Select,
-  MenuItem,
-  Typography,
+  IconButton,
   InputAdornment,
-  IconButton, type SelectChangeEvent,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
+  Typography,
 } from '@mui/material';
-import { Clear } from '@mui/icons-material';
 
 type TypeFilterSelectProps = {
   selectedValue: string | null;
-  onTypeFilterChange: (e:SelectChangeEvent<string | null>) => void;
+  onTypeFilterChange: (e: SelectChangeEvent<string | null>) => void;
   onTypeFilterClear: () => void;
   allTypes: string[];
 };
@@ -29,13 +29,23 @@ function TypeFilterSelect(props: TypeFilterSelectProps) {
         displayEmpty
         className="select"
         renderValue={(selected) =>
-          (selected ? (
-            <em style={{ fontSize: '.9em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selected}</em>
+          selected ? (
+            <em
+              style={{
+                fontSize: '.9em',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {selected}
+            </em>
           ) : (
             <Typography color="textDisabled" variant="subtitle2" sx={{ whiteSpace: 'nowrap' }}>
               Filter by Type
             </Typography>
-          ))}
+          )
+        }
         endAdornment={
           selectedValue && (
             <InputAdornment position="end" sx={{ ml: 0, flexShrink: 0 }}>

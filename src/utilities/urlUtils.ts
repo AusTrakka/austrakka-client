@@ -120,7 +120,10 @@ export function getRawQueryParams(url: any) {
   return queryParams;
 }
 
-export const getFilterObjFromSearchParams = (paramName: string, defaultState: DataTableFilterMeta) => {
+export const getFilterObjFromSearchParams = (
+  paramName: string,
+  defaultState: DataTableFilterMeta,
+) => {
   const params = getRawQueryParams(window.location.search);
   const filterString = params[paramName];
   if (filterString === null || filterString === undefined) return defaultState;

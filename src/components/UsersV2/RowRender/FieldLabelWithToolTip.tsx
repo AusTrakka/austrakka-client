@@ -1,8 +1,12 @@
-
 import { InfoTooltip } from './InfoTooltip';
 
-export function FieldLabelWithTooltip({ field, readableNames }:
-{ field: string; readableNames: Record<string, string> }) {
+export function FieldLabelWithTooltip({
+  field,
+  readableNames,
+}: {
+  field: string;
+  readableNames: Record<string, string>;
+}) {
   if (field === 'analysisServerUsername') {
     return (
       <span style={{ display: 'flex', alignItems: 'center' }}>

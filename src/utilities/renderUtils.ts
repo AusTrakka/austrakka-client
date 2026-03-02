@@ -12,7 +12,7 @@ export const renderValueOrEmptyString = (value: any): string => {
 // whether a field is a date or a datetime.
 // biome-ignore lint/complexity/noBannedTypes: historic
 export const fieldRenderFunctions: { [index: string]: Function } = {
-  'Shared_groups': (value: any) => {
+  Shared_groups: (value: any) => {
     if (value === null || value === undefined) return '';
 
     // 1. Remove unwanted characters (optional)
@@ -23,16 +23,16 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
     return sanitizedValue.replace(/,/g, ', ');
   },
 
-  'Date_created': (value: string) => isoDateLocalDate(value),
-  'Date_updated': (value: string) => isoDateLocalDate(value),
-  'eventTime': (value: string) => isoDateLocalDate(value),
+  Date_created: (value: string) => isoDateLocalDate(value),
+  Date_updated: (value: string) => isoDateLocalDate(value),
+  eventTime: (value: string) => isoDateLocalDate(value),
 };
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 // biome-ignore lint/complexity/noBannedTypes: historic
 export const typeRenderFunctions: { [index: string]: Function } = {
-  'boolean': (value: boolean): string => renderValueOrEmptyString(value),
-  'date': (value: string): string => isoDateLocalDateNoTime(value),
+  boolean: (value: boolean): string => renderValueOrEmptyString(value),
+  date: (value: string): string => isoDateLocalDateNoTime(value),
 };
 export const renderValue = (value: any, field: string, type: string): string => {
   if (field in fieldRenderFunctions) {

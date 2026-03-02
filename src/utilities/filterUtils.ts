@@ -1,5 +1,9 @@
-import {FilterMatchMode} from 'primereact/api';
-import type {DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData} from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
+import type {
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableOperatorFilterMetaData,
+} from 'primereact/datatable';
 
 export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = {
   [FilterMatchMode.EQUALS]: '==',
@@ -29,9 +33,7 @@ export function isOperatorFilterMetaData(
 }
 
 // Generic function to create filter string in SSKV format from date filter object
-export function generateDateFilterString(
-  dateFilterObject: DataTableFilterMeta,
-): string {
+export function generateDateFilterString(dateFilterObject: DataTableFilterMeta): string {
   if (Object.keys(dateFilterObject).length === 0) {
     return '';
   }
@@ -52,7 +54,7 @@ export function generateDateFilterString(
     // Handle operator type with a single constraint
     if (filterData.constraints.length > 0) {
       const [first1] = filterData.constraints;
-      const constraint = first1
+      const constraint = first1;
       dateValue = constraint.value;
       matchMode = constraint.matchMode as FilterMatchMode;
     }
@@ -63,9 +65,9 @@ export function generateDateFilterString(
 
   if (
     dateValue instanceof Date &&
-      !Number.isNaN(dateValue.getTime()) && // Ensure it's a valid date
-      matchMode &&
-      filterMatchModeToOperator[matchMode]
+    !Number.isNaN(dateValue.getTime()) && // Ensure it's a valid date
+    matchMode &&
+    filterMatchModeToOperator[matchMode]
   ) {
     const date = dateValue.toISOString();
     const condition = filterMatchModeToOperator[matchMode];
@@ -82,13 +84,15 @@ function isEqualFilterMetaData(
   return filter1.value === filter2.value && filter1.matchMode === filter2.matchMode;
 }
 
-export function
-isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
+export function isDataTableFiltersEqual(
+  obj1: DataTableFilterMeta,
+  obj2: DataTableFilterMeta,
+): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
   // first we could check if the keys have the same values
-  if (!keys1.every(key => keys2.includes(key))) {
+  if (!keys1.every((key) => keys2.includes(key))) {
     return false;
   }
 
@@ -129,7 +133,7 @@ export function getConditionName(
   constraint: DataTableFilterMetaData,
   conditions: { value: string; name: string }[],
 ) {
-  const found = conditions.find(c => c.value === constraint.matchMode)?.name;
+  const found = conditions.find((c) => c.value === constraint.matchMode)?.name;
   if (found) return found;
 
   if (constraint.matchMode === FilterMatchMode.CUSTOM) {
@@ -151,6 +155,7 @@ export function getDisplayValue(
   const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
 
   if (Array.isArray(raw)) return raw.join(', ');
-  if (dateConditions.some(c => c.name === conditionName)) return new Date(raw).toLocaleDateString('en-CA');
+  if (dateConditions.some((c) => c.name === conditionName))
+    return new Date(raw).toLocaleDateString('en-CA');
   return String(raw);
 }

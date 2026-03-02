@@ -1,16 +1,15 @@
-import { memo, useEffect, useState } from 'react';
-import { Typography, Box, Paper, Accordion, styled,
-  AccordionSummary, Alert } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
-import type { ProFormaVersion, Project } from '../../types/dtos';
-import GenerateCards, { CardType } from '../ProForma/CardGenerator';
-import { handleProformaDownload } from '../ProForma/proformaUtils';
+import { Accordion, AccordionSummary, Alert, Box, Paper, styled, Typography } from '@mui/material';
+import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
-import { ResponseType } from '../../constants/responseType';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { Theme } from '../../assets/themes/theme';
+import { ResponseType } from '../../constants/responseType';
+import type { ProFormaVersion, Project } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
+import GenerateCards, { CardType } from '../ProForma/CardGenerator';
+import { handleProformaDownload } from '../ProForma/proformaUtils';
 
 // Local Proforma Props
 interface ProFormasListProps {
@@ -19,8 +18,7 @@ interface ProFormasListProps {
 }
 
 function ProFormaList(props: ProFormasListProps) {
-  const { projectDetails,
-    setIsLoading } = props;
+  const { projectDetails, setIsLoading } = props;
 
   const { navigate } = useStableNavigate();
   const [proformaList, setProformaList] = useState<ProFormaVersion[]>([]);
@@ -33,8 +31,10 @@ function ProFormaList(props: ProFormasListProps) {
 
   useEffect(() => {
     async function getProFormaList() {
-      const proformaListResponse : ResponseObject =
-        await getGroupProFormaVersions(projectDetails!.projectMembers.id, token);
+      const proformaListResponse: ResponseObject = await getGroupProFormaVersions(
+        projectDetails!.projectMembers.id,
+        token,
+      );
       if (proformaListResponse.status === ResponseType.Success) {
         const data = proformaListResponse.data as ProFormaVersion[];
         setProformaList(data);
@@ -52,7 +52,7 @@ function ProFormaList(props: ProFormasListProps) {
     }
   }, [projectDetails, token, setIsLoading]);
 
-  const handleFileDownload = async (dAbbrev: string, version : number | null) => {
+  const handleFileDownload = async (dAbbrev: string, version: number | null) => {
     handleProformaDownload(dAbbrev, version, token);
   };
 
@@ -65,23 +65,27 @@ function ProFormaList(props: ProFormasListProps) {
   const sortByCreated = (a: ProFormaVersion, b: ProFormaVersion) => {
     if (a.created > b.created) {
       return -1;
-    } if (a.created < b.created) {
+    }
+    if (a.created < b.created) {
       return 1;
     }
     return 0;
   };
 
-const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce((acc, obj) => {
-  const group = obj.abbreviation;
-  if (!acc[group]) {
-    acc[group] = [];
-  }
-  acc[group].push(obj);
-  return acc;
-}, {} as { [group: string]: ProFormaVersion[] });
+  const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.reduce(
+    (acc, obj) => {
+      const group = obj.abbreviation;
+      if (!acc[group]) {
+        acc[group] = [];
+      }
+      acc[group].push(obj);
+      return acc;
+    },
+    {} as { [group: string]: ProFormaVersion[] },
+  );
 
   // Iterate over each group
-  Object.keys(groupedObjects).forEach(group => {
+  Object.keys(groupedObjects).forEach((group) => {
     // Sort the array of objects within each group
     groupedObjects[group].sort(sortByCreated);
   });
@@ -93,24 +97,26 @@ const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.redu
     flexDirection: 'column',
   }));
 
-  const renderTitleOrError = (hasError: boolean, errMsg: string) => (
-    hasError ?
+  const renderTitleOrError = (hasError: boolean, errMsg: string) =>
+    hasError ? (
       <Alert severity="error">{errMsg}</Alert>
-      : (
-        <Typography sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }} variant="subtitle1" color="primary">
-          This page holds pro formas with attached
-          templates. Only
-          {' '}
-          <b>current</b>
-          {' '}
-          pro forma templates may be downloaded.
-        </Typography>
-      ));
+    ) : (
+      <Typography
+        sx={{ paddingTop: 2, paddingBottom: 2, paddingLeft: 2 }}
+        variant="subtitle1"
+        color="primary"
+      >
+        This page holds pro formas with attached templates. Only <b>current</b> pro forma templates
+        may be downloaded.
+      </Typography>
+    );
 
-  const renderEmptyState = (isEmpty: boolean, hasError: boolean) => (
-    isEmpty && !hasError
-      ? <Alert severity="warning">No attached templates for project pro formas are available</Alert>
-      : <br />);
+  const renderEmptyState = (isEmpty: boolean, hasError: boolean) =>
+    isEmpty && !hasError ? (
+      <Alert severity="warning">No attached templates for project pro formas are available</Alert>
+    ) : (
+      <br />
+    );
 
   const renderContent = () => (
     <Box>
@@ -118,10 +124,12 @@ const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.redu
         {Object.keys(groupedObjects).map((index) => (
           <Paper
             key={groupedObjects[index][0].proFormaId}
-            sx={{ minWidth: '350px',
+            sx={{
+              minWidth: '350px',
               maxWidth: '350px',
               minHeight: '352px',
-              backgroundColor: Theme.PrimaryGrey100 }}
+              backgroundColor: Theme.PrimaryGrey100,
+            }}
           >
             <StyledAccordion sx={{ pointerEvents: 'none', margin: '0px' }}>
               <AccordionSummary
@@ -136,9 +144,9 @@ const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.redu
                     GenerateCards(
                       groupedObjects[index].slice(0, 1),
                       handleFileDownload,
-                      groupedObjects[index][0].assetId ?
-                        CardType.CurrentWithFile :
-                        CardType.CurrentWithoutFile,
+                      groupedObjects[index][0].assetId
+                        ? CardType.CurrentWithFile
+                        : CardType.CurrentWithoutFile,
                       loadingState,
                       setLoadingState,
                       handleRedirect,
@@ -153,9 +161,9 @@ const groupedObjects: { [group: string]: ProFormaVersion[] } = proformaList.redu
   );
   return (
     <>
-      { renderTitleOrError(proformaError, proformaErrorMessage) }
-      { renderEmptyState(proformaList.length === 0, proformaError)}
-      { renderContent() }
+      {renderTitleOrError(proformaError, proformaErrorMessage)}
+      {renderEmptyState(proformaList.length === 0, proformaError)}
+      {renderContent()}
     </>
   );
 }

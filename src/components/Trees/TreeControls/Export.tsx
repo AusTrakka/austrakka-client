@@ -1,9 +1,9 @@
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Menu } from '@mui/material';
+import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import html2canvas from 'html2canvas';
+import * as React from 'react';
 import type { TreeExportFuctions } from '../Tree';
 
 const base64toBlob = (base64Image: string) => {
@@ -25,14 +25,12 @@ const base64toBlob = (base64Image: string) => {
 };
 
 interface Props {
-  treeName: string,
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
-  legendRef: React.RefObject<HTMLDivElement>,
+  treeName: string;
+  phylocanvasRef: React.RefObject<TreeExportFuctions>;
+  legendRef: React.RefObject<HTMLDivElement>;
 }
 
-export default function ExportButton(
-  { treeName, phylocanvasRef, legendRef }: Props,
-) {
+export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Props) {
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
     if (typeof blob === 'string' && encode) {
@@ -41,15 +39,10 @@ export default function ExportButton(
       blobData = blob as Blob;
     }
 
-    const url = window.URL.createObjectURL(
-      new Blob([blobData]),
-    );
+    const url = window.URL.createObjectURL(new Blob([blobData]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute(
-      'download',
-      filename,
-    );
+    link.setAttribute('download', filename);
 
     // Append to html link element page
     document.body.appendChild(link);
@@ -143,10 +136,7 @@ export default function ExportButton(
       .replace(/<text(?![^>]*xml:space)/g, '<text xml:space="preserve"')
       .replace(/<tspan(?![^>]*xml:space)/g, '<tspan xml:space="preserve"');
 
-    const svg = new Blob(
-      [fixedSvgText],
-      { type: 'image/svg+xml' },
-    );
+    const svg = new Blob([fixedSvgText], { type: 'image/svg+xml' });
     return svg;
   };
 
@@ -170,12 +160,7 @@ export default function ExportButton(
       >
         Export
       </Button>
-      <Menu
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        onClick={handleClose}
-      >
+      <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}>
         <MenuItem
           key="Export tree as SVG"
           onClick={async () => {
@@ -194,9 +179,7 @@ export default function ExportButton(
         >
           Export tree as PNG
         </MenuItem>
-        <MenuItem onClick={() => handleTipExport()}>
-          Export leaves
-        </MenuItem>
+        <MenuItem onClick={() => handleTipExport()}>Export leaves</MenuItem>
         <MenuItem onClick={() => handleLegendExport()} disabled={!legendRef.current}>
           Export legend
         </MenuItem>

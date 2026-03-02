@@ -1,30 +1,43 @@
-import type * as React from 'react';
-import { FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, OutlinedInput, Select, type SelectChangeEvent, Switch } from '@mui/material';
+import {
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  type SelectChangeEvent,
+  Switch,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import type * as React from 'react';
 import InputSlider from './Slider';
 import getStyles, { MenuProps } from './utils';
 
 interface State {
-  alignLabels: boolean,
-  showLeafLabels: boolean,
-  showInternalLabels: boolean,
-  showBranchLengths: boolean,
-  fontSize: number,
-  nodeSize: number,
-  labelBlocks: string[],
-  keyValueLabelBlocks: boolean,
-  nodeColumn: string,
+  alignLabels: boolean;
+  showLeafLabels: boolean;
+  showInternalLabels: boolean;
+  showBranchLengths: boolean;
+  fontSize: number;
+  nodeSize: number;
+  labelBlocks: string[];
+  keyValueLabelBlocks: boolean;
+  nodeColumn: string;
 }
 
-export default function NodeAndLabelControls(
-  { columns, visualColumns, state, onChange }: {
-    columns: string[],
-    visualColumns: string[],
-    state: State,
-    onChange: (
-      event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
-    ) => void; },
-) {
+export default function NodeAndLabelControls({
+  columns,
+  visualColumns,
+  state,
+  onChange,
+}: {
+  columns: string[];
+  visualColumns: string[];
+  state: State;
+  onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
+}) {
   const theme = useTheme();
   return (
     <Grid>
@@ -67,10 +80,7 @@ export default function NodeAndLabelControls(
             <i>None</i>
           </MenuItem>
           {visualColumns.map((column) => (
-            <MenuItem
-              key={column}
-              value={column}
-            >
+            <MenuItem key={column} value={column}>
               {column}
             </MenuItem>
           ))}
@@ -80,74 +90,64 @@ export default function NodeAndLabelControls(
         <FormGroup>
           {state.labelBlocks.length > 0 ? (
             <FormControlLabel
-              control={(
+              control={
                 <Switch
                   checked={state.keyValueLabelBlocks}
                   onChange={onChange}
                   name="keyValueLabelBlocks"
                 />
-                )}
+              }
               label="Key value label pairs"
             />
-          )
-            :
-            <div />}
+          ) : (
+            <div />
+          )}
           <FormControlLabel
-            control={(
-              <Switch
-                checked={state.alignLabels}
-                onChange={onChange}
-                name="alignLabels"
-              />
-            )}
+            control={<Switch checked={state.alignLabels} onChange={onChange} name="alignLabels" />}
             label="Align labels"
           />
           <FormControlLabel
-            control={(
-              <Switch
-                checked={state.showLeafLabels}
-                onChange={onChange}
-                name="showLeafLabels"
-              />
-          )}
+            control={
+              <Switch checked={state.showLeafLabels} onChange={onChange} name="showLeafLabels" />
+            }
             label="Show tip labels"
           />
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={state.showInternalLabels}
                 onChange={onChange}
                 name="showInternalLabels"
               />
-          )}
+            }
             label="Show internal labels"
           />
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={state.showBranchLengths}
                 onChange={onChange}
                 name="showBranchLengths"
               />
-          )}
+            }
             label="Show branch lengths"
           />
         </FormGroup>
       </FormControl>
-      {state.showLeafLabels || state.showInternalLabels || state.showBranchLengths
-        ? (
-          <FormControl fullWidth>
-            <InputSlider
-              name="fontSize"
-              label="Font size"
-              value={state.fontSize}
-              onChange={onChange}
-              min={1}
-              max={24}
-            />
-          </FormControl>
-        )
-        : <div />}
+      {state.showLeafLabels || state.showInternalLabels || state.showBranchLengths ? (
+        <FormControl fullWidth>
+          <InputSlider
+            name="fontSize"
+            label="Font size"
+            value={state.fontSize}
+            onChange={onChange}
+            min={1}
+            max={24}
+          />
+        </FormControl>
+      ) : (
+        <div />
+      )}
       <FormControl fullWidth>
         <InputSlider
           name="nodeSize"

@@ -1,7 +1,6 @@
 import type { FeatureCollection } from 'geojson';
-
-import MALAYSIA from '../../assets/maps/my_processed.json';
 import AUS_NZ from '../../assets/maps/aus_nz_processed.json';
+import MALAYSIA from '../../assets/maps/my_processed.json';
 import WORLD from '../../assets/maps/world_map.json';
 
 export const Maps = {
@@ -20,7 +19,7 @@ export type MapJson = (typeof Maps)[MapKey];
 export type MapSupportInfo = [MapKey, boolean];
 
 export type MapFeatureWithStringProps = {
-  properties: { [x: string]: string }
+  properties: { [x: string]: string };
 };
 
 export const FeatureLookupField = {
@@ -30,7 +29,7 @@ export const FeatureLookupField = {
   NAME: 'name',
 } as const;
 
-export type FeatureLookupFieldType = typeof FeatureLookupField[keyof typeof FeatureLookupField];
+export type FeatureLookupFieldType = (typeof FeatureLookupField)[keyof typeof FeatureLookupField];
 
 export interface GeoCountRow {
   geoFeature: string;
@@ -52,6 +51,6 @@ export const MapRegistry: MapRegistryEntry[] = [
     supports: new Set(['AU', 'NZ', 'AUS', 'NZL']),
   },
   {
-    key: 'WORLD', // no supports needed, always included 
+    key: 'WORLD', // no supports needed, always included
   },
 ];

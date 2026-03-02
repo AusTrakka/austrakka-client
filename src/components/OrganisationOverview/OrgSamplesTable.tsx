@@ -135,7 +135,9 @@ function OrgSamplesTable(props: SamplesProps) {
     if (!metadata?.fields || !metadata?.columnLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
-    if (Object.values(metadata.columnLoadingStates).every((field) => field === LoadingState.SUCCESS)) {
+    if (
+      Object.values(metadata.columnLoadingStates).every((field) => field === LoadingState.SUCCESS)
+    ) {
       setAllFieldsLoaded(true);
     }
   }, [metadata?.columnLoadingStates, metadata?.fields]);
@@ -244,9 +246,14 @@ function OrgSamplesTable(props: SamplesProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Tooltip title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'} placement="top">
+        <Tooltip
+          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+          placement="top"
+        >
           <IconButton
             onClick={toggleShowSelectedRowsOnly}
             color={showSelectedRowsOnly ? 'success' : 'default'}
@@ -322,7 +329,9 @@ function OrgSamplesTable(props: SamplesProps) {
             onColumnVisibilityChange={(selectedCols) => {
               const newColumns = sampleTableColumns.map((col: any) => {
                 const newCol = { ...col };
-                newCol.hidden = selectedCols.some((selectedCol: any) => selectedCol.field === col.field);
+                newCol.hidden = selectedCols.some(
+                  (selectedCol: any) => selectedCol.field === col.field,
+                );
                 return newCol;
               });
               setSampleTableColumns(newColumns);

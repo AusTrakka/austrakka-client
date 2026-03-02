@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import type { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStartingField, setColorInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
-import type PlotTypeProps from '../../../types/plottypeprops.interface';
-import VegaDataPlot from '../VegaDataPlot';
-import { useAppSelector } from '../../../app/store';
+import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
+import { useAppSelector } from '../../../app/store';
+import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
+import {
+  getStartingField,
+  setColorInSpecToValue,
+  setFieldInSpec,
+} from '../../../utilities/plotUtils';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { defaultDiscreteColorScheme } from '../../../constants/schemes';
+import VegaDataPlot from '../VegaDataPlot';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -37,8 +41,8 @@ function Histogram(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
@@ -82,13 +86,17 @@ function Histogram(props: PlotTypeProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localNumericFields : ProjectViewField[] = fields
-        .filter(field => field.primitiveType === 'number' || field.primitiveType === 'double');
-      setNumericFields(localNumericFields.map(field => field.columnName));
+      const localNumericFields: ProjectViewField[] = fields.filter(
+        (field) => field.primitiveType === 'number' || field.primitiveType === 'double',
+      );
+      setNumericFields(localNumericFields.map((field) => field.columnName));
       const localCatFields = fields
-        .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null))
-        .map(field => field.columnName);
+        .filter(
+          (field) =>
+            field.canVisualise &&
+            (field.primitiveType === 'string' || field.primitiveType === null),
+        )
+        .map((field) => field.columnName);
       setCategoricalFields(localCatFields);
       // Note we do not set a preferred starting colour field; starting value is None
       // Mandatory fields: one numeric field
@@ -153,9 +161,11 @@ function Histogram(props: PlotTypeProps) {
           label="X-Axis"
           onChange={(e) => setXAxisField(e.target.value)}
         >
-          {
-            numericFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {numericFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -168,9 +178,11 @@ function Histogram(props: PlotTypeProps) {
           onChange={(e) => setColourField(e.target.value)}
         >
           <MenuItem value="none">None</MenuItem>
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       {colourField !== 'none' && (
@@ -213,10 +225,7 @@ function Histogram(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={plot?.projectAbbreviation}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
     </>
   );
 }

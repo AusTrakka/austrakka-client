@@ -1,7 +1,7 @@
-import type { ProjectField } from '../../../src/types/dtos';
-import { MergeAlgorithm } from '../../../src/constants/mergeAlgorithm';
-import { FieldSource } from '../../../src/constants/fieldSource';
 import { calculateViewFieldNames } from '../../../src/app/metadataSliceUtils';
+import { FieldSource } from '../../../src/constants/fieldSource';
+import { MergeAlgorithm } from '../../../src/constants/mergeAlgorithm';
+import type { ProjectField } from '../../../src/types/dtos';
 
 describe('calculateViewFieldNames', () => {
   test('given fieldSource is sample, should return the unaltered field name', () => {
@@ -23,7 +23,7 @@ describe('calculateViewFieldNames', () => {
     const result = calculateViewFieldNames(field, mergeAlgorithm);
     expect(result).toEqual(['field']);
   });
-  
+
   test('given fieldSource is both, should return the unaltered field name', () => {
     const field: ProjectField = {
       projectFieldId: 1,
@@ -43,7 +43,7 @@ describe('calculateViewFieldNames', () => {
     const result = calculateViewFieldNames(field, mergeAlgorithm);
     expect(result).toEqual(['field']);
   });
-  
+
   test('given mergeAlgorithm is override, then even if field source is dataset, should return the unaltered field name', () => {
     const field: ProjectField = {
       projectFieldId: 1,
@@ -63,7 +63,7 @@ describe('calculateViewFieldNames', () => {
     const result = calculateViewFieldNames(field, mergeAlgorithm);
     expect(result).toEqual(['field']);
   });
-  
+
   test('given mergeAlgorithm is show all and field source is dataset, should return field name with analysis labels', () => {
     const field: ProjectField = {
       projectFieldId: 1,

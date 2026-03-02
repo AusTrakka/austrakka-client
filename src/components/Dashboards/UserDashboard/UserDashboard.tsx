@@ -1,16 +1,18 @@
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
-import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
-import { cardStyle } from '../../../styles/dashboardStyles';
 import { Theme } from '../../../assets/themes/theme';
+import { cardStyle } from '../../../styles/dashboardStyles';
+import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
+import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
 
 function UserDashboard() {
   return (
     <Box>
       <Grid container spacing={2}>
         <Grid container size={12} justifyContent="space-between">
-          <Typography variant="h2" color="primary">Dashboard</Typography>
+          <Typography variant="h2" color="primary">
+            Dashboard
+          </Typography>
         </Grid>
         <Grid
           container
@@ -19,7 +21,7 @@ function UserDashboard() {
           sx={{
             marginTop: 1,
             padding: 2,
-            backgroundColor: Theme.PrimaryMainBackground
+            backgroundColor: Theme.PrimaryMainBackground,
           }}
         >
           <Card sx={cardStyle}>

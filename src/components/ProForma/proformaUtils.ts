@@ -2,7 +2,7 @@ import { getProFormaDownload } from '../../utilities/resourceUtils';
 
 export const handleProformaDownload = async (
   dAbbrev: string,
-  version : number | null,
+  version: number | null,
   token: string,
 ) => {
   try {

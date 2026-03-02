@@ -1,37 +1,49 @@
 import {
-  memo,
-  useEffect,
-  useState,
-} from 'react';
-import {
-  Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType,
+  Close,
+  Description,
+  InfoOutlined,
+  Insights,
+  MergeType,
+  TextRotateUp,
+  TextRotateVertical,
 } from '@mui/icons-material';
-import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import {
-  IconButton, Dialog, Alert, AlertTitle, Paper, Tooltip, Typography, alpha,
+  Alert,
+  AlertTitle,
+  alpha,
+  Dialog,
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography,
 } from '@mui/material';
+import { Column } from 'primereact/column';
+import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
+import { memo, useEffect, useState } from 'react';
 import './Samples.css';
 import { Skeleton } from 'primereact/skeleton';
+import { useStableNavigate } from '../../app/NavigationContext';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { useAppSelector } from '../../app/store';
+import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildPrimeReactColumnDefinitionsPVF, type PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
-import type { Sample } from '../../types/sample.interface';
-import { useAppSelector } from '../../app/store';
-import ExportTableData from '../Common/ExportTableData';
-import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
-import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
-import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
-import sortIcon from '../TableComponents/SortIcon';
-import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
-import type { ProjectField } from '../../types/dtos';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
-import { useStableNavigate } from '../../app/NavigationContext';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
-import { Theme } from '../../assets/themes/theme';
+import type { ProjectField } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  buildPrimeReactColumnDefinitionsPVF,
+  type PrimeReactColumnDefinition,
+} from '../../utilities/tableUtils';
+import ExportTableData from '../Common/ExportTableData';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
+import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
+import sortIcon from '../TableComponents/SortIcon';
+import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 
 interface SamplesProps {
   projectAbbrev: string;
@@ -47,14 +59,12 @@ function BodyComponent(props: BodyComponentProps) {
   return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
     <Skeleton /> // Replace with your skeleton component
   ) : (
-    col.body// Wrap your existing body content
+    col.body // Wrap your existing body content
   );
 }
 
 function ProjectSamplesTable(props: SamplesProps) {
-  const {
-    projectAbbrev,
-  } = props;
+  const { projectAbbrev } = props;
 
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
@@ -73,13 +83,19 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
 
-  const metadata: ProjectMetadataState | null = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev));
-  const { maxHeight, getHeaderRef } = useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
+  const metadata: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
+  const { maxHeight, getHeaderRef } = useMaxHeaderHeight(
+    metadata?.loadingState ?? MetadataLoadingState.IDLE,
+  );
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    if (Object.values(metadata.fieldLoadingStates).every((field) => field === LoadingState.SUCCESS)) {
+    if (
+      Object.values(metadata.fieldLoadingStates).every((field) => field === LoadingState.SUCCESS)
+    ) {
       setAllFieldsLoaded(true);
     }
     setSampleTableColumns(columnBuilder);
@@ -88,8 +104,10 @@ function ProjectSamplesTable(props: SamplesProps) {
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.ERROR
-      || metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (
+      metadata?.loadingState === MetadataLoadingState.ERROR ||
+      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+    ) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -114,15 +132,16 @@ function ProjectSamplesTable(props: SamplesProps) {
   };
 
   const header = (
-    <div style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%',
-    }}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: '100%',
+      }}
     >
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <HeaderColourToggle
-          colourBySource={colourBySource}
-          setColourBySource={setColourBySource}
-        />
+        <HeaderColourToggle colourBySource={colourBySource} setColourBySource={setColourBySource} />
         <KeyValuePopOver
           data={metadata?.projectFields || []}
           keyExtractor={(field: ProjectField) => field.fieldName}
@@ -157,7 +176,7 @@ function ProjectSamplesTable(props: SamplesProps) {
           dataToExport={
             metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
               ? []
-              : filteredData ?? []
+              : (filteredData ?? [])
           }
           headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
@@ -195,10 +214,7 @@ function ProjectSamplesTable(props: SamplesProps) {
         </Tooltip>
       </div>
     ) : (
-      <div
-        ref={(ref) => getHeaderRef(ref, index)}
-        className="custom-vertical-header"
-      >
+      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
         <span className="vertical-text">{column.header}</span>
         <Tooltip title={`Source from ${source}`} placement="top" arrow>
           {icon}
@@ -248,11 +264,7 @@ function ProjectSamplesTable(props: SamplesProps) {
           CSV export will not be available. Refresh to reload.`
             : 'An error occurred loading project metadata. Refresh to reload.'}
           <br />
-          Please contact the
-          {' '}
-          {import.meta.env.VITE_BRANDING_NAME}
-          {' '}
-          team if this error persists.
+          Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
         </Alert>
       </Dialog>
       <DataFilters
@@ -268,9 +280,7 @@ function ProjectSamplesTable(props: SamplesProps) {
         setLoadingState={setLoadingState} // TODO: This is a hack to get the filters to update
         primeReactFilters={currentFilters}
       />
-      {
-        /* TODO: Make a function for the table so that a different sort is used per column type */
-      }
+      {/* TODO: Make a function for the table so that a different sort is used per column type */}
       <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
         <DataTable
           value={metadata?.metadata ?? []}
@@ -297,33 +307,33 @@ function ProjectSamplesTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-          filters={allFieldsLoaded
-            ? currentFilters
-            : defaultState}
+          filters={allFieldsLoaded ? currentFilters : defaultState}
           reorderableColumns
           resizableColumns
           sortIcon={sortIcon}
-          emptyMessage={(
+          emptyMessage={
             <Typography variant="subtitle1" color="textSecondary" align="center">
               No samples found
             </Typography>
-            )}
+          }
         >
-          {metadata?.metadata ? sampleTableColumns.map((col: any, index: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={getColumnHeader(col, index, verticalHeaders)}
-              body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
-              hidden={col.hidden}
-              sortable
-              resizeable
-              headerStyle={getColumnHeaderStyle(verticalHeaders, col)}
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
-            />
-          )) : null}
+          {metadata?.metadata
+            ? sampleTableColumns.map((col: any, index: any) => (
+                <Column
+                  key={col.field}
+                  field={col.field}
+                  header={getColumnHeader(col, index, verticalHeaders)}
+                  body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
+                  hidden={col.hidden}
+                  sortable
+                  resizeable
+                  headerStyle={getColumnHeaderStyle(verticalHeaders, col)}
+                  headerClassName="custom-title"
+                  className="flexible-column"
+                  bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+                />
+              ))
+            : null}
         </DataTable>
       </Paper>
     </div>

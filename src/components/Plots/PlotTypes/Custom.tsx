@@ -4,10 +4,10 @@
 // Recommended to set width to "container" and leave height unconstrained
 // All project metadata fields will be requested from the database
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { TopLevelSpec } from 'vega-lite';
-import VegaDataPlot from '../VegaDataPlot';
 import type PlotTypeProps from '../../../types/plottypeprops.interface';
+import VegaDataPlot from '../VegaDataPlot';
 
 function Custom(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
@@ -22,12 +22,7 @@ function Custom(props: PlotTypeProps) {
     }
   }, [plot, setPlotErrorMsg]);
 
-  return (
-    <VegaDataPlot
-      spec={spec}
-      projectAbbrev={plot?.projectAbbreviation}
-    />
-  );
+  return <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />;
 }
 
 export default Custom;

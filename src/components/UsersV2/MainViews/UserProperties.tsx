@@ -1,18 +1,18 @@
-import type { Dispatch, SetStateAction } from 'react';
 import {
+  Alert,
+  Box,
   Paper,
   Stack,
-  Typography,
-  TableContainer,
   Table,
   TableBody,
-  Box,
-  Alert,
+  TableContainer,
+  Typography,
 } from '@mui/material';
+import type { Dispatch, SetStateAction } from 'react';
 import type { UserV2 } from '../../../types/dtos';
 import EditButtonsV2 from '../EditButtonsV2';
-import EditableRow from '../RowRender/EditableRow';
 import BasicRow from '../RowRender/BasicRow';
+import EditableRow from '../RowRender/EditableRow';
 
 interface UserPropertiesProps {
   user: UserV2;
@@ -60,16 +60,9 @@ export default function UserProperties(props: UserPropertiesProps) {
         />
       );
     }
-    return (
-      <BasicRow
-        key={field}
-        field={field}
-        value={value}
-        readableNames={readableNames}
-      />
-    );
+    return <BasicRow key={field} field={field} value={value} readableNames={readableNames} />;
   };
-  
+
   return (
     <Paper elevation={1} className="basic-info-table">
       <Stack
@@ -97,7 +90,10 @@ export default function UserProperties(props: UserPropertiesProps) {
         <Table sx={{ borderBottom: 'none' }}>
           <TableBody>
             {Object.entries(user).map(([field, value]) => {
-              if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
+              if (
+                (typeof value !== 'object' || value === null) &&
+                !nonDisplayFields.includes(field)
+              ) {
                 return renderRow(field as keyof UserV2, value);
               }
               return null;

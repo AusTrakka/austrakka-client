@@ -26,7 +26,8 @@ function doesNotContainFn(records: any, filterParams: any) {
   if (records[field] && !records[field].toLowerCase().includes(value.toLowerCase())) {
     return true;
   }
-  if (!records[field]) { // To account for null fields which will never include searched value
+  if (!records[field]) {
+    // To account for null fields which will never include searched value
     return true;
   }
   return false;

@@ -1,22 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { compile, type TopLevelSpec } from 'vega-lite';
-import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
-import type { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { parse, View as VegaView } from 'vega';
+import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
+import {
+  type ProjectMetadataState,
+  selectProjectMetadata,
+} from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
-import ExportVegaPlot from '../../Plots/ExportVegaPlot';
-import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import type { Sample } from '../../../types/sample.interface';
-import { createVegaScale } from '../../../utilities/plotUtils';
-import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
+import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { createVegaScale } from '../../../utilities/plotUtils';
+import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 // Parameterised widget; field must be specified
 const DEFAULT_COLOUR_SCHEME = 'tableau10';
@@ -44,11 +47,14 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     legendColumns = 4,
   } = props;
   if (colourScheme && colourMapping) {
-    console.warn('colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored');
+    console.warn(
+      'colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored',
+    );
   }
   // TODO maybe just fieldUniqueValues selector?
-  const data: ProjectMetadataState | null = useAppSelector(state =>
-    selectProjectMetadata(state, projectAbbrev));
+  const data: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -61,7 +67,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
 
     const value = item.datum[field];
     let drillDownTableMetaFilters: DataTableFilterMeta = {};
-    
+
     if (isNullOrEmpty(value)) {
       // Find empty values
       drillDownTableMetaFilters = {
@@ -91,13 +97,13 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     }
 
     const combinedFilters: DataTableFilterMeta =
-        timeFilterObject && Object.keys(timeFilterObject).length !== 0 ?
-          { ...drillDownTableMetaFilters, ...timeFilterObject }
-          : drillDownTableMetaFilters;
+      timeFilterObject && Object.keys(timeFilterObject).length !== 0
+        ? { ...drillDownTableMetaFilters, ...timeFilterObject }
+        : drillDownTableMetaFilters;
 
     updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
   }
-  
+
   // Not ideal, but only used for the case where the widget colourMapping is specified incorrectly
   const randomColour = () => {
     const hue = Math.floor(Math.random() * 360);
@@ -105,63 +111,66 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     const lightness = 70;
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   };
-  
+
   // Move to utility file if used outside this widget
   const createCustomScale = () => {
     const uniqueValues = data!.fieldUniqueValues![field] ?? [];
     if (colourMapping) {
       return {
         domain: uniqueValues,
-        range: uniqueValues.map((val) => (
-          isNullOrEmpty(val) ? NULL_COLOUR : (colourMapping[val] ?? randomColour()))),
+        range: uniqueValues.map((val) =>
+          isNullOrEmpty(val) ? NULL_COLOUR : (colourMapping[val] ?? randomColour()),
+        ),
       };
     }
-    return createVegaScale(
-      uniqueValues ?? [],
-      colourScheme || DEFAULT_COLOUR_SCHEME,
-    );
+    return createVegaScale(uniqueValues ?? [], colourScheme || DEFAULT_COLOUR_SCHEME);
   };
-  
+
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
     width: 'container',
-    layer: [{
-      mark: { type: 'arc', radius: 90, radius2: 40, tooltip: true, cursor: 'pointer' },
-      encoding: {
-        theta: {
-          aggregate: 'count',
-          stack: 'zero',
-          axis: { title: 'Count' },
-        },
-        color: {
-          field: `${field}`,
-          scale: createCustomScale(),
-          legend: {
-            title: field,
-            orient: 'bottom',
-            columns: legendColumns,
-            labelExpr: "datum.label || 'unknown'",
+    layer: [
+      {
+        mark: { type: 'arc', radius: 90, radius2: 40, tooltip: true, cursor: 'pointer' },
+        encoding: {
+          theta: {
+            aggregate: 'count',
+            stack: 'zero',
+            axis: { title: 'Count' },
+          },
+          color: {
+            field: `${field}`,
+            scale: createCustomScale(),
+            legend: {
+              title: field,
+              orient: 'bottom',
+              columns: legendColumns,
+              labelExpr: "datum.label || 'unknown'",
+            },
           },
         },
       },
-    },
-    {
-      mark: { type: 'text', radius: 67, color: 'black', tooltip: true, cursor: 'pointer' },
-    }],
+      {
+        mark: { type: 'text', radius: 67, color: 'black', tooltip: true, cursor: 'pointer' },
+      },
+    ],
     usermeta: {
       dateCollField: field,
     },
   });
 
   useEffect(() => {
-    if (data?.loadingState && (
-      data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-            data.loadingState === MetadataLoadingState.DATA_LOADED
-    )) {
-      const fields = data.fields!.map(fld => fld.columnName);
+    if (
+      data?.loadingState &&
+      (data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
+        data.loadingState === MetadataLoadingState.DATA_LOADED)
+    ) {
+      const fields = data.fields!.map((fld) => fld.columnName);
       if (!fields.includes(field)) {
-        setInfoMessage(`Field ${field} not found in project. Add this field to the project to see data.`);
+        setInfoMessage(
+          `Field ${field} not found in project. Add this field to the project to see data.`,
+        );
       }
     }
   }, [data, field]);
@@ -178,7 +187,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      
+
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
         .addEventListener('click', (_, item) => handleItemClick(item))
@@ -189,7 +198,6 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     if (filteredData && plotDiv?.current) {
       createVegaViews();
     }
-
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
   useEffect(() => {
@@ -202,7 +210,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     <Box>
       <Tooltip title={tooltipTitle} arrow placement="top">
         <Typography variant="h5" paddingBottom={3} color="primary">
-          { title ?? `${field} counts` }
+          {title ?? `${field} counts`}
         </Typography>
       </Tooltip>
       {errorMessage && (
@@ -211,31 +219,23 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
           {errorMessage}
         </Alert>
       )}
-      {infoMessage && (
-      <Alert severity="info">
-        {infoMessage}
-      </Alert>
-      )}
+      {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
       {!errorMessage && !infoMessage && (
         <Grid container spacing={2}>
           <Grid size={11}>
-            <div
-              id="#plot-container"
-              ref={plotDiv}
-              style={{ width: '100%' }}
-            />
+            <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
           </Grid>
           <Grid size={1}>
             <ExportVegaPlot vegaView={vegaView} />
           </Grid>
         </Grid>
       )}
-      {(!(data?.loadingState) ||
-                !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-                    data.loadingState === MetadataLoadingState.ERROR ||
-                    data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-                    <div>Loading...</div>
-      )}
+      {(!data?.loadingState ||
+        !(
+          data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+        )) && <div>Loading...</div>}
     </Box>
   );
 }

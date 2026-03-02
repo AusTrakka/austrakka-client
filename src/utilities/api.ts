@@ -3,7 +3,7 @@ import type { ApiResponse } from '../types/apiResponse.interface';
 import type { ResponseObject } from '../types/responseObject.interface';
 
 interface HTTPOptions {
-  [key: string]: any
+  [key: string]: any;
 }
 
 // Constants
@@ -28,43 +28,43 @@ export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs:
 
 function getHeaders(token: string): any {
   return {
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
 
 function getHeadersPut(token: string): any {
   return {
-    'Accept': 'application/json',
+    Accept: 'application/json',
     'Content-Type': 'application/json-patch+json',
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
 
 function getHeadersPatch(token: string): any {
   return {
-    'Accept': 'application/json',
+    Accept: 'application/json',
     'Content-Type': 'application/json-patch+json',
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
 
 function getHeadersPost(token: string): any {
   return {
-    'Accept': 'application/json',
+    Accept: 'application/json',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
 
 function getHeadersMultipartPost(token: string): any {
   return {
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
@@ -73,8 +73,10 @@ async function parseApiResponse<T = any>(response: Response): Promise<ApiRespons
   return (await response.json()) as ApiResponse<T>;
 }
 
-async function fetchAndParse<T = any>(url: string, options: HTTPOptions)
-  : Promise<[ApiResponse<T>, Response]> {
+async function fetchAndParse<T = any>(
+  url: string,
+  options: HTTPOptions,
+): Promise<[ApiResponse<T>, Response]> {
   const response = await fetch(base + url, options);
   let apiResp: ApiResponse<T>;
   try {
@@ -121,7 +123,7 @@ function errorResponse<T = any>(response: Response, apiResp: ApiResponse<T>): Re
 }
 
 function fatalResponse(error: any): ResponseObject {
-  return ({ status: ResponseType.Error, message: genericErrorMessage, error, messages: [] });
+  return { status: ResponseType.Error, message: genericErrorMessage, error, messages: [] };
 }
 
 function addClientSessionId(headers: any, clientSessionId?: string | null): any {
@@ -173,8 +175,12 @@ export async function callGET(
   });
 }
 
-export async function callPATCH(url: string, token: string, body?: any, clientSessionId?: string):
-Promise<ResponseObject> {
+export async function callPATCH(
+  url: string,
+  token: string,
+  body?: any,
+  clientSessionId?: string,
+): Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
     return noToken;
@@ -194,8 +200,12 @@ Promise<ResponseObject> {
   });
 }
 
-export async function callPUT(url: string, token: string, body: any, clientSessionId?: string):
-Promise<ResponseObject> {
+export async function callPUT(
+  url: string,
+  token: string,
+  body: any,
+  clientSessionId?: string,
+): Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
@@ -207,8 +217,12 @@ Promise<ResponseObject> {
   });
 }
 
-export async function callPost<T>(url: string, token: string, body: any, clientSessionId?: string):
-Promise<ResponseObject> {
+export async function callPost<T>(
+  url: string,
+  token: string,
+  body: any,
+  clientSessionId?: string,
+): Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
@@ -226,8 +240,7 @@ export async function callPostMultipart(
   token: string,
   customHeaders: any = {},
   clientSessionId?: string,
-)
-  : Promise<ResponseObject> {
+): Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
@@ -246,8 +259,7 @@ export async function callPOSTForm(
   token: string,
   customHeaders: any = {},
   clientSessionId?: string,
-)
-  : Promise<ResponseObject> {
+): Promise<ResponseObject> {
   if (!token) {
     return noToken as ResponseObject;
   }
@@ -262,8 +274,12 @@ export async function callPOSTForm(
   });
 }
 
-export async function callDELETE(url: string, token: string, body?: any, clientSessionId?: string):
-Promise<ResponseObject> {
+export async function callDELETE(
+  url: string,
+  token: string,
+  body?: any,
+  clientSessionId?: string,
+): Promise<ResponseObject> {
   // Check if token is null/undefined before making API call
   if (!token) {
     return noToken;
@@ -304,7 +320,7 @@ export async function downloadFile(url: string, token: string, clientSessionId?:
   if (contentDisposition) {
     try {
       const parts = contentDisposition.split(';');
-      const filenamePart = parts.find(part => part.trim().startsWith('filename='));
+      const filenamePart = parts.find((part) => part.trim().startsWith('filename='));
       if (filenamePart) {
         filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
       }

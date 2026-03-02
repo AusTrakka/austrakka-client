@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
-import type { DerivedLog } from '../types/dtos';
 import { useApi } from '../app/ApiContext';
+import LoadingState from '../constants/loadingState';
+import { ResponseType } from '../constants/responseType';
+import type { DerivedLog } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
-import { ResponseType } from '../constants/responseType';
-import LoadingState from '../constants/loadingState';
 
 // TODO look at this structure; it mimics a hook but is not one
-export default function useActivityLogs(
-  recordType: string,
-  rguid?: string,
-) {
+export default function useActivityLogs(recordType: string, rguid?: string) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
   const [exportData, setExportData] = useState<DerivedLog[]>([]);
@@ -20,11 +17,7 @@ export default function useActivityLogs(
 
   useEffect(() => {
     const getData = async () => {
-      const resp: ResponseObject<DerivedLog[]> = await getActivities(
-        recordType,
-        token,
-        rguid,
-      );
+      const resp: ResponseObject<DerivedLog[]> = await getActivities(recordType, token, rguid);
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
@@ -35,9 +28,7 @@ export default function useActivityLogs(
       setDataLoading(false);
     };
 
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       setDataLoading(true);
       getData();
     }

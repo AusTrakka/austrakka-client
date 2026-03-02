@@ -1,6 +1,5 @@
-
-import { Button, styled } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
+import { Button, styled } from '@mui/material';
 
 const CustomButton = styled(Button)({
   textTransform: 'none',

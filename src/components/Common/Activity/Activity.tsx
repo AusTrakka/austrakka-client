@@ -1,38 +1,41 @@
-import { useEffect, useState } from 'react';
+import { Cancel } from '@mui/icons-material';
+import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
+import { Column } from 'primereact/column';
 import {
   DataTable,
   type DataTableRowClickEvent,
   type DataTableRowDataArray,
   type DataTableSelectEvent,
 } from 'primereact/datatable';
-import { Alert, AlertTitle, Paper, Typography } from '@mui/material';
-import { Column } from 'primereact/column';
-import { Cancel } from '@mui/icons-material';
-import type { ActivityDetailInfo } from './activityViewModels.interface';
-import ActivityDetails from './ActivityDetails';
-import type { DerivedLog } from '../../../types/dtos';
+import { useEffect, useState } from 'react';
+import { useStableNavigate } from '../../../app/NavigationContext';
+import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
-import { buildPrimeReactColumnDefinitions, type PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
+import type { DerivedLog } from '../../../types/dtos';
+import { useStateFromSearchParamsForFilterObject } from '../../../utilities/stateUtils';
+import {
+  buildPrimeReactColumnDefinitions,
+  type PrimeReactColumnDefinition,
+} from '../../../utilities/tableUtils';
 import DataFilters, { defaultState } from '../../DataFilters/DataFilters';
 import sortIcon from '../../TableComponents/SortIcon';
-import { Theme } from '../../../assets/themes/theme';
+import ActivityDetails from './ActivityDetails';
+import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
+import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
-import { useStateFromSearchParamsForFilterObject } from '../../../utilities/stateUtils';
-import { useStableNavigate } from '../../../app/NavigationContext';
-import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 
 interface ActivityProps {
-  recordType: string,
-  rGuid?: string,
+  recordType: string;
+  rGuid?: string;
 }
 
 const emptyDetailInfo: ActivityDetailInfo = {
-  'Event': '',
+  Event: '',
   'Time stamp': '',
   'Event initiated by': '',
-  'Resource': '',
+  Resource: '',
   'Resource Type': '',
-  'Details': null,
+  Details: null,
 };
 
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
@@ -51,15 +54,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     navigate,
   );
 
-  const routeSegment = recordType === 'Tenant'
-    ? recordType
-    : `${recordType}V2`;
+  const routeSegment = recordType === 'Tenant' ? recordType : `${recordType}V2`;
 
-  const {
-    refinedLogs,
-    httpStatusCode,
-    dataLoading,
-  } = useActivityLogs(routeSegment, rGuid);
+  const { refinedLogs, httpStatusCode, dataLoading } = useActivityLogs(routeSegment, rGuid);
 
   useEffect(() => {
     setLoadingState(dataLoading);
@@ -73,10 +70,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   useEffect(() => {
     if (columns.length > 0) return;
 
-    const [firstCol] = supportedColumns.filter(c => c.columnName === EVENT_NAME_COLUMN);
+    const [firstCol] = supportedColumns.filter((c) => c.columnName === EVENT_NAME_COLUMN);
     const [firstColBuilder] = buildPrimeReactColumnDefinitions([firstCol]);
     firstColBuilder.isDecorated = true;
-    const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
+    const remainingCols = supportedColumns.filter((c) => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
@@ -87,12 +84,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     const row = event.data;
 
     const info: ActivityDetailInfo = {
-      'Event': row[EVENT_NAME_COLUMN],
+      Event: row[EVENT_NAME_COLUMN],
       'Time stamp': row.eventTime,
       'Event initiated by': row.submitterDisplayName,
-      'Resource': row.resourceUniqueString,
+      Resource: row.resourceUniqueString,
       'Resource Type': row.resourceType,
-      'Details': row.data || null,
+      Details: row.data || null,
     };
     setDetailInfo(info);
     setOpenDetails(true);
@@ -109,7 +106,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   };
 
   // TODO: very similar logic can be used to expand/collapse bundled logs when re-implemented
-  // 
+  //
   // const toggleRow = (e: DataTableRowToggleEvent) => {
   //   const row = (e.data as any[])[0] as Log;
   //
@@ -154,27 +151,23 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   //   setLocalLogs(clonedRows);
   // };
 
-  const firstColumnTemplate = (rowData: any) => (
-    rowData.eventStatus === 'Success'
-      ? (
-        <div>
-          {rowData[EVENT_NAME_COLUMN]}
-        </div>
-      )
-      : (
-        <span>
-          <Cancel style={{
+  const firstColumnTemplate = (rowData: any) =>
+    rowData.eventStatus === 'Success' ? (
+      <div>{rowData[EVENT_NAME_COLUMN]}</div>
+    ) : (
+      <span>
+        <Cancel
+          style={{
             marginRight: '10px',
             cursor: 'pointer',
             color: Theme.SecondaryRed,
             fontSize: '14px',
             verticalAlign: 'middle',
           }}
-          />
-          {rowData[EVENT_NAME_COLUMN]}
-        </span>
-      )
-  );
+        />
+        {rowData[EVENT_NAME_COLUMN]}
+      </span>
+    );
 
   const tableContent = (
     <>
@@ -229,11 +222,11 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
           paginatorPosition="bottom"
           paginatorRight
-          emptyMessage={(
+          emptyMessage={
             <Typography variant="subtitle1" color="textSecondary" align="center">
               No activity found
             </Typography>
-          )}
+          }
         >
           <Column
             key={EVENT_NAME_COLUMN}
@@ -247,22 +240,24 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             className="flexible-column"
             bodyClassName="value-cells"
           />
-          {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-            col.field !== EVENT_NAME_COLUMN)
-            .map((col: any) => (
-              <Column
-                key={col.field}
-                field={col.field}
-                header={col.header}
-                hidden={false}
-                body={col.body}
-                sortable
-                resizeable
-                headerClassName="custom-title"
-                className="flexible-column"
-                bodyClassName="value-cells"
-              />
-            )) : null}
+          {columns
+            ? columns
+                .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                .map((col: any) => (
+                  <Column
+                    key={col.field}
+                    field={col.field}
+                    header={col.header}
+                    hidden={false}
+                    body={col.body}
+                    sortable
+                    resizeable
+                    headerClassName="custom-title"
+                    className="flexible-column"
+                    bodyClassName="value-cells"
+                  />
+                ))
+            : null}
         </DataTable>
       </Paper>
     </>
@@ -294,16 +289,15 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   } else if (dataLoading) {
     contentPane = <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />;
   } else {
-    contentPane = refinedLogs.length > 0
-      ? tableContent
-      : <EmptyContentPane message="There is no activity to show." icon={ContentIcon.InTray} />;
+    contentPane =
+      refinedLogs.length > 0 ? (
+        tableContent
+      ) : (
+        <EmptyContentPane message="There is no activity to show." icon={ContentIcon.InTray} />
+      );
   }
 
-  return (
-    <>
-      {contentPane}
-    </>
-  );
+  return <>{contentPane}</>;
 }
 
 export default Activity;

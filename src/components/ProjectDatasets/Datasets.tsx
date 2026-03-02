@@ -1,37 +1,41 @@
-import type React from 'react';
-import { useState, useEffect, memo } from 'react';
+import { HelpOutline } from '@mui/icons-material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {
-  IconButton,
-  Snackbar,
   Alert,
-  Dialog,
   Button,
+  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Paper,
+  Snackbar,
   Tooltip,
   Typography,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
-import { HelpOutline } from '@mui/icons-material';
-import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
-import type { DataSetEntry, Project } from '../../types/dtos';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+} from 'primereact/datatable';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
 import { useAppSelector } from '../../app/store';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
+import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
-import { type UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission } from '../../permissions/accessTable';
+import { ResponseType } from '../../constants/responseType';
+import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
+import type { DataSetEntry, Project } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { disableDataset, getDatasets } from '../../utilities/resourceUtils';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { Theme } from '../../assets/themes/theme';
 
 interface DatasetProps {
   projectDetails: Project | null;
@@ -46,23 +50,24 @@ function Datasets(props: DatasetProps) {
   const [openDialog, setOpenDialog] = useState(false); // State for confirmation dialog
   const [dataSetIdToDelete, setDataSetIdToDelete] = useState<number | null>(null);
   const [datasetError, setDatasetError] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
   const [columns, setColumns] = useState([
     { field: 'dataSetId', header: 'Dataset ID' },
     { field: 'fileName', header: 'File Name' },
     { field: 'analysisLabel', header: 'Analysis Label' },
     { field: 'createdBy', header: 'Created By' },
-    { field: 'uploadedDate', header: 'Uploaded Date', body: (rowData: any) => isoDateLocalDate(rowData.uploadedDate) },
+    {
+      field: 'uploadedDate',
+      header: 'Uploaded Date',
+      body: (rowData: any) => isoDateLocalDate(rowData.uploadedDate),
+    },
     { field: 'fields', header: 'Fields', body: (rowData: any) => rowData.fields.join(', ') },
   ]);
   const user: UserSliceState = useAppSelector(selectUserState);
 
-  const renderDeleteButton = (
-    rowData: any,
-    handleDeleteRow: (id: number) => void,
-  ) => (
+  const renderDeleteButton = (rowData: any, handleDeleteRow: (id: number) => void) => (
     <IconButton
       onClick={() => handleDeleteRow(rowData.dataSetId)}
       sx={{ color: 'gray' }}
@@ -95,8 +100,11 @@ function Datasets(props: DatasetProps) {
   const handleConfirmDisable = async () => {
     try {
       setOpenDialog(false); // Close the dialog
-      const response: ResponseObject =
-        await disableDataset(projectDetails!.abbreviation, dataSetIdToDelete!, token);
+      const response: ResponseObject = await disableDataset(
+        projectDetails!.abbreviation,
+        dataSetIdToDelete!,
+        token,
+      );
       if (response.status !== ResponseType.Success) {
         throw new Error('Failed to disable dataset');
       }
@@ -143,22 +151,28 @@ function Datasets(props: DatasetProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'row', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
           {mergeAlgorithm && (
-          <Tooltip placement="top" title={`Merge Algorithm: ${mergeAlgorithm}`}>
-            <IconButton
-              sx={{ mr: 0.5 }}
-              disableTouchRipple
-            >
-              <HelpOutline color="action" fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            <Tooltip placement="top" title={`Merge Algorithm: ${mergeAlgorithm}`}>
+              <IconButton sx={{ mr: 0.5 }} disableTouchRipple>
+                <HelpOutline color="action" fontSize="small" />
+              </IconButton>
+            </Tooltip>
           )}
           <ColumnVisibilityMenu
             columns={columns}
@@ -178,82 +192,77 @@ function Datasets(props: DatasetProps) {
     </div>
   );
 
-  return (
-    (datasetError) ? (
-      <Alert severity="error">
-        Error loading datasets. Please contact an Admin
-      </Alert>
-    )
-      : (
-        <div>
-          <Typography variant="subtitle2" paddingBottom={1}>
-            This page lists metadata sets added to the project by project analysts. These may
-            represent analysis results or other project-owned data.
-          </Typography>
-          <Paper elevation={2} sx={{ marginBottom: 10 }}>
-            <DataTable
-              value={rows}
-              size="small"
-              columnResizeMode="expand"
-              resizableColumns
-              showGridlines
-              reorderableColumns
-              removableSort
-              scrollable
-              scrollHeight="calc(100vh - 300px)"
-              header={header}
-              filters={globalFilter}
-              globalFilterFields={columns.map((col) => col.field)}
-              sortIcon={sortIcon}
-              className="my-flexible-table"
-            >
-              {canDelete() ? (
-                <Column
-                  header="Delete"
-                  body={(rowData: any) => renderDeleteButton(rowData, handleDeleteRow)}
-                  style={{ width: '3rem' }}
-                  align="center"
-                />
-              ) : null}
-              {columns.map((col: any) => (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
-                  body={col.body}
-                  hidden={col.hidden ?? false}
-                  sortable
-                  resizeable
-                  className="flexible-column"
-                  style={{ minWidth: '150px' }}
-                  headerClassName="custom-title"
-                  bodyClassName="value-cells"
-                />
-              ))}
-            </DataTable>
-          </Paper>
-          <Snackbar
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            open={openSnackbar}
-            autoHideDuration={5000} // Duration (ms)
-            onClose={handleCloseSnackbar}
-          >
-            <Alert onClose={handleCloseSnackbar} severity="success">
-              Successfully Removed Dataset
-            </Alert>
-          </Snackbar>
-          <Dialog open={openDialog} onClose={handleCloseDialog}>
-            <DialogTitle>Confirm Dataset Deletion</DialogTitle>
-            <DialogContent>
-              Are you sure you want to delete this dataset? This action cannot be undone.
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleConfirmDisable}>Confirm</Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      )
+  return datasetError ? (
+    <Alert severity="error">Error loading datasets. Please contact an Admin</Alert>
+  ) : (
+    <div>
+      <Typography variant="subtitle2" paddingBottom={1}>
+        This page lists metadata sets added to the project by project analysts. These may represent
+        analysis results or other project-owned data.
+      </Typography>
+      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+        <DataTable
+          value={rows}
+          size="small"
+          columnResizeMode="expand"
+          resizableColumns
+          showGridlines
+          reorderableColumns
+          removableSort
+          scrollable
+          scrollHeight="calc(100vh - 300px)"
+          header={header}
+          filters={globalFilter}
+          globalFilterFields={columns.map((col) => col.field)}
+          sortIcon={sortIcon}
+          className="my-flexible-table"
+        >
+          {canDelete() ? (
+            <Column
+              header="Delete"
+              body={(rowData: any) => renderDeleteButton(rowData, handleDeleteRow)}
+              style={{ width: '3rem' }}
+              align="center"
+            />
+          ) : null}
+          {columns.map((col: any) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              body={col.body}
+              hidden={col.hidden ?? false}
+              sortable
+              resizeable
+              className="flexible-column"
+              style={{ minWidth: '150px' }}
+              headerClassName="custom-title"
+              bodyClassName="value-cells"
+            />
+          ))}
+        </DataTable>
+      </Paper>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={openSnackbar}
+        autoHideDuration={5000} // Duration (ms)
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          Successfully Removed Dataset
+        </Alert>
+      </Snackbar>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Dataset Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this dataset? This action cannot be undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleConfirmDisable}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 }
 
