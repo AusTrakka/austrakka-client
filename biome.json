@@ -20,9 +20,7 @@
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 110,
-    "lineEnding": "lf"
+    "lineWidth": 100
   },
   "javascript": {
     "formatter": {
@@ -30,9 +28,7 @@
       "jsxQuoteStyle": "double",
       "semicolons": "always",
       "trailingCommas": "all",
-      "arrowParentheses": "always",
-      "bracketSpacing": true,
-      "bracketSameLine": false
+      "bracketSpacing": true
     }
   },
   "linter": {
