@@ -1,13 +1,5 @@
 import { splitFastaByContig } from '../../../src/utilities/uploadUtils';
 
-const testFileContent = `>contig1 description
-ATGCATGCATGC
->contig2 description
-GGCATGCATGCA
->contig3 description
-TTTTTTTTTTTT
-`;
-
 function mockFile(content: string, name: string = 'test.fasta'): File {
   const blob = new Blob([content], { type: 'text/plain' });
   const file = new File([blob], name);
@@ -27,6 +19,13 @@ function readFileAsText(file: File): Promise<string> {
 
 describe('splitFastaByContig', () => {
   test('should split a fasta file into separate files for each contig', async () => {
+    const testFileContent = `>contig1 description
+ATGCATGCATGC
+>contig2 description
+GGCATGCATGCA
+>contig3 description
+TTTTTTTTTTTT
+`;
     const file = mockFile(testFileContent);
         
     // Act
@@ -40,5 +39,31 @@ describe('splitFastaByContig', () => {
     expect(await readFileAsText(result[1])).toBe('>contig2 description\nGGCATGCATGCA\n');
     expect(result[2].name).toBe('contig3.fa');
     expect(await readFileAsText(result[2])).toBe('>contig3 description\nTTTTTTTTTTTT\n');
+  });
+  
+  test('should throw an error if the file contains duplicate Seq_IDs', async () => {
+    const testFileContent = `>contig1 description
+ATGCATGCATGC
+>contig3 description
+GGCATGCATGCA
+>contig3 description
+TTTTTTTTTTTT
+`;
+    const file = mockFile(testFileContent);
+    
+    await expect(() => splitFastaByContig([file])).rejects.toThrow();
+  });
+  
+  test('should throw an error if the file contains Seq_IDs that are duplicate after trimming', async () => {
+    const testFileContent = `>contig1 description
+ATGCATGCATGC
+>contig3.1 description
+GGCATGCATGCA
+>contig3.2 description
+TTTTTTTTTTTT
+`;
+    const file = mockFile(testFileContent);
+    
+    await expect(() => splitFastaByContig([file])).rejects.toThrow();
   });
 });
