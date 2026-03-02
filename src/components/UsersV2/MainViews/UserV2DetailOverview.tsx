@@ -203,10 +203,13 @@ function UserV2DetailOverview() {
   }
 
   const processPendingChanges = async () => {
+    const clientSessionId : string = crypto.randomUUID();
+
     const failedRequests = await processPrivilegeChanges(
       pendingChanges,
       userGlobalId!,
       token,
+      clientSessionId,
     );
 
     if (failedRequests.length > 0) {
@@ -244,11 +247,13 @@ function UserV2DetailOverview() {
 
     const editedActiveState = user?.isActive !== isActive;
     try {
+      const clientSessionId : string = crypto.randomUUID();
       // basic patch
       const userResponse: ResponseObject = await patchUserV2(
         userGlobalId!,
         editedValuesDtoFormat,
         token,
+        clientSessionId,
       );
 
       // enable user
@@ -258,11 +263,13 @@ function UserV2DetailOverview() {
           userActivateResponse = await enableUserV2(
             userGlobalId!,
             token,
+            clientSessionId,
           );
         } else {
           userActivateResponse = await disableUserV2(
             userGlobalId!,
             token,
+            clientSessionId,
           );
         }
         if (userActivateResponse.status !== ResponseType.Success) {
