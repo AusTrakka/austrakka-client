@@ -1,41 +1,46 @@
+import {
+  Button,
+  ButtonGroup,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
+} from '@mui/material';
 import React, { useEffect } from 'react';
-import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
-import type { PhylocanvasNode } from '../../../types/phylocanvas.interface';
-import type { TreeExportFuctions } from '../Tree';
 import type { TreeVersion } from '../../../types/dtos';
+import type { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import { Phylocanvas, TreeTypes } from '../PhylocanvasGL';
+import type { TreeExportFuctions } from '../Tree';
 
 interface State {
-  type: string,
+  type: string;
 }
 
 interface TreeNavigationProps {
-  state: State,
-  currentVersion: string,
-  versions: TreeVersion[],
-  selectedIds: string[],
-  rootId: string,
-  onChange: (
-    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>
-  ) => void;
+  state: State;
+  currentVersion: string;
+  versions: TreeVersion[];
+  selectedIds: string[];
+  rootId: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
   onJumpToSubtree: (id: string) => void;
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
+  phylocanvasRef: React.RefObject<TreeExportFuctions>;
 }
 
-export default function TreeNavigation(
-  {
-    state,
-    currentVersion,
-    versions,
-    selectedIds,
-    rootId,
-    onChange,
-    onJumpToSubtree,
-    phylocanvasRef,
-  }: TreeNavigationProps,
-) {
+export default function TreeNavigation({
+  state,
+  currentVersion,
+  versions,
+  selectedIds,
+  rootId,
+  onChange,
+  onJumpToSubtree,
+  phylocanvasRef,
+}: TreeNavigationProps) {
   const navigate = useNavigate();
   const { projectAbbrev, treeId } = useParams();
   const [nodes, setNodes] = React.useState<{ [key: string]: PhylocanvasNode } | null>(null);
@@ -75,9 +80,9 @@ export default function TreeNavigation(
 
   const handleJumpToSubtree = () => {
     if (nodes) {
-      const selectedNodes: PhylocanvasNode[] = selectedIds.map(
-        (id) => nodes[id],
-      ).filter((node) => node !== undefined);
+      const selectedNodes: PhylocanvasNode[] = selectedIds
+        .map((id) => nodes[id])
+        .filter((node) => node !== undefined);
       let mrca = Phylocanvas.getMRCA(selectedNodes);
       if (mrca) {
         while (mrca?.totalSubtreeLength === 0) {
@@ -145,19 +150,19 @@ export default function TreeNavigation(
           label="Version"
           onChange={onChange}
         >
-          {
-            versions.filter((version => version.version !== null)).map((version) => (
+          {versions
+            .filter((version) => version.version !== null)
+            .map((version) => (
               <MenuItem
                 key={version.treeVersionId}
                 value={version.version}
-                onClick={() => { versionClickHandler(version); }}
+                onClick={() => {
+                  versionClickHandler(version);
+                }}
               >
-                {
-                isoDateLocalDate(version.versionName.replaceAll('-', '/'))
-                }
+                {isoDateLocalDate(version.versionName.replaceAll('-', '/'))}
               </MenuItem>
-            ))
-          }
+            ))}
         </Select>
       </FormControl>
       <FormControl sx={{ marginY: 1 }} size="small" fullWidth>
@@ -171,17 +176,29 @@ export default function TreeNavigation(
           label="Type"
           onChange={onChange}
         >
-          {
-            Object.keys(TreeTypes).map((type) => (
-              <MenuItem key={type} value={TreeTypes[type]}>{type}</MenuItem>
-            ))
-          }
+          {Object.keys(TreeTypes).map((type) => (
+            <MenuItem key={type} value={TreeTypes[type]}>
+              {type}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
-      <Button variant="outlined" disabled={rootId === '0'} fullWidth sx={{ marginBottom: 1 }} onClick={handleGoToRoot}>
+      <Button
+        variant="outlined"
+        disabled={rootId === '0'}
+        fullWidth
+        sx={{ marginBottom: 1 }}
+        onClick={handleGoToRoot}
+      >
         Go to Root
       </Button>
-      <Button variant="outlined" disabled={selectedIds.length === 0} fullWidth sx={{ marginBottom: 1 }} onClick={handleJumpToSubtree}>
+      <Button
+        variant="outlined"
+        disabled={selectedIds.length === 0}
+        fullWidth
+        sx={{ marginBottom: 1 }}
+        onClick={handleJumpToSubtree}
+      >
         Jump to subtree
       </Button>
       <ButtonGroup fullWidth>
@@ -191,7 +208,11 @@ export default function TreeNavigation(
         <Button variant="outlined" disabled={historyIndex < 0} onClick={handleBack}>
           Back
         </Button>
-        <Button variant="outlined" disabled={historyIndex >= history.length - 1} onClick={handleForward}>
+        <Button
+          variant="outlined"
+          disabled={historyIndex >= history.length - 1}
+          onClick={handleForward}
+        >
           Forward
         </Button>
       </ButtonGroup>

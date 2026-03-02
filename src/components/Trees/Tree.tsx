@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState, useImperativeHandle } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { PhylocanvasNode, PhylocanvasProps } from '../../types/phylocanvas.interface';
 import { Phylocanvas } from './PhylocanvasGL';
-import type { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
 
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
@@ -15,7 +15,7 @@ export type TreeExportFuctions = {
   getSelectedLeafIDs(): string[];
   getVisibleLeafIDs(): string[];
   fitInCanvas(): void;
-  nodes: { ids: { [key: string]: PhylocanvasNode }, leaves: PhylocanvasNode[]; };
+  nodes: { ids: { [key: string]: PhylocanvasNode }; leaves: PhylocanvasNode[] };
 };
 
 const Tree = React.forwardRef(
@@ -41,9 +41,9 @@ const Tree = React.forwardRef(
         return tree.current?.props.selectedIds || [];
       },
       getVisibleLeafIDs() {
-        return tree.current?.getGraphAfterLayout().leaves.map(
-          (leaf: PhylocanvasNode) => leaf.id,
-        ) || [];
+        return (
+          tree.current?.getGraphAfterLayout().leaves.map((leaf: PhylocanvasNode) => leaf.id) || []
+        );
       },
       fitInCanvas() {
         return tree.current?.fitInCanvas();
@@ -82,10 +82,10 @@ const Tree = React.forwardRef(
     useEffect(() => {
       const updatedProps = { ...otherProps, size };
       if (tree.current) {
-      // update the props on change
+        // update the props on change
         tree.current.setProps({ ...updatedProps });
       }
-    // biome-ignore lint/correctness/useExhaustiveDependencies: historic otherProps used
+      // biome-ignore lint/correctness/useExhaustiveDependencies: historic otherProps used
     }, [otherProps, size]);
 
     return <div ref={treeDiv} />;

@@ -13,13 +13,18 @@ export function isoDateLocalDate(datetime: string): string {
 
 /**
  * This will return Date string with no time in the UTC timezone
- * @param datetime 
+ * @param datetime
  */
 export function isoDateLocalDateNoTime(datetime: string) {
   if (!datetime) return '';
   if (datetime === 'null') return '';
   const isoDate = new Date(Date.parse(datetime));
-  return isoDate.toLocaleString('sv-SE', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+  return isoDate.toLocaleString('sv-SE', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
 export function formatDate(dateUTC: string): string {
@@ -27,7 +32,15 @@ export function formatDate(dateUTC: string): string {
   if (dateUTC === 'null') return '';
   if (Number.isNaN(Date.parse(dateUTC))) return 'Invalid Date';
   const date = new Date(dateUTC);
-  return date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
+  return date.toLocaleString('en-AU', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    timeZoneName: 'short',
+  });
 }
 
 export function formatDateAsTwoStrings(dateUTC: string): string[] {
@@ -35,8 +48,17 @@ export function formatDateAsTwoStrings(dateUTC: string): string[] {
   if (dateUTC === 'null') return ['', ''];
   if (Number.isNaN(Date.parse(dateUTC))) return ['Invalid Date', ''];
   const date = new Date(dateUTC);
-  const dateString = date.toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  const timeString = date.toLocaleString('en-AU', { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' });
+  const dateString = date.toLocaleString('en-AU', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const timeString = date.toLocaleString('en-AU', {
+    hour: 'numeric',
+    minute: 'numeric',
+    timeZoneName: 'short',
+  });
   return [dateString, timeString];
 }
 

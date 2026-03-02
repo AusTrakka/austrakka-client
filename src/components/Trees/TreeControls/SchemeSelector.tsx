@@ -1,11 +1,14 @@
-
-import FormControl from '@mui/material/FormControl';
-import Typography from '@mui/material/Typography';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import { InputLabel, ListSubheader, MenuItem, Stack, Tooltip } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import Typography from '@mui/material/Typography';
 import {
-  ColorSchemeNames, cyclical, defaultDiscreteColorScheme,
-  discreteColorSchemes, diverging, sequential,
+  ColorSchemeNames,
+  cyclical,
+  defaultDiscreteColorScheme,
+  discreteColorSchemes,
+  diverging,
+  sequential,
 } from '../../../constants/schemes';
 import { generateColorSchemeThumbnail } from '../../../utilities/colourUtils';
 
@@ -25,64 +28,69 @@ export default function ColorSchemeSelector({
   const handleSchemeChange = (event: SelectChangeEvent<string>) => {
     onColourChange(event.target.value);
   };
-  const generateThumbnailWithTooltip =
-      (colorScheme: string[], schemeName: string, showName: boolean) => (
-        <Tooltip title={schemeName} arrow>
-          <Stack direction="row" spacing={1}>
-            <div
-              style={{
-                backgroundColor: colorScheme[0],
-                width: '20px',
-                height: '20px',
-                border: '1px solid var(--primary-grey-300)',
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: colorScheme[1],
-                width: '20px',
-                height: '20px',
-                border: '1px solid var(--primary-grey-300)',
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: colorScheme[2],
-                width: '20px',
-                height: '20px',
-                border: '1px solid var(--primary-grey-300)',
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: colorScheme[3],
-                width: '20px',
-                height: '20px',
-                border: '1px solid var(--primary-grey-300)',
-              }}
-            />
-            <div
-              style={{
-                backgroundColor: colorScheme[4],
-                width: '20px',
-                height: '20px',
-                border: '1px solid var(--primary-grey-300)',
-              }}
-            />
-            {showName && (
-            <Typography variant="caption">
-              {ColorSchemeNames[schemeName as keyof typeof ColorSchemeNames]}
-            </Typography>
-            )}
-          </Stack>
-        </Tooltip>
-      );
+  const generateThumbnailWithTooltip = (
+    colorScheme: string[],
+    schemeName: string,
+    showName: boolean,
+  ) => (
+    <Tooltip title={schemeName} arrow>
+      <Stack direction="row" spacing={1}>
+        <div
+          style={{
+            backgroundColor: colorScheme[0],
+            width: '20px',
+            height: '20px',
+            border: '1px solid var(--primary-grey-300)',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: colorScheme[1],
+            width: '20px',
+            height: '20px',
+            border: '1px solid var(--primary-grey-300)',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: colorScheme[2],
+            width: '20px',
+            height: '20px',
+            border: '1px solid var(--primary-grey-300)',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: colorScheme[3],
+            width: '20px',
+            height: '20px',
+            border: '1px solid var(--primary-grey-300)',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: colorScheme[4],
+            width: '20px',
+            height: '20px',
+            border: '1px solid var(--primary-grey-300)',
+          }}
+        />
+        {showName && (
+          <Typography variant="caption">
+            {ColorSchemeNames[schemeName as keyof typeof ColorSchemeNames]}
+          </Typography>
+        )}
+      </Stack>
+    </Tooltip>
+  );
 
   return (
     <FormControl variant={variant} size={size} sx={{ marginX: 1, marginY: 1, minWidth: 180 }}>
-      {variant === 'outlined' ?
-        <InputLabel id="colour-field-select-label">Color Scheme</InputLabel> :
-        <Typography variant="caption">Color Scheme</Typography>}
+      {variant === 'outlined' ? (
+        <InputLabel id="colour-field-select-label">Color Scheme</InputLabel>
+      ) : (
+        <Typography variant="caption">Color Scheme</Typography>
+      )}
       <Select
         labelId="tree-select-colour-scheme"
         id="tree-colour-scheme"
@@ -91,13 +99,9 @@ export default function ColorSchemeSelector({
         value={selectedScheme ?? defaultDiscreteColorScheme}
         onChange={handleSchemeChange}
         style={{ width: '180px' }}
-        renderValue={(value: string) => (
-          generateThumbnailWithTooltip(
-            generateColorSchemeThumbnail(value),
-            value,
-            false,
-          )
-        )}
+        renderValue={(value: string) =>
+          generateThumbnailWithTooltip(generateColorSchemeThumbnail(value), value, false)
+        }
       >
         <ListSubheader>Discrete</ListSubheader>
         {Object.keys(discreteColorSchemes).map((schemeName) => (
@@ -109,7 +113,7 @@ export default function ColorSchemeSelector({
             )}
           </MenuItem>
         ))}
-        
+
         <ListSubheader>Diverging</ListSubheader>
         {Object.keys(diverging).map((schemeName) => (
           <MenuItem key={schemeName} value={schemeName}>

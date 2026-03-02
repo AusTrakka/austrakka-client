@@ -1,5 +1,5 @@
-import { createContext, useContext, useRef, useEffect, type ReactNode } from 'react';
-import { useNavigate, type NavigateFunction } from 'react-router-dom';
+import { createContext, type ReactNode, useContext, useEffect, useRef } from 'react';
+import { type NavigateFunction, useNavigate } from 'react-router-dom';
 
 interface NavigationContextType {
   navigate: NavigateFunction;
@@ -30,17 +30,14 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
   // Initialize the stable navigate function only once
   if (!isInitialized.current) {
-    stableContextValue.navigate =
-        ((...args: Parameters<NavigateFunction>) =>
-          navigateRef.current(...args)) as NavigateFunction;
-    
+    stableContextValue.navigate = ((...args: Parameters<NavigateFunction>) =>
+      navigateRef.current(...args)) as NavigateFunction;
+
     isInitialized.current = true;
   }
 
   return (
-    <NavigationContext.Provider value={stableContextValue}>
-      {children}
-    </NavigationContext.Provider>
+    <NavigationContext.Provider value={stableContextValue}>{children}</NavigationContext.Provider>
   );
 }
 

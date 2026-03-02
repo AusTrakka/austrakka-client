@@ -1,5 +1,5 @@
-import { sortAlerts, type ThresholdAlert } from '../../../src/utilities/thresholdAlertUtils';
 import { AlertLevels } from '../../../src/constants/thresholdAlertConstants';
+import { sortAlerts, type ThresholdAlert } from '../../../src/utilities/thresholdAlertUtils';
 
 describe('sortAlerts', () => {
   test('should sort alerts by descending alertLevelOrder', () => {
@@ -31,7 +31,7 @@ describe('sortAlerts', () => {
     alerts.sort(sortAlerts);
     expect(alerts).toEqual([alert3, alert2, alert1]);
   });
-  
+
   test('should sort alerts by ascending categoryValue', () => {
     const alert1: ThresholdAlert = {
       alertLevelOrder: 1,
@@ -61,7 +61,7 @@ describe('sortAlerts', () => {
     alerts.sort(sortAlerts);
     expect(alerts).toEqual([alert1, alert2, alert3]);
   });
-  
+
   test('should sort alerts by descending recentCount', () => {
     const alert1: ThresholdAlert = {
       alertLevelOrder: 1,

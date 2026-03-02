@@ -1,46 +1,44 @@
 import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
+import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import type { MetaDataColumn } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
-import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';
-import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import {
   getEmptyStringColumns,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
+import type { RootState } from './store';
 
 // These are hard-coded views mimicking project views. The "full view" will be added automatically.
-const DATA_VIEWS = [
-  [SAMPLE_ID_FIELD],
-];
+const DATA_VIEWS = [[SAMPLE_ID_FIELD]];
 
 // This is an interim function based on hard-coded views
 const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
-  const fieldNames = fields.map(field => field.columnName);
-  const dataViews = DATA_VIEWS
-    .map(view => view.filter(field => fieldNames.includes(field)))
-    .filter(view => view.length > 0);
+  const fieldNames = fields.map((field) => field.columnName);
+  const dataViews = DATA_VIEWS.map((view) =>
+    view.filter((field) => fieldNames.includes(field)),
+  ).filter((view) => view.length > 0);
   dataViews.push(fieldNames);
   return dataViews;
 };
 
 export interface GroupMetadataState {
-  groupId: number | null
-  loadingState: MetadataLoadingState,
-  fields: MetaDataColumn[] | null
-  fieldUniqueValues: Record<string, string[] | null> | null
-  views: Record<number, string[]>
-  viewLoadingStates: Record<number, LoadingState>
-  viewToFetch: number
-  metadata: Sample[] | null
-  columnLoadingStates: Record<string, LoadingState>
-  emptyColumns: string[]
-  errorMessage: string | null
+  groupId: number | null;
+  loadingState: MetadataLoadingState;
+  fields: MetaDataColumn[] | null;
+  fieldUniqueValues: Record<string, string[] | null> | null;
+  views: Record<number, string[]>;
+  viewLoadingStates: Record<number, LoadingState>;
+  viewToFetch: number;
+  metadata: Sample[] | null;
+  columnLoadingStates: Record<string, LoadingState>;
+  emptyColumns: string[];
+  errorMessage: string | null;
 }
 
 const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState => ({
@@ -58,8 +56,8 @@ const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState =
 });
 
 interface GroupMetadataSliceState {
-  data: { [groupId: number]: GroupMetadataState },
-  token: string | null, // must be provided by calling component along with each fetch request
+  data: { [groupId: number]: GroupMetadataState };
+  token: string | null; // must be provided by calling component along with each fetch request
 }
 
 const initialState: GroupMetadataSliceState = {
@@ -70,25 +68,25 @@ const initialState: GroupMetadataSliceState = {
 // Input parameters and return types (on success/fulfilled) for actions and thunks
 
 interface FetchGroupMetadataParams {
-  groupId: number,
-  token: string,
+  groupId: number;
+  token: string;
 }
 
 interface FetchGroupFieldsParams {
-  groupId: number,
+  groupId: number;
 }
 
 interface FetchGroupFieldsResponse {
-  fields: MetaDataColumn[],
+  fields: MetaDataColumn[];
 }
 
 interface FetchDataViewParams {
-  groupId: number,
-  fields: string[],
-  viewIndex: number,
+  groupId: number;
+  fields: string[];
+  viewIndex: number;
 }
 interface FetchDataViewResponse {
-  data: Sample[],
+  data: Sample[];
 }
 
 const fetchGroupFields = createAsyncThunk(
@@ -96,7 +94,7 @@ const fetchGroupFields = createAsyncThunk(
   async (
     params: FetchGroupFieldsParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<FetchGroupFieldsResponse | unknown > => {
+  ): Promise<FetchGroupFieldsResponse | unknown> => {
     const { groupId } = params;
     const { token } = (getState() as RootState).groupMetadataState;
     const response = await getDisplayFields(groupId, token!);
@@ -114,7 +112,7 @@ const fetchDataView = createAsyncThunk(
   async (
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
-  ):Promise<FetchDataViewResponse | unknown > => {
+  ): Promise<FetchDataViewResponse | unknown> => {
     const { groupId, fields } = params;
     const { token } = (getState() as RootState).groupMetadataState;
     const response = await getMetadata(groupId, fields, token!);
@@ -136,27 +134,27 @@ listenerMiddleware.startListening({
     // Return early if wrong action; don't try to read groupId
     if (action.type !== 'groupMetadata/fetchGroupMetadata') return false;
     // Check that the reducer logic is telling us to trigger a new load process
-    const previousLoadingState = (previousState as RootState).groupMetadataState
-      .data[(action as any).payload.groupId]?.loadingState;
-    const loadingState = (currentState as RootState).groupMetadataState
-      .data[(action as any).payload.groupId]?.loadingState;
-    return previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
-           loadingState === MetadataLoadingState.FETCH_REQUESTED;
+    const previousLoadingState = (previousState as RootState).groupMetadataState.data[
+      (action as any).payload.groupId
+    ]?.loadingState;
+    const loadingState = (currentState as RootState).groupMetadataState.data[
+      (action as any).payload.groupId
+    ]?.loadingState;
+    return (
+      previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
+      loadingState === MetadataLoadingState.FETCH_REQUESTED
+    );
   },
   effect: (action, listenerApi) => {
-    listenerApi.dispatch(
-      fetchGroupFields({ groupId: (action as any).payload.groupId }),
-    );
+    listenerApi.dispatch(fetchGroupFields({ groupId: (action as any).payload.groupId }));
   },
 });
 
 // Launch fetchGroupFields in response to metadata reload request
 listenerMiddleware.startListening({
-  predicate: (action) => (action.type === 'groupMetadata/reloadGroupMetadata'),
+  predicate: (action) => action.type === 'groupMetadata/reloadGroupMetadata',
   effect: (action, listenerApi) => {
-    listenerApi.dispatch(
-      fetchGroupFields({ groupId: (action as any).payload.groupId }),
-    );
+    listenerApi.dispatch(fetchGroupFields({ groupId: (action as any).payload.groupId }));
   },
 });
 
@@ -167,16 +165,16 @@ listenerMiddleware.startListening({
     if (!isAnyOf(fetchGroupFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
     const { groupId } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
-    const previousViewToFetch = (previousState as RootState).groupMetadataState
-      .data[groupId]?.viewToFetch;
-    const viewToFetch = (currentState as RootState).groupMetadataState
-      .data[groupId]?.viewToFetch;
+    const previousViewToFetch = (previousState as RootState).groupMetadataState.data[groupId]
+      ?.viewToFetch;
+    const viewToFetch = (currentState as RootState).groupMetadataState.data[groupId]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
   },
   effect: (action, listenerApi) => {
     const { groupId } = (action as any).meta.arg;
-    const { views, viewToFetch } =
-      (listenerApi.getState() as RootState).groupMetadataState.data[groupId];
+    const { views, viewToFetch } = (listenerApi.getState() as RootState).groupMetadataState.data[
+      groupId
+    ];
     // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
     // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
     if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
@@ -197,9 +195,11 @@ export const groupMetadataSlice = createSlice({
         state.data[groupId] = groupMetadataInitialStateCreator(groupId);
       }
       // Only initialise fetch if in allowed state; do not reload loading data
-      if (state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
-          state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
-          state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+      if (
+        state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
+        state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
+        state.data[groupId].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+      ) {
         // If we were in an error state and are refreshing, clear data
         if (state.data[groupId].loadingState !== MetadataLoadingState.IDLE) {
           state.data[groupId] = groupMetadataInitialStateCreator(groupId);
@@ -255,7 +255,7 @@ export const groupMetadataSlice = createSlice({
       if (viewIndex === 0) {
         state.data[groupId].loadingState = MetadataLoadingState.AWAITING_DATA;
       }
-      fields.forEach(field => {
+      fields.forEach((field) => {
         // Check per-column state; columns new in this load get LOADING status
         if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
           state.data[groupId].columnLoadingStates[field] = LoadingState.LOADING;
@@ -276,60 +276,65 @@ export const groupMetadataSlice = createSlice({
       state.data[groupId].metadata = data;
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
-      if (state.data[groupId].metadata!.length > 0 &&
-          state.data[groupId].metadata![0][SAMPLE_ID_FIELD]) {
+      if (
+        state.data[groupId].metadata!.length > 0 &&
+        state.data[groupId].metadata![0][SAMPLE_ID_FIELD]
+      ) {
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         state.data[groupId].metadata!.sort((a, b) =>
-          collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]));
+          collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
+        );
       }
       // Calculate unique values
       // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
       // Would be better to do server-side, but this operation is quite fast.
       // Note that if categorical fields are included in project sub-views, they will be
       // recalculated per-view, to ensure consistency.
-      const fieldDetails: MetaDataColumn[] = fields.map(
-        field => {
-          const fieldDetail = state.data[groupId].fields!.find(f => f.columnName === field);
-          if (!fieldDetail) {
-            throw new Error(
-              'Unexpected error in fetchDataView.fullfilled: ' +
+      const fieldDetails: MetaDataColumn[] = fields.map((field) => {
+        const fieldDetail = state.data[groupId].fields!.find((f) => f.columnName === field);
+        if (!fieldDetail) {
+          throw new Error(
+            'Unexpected error in fetchDataView.fullfilled: ' +
               `field ${field} in data not found in expected fields`,
-            );
-          }
-          return fieldDetail;
-        },
-      );
+          );
+        }
+        return fieldDetail;
+      });
       // fields with defined valid values can just be looked up
-      const categoricalFields = fieldDetails.filter(field =>
-        field.canVisualise && field.metaDataColumnValidValues);
-      categoricalFields.forEach(field => {
+      const categoricalFields = fieldDetails.filter(
+        (field) => field.canVisualise && field.metaDataColumnValidValues,
+      );
+      categoricalFields.forEach((field) => {
         state.data[groupId].fieldUniqueValues![field.columnName] = field.metaDataColumnValidValues;
       });
       // visualisable string field unique values must be calculated
-      const visualisableFields = fieldDetails.filter(field => field.canVisualise && field.primitiveType === 'string');
-      const valueSets : Record<string, Set<string>> = {};
-      visualisableFields.forEach(field => {
+      const visualisableFields = fieldDetails.filter(
+        (field) => field.canVisualise && field.primitiveType === 'string',
+      );
+      const valueSets: Record<string, Set<string>> = {};
+      visualisableFields.forEach((field) => {
         valueSets[field.columnName] = new Set();
       });
-      data.forEach(sample => {
-        visualisableFields.forEach(field => {
+      data.forEach((sample) => {
+        visualisableFields.forEach((field) => {
           const value = sample[field.columnName];
           // we conflate the string 'null' with empty values, but there may not be a better option
           valueSets[field.columnName].add(value === null ? 'null' : value);
         });
       });
-      visualisableFields.forEach(field => {
-        state.data[groupId].fieldUniqueValues![field.columnName] =
-          Array.from(valueSets[field.columnName]);
+      visualisableFields.forEach((field) => {
+        state.data[groupId].fieldUniqueValues![field.columnName] = Array.from(
+          valueSets[field.columnName],
+        );
       });
       // Sort unique values using natural sort order
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-      visualisableFields.forEach(field => {
+      visualisableFields.forEach((field) => {
         state.data[groupId].fieldUniqueValues![field.columnName]!.sort(collator.compare);
       });
       // Set SUCCESS states
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
-      fields.forEach(field => {
+      fields.forEach((field) => {
         state.data[groupId].columnLoadingStates[field] = LoadingState.SUCCESS;
       });
       // Increment viewToFetch, which will trigger the next view load
@@ -346,7 +351,7 @@ export const groupMetadataSlice = createSlice({
       const { groupId, fields, viewIndex } = action.meta.arg;
       state.data[groupId].viewLoadingStates![viewIndex] = LoadingState.ERROR;
       // Any column not already loaded by another thunk gets an error state
-      fields.forEach(field => {
+      fields.forEach((field) => {
         if (state.data[groupId].columnLoadingStates[field] !== LoadingState.SUCCESS) {
           state.data[groupId].columnLoadingStates[field] = LoadingState.ERROR;
         }
@@ -374,12 +379,13 @@ export const { fetchGroupMetadata, reloadGroupMetadata } = groupMetadataSlice.ac
 
 // selectors
 
-export const selectGroupMetadata:
-(state: RootState, groupId: number | undefined) => GroupMetadataState | null =
-  (state, groupId) => {
-    if (!groupId) return null; // should not be 0, which is fine
-    return state.groupMetadataState.data[groupId!] ?? null;
-  };
+export const selectGroupMetadata: (
+  state: RootState,
+  groupId: number | undefined,
+) => GroupMetadataState | null = (state, groupId) => {
+  if (!groupId) return null; // should not be 0, which is fine
+  return state.groupMetadataState.data[groupId!] ?? null;
+};
 
 // May want to also include per-field loading state in this selector
 export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
@@ -404,8 +410,10 @@ export const selectGroupMetadataError = (state: RootState, groupId: number | und
 export const selectAwaitingGroupMetadata = (state: RootState, groupId: number | undefined) => {
   if (!groupId) return true;
   const loadingState = state.groupMetadataState.data[groupId]?.loadingState;
-  return loadingState === MetadataLoadingState.IDLE ||
-         loadingState === MetadataLoadingState.FETCH_REQUESTED ||
-         loadingState === MetadataLoadingState.AWAITING_FIELDS ||
-         loadingState === MetadataLoadingState.AWAITING_DATA;
+  return (
+    loadingState === MetadataLoadingState.IDLE ||
+    loadingState === MetadataLoadingState.FETCH_REQUESTED ||
+    loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+    loadingState === MetadataLoadingState.AWAITING_DATA
+  );
 };

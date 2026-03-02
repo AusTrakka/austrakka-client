@@ -1,18 +1,14 @@
 import { Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import PhessIdStatus from '../../Widgets/ProjectWidgets/PhessIdStatus';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import StCounts from '../../Widgets/ProjectWidgets/StCounts';
-import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 function VicDHDashboard(props: ProjectDashboardTemplateProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
-  
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
+
   return (
     <>
       <Grid container spacing={2}>

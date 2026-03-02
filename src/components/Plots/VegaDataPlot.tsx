@@ -1,27 +1,25 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { parse, type Spec, View as VegaView } from 'vega';
-import { type TopLevelSpec, compile } from 'vega-lite';
+
 import { Alert, Grid } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { parse, type Spec, View as VegaView } from 'vega';
+import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
-import ExportVegaPlot from './ExportVegaPlot';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import {
-  selectProjectMetadata, type ProjectMetadataState,
-} from '../../app/projectMetadataSlice';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
 import type { Sample } from '../../types/sample.interface';
-
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import ExportVegaPlot from './ExportVegaPlot';
 import { useGlobalErrorListener } from './globalErrorListener';
 
 interface VegaDataPlotProps {
-  spec: TopLevelSpec | Spec | null,
-  projectAbbrev: string | undefined,
+  spec: TopLevelSpec | Spec | null;
+  projectAbbrev: string | undefined;
 }
 
 // WIDGETS SHOULD NOT USE THIS
@@ -42,8 +40,9 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-  const metadata: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const metadata: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   useEffect(() => {
     setErrorOccurred(false);
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
@@ -51,16 +50,20 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   const handleGlobalError = useCallback((event: ErrorEvent) => {
     if (event.error instanceof DOMException) {
-      setErrorMsg('The plot could not be rendered. It may be too large for the browser. ' +
-          'Consider filtering the data, or changing the selected fields.');
+      setErrorMsg(
+        'The plot could not be rendered. It may be too large for the browser. ' +
+          'Consider filtering the data, or changing the selected fields.',
+      );
     } else {
-      setErrorMsg(`An error occurred rendering the plot. Please contact ${import.meta.env.VITE_BRANDING_NAME} Support.`);
+      setErrorMsg(
+        `An error occurred rendering the plot. Please contact ${import.meta.env.VITE_BRANDING_NAME} Support.`,
+      );
     }
 
     setErrorOccurred(true);
     setLoading(false);
   }, []);
-  
+
   useGlobalErrorListener(handleGlobalError);
 
   useEffect(() => {
@@ -68,7 +71,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       setFilteredData(metadata?.metadata ?? []);
       setAllFieldsLoaded(true);
     }
-  }, [ metadata?.loadingState, metadata?.metadata]);
+  }, [metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
@@ -76,17 +79,23 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     setErrorOccurred(false);
     // Modifies compiledSpec in place
     const fixRowWidths = (compiledSpec: Spec) => {
-      if (!compiledSpec.signals) { compiledSpec.signals = []; }
+      if (!compiledSpec.signals) {
+        compiledSpec.signals = [];
+      }
       // -80 compensates for default Vega facet padding values
       const newSignal = {
         name: 'child_width',
         init: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
-        on: [{
-          events: 'window:resize',
-          update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
-        }],
+        on: [
+          {
+            events: 'window:resize',
+            update: 'isFinite(containerSize()[0]) ? (containerSize()[0] - 80) : 200',
+          },
+        ],
       };
-      const signalIndex: number = compiledSpec.signals.findIndex(sig => sig.name === 'child_width');
+      const signalIndex: number = compiledSpec.signals.findIndex(
+        (sig) => sig.name === 'child_width',
+      );
       if (signalIndex > -1) {
         compiledSpec.signals[signalIndex] = newSignal;
       } else {
@@ -105,7 +114,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       } else {
         compiledSpec = compile((spec as TopLevelSpec)!).spec;
       }
-      const dataIndex: number = compiledSpec!.data!.findIndex(dat => dat.name === 'inputdata');
+      const dataIndex: number = compiledSpec!.data!.findIndex((dat) => dat.name === 'inputdata');
       // TODO show a warning on the UI as well
       if (dataIndex === -1) {
         console.error('Bad plot spec: inputdata slot not found in spec');
@@ -119,21 +128,21 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       }
 
       setLoading(true);
-      const view = await new VegaView(parse(compiledSpec))
-        .initialize(plotDiv.current!)
-        .runAsync();
+      const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
       setLoading(false);
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (spec &&
+    if (
+      spec &&
       metadata?.loadingState &&
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
       mutableFilteredData &&
-      plotDiv?.current) {
+      plotDiv?.current
+    ) {
       // TODO it appears this may trigger too often?
       createVegaView();
     }
@@ -144,12 +153,14 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (metadata?.loadingState &&
+    if (
+      metadata?.loadingState &&
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-      Object.keys(currentFilters).length === 0) {
-      setMutableFilteredData(JSON.parse(JSON.stringify((metadata.metadata!))));
+      Object.keys(currentFilters).length === 0
+    ) {
+      setMutableFilteredData(JSON.parse(JSON.stringify(metadata.metadata!)));
       setLoading(false);
     }
   }, [metadata?.metadata]);
@@ -163,9 +174,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
               <div id="#plot-container" ref={plotDiv} />
             </Grid>
             <Grid item xs={1}>
-              <ExportVegaPlot
-                vegaView={vegaView}
-              />
+              <ExportVegaPlot vegaView={vegaView} />
             </Grid>
           </Grid>
         ) : (

@@ -21,9 +21,7 @@ describe('removeSelectionFromPrivileges', () => {
         {
           recordName: 'User2',
           recordGlobalId: '2',
-          roles: [
-            { roleName: 'Viewer', privilegeGlobalId: undefined },
-          ],
+          roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
         },
       ],
     },
@@ -33,9 +31,7 @@ describe('removeSelectionFromPrivileges', () => {
         {
           recordName: 'Role1',
           recordGlobalId: '3',
-          roles: [
-            { roleName: 'Manager', privilegeGlobalId: undefined },
-          ],
+          roles: [{ roleName: 'Manager', privilegeGlobalId: undefined }],
         },
       ],
     },
@@ -56,16 +52,12 @@ describe('removeSelectionFromPrivileges', () => {
           {
             recordName: 'User1',
             recordGlobalId: '1',
-            roles: [
-              { roleName: 'Editor', privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Editor', privilegeGlobalId: undefined }],
           },
           {
             recordName: 'User2',
             recordGlobalId: '2',
-            roles: [
-              { roleName: 'Viewer', privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -75,9 +67,7 @@ describe('removeSelectionFromPrivileges', () => {
           {
             recordName: 'Role1',
             recordGlobalId: '3',
-            roles: [
-              { roleName: 'Manager', privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Manager', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -85,12 +75,7 @@ describe('removeSelectionFromPrivileges', () => {
   });
 
   test('should handle null prev input by returning an empty array', () => {
-    const result = removeSelectionFromPrivileges(
-      null,
-      mockRecordType,
-      mockRecordName,
-      mockRole,
-    );
+    const result = removeSelectionFromPrivileges(null, mockRecordType, mockRecordName, mockRole);
 
     expect(result).toEqual([]);
   });
@@ -118,12 +103,9 @@ describe('removeSelectionFromPrivileges', () => {
   });
 
   test('should return unchanged privileges if role does not exist', () => {
-    const result = removeSelectionFromPrivileges(
-      mockPrev,
-      mockRecordType,
-      mockRecordName,
-      { roleName: 'NonExistentRole' },
-    );
+    const result = removeSelectionFromPrivileges(mockPrev, mockRecordType, mockRecordName, {
+      roleName: 'NonExistentRole',
+    });
 
     expect(result).toEqual(mockPrev);
   });
@@ -137,9 +119,7 @@ describe('removeSelectionFromPrivileges', () => {
             {
               recordName: 'User1',
               recordGlobalId: '1',
-              roles: [
-                { roleName: 'Admin', privilegeGlobalId: undefined },
-              ],
+              roles: [{ roleName: 'Admin', privilegeGlobalId: undefined }],
             },
           ],
         },
@@ -169,9 +149,7 @@ describe('removeSelectionFromPrivileges', () => {
             {
               recordName: 'User2',
               recordGlobalId: '2',
-              roles: [
-                { roleName: 'Viewer', privilegeGlobalId: undefined },
-              ],
+              roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
             },
           ],
         },
@@ -188,16 +166,12 @@ describe('removeSelectionFromPrivileges', () => {
           {
             recordName: 'User1',
             recordGlobalId: '1',
-            roles: [
-              { roleName: 'Editor', privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Editor', privilegeGlobalId: undefined }],
           },
           {
             recordName: 'User2',
             recordGlobalId: '2',
-            roles: [
-              { roleName: 'Viewer', privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
           },
         ],
       },

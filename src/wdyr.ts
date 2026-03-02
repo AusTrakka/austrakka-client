@@ -1,5 +1,5 @@
-import React from 'react';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
+import React from 'react';
 import { ReactReduxContext } from 'react-redux';
 
 if (import.meta.env.DEV) {
@@ -9,9 +9,7 @@ if (import.meta.env.DEV) {
     titleColor: 'yellow',
     diffNameColor: 'lightblue',
     diffPathColor: 'red',
-    trackExtraHooks: [
-      [ReactReduxContext, 'useSelector'],
-    ],
+    trackExtraHooks: [[ReactReduxContext, 'useSelector']],
     logOnDifferentValues: true,
     exclude: [/^Body/, /^Table/, /^Header/, /^Virtual/],
   });

@@ -1,17 +1,13 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
-import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
-import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function DefaultDashboard(props: ProjectDashboardTemplateProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -49,7 +45,6 @@ function DefaultDashboard(props: ProjectDashboardTemplateProps) {
         </Grid>
       </Grid>
     </Box>
-
   );
 }
 export default DefaultDashboard;

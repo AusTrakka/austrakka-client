@@ -1,6 +1,6 @@
-import type { Dispatch, SetStateAction } from 'react';
-import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
+import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
+import type { Dispatch, SetStateAction } from 'react';
 import type { RolesV2 } from '../../../types/dtos';
 
 interface RoleAutocompleteProps {
@@ -14,7 +14,7 @@ export function RoleAutocomplete(props: RoleAutocompleteProps) {
 
   return (
     <Autocomplete
-      options={roles?.filter(r => !selectedRoles?.some(sr => sr.globalId === r.globalId)) || []}
+      options={roles?.filter((r) => !selectedRoles?.some((sr) => sr.globalId === r.globalId)) || []}
       multiple
       limitTags={1}
       style={{ width: '19em' }}
@@ -52,7 +52,8 @@ export function RoleAutocomplete(props: RoleAutocompleteProps) {
               />
             </Tooltip>
           );
-        })}
+        })
+      }
       renderInput={(params) => (
         <TextField
           {...params}

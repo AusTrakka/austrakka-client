@@ -1,42 +1,41 @@
-
 import './App.css';
 import './assets/themes/custom-style.css';
-import {
-  Routes, Route, Navigate, useNavigate,
-} from 'react-router-dom';
-import {
-  AuthenticatedTemplate, UnauthenticatedTemplate, MsalAuthenticationTemplate,
-} from '@azure/msal-react';
 import { InteractionType } from '@azure/msal-browser';
+import {
+  AuthenticatedTemplate,
+  MsalAuthenticationTemplate,
+  UnauthenticatedTemplate,
+} from '@azure/msal-react';
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en-gb';
-import CustomNavigationClient from './utilities/NavigationClient';
-import MainMenuLayout from './components/Layouts/MainMenuLayout';
-import ProjectsList from './components/ProjectsList/ProjectsList';
-import Upload from './components/Upload/Upload';
-import Login from './components/Login/Login';
 import muiTheme from './assets/themes/theme';
-import PlotDetail from './components/Plots/PlotDetail';
-import TreeDetail from './components/Trees/TreeDetail';
-import ProFormaDetail from './components/ProForma/ProFormaDetail';
+import Users from './components/Admin/Users';
+import UsersV2 from './components/Admin/UsersV2';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
+import Fields from './components/Fields/Fields';
+import MainMenuLayout from './components/Layouts/MainMenuLayout';
+import Login from './components/Login/Login';
+import MapPage from './components/Maps/MapPage';
+import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
+import Platform from './components/Platform/Platform';
+import PlotDetail from './components/Plots/PlotDetail';
+import ProFormaDetail from './components/ProForma/ProFormaDetail';
+import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
+import ProjectsList from './components/ProjectsList/ProjectsList';
+import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
+import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
+import TreeDetail from './components/Trees/TreeDetail';
+import Upload from './components/Upload/Upload';
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
-import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
-import { msalInstance } from './utilities/authUtils';
 import UserDetail from './components/Users/UserDetail';
-import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
-import Users from './components/Admin/Users';
-import Fields from './components/Fields/Fields';
-import UsersV2 from './components/Admin/UsersV2';
-import Platform from './components/Platform/Platform';
-import UserProvider from './providers/UserProvider';
 import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
-import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
-import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
-import MapPage from './components/Maps/MapPage';
+import UserProvider from './providers/UserProvider';
+import { msalInstance } from './utilities/authUtils';
+import CustomNavigationClient from './utilities/NavigationClient';
 
 function App() {
   const navigate = useNavigate();
@@ -48,9 +47,7 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
         <UserProvider>
           <AuthenticatedTemplate>
-            <MsalAuthenticationTemplate
-              interactionType={InteractionType.Redirect}
-            >
+            <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
               <Routes>
                 {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
                 <Route element={<MainMenuLayout />}>
@@ -63,10 +60,22 @@ function App() {
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
-                  <Route path="projects/:projectAbbrev/plots/:plotAbbrev" element={<PlotDetail />} />
-                  <Route path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId" element={<TreeDetail />} />
-                  <Route path="projects/:projectAbbrev/records/:seqId" element={<ProjectSampleDetail />} />
-                  <Route path="projects/:projectAbbrev/:tab?" element={<ProjectOverviewWrapper />} />
+                  <Route
+                    path="projects/:projectAbbrev/plots/:plotAbbrev"
+                    element={<PlotDetail />}
+                  />
+                  <Route
+                    path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId"
+                    element={<TreeDetail />}
+                  />
+                  <Route
+                    path="projects/:projectAbbrev/records/:seqId"
+                    element={<ProjectSampleDetail />}
+                  />
+                  <Route
+                    path="projects/:projectAbbrev/:tab?"
+                    element={<ProjectOverviewWrapper />}
+                  />
                   <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />

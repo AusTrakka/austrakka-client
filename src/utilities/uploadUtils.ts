@@ -18,24 +18,25 @@ export const activeSeqUploadStates = [
 ];
 
 export interface CustomUploadValidatorReturn {
-  success: boolean,
-  message: string,
+  success: boolean;
+  message: string;
 }
 
 export interface CustomUploadValidator {
-  func: (files: File[]) => CustomUploadValidatorReturn,
+  func: (files: File[]) => CustomUploadValidatorReturn;
 }
 
 export const validateEvenNumberOfFiles = {
-  func: (files: File[]) => ({
-    success: files.length % 2 === 0,
-    message: 'Must upload an even number of files for paired-end sequence data',
-  } as CustomUploadValidatorReturn),
+  func: (files: File[]) =>
+    ({
+      success: files.length % 2 === 0,
+      message: 'Must upload an even number of files for paired-end sequence data',
+    }) as CustomUploadValidatorReturn,
 } as CustomUploadValidator;
 
 export const validateNoDuplicateFilenames = {
   func: (files: File[]) => {
-    const filenames = files.map(f => f.name);
+    const filenames = files.map((f) => f.name);
     const duplicates = filenames.filter((item, index) => filenames.indexOf(item) !== index);
     if (duplicates.length > 0) {
       return {
@@ -62,7 +63,7 @@ function countElements(array: any[]): Record<string, number> {
 
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
   func: (files: File[]) => {
-    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name)));
     const problemSampleNames = Object.entries(sampleCounts)
       .filter(([_sample, count]) => count !== 2)
       .map(([sample, _count]) => sample);
@@ -80,7 +81,7 @@ export const validateAllHaveSampleNamesWithTwoFilesOnly = {
 
 export const validateAllHaveSampleNamesWithOneFileOnly = {
   func: (files: File[]) => {
-    const sampleCounts = countElements(files.map(f => getSampleNameFromFile(f.name)));
+    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name)));
     const problemSampleNames = Object.entries(sampleCounts)
       .filter(([_sample, count]) => count !== 1)
       .map(([sample, _count]) => sample);
@@ -98,15 +99,17 @@ export const validateAllHaveSampleNamesWithOneFileOnly = {
 
 // Logic of these two functions will need to change in perms V2; currently take in groupRoles
 
-// TODO requires special logic if we want admins to be allowed to upload to any org using this UI 
+// TODO requires special logic if we want admins to be allowed to upload to any org using this UI
 //  but do we? They can always give themselves a role if they really need to use the UI
 
-// TODO ought to get group type in DTO rather than rely on group name structure - 
+// TODO ought to get group type in DTO rather than rely on group name structure -
 // however this is temporary anyway
 export const getUploadableOrgs = (groupRoles: GroupRole[]): OrgDescriptor[] => {
   const orgs: OrgDescriptor[] = groupRoles
     .filter((groupRole) => groupRole.role.name === 'Uploader')
-    .filter((groupRole) => ['Owner', 'Contributor'].includes(groupRole.group.name.split('-').pop()!))
+    .filter((groupRole) =>
+      ['Owner', 'Contributor'].includes(groupRole.group.name.split('-').pop()!),
+    )
     .map((groupRole) => groupRole.group.organisation);
   return orgs;
 };
@@ -125,27 +128,26 @@ export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]
     .filter((groupRole) => groupRole.group.organisation?.abbreviation === orgAbbrev)
     // Needs to have an Uploader role in the owner group
     .filter(() =>
-      groupRoles.some((groupRole) =>
-        groupRole.group.organisation?.abbreviation === orgAbbrev &&
-        groupRole.role.name === 'Uploader' &&
-        groupRole.group.name.split('-').pop() === 'Owner'))
+      groupRoles.some(
+        (groupRole) =>
+          groupRole.group.organisation?.abbreviation === orgAbbrev &&
+          groupRole.role.name === 'Uploader' &&
+          groupRole.group.name.split('-').pop() === 'Owner',
+      ),
+    )
     // Filter out all groups other than Everyone group
     .filter((groupRole) => ['Everyone'].includes(groupRole.group.name.split('-').pop()!))
     .map((groupRole) => groupRole.group.name)
     .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-  
+
   const uniqueOrgGroupNames = [...new Set(orgGroupNames)];
   return uniqueOrgGroupNames;
 };
 
-export const createSampleCSV = (
-  seqUploadRows: SeqUploadRow[],
-): string => {
+export const createSampleCSV = (seqUploadRows: SeqUploadRow[]): string => {
   // This is technically a CSV, but has just a single column
   const csvHeader = 'Seq_ID';
-  const csvRows = seqUploadRows.map(
-    row => `${row.seqId}`,
-  );
+  const csvRows = seqUploadRows.map((row) => `${row.seqId}`);
   const csv = [csvHeader, ...csvRows].join('\n');
   return csv;
 };
@@ -157,30 +159,34 @@ export const createPairedSeqUploadRows = (
   if (seqType !== SeqType.FastqIllPe) {
     throw new Error('Invalid seqType for creating paired-end sequence upload rows');
   }
-  const pairedFiles = files.sort((a, b) => {
-    if (a.file.name < b.file.name) {
-      return -1;
-    }
-    return 1;
-  })
-    .reduce((
-      result: SeqPairedUploadRow[],
-      value: DropFileUpload,
-      index: number,
-      array: DropFileUpload[],
-    ) => {
-      if (index % 2 === 0) {
-        result.push({
-          id: crypto.randomUUID(),
-          seqId: getSampleNameFromFile(value.file.name),
-          read1: value,
-          read2: array[index + 1],
-          seqType: SeqType.FastqIllPe,
-          state: SeqUploadRowState.Waiting,
-        } as SeqPairedUploadRow);
+  const pairedFiles = files
+    .sort((a, b) => {
+      if (a.file.name < b.file.name) {
+        return -1;
       }
-      return result;
-    }, []);
+      return 1;
+    })
+    .reduce(
+      (
+        result: SeqPairedUploadRow[],
+        value: DropFileUpload,
+        index: number,
+        array: DropFileUpload[],
+      ) => {
+        if (index % 2 === 0) {
+          result.push({
+            id: crypto.randomUUID(),
+            seqId: getSampleNameFromFile(value.file.name),
+            read1: value,
+            read2: array[index + 1],
+            seqType: SeqType.FastqIllPe,
+            state: SeqUploadRowState.Waiting,
+          } as SeqPairedUploadRow);
+        }
+        return result;
+      },
+      [],
+    );
   return pairedFiles;
 };
 
@@ -191,12 +197,15 @@ export const createSingleSeqUploadRows = (
   if (![SeqType.FastqIllSe, SeqType.FastqOnt].includes(seqType)) {
     throw new Error('Invalid seqType for creating single-end sequence upload rows');
   }
-  const singleFiles = files.map((file) => ({
-    id: crypto.randomUUID(),
-    seqId: getSampleNameFromFile(file.file.name),
-    file,
-    seqType,
-    state: SeqUploadRowState.Waiting,
-  } as SeqSingleUploadRow));
+  const singleFiles = files.map(
+    (file) =>
+      ({
+        id: crypto.randomUUID(),
+        seqId: getSampleNameFromFile(file.file.name),
+        file,
+        seqType,
+        state: SeqUploadRowState.Waiting,
+      }) as SeqSingleUploadRow,
+  );
   return singleFiles;
 };

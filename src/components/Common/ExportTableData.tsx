@@ -9,10 +9,10 @@ import { generateFilename } from '../../utilities/file';
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed
 interface ExportTableDataProps {
-  dataToExport: any[]
-  disabled: boolean
-  fileNamePrefix: string
-  headers?: string[]
+  dataToExport: any[];
+  disabled: boolean;
+  fileNamePrefix: string;
+  headers?: string[];
 }
 
 function ExportTableData(props: ExportTableDataProps) {
@@ -61,19 +61,10 @@ function ExportTableData(props: ExportTableDataProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact the
-          {' '}
-          {import.meta.env.VITE_BRANDING_NAME}
-          {' '}
-          team.
+          Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
         </Alert>
       </Dialog>
-      <CSVLink
-        data={[]}
-        ref={csvLink}
-        filename={generateFilename()}
-        headers={headers}
-      />
+      <CSVLink data={[]} ref={csvLink} filename={generateFilename()} headers={headers} />
       <Tooltip title="Export to CSV" placement="top" arrow>
         <span>
           <IconButton
@@ -81,9 +72,7 @@ function ExportTableData(props: ExportTableDataProps) {
               exportData();
             }}
             disabled={
-              disabled ||
-              exportCSVStatus === LoadingState.LOADING ||
-              dataToExport.length < 1
+              disabled || exportCSVStatus === LoadingState.LOADING || dataToExport.length < 1
             }
             color={disabled ? 'secondary' : 'default'}
           >

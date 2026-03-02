@@ -1,13 +1,14 @@
-import type { DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type {
+  DataTableFilterMetaData,
+  DataTableOperatorFilterMetaData,
+} from 'primereact/datatable';
 import { isOperatorFilterMetaData } from '../../../src/utilities/filterUtils';
 
 describe('isOperatorFilterMetaData', () => {
   test('returns true for a valid DataTableOperatorFilterMetaData object', () => {
     const operatorFilterData: DataTableOperatorFilterMetaData = {
       operator: 'and',
-      constraints: [
-        { value: 'test', matchMode: 'equals' },
-      ],
+      constraints: [{ value: 'test', matchMode: 'equals' }],
     };
     expect(isOperatorFilterMetaData(operatorFilterData)).toBe(true);
   });

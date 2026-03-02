@@ -12,13 +12,8 @@ interface EditButtonsProps {
 }
 
 // Define the EditButtons component outside the UserDetail component
-export default function EditButtons(props : EditButtonsProps) {
-  const { editing,
-    setEditing,
-    onSave,
-    hasSavedChanges,
-    onCancel,
-    canSee } = props;
+export default function EditButtons(props: EditButtonsProps) {
+  const { editing, setEditing, onSave, hasSavedChanges, onCancel, canSee } = props;
 
   if (editing) {
     return (

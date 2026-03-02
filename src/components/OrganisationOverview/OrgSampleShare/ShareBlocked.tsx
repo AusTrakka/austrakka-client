@@ -1,12 +1,11 @@
-
 import { Close } from '@mui/icons-material';
 import { Alert, Dialog, IconButton, Typography } from '@mui/material';
 
 interface ShareBlockedProps {
-  canShare: boolean,
-  openShareBlocked: boolean,
-  setOpenShareBlocked: (open: boolean) => void,
-  selectedIdsLength: number,
+  canShare: boolean;
+  openShareBlocked: boolean;
+  setOpenShareBlocked: (open: boolean) => void;
+  selectedIdsLength: number;
 }
 
 export function ShareBlocked(props: ShareBlockedProps) {
@@ -20,11 +19,8 @@ export function ShareBlocked(props: ShareBlockedProps) {
           Incorrect permissions
         </Typography>
         <Typography variant="body1">
-          Only users with
-          {' '}
-          <strong>Uploader</strong>
-          {' '}
-          permissions for the organisation&apos;s Owner group can share samples.
+          Only users with <strong>Uploader</strong> permissions for the organisation&apos;s Owner
+          group can share samples.
         </Typography>
       </>
     );
@@ -45,9 +41,7 @@ export function ShareBlocked(props: ShareBlockedProps) {
         <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
           Error sharing samples
         </Typography>
-        <Typography variant="body1">
-          There was an error initiating sample sharing.
-        </Typography>
+        <Typography variant="body1">There was an error initiating sample sharing.</Typography>
       </>
     );
   }

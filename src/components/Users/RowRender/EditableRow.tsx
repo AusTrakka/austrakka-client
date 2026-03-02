@@ -1,10 +1,18 @@
+import {
+  Autocomplete,
+  InputAdornment,
+  Switch,
+  TableCell,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
 import type React from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { Autocomplete, InputAdornment, Switch, TableCell, TableRow, TextField, Typography } from '@mui/material';
 import type { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
-import { FieldLabelWithTooltip } from '../../UsersV2/RowRender/FieldLabelWithToolTip';
 import { bytesToMB } from '../../../utilities/renderUtils';
+import { FieldLabelWithTooltip } from '../../UsersV2/RowRender/FieldLabelWithToolTip';
 
 interface EditableRowProps {
   field: keyof User;
@@ -16,7 +24,7 @@ interface EditableRowProps {
   setOrgChanged: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function EditableRow(props : EditableRowProps) {
+function EditableRow(props: EditableRowProps) {
   const {
     field,
     detailValue,
@@ -26,7 +34,7 @@ function EditableRow(props : EditableRowProps) {
     allOrgs,
     setOrgChanged,
   } = props;
-  
+
   const nonEditableFields = [
     'created',
     'objectId',
@@ -57,20 +65,19 @@ function EditableRow(props : EditableRowProps) {
       };
     });
   };
-  
+
   const handleMBChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const mbValue = parseFloat(e.target.value) || 0;
     const bytes = Math.round(mbValue * 1024 * 1024);
 
-    setEditedValues(prevValues => {
+    setEditedValues((prevValues) => {
       if (!prevValues) return null;
       return { ...prevValues, [field]: bytes };
     });
   };
-  
+
   switch (typeof detailValue) {
     case 'string':
-     
       if (nonEditableFields.includes(field)) {
         let displayValue;
         if (field === 'created') {
@@ -106,7 +113,9 @@ function EditableRow(props : EditableRowProps) {
                     return {
                       ...prevValues,
                       [field]: newValue,
-                      'orgAbbrev': allOrgs.find((org) => org.name === newValue)?.abbreviation || prevValues.orgAbbrev,
+                      orgAbbrev:
+                        allOrgs.find((org) => org.name === newValue)?.abbreviation ||
+                        prevValues.orgAbbrev,
                     };
                   });
                 }}
@@ -161,7 +170,7 @@ function EditableRow(props : EditableRowProps) {
           <TableCell>
             <Switch
               size="small"
-              checked={editedValues?.[field] as boolean || false}
+              checked={(editedValues?.[field] as boolean) || false}
               onChange={handleChangeBoolean}
             />
           </TableCell>
@@ -171,12 +180,8 @@ function EditableRow(props : EditableRowProps) {
       if (nonEditableFields.includes(field)) {
         return (
           <TableRow key={field}>
-            <TableCell width="200em">
-              {readableNames[field] || field}
-            </TableCell>
-            <TableCell>
-              {`${bytesToMB(detailValue as number)} MB`}
-            </TableCell>
+            <TableCell width="200em">{readableNames[field] || field}</TableCell>
+            <TableCell>{`${bytesToMB(detailValue as number)} MB`}</TableCell>
           </TableRow>
         );
       }
@@ -193,12 +198,14 @@ function EditableRow(props : EditableRowProps) {
               fullWidth
               size="small"
               hiddenLabel
-              sx={{ 'width': '100%',
-                'padding': '0',
-                'flexWrap': 'nowrap !important',
+              sx={{
+                width: '100%',
+                padding: '0',
+                flexWrap: 'nowrap !important',
                 '& .MuiFilledInput-root.Mui-focused': {
                   flexWrap: 'nowrap !important',
-                } }}
+                },
+              }}
               slotProps={{
                 input: {
                   style: {
@@ -208,10 +215,11 @@ function EditableRow(props : EditableRowProps) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   },
-                  endAdornment:
-  <InputAdornment position="end">
-    <Typography fontSize="0.9rem">MB per month</Typography>
-  </InputAdornment>,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography fontSize="0.9rem">MB per month</Typography>
+                    </InputAdornment>
+                  ),
                 },
               }}
             />
@@ -225,7 +233,7 @@ function EditableRow(props : EditableRowProps) {
             <TableCell width="200em">{readableNames[field] || field}</TableCell>
             <TableCell>
               <TextField
-                value={editedValues?.[field] as string || ''}
+                value={(editedValues?.[field] as string) || ''}
                 onChange={handleChange}
                 variant="filled"
                 fullWidth

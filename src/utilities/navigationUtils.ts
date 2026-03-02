@@ -1,8 +1,8 @@
 import type { DataTableFilterMeta } from 'primereact/datatable';
 import type { NavigateFunction } from 'react-router-dom';
-import { encodeFilterObj } from './urlUtils';
 import { ORG_TABS } from '../components/OrganisationOverview/orgTabConstants';
 import { PROJ_TABS } from '../components/ProjectOverview/projTabConstants';
+import { encodeFilterObj } from './urlUtils';
 
 function parse<T>(value: string | null, defaultValue: T): T {
   if (value === undefined || value === null) {
@@ -45,8 +45,8 @@ const shouldReplaceLastSegment = (lastSegment: string) => {
   const lowerSegment = lastSegment.toLowerCase();
 
   return (
-    Object.values(ORG_TABS).some(tab => tab.title.toLowerCase() === lowerSegment) ||
-      Object.values(PROJ_TABS).some(tab => tab.title.toLowerCase() === lowerSegment)
+    Object.values(ORG_TABS).some((tab) => tab.title.toLowerCase() === lowerSegment) ||
+    Object.values(PROJ_TABS).some((tab) => tab.title.toLowerCase() === lowerSegment)
   );
 };
 

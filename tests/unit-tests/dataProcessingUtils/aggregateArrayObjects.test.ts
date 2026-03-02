@@ -21,8 +21,7 @@ describe('aggregateArrayObjects', () => {
       expect(result).toEqual(expectedOutput);
     });
   });
-  describe('when given variations of invalid' +
-         'input or values within the input', () => {
+  describe('when given variations of invalid' + 'input or values within the input', () => {
     test('undefined arrays are converted to empty arrays', () => {
       const inputArray = undefined;
       const expectedOutput: any[] = [];
@@ -98,11 +97,7 @@ describe('aggregateArrayObjects', () => {
     });
 
     test('input without specified property will return empty array', () => {
-      const inputArray = [
-        { name: 'A' },
-        { name: 'B' },
-        { name: 'A' },
-      ];
+      const inputArray = [{ name: 'A' }, { name: 'B' }, { name: 'A' }];
       const expectedOutput: any[] = [];
 
       const result = aggregateArrayObjects('category', inputArray);

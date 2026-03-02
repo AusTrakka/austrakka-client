@@ -1,20 +1,38 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { CheckCircle, Error as ErrorIcon, IosShare, Send } from '@mui/icons-material';
 import {
   Alert,
-  Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
-  FormControl, Grid2, InputLabel, MenuItem, Select, Skeleton, Typography,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid2,
+  InputLabel,
+  MenuItem,
+  Select,
+  Skeleton,
+  Typography,
 } from '@mui/material';
-import { CheckCircle, Error as ErrorIcon, IosShare, Send } from '@mui/icons-material';
-import type { Sample } from '../../../types/sample.interface';
-import { selectUserState, type UserSliceState } from '../../../app/userSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { getDisplayFields, getGroup, getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
+import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/store';
+import { selectUserState, type UserSliceState } from '../../../app/userSlice';
+import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
-import LoadingState from '../../../constants/loadingState';
+import type { Sample } from '../../../types/sample.interface';
+import {
+  getDisplayFields,
+  getGroup,
+  getProjectFields,
+  shareSamples,
+} from '../../../utilities/resourceUtils';
 import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
-import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
 
 type DestinationType = 'project' | 'orgGroup';
 type ShareStatusProps = {
@@ -81,14 +99,16 @@ function OrgSampleShare(props: OrgSampleShareProps) {
     if (selectedDestination) {
       setDestination(selectedDestination);
 
-      const canViewPreview = Object.entries(user.groupRolesByGroup)
-        .some(([groupName, roles]) =>
-          groupName === (selectedDestination) && roles.includes('Viewer'));
-      
+      const canViewPreview = Object.entries(user.groupRolesByGroup).some(
+        ([groupName, roles]) => groupName === selectedDestination && roles.includes('Viewer'),
+      );
+
       setCanViewDestinationFields(canViewPreview);
-      if (canViewPreview &&
+      if (
+        canViewPreview &&
         tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
+        tokenLoading !== LoadingState.IDLE
+      ) {
         if (destType === 'project') {
           // If destination is a project, get project fields
           const destAbbrev = selectedDestination.replace(/-Group$/, '');
@@ -105,7 +125,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
           // If destination is an org group, get fields by group context
           const groupResp = await getGroup(selectedDestination, token);
           if (groupResp.status === ResponseType.Success && groupResp.data) {
-            const groupId:number = groupResp.data?.groupId;
+            const groupId: number = groupResp.data?.groupId;
             const fieldsResp = await getDisplayFields(groupId, token);
             if (fieldsResp.status === ResponseType.Success) {
               setPreviewFields(fieldsResp.data);
@@ -130,18 +150,16 @@ function OrgSampleShare(props: OrgSampleShareProps) {
   const handleSharingSamples = async () => {
     try {
       setStatus(LoadingState.LOADING);
-      const shareResponse: ResponseObject = await shareSamples(
-        token,
-        destination!,
-        selectedIds,
-      );
+      const shareResponse: ResponseObject = await shareSamples(token, destination!, selectedIds);
       if (shareResponse.status === ResponseType.Success) {
         setStatus(LoadingState.SUCCESS);
         // TODO: Improve how success message is shown from shareResponse.messages array
         setStatusMessage('Samples shared successfully.');
         // Refresh to get updated Shared_groups
         // Delay to allow sampleFlat to update; required while sample sharing comes via sampleFlat
-        await new Promise<void>((resolve) => { setTimeout(resolve, 500); });
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 500);
+        });
         dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
       } else {
         setStatus(LoadingState.ERROR);
@@ -179,7 +197,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         open={open}
         onClose={status === LoadingState.LOADING ? undefined : onClose}
         disableEscapeKeyDown={status === LoadingState.LOADING}
-        maxWidth={(status === LoadingState.IDLE || status === LoadingState.LOADING) ? 'md' : 'xs'}
+        maxWidth={status === LoadingState.IDLE || status === LoadingState.LOADING ? 'md' : 'xs'}
         fullWidth
       >
         {status === LoadingState.ERROR &&
@@ -206,8 +224,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                 Share Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only share samples to projects or
-                organisation groups in which you have Uploader permissions in.
+                Please note you can only share samples to projects or organisation groups in which
+                you have Uploader permissions in.
               </Typography>
               <Alert severity="info">
                 Sharing these sample records will register the sample as being a
@@ -216,8 +234,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                 <b> sequence files </b>
                 with project analysts, and will share
                 <b> existing metadata values </b>
-                with project members if those metadata variables appear
-                in the target project.
+                with project members if those metadata variables appear in the target project.
               </Alert>
             </DialogTitle>
             <DialogContent>
@@ -227,12 +244,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                     Samples for sharing
                   </Typography>
                   <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                    <b>{selectedSamples.length}</b>
-                    {' '}
-                    sample
-                    {selectedSamples.length !== 1 ? 's' : ''}
-                    {' '}
-                    selected for sharing
+                    <b>{selectedSamples.length}</b> sample
+                    {selectedSamples.length !== 1 ? 's' : ''} selected for sharing
                   </Typography>
                   <FormControl
                     variant="standard"
@@ -260,16 +273,14 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                     error={false}
                   >
                     <InputLabel shrink>
-                      Select
-                      {' '}
-                      {destinationTypes.find(dt => dt.value === destType)?.label.toLowerCase()}
-                      *
+                      Select{' '}
+                      {destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase()}*
                     </InputLabel>
                     <Select
                       value={destination}
                       // onChange={(e) => setDestination(e.target.value)}
                       onChange={(e) => handleDestinationChange(e.target.value)}
-                      label={`Select ${destinationTypes.find(dt => dt.value === destType)?.label.toLowerCase() ?? ''}*`}
+                      label={`Select ${destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase() ?? ''}*`}
                       notched
                       disabled={status === LoadingState.LOADING}
                     >
@@ -295,7 +306,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                       </Typography>
                       <Typography variant="subtitle2">
                         These are the fields that may be shared with the selected
-                        {` ${destinationTypes.find(dt => dt.value === destType)?.label.toLowerCase() ?? ''} `}
+                        {` ${destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase() ?? ''} `}
                         if they are populated in the sample records.
                       </Typography>
                       {previewLoading ? (
@@ -320,7 +331,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                           />
                         </Box>
                       ) : null}
-                      { previewError ? (
+                      {previewError ? (
                         <Typography variant="body2" color="error" sx={{ marginTop: 2 }}>
                           Error loading preview fields.
                         </Typography>
@@ -342,13 +353,21 @@ function OrgSampleShare(props: OrgSampleShareProps) {
               </Grid2>
             </DialogContent>
             <DialogActions sx={{ padding: 2 }}>
-              <Button onClick={onClose} disabled={status === LoadingState.LOADING}>Cancel</Button>
+              <Button onClick={onClose} disabled={status === LoadingState.LOADING}>
+                Cancel
+              </Button>
               <Button
                 variant="contained"
                 color="success"
                 onClick={handleSharingSamples}
-                disabled={!destination || (status === LoadingState.LOADING)}
-                startIcon={!(status === LoadingState.LOADING) ? <Send /> : <CircularProgress size={16} sx={{ color: 'inherit' }} />}
+                disabled={!destination || status === LoadingState.LOADING}
+                startIcon={
+                  !(status === LoadingState.LOADING) ? (
+                    <Send />
+                  ) : (
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                  )
+                }
               >
                 Share
               </Button>

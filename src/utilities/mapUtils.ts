@@ -1,17 +1,13 @@
-import type {
-  FeatureLookupFieldType,
-  GeoCountRow,
-  MapJson,
-} from '../components/Maps/mapMeta';
-import type { Sample } from '../types/sample.interface';
-import type { Field } from '../types/dtos';
 import { getCountryCode } from '../app/metadataSliceUtils';
+import type { FeatureLookupFieldType, GeoCountRow, MapJson } from '../components/Maps/mapMeta';
+import type { Field } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 
 export function detectIsoType(validValues: string[]): FeatureLookupFieldType | null {
   if (!validValues || validValues.length === 0) return null;
 
   // Take the first non-null standardised value
-  const sampleIso = validValues.map(getCountryCode).find(v => v !== null);
+  const sampleIso = validValues.map(getCountryCode).find((v) => v !== null);
   if (!sampleIso) return null;
 
   if (/^[A-Z]{2}-/.test(validValues[0].toUpperCase())) return 'iso_region';
@@ -34,15 +30,13 @@ export const aggregateGeoData = (
   const missingTable: Record<string, number> = {};
 
   // Initialize lookup table with expected values from GeoJSON
-  const expectedValues = geoJSON.features
-    .map((feature: any) => feature.properties[geoLookupField])
-    .filter(Boolean) || [];
+  const expectedValues =
+    geoJSON.features.map((feature: any) => feature.properties[geoLookupField]).filter(Boolean) ||
+    [];
 
   expectedValues.forEach((value: string) => {
     if (lookupTable[value] !== undefined) {
-      throw new Error(
-        `Duplicate geoLookupField value "${value}" found in GeoJSON features`,
-      );
+      throw new Error(`Duplicate geoLookupField value "${value}" found in GeoJSON features`);
     }
     lookupTable[value] = 0;
   });

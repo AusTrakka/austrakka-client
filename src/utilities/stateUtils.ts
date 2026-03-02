@@ -1,17 +1,19 @@
 // TODO: Need to move this function else where as it is more than a utility
-import { type SetStateAction, useEffect, useMemo, useState } from 'react'
+
 import type { DataTableFilterMeta } from 'primereact/datatable';
+import { type SetStateAction, useEffect, useMemo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
+import { isDataTableFiltersEqual } from './filterUtils';
 import getQueryParamOrDefault from './navigationUtils';
 import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
-import { isDataTableFiltersEqual } from './filterUtils';
 
-export function useStateFromSearchParamsForPrimitive<T extends
-  string | number | boolean | null | Array<string | number | boolean | null>>(
-    paramName: string,
-    defaultState: T,
-    navigate: NavigateFunction,
-  ): [T, React.Dispatch<React.SetStateAction<T>>] {
+export function useStateFromSearchParamsForPrimitive<
+  T extends string | number | boolean | null | Array<string | number | boolean | null>,
+>(
+  paramName: string,
+  defaultState: T,
+  navigate: NavigateFunction,
+): [T, React.Dispatch<React.SetStateAction<T>>] {
   const initCurrentSearchParams = getRawQueryParams(window.location.search);
   const stateSearchParams = getQueryParamOrDefault<T>(
     paramName,
@@ -48,12 +50,7 @@ export function useStateFromSearchParamsForPrimitive<T extends
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
-  return [state, useMemo(() => useStateWithQueryParam, [
-    paramName,
-    defaultState,
-    setState,
-  ]),
-  ];
+  return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultState, setState])];
 }
 
 // TODO: Need to move this function else where as it is more than a utillitiy
@@ -124,8 +121,7 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
 function resolveState(
   newState: SetStateAction<DataTableFilterMeta>,
   currentState: DataTableFilterMeta,
-):
-  DataTableFilterMeta {
+): DataTableFilterMeta {
   if (typeof newState === 'function') {
     // If it's a function, call it with the current state
     return (newState as (prevState: DataTableFilterMeta) => DataTableFilterMeta)(currentState);
@@ -141,7 +137,7 @@ export function useStateFromSearchParamsForFilterObject(
   navigate: NavigateFunction,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
   const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
-  // This default initialisation only happens on the first render. 
+  // This default initialisation only happens on the first render.
   // Thus when the stateSearchParams changes, the state here will not be updated
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
 

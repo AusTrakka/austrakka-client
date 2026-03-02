@@ -1,34 +1,42 @@
-import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
+import { ScopeDefinitions } from '../constants/scopes';
 import type {
-  GroupedPrivilegesByRecordType, GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRoles,
+  GroupedPrivilegesByRecordType,
+  GroupedPrivilegesByRecordTypeWithScopes,
+  PrivilegeWithRoles,
   RecordRole,
 } from '../types/dtos';
-import { ScopeDefinitions } from '../constants/scopes';
+import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
 
 export const groupPendingChangesByType = (changes: PendingChange[]) =>
-  changes.reduce((acc, change) => {
-    const { type } = change;
-    const { recordType } = change;
+  changes.reduce(
+    (acc, change) => {
+      const { type } = change;
+      const { recordType } = change;
 
-    if (!acc[type]) acc[type] = {};
-    if (!acc[type][recordType]) acc[type][recordType] = [];
+      if (!acc[type]) acc[type] = {};
+      if (!acc[type][recordType]) acc[type][recordType] = [];
 
-    acc[type][recordType].push(change);
-    return acc;
-  }, {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>);
+      acc[type][recordType].push(change);
+      return acc;
+    },
+    {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>,
+  );
 
-export const checkFetchUserScope =
-  (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
-    scope =>
+export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) =>
+  scopes.some(
+    (scope) =>
       scope.recordType === 'Tenant' &&
-      scope.recordRoles.some(record =>
-        record.roles.some(role =>
-          role.scopes.includes(ScopeDefinitions.Everything) ||
-          role.scopes.includes(ScopeDefinitions.GetUserByGlobalId))),
+      scope.recordRoles.some((record) =>
+        record.roles.some(
+          (role) =>
+            role.scopes.includes(ScopeDefinitions.Everything) ||
+            role.scopes.includes(ScopeDefinitions.GetUserByGlobalId),
+        ),
+      ),
   );
 
 export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => {
-  // This may be a bit excessive, another option is that if the user can update a user the 
+  // This may be a bit excessive, another option is that if the user can update a user the
   // assumption is that they can edit the users privileges as well.
   // (This may not always be the case but its good enough for a visual conditional in my opinion)
   const requiredScopes = [
@@ -44,57 +52,73 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
   ];
 
   const hasAllScopes = (role: { scopes: string[] }) =>
-    requiredScopes.every(scope => role.scopes.includes(scope));
+    requiredScopes.every((scope) => role.scopes.includes(scope));
 
-  return scopes.some(scope =>
-    scope.recordType === 'Tenant' &&
-    scope.recordRoles.some(record =>
-      record.roles.some(role => role.scopes.includes(ScopeDefinitions.Everything)) ||
-      record.roles.some(hasAllScopes)));
+  return scopes.some(
+    (scope) =>
+      scope.recordType === 'Tenant' &&
+      scope.recordRoles.some(
+        (record) =>
+          record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||
+          record.roles.some(hasAllScopes),
+      ),
+  );
 };
 
 export const groupFailedChangesByType = (changes: [string | null, PendingChange][]) =>
-  changes.reduce((acc, [errorMessage, change]) => {
-    const { type } = change;
-    const { recordType } = change;
+  changes.reduce(
+    (acc, [errorMessage, change]) => {
+      const { type } = change;
+      const { recordType } = change;
 
-    // Initialize the nested structure if it doesn't exist
-    if (!acc[type]) acc[type] = {};
-    if (!acc[type][recordType]) acc[type][recordType] = [];
+      // Initialize the nested structure if it doesn't exist
+      if (!acc[type]) acc[type] = {};
+      if (!acc[type][recordType]) acc[type][recordType] = [];
 
-    // Push the tuple [errorMessage, change] into the appropriate group
-    acc[type][recordType].push([errorMessage ?? 'System Error', change]);
-    return acc;
-  }, {} as Record<'POST' | 'DELETE', Record<string, [string, PendingChange][]>>);
+      // Push the tuple [errorMessage, change] into the appropriate group
+      acc[type][recordType].push([errorMessage ?? 'System Error', change]);
+      return acc;
+    },
+    {} as Record<'POST' | 'DELETE', Record<string, [string, PendingChange][]>>,
+  );
 
 export const filterAssignedRoles = (
   recordType: string,
   assignedRoles: RoleAssignments[],
   editedPrivileges: GroupedPrivilegesByRecordType[] | null,
   pendingChanges: PendingChange[],
-): RoleAssignments[] => assignedRoles.map(assignedRole => {
-  const filteredRoles = assignedRole.roles.filter(role => {
-    const existsInEditedPrivileges = editedPrivileges?.some(priv =>
-      priv.recordType === recordType &&
-      priv.recordRoles.some(recordRole =>
-        recordRole.recordGlobalId === assignedRole.record.id &&
-        recordRole.roles.some(existingRole => existingRole.roleName === role.name)));
+): RoleAssignments[] =>
+  assignedRoles
+    .map((assignedRole) => {
+      const filteredRoles = assignedRole.roles.filter((role) => {
+        const existsInEditedPrivileges = editedPrivileges?.some(
+          (priv) =>
+            priv.recordType === recordType &&
+            priv.recordRoles.some(
+              (recordRole) =>
+                recordRole.recordGlobalId === assignedRole.record.id &&
+                recordRole.roles.some((existingRole) => existingRole.roleName === role.name),
+            ),
+        );
 
-    const existsInPendingChanges = pendingChanges.some(change =>
-      change.type === 'POST' &&
-      change.recordType === recordType &&
-      change.payload.recordGlobalId === assignedRole.record.id &&
-      change.payload.roleName === role.name);
+        const existsInPendingChanges = pendingChanges.some(
+          (change) =>
+            change.type === 'POST' &&
+            change.recordType === recordType &&
+            change.payload.recordGlobalId === assignedRole.record.id &&
+            change.payload.roleName === role.name,
+        );
 
-    // Keep roles that **do not** exist in editedPrivileges or pendingChanges
-    return !existsInEditedPrivileges && !existsInPendingChanges;
-  });
+        // Keep roles that **do not** exist in editedPrivileges or pendingChanges
+        return !existsInEditedPrivileges && !existsInPendingChanges;
+      });
 
-  return {
-    ...assignedRole,
-    roles: filteredRoles,
-  };
-}).filter(assignedRole => assignedRole.roles.length > 0); // Remove only records with no roles left
+      return {
+        ...assignedRole,
+        roles: filteredRoles,
+      };
+    })
+    .filter((assignedRole) => assignedRole.roles.length > 0); // Remove only records with no roles left
 
 export const updateEditedPrivileges = (
   prev: GroupedPrivilegesByRecordType[] | null,
@@ -102,12 +126,12 @@ export const updateEditedPrivileges = (
   filteredAssignedRoles: RoleAssignments[],
 ): GroupedPrivilegesByRecordType[] => {
   const safePrev = JSON.parse(JSON.stringify(prev ?? [])) as GroupedPrivilegesByRecordType[];
-  const existingPrivileges = new Map(safePrev.map(priv => [priv.recordType, priv]));
+  const existingPrivileges = new Map(safePrev.map((priv) => [priv.recordType, priv]));
 
-  const newRecordRoles: PrivilegeWithRoles[] = filteredAssignedRoles.map(assigned => ({
+  const newRecordRoles: PrivilegeWithRoles[] = filteredAssignedRoles.map((assigned) => ({
     recordName: assigned.record.abbrev,
     recordGlobalId: assigned.record.id,
-    roles: assigned.roles.map(role => ({
+    roles: assigned.roles.map((role) => ({
       roleName: role.name,
       privilegeLevel: role.privilegeLevel,
       privilegeGlobalId: undefined,
@@ -115,24 +139,25 @@ export const updateEditedPrivileges = (
   }));
 
   return existingPrivileges.has(recordType)
-    ? safePrev.map(priv => {
-      if (priv.recordType === recordType) {
-        const existingRolesByRecord = new Map(priv.recordRoles
-          .map(record => [record.recordName, record]));
+    ? safePrev.map((priv) => {
+        if (priv.recordType === recordType) {
+          const existingRolesByRecord = new Map(
+            priv.recordRoles.map((record) => [record.recordName, record]),
+          );
 
-        newRecordRoles.forEach(newRecord => {
-          const existing = existingRolesByRecord.get(newRecord.recordName);
-          if (existing) {
-            existing.roles = [...new Set([...existing.roles, ...newRecord.roles])];
-          } else {
-            priv.recordRoles.push(newRecord);
-          }
-        });
+          newRecordRoles.forEach((newRecord) => {
+            const existing = existingRolesByRecord.get(newRecord.recordName);
+            if (existing) {
+              existing.roles = [...new Set([...existing.roles, ...newRecord.roles])];
+            } else {
+              priv.recordRoles.push(newRecord);
+            }
+          });
 
+          return priv;
+        }
         return priv;
-      }
-      return priv;
-    })
+      })
     : [...safePrev, { recordType, recordRoles: newRecordRoles }];
 };
 
@@ -140,35 +165,36 @@ export const updatePendingChanges = (
   pendingChanges: PendingChange[],
   recordType: string,
   filteredAssignedRoles: RoleAssignments[],
-): PendingChange[] => filteredAssignedRoles.reduce((acc, assignedRole) => {
-  const changes = acc.slice();
+): PendingChange[] =>
+  filteredAssignedRoles.reduce((acc, assignedRole) => {
+    const changes = acc.slice();
 
-  assignedRole.roles.forEach(role => {
-    const deleteIndex = changes.findIndex(
-      change =>
-        change.type === 'DELETE' &&
-        change.payload.recordGlobalId === assignedRole.record.id &&
-        change.payload.roleName === role.name,
-    );
+    assignedRole.roles.forEach((role) => {
+      const deleteIndex = changes.findIndex(
+        (change) =>
+          change.type === 'DELETE' &&
+          change.payload.recordGlobalId === assignedRole.record.id &&
+          change.payload.roleName === role.name,
+      );
 
-    if (deleteIndex !== -1) {
-      changes.splice(deleteIndex, 1);
-    } else {
-      changes.push({
-        type: 'POST',
-        recordType,
-        payload: {
-          recordGlobalId: assignedRole.record.id,
-          roleGlobalId: role.globalId,
-          recordName: assignedRole.record.name,
-          roleName: role.name,
-        },
-      });
-    }
-  });
+      if (deleteIndex !== -1) {
+        changes.splice(deleteIndex, 1);
+      } else {
+        changes.push({
+          type: 'POST',
+          recordType,
+          payload: {
+            recordGlobalId: assignedRole.record.id,
+            roleGlobalId: role.globalId,
+            recordName: assignedRole.record.name,
+            roleName: role.name,
+          },
+        });
+      }
+    });
 
-  return changes;
-}, pendingChanges);
+    return changes;
+  }, pendingChanges);
 
 export const removeSelectionFromPrivileges = (
   prev: GroupedPrivilegesByRecordType[] | null,
@@ -191,7 +217,7 @@ export const removeSelectionFromPrivileges = (
         return records;
       }
 
-      const filteredRoles = record.roles.filter(r => r.roleName !== role.roleName);
+      const filteredRoles = record.roles.filter((r) => r.roleName !== role.roleName);
 
       if (filteredRoles.length > 0) {
         records.push({ ...record, roles: filteredRoles });
@@ -218,7 +244,7 @@ export const updatePendingChangesForRemoval = (
   // If a user adds a role and then removes it, the POST change will be in the pendingChanges
   // array and instead of adding a DELETE change, POST will be removed from the pendingChanges
   const postIndex = pendingChanges.findIndex(
-    change =>
+    (change) =>
       change.type === 'POST' &&
       change.payload.recordGlobalId === recordGlobalId &&
       change.payload.roleName === role.roleName,

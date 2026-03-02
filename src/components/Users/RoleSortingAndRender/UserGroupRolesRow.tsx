@@ -1,9 +1,8 @@
-
-import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel, Lock } from '@mui/icons-material';
+import { Box, Chip, Collapse, Stack, TableCell, TableRow, Typography } from '@mui/material';
+import { Theme } from '../../../assets/themes/theme';
 import type { GroupRole } from '../../../types/dtos';
 import { GroupHeadings } from '../Enums/GroupHeadings';
-import { Theme } from '../../../assets/themes/theme';
 
 interface UserGroupRolesRowProps {
   groupName: string;
@@ -16,13 +15,8 @@ interface UserGroupRolesRowProps {
 }
 
 function UserGroupRolesRow(props: UserGroupRolesRowProps) {
-  const { groupName,
-    roleNames,
-    isOpen,
-    editing,
-    userGroupRoles,
-    updateUserGroupRoles,
-    groupType } = props;
+  const { groupName, roleNames, isOpen, editing, userGroupRoles, updateUserGroupRoles, groupType } =
+    props;
 
   // locked now equals true if the type of group is personal orgs and its everything but
   // the owner group for the subset of groups in this type. which will be locked.
@@ -39,14 +33,12 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
   const locked = isItLocked();
 
   const handleRoleDelete = (roleName: string) => {
-    const updatedRoles = userGroupRoles.filter(
-      (groupRole) => {
-        if (groupRole.group.name === groupName) {
-          return roleName !== groupRole.role.name;
-        }
-        return true;
-      },
-    );
+    const updatedRoles = userGroupRoles.filter((groupRole) => {
+      if (groupRole.group.name === groupName) {
+        return roleName !== groupRole.role.name;
+      }
+      return true;
+    });
     updateUserGroupRoles(updatedRoles);
   };
 
@@ -57,35 +49,32 @@ function UserGroupRolesRow(props: UserGroupRolesRowProps) {
     return editing ? 'error' : 'primary';
   };
 
-  return (
-    isOpen ? (
-      <TableRow style={{ backgroundColor: Theme.PrimaryGrey }}>
-        <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
-          <Box sx={{ width: '100%' }}>
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
-                <Typography variant="body2" width="15em">
-                  {groupName}
-                </Typography>
-                {roleNames.map((roleName) => (
-                  <Chip
-                    key={`${groupName}-${roleName}`}
-                    label={roleName}
-                    color={handleColor()}
-                    variant={editing ? 'filled' : 'outlined'}
-                    onDelete={editing && !locked ? () => handleRoleDelete(roleName) : undefined}
-                    deleteIcon={<Cancel />}
-                    icon={editing && locked ? <Lock fontSize="small" /> : undefined}
-                  />
-                ))}
-              </Stack>
-            </Collapse>
-          </Box>
-        </TableCell>
-      </TableRow>
-    )
-      : null
-  );
+  return isOpen ? (
+    <TableRow style={{ backgroundColor: Theme.PrimaryGrey }}>
+      <TableCell style={{ padding: 0, margin: 0 }} colSpan={2} hidden={!isOpen}>
+        <Box sx={{ width: '100%' }}>
+          <Collapse in={isOpen} timeout="auto" unmountOnExit>
+            <Stack direction="row" spacing={2} padding={2} alignItems="center" marginLeft="3em">
+              <Typography variant="body2" width="15em">
+                {groupName}
+              </Typography>
+              {roleNames.map((roleName) => (
+                <Chip
+                  key={`${groupName}-${roleName}`}
+                  label={roleName}
+                  color={handleColor()}
+                  variant={editing ? 'filled' : 'outlined'}
+                  onDelete={editing && !locked ? () => handleRoleDelete(roleName) : undefined}
+                  deleteIcon={<Cancel />}
+                  icon={editing && locked ? <Lock fontSize="small" /> : undefined}
+                />
+              ))}
+            </Stack>
+          </Collapse>
+        </Box>
+      </TableCell>
+    </TableRow>
+  ) : null;
 }
 
 export default UserGroupRolesRow;

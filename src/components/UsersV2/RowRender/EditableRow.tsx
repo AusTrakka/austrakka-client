@@ -1,24 +1,22 @@
-import type React from 'react';
-import { type Dispatch, type SetStateAction, useState } from 'react'
+import { CancelOutlined, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import {
-  IconButton, InputAdornment,
+  IconButton,
+  InputAdornment,
   Switch,
   TableCell,
   TableRow,
   TextField,
-  Tooltip, Typography,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import {
-  CancelOutlined,
-  CheckCircleOutlined,
-  ContentCopy,
-} from '@mui/icons-material';
-import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
+import type React from 'react';
+import { type Dispatch, type SetStateAction, useState } from 'react';
 import type { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import './RowAndCell.css';
-import { bytesToMB } from '../../../utilities/renderUtils';
 import { Theme } from '../../../assets/themes/theme';
+import { bytesToMB } from '../../../utilities/renderUtils';
 
 interface EditableRowProps {
   field: keyof UserV2;
@@ -28,14 +26,8 @@ interface EditableRowProps {
   readableNames: Record<string, string>;
 }
 
-function EditableRow(props : EditableRowProps) {
-  const {
-    field,
-    detailValue,
-    editedValues,
-    setEditedValues,
-    readableNames,
-  } = props;
+function EditableRow(props: EditableRowProps) {
+  const { field, detailValue, editedValues, setEditedValues, readableNames } = props;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -44,18 +36,9 @@ function EditableRow(props : EditableRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
-  const nonEditableFields = [
-    'created',
-    'objectId',
-    'globalId',
-    'orgName',
-    'monthlyBytesUsed',
-  ];
-  
-  const immutableGuids = [
-    'objectId',
-    'globalId',
-  ];
+  const nonEditableFields = ['created', 'objectId', 'globalId', 'orgName', 'monthlyBytesUsed'];
+
+  const immutableGuids = ['objectId', 'globalId'];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
@@ -72,7 +55,7 @@ function EditableRow(props : EditableRowProps) {
     const mbValue = parseFloat(e.target.value) || 0;
     const bytes = Math.round(mbValue * 1024 * 1024);
 
-    setEditedValues(prevValues => {
+    setEditedValues((prevValues) => {
       if (!prevValues) return null;
       return { ...prevValues, [field]: bytes };
     });
@@ -103,10 +86,7 @@ function EditableRow(props : EditableRowProps) {
                     return (
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ marginRight: '8px' }}>{detailValue}</span>
-                        <Tooltip
-                          title={copied ? 'Copied!' : 'Copy to clipboard'}
-                          placement="top"
-                        >
+                        <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
                           <IconButton size="small" onClick={() => handleCopy(detailValue)}>
                             <ContentCopy style={{ fontSize: '1rem' }} />
                           </IconButton>
@@ -121,7 +101,7 @@ function EditableRow(props : EditableRowProps) {
           </TableRow>
         );
       }
-      
+
       return (
         <TableRow key={field}>
           <TableCell className="key-cell-editing">
@@ -147,16 +127,24 @@ function EditableRow(props : EditableRowProps) {
           <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
           <TableCell className="value-cell-editing">
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Switch checked={editedValues?.[field] as boolean || false} size="small" onChange={handleChangeBoolean} />
-              <Tooltip title={(editedValues?.[field] as boolean) ? 'Active' : 'Disabled'} arrow placement="top">
-                {(editedValues?.[field] as boolean || false) ? (
+              <Switch
+                checked={(editedValues?.[field] as boolean) || false}
+                size="small"
+                onChange={handleChangeBoolean}
+              />
+              <Tooltip
+                title={(editedValues?.[field] as boolean) ? 'Active' : 'Disabled'}
+                arrow
+                placement="top"
+              >
+                {(editedValues?.[field] as boolean) || false ? (
                   <CheckCircleOutlined
                     fontSize="small"
                     style={{ color: Theme.SecondaryLightGreen }}
                   />
-                )
-                  :
-                  <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />}
+                ) : (
+                  <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />
+                )}
               </Tooltip>
             </div>
           </TableCell>
@@ -171,7 +159,7 @@ function EditableRow(props : EditableRowProps) {
             </TableCell>
             <TableCell className="value-cell-editing">
               <TextField
-                value={editedValues?.[field] as string || ''}
+                value={(editedValues?.[field] as string) || ''}
                 onChange={handleChange}
                 variant="filled"
                 fullWidth
@@ -197,12 +185,14 @@ function EditableRow(props : EditableRowProps) {
               fullWidth
               size="small"
               hiddenLabel
-              sx={{ 'width': '100%',
-                'padding': '0',
-                'flexWrap': 'nowrap !important',
+              sx={{
+                width: '100%',
+                padding: '0',
+                flexWrap: 'nowrap !important',
                 '& .MuiFilledInput-root.Mui-focused': {
                   flexWrap: 'nowrap !important',
-                } }}
+                },
+              }}
               slotProps={{
                 input: {
                   style: {
@@ -212,10 +202,11 @@ function EditableRow(props : EditableRowProps) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   },
-                  endAdornment:
-  <InputAdornment position="end">
-    <Typography fontSize="0.9em">MB per month</Typography>
-  </InputAdornment>,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography fontSize="0.9em">MB per month</Typography>
+                    </InputAdornment>
+                  ),
                 },
               }}
             />

@@ -1,9 +1,9 @@
-import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useAppDispatch } from '../../app/store';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
 import { fetchProjectMetadata } from '../../app/projectMetadataSlice';
+import { useAppDispatch } from '../../app/store';
+import LoadingState from '../../constants/loadingState';
 import MapDetail from './MapDetail';
 
 function MapPage() {
@@ -13,9 +13,11 @@ function MapPage() {
   const { token, tokenLoading } = useApi();
 
   useEffect(() => {
-    if (projectAbbrev &&
-        tokenLoading !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
+    if (
+      projectAbbrev &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);

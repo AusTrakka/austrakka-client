@@ -13,8 +13,8 @@ export const seqTypeNames: Record<string, string> = {
 };
 
 export interface OrgDescriptor {
-  abbreviation: string,
-  name: string,
+  abbreviation: string;
+  name: string;
 }
 
 export enum SkipForce {
@@ -37,28 +37,28 @@ export enum SeqUploadRowState {
 }
 
 export interface SeqUploadRow {
-  id: string
-  seqId: string
-  seqType: SeqType
-  state: SeqUploadRowState
-  clientSessionId?: string | null
+  id: string;
+  seqId: string;
+  seqType: SeqType;
+  state: SeqUploadRowState;
+  clientSessionId?: string | null;
 }
 
 export interface SeqPairedUploadRow extends SeqUploadRow {
-  id: string
-  seqId: string
-  read1: DropFileUpload
-  read2: DropFileUpload
-  seqType: SeqType
-  state: SeqUploadRowState
-  clientSessionId?: string
+  id: string;
+  seqId: string;
+  read1: DropFileUpload;
+  read2: DropFileUpload;
+  seqType: SeqType;
+  state: SeqUploadRowState;
+  clientSessionId?: string;
 }
 
 export interface SeqSingleUploadRow extends SeqUploadRow {
-  id: string
-  seqId: string
-  file: DropFileUpload
-  seqType: SeqType
-  state: SeqUploadRowState
-  clientSessionId?: string
+  id: string;
+  seqId: string;
+  file: DropFileUpload;
+  seqType: SeqType;
+  state: SeqUploadRowState;
+  clientSessionId?: string;
 }

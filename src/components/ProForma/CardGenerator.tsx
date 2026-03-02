@@ -1,22 +1,22 @@
-import type React from 'react';
-import type { Dispatch, SetStateAction } from 'react';
+import { InfoOutlined, MoveToInbox } from '@mui/icons-material';
 import {
   Card,
-  CardContent,
-  Typography,
-  CardMedia,
-  Stack,
   CardActionArea,
-  IconButton,
-  Icon,
+  CardContent,
+  CardMedia,
   CircularProgress,
-  Tooltip,
   Grid, // need to import Grid2 for the future.
+  Icon,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { MoveToInbox, InfoOutlined } from '@mui/icons-material';
+import type React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { Theme } from '../../assets/themes/theme';
 import type { ProFormaVersion } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { Theme } from '../../assets/themes/theme';
 
 export enum CardType {
   CurrentWithFile = 0,
@@ -107,9 +107,7 @@ function GenerateCards(
     }
 
     if (loadingState === version.proFormaId) {
-      return (
-        <CircularProgress size={35} color="secondary" />
-      );
+      return <CircularProgress size={35} color="secondary" />;
     }
 
     if (styleConfig.showDownloadIcon) {
@@ -121,9 +119,7 @@ function GenerateCards(
             handleDownload(
               version.abbreviation,
               version.proFormaId,
-              !version.isCurrent ?
-                version.version :
-                undefined,
+              !version.isCurrent ? version.version : undefined,
             );
           }}
           sx={{ padding: 0, pointerEvents: 'auto' }}
@@ -146,7 +142,13 @@ function GenerateCards(
           onClick={(e) => e.stopPropagation()}
         >
           <InfoOutlined
-            sx={{ fontSize: '15px', padding: 0, marginLeft: '5px', color: 'white', pointerEvents: 'auto' }}
+            sx={{
+              fontSize: '15px',
+              padding: 0,
+              marginLeft: '5px',
+              color: 'white',
+              pointerEvents: 'auto',
+            }}
           />
         </Tooltip>
       );
@@ -181,7 +183,8 @@ function GenerateCards(
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        border: cardType === CardType.CurrentWithoutFile ? `1px dashed ${Theme.SecondaryTeal}` : 'none',
+        border:
+          cardType === CardType.CurrentWithoutFile ? `1px dashed ${Theme.SecondaryTeal}` : 'none',
       }}
     >
       <CardActionArea
@@ -204,7 +207,10 @@ function GenerateCards(
             flexDirection: 'column',
           }}
         >
-          <Typography variant="h5" padding={0.5}> Fields</Typography>
+          <Typography variant="h5" padding={0.5}>
+            {' '}
+            Fields
+          </Typography>
           <Grid
             container
             justifyContent="space-between"
@@ -216,15 +222,10 @@ function GenerateCards(
             }}
           >
             <Stack>
-              {version.columnMappings
-                .slice(0, 3)
-                .map((item) => (
-                  renderColumnFields(item)))}
+              {version.columnMappings.slice(0, 3).map((item) => renderColumnFields(item))}
             </Stack>
             <Stack minWidth="75px">
-              {version.columnMappings
-                .slice(3, 6)
-                .map((item) => renderColumnFields(item))}
+              {version.columnMappings.slice(3, 6).map((item) => renderColumnFields(item))}
             </Stack>
           </Grid>
           <Typography color={Theme.PrimaryGrey400} variant="button" padding={1}>
@@ -234,7 +235,14 @@ function GenerateCards(
       </CardActionArea>
       <CardContent style={{ borderTop: 1, borderColor: 'black', pointerEvents: 'none' }}>
         <Stack direction="row" justifyContent="space-between">
-          <Stack sx={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '200px' }}>
+          <Stack
+            sx={{
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              maxWidth: '200px',
+            }}
+          >
             <Typography
               title={version.assetId ? version.originalFileName : 'No File'}
               noWrap
@@ -264,13 +272,14 @@ function GenerateCards(
           </Stack>
           <Stack alignItems="flex-end" spacing={2} justifyContent="space-between">
             {renderIconButton(version)}
-            <div style={{
-              display: 'inline-flex',
-              verticalAlign: 'text-bottom',
-              boxSizing: 'inherit',
-              textAlign: 'center',
-              alignItems: 'center',
-            }}
+            <div
+              style={{
+                display: 'inline-flex',
+                verticalAlign: 'text-bottom',
+                boxSizing: 'inherit',
+                textAlign: 'center',
+                alignItems: 'center',
+              }}
             >
               <Typography
                 variant="caption"

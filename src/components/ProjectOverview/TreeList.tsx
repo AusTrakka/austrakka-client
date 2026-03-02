@@ -1,37 +1,46 @@
-import type React from 'react';
-import { memo, useEffect, useState } from 'react';
-import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData, type DataTableRowClickEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
+import { useApi } from '../../app/ApiContext';
+import { useStableNavigate } from '../../app/NavigationContext';
+import { ResponseType } from '../../constants/responseType';
 import type { Project, Tree } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { getTrees } from '../../utilities/resourceUtils';
-import { useApi } from '../../app/ApiContext';
-import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { useStableNavigate } from '../../app/NavigationContext';
 
 interface TreesProps {
-  projectDetails: Project | null
-  setIsLoading: (isLoading: boolean) => void
+  projectDetails: Project | null;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 function TreeList(props: TreesProps) {
   const { projectDetails, setIsLoading } = props;
-  
+
   const { navigate } = useStableNavigate();
   const columns = [
     { field: 'abbreviation', header: 'Abbreviation' },
     { field: 'name', header: 'Name' },
     { field: 'description', header: 'Description' },
-    { field: 'latestTreeLastUpdated', header: 'Updated', body: (rowData: any) => isoDateLocalDate(rowData.latestTreeLastUpdated) },
+    {
+      field: 'latestTreeLastUpdated',
+      header: 'Updated',
+      body: (rowData: any) => isoDateLocalDate(rowData.latestTreeLastUpdated),
+    },
   ];
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
   const [treeList, setTreeList] = useState<Tree[]>([]);
   const [treeListError, setTreeListError] = useState(false);
   const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
@@ -73,7 +82,9 @@ function TreeList(props: TreesProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <SearchInput
         value={(globalFilter.global as DataTableFilterMetaData).value || ''}
         onChange={onGlobalFilterChange}
@@ -83,49 +94,45 @@ function TreeList(props: TreesProps) {
 
   // if (isLoading) return null;
 
-  return (
-    treeListError ? (
-      <Alert severity="error">
-        {treeListErrorMessage}
-      </Alert>
-    ) : (
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
-        <DataTable
-          value={treeList}
-          selectionMode="single"
-          onRowClick={rowClickHandler}
-          showGridlines
-          resizableColumns
-          scrollable
-          filters={globalFilter}
-          header={header}
-          globalFilterFields={columns.map((col) => col.field)}
-          size="small"
-          scrollHeight="calc(100vh - 500px)"
-          sortField="latestTreeLastUpdated"
-          sortOrder={-1}
-          removableSort
-          reorderableColumns
-          columnResizeMode="expand"
-          className="my-flexible-table"
-          sortIcon={sortIcon}
-        >
-          {columns.map((col) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              sortable
-              resizeable
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName="value-cells"
-            />
-          ))}
-        </DataTable>
-      </Paper>
-    )
+  return treeListError ? (
+    <Alert severity="error">{treeListErrorMessage}</Alert>
+  ) : (
+    <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <DataTable
+        value={treeList}
+        selectionMode="single"
+        onRowClick={rowClickHandler}
+        showGridlines
+        resizableColumns
+        scrollable
+        filters={globalFilter}
+        header={header}
+        globalFilterFields={columns.map((col) => col.field)}
+        size="small"
+        scrollHeight="calc(100vh - 500px)"
+        sortField="latestTreeLastUpdated"
+        sortOrder={-1}
+        removableSort
+        reorderableColumns
+        columnResizeMode="expand"
+        className="my-flexible-table"
+        sortIcon={sortIcon}
+      >
+        {columns.map((col) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            body={col.body}
+            sortable
+            resizeable
+            headerClassName="custom-title"
+            className="flexible-column"
+            bodyClassName="value-cells"
+          />
+        ))}
+      </DataTable>
+    </Paper>
   );
 }
 export default memo(TreeList);

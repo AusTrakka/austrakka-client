@@ -1,6 +1,6 @@
 export function isNullOrEmpty(value: any) {
   // null, undefined, empty; but not false or 0
-  return (value == null || value === '');
+  return value == null || value === '';
 }
 
 // Function to aggregate counts of objects in an array, on a certain property
@@ -13,7 +13,7 @@ export function aggregateArrayObjects(
   property: string,
   array: Array<any>,
   nullPropertyName: string | null = null,
-) : CountRow[] {
+): CountRow[] {
   if (!array || !Array.isArray(array)) {
     return [];
   }
@@ -39,7 +39,7 @@ export function aggregateArrayObjects(
     const obj = { value: key, count: value };
     aggregatedCounts.push(obj);
   }
-  
+
   // If null or nullPropertyName values are present, sort them to the start of the list
   // Otherwise sort by count descending
   aggregatedCounts.sort((a, b) => {
@@ -58,7 +58,7 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
       { status: 'Missing', sampleCount: 0 },
     ];
   }
-  
+
   let presentCount = 0;
   array.forEach((item) => {
     if (item && typeof item === 'object' && property in item) {
@@ -69,7 +69,7 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
       }
     }
   });
-  
+
   return [
     { status: 'Present', sampleCount: presentCount },
     { status: 'Missing', sampleCount: array.length - presentCount },
@@ -85,7 +85,7 @@ export const minObj = (arr: any[]) => arr.reduce((a, b) => (a < b ? a : b));
 export function compareProperties(
   a: any,
   b: any,
-  transformFunctions: [((a: any) => any), number][],
+  transformFunctions: [(a: any) => any, number][],
 ): number {
   if (isNullOrEmpty(a) && isNullOrEmpty(b)) return 0;
   for (const [transform, sign] of transformFunctions) {

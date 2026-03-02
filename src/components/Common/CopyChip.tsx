@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { Box, Chip, Tooltip } from '@mui/material';
+import { useState } from 'react';
 
 export default function CopyChip({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
