@@ -1,9 +1,9 @@
 import { Box, Paper, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import EditButtonsV2 from '../EditButtonsV2';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
-import { GroupedPrivilegesByRecordType, RecordRole } from '../../../types/dtos';
-import { RoleAssignments } from '../../../types/userDetailEdit.interface';
+import type { GroupedPrivilegesByRecordType, RecordRole } from '../../../types/dtos';
+import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 
 interface UserPrivilegesProps {
   editingPrivileges: boolean;

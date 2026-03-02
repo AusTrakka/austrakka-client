@@ -1,7 +1,6 @@
-import React from 'react';
+
 import { ArrowDropDown, ArrowDropUp, Sort } from '@mui/icons-material';
 
-/* eslint-disable no-nested-ternary */
 const sortIcon = (options : any) => {
   const icon = (
     <div className="custom-icon-container">

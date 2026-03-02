@@ -1,23 +1,24 @@
-/* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
+/* -disable no-nested-ternary */
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { IconButton, Paper, Skeleton, Tooltip } from '@mui/material';
 import {
   DataTable,
-  DataTableSelectAllChangeEvent,
-  DataTableSelectionMultipleChangeEvent,
+  type DataTableSelectAllChangeEvent,
+  type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { TextRotateUp, TextRotateVertical, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { ProjectViewField } from '../../types/dtos';
+import type { ProjectViewField } from '../../types/dtos';
 import {
-  buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition,
+  buildPrimeReactColumnDefinitionsPVF, type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ExportTableData from '../Common/ExportTableData';
 import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { Sample } from '../../types/sample.interface';
+import type { Sample } from '../../types/sample.interface';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
@@ -143,7 +144,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
   useEffect(() => {
     setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
   }, [formattedData, selectedIds]);
-
+ 
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
@@ -151,7 +152,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
       setShowSelectedRowsOnly(false);
       setDisplayRows(tableMetadata);
     }
-  }, [selectedSamples, filteredData, showSelectedRowsOnly,
+  }, [selectedSamples, showSelectedRowsOnly,
     tableMetadata, metadataLoadingState]);
 
   const toggleShowSelectedRowsOnly = () => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import { Plot } from '../../types/dtos';
+import type { Plot } from '../../types/dtos';
 import { getPlotDetails } from '../../utilities/resourceUtils';
 import ClusterTimeline from './PlotTypes/ClusterTimeline';
 import EpiCurve from './PlotTypes/EpiCurve';
@@ -9,7 +9,7 @@ import BarChart from './PlotTypes/BarChart';
 import Custom from './PlotTypes/Custom';
 import HeatMap from './PlotTypes/HeatMap';
 import Histogram from './PlotTypes/Histogram';
-import PlotTypeProps from '../../types/plottypeprops.interface';
+import type PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';

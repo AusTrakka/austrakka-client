@@ -1,5 +1,5 @@
-import { Field } from '../../../src/types/dtos';
-import { Sample } from '../../../src/types/sample.interface';
+import type { Field } from '../../../src/types/dtos';
+import type { Sample } from '../../../src/types/sample.interface';
 import { calculateUniqueValues } from '../../../src/app/metadataSliceUtils';
 
 describe('calculateUniqueValues', () => {

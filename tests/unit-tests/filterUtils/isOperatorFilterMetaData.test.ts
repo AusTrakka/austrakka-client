@@ -1,4 +1,4 @@
-import { DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type { DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { isOperatorFilterMetaData } from '../../../src/utilities/filterUtils';
 
 describe('isOperatorFilterMetaData', () => {

@@ -1,10 +1,11 @@
-import React, { memo, useEffect, useState } from 'react';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
+import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Alert, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { Project, Tree } from '../../types/dtos';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { Project, Tree } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { getTrees } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';

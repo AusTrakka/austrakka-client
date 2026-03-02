@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Palette } from '@mui/icons-material';
 import { Tooltip, IconButton } from '@mui/material';
 import { Theme } from '../../assets/themes/theme';

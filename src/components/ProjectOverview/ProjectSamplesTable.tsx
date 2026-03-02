@@ -1,11 +1,12 @@
-/* eslint-disable react/jsx-pascal-case */
-import React, {
+import {
   memo,
   useEffect,
   useState,
 } from 'react';
-import { Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType } from '@mui/icons-material';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import {
+  Close, InfoOutlined, TextRotateUp, TextRotateVertical, Insights, Description, MergeType,
+} from '@mui/icons-material';
+import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import {
   IconButton, Dialog, Alert, AlertTitle, Paper, Tooltip, Typography, alpha,
@@ -15,10 +16,10 @@ import { Skeleton } from 'primereact/skeleton';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import { ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { buildPrimeReactColumnDefinitionsPVF, PrimeReactColumnDefinition } from '../../utilities/tableUtils';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { buildPrimeReactColumnDefinitionsPVF, type PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { Sample } from '../../types/sample.interface';
+import type { Sample } from '../../types/sample.interface';
 import { useAppSelector } from '../../app/store';
 import ExportTableData from '../Common/ExportTableData';
 import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
@@ -26,21 +27,21 @@ import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
 import sortIcon from '../TableComponents/SortIcon';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
-import { ProjectField } from '../../types/dtos';
+import type { ProjectField } from '../../types/dtos';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import { Theme } from '../../assets/themes/theme';
 
 interface SamplesProps {
-  projectAbbrev: string,
+  projectAbbrev: string;
 }
 
 interface BodyComponentProps {
-  col: Sample,
-  readyFields: Record<string, LoadingState> | undefined,
+  col: Sample;
+  readyFields: Record<string, LoadingState> | undefined;
 }
-  
+
 function BodyComponent(props: BodyComponentProps) {
   const { col, readyFields } = props;
   return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
@@ -54,7 +55,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   const {
     projectAbbrev,
   } = props;
-  
+
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -69,19 +70,16 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-  const [filteredDataLength, setFilteredDataLength] =
-    useState<number>(0);
+  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
 
-  const metadata: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const { maxHeight, getHeaderRef } =
-    useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
+  const metadata: ProjectMetadataState | null = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev));
+  const { maxHeight, getHeaderRef } = useMaxHeaderHeight(metadata?.loadingState ?? MetadataLoadingState.IDLE);
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    if (Object.values(metadata.fieldLoadingStates).every(field => field === LoadingState.SUCCESS)) {
+    if (Object.values(metadata.fieldLoadingStates).every((field) => field === LoadingState.SUCCESS)) {
       setAllFieldsLoaded(true);
     }
     setSampleTableColumns(columnBuilder);
@@ -90,12 +88,12 @@ function ProjectSamplesTable(props: SamplesProps) {
 
   // Open error dialog if loading state changes to error
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.ERROR ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR
+      || metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
-  
+
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const selectedRow = event.data as Sample;
     if (SAMPLE_ID_FIELD in selectedRow) {
@@ -105,18 +103,21 @@ function ProjectSamplesTable(props: SamplesProps) {
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata!);
+      setFilteredData(metadata?.metadata ?? []);
     }
   }, [metadata?.loadingState, metadata?.metadata]);
 
   const getFieldSource = (field: string) => {
-    const fieldObj = metadata?.fields?.find(f => f.columnName === field);
+    const fieldObj = metadata?.fields?.find((f) => f.columnName === field);
     // Field Object returned from the server ideally shouldn't include "Source From" string
     return `${fieldObj?.fieldSource.replace(/^Source From\s*/i, '')}`;
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div style={{
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%',
+    }}
+    >
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <HeaderColourToggle
           colourBySource={colourBySource}
@@ -158,7 +159,7 @@ function ProjectSamplesTable(props: SamplesProps) {
               ? []
               : filteredData ?? []
           }
-          headers={sampleTableColumns.filter(col => !col.hidden).map(col => col.header)}
+          headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
           disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
           fileNamePrefix={projectAbbrev}
         />
@@ -166,10 +167,10 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
-  const getColumnHeader = (column:any, index: number, vertical: boolean) => {
+  const getColumnHeader = (column: any, index: number, vertical: boolean) => {
     const source = getFieldSource(column.field).toLowerCase();
     const iconColour = Theme.PrimaryGrey500;
-    
+
     const icon = (() => {
       switch (source?.toLowerCase()) {
         case 'sample record':
@@ -216,7 +217,7 @@ function ProjectSamplesTable(props: SamplesProps) {
         headerColour = alpha(Theme.SecondaryMain, 0.3);
       }
     }
-    
+
     const headerStyle = vertical
       ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
       : { width: `${maxHeight}px`, backgroundColor: headerColour };
@@ -237,15 +238,15 @@ function ProjectSamplesTable(props: SamplesProps) {
           </IconButton>
           <AlertTitle sx={{ paddingBottom: 1 }}>
             <strong>
-              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-                'Project metadata could not be fully loaded' :
-                'Project metadata could not be loaded'}
+              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+                ? 'Project metadata could not be fully loaded'
+                : 'Project metadata could not be loaded'}
             </strong>
           </AlertTitle>
-          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ?
-            `An error occurred loading project metadata. Some fields will be null, and 
-          CSV export will not be available. Refresh to reload.` :
-            'An error occurred loading project metadata. Refresh to reload.'}
+          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+            ? `An error occurred loading project metadata. Some fields will be null, and 
+          CSV export will not be available. Refresh to reload.`
+            : 'An error occurred loading project metadata. Refresh to reload.'}
           <br />
           Please contact the
           {' '}
@@ -296,9 +297,9 @@ function ProjectSamplesTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-          filters={allFieldsLoaded ?
-            currentFilters :
-            defaultState}
+          filters={allFieldsLoaded
+            ? currentFilters
+            : defaultState}
           reorderableColumns
           resizableColumns
           sortIcon={sortIcon}

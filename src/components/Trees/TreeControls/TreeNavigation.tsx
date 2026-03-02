@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, type SelectChangeEvent } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TreeTypes, Phylocanvas } from '../PhylocanvasGL';
-import { PhylocanvasNode } from '../../../types/phylocanvas.interface';
-import { TreeExportFuctions } from '../Tree';
-import { TreeVersion } from '../../../types/dtos';
+import type { PhylocanvasNode } from '../../../types/phylocanvas.interface';
+import type { TreeExportFuctions } from '../Tree';
+import type { TreeVersion } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 
 interface State {
@@ -43,6 +43,7 @@ export default function TreeNavigation(
   // the root is implicitly the -1th element of the history
   const [historyIndex, setHistoryIndex] = React.useState<number>(-1);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: I want to nodes to be checked
   useEffect(() => {
     // Don't do anything if phylocanvasRef or phylocanvasRef.current.nodes is not yet set
     const phyloNodes = phylocanvasRef?.current?.nodes;

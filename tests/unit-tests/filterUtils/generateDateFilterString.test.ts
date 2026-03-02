@@ -1,4 +1,4 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 
 import { generateDateFilterString } from '../../../src/utilities/filterUtils';

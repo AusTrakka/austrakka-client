@@ -1,22 +1,21 @@
-/* eslint react/require-default-props: 0 */
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
-import { compile, TopLevelSpec } from 'vega-lite';
+import { compile, type TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { InlineData } from 'vega-lite/build/src/data';
 import { shallowEqual } from 'react-redux';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { useAppSelector } from '../../../app/store';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import LoadingState from '../../../constants/loadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
-import { Sample } from '../../../types/sample.interface';
+import type { Sample } from '../../../types/sample.interface';
 import { useStableNavigate } from '../../../app/NavigationContext';
 import { Theme } from '../../../assets/themes/theme';
 
@@ -178,6 +177,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     }
   }, [data, field, categoryFieldStable]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
@@ -201,7 +201,6 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
       createVegaViews();
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, timeFilterObject]);
 
   return (

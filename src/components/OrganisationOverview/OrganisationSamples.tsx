@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
-import { Error } from '@mui/icons-material';
+import { Error as ErrorIcon } from '@mui/icons-material';
 import LoadingState from '../../constants/loadingState';
-import { Group } from '../../types/dtos';
+import type { Group } from '../../types/dtos';
 import OrgSamplesTable from './OrgSamplesTable';
 
 interface OrganisationSampleProps {
@@ -29,7 +29,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
       {groupStatus === LoadingState.ERROR
         ? (
           <Tooltip title={groupStatusMessage}>
-            <Error color="error" />
+            <ErrorIcon color="error" />
           </Tooltip>
         )
         : null }

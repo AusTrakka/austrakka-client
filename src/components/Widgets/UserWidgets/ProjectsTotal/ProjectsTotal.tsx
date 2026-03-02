@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import LoadingState from '../../../../constants/loadingState';
 import DrilldownButton from '../../../Common/DrilldownButton';
 import { useApi } from '../../../../app/ApiContext';
 import { formatDateAsTwoIsoStrings } from '../../../../utilities/dateUtils';
-import { ResponseObject } from '../../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../../types/responseObject.interface';
 import { getUserDashboardProjects } from '../../../../utilities/resourceUtils';
 import { ResponseType } from '../../../../constants/responseType';
-import { ProjectSummary } from '../../../../types/dtos';
+import type { ProjectSummary } from '../../../../types/dtos';
 import { compareProperties, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import sortIcon from '../../../TableComponents/SortIcon';
 

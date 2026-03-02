@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { NavigateFunction } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -18,14 +18,14 @@ import {
 import { defaultContinuousColorScheme } from '../../constants/schemes';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import {
-  ProjectMetadataState,
+  type ProjectMetadataState,
   selectProjectMetadata, selectProjectMetadataError,
 } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import { MapKey } from './mapMeta';
+import type { MapKey } from './mapMeta';
 import MapChart from './MapChart';
-import { Sample } from '../../types/sample.interface';
-import { Field } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
+import type { Field } from '../../types/dtos';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
 
@@ -74,6 +74,7 @@ function MapDetail(props: MapDetailProps) {
   );
 
   // This use effect will set the state of the region toggle and also if it's disabled
+  // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
   useEffect(() => {
     if (data &&
         data.loadingState === MetadataLoadingState.DATA_LOADED) {
@@ -105,7 +106,7 @@ function MapDetail(props: MapDetailProps) {
       const geoFieldNames = data.fields
         .filter(field => field.geoField)
         .map(field => field.columnName) ?? [];
-      const firstGeoField = geoFieldNames[0];
+      const [firstGeoField] = geoFieldNames;
 
       // this should be setting an error as we shouldn't be here with no geo fields
       if (!firstGeoField) return;
@@ -116,8 +117,7 @@ function MapDetail(props: MapDetailProps) {
   }, [data, setSelectedField]);
 
   useEffect(() => {
-    if (data &&
-        data.fields &&
+    if (data?.fields &&
         data.loadingState === MetadataLoadingState.DATA_LOADED &&
         selectedField) {
       const selectedFieldObj = data.fields

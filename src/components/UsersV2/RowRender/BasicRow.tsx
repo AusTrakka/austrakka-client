@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import {
   Cancel,
   CheckCircleOutlined,
   ContentCopy,
 } from '@mui/icons-material';
-import { UserV2 } from '../../../types/dtos';
+import type { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';

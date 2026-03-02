@@ -1,8 +1,7 @@
-/* eslint-disable no-plusplus */
-import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { Field } from '../types/dtos';
+import type { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
+import type { Field } from '../types/dtos';
 import { createColourMapping } from './colourUtils';
-import { Sample } from '../types/sample.interface';
+import type { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { defaultDiscreteColorScheme } from '../constants/schemes';
 import { renderValue } from './renderUtils';

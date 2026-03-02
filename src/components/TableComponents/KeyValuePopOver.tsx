@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import type React from 'react';
+import { useState, useMemo } from 'react';
 import { IconButton, Popover, List, ListItem, Typography, Box, TextField, Tooltip } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 

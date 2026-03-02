@@ -1,4 +1,4 @@
-import { DropFileUpload } from './DropFileUpload';
+import type { DropFileUpload } from './DropFileUpload';
 
 export enum SeqType {
   FastqIllPe = 'fastq-ill-pe',

@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent, DataTableValue } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta, type DataTableRowClickEvent, type DataTableValue } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useAppSelector } from '../../../app/store';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import { type CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
 import LoadingState from '../../../constants/loadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { useStableNavigate } from '../../../app/NavigationContext';
 
 // TODO This widget is really now obsolete; we could use the Counts widget

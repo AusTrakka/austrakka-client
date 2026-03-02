@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useMsal } from '@azure/msal-react';
 import { MenuItem, ListItemText, ListItemIcon, Tooltip } from '@mui/material';
 import { Logout } from '@mui/icons-material';

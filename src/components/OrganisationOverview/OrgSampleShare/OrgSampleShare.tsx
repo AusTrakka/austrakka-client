@@ -1,17 +1,17 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   Alert,
   Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, Grid2, InputLabel, MenuItem, Select, Skeleton, Typography,
 } from '@mui/material';
-import { CheckCircle, Error, IosShare, Send } from '@mui/icons-material';
-import { Sample } from '../../../types/sample.interface';
-import { selectUserState, UserSliceState } from '../../../app/userSlice';
+import { CheckCircle, Error as ErrorIcon, IosShare, Send } from '@mui/icons-material';
+import type { Sample } from '../../../types/sample.interface';
+import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { getDisplayFields, getGroup, getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
 import { useApi } from '../../../app/ApiContext';
 import { ResponseType } from '../../../constants/responseType';
-import { ResponseObject } from '../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
 import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
 import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
@@ -68,7 +68,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
-    if (user && user.groupRoles) {
+    if (user?.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
       const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
@@ -150,7 +150,6 @@ function OrgSampleShare(props: OrgSampleShareProps) {
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while sharing samples. Please try again.');
-      // eslint-disable-next-line no-console
       console.error('Unexpected error sharing samples:', error);
     }
   };
@@ -185,7 +184,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
       >
         {status === LoadingState.ERROR &&
           renderShareStatus({
-            icon: <Error fontSize="large" color="error" />,
+            icon: <ErrorIcon fontSize="large" color="error" />,
             iconColor: 'error',
             title: 'Error sharing samples',
             message: statusMessage,

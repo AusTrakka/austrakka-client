@@ -1,7 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
+import type React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, InputAdornment, Switch, TableCell, TableRow, TextField, Typography } from '@mui/material';
-import { User } from '../../../types/dtos';
+import type { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 import { FieldLabelWithTooltip } from '../../UsersV2/RowRender/FieldLabelWithToolTip';
 import { bytesToMB } from '../../../utilities/renderUtils';
@@ -99,7 +99,7 @@ function EditableRow(props : EditableRowProps) {
                 disableClearable
                 getOptionLabel={(option) => option.name ?? option}
                 value={editedValues?.orgName || null}
-                onChange={(event, newValue) => {
+                onChange={(_event, newValue) => {
                   setOrgChanged(true);
                   setEditedValues((prevValues) => {
                     if (prevValues === null) return null;

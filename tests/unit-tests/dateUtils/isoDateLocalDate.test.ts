@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { TimeZone, register, unregister } from 'timezone-mock';
+import { type TimeZone, register, unregister } from 'timezone-mock';
 import { formatTestDateTime, parseTestDateTime } from '../../test-utils/dateTestUtils';
 import { isoDateLocalDate } from '../../../src/utilities/dateUtils';
 

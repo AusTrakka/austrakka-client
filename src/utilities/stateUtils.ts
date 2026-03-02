@@ -1,17 +1,17 @@
 // TODO: Need to move this function else where as it is more than a utility
-import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { NavigateFunction } from 'react-router-dom';
+import { type SetStateAction, useEffect, useMemo, useState } from 'react'
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import type { NavigateFunction } from 'react-router-dom';
 import getQueryParamOrDefault from './navigationUtils';
 import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
 import { isDataTableFiltersEqual } from './filterUtils';
 
 export function useStateFromSearchParamsForPrimitive<T extends
-string | number | boolean | null | Array<string | number | boolean | null>>(
-  paramName: string,
-  defaultState: T,
-  navigate: NavigateFunction,
-): [T, React.Dispatch<React.SetStateAction<T>>] {
+  string | number | boolean | null | Array<string | number | boolean | null>>(
+    paramName: string,
+    defaultState: T,
+    navigate: NavigateFunction,
+  ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const initCurrentSearchParams = getRawQueryParams(window.location.search);
   const stateSearchParams = getQueryParamOrDefault<T>(
     paramName,
@@ -20,17 +20,17 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
   );
   const [state, setState] = useState<T>(stateSearchParams);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateSearchParams]);
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setState(newState);
 
     const currentSearchParams = getRawQueryParams(window.location.search);
-    
+
     // Delete existing key
     if (paramName in currentSearchParams) {
       delete currentSearchParams[paramName];
@@ -47,7 +47,7 @@ string | number | boolean | null | Array<string | number | boolean | null>>(
 
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   return [state, useMemo(() => useStateWithQueryParam, [
     paramName,
     defaultState,
@@ -75,12 +75,13 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
   });
   const [stateObject, setStateObject] = useState<T>(state);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     // Stringify and compare to avoid reference inequality in objects
     if (JSON.stringify(state) !== JSON.stringify(stateObject)) {
       setStateObject(state);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   }, [state]);
 
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
@@ -116,7 +117,7 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
 
     navigate(`${window.location.pathname}?${queryString}`, { replace: true });
   };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
 }
 
@@ -145,12 +146,12 @@ export function useStateFromSearchParamsForFilterObject(
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
 
   // This is why we need to use useEffect
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     // Stringify and compare to avoid reference inequality in objects
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateSearchParams]);
 
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
@@ -184,6 +185,6 @@ export function useStateFromSearchParamsForFilterObject(
   };
 
   // the function we return here acts like a setter and should not be updated on every render
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
 }

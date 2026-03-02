@@ -1,15 +1,15 @@
-import React from 'react';
+
 import { Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { useAppSelector } from '../../../app/store';
 import DrilldownButton from '../../Common/DrilldownButton';
 import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
 import { maxObj } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { useStableNavigate } from '../../../app/NavigationContext';
 
 function SampleSummary(props: ProjectWidgetProps) {

@@ -1,6 +1,6 @@
 import { TableChart, TextSnippet } from '@mui/icons-material';
 import { Box, Card, CardActionArea, CardContent, Grid, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const uploadPages = [

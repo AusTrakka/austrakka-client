@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Alert, Button, Card, CardContent, CardMedia, CircularProgress, Grid, Snackbar, Tooltip, Typography } from '@mui/material';
-import { Email, Error } from '@mui/icons-material';
-import { Member } from '../../types/dtos';
+import { Email, Error as ErrorIcon } from '@mui/icons-material';
+import type { Member } from '../../types/dtos';
 
 interface OrgMembersProps {
   isMembersLoading: boolean,
@@ -99,7 +99,7 @@ function OrgMembers(props: OrgMembersProps) {
       {isMembersLoading ? <CircularProgress /> : null}
       {memberListError ? (
         <Tooltip title={memberListErrorMessage}>
-          <Error color="error" />
+          <ErrorIcon color="error" />
         </Tooltip>
       ) : (
         <Grid container spacing={2}>

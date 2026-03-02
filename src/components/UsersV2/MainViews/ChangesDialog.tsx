@@ -1,4 +1,4 @@
-import React from 'react';
+
 import {
   Box, Button,
   Dialog, DialogActions,
@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { CheckCircle, RemoveCircle, Save } from '@mui/icons-material';
-import { PendingChange } from '../../../types/userDetailEdit.interface';
+import type { PendingChange } from '../../../types/userDetailEdit.interface';
 import { groupPendingChangesByType } from '../../../utilities/privilegeUtils';
 
 interface ChangesDialogProps {

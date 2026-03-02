@@ -1,7 +1,6 @@
-import React from 'react';
 import { Card, CardContent, CircularProgress, Grid, Tooltip, Typography } from '@mui/material';
-import { Error } from '@mui/icons-material';
-import { Member } from '../../types/dtos';
+import { Error as ErrorIcon } from '@mui/icons-material';
+import type { Member } from '../../types/dtos';
 import { useStableNavigate } from '../../app/NavigationContext';
 
 interface OrgMembersProps {
@@ -56,7 +55,7 @@ function OrgMembers(props: OrgMembersProps) {
       {isMembersLoading ? <CircularProgress /> : null}
       {memberListError ? (
         <Tooltip title={memberListErrorMessage}>
-          <Error color="error" />
+          <ErrorIcon color="error" />
         </Tooltip>
       ) : (
         <Grid container spacing={2}>

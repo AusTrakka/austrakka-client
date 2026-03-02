@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import {
   Card, CardContent, Alert, Tooltip, Box,
 } from '@mui/material';

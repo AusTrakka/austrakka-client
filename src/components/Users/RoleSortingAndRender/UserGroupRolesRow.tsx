@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { Chip, TableRow, TableCell, Box, Collapse, Stack, Typography } from '@mui/material';
 import { Cancel, Lock } from '@mui/icons-material';
-import { GroupRole } from '../../../types/dtos';
+import type { GroupRole } from '../../../types/dtos';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 import { Theme } from '../../../assets/themes/theme';
 

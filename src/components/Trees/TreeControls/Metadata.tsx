@@ -1,10 +1,10 @@
-import React from 'react';
+import type React from 'react';
 import { useTheme } from '@mui/material/styles';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import InputSlider from './Slider';
 import getStyles, { MenuProps } from './utils';

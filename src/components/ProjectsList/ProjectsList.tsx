@@ -1,28 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Paper,
-  SelectChangeEvent,
+  type SelectChangeEvent,
   Stack,
   Typography,
 } from '@mui/material';
 import { DataTable,
-  DataTableFilterMeta,
-  DataTableFilterMetaData,
-  DataTableRowClickEvent } from 'primereact/datatable';
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { getProjectList } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import sortIcon from '../TableComponents/SortIcon';
 import SearchInput from '../TableComponents/SearchInput';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
-import { Project } from '../../types/dtos';
+import type { Project } from '../../types/dtos';
 
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },

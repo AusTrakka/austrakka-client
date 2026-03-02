@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState } from 'react';
 import {
   NavLink, useLocation, Link, Outlet, useNavigate,
@@ -343,7 +342,7 @@ function MainMenuLayout() {
             </Breadcrumbs>
           </div>
         </div>
-        {pathnames.map((value, index) => {
+        {pathnames.map((_value, index) => {
           const last: boolean = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 

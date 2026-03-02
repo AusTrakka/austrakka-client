@@ -3,7 +3,7 @@
 // i.e. loading indicators when patch requests are in progress
 import { Cancel, Edit, Save } from '@mui/icons-material';
 import { CircularProgress, IconButton, Tooltip } from '@mui/material';
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
 interface EditButtonsProps {
   editing: boolean;

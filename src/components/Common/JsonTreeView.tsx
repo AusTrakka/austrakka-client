@@ -39,7 +39,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
 
           // Don't expand if singular key-value pair
           if (visibleKeys.length === 1) {
-            const key = visibleKeys[0];
+            const [key] = visibleKeys;
             const value = item[key];
             return [key, value];
           }
@@ -47,7 +47,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
           // Expand multiple key-value pairs and use first key as label
           // This may not be the most effective way to label as
           // the first key may always be the most informative
-          const firstKey = visibleKeys[0];
+          const [firstKey] = visibleKeys;
           return [firstKey, item];
         });
     }
@@ -60,7 +60,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
 
     return [];
   };
-  
+
   // Render primitive values
   if (!isObject(data) && !Array.isArray(data)) {
     if (shouldHideNullValue(data)) return null;

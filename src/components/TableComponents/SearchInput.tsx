@@ -1,5 +1,5 @@
 import React, { memo, useRef } from 'react';
-import { Box, IconButton, IconButtonProps, styled, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, type IconButtonProps, styled, TextField, Tooltip } from '@mui/material';
 import { ManageSearch } from '@mui/icons-material';
 
 interface SearchInputProps {

@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import type { GeoJSON } from 'geojson';
 import * as echarts from 'echarts';
-import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Alert, Box, Chip, Stack, Typography } from '@mui/material';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
-import { Sample } from '../../types/sample.interface';
-import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
+import type { Sample } from '../../types/sample.interface';
+import { type FeatureLookupFieldType, type GeoCountRow, type MapKey, Maps } from './mapMeta';
 import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
-import { Field } from '../../types/dtos';
+import type { Field } from '../../types/dtos';
 import { Theme } from '../../assets/themes/theme';
 
 interface MapTestProps {
@@ -39,7 +39,7 @@ function MapChart(props: MapTestProps) {
     return {
       ...mapJson,
       features: mapJson.features.filter(
-        f => regionView || !f.properties.is_region,
+        f => regionView || !f.properties?.is_region,
       ),
     };
   }, [mapSpec, regionView]);
@@ -56,8 +56,9 @@ function MapChart(props: MapTestProps) {
       }
     };
   }, []);
-
-  useEffect(() => {
+  
+    // biome-ignore lint/correctness/useExhaustiveDependencies: explained below
+    useEffect(() => {
     if (!chartRef.current) return undefined;
 
     // Resize handler for window events
@@ -181,7 +182,7 @@ function MapChart(props: MapTestProps) {
       setAggregateData(counts);
       setMissingData(missing);
       setShowAlert(true);
-    } catch (err) {
+    } catch (_err) {
       setMapRenderingError(true);
     }
   }, [data, geoField, filteredMapSpec, isoType]);
@@ -196,18 +197,18 @@ function MapChart(props: MapTestProps) {
         echarts.registerMap('currentMap', {
           type: 'FeatureCollection',
           features: [],
-        } as GeoJSONSourceInput);
+        });
       }
-    } catch (error) {
+    } catch (_error) {
       setMapRenderingError(true);
     }
 
     // Register new map with validation
     try {
       if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
-        echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
+        echarts.registerMap('currentMap', filteredMapSpec as any);
       }
-    } catch (error) {
+    } catch (_error) {
       setMapRenderingError(true);
     }
   }, [filteredMapSpec]);

@@ -1,9 +1,8 @@
-/* eslint-disable no-param-reassign */
-import { createAsyncThunk, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
-import { MetaDataColumn } from '../types/dtos';
-import { Sample } from '../types/sample.interface';
+import type { MetaDataColumn } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 import { listenerMiddleware } from './listenerMiddleware';

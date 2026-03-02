@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
-import { MinifiedRecord } from '../../../types/userDetailEdit.interface';
+import type { MinifiedRecord } from '../../../types/userDetailEdit.interface';
 
 interface RecordAutocompleteProps {
   records: MinifiedRecord[];
@@ -25,7 +24,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
       disableCloseOnSelect
       isOptionEqualToValue={(option, value) => option.id === value.id}
       getOptionLabel={(option) => option.abbrev}
-      onChange={(e, v) => setSelectedRecords(v)}
+      onChange={(_e, v) => setSelectedRecords(v)}
       renderOption={(_props, option, { selected }) => (
         <li {..._props} style={{ fontSize: '0.9em' }} key={option.id}>
           <Checkbox

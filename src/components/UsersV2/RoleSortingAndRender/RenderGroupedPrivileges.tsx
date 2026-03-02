@@ -1,7 +1,6 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import UserRecordRolesRow from './UserRecordRolesRow';
-import {
+import type {
   GroupedPrivilegesByRecordType,
   PrivilegeWithRoles,
   RecordRole,
@@ -11,9 +10,9 @@ import GroupHeaderRowV2 from './GroupHeaderRowV2';
 import { useApi } from '../../../app/ApiContext';
 import { getRoles } from '../../../utilities/resourceUtils';
 import { ResponseType } from '../../../constants/responseType';
-import { ResponseObject } from '../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import LoadingState from '../../../constants/loadingState';
-import { RoleAssignments } from '../../../types/userDetailEdit.interface';
+import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupedPrivileges: GroupedPrivilegesByRecordType[];

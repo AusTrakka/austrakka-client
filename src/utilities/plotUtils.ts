@@ -1,12 +1,11 @@
 // Pure functions used in plot pages
 
 /* Disabling to make e.g. newSpec['encoding'][field]['field'] clearer */
-/* eslint-disable @typescript-eslint/dot-notation */
 
-import { TopLevelSpec } from 'vega-lite';
+import type { TopLevelSpec } from 'vega-lite';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import { createColourMapping } from './colourUtils';
-import { ProjectViewField } from '../types/dtos';
+import type { ProjectViewField } from '../types/dtos';
 import { defaultDiscreteColorScheme, defaultContinuousColorScheme } from '../constants/schemes';
 import { maxObj, minObj } from './dataProcessingUtils';
 
@@ -52,8 +51,8 @@ export const setFieldInSpec
   // Note we do not change other properties of specified field, e.g. type
   const newSpec: any = { ...oldSpec };
   newSpec.encoding = { ...(oldSpec as any).encoding };
-  newSpec['encoding'][field] = { ...(oldSpec as any)['encoding'][field] };
-  newSpec['encoding'][field]['field'] = value;
+  newSpec.encoding[field] = { ...(oldSpec as any).encoding[field] };
+  newSpec.encoding[field].field = value;
   return newSpec as TopLevelSpec;
 };
 
@@ -135,7 +134,6 @@ export const setRowInSpecToValue =
       const newSpec: any = { ...oldSpec };
       if (rowField === 'none') {
         // Remove row from encoding
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { row, ...newEncoding } = (oldSpec as any).encoding;
         newSpec.encoding = newEncoding;
       } else {

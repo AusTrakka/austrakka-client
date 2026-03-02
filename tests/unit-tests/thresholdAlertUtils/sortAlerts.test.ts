@@ -1,4 +1,4 @@
-import { sortAlerts, ThresholdAlert } from '../../../src/utilities/thresholdAlertUtils';
+import { sortAlerts, type ThresholdAlert } from '../../../src/utilities/thresholdAlertUtils';
 import { AlertLevels } from '../../../src/constants/thresholdAlertConstants';
 
 describe('sortAlerts', () => {

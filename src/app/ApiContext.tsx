@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
 import LoadingState from '../constants/loadingState';
@@ -35,7 +35,7 @@ export default function ApiProvider({ children } : any) {
           if (error instanceof InteractionRequiredAuthError) {
             instance.acquireTokenRedirect(accessTokenRequest);
           }
-          // eslint-disable-next-line no-console
+          // -disable-next-line no-console
           console.log(error);
           setAuthToken(null);
           setAuthTokenLoading(LoadingState.ERROR);

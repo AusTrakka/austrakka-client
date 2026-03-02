@@ -1,5 +1,5 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { NavigateFunction } from 'react-router-dom';
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import type { NavigateFunction } from 'react-router-dom';
 import { encodeFilterObj } from './urlUtils';
 import { ORG_TABS } from '../components/OrganisationOverview/orgTabConstants';
 import { PROJ_TABS } from '../components/ProjectOverview/projTabConstants';

@@ -1,13 +1,14 @@
 import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-import { MetaDataColumn, Group, Field } from '../../types/dtos';
-import { Sample } from '../../types/sample.interface';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { MetaDataColumn, Group, Field } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
 import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { ResponseType } from '../../constants/responseType';
 import { renderValue } from '../../utilities/renderUtils';
 import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
@@ -31,7 +32,7 @@ function SampleDetail() {
   const [errToast, setErrToast] = useState<boolean>(false);
   const { token, tokenLoading } = useApi();
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       setErrToast(false);
       return;
@@ -47,7 +48,6 @@ function SampleDetail() {
           const groupsData = sampleResponse.data as Group[];
           const ownerAbbrev = groupsData.find(g => g.name.endsWith('-Everyone'))?.organisation.abbreviation;
           if (ownerAbbrev === undefined) {
-            // eslint-disable-next-line no-console
             console.error('Organisation Everyone group cannot be found for the current user');
           }
           const sortedGroups = groupsData.sort((groupA, groupB) => {
@@ -67,7 +67,6 @@ function SampleDetail() {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error updating project:', error);
       }
     };
@@ -75,8 +74,9 @@ function SampleDetail() {
     tokenLoading !== LoadingState.IDLE) {
       updateProject();
     }
-  }, [token, seqId, groupName, selectedGroup, tokenLoading]);
+  }, [token, seqId, groupName, tokenLoading]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (groups) {
       // Check if selectedGroup is already set, otherwise set it
@@ -93,7 +93,6 @@ function SampleDetail() {
         setGroupName(selectedGroup.name);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupName, groups, selectedGroup]);
 
   useEffect(() => {
@@ -108,7 +107,6 @@ function SampleDetail() {
           }
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error updating display fields:', error);
       }
     };
@@ -196,7 +194,6 @@ function SampleDetail() {
                 setSelectedGroup(selected);
                 setGroupName(selected.name);
               } else {
-                // eslint-disable-next-line no-console
                 console.error(`Group with name ${selectedGroupName} not found.`);
               }
             }}

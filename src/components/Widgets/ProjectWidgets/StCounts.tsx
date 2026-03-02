@@ -1,23 +1,23 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 
 import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
-import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
+import { type TopLevelSpec, compile } from 'vega-lite';
+import { DataTable, type DataTableFilterMeta, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import { type CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { legendSpec } from '../../../utilities/plotUtils';
 
 // May want to parametrise field to make widget more flexible
@@ -51,7 +51,8 @@ function STChart(props: any) {
       },
     },
   };
-  
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaView = async () => {
       if (vegaView) {
@@ -71,7 +72,6 @@ function STChart(props: any) {
     if (stData && plotDiv?.current) {
       createVegaView();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stData, plotDiv]);
 
   return (
@@ -107,6 +107,7 @@ export default function StCounts(props: ProjectWidgetProps) {
     }
   }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(stFieldName)) {
       setErrorMessage(`Field ${stFieldName} not found in project`);
@@ -115,7 +116,6 @@ export default function StCounts(props: ProjectWidgetProps) {
     } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${stFieldName} values`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.fields, data?.loadingState]);
   
   const rowClickHandler = (row: DataTableRowClickEvent) => {

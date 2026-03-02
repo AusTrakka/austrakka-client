@@ -1,11 +1,11 @@
-import { UserRoleRecordPrivilegePost } from '../../types/dtos';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { UserRoleRecordPrivilegePost } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import {
   deleteOrgPrivilege, deleteTenantPrivilege,
   postOrgPrivilege,
   postTenantPrivilege,
 } from '../../utilities/resourceUtils';
-import { PendingChange } from '../../types/userDetailEdit.interface';
+import type { PendingChange } from '../../types/userDetailEdit.interface';
 import { ResponseType } from '../../constants/responseType';
 
 const postApiMap: Record<string,
@@ -64,12 +64,12 @@ export async function processPrivilegeChanges(
         }
       } else {
         const errorMessage = `Unsupported change type: ${change.type} for record type: ${change.recordType}`;
-        console.error(errorMessage); // eslint-disable-line no-console
+        console.error(errorMessage); 
         failedChanges.push([errorMessage, change]);
       }
     } catch (error) {
       const errorMessage = `Failed to process ${change.recordType} privilege for ${change.payload.recordName}: ${error}`;
-      console.error(errorMessage); // eslint-disable-line no-console
+      console.error(errorMessage); 
       failedChanges.push([errorMessage, change]);
     }
   };

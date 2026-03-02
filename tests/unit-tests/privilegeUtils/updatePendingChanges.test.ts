@@ -1,5 +1,5 @@
 import { updatePendingChanges } from '../../../src/utilities/privilegeUtils';
-import { PendingChange, RoleAssignments } from '../../../src/types/userDetailEdit.interface';
+import type { PendingChange, RoleAssignments } from '../../../src/types/userDetailEdit.interface';
 
 describe('updatePendingChanges', () => {
   const mockRecordType = 'User';

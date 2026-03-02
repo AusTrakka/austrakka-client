@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import {
   TableRow,
   TableCell,
@@ -16,8 +15,8 @@ import {
   KeyboardArrowRight,
   CheckBoxOutlineBlank, CheckBox,
 } from '@mui/icons-material';
-import { Group, GroupRole, Role, User } from '../../../types/dtos';
-import { RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
+import type { Group, GroupRole, Role, User } from '../../../types/dtos';
+import { type RoleName, orgRoles, projectRoles } from '../../../permissions/roles';
 import { sortGroups } from '../groupSorting';
 
 interface GroupHeaderRowProps {
@@ -51,7 +50,8 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
 
   const [selectedGroups, setSelectedGroups] = useState<Group[] | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
-
+  
+  // biome-ignore lint/correctness/useExhaustiveDependencies: state setters are stable
   useEffect(() => {
     setSelectedGroups(null);
     setSelectedRoles(null);
@@ -159,7 +159,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 value={selectedGroups || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedGroups(v)}
+                onChange={(_e, v) => setSelectedGroups(v)}
                 renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
                     <Checkbox
@@ -198,7 +198,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
                 value={selectedRoles || []}
                 disableCloseOnSelect
                 getOptionLabel={(option) => option.name}
-                onChange={(e, v) => setSelectedRoles(v)}
+                onChange={(_e, v) => setSelectedRoles(v)}
                 renderOption={(_props, option, { selected }) => (
                   <li {..._props} style={{ fontSize: '0.9em' }}>
                     <Checkbox

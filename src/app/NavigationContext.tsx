@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useRef, useEffect, ReactNode } from 'react';
-import { useNavigate, NavigateFunction } from 'react-router-dom';
+import { createContext, useContext, useRef, useEffect, type ReactNode } from 'react';
+import { useNavigate, type NavigateFunction } from 'react-router-dom';
 
 interface NavigationContextType {
   navigate: NavigateFunction;

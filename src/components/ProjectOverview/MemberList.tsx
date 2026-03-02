@@ -1,15 +1,15 @@
-/* eslint-disable react/jsx-pascal-case */
-import React, { memo, useEffect, useRef, useState, JSX } from 'react';
+import type React from 'react';
+import { memo, useEffect, useRef, useState, type JSX } from 'react'
 import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
 import { Close, FileDownload } from '@mui/icons-material';
 import { CSVLink } from 'react-csv';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData, type DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
 import LoadingState from '../../constants/loadingState';
-import { Member, Project } from '../../types/dtos';
+import type { Member, Project } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupMembers } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import SearchInput from '../TableComponents/SearchInput';
@@ -59,7 +59,6 @@ function MemberList(props: MemberListProps) {
 
   useEffect(() => {
     async function getMemberList() {
-      // eslint-disable-next-line max-len
       const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
       if (memberListResponse.status === ResponseType.Success) {
         setMemberList(memberListResponse.data as Member[]);
@@ -85,7 +84,7 @@ function MemberList(props: MemberListProps) {
       try {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
-      } catch (error) {
+      } catch (_error) {
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
@@ -96,14 +95,12 @@ function MemberList(props: MemberListProps) {
       setExportCSVStatus(LoadingState.LOADING);
       const td = memberList.map((member) => ({
         roles: member.roles,
-        // eslint-disable-next-line max-len
         organization: member.organization?.abbreviation, // Assuming organization is an object with a 'name' property
         displayName: member.displayName,
       }));
       setTransformedData(td);
       setExportCSVStatus(LoadingState.SUCCESS);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error exporting data:', error);
       setExportCSVStatus(LoadingState.ERROR);
     }
@@ -117,7 +114,6 @@ function MemberList(props: MemberListProps) {
       const url = `/users/${objectId}`;
       navigate(url);
     } else {
-      // eslint-disable-next-line no-console
       console.error('Object Id not found in selectedRow.');
     }
   };

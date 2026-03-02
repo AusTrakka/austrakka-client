@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Alert,
-  AlertColor,
+  type AlertColor,
   Paper,
   Snackbar,
   Stack,
@@ -18,18 +19,18 @@ import {
 } from '../../../utilities/resourceUtils';
 import { useAppSelector } from '../../../app/store';
 import { useApi } from '../../../app/ApiContext';
-import {
+import type {
   GroupedPrivilegesByRecordType, RecordRole,
   UserPatchV2,
   UserV2,
 } from '../../../types/dtos';
 import { selectUserState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
-import { ResponseObject } from '../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../RowRender/RowAndCell.css';
-import { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import type { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
 import UserProperties from './UserProperties';
@@ -98,7 +99,7 @@ function UserV2DetailOverview() {
     'lastDownloadDate',
   ];
 
-  if (user && user.noDownloadQuota) {
+  if (user?.noDownloadQuota) {
     nonDisplayFields.push('monthlyBytesQuota');
   }
 
@@ -137,7 +138,7 @@ function UserV2DetailOverview() {
     setEditingPrivileges(false);
   };
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -145,7 +146,7 @@ function UserV2DetailOverview() {
     setOpenSnackbar(false);
   };
 
-  const handleDupClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleDupClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -154,7 +155,7 @@ function UserV2DetailOverview() {
   };
 
   const handleSuccessPrivAssignmentSnackbarClose = (
-    event: React.SyntheticEvent | Event,
+    _event: React.SyntheticEvent | Event,
     reason?: string,
   ) => {
     if (reason === 'clickaway') {
@@ -232,7 +233,6 @@ function UserV2DetailOverview() {
   };
 
   const editUserDetails = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
 
     // Creating editedValuesDtoFormat object

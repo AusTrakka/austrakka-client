@@ -1,9 +1,9 @@
-import React from 'react';
+import type React from 'react';
 import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
 import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlertsDashboard';
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
-import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
+import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
 import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
-// ^ rule is broken for some typescript-specific syntax features
 import {
   callDELETE,
   buildUploadHeaders,
@@ -12,7 +10,7 @@ import {
   callSimpleGET,
   downloadFile,
 } from './api';
-import {
+import type {
   Feedback,
   FeedbackPost,
   DerivedLog,
@@ -26,7 +24,7 @@ import {
   UserPatchV2,
   UserRoleRecordPrivilegePost, Group,
 } from '../types/dtos';
-import { ResponseObject } from '../types/responseObject.interface';
+import type { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 

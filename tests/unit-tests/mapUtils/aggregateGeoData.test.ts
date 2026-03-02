@@ -1,4 +1,4 @@
-import { FeatureLookupField, FeatureLookupFieldType, MapJson } from '../../../src/components/Maps/mapMeta';
+import { FeatureLookupField, type FeatureLookupFieldType, type MapJson } from '../../../src/components/Maps/mapMeta';
 import { aggregateGeoData } from '../../../src/utilities/mapUtils';
 
 describe('aggregateGeoData', () => {

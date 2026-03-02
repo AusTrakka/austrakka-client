@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-one-expression-per-line */
-import React from 'react';
+
 
 export default function UploadSequencesHelp() {
   return (

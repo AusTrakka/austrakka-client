@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
-import { RolesV2 } from '../../../types/dtos';
+import type { RolesV2 } from '../../../types/dtos';
 
 interface RoleAutocompleteProps {
   roles: RolesV2[];
@@ -23,7 +22,7 @@ export function RoleAutocomplete(props: RoleAutocompleteProps) {
       disableCloseOnSelect
       getOptionLabel={(option) => option.name}
       isOptionEqualToValue={(option, value) => option.globalId === value.globalId}
-      onChange={(e, v) => setSelectedRoles(v)}
+      onChange={(_e, v) => setSelectedRoles(v)}
       renderOption={(_props, option, { selected }) => (
         <li {..._props} style={{ fontSize: '0.9em' }} key={option.globalId}>
           <Checkbox

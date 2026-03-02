@@ -1,4 +1,4 @@
-import { Sample } from '../../../src/types/sample.interface';
+import type { Sample } from '../../../src/types/sample.interface';
 import { calculateAlertList } from '../../../src/utilities/thresholdAlertUtils';
 
 describe('calculateAlertList', () => {

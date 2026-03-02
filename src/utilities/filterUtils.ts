@@ -1,5 +1,5 @@
-import { FilterMatchMode } from 'primereact/api';
-import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import {FilterMatchMode} from 'primereact/api';
+import type {DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData} from 'primereact/datatable';
 
 export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = {
   [FilterMatchMode.EQUALS]: '==',
@@ -37,7 +37,8 @@ export function generateDateFilterString(
   }
 
   // Assuming we're working with the first key in the dateObject
-  const key = Object.keys(dateFilterObject)[0];
+  const [first] = Object.keys(dateFilterObject);
+  const key = first;
   const filterData = dateFilterObject[key];
 
   if (!filterData) {
@@ -50,7 +51,8 @@ export function generateDateFilterString(
   if (isOperatorFilterMetaData(filterData)) {
     // Handle operator type with a single constraint
     if (filterData.constraints.length > 0) {
-      const constraint = filterData.constraints[0];
+      const [first1] = filterData.constraints;
+      const constraint = first1
       dateValue = constraint.value;
       matchMode = constraint.matchMode as FilterMatchMode;
     }
@@ -106,7 +108,6 @@ isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
       if (val1.operator !== val2.operator || val1.constraints.length !== val2.constraints.length) {
         return false;
       }
-      // eslint-disable-next-line no-plusplus
       for (let i = 0; i < val1.constraints.length; i++) {
         if (!isEqualFilterMetaData(val1.constraints[i], val2.constraints[i])) {
           return false;

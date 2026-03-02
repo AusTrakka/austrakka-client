@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   TableRow,
   TableCell,
@@ -13,13 +12,13 @@ import {
   KeyboardArrowRight,
 } from '@mui/icons-material';
 import { getOrganisations } from '../../../utilities/resourceUtils';
-import { ResponseObject } from '../../../types/responseObject.interface';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import { ResponseType } from '../../../constants/responseType';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import './autocompleteStyleOverride.css';
-import { RolesV2 } from '../../../types/dtos';
-import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import type { RolesV2 } from '../../../types/dtos';
+import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
 import { Theme } from '../../../assets/themes/theme';
@@ -88,7 +87,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             abbrev: item.abbreviation,
             name: item.name,
           })));
-      } catch (error) {
+      } catch (_error) {
         setRecordFetchError('An error occurred while fetching records.');
       }
     }

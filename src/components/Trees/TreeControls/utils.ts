@@ -1,4 +1,4 @@
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;

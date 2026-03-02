@@ -1,26 +1,24 @@
-/* eslint-disable react/require-default-props */
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { compile, TopLevelSpec } from 'vega-lite';
+import { compile, type TopLevelSpec } from 'vega-lite';
 import { parse, View as VegaView } from 'vega';
 import Grid from '@mui/material/Grid2';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { InlineData } from 'vega-lite/build/src/data';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { useAppSelector } from '../../../app/store';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import { Sample } from '../../../types/sample.interface';
+import type { Sample } from '../../../types/sample.interface';
 import { createVegaScale } from '../../../utilities/plotUtils';
 import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
 
 // Parameterised widget; field must be specified
-
 const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 interface MetadataValueWidgetProps extends ProjectWidgetProps {
@@ -46,7 +44,6 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     legendColumns = 4,
   } = props;
   if (colourScheme && colourMapping) {
-    // eslint-disable-next-line no-console
     console.warn('colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored');
   }
   // TODO maybe just fieldUniqueValues selector?
@@ -169,6 +166,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     }
   }, [data, field]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaViews = async () => {
       // Cleanup existing views
@@ -192,7 +190,6 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
       createVegaViews();
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, projectAbbrev, navigate, timeFilterObject]);
 
   useEffect(() => {

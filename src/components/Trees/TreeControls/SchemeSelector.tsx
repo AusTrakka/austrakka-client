@@ -1,7 +1,7 @@
-import React from 'react';
+
 import FormControl from '@mui/material/FormControl';
 import Typography from '@mui/material/Typography';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import { InputLabel, ListSubheader, MenuItem, Stack, Tooltip } from '@mui/material';
 import {
   ColorSchemeNames, cyclical, defaultDiscreteColorScheme,

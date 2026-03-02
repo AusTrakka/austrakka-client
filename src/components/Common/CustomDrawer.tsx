@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useRef } from 'react';
+import { type ReactNode, useState, useRef } from 'react';
 import { Box, Drawer, IconButton, Tooltip } from '@mui/material';
 import { KeyboardDoubleArrowUp } from '@mui/icons-material';
 import { Theme } from '../../assets/themes/theme';

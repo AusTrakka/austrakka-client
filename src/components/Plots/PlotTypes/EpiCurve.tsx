@@ -1,14 +1,14 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { TopLevelSpec } from 'vega-lite';
+import { useEffect, useState } from 'react';
+import type { TopLevelSpec } from 'vega-lite';
 import { useNavigate } from 'react-router-dom';
 import {
-  ProjectMetadataState,
+  type ProjectMetadataState,
   selectProjectMetadata,
   selectProjectMetadataFields,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
 import {
   getStartingField, selectGoodTimeBinUnit,
   setAxisResolutionInSpecToValue,
@@ -18,11 +18,11 @@ import {
 } from '../../../utilities/plotUtils';
 import VegaDataPlot from '../VegaDataPlot';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { ProjectViewField } from '../../../types/dtos';
+import type { ProjectViewField } from '../../../types/dtos';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { Sample } from '../../../types/sample.interface';
+import type { Sample } from '../../../types/sample.interface';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
@@ -131,6 +131,7 @@ function EpiCurve(props: PlotTypeProps) {
     }
   }, [plot]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
       const localCatFields : ProjectViewField[] = fields
@@ -152,9 +153,9 @@ function EpiCurve(props: PlotTypeProps) {
         setDateField(getStartingField(preferredDateFields, localDateFields));
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (dateBinUnit === '' &&
         dateField !== '' &&
@@ -169,7 +170,6 @@ function EpiCurve(props: PlotTypeProps) {
       setDateBinStep(bin.step!);
     }
     // Do not want to trigger on dateBinUnit; relevant data changes are covered by loadingState
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState, dateField, setDateBinUnit, setDateBinStep]);
 
   useEffect(() => {

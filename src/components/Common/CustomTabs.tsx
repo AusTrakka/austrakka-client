@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { useStableNavigate } from '../../app/NavigationContext';
 
@@ -39,7 +39,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     navigate(newPath);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
 
     // Generate the URL for the selected tab and navigate to it

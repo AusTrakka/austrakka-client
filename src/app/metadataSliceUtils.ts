@@ -1,9 +1,9 @@
-import { Field, ProjectField } from '../types/dtos';
-import { Sample } from '../types/sample.interface';
+import type { Field, ProjectField } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-import { MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
+import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 
 export function getCountryCode(code: string): string | null {
   if (!code) return null;

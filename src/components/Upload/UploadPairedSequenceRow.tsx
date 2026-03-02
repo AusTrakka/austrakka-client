@@ -7,21 +7,21 @@ import {
   TableCell,
   TextField,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  SeqPairedUploadRow,
+  type SeqPairedUploadRow,
   SeqUploadRowState,
-  SkipForce,
+  type SkipForce,
 } from '../../types/sequploadtypes';
 import LoadingState from '../../constants/loadingState';
-import { ResponseMessage } from '../../types/apiResponse.interface';
+import type { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
 import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import { ValidationPopupButton } from '../Validation/Validation';
 import { generateHash } from '../../utilities/file';
 import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
-import { ResponseObject } from '../../types/responseObject.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
 
 interface UploadSequenceRowProps {
   seqUploadRow: SeqPairedUploadRow,
@@ -114,7 +114,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     );
     if (sampleResp.httpStatusCode === 409) {
       // If it's a conflict, display this as a warning.
-      const message = sampleResp.messages[0];
+      const [message] = sampleResp.messages;
       message.ResponseType = ResponseType.Warning;
       messages.push(message);
     } else {
@@ -123,7 +123,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
     sharedProjects.forEach(r =>
-      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId)));
+    {sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId))});
 
     for (const resp of (await Promise.all(sampleSharePromises))) {
       messages.push(...resp.messages);
@@ -196,6 +196,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     SeqUploadRowState.Incomplete,
   ].includes(seqUploadRow.state);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.state === SeqUploadRowState.CreateSample) {
       handleSampleCreate();
@@ -206,14 +207,13 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.state]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash]);
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableRowClickEvent,
@@ -10,7 +10,7 @@ import { Cancel } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { ActivityDetailInfo } from './activityViewModels.interface';
 import ActivityDetails from './ActivityDetails';
-import { DerivedLog } from '../../../types/dtos';
+import type { DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 import sortIcon from '../../TableComponents/SortIcon';
@@ -80,15 +80,15 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   useEffect(() => {
     if (columns.length > 0) return;
 
-    const firstCol = supportedColumns.filter(c => c.columnName === EVENT_NAME_COLUMN)[0];
-    const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
+    const [firstCol] = supportedColumns.filter(c => c.columnName === EVENT_NAME_COLUMN);
+    const [firstColBuilder] = buildPrimeReactColumnDefinitions([firstCol]);
     firstColBuilder.isDecorated = true;
     const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
-  }, [recordType, rGuid, columns.length]);
+  }, [columns.length]);
 
   const rowClickHandler = (event: DataTableRowClickEvent) => {
     const row = event.data;

@@ -1,18 +1,17 @@
-/* eslint-disable react/require-default-props */
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
 import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
-import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { InlineData } from 'vega-lite/build/src/data';
+import { type TopLevelSpec, compile } from 'vega-lite';
+import type { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
-import { Sample } from '../../../types/sample.interface';
+import type { Sample } from '../../../types/sample.interface';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 import { Theme } from '../../../assets/themes/theme';
@@ -71,11 +70,11 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     },
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const setColourSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
       const colSpec = {
-        // eslint-disable-next-line object-shorthand
         field: field,
         scale: createVegaScale(values, colourScheme),
         legend: legendSpec,
@@ -101,9 +100,9 @@ function EpiCurveChart(props: EpiCurveChartProps) {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (data?.fields && !data.fields.map(fld => fld.columnName).includes(TIME_AXIS_FIELD)) {
       setErrorMessage(`Field ${TIME_AXIS_FIELD} not found in project`);
@@ -112,7 +111,6 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     } else if (data?.fieldLoadingStates[TIME_AXIS_FIELD] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${TIME_AXIS_FIELD} values`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.fields, data?.loadingState]);
 
   useEffect(() => {
@@ -138,6 +136,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     }
   }, [data?.fields, filteredData]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaView = async () => {
       if (vegaView) {
@@ -158,7 +157,6 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     if (filteredData && plotDiv?.current) {
       createVegaView();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
 
   return (

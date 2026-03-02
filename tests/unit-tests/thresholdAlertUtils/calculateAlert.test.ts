@@ -1,6 +1,6 @@
 import { AlertLevels } from '../../../src/constants/thresholdAlertConstants';
 import { calculateAlert } from '../../../src/utilities/thresholdAlertUtils';
-import { Sample } from '../../../src/types/sample.interface';
+import type { Sample } from '../../../src/types/sample.interface';
 
 describe('calculateAlert', () => {
   test('Given only historical records, expect no alert', () => {
