@@ -5,7 +5,6 @@ import {
   SeqPairedUploadRow,
   SeqSingleUploadRow,
   SeqType,
-  SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 
@@ -139,25 +138,9 @@ export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]
   return uniqueOrgGroupNames;
 };
 
-export const createSampleCSV = (
-  seqUploadRows: SeqUploadRow[],
-): string => {
-  // This is technically a CSV, but has just a single column
-  const csvHeader = 'Seq_ID';
-  const csvRows = seqUploadRows.map(
-    row => `${row.seqId}`,
-  );
-  const csv = [csvHeader, ...csvRows].join('\n');
-  return csv;
-};
-
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
-  seqType: SeqType,
 ): SeqPairedUploadRow[] => {
-  if (seqType !== SeqType.FastqIllPe) {
-    throw new Error('Invalid seqType for creating paired-end sequence upload rows');
-  }
   const pairedFiles = files.sort((a, b) => {
     if (a.file.name < b.file.name) {
       return -1;
@@ -189,9 +172,6 @@ export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
 ): SeqSingleUploadRow[] => {
-  if (![SeqType.FastqIllSe, SeqType.FastqOnt, SeqType.FastaAsm].includes(seqType)) {
-    throw new Error('Invalid seqType for creating single-end sequence upload rows');
-  }
   const singleFiles = files.map((file) => ({
     id: crypto.randomUUID(),
     seqId: getSampleNameFromFile(file.file.name),
@@ -201,3 +181,39 @@ export const createSingleSeqUploadRows = (
   } as SeqSingleUploadRow));
   return singleFiles;
 };
+
+// Split file into lines by contig, by just searching for ">" at the start of a line
+// Return a set of files, one per contig, with the contig name as the filename
+// The contig name is deemed to be from ">" to the first whitespace/_/., 
+// consistent with filename parsing.
+// This function must validate expected properties (uniqueness of Seq_IDs)
+export async function splitFastaByContig(files: File[]) : Promise<File[]> {
+  // For now assert only one file, but we could in principle handle many
+  if (files.length > 1) {
+    throw new Error('Expected only one file for fasta-cns splitting');
+  }
+  const file = files[0];
+  const fileContent = await file.text();
+  // Assert that the file starts with ">" before we split on it
+  if (!fileContent.trim().startsWith('>')) {
+    throw new Error('File does not appear to be in fasta format: missing ">" at start of file');
+  }
+  const contigs = fileContent.split(/^>(?=[^\n]+)/m).filter(c => c.trim() !== '');
+  const contigNames = new Set();
+  const contigFiles = contigs.map((contig) => {
+    const contigName = contig.split(/[\s._]/)[0];
+    if (contigNames.has(contigName)) {
+      const untrimmedName = contig.split(/\s/)[0];
+      let errorMsg = `Duplicate Seq_ID found in upload: ${contigName}.`;
+      if (contigName !== untrimmedName) {
+        errorMsg += ` Seq_IDs trimmed from ${untrimmedName} due to invalid characters.`;
+      }
+      throw new Error(errorMsg);
+    }
+    contigNames.add(contigName);
+    const contigContent = `>${contig}`;
+    const contigBlob = new Blob([contigContent], { type: file.type });
+    return new File([contigBlob], `${contigName}.fa`, { type: file.type });
+  });
+  return contigFiles;
+}

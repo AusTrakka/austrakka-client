@@ -4,7 +4,7 @@ export enum SeqType {
   FastqIllPe = 'fastq-ill-pe',
   FastqIllSe = 'fastq-ill-se',
   FastqOnt = 'fastq-ont',
-  //FastaCns = 'fasta-cns',
+  FastaCns = 'fasta-cns',
   FastaAsm = 'fasta-asm',
 }
 
@@ -12,7 +12,7 @@ export const seqTypeNames: Record<string, string> = {
   [SeqType.FastqIllPe]: 'Illumina Paired-End FASTQ',
   [SeqType.FastqIllSe]: 'Illumina Single-End FASTQ',
   [SeqType.FastqOnt]: 'Oxford Nanopore FASTQ',
-  //[SeqType.FastaCns]: 'Consensus FASTA (single contig per sample)',
+  [SeqType.FastaCns]: 'Consensus FASTA (single contig per sample)',
   [SeqType.FastaAsm]: 'Assembly FASTA',
 };
 
@@ -20,7 +20,7 @@ export const seqTypeClasses: Record<SeqType, string> = {
   [SeqType.FastqIllPe]: 'fastq',
   [SeqType.FastqIllSe]: 'fastq',
   [SeqType.FastqOnt]: 'fastq',
-  //[SeqType.FastaCns]: 'fasta',
+  [SeqType.FastaCns]: 'fasta',
   [SeqType.FastaAsm]: 'fasta',
 };
 
@@ -31,7 +31,7 @@ const validFormatsPerClass: Record<string, Record<string, string>> = {
     '.fq.gz': 'application/x-gzip',
     '.fastq.gz': 'application/x-gzip',
   },
-  'fasta' : {
+  'fasta': {
     '.fa': '',
     '.fasta': '',
     '.fa.gz': 'application/x-gzip',
@@ -84,6 +84,8 @@ export interface SeqPairedUploadRow extends SeqUploadRow {
   clientSessionId?: string
 }
 
+// This represents any single-file upload, including single-end fastq of different types, and 
+// fasta files we have produced by splitting a multi-sample fasta
 export interface SeqSingleUploadRow extends SeqUploadRow {
   id: string
   seqId: string
