@@ -90,8 +90,8 @@ function MainMenuLayout() {
   }
 
   if (pathnames.length > 0 && pathnames.length <= 3 &&
-      noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
-      && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
+    noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
+    && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
     pathnames.pop();
   }
 
@@ -133,7 +133,7 @@ function MainMenuLayout() {
       icon: <Domain />,
       requirePermission: true,
       permissionDomain: null,
-      requiredTenantScope: ScopeDefinitions.GET_TENANT_ACTIVITY_LOG,
+      requiredTenantScope: ScopeDefinitions.GetTenantActivityLog,
     },
     {
       title: 'Users',
@@ -151,22 +151,22 @@ function MainMenuLayout() {
     },
   ];
 
-  const hasV1Perm = (domain: string | null) : boolean => hasPermission(
+  const hasV1Perm = (domain: string | null): boolean => hasPermission(
     user,
     'AusTrakka-Owner',
     domain,
     PermissionLevel.CanShow,
   );
 
-  const hasV2TenantPerm = (scope : string | undefined) : boolean => hasPermissionV2(
+  const hasV2TenantPerm = (scope: string | undefined): boolean => hasPermissionV2(
     user,
     scope,
   );
 
   const visiblePages = pages.filter((page) =>
     !page.requirePermission
-      || hasV1Perm(page.permissionDomain)
-      || hasV2TenantPerm(page.requiredTenantScope));
+    || hasV1Perm(page.permissionDomain)
+    || hasV2TenantPerm(page.requiredTenantScope));
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
@@ -206,26 +206,26 @@ function MainMenuLayout() {
                 onClick={() => handleDrawer()}
                 aria-label="menu-toggle"
               >
-                {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight /> }
+                {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight />}
               </IconButton>
             </Box>
           </Box>
           {
             drawer && showSidebarBrandingName() && (
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'primary.main',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                fontWeight: '800',
-              }}
-            >
-              {import.meta.env.VITE_BRANDING_NAME}
-            </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'primary.main',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  fontWeight: '800',
+                }}
+              >
+                {import.meta.env.VITE_BRANDING_NAME}
+              </Typography>
             )
-}
+          }
           <Divider />
           <List className={styles.pagelist}>
             {visiblePages.map((page) => (
@@ -298,7 +298,7 @@ function MainMenuLayout() {
                 <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
                   {setting.icon}
                 </ListItemIcon>
-                { drawer ? (
+                {drawer ? (
                   <ListItemText sx={{ color: 'primary.main' }}>
                     {setting.title}
                   </ListItemText>

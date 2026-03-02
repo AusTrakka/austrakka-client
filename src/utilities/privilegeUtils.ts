@@ -18,29 +18,28 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
   }, {} as Record<'POST' | 'DELETE', Record<string, PendingChange[]>>);
 
 export const checkFetchUserScope =
-    (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
-      scope =>
-        scope.recordType === 'Tenant' &&
-          scope.recordRoles.some(record =>
-            record.roles.some(role =>
-              role.scopes.includes(ScopeDefinitions.ALL_ACCESS) ||
-              role.scopes.includes(ScopeDefinitions.GET_USER_BY_GLOBAL_ID))),
-    );
+  (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => scopes.some(
+    scope =>
+      scope.recordType === 'Tenant' &&
+      scope.recordRoles.some(record =>
+        record.roles.some(role =>
+          role.scopes.includes(ScopeDefinitions.Everything) ||
+          role.scopes.includes(ScopeDefinitions.GetUserByGlobalId))),
+  );
 
 export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) => {
   // This may be a bit excessive, another option is that if the user can update a user the 
   // assumption is that they can edit the users privileges as well.
   // (This may not always be the case but its good enough for a visual conditional in my opinion)
   const requiredScopes = [
-    ScopeDefinitions.DELETE_USER_ACCESS,
-    ScopeDefinitions.GRANT_USER_ACCESS,
-    ScopeDefinitions.UPDATE_USER,
-    ScopeDefinitions.DELETE_ORG_ACCESS,
-    ScopeDefinitions.DISABLE_USER,
-    ScopeDefinitions.ENABLE_USER,
-    ScopeDefinitions.GRANT_ORG_ACCESS,
-    ScopeDefinitions.GRANT_TENANT_ACCESS,
-    ScopeDefinitions.DELETE_TENANT_ACCESS,
+    ScopeDefinitions.DeleteAccessUser,
+    ScopeDefinitions.GrantAccessUser,
+    ScopeDefinitions.UpdateUser,
+    ScopeDefinitions.DeleteAccessOrganisation,
+    ScopeDefinitions.EnableDisableUser,
+    ScopeDefinitions.GrantAccessOrganisation,
+    ScopeDefinitions.GrantAccessTenant,
+    ScopeDefinitions.DeleteAccessTenant,
     // can add for ProForma and user as-well if the need arises
   ];
 
@@ -49,9 +48,9 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
 
   return scopes.some(scope =>
     scope.recordType === 'Tenant' &&
-      scope.recordRoles.some(record =>
-        record.roles.some(role => role.scopes.includes(ScopeDefinitions.ALL_ACCESS)) ||
-        record.roles.some(hasAllScopes)));
+    scope.recordRoles.some(record =>
+      record.roles.some(role => role.scopes.includes(ScopeDefinitions.Everything)) ||
+      record.roles.some(hasAllScopes)));
 };
 
 export const groupFailedChangesByType = (changes: [string | null, PendingChange][]) =>
@@ -77,15 +76,15 @@ export const filterAssignedRoles = (
   const filteredRoles = assignedRole.roles.filter(role => {
     const existsInEditedPrivileges = editedPrivileges?.some(priv =>
       priv.recordType === recordType &&
-        priv.recordRoles.some(recordRole =>
-          recordRole.recordGlobalId === assignedRole.record.id &&
-            recordRole.roles.some(existingRole => existingRole.roleName === role.name)));
+      priv.recordRoles.some(recordRole =>
+        recordRole.recordGlobalId === assignedRole.record.id &&
+        recordRole.roles.some(existingRole => existingRole.roleName === role.name)));
 
     const existsInPendingChanges = pendingChanges.some(change =>
       change.type === 'POST' &&
-        change.recordType === recordType &&
-        change.payload.recordGlobalId === assignedRole.record.id &&
-        change.payload.roleName === role.name);
+      change.recordType === recordType &&
+      change.payload.recordGlobalId === assignedRole.record.id &&
+      change.payload.roleName === role.name);
 
     // Keep roles that **do not** exist in editedPrivileges or pendingChanges
     return !existsInEditedPrivileges && !existsInPendingChanges;
@@ -148,8 +147,8 @@ export const updatePendingChanges = (
     const deleteIndex = changes.findIndex(
       change =>
         change.type === 'DELETE' &&
-              change.payload.recordGlobalId === assignedRole.record.id &&
-              change.payload.roleName === role.name,
+        change.payload.recordGlobalId === assignedRole.record.id &&
+        change.payload.roleName === role.name,
     );
 
     if (deleteIndex !== -1) {
@@ -221,8 +220,8 @@ export const updatePendingChangesForRemoval = (
   const postIndex = pendingChanges.findIndex(
     change =>
       change.type === 'POST' &&
-          change.payload.recordGlobalId === recordGlobalId &&
-          change.payload.roleName === role.roleName,
+      change.payload.recordGlobalId === recordGlobalId &&
+      change.payload.roleName === role.roleName,
   );
 
   if (postIndex !== -1) {
