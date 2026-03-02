@@ -32,7 +32,7 @@ function Fields() {
   const renderFieldType = (rowData: any, field: string) => {
     const type: string = rowData[field];
     const colour = FIELD_TYPE_COLOURS[type as FieldType] ?? FIELD_TYPE_COLOURS.default;
-    
+
     return (
       <Chip
         size="small"
@@ -46,14 +46,14 @@ function Fields() {
       />
     );
   };
-  
-  const renderAllowedValues = (allowedValues: string[] | null, field:string) => {
+
+  const renderAllowedValues = (allowedValues: string[] | null, field: string) => {
     if (allowedValues === null || allowedValues.length === 0) return '';
     return (
       <AllowedValues allowedValues={allowedValues} field={field} />
     );
   };
-  
+
   const interactiveColumns = [
     {
       field: 'columnName',
@@ -133,9 +133,9 @@ function Fields() {
   const user: UserSliceState = useAppSelector(selectUserState);
   const interactionPermission = hasPermissionV2(
     user,
-    ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN,
+    ScopeDefinitions.UpdateFieldTenant,
   );
-  
+
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [columns, setColumns] = useState<any[]>(
