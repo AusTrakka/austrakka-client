@@ -35,7 +35,7 @@ export default function ApiProvider({ children }: any) {
           if (error instanceof InteractionRequiredAuthError) {
             instance.acquireTokenRedirect(accessTokenRequest);
           }
-          // -disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: historic
           console.log(error);
           setAuthToken(null);
           setAuthTokenLoading(LoadingState.ERROR);

@@ -21,6 +21,7 @@ export const handleProformaDownload = async (
     URL.revokeObjectURL(blobUrl);
     link.remove();
   } catch (error) {
+    // biome-ignore lint/suspicious/noConsole: historic
     console.error('Error:', error);
   }
 };

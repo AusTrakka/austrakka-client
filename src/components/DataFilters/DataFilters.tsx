@@ -261,7 +261,7 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field];
+    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field] ?? null;
 
     // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (
@@ -471,6 +471,7 @@ function DataFilters(props: DataFiltersProps) {
         }
       } else {
         // Handle case where the filter types don't match
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Filter type mismatch');
       }
     });

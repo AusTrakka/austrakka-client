@@ -168,6 +168,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while sharing samples. Please try again.');
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Unexpected error sharing samples:', error);
     }
   };

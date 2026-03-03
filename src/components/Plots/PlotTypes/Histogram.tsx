@@ -142,6 +142,7 @@ function Histogram(props: PlotTypeProps) {
       } else if (binMode === 'fixed') {
         newSpec.encoding.x.bin = { step: stepSize };
       } else {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error(`Unknown bin mode ${binMode}`);
       }
       return newSpec as TopLevelSpec;

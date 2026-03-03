@@ -153,6 +153,7 @@ function OrgSamplesTable(props: SamplesProps) {
       const url = `/records/${sampleId}`;
       navigate(url);
     } else {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
     }
   };

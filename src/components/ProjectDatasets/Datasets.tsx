@@ -112,6 +112,7 @@ function Datasets(props: DatasetProps) {
       setRows(updatedData);
       setOpenSnackbar(true); // Open toast on success
     } catch (error) {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Error disabling dataset:', error);
     } finally {
       setDataSetIdToDelete(null); // Clear the dataset ID after the operation
