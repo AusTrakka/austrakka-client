@@ -35,6 +35,7 @@ function ExportTableData(props: ExportTableDataProps) {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
       } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error exporting data to CSV:', error);
         setExportCSVStatus(LoadingState.ERROR);
       }

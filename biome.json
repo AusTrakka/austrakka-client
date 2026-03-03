@@ -37,7 +37,8 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "off",
-        "noImplicitAnyLet": "off"
+        "noImplicitAnyLet": "off",
+        "noConsole": "warn"
       },
       "a11y": {
         "useValidAutocomplete": "off"
@@ -48,6 +49,7 @@
       },
       "style": {
         "noNonNullAssertion": "off",
+        "noNestedTernary": "warn",
         "useNamingConvention": {
           "level": "off"
         }

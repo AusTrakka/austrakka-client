@@ -4,6 +4,7 @@ const sortIcon = (options: any) => {
   const icon = (
     <div className="custom-icon-container">
       {options.sorted ? (
+        // biome-ignore lint/style/noNestedTernary: historic
         options.sortOrder < 0 ? (
           <ArrowDropDown fontSize="small" color="success" />
         ) : (

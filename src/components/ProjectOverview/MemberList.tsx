@@ -132,6 +132,7 @@ function MemberList(props: MemberListProps) {
       setTransformedData(td);
       setExportCSVStatus(LoadingState.SUCCESS);
     } catch (error) {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Error exporting data:', error);
       setExportCSVStatus(LoadingState.ERROR);
     }
@@ -145,6 +146,7 @@ function MemberList(props: MemberListProps) {
       const url = `/users/${objectId}`;
       navigate(url);
     } else {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Object Id not found in selectedRow.');
     }
   };

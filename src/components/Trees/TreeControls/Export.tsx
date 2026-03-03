@@ -95,6 +95,7 @@ export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Pr
 
         return imgDataUrl;
       } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error converting HTML to PNG data URL:', error);
       } finally {
         // Restore the original scroll position
@@ -117,9 +118,11 @@ export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Pr
       if (pngURL !== null) {
         download(pngURL, 'legend.png', true);
       } else {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('legendRef.current is null or undefined.');
       } // Use 'legend.png' as the filename
     } catch (error) {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Error exporting legend as PNG:', error);
     }
   };

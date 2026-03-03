@@ -47,6 +47,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     legendColumns = 4,
   } = props;
   if (colourScheme && colourMapping) {
+    // biome-ignore lint/suspicious/noConsole: historic
     console.warn(
       'colourScheme and colourMapping are mutually exclusive; colourScheme will be ignored',
     );

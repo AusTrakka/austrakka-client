@@ -64,12 +64,14 @@ export async function processPrivilegeChanges(
         }
       } else {
         const errorMessage = `Unsupported change type: ${change.type} for record type: ${change.recordType}`;
-        console.error(errorMessage); 
+        // biome-ignore lint/suspicious/noConsole: historic
+        console.error(errorMessage);
         failedChanges.push([errorMessage, change]);
       }
     } catch (error) {
       const errorMessage = `Failed to process ${change.recordType} privilege for ${change.payload.recordName}: ${error}`;
-      console.error(errorMessage); 
+      // biome-ignore lint/suspicious/noConsole: historic
+      console.error(errorMessage);
       failedChanges.push([errorMessage, change]);
     }
   };

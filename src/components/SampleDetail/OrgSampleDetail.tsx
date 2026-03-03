@@ -62,6 +62,7 @@ function SampleDetail() {
           const ownerAbbrev = groupsData.find((g) => g.name.endsWith('-Everyone'))?.organisation
             .abbreviation;
           if (ownerAbbrev === undefined) {
+            // biome-ignore lint/suspicious/noConsole: historic
             console.error('Organisation Everyone group cannot be found for the current user');
           }
           const sortedGroups = groupsData.sort((groupA, groupB) => {
@@ -84,6 +85,7 @@ function SampleDetail() {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
       } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error updating project:', error);
       }
     };
@@ -127,6 +129,7 @@ function SampleDetail() {
           }
         }
       } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error updating display fields:', error);
       }
     };
@@ -216,6 +219,7 @@ function SampleDetail() {
                 setSelectedGroup(selected);
                 setGroupName(selected.name);
               } else {
+                // biome-ignore lint/suspicious/noConsole: historic
                 console.error(`Group with name ${selectedGroupName} not found.`);
               }
             }}

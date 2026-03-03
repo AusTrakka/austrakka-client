@@ -172,6 +172,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while unsharing samples. Please try again.');
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Unexpected error unsharing samples:', error);
     }
   };

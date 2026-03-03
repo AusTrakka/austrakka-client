@@ -477,6 +477,7 @@ function DataFilters(props: DataFiltersProps) {
         }
       } else {
         // Handle case where the filter types don't match
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Filter type mismatch');
       }
     });
