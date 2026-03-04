@@ -1,8 +1,33 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
-const CHUNK_SIZE = 50000;
+const CHUNK_SIZE = 500;
 
-const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
+export const estimateCSVSize = (data: any[], headers?: string[]): number => {
+  if (data.length === 0) return 0;
+
+  const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
+
+  // Sample up to 20 rows to get an average row byte size
+  const sampleSize = Math.min(20, data.length);
+  const encoder = new TextEncoder();
+  let sampleBytes = 0;
+
+  for (let i = 0; i < sampleSize; i++) {
+    const formatted = formatCSVValues(data[i]);
+    const line = resolvedHeaders.map((h) => `"${String(formatted[h] ?? '')}"`).join(',');
+    sampleBytes += encoder.encode(`${line}\n`).byteLength;
+  }
+
+  const avgRowBytes = sampleBytes / sampleSize;
+  const headerBytes = encoder.encode(
+    `${resolvedHeaders.map((h) => `"${h}"`).join(',')}\n`,
+  ).byteLength;
+
+  console.log('I found out the size');
+  return Math.ceil(headerBytes + avgRowBytes * data.length);
+};
+
+const formatCsvBody = (data: any[], headerString: string[]): any[] => {
   const csvRows = [];
 
   for (const row of data) {
@@ -63,8 +88,9 @@ export const generateCSV = (data: any[], headers?: string[]) => {
 
 export const generateCSVStream = (data: any[], headers?: string[]): ReadableStream<Uint8Array> => {
   const encoder = new TextEncoder();
-  const resolvedHeaders: string[] = headers ??
-    (data.length > 0 ? Object.keys(formatCSVValues(data[0])) : []);
+  console.log('am i generating a csv here');
+  const resolvedHeaders: string[] =
+    headers ?? (data.length > 0 ? Object.keys(formatCSVValues(data[0])) : []);
 
   if (resolvedHeaders.length === 0) throw new Error('Cannot generate CSV: no headers resolved');
 
@@ -73,28 +99,40 @@ export const generateCSVStream = (data: any[], headers?: string[]): ReadableStre
 
   return new ReadableStream<Uint8Array>({
     pull(controller) {
-      return new Promise<void>(resolve => {
-        if (!headerWritten) {
-          controller.enqueue(encoder.encode(`${resolvedHeaders.map(h => `"${h}"`).join(',')}\n`));
-          headerWritten = true;
-        }
+      // Write header once
+      if (!headerWritten) {
+        controller.enqueue(encoder.encode(`${resolvedHeaders.map((h) => `"${h}"`).join(',')}\n`));
+        headerWritten = true;
+      }
 
-        if (index >= data.length) {
-          controller.close();
-          resolve();
-          return;
-        }
+      if (index >= data.length) {
+        controller.close();
+        return;
+      }
 
-        const end = Math.min(index + CHUNK_SIZE, data.length);
-        for (let i = index; i < end; i++) {
-          const formatted = formatCSVValues(data[i]);
-          const line = resolvedHeaders.map(h => `"${formatted[h]}"`).join(',');
-          controller.enqueue(encoder.encode(`${line}\n`));
-        }
-        index = end;
+      // Build a single large string per chunk rather than enqueuing per-row
+      const end = Math.min(index + CHUNK_SIZE, data.length);
+      const lines: string[] = [];
 
-        setTimeout(resolve, 0);
-      });
+      for (let i = index; i < end; i++) {
+        const formatted = formatCSVValues(data[i]);
+        lines.push(resolvedHeaders.map((h) => `"${String(formatted[h] ?? '')}"`).join(','));
+      }
+
+      controller.enqueue(encoder.encode(`${lines.join('\n')}\n`));
+      index = end;
+
+      const yieldToMain = (() => {
+        if (
+          'scheduler' in globalThis &&
+          typeof (globalThis as any).scheduler.yield === 'function'
+        ) {
+          console.log('[CSV Export] Using scheduler.yield() for main thread yielding');
+          return () => (globalThis as any).scheduler.yield();
+        }
+        console.log('[CSV Export] scheduler.yield() unavailable, falling back to setTimeout(0)');
+        return () => new Promise<void>((r) => setTimeout(r, 0));
+      })();
     },
   });
 };

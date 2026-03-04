@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
-import { generateCSVStream } from '../../utilities/exportUtils';
+import { estimateCSVSize, generateCSVStream } from '../../utilities/exportUtils';
 import { generateFilename } from '../../utilities/file';
 
 // Do not recalculate CSV data when filters are reapplied or removed
@@ -31,8 +31,12 @@ function ExportTableData(props: ExportTableDataProps) {
 
     try {
       const fileName = generateFilename(fileNamePrefix);
-      const fileStream = streamSaver.createWriteStream(`${fileName}.csv`);
+      const filesize = estimateCSVSize(dataToExport);
+      const fileStream = streamSaver.createWriteStream(`${fileName}.csv`, {
+        size: filesize,
+      });
 
+      console.log('what the hell is happening');
       // Get your readable stream
       const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
 
@@ -40,7 +44,7 @@ function ExportTableData(props: ExportTableDataProps) {
       await readable.pipeTo(fileStream);
 
       setExportCSVStatus(LoadingState.IDLE);
-    } catch (error) {
+    } catch (_error) {
       setExportCSVStatus(LoadingState.ERROR);
     }
   };
