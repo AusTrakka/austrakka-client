@@ -115,52 +115,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setSelectedRow(e.data);
   };
 
-  // TODO: very similar logic can be used to expand/collapse bundled logs when re-implemented
-  // 
-  // const toggleRow = (e: DataTableRowToggleEvent) => {
-  //   const row = (e.data as any[])[0] as Log;
-  //
-  //   const firstChildIdx = localLogs.findIndex((node) =>
-  //     node.aggregationMemberKey
-  //           && row.aggregationKey
-  //           && node.aggregationMemberKey === row.aggregationKey);
-  //
-  //   const clonedRows = [...localLogs];
-  //
-  //   if (firstChildIdx === -1) {
-  //     // Add
-  //     const rowIdx = localLogs.indexOf(row);
-  //     // Insert row.children at position rowIdx + 1
-  //     clonedRows.splice(rowIdx + 1, 0, ...row.children ?? []);
-  //   } else {
-  //     // Remove
-  //     // Traverse the tree of row recursively to find all the descendants.
-  //     // Compile the nodes into a flat array. Using this information, remove
-  //     // each member of the array from currentRows.
-  //     const targets: Log[] = [];
-  //
-  //     const findDescendants = (node: Log) => {
-  //       targets.push(node);
-  //       node.children?.forEach((child) => findDescendants(child));
-  //     };
-  //
-  //     if (row.children) {
-  //       for (let i = 0; i < row.children.length; i++) {
-  //         findDescendants(row.children[i]);
-  //       }
-  //     }
-  //
-  //     // Remove the targets from the currentRows
-  //     targets.forEach((target) => {
-  //       const idx = clonedRows.indexOf(target);
-  //       if (idx !== -1) {
-  //         clonedRows.splice(idx, 1);
-  //       }
-  //     });
-  //   }
-  //   setLocalLogs(clonedRows);
-  // };
-
   const firstColumnTemplate = (rowData: any) => (
     rowData.eventStatus === 'Success'
       ? (
@@ -227,8 +181,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 sortIcon={sortIcon}
                 scrollHeight="flex"
                 paginator
-                rows={25}
-                rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+                rows={500}
+                rowsPerPageOptions={[500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
                 currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
                 paginatorPosition="bottom"
@@ -237,7 +191,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 onRowClick={rowClickHandler}
                 selection={selectedRow}
                 onRowSelect={onRowSelect}
-                // onRowToggle={toggleRow}
                 selectionMode="single"
                 emptyMessage={httpStatusCode === 413 ? (
                   <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>

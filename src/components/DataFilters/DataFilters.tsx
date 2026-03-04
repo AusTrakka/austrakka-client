@@ -478,29 +478,27 @@ function DataFilters(props: DataFiltersProps) {
     switch (selectedFieldType) {
       case FieldTypes.DATE:
         return (
-          <Box display="flex" alignItems="center" gap={1}>
-            <DatePicker
-              label="Value"
-              value={filterFormValues.value === '' ? null : filterFormValues.value}
-              onError={(newError) => setDateError(newError)}
-              onChange={(newValue) => handleFilterDateChange(newValue)}
-              format="YYYY-MM-DD"
-              slotProps={{
-                textField: {
-                  size: 'small',
-                  sx: {
-                    'width': '200',
-                    '& .MuiInputBase-input': {
-                      flex: 1,
-                      minWidth: 0,
-                    },
+          <DatePicker
+            label="Value"
+            value={filterFormValues.value === '' ? null : filterFormValues.value}
+            onError={(newError) => setDateError(newError)}
+            onChange={(newValue) => handleFilterDateChange(newValue)}
+            format="YYYY-MM-DD"
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: {
+                  'width': '200',
+                  '& .MuiInputBase-input': {
+                    flex: 1,
+                    minWidth: 0,
                   },
                 },
-              }}
-              disabled={nullOrEmptyFlag}
-              disableFuture
-            />
-          </Box>
+              },
+            }}
+            disabled={nullOrEmptyFlag}
+            disableFuture
+          />
         );
       case FieldTypes.BOOLEAN:
         return (
