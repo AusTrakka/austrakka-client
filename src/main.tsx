@@ -12,6 +12,14 @@ import store from './app/store';
 import { globalStyles } from './assets/themes/theme';
 import { msalInstance } from './utilities/authUtils';
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(() => {
+    console.log('StreamSaver service worker registered');
+  }).catch(err => {
+    console.warn('Service worker registration failed:', err);
+  });
+}
+
 if (import.meta.env.DEV) {
   await import('./wdyr');
 }

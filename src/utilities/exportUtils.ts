@@ -1,6 +1,8 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
-const formatCsvBody = (data: any[], headerString: string[]): any[] => {
+const CHUNK_SIZE = 50000;
+
+const formatCsvBody = (data: any[], headerString: string[]) : any[] => {
   const csvRows = [];
 
   for (const row of data) {
@@ -57,4 +59,42 @@ export const generateCSV = (data: any[], headers?: string[]) => {
 
   // Set data for CSVLink
   return formatDataAsCSV(formattedData, header);
+};
+
+export const generateCSVStream = (data: any[], headers?: string[]): ReadableStream<Uint8Array> => {
+  const encoder = new TextEncoder();
+  const resolvedHeaders: string[] = headers ??
+    (data.length > 0 ? Object.keys(formatCSVValues(data[0])) : []);
+
+  if (resolvedHeaders.length === 0) throw new Error('Cannot generate CSV: no headers resolved');
+
+  let index = 0;
+  let headerWritten = false;
+
+  return new ReadableStream<Uint8Array>({
+    pull(controller) {
+      return new Promise<void>(resolve => {
+        if (!headerWritten) {
+          controller.enqueue(encoder.encode(`${resolvedHeaders.map(h => `"${h}"`).join(',')}\n`));
+          headerWritten = true;
+        }
+
+        if (index >= data.length) {
+          controller.close();
+          resolve();
+          return;
+        }
+
+        const end = Math.min(index + CHUNK_SIZE, data.length);
+        for (let i = index; i < end; i++) {
+          const formatted = formatCSVValues(data[i]);
+          const line = resolvedHeaders.map(h => `"${formatted[h]}"`).join(',');
+          controller.enqueue(encoder.encode(`${line}\n`));
+        }
+        index = end;
+
+        setTimeout(resolve, 0);
+      });
+    },
+  });
 };

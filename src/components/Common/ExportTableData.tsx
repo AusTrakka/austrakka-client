@@ -2,8 +2,9 @@ import { Close, SimCardDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
 import { useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
+import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
-import { generateCSV } from '../../utilities/exportUtils';
+import { generateCSVStream } from '../../utilities/exportUtils';
 import { generateFilename } from '../../utilities/file';
 
 // Do not recalculate CSV data when filters are reapplied or removed
@@ -20,25 +21,27 @@ function ExportTableData(props: ExportTableDataProps) {
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
   const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
-  const exportData = () => {
+  const exportData = async () => {
     setExportCSVStatus(LoadingState.LOADING);
-    if (dataToExport.length > 0) {
-      try {
-        const csvData = generateCSV(dataToExport, headers);
-        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
 
-        csvLink.current?.link.setAttribute('href', url);
-        csvLink.current?.link.setAttribute('download', generateFilename(fileNamePrefix));
+    if (dataToExport.length === 0) {
+      setExportCSVStatus(LoadingState.IDLE);
+      return;
+    }
 
-        // Trigger click to download
-        csvLink.current?.link.click();
-        setExportCSVStatus(LoadingState.IDLE);
-      } catch (error) {
-        // biome-ignore lint/suspicious/noConsole: historic
-        console.error('Error exporting data to CSV:', error);
-        setExportCSVStatus(LoadingState.ERROR);
-      }
+    try {
+      const fileName = generateFilename(fileNamePrefix);
+      const fileStream = streamSaver.createWriteStream(`${fileName}.csv`);
+
+      // Get your readable stream
+      const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
+
+      // Pipe the data to the file stream
+      await readable.pipeTo(fileStream);
+
+      setExportCSVStatus(LoadingState.IDLE);
+    } catch (error) {
+      setExportCSVStatus(LoadingState.ERROR);
     }
   };
 
