@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel } from '@mui/icons-material';
@@ -15,22 +15,22 @@ import { Theme } from '../../../assets/themes/theme';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 import ActivityFilters, { Filters } from './ActivityFilters';
-import CollapseExpandTreeNodes from '../../TableComponents/CollapseExpandTreeNodes';
+import CollapseTreeNodes from '../../TableComponents/CollapseTreeNodes';
 import './TreeTable.css';
 
 function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
   const usedLogIds = new Set<string>();
   const groups = new Map<string, TreeNode>();
-  const primaryKey = (log: DerivedLog) => `${log.clientSessionId}_${log.eventType}`;
-  const secondaryKey = (log: DerivedLog) => `${log.callId}_${log.eventType}`;
+  const buildPrimaryKey = (log: DerivedLog) => `${log.clientSessionId}_${log.eventType}`;
+  const buildSecondaryKey = (log: DerivedLog) => `${log.callId}_${log.eventType}`;
 
-  const aggregateByKey = (logsToAggregate: DerivedLog[], key: (log: DerivedLog) => string) => {
+  const aggregateByKey = (logsToAggregate: DerivedLog[], buildKey: (log: DerivedLog) => string) => {
     for (const log of logsToAggregate) {
       // Skip logs that have already been grouped in a previous round of aggregation
       if (usedLogIds.has(log.globalId)) continue;
 
       // Determine the group key based on the provided key function
-      const groupKey = key(log);
+      const groupKey = buildKey(log);
 
       if (!groups.has(groupKey)) {
         groups.set(groupKey, {
@@ -66,8 +66,8 @@ function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
     }
   };
 
-  aggregateByKey(logs, primaryKey);
-  aggregateByKey(logs, secondaryKey);
+  aggregateByKey(logs, buildPrimaryKey);
+  aggregateByKey(logs, buildSecondaryKey);
 
   return Array.from(groups.values());
 }
@@ -79,13 +79,9 @@ function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
 
     if (childCount === 1) {
       // Flatten nodes with single child
-      return children[0];
+      return { ...children[0] };
     } if (childCount > 1) {
       const firstChild = children[0].data as DerivedLog;
-      // Generate resourceUniqueString preview (all children)
-      node.data.resourceCount = childCount;
-      node.data.resourcePreview = `${firstChild.resourceUniqueString} `;
-      node.label = `${node.data.eventType} (${childCount})`;
 
       // Generate resourceType preview (unique values among children)
       const uniqueResourceTypes = Array.from(
@@ -95,16 +91,45 @@ function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
           ),
         ),
       );
-      const [firstResourceType] = uniqueResourceTypes;
-      node.data.resourceTypePreview = firstResourceType;
-      node.data.resourceTypeCount = uniqueResourceTypes.length;
 
-      return node;
+      return {
+        ...node,
+        label: `${node.data.eventType} (${childCount})`,
+        data: {
+          ...node.data,
+          resourceCount: childCount,
+          resourcePreview: firstChild.resourceUniqueString,
+          resourceTypeCount: uniqueResourceTypes.length,
+          resourceTypePreview: uniqueResourceTypes[0],
+        },
+        // Ensure each child is a new object to avoid shared references
+        children: children.map(child => ({ ...child, data: { ...child.data } })),
+      };
     }
-    node.children = undefined;
-    node.leaf = true;
-    return node;
+    // Leaf node
+    return {
+      ...node,
+      children: undefined,
+      leaf: true,
+    };
   });
+}
+
+function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeNode[] {
+  const children = parent.children ?? [];
+  if (children.length <= maxSize) return [parent];
+
+  const chunks: TreeNode[] = [];
+  for (let i = 0; i < children.length; i += maxSize) {
+    const chunkChildren = children.slice(i, i + maxSize);
+    chunks.push({
+      key: `${parent.key}_${i / maxSize}`,
+      label: `${parent.label} (${i + 1}-${i + chunkChildren.length})`,
+      data: { ...parent.data, resourceCount: chunkChildren.length },
+      children: chunkChildren,
+    });
+  }
+  return chunks;
 }
 
 interface ActivityProps {
@@ -125,11 +150,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
-  const [localLogs, setLocalLogs] = useState<DerivedLog[]>([]);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
   const [expandedKeys, setExpandedKeys] =
     useState<TreeTableExpandedKeysType | undefined>(undefined);
-  const [nodes, setNodes] = useState<TreeNode[]>([]);
 
   const today = dayjs();
   const lastWeek = dayjs().subtract(7, 'day');
@@ -166,10 +189,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       setLoadingState(true);
     }
   }, [dataLoading]);
-
-  useEffect(() => {
-    setLocalLogs(refinedLogs);
-  }, [refinedLogs]);
 
   useEffect(() => {
     if (columns.length > 0) return;
@@ -214,75 +233,102 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     }
   };
 
-  const aggregatedCellTemplate = (
-    rowNode: any,
-    params: { countKey: string; previewKey: string; valueKey: string },
-  ) => {
-    const { data, key, children } = rowNode;
-    const { countKey, previewKey, valueKey } = params;
+  const aggregatedCellTemplate = useCallback(
+    (rowNode: any, params: { countKey: string; previewKey: string; valueKey: string }) => {
+      const { data, key, children } = rowNode;
+      const { countKey, previewKey, valueKey } = params;
 
-    const isExpanded = !!expandedKeys?.[key];
-    const isParent = !!children && children.length > 0;
+      const isExpanded = !!expandedKeys?.[key];
+      const isParent = !!children && children.length > 0;
 
-    // If parent row is expanded show empty cell for this column
-    if (isParent && isExpanded) {
-      return null;
-    }
+      if (isParent && isExpanded) {
+        return null;
+      }
 
-    if (data[countKey] && data[countKey] > 1) {
-      return (
-        <span>
-          {data[previewKey]}
-          <Chip
-            variant="outlined"
-            color="primary"
-            size="small"
-            label={`+${data[countKey] - 1} more`}
-            sx={{ marginLeft: '8px' }}
-          />
-        </span>
-      );
-    }
-    return data[valueKey] || '-';
-  };
+      if (data[countKey] && data[countKey] > 1) {
+        return (
+          <span>
+            {data[previewKey]}
+            <Chip
+              variant="outlined"
+              color="primary"
+              size="small"
+              label={`+${data[countKey] - 1} more`}
+              sx={{ marginLeft: '8px' }}
+            />
+          </span>
+        );
+      }
+      return data[valueKey] || '-';
+    },
+    [expandedKeys],
+  );
 
-  const firstColumnTemplate = (row: any) => (
-    row.data.eventStatus === 'Failed'
-      ? (
-        <span>
-          <Cancel
-            style={{
-              marginRight: '5px',
-              cursor: 'pointer',
-              color: Theme.SecondaryRed,
-              fontSize: '14px',
-              verticalAlign: 'middle',
-            }}
-          />
-          {row.data[EVENT_NAME_COLUMN]}
-        </span>
-      )
-      : (
-        <>{row.data[EVENT_NAME_COLUMN]}</>
-      )
+  const firstColumnTemplate = useCallback(
+    (row: any) => {
+      if (row.data.eventStatus === 'Failed') {
+        return (
+          <span>
+            <Cancel
+              style={{
+                marginRight: '5px',
+                cursor: 'pointer',
+                color: Theme.SecondaryRed,
+                fontSize: '14px',
+                verticalAlign: 'middle',
+              }}
+            />
+            {row.data[EVENT_NAME_COLUMN]}
+          </span>
+        );
+      }
+      return row.data[EVENT_NAME_COLUMN];
+    },
+    [],
+  );
+
+  const rowClassName = useCallback(
+    (rowNode: TreeNode) => {
+      const { key, children } = rowNode;
+      const classes: Record<string, boolean> = {};
+      const isParent = !!children?.length;
+      const isExpanded = expandedKeys && key && !!expandedKeys[key];
+
+      if (isParent && isExpanded) classes['parent-row-event'] = true;
+      if (rowNode.data.parentKey && expandedKeys && expandedKeys[rowNode.data.parentKey]) {
+        classes['child-row-event'] = true;
+      }
+      return classes;
+    },
+    [expandedKeys],
   );
 
   useEffect(() => {
-    if (dataLoading) return;
-    // Aggregate logs and process to tree structure
-    const aggregatedLogs = aggregateLogsToTree(localLogs);
-    const processedNodes = processTreeNodes(aggregatedLogs);
+    if (!dataLoading) {
+      setLoadingState(false);
+    }
+  }, [dataLoading]);
 
-    setNodes(processedNodes);
-    setExpandedKeys({});
-    setLoadingState(false);
-  }, [dataLoading, localLogs]);
+  // const nodes = useMemo(() => {
+  //   if (dataLoading) return [];
+  //   const aggregated = aggregateLogsToTree(refinedLogs);
+  //   const processed = processTreeNodes(aggregated);
+  //   return processed.flatMap(node => splitLargeChildrenGroups(node, 500));
+  // }, [dataLoading, refinedLogs]);
+
+  const aggregatedNodes = useMemo(() => aggregateLogsToTree(refinedLogs), [refinedLogs]);
+  const processedNodes = useMemo(() => processTreeNodes(aggregatedNodes), [aggregatedNodes]);
+  const nodes = useMemo(
+    () =>
+      processedNodes.flatMap(node =>
+        splitLargeChildrenGroups(node, 500)),
+    [processedNodes],
+  );
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <CollapseExpandTreeNodes
-          allNodes={nodes}
+        <CollapseTreeNodes
           expandedKeys={expandedKeys}
           setExpandedKeys={setExpandedKeys}
         />
@@ -321,20 +367,21 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 <TreeTable
                   className="tree-table-custom"
                   header={header}
-                  rowClassName={(rowNode) => {
-                    const { key, children } = rowNode;
-                    const classes: Record<string, boolean> = {};
-                    const isParent = !!children?.length;
-                    const isExpanded = expandedKeys && key && !!expandedKeys[key];
-                    if (isParent && isExpanded) classes['parent-row-event'] = true;
-                    if (rowNode.data.parentKey &&
-                      expandedKeys &&
-                      expandedKeys[rowNode.data.parentKey]
-                    ) {
-                      classes['child-row-event'] = true;
-                    }
-                    return classes;
-                  }}
+                  rowClassName={rowClassName}
+                  // rowClassName={(rowNode) => {
+                  //   const { key, children } = rowNode;
+                  //   const classes: Record<string, boolean> = {};
+                  //   const isParent = !!children?.length;
+                  //   const isExpanded = expandedKeys && key && !!expandedKeys[key];
+                  //   if (isParent && isExpanded) classes['parent-row-event'] = true;
+                  //   if (rowNode.data.parentKey &&
+                  //     expandedKeys &&
+                  //     expandedKeys[rowNode.data.parentKey]
+                  //   ) {
+                  //     classes['child-row-event'] = true;
+                  //   }
+                  //   return classes;
+                  // }}
                   value={nodes || []}
                   expandedKeys={expandedKeys}
                   onToggle={(e) => setExpandedKeys(e.value)}
