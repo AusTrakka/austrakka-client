@@ -478,7 +478,4 @@ export interface DerivedLog {
     resourceType: string;
     uniqueStringId: string;
   }[];
-  // UI-specific fields
-  children: DerivedLog[] | null,
-  level: number | null,
 }
