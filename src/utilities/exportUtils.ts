@@ -1,6 +1,6 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
-const CHUNK_SIZE = 1000;
+const CHUNK_SIZE = 800;
 
 type ColumnMeta = {
   key: string;
