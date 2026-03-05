@@ -473,7 +473,11 @@ export interface DerivedLog {
   submitterDisplayName: string,
   eventStatus: string,
   data: string, // TODO needs to be parsed
-
+  visChain: {
+    globalId: string;
+    resourceType: string;
+    uniqueStringId: string;
+  }[];
   // UI-specific fields
   children: DerivedLog[] | null,
   level: number | null,
