@@ -1,138 +1,137 @@
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
-const CHUNK_SIZE = 500;
+const CHUNK_SIZE = 1000;
 
-export const estimateCSVSize = (data: any[], headers?: string[]): number => {
-  if (data.length === 0) return 0;
-
-  const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
-
-  // Sample up to 20 rows to get an average row byte size
-  const sampleSize = Math.min(20, data.length);
-  const encoder = new TextEncoder();
-  let sampleBytes = 0;
-
-  for (let i = 0; i < sampleSize; i++) {
-    const formatted = formatCSVValues(data[i]);
-    const line = resolvedHeaders.map((h) => `"${String(formatted[h] ?? '')}"`).join(',');
-    sampleBytes += encoder.encode(`${line}\n`).byteLength;
-  }
-
-  const avgRowBytes = sampleBytes / sampleSize;
-  const headerBytes = encoder.encode(
-    `${resolvedHeaders.map((h) => `"${h}"`).join(',')}\n`,
-  ).byteLength;
-
-  console.log('I found out the size');
-  return Math.ceil(headerBytes + avgRowBytes * data.length);
+type ColumnMeta = {
+  key: string;
+  isField: boolean;
+  type: string;
 };
 
-const formatCsvBody = (data: any[], headerString: string[]): any[] => {
-  const csvRows = [];
+const buildColumnMeta = (data: any[], headers: string[]): ColumnMeta[] =>
+  headers.map((key) => {
+    if (key in fieldRenderFunctions) return { key, isField: true, type: '' };
+    const sample = data.find((row) => row[key] != null)?.[key];
+    const type = sample instanceof Date ? 'date' : typeof sample;
+    return { key, isField: false, type };
+  });
 
-  for (const row of data) {
-    const values = headerString.map((header) => {
-      const value = row[header];
-      if (value === undefined) {
-        throw new Error(`Could not find value for header ${header}`);
-      }
-      return `"${value}"`;
-    });
-    csvRows.push(values.join(','));
-  }
-  return csvRows;
+const formatValueFromMeta = (key: string, value: any, type: string, isField: boolean): any => {
+  if (isField) return fieldRenderFunctions[key](value);
+  if (value == null) return '';
+  if (type in typeRenderFunctions) return typeRenderFunctions[type](value);
+  if (typeof value === 'string') return value.replace(/"/g, '""');
+  return value;
 };
 
-export const formatDataAsCSV = (data: any[], headerString: string[]) => {
-  const csvRows = [];
-  csvRows.push(headerString.join(','));
-  const csvContent = formatCsvBody(data, headerString);
-  csvRows.push(...csvContent);
-  return csvRows.join('\n');
-};
-
-export const formatCSVValues = (row: any) => {
+export const formatCSVValues = (row: any, columnMeta?: ColumnMeta[]): any => {
   const formattedRow: any = {};
   for (const [key, value] of Object.entries(row)) {
-    const type = value instanceof Date ? 'date' : (typeof value).toLocaleLowerCase();
-    switch (true) {
-      case key in fieldRenderFunctions:
-        formattedRow[key] = fieldRenderFunctions[key](value);
-        break;
-      case type in typeRenderFunctions:
-        // this handles null values
-        formattedRow[key] = typeRenderFunctions[type](value);
-        break;
-      case type === 'object' && value === null:
-        formattedRow[key] = '';
-        break;
-      case typeof value === 'string':
-        formattedRow[key] = (value as string).replace(/"/g, '""');
-        break;
-      default:
-        formattedRow[key] = value;
+    const meta = columnMeta?.find((m) => m.key === key);
+    if (meta) {
+      formattedRow[key] = formatValueFromMeta(key, value, meta.type, meta.isField);
+    } else {
+      const type = value instanceof Date ? 'date' : (typeof value).toLowerCase();
+      const isField = key in fieldRenderFunctions;
+      formattedRow[key] = formatValueFromMeta(key, value, type, isField);
     }
   }
   return formattedRow;
 };
 
-export const generateCSV = (data: any[], headers?: string[]) => {
-  // Processing data here
-  const formattedData = data.map((row: any) => formatCSVValues(row));
-  // Set headers
-  const header = headers === undefined ? Object.keys(formattedData[0]) : headers;
+export const formatCsvBody = (
+  data: any[],
+  headerString: string[],
+  columnMeta?: ColumnMeta[],
+): string[] => {
+  const meta = columnMeta ?? buildColumnMeta(data, headerString);
+  const buffer = new Array(headerString.length);
+  const lines = new Array(data.length);
 
-  // Set data for CSVLink
-  return formatDataAsCSV(formattedData, header);
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    for (let j = 0; j < meta.length; j++) {
+      const { key, isField, type } = meta[j];
+      const value = row[key];
+      if (value === undefined) throw new Error(`Could not find value for header ${key}`);
+      buffer[j] = `"${formatValueFromMeta(key, value, type, isField)}"`;
+    }
+    lines[i] = buffer.join(',');
+  }
+  return lines;
 };
+
+export const estimateCSVSize = (data: any[], headers?: string[]): number => {
+  if (data.length === 0) return 0;
+
+  const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
+  // Build meta once so we aren't re-detecting types for every sample row
+  const meta = buildColumnMeta(data, resolvedHeaders);
+
+  const sampleSize = Math.min(20, data.length);
+  const encoder = new TextEncoder();
+  let sampleBytes = 0;
+
+  for (let i = 0; i < sampleSize; i++) {
+    const row = data[i];
+
+    // We recreate the exact string logic formatCsvBody uses
+    const line = meta
+      .map(({ key, isField, type }) => {
+        const val = row[key];
+        const formatted = formatValueFromMeta(key, val, type, isField);
+        return `"${formatted ?? ''}"`;
+      })
+      .join(',');
+
+    // +1 for the newline that the stream appends
+    sampleBytes += encoder.encode(`${line}\n`).byteLength;
+  }
+
+  const avgRowBytes = sampleBytes / sampleSize;
+  const headerLine = resolvedHeaders.join(',');
+  const headerBytes = encoder.encode(`${headerLine}\n`).byteLength;
+
+  return Math.ceil(headerBytes + avgRowBytes * data.length);
+};
+
+// UNCHANGED
+const yieldToMain =
+  'scheduler' in globalThis && typeof (globalThis as any).scheduler.yield === 'function'
+    ? () => (globalThis as any).scheduler.yield()
+    : () => new Promise<void>((r) => setTimeout(r, 0));
 
 export const generateCSVStream = (data: any[], headers?: string[]): ReadableStream<Uint8Array> => {
   const encoder = new TextEncoder();
-  console.log('am i generating a csv here');
-  const resolvedHeaders: string[] =
-    headers ?? (data.length > 0 ? Object.keys(formatCSVValues(data[0])) : []);
+  if (data.length === 0 && !headers) throw new Error('Cannot generate CSV: no headers resolved');
 
-  if (resolvedHeaders.length === 0) throw new Error('Cannot generate CSV: no headers resolved');
+  const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
+  const columnMeta = buildColumnMeta(data, resolvedHeaders);
 
   let index = 0;
   let headerWritten = false;
 
   return new ReadableStream<Uint8Array>({
-    pull(controller) {
-      // Write header once
+    async pull(controller) {
       if (!headerWritten) {
-        controller.enqueue(encoder.encode(`${resolvedHeaders.map((h) => `"${h}"`).join(',')}\n`));
+        controller.enqueue(encoder.encode(`${resolvedHeaders.join(',')}\n`));
         headerWritten = true;
       }
-
       if (index >= data.length) {
         controller.close();
         return;
       }
-
-      // Build a single large string per chunk rather than enqueuing per-row
       const end = Math.min(index + CHUNK_SIZE, data.length);
-      const lines: string[] = [];
-
-      for (let i = index; i < end; i++) {
-        const formatted = formatCSVValues(data[i]);
-        lines.push(resolvedHeaders.map((h) => `"${String(formatted[h] ?? '')}"`).join(','));
+      try {
+        // removed data.slice() — passes index/end range directly to avoid allocation
+        const lines = formatCsvBody(data.slice(index, end), resolvedHeaders, columnMeta);
+        controller.enqueue(encoder.encode(`${lines.join('\n')}\n`));
+      } catch (error) {
+        controller.error(error);
+        return;
       }
-
-      controller.enqueue(encoder.encode(`${lines.join('\n')}\n`));
       index = end;
-
-      const yieldToMain = (() => {
-        if (
-          'scheduler' in globalThis &&
-          typeof (globalThis as any).scheduler.yield === 'function'
-        ) {
-          console.log('[CSV Export] Using scheduler.yield() for main thread yielding');
-          return () => (globalThis as any).scheduler.yield();
-        }
-        console.log('[CSV Export] scheduler.yield() unavailable, falling back to setTimeout(0)');
-        return () => new Promise<void>((r) => setTimeout(r, 0));
-      })();
+      await yieldToMain();
     },
   });
 };
