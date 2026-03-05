@@ -36,7 +36,6 @@ function ExportTableData(props: ExportTableDataProps) {
         size: filesize,
       });
 
-      console.log('what the hell is happening');
       // Get your readable stream
       const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
 
