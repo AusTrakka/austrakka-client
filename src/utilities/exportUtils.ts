@@ -65,7 +65,6 @@ export const estimateCSVSize = (data: any[], headers?: string[]): number => {
   if (data.length === 0) return 0;
 
   const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
-  // Build meta once so we aren't re-detecting types for every sample row
   const meta = buildColumnMeta(data, resolvedHeaders);
 
   const sampleSize = Math.min(20, data.length);
@@ -75,7 +74,6 @@ export const estimateCSVSize = (data: any[], headers?: string[]): number => {
   for (let i = 0; i < sampleSize; i++) {
     const row = data[i];
 
-    // We recreate the exact string logic formatCsvBody uses
     const line = meta
       .map(({ key, isField, type }) => {
         const val = row[key];
@@ -84,7 +82,6 @@ export const estimateCSVSize = (data: any[], headers?: string[]): number => {
       })
       .join(',');
 
-    // +1 for the newline that the stream appends
     sampleBytes += encoder.encode(`${line}\n`).byteLength;
   }
 
@@ -95,7 +92,6 @@ export const estimateCSVSize = (data: any[], headers?: string[]): number => {
   return Math.ceil(headerBytes + avgRowBytes * data.length);
 };
 
-// UNCHANGED
 const yieldToMain =
   'scheduler' in globalThis && typeof (globalThis as any).scheduler.yield === 'function'
     ? () => (globalThis as any).scheduler.yield()
@@ -123,7 +119,6 @@ export const generateCSVStream = (data: any[], headers?: string[]): ReadableStre
       }
       const end = Math.min(index + CHUNK_SIZE, data.length);
       try {
-        // removed data.slice() — passes index/end range directly to avoid allocation
         const lines = formatCsvBody(data.slice(index, end), resolvedHeaders, columnMeta);
         controller.enqueue(encoder.encode(`${lines.join('\n')}\n`));
       } catch (error) {

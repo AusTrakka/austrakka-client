@@ -36,12 +36,9 @@ function ExportTableData(props: ExportTableDataProps) {
         size: filesize,
       });
 
-      // Get your readable stream
       const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
 
-      // Pipe the data to the file stream
       await readable.pipeTo(fileStream);
-
       setExportCSVStatus(LoadingState.IDLE);
     } catch (_error) {
       setExportCSVStatus(LoadingState.ERROR);
