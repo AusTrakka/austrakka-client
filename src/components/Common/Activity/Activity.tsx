@@ -1,25 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DataTable,
-  DataTableRowClickEvent,
-  DataTableSelectEvent,
+  type DataTableRowClickEvent,
+  type DataTableSelectEvent,
 } from 'primereact/datatable';
 import { Alert, AlertTitle, Box, Paper, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { Cancel } from '@mui/icons-material';
 import dayjs from 'dayjs';
-import { ActivityDetailInfo } from './activityViewModels.interface';
-import ActivityDetails from './ActivityDetails';
-import { DerivedLog } from '../../../types/dtos';
+import type { DerivedLog } from '../../../types/dtos';
 import useActivityLogs from '../../../hooks/useActivityLogs';
-import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
+import {
+  buildPrimeReactColumnDefinitions,
+  type PrimeReactColumnDefinition,
+} from '../../../utilities/tableUtils';
 import sortIcon from '../../TableComponents/SortIcon';
 import ActivityDetails from './ActivityDetails';
-import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
 import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
-import ActivityFilters, { Filters } from './ActivityFilters';
+import ActivityFilters, { type Filters } from './ActivityFilters';
+import { Theme } from '../../../assets/themes/theme';
 
 interface ActivityProps {
   recordType: string;
@@ -55,17 +56,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     eventType: null,
     submitterDisplayName: null,
   });
-  
-  const routeSegment = recordType === 'Tenant'
-    ? recordType
-    : `${recordType}V2`;
 
-  const {
-    refinedLogs,
-    httpStatusCode,
-    isLoadingErrorMsg,
-    dataLoading,
-  } = useActivityLogs(
+  const routeSegment = recordType === 'Tenant' ? recordType : `${recordType}V2`;
+
+  const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
     routeSegment,
     filters,
     rGuid,
@@ -117,16 +111,13 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setSelectedRow(e.data);
   };
 
-  const firstColumnTemplate = (rowData: any) => (
-    rowData.eventStatus === 'Success'
-      ? (
-        <div>
-          {rowData[EVENT_NAME_COLUMN]}
-        </div>
-      )
-      : (
-        <span>
-          <Cancel style={{
+  const firstColumnTemplate = (rowData: any) =>
+    rowData.eventStatus === 'Success' ? (
+      <div>{rowData[EVENT_NAME_COLUMN]}</div>
+    ) : (
+      <span>
+        <Cancel
+          style={{
             marginRight: '10px',
             cursor: 'pointer',
             color: Theme.SecondaryRed,
@@ -163,77 +154,81 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             <Box sx={{ p: 4 }}>
               <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
             </Box>
-          ) :
-            (
-              <DataTable
-                className="my-flexible-table"
-                value={localLogs}
-                onValueChange={() => {
-                  setLoadingState(false);
-                }}
-                size="small"
-                columnResizeMode="expand"
-                resizableColumns
-                showGridlines
-                reorderableColumns
-                header={<div style={{ margin: '20px' }} />}
-                removableSort
-                scrollable
-                sortIcon={sortIcon}
-                scrollHeight="flex"
-                paginator
-                rows={500}
-                rowsPerPageOptions={[500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]}
-                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-                currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-                paginatorPosition="bottom"
-                paginatorRight
-                loading={loadingState}
-                onRowClick={rowClickHandler}
-                selection={selectedRow}
-                onRowSelect={onRowSelect}
-                selectionMode="single"
-                emptyMessage={httpStatusCode === 413 ? (
+          ) : (
+            <DataTable
+              className="my-flexible-table"
+              value={localLogs}
+              onValueChange={() => {
+                setLoadingState(false);
+              }}
+              size="small"
+              columnResizeMode="expand"
+              resizableColumns
+              showGridlines
+              reorderableColumns
+              header={<div style={{ margin: '20px' }} />}
+              removableSort
+              scrollable
+              sortIcon={sortIcon}
+              scrollHeight="flex"
+              paginator
+              rows={500}
+              rowsPerPageOptions={[500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]}
+              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+              currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+              paginatorPosition="bottom"
+              paginatorRight
+              loading={loadingState}
+              onRowClick={rowClickHandler}
+              selection={selectedRow}
+              onRowSelect={onRowSelect}
+              selectionMode="single"
+              emptyMessage={
+                httpStatusCode === 413 ? (
                   <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
                     <AlertTitle>Error</AlertTitle>
-                    {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
+                    {isLoadingErrorMsg ||
+                      'The activity log is too large to display. Please narrow your filters.'}
                   </Alert>
                 ) : (
                   <Typography variant="subtitle1" color="textSecondary" align="center">
                     No activity found
                   </Typography>
-                )}
-              >
-                <Column
-                  key={EVENT_NAME_COLUMN}
-                  field={EVENT_NAME_COLUMN}
-                  header="Event"
-                  hidden={false}
-                  body={firstColumnTemplate}
-                  sortable
-                  resizeable
-                  headerClassName="custom-title"
-                  className="flexible-column"
-                  bodyClassName="value-cells"
-                />
-                {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-                  col.field !== EVENT_NAME_COLUMN)
-                  .map((col: any) => (
-                    <Column
-                      key={col.field}
-                      field={col.field}
-                      header={col.header}
-                      hidden={false}
-                      body={col.body}
-                      sortable
-                      resizeable
-                      headerClassName="custom-title"
-                      className="flexible-column"
-                      bodyClassName="value-cells"
-                    />
-                  )) : null}
-              </DataTable>
-            )}
+                )
+              }
+            >
+              <Column
+                key={EVENT_NAME_COLUMN}
+                field={EVENT_NAME_COLUMN}
+                header="Event"
+                hidden={false}
+                body={firstColumnTemplate}
+                sortable
+                resizeable
+                headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName="value-cells"
+              />
+              {columns
+                ? columns
+                    .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                    .map((col: any) => (
+                      <Column
+                        key={col.field}
+                        field={col.field}
+                        header={col.header}
+                        hidden={false}
+                        body={col.body}
+                        sortable
+                        resizeable
+                        headerClassName="custom-title"
+                        className="flexible-column"
+                        bodyClassName="value-cells"
+                      />
+                    ))
+                : null}
+            </DataTable>
+          )}
         </Paper>
       )}
     </Box>

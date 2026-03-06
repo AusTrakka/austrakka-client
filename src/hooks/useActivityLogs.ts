@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { DerivedLog } from '../types/dtos';
+import type { DerivedLog } from '../types/dtos';
 import { useApi } from '../app/ApiContext';
 import LoadingState from '../constants/loadingState';
-import { Filters } from '../components/Common/Activity/ActivityFilters';
+import type { Filters } from '../components/Common/Activity/ActivityFilters';
 
 // TODO look at this structure; it mimics a hook but is not one
-export default function useActivityLogs(
-  recordType: string,
-  filters: Filters,
-  rguid?: string,
-) {
+export default function useActivityLogs(recordType: string, filters: Filters, rguid?: string) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
   const [exportData, setExportData] = useState<DerivedLog[]>([]);
@@ -22,10 +18,12 @@ export default function useActivityLogs(
     const getData = async () => {
       const params = new URLSearchParams();
 
-      if (filters.resourceUniqueString) params.append('resourceIdentifier', filters.resourceUniqueString);
+      if (filters.resourceUniqueString)
+        params.append('resourceIdentifier', filters.resourceUniqueString);
       if (filters.resourceType) params.append('resourceType', filters.resourceType);
       if (filters.eventType) params.append('eventType', filters.eventType);
-      if (filters.submitterDisplayName) params.append('submitterDisplayName', filters.submitterDisplayName);
+      if (filters.submitterDisplayName)
+        params.append('submitterDisplayName', filters.submitterDisplayName);
       if (filters.startDate) params.append('startDateTime', filters.startDate.toISOString());
       if (filters.endDate) params.append('endDateTime', filters.endDate.toISOString());
 
