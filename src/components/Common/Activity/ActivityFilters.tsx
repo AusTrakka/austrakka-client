@@ -1,17 +1,17 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { AddBox, IndeterminateCheckBox, Lock } from '@mui/icons-material';
 import {
   Box,
-  Grid2 as Grid,
   Button,
+  Grid2 as Grid,
+  IconButton,
+  InputAdornment,
   Stack,
   TextField,
-  InputAdornment,
-  IconButton,
   Tooltip,
 } from '@mui/material';
-import { AddBox, IndeterminateCheckBox, Lock } from '@mui/icons-material';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import type { Dispatch, SetStateAction } from 'react';
 import { supportedColumns } from './ActivityTableFields';
 
 export type Filters = {
