@@ -44,7 +44,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                     background: 'transparent',
                     color: 'transparent',
                   }}
-                >Dismiss</Button>
+                >
+                  Dismiss
+                </Button>
               )}
             >
               <App />
