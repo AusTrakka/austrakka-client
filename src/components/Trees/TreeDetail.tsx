@@ -134,8 +134,7 @@ function TreeDetail() {
   useEffect(() => {
     if (tree &&
       tableMetadata && tableMetadata.length > 0 &&
-      projectMetadata?.fields &&
-      projectMetadata?.fieldUniqueValues
+      projectMetadata?.fields
     ) {
       if (Object.keys(colourSchemeMapping).length === 0) {
         projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
@@ -150,7 +149,7 @@ function TreeDetail() {
         projectMetadata.fields.map((f) => f.columnName),
         projectMetadata.fields,
         tableMetadata,
-      )
+      );
 
       const mappingData = mapMetadataToPhylocanvas(
         tableMetadata,
