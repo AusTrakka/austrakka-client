@@ -18,7 +18,6 @@ import TabPanel from '../Common/TabPanel';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
 import { NavigationProvider } from '../../app/NavigationContext';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
-import { channelCompatibility } from 'vega-lite/build/src/channeldef';
 
 const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
   groupRoles.filter((groupRole: GroupRole) =>
@@ -30,19 +29,19 @@ const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole
       if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
       if (a.group.name.endsWith('-Owner')) return -1;
       if (b.group.name.endsWith('-Owner')) return 1;
-      return 0
+      return 0;
     });
 
 const getCorrectGroupsAdmin = (groups: Group[], orgAbbrev: string): Group[] =>
   groups.filter((group: Group) => (
     group.name === `${orgAbbrev}-Owner`
     || group.name === `${orgAbbrev}-Everyone`)).sort((a: any, b: any) => {
-      // Owner group first
-      if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
-      if (a.name.endsWith('-Owner')) return -1;
-      if (b.name.endsWith('-Owner')) return 1;
-      return 0;
-    });
+    // Owner group first
+    if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
+    if (a.name.endsWith('-Owner')) return -1;
+    if (b.name.endsWith('-Owner')) return 1;
+    return 0;
+  });
 
 interface OrganisationOverviewProps {
   orgAbbrev: string,

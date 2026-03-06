@@ -21,7 +21,6 @@ import {
   fetchProjectMetadata,
   selectProjectMergeAlgorithm,
 } from '../../app/projectMetadataSlice';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { ResponseType } from '../../constants/responseType';
 import Activity from '../Common/Activity/Activity';
@@ -45,15 +44,8 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const { token, tokenLoading } = useApi();
   const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
-
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
-  const user: UserSliceState = useAppSelector(selectUserState);
-
-  // Temporarily hiding activity tab for non SuperUsers
-  // If long-term, can drive tab visibility
-  // based on V2 permission similarly to <MainMenuLayout/>
-  const isSuperUser = Boolean(user?.adminV2);
-
+   
   const tabLoadingSetters = useMemo(() => (
     Object.values(PROJ_TABS).reduce((acc, pt) => {
       acc[pt.index] = (loading: boolean) =>

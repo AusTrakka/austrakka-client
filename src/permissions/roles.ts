@@ -7,7 +7,7 @@ export enum RoleName {
   ProjectAnalyst = 'ProjectAnalyst',
 }
 
-//WARN: might be missing some here
+// WARN: might be missing some here
 export enum RoleV2SeededName {
   SuperUser = 'SuperUser',
   User = 'User',
@@ -17,7 +17,7 @@ export enum RoleV2SeededName {
   OrgViewer = 'OrgViewer',
   GuestViewer = 'GuestViewer',
   ProjectContributor = 'ProjectContributor',
-  GuestUploader = 'GuestViewer'
+  GuestUploader = 'GuestViewer',
 }
 
 export const orgRoles = [

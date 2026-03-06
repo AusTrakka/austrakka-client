@@ -7,7 +7,6 @@ import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn, Domain,
-  SvgIconComponent,
 } from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
@@ -19,11 +18,10 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission, hasPermissionV2ByRole, hasPermissionV2ByScope } from '../../permissions/accessTable';
+import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
-import { ScopeDefinitions } from '../../constants/scopes';
 import { Theme } from '../../assets/themes/theme';
 import { RoleV2SeededName } from '../../permissions/roles';
 
@@ -139,7 +137,7 @@ function MainMenuLayout() {
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
-      permissionDomain: 'tenantPlatform'
+      permissionDomain: 'tenantPlatform',
     },
     {
       title: 'Users',
@@ -155,14 +153,12 @@ function MainMenuLayout() {
     },
   ];
 
-  const hasAdminRights = (domain: string | null): boolean => hasPermissionV2ByRole(
+  const hasAdminRights: boolean = hasPermissionV2ByRole(
     user,
     RoleV2SeededName.Admin,
-  )
-
-  const visiblePages = pages.filter((page) =>
-    !page.permissionDomain || hasAdminRights(page.permissionDomain)
   );
+
+  const visiblePages = pages.filter((page) => !page.permissionDomain || hasAdminRights);
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
