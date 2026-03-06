@@ -1,7 +1,7 @@
 import { GroupedPrivilegesByRecordTypeWithScopes, PrivilegeWithRolesWithScopes } from '../types/dtos';
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
-import { RoleName } from '../permissions/roles';
+import { RoleName, RoleV2SeededName } from '../permissions/roles';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
   const targetGroup = groups.find(group => group.recordType === RecordTypes.TENANT);
@@ -50,7 +50,7 @@ export function hasScopeInRecord(
 
 export function hasRoleInRecord(
   privileges: GroupedPrivilegesByRecordTypeWithScopes[],
-  role: string,
+  role: RoleV2SeededName,
   recordName: string = '',
   recordType = 'Tenant'
 ): boolean {
