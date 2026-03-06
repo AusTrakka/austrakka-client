@@ -97,11 +97,6 @@ function TreeDetail() {
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
-  // const tableUniqueValues = useMemo(() => {
-  //   if (!tableMetadata || !projectMetadata?.fields) return {}
-  //   return calculateUniqueValues()
-  // }, [tableMetadata, projectMetadata?.fields])
-
   // Request redux data if not loaded
   useEffect(() => {
     if (projectAbbrev &&
