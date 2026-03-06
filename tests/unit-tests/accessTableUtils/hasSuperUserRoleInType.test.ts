@@ -1,3 +1,4 @@
+import { ScopeDefinitions } from '../../../src/constants/scopes';
 import { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasSuperUserRoleInType } from '../../../src/utilities/accessTableUtils';
 
@@ -13,7 +14,7 @@ describe('hasSuperUserRoleInType', () => {
             roleName: 'SuperUser',
             privilegeLevel: '',
             privilegeGlobalId: 'global-id-1',
-            scopes: ['method=*,/**'],
+            scopes: [ScopeDefinitions.Everything],
           }],
         }],
       }];
@@ -21,7 +22,7 @@ describe('hasSuperUserRoleInType', () => {
       expect(hasSuperUserRoleInType(groups)).toBe(true);
     });
 
-    test('return true when user has method=*,/** scope', () => {
+    test('return true when user has ScopeDefinitions.Everything scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [{
         recordType: 'Tenant',
         recordRoles: [{
@@ -31,7 +32,7 @@ describe('hasSuperUserRoleInType', () => {
             roleName: 'RegularUser',
             privilegeLevel: 'User',
             privilegeGlobalId: 'global-id-1',
-            scopes: ['method=*,/**'],
+            scopes: [ScopeDefinitions.Everything],
           }],
         }],
       }];
@@ -126,7 +127,7 @@ describe('hasSuperUserRoleInType', () => {
               roleName: 'SuperUser',
               privilegeLevel: '',
               privilegeGlobalId: 'global-id-2',
-              scopes: ['method=*,/**'],
+              scopes: [ScopeDefinitions.Everything],
             }],
           },
         ],

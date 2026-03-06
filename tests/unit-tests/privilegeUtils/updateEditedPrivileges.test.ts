@@ -9,11 +9,11 @@ describe('updateEditedPrivileges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 'Root' },
+        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
         {
           name: 'Editor',
           globalId: 'role2',
-          allowedRootResourceTypes: [],
+          resourceTypes: [],
           privilegeLevel: 'TrakkaAdmin',
         },
       ],
@@ -24,7 +24,7 @@ describe('updateEditedPrivileges', () => {
         {
           name: 'Viewer',
           globalId: 'role3',
-          allowedRootResourceTypes: [],
+          resourceTypes: [],
           privilegeLevel: 'Admin',
         },
       ],
@@ -61,7 +61,7 @@ describe('updateEditedPrivileges', () => {
             recordName: 'U1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Admin',  },
+              { roleName: 'Admin' },
               { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
               { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
