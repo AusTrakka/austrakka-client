@@ -1,26 +1,26 @@
-import { useEffect, useState } from 'react';
+import { Cancel } from '@mui/icons-material';
+import { Alert, AlertTitle, Box, Paper, Typography } from '@mui/material';
+import dayjs from 'dayjs';
+import { Column } from 'primereact/column';
 import {
   DataTable,
   type DataTableRowClickEvent,
   type DataTableSelectEvent,
 } from 'primereact/datatable';
-import { Alert, AlertTitle, Box, Paper, Typography } from '@mui/material';
-import { Column } from 'primereact/column';
-import { Cancel } from '@mui/icons-material';
-import dayjs from 'dayjs';
-import type { DerivedLog } from '../../../types/dtos';
+import { useEffect, useState } from 'react';
+import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
+import type { DerivedLog } from '../../../types/dtos';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
 } from '../../../utilities/tableUtils';
 import sortIcon from '../../TableComponents/SortIcon';
 import ActivityDetails from './ActivityDetails';
+import ActivityFilters, { type Filters } from './ActivityFilters';
+import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
 import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
-import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
-import ActivityFilters, { type Filters } from './ActivityFilters';
-import { Theme } from '../../../assets/themes/theme';
 
 interface ActivityProps {
   recordType: string;
