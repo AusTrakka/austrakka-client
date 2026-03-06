@@ -7,6 +7,7 @@ import {
   Inventory, Upload, Help,
   Dashboard, AccountTree, Description, AccountCircle,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn, Domain,
+  SvgIconComponent,
 } from '@mui/icons-material';
 import {
   Box, Drawer, IconButton, List,
@@ -18,12 +19,20 @@ import styles from './MainMenuLayout.module.css';
 import LogoutButton from '../Common/LogoutButton';
 import { useAppSelector } from '../../app/store';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
+import { PermissionLevel, hasPermission, hasPermissionV2ByRole, hasPermissionV2ByScope } from '../../permissions/accessTable';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
 import { ScopeDefinitions } from '../../constants/scopes';
 import { Theme } from '../../assets/themes/theme';
+import { RoleV2SeededName } from '../../permissions/roles';
+
+interface SideBarItemProps {
+  title: string,
+  link: string;
+  icon: React.ReactNode;
+  permissionDomain?: string;
+}
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -100,7 +109,7 @@ function MainMenuLayout() {
   const account = useAccount(accounts[0] || {});
   const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const pages = [
+  const pages: SideBarItemProps[] = [
     {
       title: 'Dashboard',
       link: '/',
@@ -127,46 +136,33 @@ function MainMenuLayout() {
       icon: <ViewColumn />,
     },
     {
-      // TODO: Drive content pane visibility based on V2 permission.
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
-      requirePermission: true,
-      permissionDomain: null,
-      requiredTenantScope: ScopeDefinitions.GetTenantActivityLog,
+      permissionDomain: 'tenantPlatform'
     },
     {
       title: 'Users',
       link: '/users',
       icon: <People />,
-      requirePermission: true,
       permissionDomain: 'users',
     },
     {
       title: 'Users (V2)',
       link: '/usersV2',
       icon: <People color="warning" />,
-      requirePermission: true,
       permissionDomain: 'usersV2',
     },
   ];
 
-  const hasV1Perm = (domain: string | null): boolean => hasPermission(
+  const hasAdminRights = (domain: string | null): boolean => hasPermissionV2ByRole(
     user,
-    'AusTrakka-Owner',
-    domain,
-    PermissionLevel.CanShow,
-  );
-
-  const hasV2TenantPerm = (scope: string | undefined): boolean => hasPermissionV2(
-    user,
-    scope,
-  );
+    RoleV2SeededName.Admin,
+  )
 
   const visiblePages = pages.filter((page) =>
-    !page.requirePermission
-    || hasV1Perm(page.permissionDomain)
-    || hasV2TenantPerm(page.requiredTenantScope));
+    !page.permissionDomain || hasAdminRights(page.permissionDomain)
+  );
 
   const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {

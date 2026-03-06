@@ -1,6 +1,6 @@
 import { UserSliceState } from '../app/userSlice';
-import { RoleName } from './roles';
-import { hasScopeInRecord } from '../utilities/accessTableUtils';
+import { RoleName, RoleV2SeededName } from './roles';
+import { hasRoleInRecord, hasScopeInRecord } from '../utilities/accessTableUtils';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
@@ -43,12 +43,13 @@ export function hasPermission(
   if (user.admin) {
     return true;
   }
+  if (user.adminV2) return true
   const userRoles = user.groupRolesByGroup[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return userRoles.some(role => allowedRoles.includes(role));
 }
 
-export function hasPermissionV2(
+export function hasPermissionV2ByScope(
   user: UserSliceState,
   scope?: string,
   recordName: string = '',
@@ -60,10 +61,24 @@ export function hasPermissionV2(
   if (user.adminV2) {
     return true;
   }
-  
+
   if (!user.scopes || user.scopes.length === 0) {
     return false;
   }
-  
+
   return hasScopeInRecord(user.scopes, scope, recordName, recordType);
+}
+
+export function hasPermissionV2ByRole(
+  user:UserSliceState,
+  role: RoleV2SeededName,
+  recordName: string = '',
+  recordType = 'Tenant',
+): boolean {
+  if (!user) return false;
+  if (!role) return false;
+  if (user.adminV2) return true;
+  if (!user.scopes || user.scopes.length === 0) return false;
+
+  return hasRoleInRecord(user.scopes, role, recordName, recordType)
 }

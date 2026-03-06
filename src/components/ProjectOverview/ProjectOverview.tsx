@@ -53,9 +53,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
   // If long-term, can drive tab visibility
   // based on V2 permission similarly to <MainMenuLayout/>
   const isSuperUser = Boolean(user?.adminV2);
-  const visibleProjTabs = isSuperUser
-    ? Object.values(PROJ_TABS)
-    : Object.values(PROJ_TABS).filter(projectTab => projectTab !== PROJ_TABS.activity);
 
   const tabLoadingSetters = useMemo(() => (
     Object.values(PROJ_TABS).reduce((acc, pt) => {
@@ -127,7 +124,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
           </Typography>
           <CustomTabs
             value={tabValue}
-            tabContent={visibleProjTabs}
+            tabContent={Object.values(PROJ_TABS)}
             setValue={setTabValue}
           />
           <TabPanel
