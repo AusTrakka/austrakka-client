@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DerivedLog } from '../types/dtos';
 import { useApi } from '../app/ApiContext';
 import { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
 import { ResponseType } from '../constants/responseType';
 import LoadingState from '../constants/loadingState';
+import { Filters } from '../components/Common/Activity/ActivityFilters';
 
 // TODO look at this structure; it mimics a hook but is not one
 export default function useActivityLogs(
   recordType: string,
+  filters: Filters,
   rguid?: string,
 ) {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
@@ -17,18 +19,31 @@ export default function useActivityLogs(
   const [httpStatusCode, setHttpStatusCode] = useState<number>(-1);
   const [isLoadingErrorMsg, setIsLoadingErrorMsg] = useState<string>('');
   const [dataLoading, setDataLoading] = useState<boolean>(true);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const getData = async () => {
+      const params = new URLSearchParams();
+
+      if (filters.resourceUniqueString) params.append('resourceIdentifier', filters.resourceUniqueString);
+      if (filters.resourceType) params.append('resourceType', filters.resourceType);
+      if (filters.eventType) params.append('eventType', filters.eventType);
+      if (filters.submitterDisplayName) params.append('submitterDisplayName', filters.submitterDisplayName);
+      if (filters.startDate) params.append('startDateTime', filters.startDate.toISOString());
+      if (filters.endDate) params.append('endDateTime', filters.endDate.toISOString());
+
       const resp: ResponseObject<DerivedLog[]> = await getActivities(
         recordType,
         token,
         rguid,
+        params,
       );
       if (resp.status === ResponseType.Success) {
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
+        setHttpStatusCode(resp.httpStatusCode || -1);
       } else {
+        setRefinedLogs([]);
         setHttpStatusCode(resp.httpStatusCode || -1);
         setIsLoadingErrorMsg(resp.message);
       }
@@ -39,9 +54,14 @@ export default function useActivityLogs(
       tokenLoading !== LoadingState.IDLE
     ) {
       setDataLoading(true);
-      getData();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        getData();
+      }, 600);
     }
-  }, [recordType, rguid, token, tokenLoading]);
+  }, [filters, recordType, rguid, token, tokenLoading]);
 
   return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
 }
