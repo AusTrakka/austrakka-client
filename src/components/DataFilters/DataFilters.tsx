@@ -125,7 +125,9 @@ function DataFilters(props: DataFiltersProps) {
   const [conditions, setConditions] = useState(stringConditions);
   const [selectedFieldType, setSelectedFieldType] = useState(FieldTypes.STRING);
   const [filterError, setFilterError] = useState(false);
-  const [filterErrorMessage, setFilterErrorMessage] = useState('An error has occurred in the filters.');
+  const [filterErrorMessage, setFilterErrorMessage] = useState(
+    'An error has occurred in the filters.',
+  );
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [dateError, setDateError] = useState<DateValidationError>(null);
   const [fields, setFields] = useState<Field[]>([]);
