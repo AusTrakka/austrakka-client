@@ -15,7 +15,7 @@ import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 import ActivityFilters, { Filters } from './ActivityFilters';
 import CollapseTreeNodes from '../../TableComponents/CollapseTreeNodes';
-import './TreeTable.css';
+import '../../../styles/TreeTable.css';
 import { aggregateLogsToTree, processTreeNodes, splitLargeChildrenGroups } from '../../../utilities/activityTreeUtils';
 
 interface ActivityProps {
@@ -232,79 +232,77 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             </Box>
           ) :
             (
-              <>
-                <TreeTable
-                  className="tree-table-custom"
-                  header={header}
-                  rowClassName={rowClassName}
-                  value={nodes || []}
-                  expandedKeys={expandedKeys}
-                  onToggle={(e) => setExpandedKeys(e.value)}
-                  onRowClick={handleTreeRowClick}
-                  showGridlines
-                  removableSort
-                  sortIcon={sortIcon}
-                  paginator
-                  rows={25}
-                  rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-                  paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-                  currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-                  paginatorPosition="bottom"
-                  paginatorRight
-                  rowHover
-                  selectionMode="single"
-                  emptyMessage={httpStatusCode === 413 ? (
-                    <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                      <AlertTitle>Error</AlertTitle>
-                      {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
-                    </Alert>
-                  ) : (
-                    <Typography variant="subtitle1" color="textSecondary" align="center">
-                      No activity found
-                    </Typography>
-                  )}
-                >
-                  <Column
-                    key={EVENT_NAME_COLUMN}
-                    field={EVENT_NAME_COLUMN}
-                    header="Event"
-                    hidden={false}
-                    body={firstColumnTemplate}
-                    sortable
-                    expander
-                  />
-                  {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-                    col.field !== EVENT_NAME_COLUMN)
-                    .map((col: any) => (
-                      <Column
-                        key={col.field}
-                        field={col.field}
-                        header={col.header}
-                        hidden={false}
-                        body={(node: TreeNode) => {
-                          if (col.field === 'resourceUniqueString') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceCount',
-                              previewKey: 'resourcePreview',
-                              valueKey: 'resourceUniqueString',
-                            });
-                          }
-                          if (col.field === 'resourceType') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceTypeCount',
-                              previewKey: 'resourceTypePreview',
-                              valueKey: 'resourceType',
-                            });
-                          }
-                          // Work around so tableUtils/renderUtils work with TreeTable bodyData
-                          const bodyData = node.data;
-                          return col.body ? col.body(bodyData) : bodyData[col.field];
-                        }}
-                        sortable
-                      />
-                    )) : null}
-                </TreeTable>
-              </>
+              <TreeTable
+                className="tree-table-custom"
+                header={header}
+                rowClassName={rowClassName}
+                value={nodes || []}
+                expandedKeys={expandedKeys}
+                onToggle={(e) => setExpandedKeys(e.value)}
+                onRowClick={handleTreeRowClick}
+                showGridlines
+                removableSort
+                sortIcon={sortIcon}
+                paginator
+                rows={500}
+                rowsPerPageOptions={[500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]}
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+                currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+                paginatorPosition="bottom"
+                paginatorRight
+                rowHover
+                selectionMode="single"
+                emptyMessage={httpStatusCode === 413 ? (
+                  <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                    <AlertTitle>Error</AlertTitle>
+                    {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
+                  </Alert>
+                ) : (
+                  <Typography variant="subtitle1" color="textSecondary" align="center">
+                    No activity found
+                  </Typography>
+                )}
+              >
+                <Column
+                  key={EVENT_NAME_COLUMN}
+                  field={EVENT_NAME_COLUMN}
+                  header="Event"
+                  hidden={false}
+                  body={firstColumnTemplate}
+                  sortable
+                  expander
+                />
+                {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
+                  col.field !== EVENT_NAME_COLUMN)
+                  .map((col: any) => (
+                    <Column
+                      key={col.field}
+                      field={col.field}
+                      header={col.header}
+                      hidden={false}
+                      body={(node: TreeNode) => {
+                        if (col.field === 'resourceUniqueString') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceCount',
+                            previewKey: 'resourcePreview',
+                            valueKey: 'resourceUniqueString',
+                          });
+                        }
+                        if (col.field === 'resourceType') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceTypeCount',
+                            previewKey: 'resourceTypePreview',
+                            valueKey: 'resourceType',
+                          });
+                        }
+                        // Work around so tableUtils/renderUtils work with TreeTable bodyData
+                        const bodyData = node.data;
+                        return col.body ? col.body(bodyData) : bodyData[col.field];
+                      }}
+                      sortable
+                    />
+                  )) : null}
+              </TreeTable>
             )}
         </Paper>
       )}
