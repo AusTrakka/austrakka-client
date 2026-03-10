@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
-
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -17,6 +16,7 @@ import type React from 'react';
 import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
+import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 import {
   fetchProjectMetadata,
   type ProjectMetadataState,
@@ -24,7 +24,37 @@ import {
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
-import { calculateUniqueValues } from '../../app/metadataSliceUtils';
+import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { ResponseType } from '../../constants/responseType';
+import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import type { TreeVersion } from '../../types/dtos';
+import type {
+  FieldAndColourScheme,
+  PhylocanvasLegends,
+  PhylocanvasMetadata,
+} from '../../types/phylocanvas.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import type { Sample } from '../../types/sample.interface';
+import type TreeState from '../../types/tree.interface';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
+import { getLatestTreeData, getTreeData, getTreeVersions } from '../../utilities/resourceUtils';
+import {
+  useStateFromSearchParamsForObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
+import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
+import { TreeTypes } from './PhylocanvasGL';
+import type { TreeExportFuctions } from './Tree';
+import Tree from './Tree';
+import ExportButton from './TreeControls/Export';
+import MetadataControls from './TreeControls/Metadata';
+import NodeAndLabelControls from './TreeControls/NodeAndLabel';
+import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import Search from './TreeControls/Search';
+import TreeNavigation from './TreeControls/TreeNavigation';
+import TreeSamplesTable from './TreeSamplesTable';
 
 const defaultState: TreeState = {
   blocks: [],
