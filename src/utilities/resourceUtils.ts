@@ -13,7 +13,6 @@ import {
   downloadFile,
 } from './api';
 import {
-  Feedback,
   FeedbackPost,
   DerivedLog,
   Plot,
@@ -24,7 +23,7 @@ import {
   Tree,
   TreeVersion,
   UserPatchV2,
-  UserRoleRecordPrivilegePost, Group,
+  UserRoleRecordPrivilegePost, Group, CreateMsg,
 } from '../types/dtos';
 import { ResponseObject } from '../types/responseObject.interface';
 
@@ -171,7 +170,7 @@ export const unshareSamples = (
 export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
 export const getOrganisation = (abbrev: string, token: string): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
-export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
+export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<CreateMsg>> => callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
 export const postTenantPrivilege = (
