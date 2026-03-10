@@ -292,8 +292,9 @@ export const getActivities = (
   recordType: string,
   token: string,
   rguid?: string,
+  searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
   const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+  return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
 };

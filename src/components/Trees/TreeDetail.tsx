@@ -31,6 +31,7 @@ import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive
 import { defaultDiscreteColorScheme } from '../../constants/schemes';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { Theme } from '../../assets/themes/theme';
+import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -133,8 +134,7 @@ function TreeDetail() {
   useEffect(() => {
     if (tree &&
       tableMetadata && tableMetadata.length > 0 &&
-      projectMetadata?.fields &&
-      projectMetadata?.fieldUniqueValues
+      projectMetadata?.fields
     ) {
       if (Object.keys(colourSchemeMapping).length === 0) {
         projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
@@ -144,10 +144,17 @@ function TreeDetail() {
           }));
         });
       }
+
+      const tableUniqueValues = calculateUniqueValues(
+        projectMetadata.fields.map((f) => f.columnName),
+        projectMetadata.fields,
+        tableMetadata,
+      );
+
       const mappingData = mapMetadataToPhylocanvas(
         tableMetadata,
         projectMetadata.fields,
-        projectMetadata.fieldUniqueValues,
+        tableUniqueValues,
         colourSchemeMapping,
       );
       setPhylocanvasMetadata(mappingData.result);
@@ -156,7 +163,6 @@ function TreeDetail() {
   }, [
     tree,
     projectMetadata?.fields,
-    projectMetadata?.fieldUniqueValues,
     colourSchemeMapping,
     tableMetadata,
   ]);
