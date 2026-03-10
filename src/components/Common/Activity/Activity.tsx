@@ -116,10 +116,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   const aggregatedCellTemplate = useCallback(
     (rowNode: any, params: { countKey: string; previewKey: string; valueKey: string }) => {
-      const { data, key, children } = rowNode;
+      const { data, children } = rowNode;
       const { countKey, previewKey, valueKey } = params;
 
-      const isExpanded = !!expandedKeys?.[key];
+      const isExpanded = rowNode.expanded;
       const isParent = !!children && children.length > 0;
 
       if (isParent && isExpanded) {
@@ -142,7 +142,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       }
       return data[valueKey] || '-';
     },
-    [expandedKeys],
+    [],
   );
 
   const firstColumnTemplate = useCallback(
