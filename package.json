@@ -6,7 +6,7 @@
   "scripts": {
     "dev-backup": "vite",
     "dev": "vite",
-    "build": "tsc && vite build && biome check .",
+    "build": "tsc && biome check . && vite build",
     "preview": "vite preview",
     "lint": "biome lint .",
     "fix": "biome check --write .",
