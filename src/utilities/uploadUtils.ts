@@ -194,32 +194,30 @@ export const createSingleSeqUploadRows = (
 // The contig name is deemed to be from ">" to the first whitespace
 // This function must validate expected properties (e.g. uniqueness of Seq_IDs)
 export async function splitFastaByContig(files: File[]) : Promise<File[]> {
-  // For now assert only one file, but we could in principle handle many
-  if (files.length > 1) {
-    throw new Error('Expected only one file for fasta-cns splitting');
-  }
-  const file = files[0];
-  const fileContent = await file.text();
-  // Assert that the file starts with ">"; the split asserts that the rest of the contigs do
-  if (!fileContent.trim().startsWith('>')) {
-    throw new Error('File does not appear to be in fasta format: missing ">" at start of file');
-  }
-  // Drop first > character from first contig, since it will not be split on.
-  // The trim() allows for whitespace after >, although this is technically not valid fasta
-  const contigs = fileContent.substring(1).split('\n>').map(line => line.trim());
   const contigNames = new Set();
-  const contigFiles = contigs.map((contig) => {
-    const contigName = contig.split(/\s/)[0];
-    if (contigNames.has(contigName)) {
-      throw new Error(`Duplicate Seq_ID found in upload: ${contigName}.`);
+  const contigFiles : File[] = [];
+  for (const file of files) {
+    const fileContent = await file.text();
+    // Assert that the file starts with ">"; the split asserts that the rest of the contigs do
+    if (!fileContent.trim().startsWith('>')) {
+      throw new Error('File does not appear to be in fasta format: missing ">" at start of file');
     }
-    if (contigName === '') {
-      throw new Error('Unable to parse contig names from fasta header, empty contig name found');
+    // Drop first > character from first contig, since it will not be split on.
+    // The trim() allows for whitespace after >, although this is technically not valid fasta
+    const contigs = fileContent.substring(1).split('\n>').map(line => line.trim());
+    for (const contig of contigs) {
+      const contigName = contig.split(/\s/)[0];
+      if (contigNames.has(contigName)) {
+        throw new Error(`Duplicate Seq_ID found in upload: ${contigName}.`);
+      }
+      if (contigName === '') {
+        throw new Error('Unable to parse contig names from fasta header, empty contig name found');
+      }
+      contigNames.add(contigName);
+      const contigContent = `>${contig}\n`;
+      const contigBlob = new Blob([contigContent], {type: file.type});
+      contigFiles.push(new File([contigBlob], `${contigName}.fa`, {type: file.type}));
     }
-    contigNames.add(contigName);
-    const contigContent = `>${contig}\n`;
-    const contigBlob = new Blob([contigContent], { type: file.type });
-    return new File([contigBlob], `${contigName}.fa`, { type: file.type });
-  });
+  }
   return contigFiles;
 }

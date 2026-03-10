@@ -526,7 +526,7 @@ function UploadSequences() {
               files={files}
               setFiles={setFiles}
               validFormats={validFormats(selectedSeqType)}
-              multiple={selectedSeqType !== SeqType.FastaCns}
+              multiple
               calculateHash={false}
               customValidators={validatorsPerSeqType[selectedSeqType]}
               fileTransform={fileTransformPerSeqType(selectedSeqType)}
