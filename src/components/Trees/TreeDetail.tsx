@@ -24,36 +24,7 @@ import {
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
-import LoadingState from '../../constants/loadingState';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { ResponseType } from '../../constants/responseType';
-import { defaultDiscreteColorScheme } from '../../constants/schemes';
-import type { TreeVersion } from '../../types/dtos';
-import type {
-  FieldAndColourScheme,
-  PhylocanvasLegends,
-  PhylocanvasMetadata,
-} from '../../types/phylocanvas.interface';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import type { Sample } from '../../types/sample.interface';
-import type TreeState from '../../types/tree.interface';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
-import { getLatestTreeData, getTreeData, getTreeVersions } from '../../utilities/resourceUtils';
-import {
-  useStateFromSearchParamsForObject,
-  useStateFromSearchParamsForPrimitive,
-} from '../../utilities/stateUtils';
-import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import { TreeTypes } from './PhylocanvasGL';
-import Tree, { type TreeExportFuctions } from './Tree';
-import ExportButton from './TreeControls/Export';
-import MetadataControls from './TreeControls/Metadata';
-import NodeAndLabelControls from './TreeControls/NodeAndLabel';
-import ColorSchemeSelector from './TreeControls/SchemeSelector';
-import Search from './TreeControls/Search';
-import TreeNavigation from './TreeControls/TreeNavigation';
-import TreeSamplesTable from './TreeSamplesTable';
+import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -154,12 +125,9 @@ function TreeDetail() {
 
   // Map group tabular metadata to format for phylocanvas, including colour mappings
   useEffect(() => {
-    if (
-      tree &&
-      tableMetadata &&
-      tableMetadata.length > 0 &&
-      projectMetadata?.fields &&
-      projectMetadata?.fieldUniqueValues
+    if (tree &&
+      tableMetadata && tableMetadata.length > 0 &&
+      projectMetadata?.fields
     ) {
       if (Object.keys(colourSchemeMapping).length === 0) {
         projectMetadata.fields
@@ -171,10 +139,17 @@ function TreeDetail() {
             }));
           });
       }
+
+      const tableUniqueValues = calculateUniqueValues(
+        projectMetadata.fields.map((f) => f.columnName),
+        projectMetadata.fields,
+        tableMetadata,
+      );
+
       const mappingData = mapMetadataToPhylocanvas(
         tableMetadata,
         projectMetadata.fields,
-        projectMetadata.fieldUniqueValues,
+        tableUniqueValues,
         colourSchemeMapping,
       );
       setPhylocanvasMetadata(mappingData.result);
@@ -183,7 +158,6 @@ function TreeDetail() {
   }, [
     tree,
     projectMetadata?.fields,
-    projectMetadata?.fieldUniqueValues,
     colourSchemeMapping,
     tableMetadata,
   ]);
