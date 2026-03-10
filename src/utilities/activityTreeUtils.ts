@@ -5,14 +5,26 @@ import { DerivedLog } from '../types/dtos';
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
   const usedLogIds = new Set<string>();
   const groups = new Map<string, TreeNode>();
-  const buildPrimaryKey = (log: DerivedLog) => `${log.clientSessionId}_${log.eventType}`;
-  const buildSecondaryKey = (log: DerivedLog) => `${log.callId}_${log.eventType}`;
 
-  const aggregateByKey = (logsToAggregate: DerivedLog[], buildKey: (log: DerivedLog) => string) => {
+  const buildPrimaryKey = (log: DerivedLog) => {
+    if (!log.clientSessionId || !log.eventType) return null;
+    return `${log.clientSessionId}_${log.eventType}`;
+  };
+
+  const buildSecondaryKey = (log: DerivedLog) => {
+    if (!log.callId || !log.eventType) return null;
+    return `${log.callId}_${log.eventType}`;
+  };
+
+  const aggregateByKey = (
+    logsToAggregate: DerivedLog[],
+    buildKey: (log: DerivedLog) => string | null,
+  ) => {
     for (const log of logsToAggregate) {
       if (usedLogIds.has(log.globalId)) continue;
 
       const groupKey = buildKey(log);
+      if (!groupKey) continue;
 
       if (!groups.has(groupKey)) {
         groups.set(groupKey, {
