@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
-
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -17,6 +16,7 @@ import type React from 'react';
 import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
+import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 import {
   fetchProjectMetadata,
   type ProjectMetadataState,
@@ -46,7 +46,8 @@ import {
 } from '../../utilities/stateUtils';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import { TreeTypes } from './PhylocanvasGL';
-import Tree, { type TreeExportFuctions } from './Tree';
+import type { TreeExportFuctions } from './Tree';
+import Tree from './Tree';
 import ExportButton from './TreeControls/Export';
 import MetadataControls from './TreeControls/Metadata';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
@@ -154,13 +155,7 @@ function TreeDetail() {
 
   // Map group tabular metadata to format for phylocanvas, including colour mappings
   useEffect(() => {
-    if (
-      tree &&
-      tableMetadata &&
-      tableMetadata.length > 0 &&
-      projectMetadata?.fields &&
-      projectMetadata?.fieldUniqueValues
-    ) {
+    if (tree && tableMetadata && tableMetadata.length > 0 && projectMetadata?.fields) {
       if (Object.keys(colourSchemeMapping).length === 0) {
         projectMetadata.fields
           .filter((fi) => fi.canVisualise)
@@ -171,22 +166,23 @@ function TreeDetail() {
             }));
           });
       }
+
+      const tableUniqueValues = calculateUniqueValues(
+        projectMetadata.fields.map((f) => f.columnName),
+        projectMetadata.fields,
+        tableMetadata,
+      );
+
       const mappingData = mapMetadataToPhylocanvas(
         tableMetadata,
         projectMetadata.fields,
-        projectMetadata.fieldUniqueValues,
+        tableUniqueValues,
         colourSchemeMapping,
       );
       setPhylocanvasMetadata(mappingData.result);
       setPhylocanvasLegends(mappingData.legends);
     }
-  }, [
-    tree,
-    projectMetadata?.fields,
-    projectMetadata?.fieldUniqueValues,
-    colourSchemeMapping,
-    tableMetadata,
-  ]);
+  }, [tree, projectMetadata?.fields, colourSchemeMapping, tableMetadata]);
 
   // Get tree historical versions
   useEffect(() => {
