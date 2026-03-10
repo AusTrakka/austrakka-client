@@ -92,15 +92,14 @@ CCCCCCCCCCCC
     const file2 = mockFile(testFileContent2, 'file2.fasta');
 
     await expect(() => splitFastaByContig([file1, file2])).rejects.toThrow();
-
   });
   
   test('given pipe characters in contig names, should split on first pipe and use the part before the pipe as the Seq_ID', async () => {
-    const testFileContent = `>contig1|restofname
+    const testFileContent = `>contig1|restofheader
 ATGCATGCATGC
->contig2|restofname
+>contig2|restofheader
 GGCATGCATGCA
->contig3|restofname
+>contig3|restofheader
 TTTTTTTTTTTT
 `;
     const file = mockFile(testFileContent);
@@ -111,12 +110,11 @@ TTTTTTTTTTTT
     // Assert
     expect(result).toHaveLength(3);
     expect(result[0].name).toBe('contig1.fa');
-    expect(await readFileAsText(result[0])).toBe('>contig1|description\nATGCATGCATGC\n');
+    expect(await readFileAsText(result[0])).toBe('>contig1|restofheader\nATGCATGCATGC\n');
     expect(result[1].name).toBe('contig2.fa');
-    expect(await readFileAsText(result[1])).toBe('>contig2|description\nGGCATGCATGCA\n');
+    expect(await readFileAsText(result[1])).toBe('>contig2|restofheader\nGGCATGCATGCA\n');
     expect(result[2].name).toBe('contig3.fa');
-    expect(await readFileAsText(result[2])).toBe('>contig3|description\nTTTTTTTTTTTT\n');
-
+    expect(await readFileAsText(result[2])).toBe('>contig3|restofheader\nTTTTTTTTTTTT\n');
   });
 
   test('given pipe characters in contig names, should throw an error if the file contains Seq_IDs that are duplicate after trimming', async () => {
@@ -131,5 +129,4 @@ TTTTTTTTTTTT
 
     await expect(() => splitFastaByContig([file])).rejects.toThrow();
   });
-  
 });

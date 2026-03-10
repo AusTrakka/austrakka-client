@@ -50,7 +50,7 @@ export const validateNoDuplicateFilenames = {
 } as CustomUploadValidator;
 
 export const getSampleNameFromFile = (filename: string) =>
-  filename.split(/[_.]+/)[0];
+  filename.split(/[_.|\s]+/)[0];
 
 // Remove last .fa only, so that seq2.1.fa becomes seq2.1, not seq2
 export const getSampleNameFromFastaCns = (filename: string) =>
@@ -197,6 +197,7 @@ export async function splitFastaByContig(files: File[]) : Promise<File[]> {
   const contigNames = new Set();
   const contigFiles : File[] = [];
   for (const file of files) {
+    // eslint-disable-next-line no-await-in-loop
     const fileContent = await file.text();
     // Assert that the file starts with ">"; the split asserts that the rest of the contigs do
     if (!fileContent.trim().startsWith('>')) {
@@ -206,17 +207,22 @@ export async function splitFastaByContig(files: File[]) : Promise<File[]> {
     // The trim() allows for whitespace after >, although this is technically not valid fasta
     const contigs = fileContent.substring(1).split('\n>').map(line => line.trim());
     for (const contig of contigs) {
-      const contigName = contig.split(/\s/)[0];
+      const contigName = contig.split(/[\s|]/)[0];
       if (contigNames.has(contigName)) {
-        throw new Error(`Duplicate Seq_ID found in upload: ${contigName}.`);
+        const fastaHeader = contig.split(/\s/)[0];
+        let errorMsg = `Duplicate Seq_ID found in upload: ${contigName}.`;
+        if (contigName !== fastaHeader) {
+          errorMsg += ` Original FASTA header was ${fastaHeader}.`;
+        }
+        throw new Error(errorMsg);
       }
       if (contigName === '') {
         throw new Error('Unable to parse contig names from fasta header, empty contig name found');
       }
       contigNames.add(contigName);
       const contigContent = `>${contig}\n`;
-      const contigBlob = new Blob([contigContent], {type: file.type});
-      contigFiles.push(new File([contigBlob], `${contigName}.fa`, {type: file.type}));
+      const contigBlob = new Blob([contigContent], { type: file.type });
+      contigFiles.push(new File([contigBlob], `${contigName}.fa`, { type: file.type }));
     }
   }
   return contigFiles;
