@@ -40,6 +40,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] =
     useState<TreeTableExpandedKeysType | undefined>(undefined);
+  const MAX_VISIBLE_CHILDREN = 600;
 
   const today = dayjs();
   const lastWeek = dayjs().subtract(7, 'day');
@@ -97,15 +98,47 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setOpenDetails(true);
   };
 
+  const collapseParents = (nodeKey: string | number | undefined, childrenCount: number) => {
+    const currentlyExpandedKeys = { ...expandedKeys };
+    const getChildrenCount = (key: string | number | undefined) =>
+      nodes.find(n => n.key === key)?.children?.length || 0;
+
+    // Total currently rendered children count
+    let renderedChildren = Object.keys(currentlyExpandedKeys).reduce(
+      (sum, key) => sum + getChildrenCount(key),
+      0,
+    );
+
+    // If expanding this node doesn't exceed limit, keep all currently expanded nodes
+    if (renderedChildren + childrenCount <= MAX_VISIBLE_CHILDREN) {
+      return currentlyExpandedKeys;
+    }
+
+    // Otherwise, we need to collapse some nodes
+    const newKeys = { ...currentlyExpandedKeys };
+    for (const key of Object.keys(currentlyExpandedKeys)) {
+      if (key === nodeKey) continue; // skip node being expanded
+
+      const removed = getChildrenCount(key);
+      delete newKeys[key];
+      renderedChildren -= removed;
+
+      if (renderedChildren + childrenCount <= MAX_VISIBLE_CHILDREN) break;
+    }
+
+    return newKeys;
+  };
+
   const handleTreeRowClick = (event: { originalEvent: React.MouseEvent; node: TreeNode }) => {
     const { node } = event;
+    const nodeChildrenCount = node.children?.length || 0;
 
     // On click open drawer for leaf nodes
-    if (!node.children || node.children.length === 0) {
+    if (!node.children || nodeChildrenCount === 0) {
       onLeafRowClick(node);
     } else {
       // Expand row for parent nodes
-      const newExpandedKeys = { ...expandedKeys };
+      const newExpandedKeys = collapseParents(node.key, nodeChildrenCount);
 
       if (newExpandedKeys[node.key!]) delete newExpandedKeys[node.key!];
       else newExpandedKeys[node.key!] = true;
