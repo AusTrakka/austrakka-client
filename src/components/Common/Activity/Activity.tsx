@@ -208,7 +208,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const tableContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
       <ActivityDetails
-        // onClose={closeDetailsHandler}
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
