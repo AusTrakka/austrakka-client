@@ -70,7 +70,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   );
 
   const [processingData, setProcessingData] = useState<boolean>(true);
-  const isTableLoading = dataLoading || processingData;
+  const isTableLoading = React.useMemo(
+    () => dataLoading || processingData,
+    [dataLoading, processingData],
+  );
 
   useEffect(() => {
     if (columns.length > 0) return;
@@ -218,8 +221,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   );
 
   useEffect(() => {
+    setProcessingData(true);
+    setNodes([]);
+    setExpandedKeys({});
     if (!dataLoading) {
-      setProcessingData(true);
       const aggregatedNodes = aggregateLogsToTree(refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
       const splitNodes = processedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
