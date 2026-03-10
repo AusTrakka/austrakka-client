@@ -125,10 +125,7 @@ function TreeDetail() {
 
   // Map group tabular metadata to format for phylocanvas, including colour mappings
   useEffect(() => {
-    if (tree &&
-      tableMetadata && tableMetadata.length > 0 &&
-      projectMetadata?.fields
-    ) {
+    if (tree && tableMetadata && tableMetadata.length > 0 && projectMetadata?.fields) {
       if (Object.keys(colourSchemeMapping).length === 0) {
         projectMetadata.fields
           .filter((fi) => fi.canVisualise)
@@ -155,12 +152,7 @@ function TreeDetail() {
       setPhylocanvasMetadata(mappingData.result);
       setPhylocanvasLegends(mappingData.legends);
     }
-  }, [
-    tree,
-    projectMetadata?.fields,
-    colourSchemeMapping,
-    tableMetadata,
-  ]);
+  }, [tree, projectMetadata?.fields, colourSchemeMapping, tableMetadata]);
 
   // Get tree historical versions
   useEffect(() => {
