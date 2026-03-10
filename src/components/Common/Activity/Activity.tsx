@@ -186,6 +186,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
   useEffect(() => {
     if (!dataLoading) {
+      setProcessingData(true);
       const aggregatedNodes = aggregateLogsToTree(refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
       const splitNodes = processedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
