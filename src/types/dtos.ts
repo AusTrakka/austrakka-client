@@ -462,7 +462,7 @@ export interface DerivedLog {
   // Server fields
   globalId: string,
   rawLogGlobalId: string,
-  clientSessionId: string,
+  clientSessionId: string | null,
   callId: string,
   eventType: string
   eventTime: string,
@@ -473,8 +473,9 @@ export interface DerivedLog {
   submitterDisplayName: string,
   eventStatus: string,
   data: string, // TODO needs to be parsed
-
-  // UI-specific fields
-  children: DerivedLog[] | null,
-  level: number | null,
+  visChain: {
+    globalId: string;
+    resourceType: string;
+    uniqueStringId: string;
+  }[];
 }
