@@ -49,6 +49,13 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
 
       const parent = groups.get(groupKey)!;
 
+      // Update parent's eventTime if this log is more recent
+      const parentTime = new Date(parent.data.eventTime).getTime();
+      const logTime = new Date(log.eventTime).getTime();
+      if (logTime > parentTime) {
+        parent.data.eventTime = log.eventTime;
+      }
+
       parent.children!.push({
         key: log.globalId,
         label: log.resourceUniqueString,
@@ -145,4 +152,27 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
     });
   }
   return chunks;
+}
+
+// Default node sorting function to order nodes
+export function defaultNodeSort(nodes: TreeNode[]): TreeNode[] {
+  // Sort parents reverse chronologically by eventTime
+  const sortedParents = [...nodes].sort((a, b) => {
+    const aTime = new Date(a.data.eventTime).getTime();
+    const bTime = new Date(b.data.eventTime).getTime();
+    return bTime - aTime;
+  });
+ 
+  // Sort children alphabetically by resourceUniqueString
+  const sortedParentsWithSortedChildren = sortedParents.map(parent => {
+    const children = parent.children ?? [];
+    const sortedChildren = [...children].sort((a, b) => {
+      const aStr = (a.data as DerivedLog).resourceUniqueString || '';
+      const bStr = (b.data as DerivedLog).resourceUniqueString || '';
+      return aStr.localeCompare(bStr, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return { ...parent, children: sortedChildren };
+  });
+
+  return sortedParentsWithSortedChildren;
 }
