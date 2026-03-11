@@ -1,5 +1,6 @@
 import { TreeNode } from 'primereact/treenode';
 import { DerivedLog } from '../types/dtos';
+import { use } from 'echarts/types/src/extension';
 
 // Aggregates logs into a tree structure
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
@@ -55,7 +56,10 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
         leaf: true,
       });
 
-      usedLogIds.add(log.globalId);
+      // Only mark log as used if it is actually grouped with others
+      if (parent.children!.length > 1) {
+        usedLogIds.add(log.globalId);
+      }
     }
   };
 
