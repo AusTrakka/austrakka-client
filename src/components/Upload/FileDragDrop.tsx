@@ -4,13 +4,12 @@ import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import muiTheme, { Theme } from '../../assets/themes/theme';
 import { DropFileUpload } from '../../types/DropFileUpload';
-import { generateHash } from '../../utilities/file';
 import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
-  validFormats: Record<string, string>, 
+  validFormats: Record<string, string>,
   multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
   fileTransform?: (f: File[]) => Promise<File[]>, // eslint-disable-line react/require-default-props
