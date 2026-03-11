@@ -182,6 +182,7 @@ function UploadSequences() {
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
     setSelectedSeqType(seqType);
+    setFiles([]);
     setFilesValidated(false);
   };
 
@@ -527,7 +528,6 @@ function UploadSequences() {
               setFiles={setFiles}
               validFormats={validFormats(selectedSeqType)}
               multiple
-              calculateHash={false}
               customValidators={validatorsPerSeqType[selectedSeqType]}
               fileTransform={fileTransformPerSeqType(selectedSeqType)}
               validated={filesValidated}

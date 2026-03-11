@@ -10,9 +10,8 @@ import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilit
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
-  validFormats: Record<string, string>, // TODO when FASTA, must revalidate when this changes
+  validFormats: Record<string, string>, 
   multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
-  calculateHash?: boolean | undefined, // eslint-disable-line react/require-default-props
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
   fileTransform?: (f: File[]) => Promise<File[]>, // eslint-disable-line react/require-default-props
   validated: boolean,
@@ -27,7 +26,6 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     setFiles,
     validFormats,
     multiple = false,
-    calculateHash = false,
     customValidators = [],
     fileTransform = (f: File[]) => Promise.resolve(f),
     validated,
@@ -98,10 +96,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     setValidated, validFormats]);
 
   const handleFiles = async (uploadedFiles: File[]) => {
-    const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
-      file,
-      hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
-    } as DropFileUpload)));
+    const fileUploads = uploadedFiles.map(file => ({ file } as DropFileUpload));
     setFiles([...files, ...fileUploads]);
   };
 
