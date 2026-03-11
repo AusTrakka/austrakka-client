@@ -10,7 +10,7 @@ import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
-import { hasPermissionV2 } from '../../permissions/accessTable';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
@@ -131,7 +131,7 @@ function Fields() {
     },
   ];
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermissionV2(
+  const interactionPermission = hasPermissionV2ByScope(
     user,
     ScopeDefinitions.UpdateFieldTenant,
   );

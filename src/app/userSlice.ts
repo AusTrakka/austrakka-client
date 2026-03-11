@@ -13,7 +13,7 @@ export interface UserSliceState {
   groupRoles: GroupRole[],
   displayName: string,
   admin: boolean,
-  adminV2: boolean,
+  superUser: boolean,
   orgAbbrev: string,
   orgName: string,
   orgGlobalId: string,
@@ -103,7 +103,7 @@ const userSlice = createSlice({
         state.groupRolesByGroup = data;
         state.groupRoles = holder.groupRoles;
         state.admin = holder.isAusTrakkaAdmin;
-        state.adminV2 = hasSuperUserRoleInType(holder.scopes);
+        state.superUser = hasSuperUserRoleInType(holder.scopes);
         state.displayName = holder.displayName;
         state.orgAbbrev = holder.orgAbbrev;
         state.orgName = holder.orgName;
