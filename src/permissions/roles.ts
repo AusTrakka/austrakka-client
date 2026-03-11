@@ -17,7 +17,7 @@ export enum RoleV2SeededName {
   OrgViewer = 'OrgViewer',
   GuestViewer = 'GuestViewer',
   ProjectContributor = 'ProjectContributor',
-  GuestUploader = 'GuestViewer',
+  GuestUploader = 'GuestUploader',
 }
 
 export const orgRoles = [

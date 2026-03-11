@@ -43,7 +43,7 @@ export function hasPermission(
   if (user.admin) {
     return true;
   }
-  if (user.adminV2) return true;
+  if (user.superUser) return true;
   const userRoles = user.groupRolesByGroup[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
   return userRoles.some(role => allowedRoles.includes(role));
@@ -58,7 +58,7 @@ export function hasPermissionV2ByScope(
   if (!user) return false;
   if (!scope) return false;
   // This is if they are admin
-  if (user.adminV2) {
+  if (user.superUser) {
     return true;
   }
 
@@ -77,7 +77,7 @@ export function hasPermissionV2ByRole(
 ): boolean {
   if (!user) return false;
   if (!role) return false;
-  if (user.adminV2) return true;
+  if (user.superUser) return true;
   if (!user.scopes || user.scopes.length === 0) return false;
 
   return hasRoleInRecord(user.scopes, role, recordName, recordType);
