@@ -1,6 +1,5 @@
 import { TreeNode } from 'primereact/treenode';
 import { DerivedLog } from '../types/dtos';
-import { use } from 'echarts/types/src/extension';
 
 // Aggregates logs into a tree structure
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
