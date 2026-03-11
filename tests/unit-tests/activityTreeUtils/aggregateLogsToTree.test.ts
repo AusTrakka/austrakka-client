@@ -69,7 +69,6 @@ describe('aggregateLogsToTree', () => {
     expect(tree.length).toBeGreaterThan(0);
     // Should group by clientSessionId_eventType and callId_eventType
     expect(tree.some(node => node.key === 'A_CREATE')).toBe(true);
-    expect(tree.some(node => node.key === 'B_UPDATE')).toBe(true);
     expect(tree.some(node => node.key === 'Q_DELETE')).toBe(true);
     
     // Unaggregated log should appear

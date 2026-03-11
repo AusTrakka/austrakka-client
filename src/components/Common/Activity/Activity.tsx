@@ -243,8 +243,11 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setNodes([]);
     setExpandedKeys({});
     if (!dataLoading) {
+      console.log('Refined logs count:', refinedLogs.length);
       const aggregatedNodes = aggregateLogsToTree(refinedLogs);
+      console.log('Aggregated nodes count:', aggregatedNodes.length);
       const processedNodes = processTreeNodes(aggregatedNodes);
+      console.log('Processed nodes count:', processedNodes.length);
       const splitNodes = processedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
       setNodes(splitNodes);
       setProcessingData(false);

@@ -56,10 +56,7 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
         leaf: true,
       });
 
-      // Only mark log as used if it is actually grouped with others on primary filter
-      if (parent.children!.length > 1 && keyType === 'primary') {
-        usedLogIds.add(log.globalId);
-      } else if (keyType === 'secondary') {
+      if (keyType === 'secondary') {
         // If secondary filter, always mark log as used to avoid duplicates
         usedLogIds.add(log.globalId);
       }
@@ -67,6 +64,21 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
   };
 
   aggregateByKey(logs, buildPrimaryKey, 'primary');
+
+  // After primary aggregation, mark logs in multi-child groups as used
+  // and remove groups that only have a single child for secondary aggregation
+  for (const [groupKey, parent] of groups) {
+    const children = parent.children ?? [];
+    if (children.length > 1) {
+      for (const child of children) {
+        // child.key is the globalId assigned when the child node was created
+        usedLogIds.add(child.key as string);
+      }
+    } else if (children.length === 1) {
+      groups.delete(groupKey);
+    }
+  }
+
   aggregateByKey(logs, buildSecondaryKey, 'secondary');
 
   return Array.from(groups.values());
