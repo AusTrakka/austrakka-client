@@ -4,16 +4,15 @@ import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import muiTheme, { Theme } from '../../assets/themes/theme';
 import { DropFileUpload } from '../../types/DropFileUpload';
-import { generateHash } from '../../utilities/file';
 import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
 interface FileDragDropProps {
   files: DropFileUpload[],
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
-  validFormats: Record<string, string>, // TODO when FASTA, must revalidate when this changes
+  validFormats: Record<string, string>,
   multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
-  calculateHash?: boolean | undefined, // eslint-disable-line react/require-default-props
   customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
+  fileTransform?: (f: File[]) => Promise<File[]>, // eslint-disable-line react/require-default-props
   validated: boolean,
   setValidated: Dispatch<SetStateAction<boolean>>,
   disabled?: boolean,
@@ -26,8 +25,8 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     setFiles,
     validFormats,
     multiple = false,
-    calculateHash = false,
     customValidators = [],
+    fileTransform = (f: File[]) => Promise.resolve(f),
     validated,
     setValidated,
     disabled,
@@ -40,7 +39,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
   const textColour = disabled ? 'text.disabled' : 'primary';
   const iconColour = disabled ? 'disabled' : 'primary';
 
-  const validateUpload = useCallback((uploadedFiles: File[]): boolean => {
+  const validateAndTransformUpload = useCallback((uploadedFiles: File[]): boolean => {
     const validateFilesAreOfType = {
       func: (_files: File[]) => ({
         success: Object.entries(validFormats).length === 0 ||
@@ -76,15 +75,27 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
         return false;
       }
     }
+    
+    // Apply transform to file list and fail validation if it fails
+    // By default this is the trivial transform, no change to the file list
+    fileTransform(uploadedFiles)
+      .then(transformedFiles => {
+        setFiles(transformedFiles.map(file => ({ file } as DropFileUpload)));
+      })
+      .catch((e) => {
+        enqueueSnackbar(`File processing failed: ${e.message}`, { variant: 'error', autoHideDuration: 8000 });
+        setValidated(false);
+        setFiles([]);
+        return false;
+      });
+    
     setValidated(true);
     return true;
-  }, [customValidators, enqueueSnackbar, multiple, setFiles, setValidated, validFormats]);
+  }, [customValidators, enqueueSnackbar, multiple, fileTransform, setFiles,
+    setValidated, validFormats]);
 
   const handleFiles = async (uploadedFiles: File[]) => {
-    const fileUploads = await Promise.all(uploadedFiles.map(async file => ({
-      file,
-      hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
-    } as DropFileUpload)));
+    const fileUploads = uploadedFiles.map(file => ({ file } as DropFileUpload));
     setFiles([...files, ...fileUploads]);
   };
 
@@ -108,7 +119,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
     if (disabled) { return; }
 
     const uploadedFiles = Array.from(e.dataTransfer?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -120,7 +131,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
   const handleBrowseChange = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const uploadedFiles = Array.from(e.target?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -132,9 +143,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = (
 
   useEffect(() => {
     if (files.length > 0 && !validated) {
-      validateUpload(files.map(f => f.file));
+      validateAndTransformUpload(files.map(f => f.file));
     }
-  }, [validated, validateUpload, setFiles, files]);
+  }, [validated, validateAndTransformUpload, setFiles, files]);
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment

@@ -68,7 +68,7 @@ export const getDisplayFields = (groupId: number, token: string) => callGET(`/ap
 export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> => callGET(`/api/Group/${groupName}`, token);
-export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
+export const replaceAssignments = (userId: string, token: string, assignments: any, clientSessionId?: string) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments, clientSessionId);
 
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
@@ -130,7 +130,7 @@ export const createSample = (
 
 // Sequence endpoints
 // TODO: this should parse the response
-export const uploadFastqSequence = (
+export const uploadSequence = (
   formData: FormData,
   params: string,
   token: string,
@@ -143,7 +143,7 @@ export const getMe = (token: string) => callGET('/api/Users/Me', token);
 export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
 export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
+export const putUser = (userObjectId: string, token: string, user: any, clientSessionId?: string) => callPUT(`/api/Users/${userObjectId}`, token, user, clientSessionId);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/RolesV2', token);
@@ -178,17 +178,20 @@ export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost('/api/Tenant/Privilege', token, privilegeBody);
+  clientSessionId?: string,
+) => callPost('/api/Tenant/Privilege', token, privilegeBody, clientSessionId);
 
 export const deleteTenantPrivilege = (
   _: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) =>
   callDELETE(
     `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
+    clientSessionId,
   );
 
 // User
@@ -207,26 +210,32 @@ export const patchUserV2 = (
   userGlobalId: string,
   userPatchDto: UserPatchV2,
   token: string,
+  clientSessionId?: string,
 ) => callPATCH(
   `/api/UserV2/${userGlobalId}`,
   token,
   userPatchDto,
+  clientSessionId,
 );
 
 export const disableUserV2 = (
   userGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) => callPATCH(
   `/api/UserV2/disable/${userGlobalId}`,
   token,
+  clientSessionId,
 );
 
 export const enableUserV2 = (
   userGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) => callPATCH(
   `/api/UserV2/enable/${userGlobalId}`,
   token,
+  clientSessionId,
 );
 
 // OrganisationV2
@@ -251,16 +260,19 @@ export const postOrgPrivilege = (
   recordGlobalId: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost(`/api/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
+  clientSessionId?: string,
+) => callPost(`/api/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) => callDELETE(
   `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
   token,
+  clientSessionId,
 );
 
 // Tenant
@@ -280,8 +292,9 @@ export const getActivities = (
   recordType: string,
   token: string,
   rguid?: string,
+  searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
   const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+  return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
 };

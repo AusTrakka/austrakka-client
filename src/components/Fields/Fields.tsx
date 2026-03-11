@@ -10,7 +10,7 @@ import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import { useApi } from '../../app/ApiContext';
 import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
-import { hasPermissionV2 } from '../../permissions/accessTable';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
 import { UserSliceState, selectUserState } from '../../app/userSlice';
 import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
@@ -32,7 +32,7 @@ function Fields() {
   const renderFieldType = (rowData: any, field: string) => {
     const type: string = rowData[field];
     const colour = FIELD_TYPE_COLOURS[type as FieldType] ?? FIELD_TYPE_COLOURS.default;
-    
+
     return (
       <Chip
         size="small"
@@ -46,14 +46,14 @@ function Fields() {
       />
     );
   };
-  
-  const renderAllowedValues = (allowedValues: string[] | null, field:string) => {
+
+  const renderAllowedValues = (allowedValues: string[] | null, field: string) => {
     if (allowedValues === null || allowedValues.length === 0) return '';
     return (
       <AllowedValues allowedValues={allowedValues} field={field} />
     );
   };
-  
+
   const interactiveColumns = [
     {
       field: 'columnName',
@@ -131,11 +131,11 @@ function Fields() {
     },
   ];
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermissionV2(
+  const interactionPermission = hasPermissionV2ByScope(
     user,
-    ScopeDefinitions.UPDATE_TENANT_METADATA_COLUMN,
+    ScopeDefinitions.UpdateFieldTenant,
   );
-  
+
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [columns, setColumns] = useState<any[]>(

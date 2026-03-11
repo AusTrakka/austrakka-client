@@ -61,7 +61,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
       const allRoles: RolesV2[] = response?.data ?? [];
 
       const rolesV2: RolesV2[] = allRoles.filter((role) =>
-        role.allowedRootResourceTypes?.length).sort((a, b) => a.name.localeCompare(b.name));
+        role.resourceTypes?.length).sort((a, b) => a.name.localeCompare(b.name));
 
       setRolesForV2(rolesV2);
     }
@@ -121,9 +121,9 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const getRolesForRecordType = (recordType: string) => {
     if (!rolesForV2) return [];
     return rolesForV2.filter((role) =>
-      role.allowedRootResourceTypes
-        .some((rt) => rt.name === recordType ||
-                rt.name === 'All'));
+      role.resourceTypes
+        .some((rt) => rt === recordType ||
+                rt === 'All'));
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {
