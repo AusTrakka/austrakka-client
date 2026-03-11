@@ -5,7 +5,6 @@ import {
   SeqPairedUploadRow,
   SeqSingleUploadRow,
   SeqType,
-  SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 
@@ -50,7 +49,12 @@ export const validateNoDuplicateFilenames = {
   },
 } as CustomUploadValidator;
 
-export const getSampleNameFromFile = (filename: string) => filename.split('_')[0];
+export const getSampleNameFromFile = (filename: string) =>
+  filename.split(/[_.|\s]+/)[0];
+
+// Remove last .fa only, so that seq2.1.fa becomes seq2.1, not seq2
+export const getSampleNameFromFastaCns = (filename: string) =>
+  filename.split(/.fa$/)[0];
 
 function countElements(array: any[]): Record<string, number> {
   const count: Record<string, number> = {};
@@ -97,10 +101,6 @@ export const validateAllHaveSampleNamesWithOneFileOnly = {
 } as CustomUploadValidator;
 
 // Logic of these two functions will need to change in perms V2; currently take in groupRoles
-
-// TODO requires special logic if we want admins to be allowed to upload to any org using this UI 
-//  but do we? They can always give themselves a role if they really need to use the UI
-
 // TODO ought to get group type in DTO rather than rely on group name structure - 
 // however this is temporary anyway
 export const getUploadableOrgs = (groupRoles: GroupRole[]): OrgDescriptor[] => {
@@ -138,25 +138,9 @@ export const getShareableOrgGroups = (orgAbbrev: string, groupRoles: GroupRole[]
   return uniqueOrgGroupNames;
 };
 
-export const createSampleCSV = (
-  seqUploadRows: SeqUploadRow[],
-): string => {
-  // This is technically a CSV, but has just a single column
-  const csvHeader = 'Seq_ID';
-  const csvRows = seqUploadRows.map(
-    row => `${row.seqId}`,
-  );
-  const csv = [csvHeader, ...csvRows].join('\n');
-  return csv;
-};
-
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
-  seqType: SeqType,
 ): SeqPairedUploadRow[] => {
-  if (seqType !== SeqType.FastqIllPe) {
-    throw new Error('Invalid seqType for creating paired-end sequence upload rows');
-  }
   const pairedFiles = files.sort((a, b) => {
     if (a.file.name < b.file.name) {
       return -1;
@@ -188,15 +172,58 @@ export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
 ): SeqSingleUploadRow[] => {
-  if (![SeqType.FastqIllSe, SeqType.FastqOnt].includes(seqType)) {
-    throw new Error('Invalid seqType for creating single-end sequence upload rows');
-  }
-  const singleFiles = files.map((file) => ({
-    id: crypto.randomUUID(),
-    seqId: getSampleNameFromFile(file.file.name),
-    file,
-    seqType,
-    state: SeqUploadRowState.Waiting,
-  } as SeqSingleUploadRow));
+  const singleFiles = files.map((file) => {
+    // For fasta-cns, we've returned the contig name as the whole filename minus .fa suffix.
+    // Preserve it. For other data types, we must parse
+    const seqId = seqType === SeqType.FastaCns ?
+      getSampleNameFromFastaCns(file.file.name) :
+      getSampleNameFromFile(file.file.name);
+    return {
+      id: crypto.randomUUID(),
+      seqId,
+      file,
+      seqType,
+      state: SeqUploadRowState.Waiting,
+    } as SeqSingleUploadRow;
+  });
   return singleFiles;
 };
+
+// Split file into lines by contig, by just searching for ">" at the start of a line
+// Return a set of files, one per contig, with the contig name as the filename
+// The contig name is deemed to be from ">" to the first whitespace
+// This function must validate expected properties (e.g. uniqueness of Seq_IDs)
+export async function splitFastaByContig(files: File[]) : Promise<File[]> {
+  const contigNames = new Set();
+  const contigFiles : File[] = [];
+  for (const file of files) {
+    // eslint-disable-next-line no-await-in-loop
+    const fileContent = await file.text();
+    // Assert that the file starts with ">"; the split asserts that the rest of the contigs do
+    if (!fileContent.trim().startsWith('>')) {
+      throw new Error('File does not appear to be in fasta format: missing ">" at start of file');
+    }
+    // Drop first > character from first contig, since it will not be split on.
+    // The trim() allows for whitespace after >, although this is technically not valid fasta
+    const contigs = fileContent.substring(1).split('\n>').map(line => line.trim());
+    for (const contig of contigs) {
+      const contigName = contig.split(/[\s|]/)[0];
+      if (contigNames.has(contigName)) {
+        const fastaHeader = contig.split(/\s/)[0];
+        let errorMsg = `Duplicate Seq_ID found in upload: ${contigName}.`;
+        if (contigName !== fastaHeader) {
+          errorMsg += ` Original FASTA header was ${fastaHeader}.`;
+        }
+        throw new Error(errorMsg);
+      }
+      if (contigName === '') {
+        throw new Error('Unable to parse contig names from fasta header, empty contig name found');
+      }
+      contigNames.add(contigName);
+      const contigContent = `>${contig}\n`;
+      const contigBlob = new Blob([contigContent], { type: file.type });
+      contigFiles.push(new File([contigBlob], `${contigName}.fa`, { type: file.type }));
+    }
+  }
+  return contigFiles;
+}

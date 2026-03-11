@@ -130,7 +130,7 @@ export const createSample = (
 
 // Sequence endpoints
 // TODO: this should parse the response
-export const uploadFastqSequence = (
+export const uploadSequence = (
   formData: FormData,
   params: string,
   token: string,
