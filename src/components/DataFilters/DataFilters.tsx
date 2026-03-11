@@ -245,10 +245,21 @@ function DataFilters(props: DataFiltersProps) {
     if (condition === FilterMatchMode.CUSTOM) {
       return value;
     }
+
+    //INFO: hacky way to make date on or after
     if (condition === FilterMatchMode.DATE_AFTER) {
-      const endOfDay = new Date(value);
-      endOfDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
-      return endOfDay;
+      const endOfPriorDay = new Date(value);
+      endOfPriorDay.setDate(endOfPriorDay.getDate() - 1);
+      endOfPriorDay.setHours(23, 59, 59, 999); // Set to 11:59:59 PM
+      return endOfPriorDay;
+    }
+
+    //INFO: hacky way to make date on or before
+    if (condition === FilterMatchMode.DATE_BEFORE) {
+      const startOfNextDay = new Date(value);
+      startOfNextDay.setDate(startOfNextDay.getDate() + 1);
+      startOfNextDay.setHours(0, 0, 0, 0); // 12am
+      return startOfNextDay;
     }
 
     return new Date(value);
