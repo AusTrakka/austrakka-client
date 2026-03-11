@@ -11,7 +11,8 @@ import { ResponseType } from '../../constants/responseType';
 const postApiMap: Record<string,
 (recordGlobalId: string,
   body: UserRoleRecordPrivilegePost,
-  token: string) => Promise<ResponseObject<any>>> = {
+  token: string,
+  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
   'Organisation': postOrgPrivilege,
   'Tenant': postTenantPrivilege,
 };
@@ -20,7 +21,8 @@ const deleteApiMap: Record<string,
 (recordGlobalId: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
-  token: string) => Promise<ResponseObject<any>>> = {
+  token: string,
+  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
   'Organisation': deleteOrgPrivilege,
   'Tenant': deleteTenantPrivilege,
 };
@@ -29,6 +31,7 @@ export async function processPrivilegeChanges(
   pendingChanges: PendingChange[],
   userGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ): Promise<[string | null, PendingChange][]> {
   const failedChanges: [string | null, PendingChange][] = [];
 
@@ -43,6 +46,7 @@ export async function processPrivilegeChanges(
           change.payload.recordGlobalId!,
           postBody,
           token,
+          clientSessionId,
         );
         if (response.status !== ResponseType.Success) {
           failedChanges.push([response.message, change]);
@@ -53,6 +57,7 @@ export async function processPrivilegeChanges(
           userGlobalId,
           change.payload.roleName,
           token,
+          clientSessionId,
         );
         if (response.status !== ResponseType.Success) {
           failedChanges.push([response.message, change]);
