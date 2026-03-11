@@ -14,7 +14,7 @@ import {
 import LoadingState from '../../constants/loadingState';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { useApi } from '../../app/ApiContext';
-import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
+import { createSample, shareSamples, uploadSequence } from '../../utilities/resourceUtils';
 import { ResponseType } from '../../constants/responseType';
 import { ValidationPopupButton } from '../Validation/Validation';
 import { generateHash } from '../../utilities/file';
@@ -126,7 +126,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
       'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
 
-    const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
+    const sequenceResponse = await uploadSequence(formData, optionString, token, headers);
     if (sequenceResponse.status === ResponseType.Success) {
       setSeqSubmission({
         ...seqSubmission,

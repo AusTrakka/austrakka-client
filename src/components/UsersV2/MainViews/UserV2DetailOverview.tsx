@@ -68,7 +68,7 @@ function UserV2DetailOverview() {
   const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
   const {
     loading,
-    adminV2,
+    superUser,
     scopes,
   } = useAppSelector(selectUserState);
 
@@ -103,7 +103,7 @@ function UserV2DetailOverview() {
   }
 
   // Add a boolean constant to determine if the user can see this page.
-  // Currently, access is only granted to adminV2 (the root super user).
+  // Currently, access is only granted to superUser.
   // Instead, the visibility and editability of the page should be checked separately
   // based on the required scopes.
 
@@ -112,7 +112,7 @@ function UserV2DetailOverview() {
 
   // this should check if it has loaded then if its super user and
   // lastly if they have the scope for fetching the user
-  if (loading === LoadingState.SUCCESS && (adminV2 || canFetch)) {
+  if (loading === LoadingState.SUCCESS && (superUser || canFetch)) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -203,10 +203,13 @@ function UserV2DetailOverview() {
   }
 
   const processPendingChanges = async () => {
+    const clientSessionId : string = crypto.randomUUID();
+
     const failedRequests = await processPrivilegeChanges(
       pendingChanges,
       userGlobalId!,
       token,
+      clientSessionId,
     );
 
     if (failedRequests.length > 0) {
@@ -244,11 +247,13 @@ function UserV2DetailOverview() {
 
     const editedActiveState = user?.isActive !== isActive;
     try {
+      const clientSessionId : string = crypto.randomUUID();
       // basic patch
       const userResponse: ResponseObject = await patchUserV2(
         userGlobalId!,
         editedValuesDtoFormat,
         token,
+        clientSessionId,
       );
 
       // enable user
@@ -258,11 +263,13 @@ function UserV2DetailOverview() {
           userActivateResponse = await enableUserV2(
             userGlobalId!,
             token,
+            clientSessionId,
           );
         } else {
           userActivateResponse = await disableUserV2(
             userGlobalId!,
             token,
+            clientSessionId,
           );
         }
         if (userActivateResponse.status !== ResponseType.Success) {
@@ -344,7 +351,7 @@ function UserV2DetailOverview() {
 
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
-  const canSeeEditButtons = () => (loading === LoadingState.SUCCESS && (adminV2 || canEdit));
+  const canSeeEditButtons = () => (loading === LoadingState.SUCCESS && (superUser || canEdit));
   return (user) ? (
     <div>
       <Stack

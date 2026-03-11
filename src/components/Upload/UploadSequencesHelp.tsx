@@ -4,15 +4,16 @@ import React from 'react';
 export default function UploadSequencesHelp() {
   return (
     <>
-      You can drag-and-drop a set of FASTQ files into the file upload box, or click to select files.
+      You can drag-and-drop a set of FASTQ or FASTA files into the file upload box,
+      or click to select files.
       <br />
       <br />
-      Once you have selected your files,
+      For FASTQ files and FASTA assembly files,,
       {' '}
       {import.meta.env.VITE_BRANDING_NAME}
       {' '}
       will attempt to determine the Seq_IDs from the filenames,
-      and to pair the files into read 1 and read 2 file pairs.
+      and to pair the files into read 1 and read 2 file pairs if appropriate.
       {' '}
       {import.meta.env.VITE_BRANDING_NAME}
       {' '}
@@ -21,6 +22,12 @@ export default function UploadSequencesHelp() {
       <br />
       <br />
       You can edit file pair assignments and Seq_IDs before submitting.
+      <br />
+      <br />
+      For consensus FASTA files, you may include multiple samples in a single file,
+      one contig per sequence record.
+      The Seq_IDs must be the FASTA headers (contig names).
+      For this data type, the filename will be ignored.
       <br />
       <br />
       If sequences already exist for a Seq_ID you are uploading to, by default,
