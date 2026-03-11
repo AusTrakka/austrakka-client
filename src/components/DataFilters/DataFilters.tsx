@@ -246,7 +246,7 @@ function DataFilters(props: DataFiltersProps) {
       return value;
     }
 
-    //INFO: hacky way to make date on or after
+    // INFO: hacky way to make date on or after
     if (condition === FilterMatchMode.DATE_AFTER) {
       const endOfPriorDay = new Date(value);
       endOfPriorDay.setDate(endOfPriorDay.getDate() - 1);
@@ -254,7 +254,7 @@ function DataFilters(props: DataFiltersProps) {
       return endOfPriorDay;
     }
 
-    //INFO: hacky way to make date on or before
+    // INFO: hacky way to make date on or before
     if (condition === FilterMatchMode.DATE_BEFORE) {
       const startOfNextDay = new Date(value);
       startOfNextDay.setDate(startOfNextDay.getDate() + 1);
