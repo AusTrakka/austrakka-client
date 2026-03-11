@@ -13,17 +13,17 @@ import { getMe, getMeV2 } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 
 export interface UserSliceState {
-  groupRolesByGroup: Record<string, string[]>,
-  groupRoles: GroupRole[],
-  displayName: string,
-  admin: boolean,
-  superUser: boolean,
-  orgAbbrev: string,
-  orgName: string,
-  orgGlobalId: string,
-  errorMessage: string,
-  loading: LoadingState,
-  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
+  groupRolesByGroup: Record<string, string[]>;
+  groupRoles: GroupRole[];
+  displayName: string;
+  admin: boolean;
+  superUser: boolean;
+  orgAbbrev: string;
+  orgName: string;
+  orgGlobalId: string;
+  errorMessage: string;
+  loading: LoadingState;
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[];
 }
 
 interface FetchUserRolesResponse {

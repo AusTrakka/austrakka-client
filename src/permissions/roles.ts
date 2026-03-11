@@ -20,11 +20,7 @@ export enum RoleV2SeededName {
   GuestUploader = 'GuestUploader',
 }
 
-export const orgRoles = [
-  RoleName.Viewer,
-  RoleName.SeqViewer,
-  RoleName.Uploader,
-];
+export const orgRoles = [RoleName.Viewer, RoleName.SeqViewer, RoleName.Uploader];
 
 export const projectRoles = [
   RoleName.Viewer,
