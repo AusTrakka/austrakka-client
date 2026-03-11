@@ -90,3 +90,7 @@
 .p-treetable.p-treetable-gridlines .p-treetable-tfoot>tr>td {
   border-color: var(--tree-table-border-color) !important;
 }
+
+.tree-table-custom .p-treetable-header {
+  padding: 6px 6px;
+}

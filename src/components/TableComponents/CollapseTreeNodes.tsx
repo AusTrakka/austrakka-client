@@ -5,7 +5,7 @@ import { TreeTableExpandedKeysType } from 'primereact/treetable';
 
 interface CollapseTreeNodesProps {
   expandedKeys: TreeTableExpandedKeysType | undefined;
-  setExpandedKeys: (keys: TreeTableExpandedKeysType | undefined) => void;
+  setExpandedKeys: (keys: TreeTableExpandedKeysType) => void;
 }
 
 function CollapseTreeNodes(props: CollapseTreeNodesProps) {

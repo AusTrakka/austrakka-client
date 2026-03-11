@@ -39,7 +39,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] =
-    useState<TreeTableExpandedKeysType | undefined>(undefined);
+    useState<TreeTableExpandedKeysType>({});
   const MAX_VISIBLE_CHILDREN = 600;
 
   const today = dayjs();
@@ -155,8 +155,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       const { data, children } = rowNode;
       const { countKey, previewKey, valueKey } = params;
 
-      const isExpanded = rowNode.expanded;
-      const isParent = !!children && children.length > 0;
+      const isExpanded = Boolean(expandedKeys && rowNode.key && expandedKeys[rowNode.key]);
+      const isParent = Boolean(children && children.length);
 
       if (isParent && isExpanded) {
         return null;
@@ -178,7 +178,25 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       }
       return data[valueKey] || '-';
     },
-    [],
+    [expandedKeys],
+  );
+
+  const unaggregatedCellTemplate = useCallback(
+    (rowNode: any, col: PrimeReactColumnDefinition) => {
+      const { data, children } = rowNode;
+
+      const isExpanded = Boolean(expandedKeys && rowNode.key && expandedKeys[rowNode.key]);
+      const isParent = Boolean(children && children.length);
+
+      if (isParent && isExpanded) {
+        return null;
+      }
+
+      // Work around so tableUtils/renderUtils work with TreeTable bodyData
+      const bodyData = data;
+      return col.body ? col.body(bodyData) : bodyData[col.field];
+    },
+    [expandedKeys],
   );
 
   const firstColumnTemplate = useCallback(
@@ -208,8 +226,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     (rowNode: TreeNode) => {
       const { key, children } = rowNode;
       const classes: Record<string, boolean> = {};
-      const isParent = !!children?.length;
-      const isExpanded = expandedKeys && key && !!expandedKeys[key];
+      const isParent = Boolean(children && children.length);
+      const isExpanded = Boolean(expandedKeys && key && expandedKeys[key]);
 
       if (isParent && isExpanded) classes['parent-row-event'] = true;
       if (rowNode.data.parentKey && expandedKeys && expandedKeys[rowNode.data.parentKey]) {
@@ -333,9 +351,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                             valueKey: 'resourceType',
                           });
                         }
-                        // Work around so tableUtils/renderUtils work with TreeTable bodyData
-                        const bodyData = node.data;
-                        return col.body ? col.body(bodyData) : bodyData[col.field];
+                        return unaggregatedCellTemplate(node, col);
                       }}
                       sortable
                     />
