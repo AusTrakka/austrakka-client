@@ -1,30 +1,34 @@
-import { Alert, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import React, {
+  useEffect, useMemo, useState,
+} from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { useApi } from '../../app/ApiContext';
+import { Alert, Typography } from '@mui/material';
 import { NavigationProvider } from '../../app/NavigationContext';
-import { fetchProjectMetadata, selectProjectMergeAlgorithm } from '../../app/projectMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import { selectUserState, type UserSliceState } from '../../app/userSlice';
-import LoadingState from '../../constants/loadingState';
-import { ResponseType } from '../../constants/responseType';
-import type { Project } from '../../types/dtos';
 import { getProjectDetails } from '../../utilities/resourceUtils';
-import Activity from '../Common/Activity/Activity';
+import ProjectSamplesTable from './ProjectSamplesTable';
+import TreeList from './TreeList';
+import PlotList from './PlotList';
+import MemberList from './MemberList';
+import Datasets from '../ProjectDatasets/Datasets';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
+import { Project } from '../../types/dtos';
+import LoadingState from '../../constants/loadingState';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
-import Datasets from '../ProjectDatasets/Datasets';
-import MemberList from './MemberList';
-import PlotList from './PlotList';
 import ProFormas from './ProFormas';
-import ProjectSamplesTable from './ProjectSamplesTable';
+import { useApi } from '../../app/ApiContext';
+import {
+  fetchProjectMetadata,
+  selectProjectMergeAlgorithm,
+} from '../../app/projectMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { ResponseType } from '../../constants/responseType';
+import Activity from '../Common/Activity/Activity';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
-import TreeList from './TreeList';
 
 interface ProjectOverviewProps {
-  tab: string;
-  projectAbbrev: string;
+  tab: string,
+  projectAbbrev: string,
 }
 
 const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).reduce(
@@ -40,31 +44,16 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const { token, tokenLoading } = useApi();
   const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
-
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
-  const user: UserSliceState = useAppSelector(selectUserState);
-
-  // Temporarily hiding activity tab for non SuperUsers
-  // If long-term, can drive tab visibility
-  // based on V2 permission similarly to <MainMenuLayout/>
-  const isSuperUser = Boolean(user?.adminV2);
-  const visibleProjTabs = isSuperUser
-    ? Object.values(PROJ_TABS)
-    : Object.values(PROJ_TABS).filter((projectTab) => projectTab !== PROJ_TABS.activity);
-
-  const tabLoadingSetters = useMemo(
-    () =>
-      Object.values(PROJ_TABS).reduce(
-        (acc, pt) => {
-          acc[pt.index] = (loading: boolean) =>
-            setTabLoadStates((prev) => ({ ...prev, [pt.index]: loading }));
-          return acc;
-        },
-        {} as Record<number, (loading: boolean) => void>,
-      ),
-    [],
-  );
-
+   
+  const tabLoadingSetters = useMemo(() => (
+    Object.values(PROJ_TABS).reduce((acc, pt) => {
+      acc[pt.index] = (loading: boolean) =>
+        setTabLoadStates(prev => ({ ...prev, [pt.index]: loading }));
+      return acc;
+    }, {} as Record<number, (loading: boolean) => void>)
+  ), []);
+  
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   // Project Overview component states
@@ -74,7 +63,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
   });
 
   // Tab loading states
-
+ 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -98,10 +87,9 @@ function ProjectOverview(props: ProjectOverviewProps) {
       getProject();
     }
   }, [dispatch, projectAbbrev, token, tokenLoading]);
-
+  
   const mergeAlgorithm = useAppSelector((state) =>
-    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation),
-  );
+    selectProjectMergeAlgorithm(state, projectDetails?.abbreviation));
 
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
@@ -111,77 +99,108 @@ function ProjectOverview(props: ProjectOverviewProps) {
       setTabValue(tabObj.index);
     }
   }, [tab]);
+  
+  if (tabValue === null) { return null; }
 
-  if (tabValue === null) {
-    return null;
-  }
-
-  return isOverviewError.detailsError ? (
-    <Alert severity="error">{isOverviewError.detailsErrorMessage}</Alert>
-  ) : (
-    <>
-      <Typography className="pageTitle">{projectDetails ? projectDetails.name : ''}</Typography>
-      <CustomTabs value={tabValue} tabContent={visibleProjTabs} setValue={setTabValue} />
-      <TabPanel value={tabValue} index={PROJ_TABS.dashboard.index}>
-        <ProjectDashboard
-          projectDesc={projectDetails ? projectDetails.description : ''}
-          projectAbbrev={projectAbbrev!}
-        />
-      </TabPanel>
-      <TabPanel value={tabValue} index={PROJ_TABS.samples.index}>
-        <ProjectSamplesTable key={location.search} projectAbbrev={projectAbbrev!} />
-      </TabPanel>
-      <TabPanel
-        value={tabValue}
-        index={PROJ_TABS.trees.index}
-        loadingState={tabLoadStates[PROJ_TABS.trees.index]}
-        setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
-      >
-        <TreeList
-          projectDetails={projectDetails}
-          setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
-        />
-      </TabPanel>
-      <TabPanel
-        value={tabValue}
-        index={PROJ_TABS.plots.index}
-        loadingState={tabLoadStates[PROJ_TABS.plots.index]}
-        setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
-      >
-        <PlotList
-          projectDetails={projectDetails}
-          setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
-        />
-      </TabPanel>
-      <TabPanel
-        value={tabValue}
-        index={PROJ_TABS.members.index}
-        loadingState={tabLoadStates[PROJ_TABS.members.index]}
-        setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
-      >
-        <MemberList
-          projectDetails={projectDetails}
-          setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
-        />
-      </TabPanel>
-      <TabPanel
-        value={tabValue}
-        index={PROJ_TABS.proformas.index}
-        loadingState={tabLoadStates[PROJ_TABS.proformas.index]}
-        setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
-      >
-        <ProFormas
-          projectDetails={projectDetails}
-          setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
-        />
-      </TabPanel>
-      <TabPanel value={tabValue} index={PROJ_TABS.datasets.index}>
-        <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
-      </TabPanel>
-      <TabPanel value={tabValue} index={PROJ_TABS.activity.index}>
-        <Activity recordType="Project" rGuid={projectDetails?.globalId ?? ''} />
-      </TabPanel>
-    </>
+  return (
+    isOverviewError.detailsError
+      ? (
+        <Alert severity="error">
+          {isOverviewError.detailsErrorMessage}
+        </Alert>
+      )
+      : (
+        <>
+          <Typography className="pageTitle">
+            {projectDetails ? projectDetails.name : ''}
+          </Typography>
+          <CustomTabs
+            value={tabValue}
+            tabContent={Object.values(PROJ_TABS)}
+            setValue={setTabValue}
+          />
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.dashboard.index}
+          >
+            <ProjectDashboard
+              projectDesc={projectDetails ? projectDetails.description : ''}
+              projectAbbrev={projectAbbrev!}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.samples.index}
+          >
+            <ProjectSamplesTable
+              key={location.search}
+              projectAbbrev={projectAbbrev!}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.trees.index}
+            loadingState={tabLoadStates[PROJ_TABS.trees.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
+          >
+            <TreeList
+              projectDetails={projectDetails}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.trees.index]}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.plots.index}
+            loadingState={tabLoadStates[PROJ_TABS.plots.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
+          >
+            <PlotList
+              projectDetails={projectDetails}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.members.index}
+            loadingState={tabLoadStates[PROJ_TABS.members.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
+          >
+            <MemberList
+              projectDetails={projectDetails}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.members.index]}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.proformas.index}
+            loadingState={tabLoadStates[PROJ_TABS.proformas.index]}
+            setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
+          >
+            <ProFormas
+              projectDetails={projectDetails}
+              setIsLoading={tabLoadingSetters[PROJ_TABS.proformas.index]}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.datasets.index}
+          >
+            <Datasets
+              projectDetails={projectDetails}
+              mergeAlgorithm={mergeAlgorithm}
+            />
+          </TabPanel>
+          <TabPanel
+            value={tabValue}
+            index={PROJ_TABS.activity.index}
+          >
+            <Activity
+              recordType="Project"
+              rGuid={projectDetails?.globalId ?? ''}
+            />
+          </TabPanel>
+        </>
+      )
   );
 }
 

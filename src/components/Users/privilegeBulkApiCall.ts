@@ -1,43 +1,37 @@
-import { ResponseType } from '../../constants/responseType';
-import type { UserRoleRecordPrivilegePost } from '../../types/dtos';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import type { PendingChange } from '../../types/userDetailEdit.interface';
+import { UserRoleRecordPrivilegePost } from '../../types/dtos';
+import { ResponseObject } from '../../types/responseObject.interface';
 import {
-  deleteOrgPrivilege,
-  deleteTenantPrivilege,
+  deleteOrgPrivilege, deleteTenantPrivilege,
   postOrgPrivilege,
   postTenantPrivilege,
 } from '../../utilities/resourceUtils';
+import { PendingChange } from '../../types/userDetailEdit.interface';
+import { ResponseType } from '../../constants/responseType';
 
-const postApiMap: Record<
-  string,
-  (
-    recordGlobalId: string,
-    body: UserRoleRecordPrivilegePost,
-    token: string,
-  ) => Promise<ResponseObject<any>>
-> = {
-  Organisation: postOrgPrivilege,
-  Tenant: postTenantPrivilege,
+const postApiMap: Record<string,
+(recordGlobalId: string,
+  body: UserRoleRecordPrivilegePost,
+  token: string,
+  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
+  'Organisation': postOrgPrivilege,
+  'Tenant': postTenantPrivilege,
 };
 
-const deleteApiMap: Record<
-  string,
-  (
-    recordGlobalId: string,
-    assigneeGlobalId: string,
-    roleGlobalId: string,
-    token: string,
-  ) => Promise<ResponseObject<any>>
-> = {
-  Organisation: deleteOrgPrivilege,
-  Tenant: deleteTenantPrivilege,
+const deleteApiMap: Record<string,
+(recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string,
+  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
+  'Organisation': deleteOrgPrivilege,
+  'Tenant': deleteTenantPrivilege,
 };
 
 export async function processPrivilegeChanges(
   pendingChanges: PendingChange[],
   userGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ): Promise<[string | null, PendingChange][]> {
   const failedChanges: [string | null, PendingChange][] = [];
 
@@ -52,6 +46,7 @@ export async function processPrivilegeChanges(
           change.payload.recordGlobalId!,
           postBody,
           token,
+          clientSessionId,
         );
         if (response.status !== ResponseType.Success) {
           failedChanges.push([response.message, change]);
@@ -62,20 +57,19 @@ export async function processPrivilegeChanges(
           userGlobalId,
           change.payload.roleName,
           token,
+          clientSessionId,
         );
         if (response.status !== ResponseType.Success) {
           failedChanges.push([response.message, change]);
         }
       } else {
         const errorMessage = `Unsupported change type: ${change.type} for record type: ${change.recordType}`;
-        // biome-ignore lint/suspicious/noConsole: historic
-        console.error(errorMessage);
+        console.error(errorMessage); // eslint-disable-line no-console
         failedChanges.push([errorMessage, change]);
       }
     } catch (error) {
       const errorMessage = `Failed to process ${change.recordType} privilege for ${change.payload.recordName}: ${error}`;
-      // biome-ignore lint/suspicious/noConsole: historic
-      console.error(errorMessage);
+      console.error(errorMessage); // eslint-disable-line no-console
       failedChanges.push([errorMessage, change]);
     }
   };

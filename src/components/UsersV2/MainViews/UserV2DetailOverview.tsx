@@ -1,47 +1,49 @@
-import { Alert, type AlertColor, Paper, Snackbar, Stack, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import {
+  Alert,
+  AlertColor,
+  Paper,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { deepEqual } from 'vega-lite';
-import { useApi } from '../../../app/ApiContext';
-import { useAppSelector } from '../../../app/store';
-import { selectUserState } from '../../../app/userSlice';
-import LoadingState from '../../../constants/loadingState';
-import { ResponseType } from '../../../constants/responseType';
-import type {
-  GroupedPrivilegesByRecordType,
-  RecordRole,
-  UserPatchV2,
-  UserV2,
-} from '../../../types/dtos';
-import type { ResponseObject } from '../../../types/responseObject.interface';
 import {
   disableUserV2,
   enableUserV2,
   getUserV2,
   patchUserV2,
 } from '../../../utilities/resourceUtils';
+import { useAppSelector } from '../../../app/store';
+import { useApi } from '../../../app/ApiContext';
+import {
+  GroupedPrivilegesByRecordType, RecordRole,
+  UserPatchV2,
+  UserV2,
+} from '../../../types/dtos';
+import { selectUserState } from '../../../app/userSlice';
+import LoadingState from '../../../constants/loadingState';
+import { ResponseObject } from '../../../types/responseObject.interface';
+import { ResponseType } from '../../../constants/responseType';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../RowRender/RowAndCell.css';
-import { Theme } from '../../../assets/themes/theme';
-import type { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
-import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { ChangesDialog } from './ChangesDialog';
+import { FailedChangesDialog } from './FailedChangesDialog';
+import UserProperties from './UserProperties';
+import UserPrivileges from './UserPrivileges';
 import {
   checkEditUserScopes,
   checkFetchUserScope,
-  filterAssignedRoles,
-  removeSelectionFromPrivileges,
-  updateEditedPrivileges,
-  updatePendingChanges,
-  updatePendingChangesForRemoval,
+  filterAssignedRoles, removeSelectionFromPrivileges,
+  updateEditedPrivileges, updatePendingChanges, updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
-import { bytesToMB } from '../../../utilities/renderUtils';
 import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
-import { ChangesDialog } from './ChangesDialog';
-import { FailedChangesDialog } from './FailedChangesDialog';
-import UserPrivileges from './UserPrivileges';
-import UserProperties from './UserProperties';
+import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { bytesToMB } from '../../../utilities/renderUtils';
+import { Theme } from '../../../assets/themes/theme';
 
 function UserV2DetailOverview() {
   const { userGlobalId } = useParams();
@@ -51,9 +53,8 @@ function UserV2DetailOverview() {
   const [user, setUser] = useState<UserV2 | null>(null);
   const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
-  const [editedPrivileges, setEditedPrivileges] = useState<GroupedPrivilegesByRecordType[] | null>(
-    null,
-  );
+  const [editedPrivileges, setEditedPrivileges] =
+    useState<GroupedPrivilegesByRecordType[] | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [patchMsg, setPatchMsg] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -65,20 +66,24 @@ function UserV2DetailOverview() {
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
   const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
-  const { loading, adminV2, scopes } = useAppSelector(selectUserState);
+  const {
+    loading,
+    superUser,
+    scopes,
+  } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
-    objectId: 'Object ID',
-    globalId: 'Global ID',
-    position: 'Position',
-    displayName: 'Name',
-    analysisServerUsername: 'Linux Username',
-    orgName: 'Organisation',
-    contactEmail: 'Email',
-    isActive: 'Active',
-    noDownloadQuota: 'No Download Quota',
-    monthlyBytesQuota: 'Download Quota',
-    created: 'Joined',
+    'objectId': 'Object ID',
+    'globalId': 'Global ID',
+    'position': 'Position',
+    'displayName': 'Name',
+    'analysisServerUsername': 'Linux Username',
+    'orgName': 'Organisation',
+    'contactEmail': 'Email',
+    'isActive': 'Active',
+    'noDownloadQuota': 'No Download Quota',
+    'monthlyBytesQuota': 'Download Quota',
+    'created': 'Joined',
   };
 
   let nonDisplayFields = [
@@ -93,12 +98,12 @@ function UserV2DetailOverview() {
     'lastDownloadDate',
   ];
 
-  if (user?.noDownloadQuota) {
+  if (user && user.noDownloadQuota) {
     nonDisplayFields.push('monthlyBytesQuota');
   }
 
   // Add a boolean constant to determine if the user can see this page.
-  // Currently, access is only granted to adminV2 (the root super user).
+  // Currently, access is only granted to superUser.
   // Instead, the visibility and editability of the page should be checked separately
   // based on the required scopes.
 
@@ -107,7 +112,7 @@ function UserV2DetailOverview() {
 
   // this should check if it has loaded then if its super user and
   // lastly if they have the scope for fetching the user
-  if (loading === LoadingState.SUCCESS && (adminV2 || canFetch)) {
+  if (loading === LoadingState.SUCCESS && (superUser || canFetch)) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -132,7 +137,7 @@ function UserV2DetailOverview() {
     setEditingPrivileges(false);
   };
 
-  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -140,7 +145,7 @@ function UserV2DetailOverview() {
     setOpenSnackbar(false);
   };
 
-  const handleDupClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleDupClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -149,7 +154,7 @@ function UserV2DetailOverview() {
   };
 
   const handleSuccessPrivAssignmentSnackbarClose = (
-    _event: React.SyntheticEvent | Event,
+    event: React.SyntheticEvent | Event,
     reason?: string,
   ) => {
     if (reason === 'clickaway') {
@@ -161,7 +166,10 @@ function UserV2DetailOverview() {
 
   useEffect(() => {
     const updateUser = async () => {
-      const userResponse: ResponseObject = await getUserV2(userGlobalId!, token);
+      const userResponse: ResponseObject = await getUserV2(
+        userGlobalId!,
+        token,
+      );
 
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserV2;
@@ -173,18 +181,19 @@ function UserV2DetailOverview() {
       }
     };
 
-    if (
-      tokenLoading !== LoadingState.IDLE &&
+    if (tokenLoading !== LoadingState.IDLE &&
       tokenLoading !== LoadingState.LOADING &&
       loading === LoadingState.SUCCESS &&
-      userGlobalId
-    ) {
+      userGlobalId) {
       updateUser();
     }
   }, [loading, token, tokenLoading, userGlobalId]);
 
   async function fetchUserDto(): Promise<UserV2> {
-    const userFetchResponse: ResponseObject = await getUserV2(userGlobalId!, token);
+    const userFetchResponse: ResponseObject = await getUserV2(
+      userGlobalId!,
+      token,
+    );
 
     if (userFetchResponse.status !== ResponseType.Success) {
       throw new Error('User could not be accessed');
@@ -194,7 +203,14 @@ function UserV2DetailOverview() {
   }
 
   const processPendingChanges = async () => {
-    const failedRequests = await processPrivilegeChanges(pendingChanges, userGlobalId!, token);
+    const clientSessionId : string = crypto.randomUUID();
+
+    const failedRequests = await processPrivilegeChanges(
+      pendingChanges,
+      userGlobalId!,
+      token,
+      clientSessionId,
+    );
 
     if (failedRequests.length > 0) {
       setFailedChanges(failedRequests);
@@ -216,6 +232,7 @@ function UserV2DetailOverview() {
   };
 
   const editUserDetails = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
 
     // Creating editedValuesDtoFormat object
@@ -230,20 +247,30 @@ function UserV2DetailOverview() {
 
     const editedActiveState = user?.isActive !== isActive;
     try {
+      const clientSessionId : string = crypto.randomUUID();
       // basic patch
       const userResponse: ResponseObject = await patchUserV2(
         userGlobalId!,
         editedValuesDtoFormat,
         token,
+        clientSessionId,
       );
 
       // enable user
       if (editedActiveState) {
         let userActivateResponse: ResponseObject;
         if (isActive) {
-          userActivateResponse = await enableUserV2(userGlobalId!, token);
+          userActivateResponse = await enableUserV2(
+            userGlobalId!,
+            token,
+            clientSessionId,
+          );
         } else {
-          userActivateResponse = await disableUserV2(userGlobalId!, token);
+          userActivateResponse = await disableUserV2(
+            userGlobalId!,
+            token,
+            clientSessionId,
+          );
         }
         if (userActivateResponse.status !== ResponseType.Success) {
           throw new Error('User could not be activated/deactivated');
@@ -275,7 +302,10 @@ function UserV2DetailOverview() {
     setEditingBasic(false);
   };
 
-  const onSelectionAdd = (recordType: string, assignedRoles: RoleAssignments[]) => {
+  const onSelectionAdd = (
+    recordType: string,
+    assignedRoles: RoleAssignments[],
+  ) => {
     const filteredAssignedRoles = filterAssignedRoles(
       recordType,
       assignedRoles,
@@ -283,9 +313,17 @@ function UserV2DetailOverview() {
       pendingChanges,
     );
 
-    setEditedPrivileges((prev) => updateEditedPrivileges(prev, recordType, filteredAssignedRoles));
+    setEditedPrivileges(prev => updateEditedPrivileges(
+      prev,
+      recordType,
+      filteredAssignedRoles,
+    ));
 
-    setPendingChanges((prev) => updatePendingChanges(prev, recordType, filteredAssignedRoles));
+    setPendingChanges(prev => updatePendingChanges(
+      prev,
+      recordType,
+      filteredAssignedRoles,
+    ));
   };
 
   const onSelectionRemove = (
@@ -294,20 +332,32 @@ function UserV2DetailOverview() {
     recordName: string,
     recordGlobalId: string,
   ) => {
-    setEditedPrivileges((prev) =>
-      removeSelectionFromPrivileges(prev, recordType, recordName, role),
-    );
-    setPendingChanges((prev) =>
-      updatePendingChangesForRemoval(prev, recordType, recordGlobalId, recordName, role),
-    );
+    setEditedPrivileges(prev =>
+      removeSelectionFromPrivileges(
+        prev,
+        recordType,
+        recordName,
+        role,
+      ));
+    setPendingChanges(prev =>
+      updatePendingChangesForRemoval(
+        prev,
+        recordType,
+        recordGlobalId,
+        recordName,
+        role,
+      ));
   };
 
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
-  const canSeeEditButtons = () => loading === LoadingState.SUCCESS && (adminV2 || canEdit);
-  return user ? (
+  const canSeeEditButtons = () => (loading === LoadingState.SUCCESS && (superUser || canEdit));
+  return (user) ? (
     <div>
-      <Stack direction="column" justifyContent="space-between">
+      <Stack
+        direction="column"
+        justifyContent="space-between"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* Left: Icon and Name */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -320,44 +370,82 @@ function UserV2DetailOverview() {
           {/* Right: Quota + Dates */}
 
           <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
+
             <Stack direction="row" spacing={3}>
               {/* Left Column: Quota Info */}
-              {!user.noDownloadQuota && (
-                <Stack direction="column" spacing={0.2} minWidth={200}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      Monthly Quota:
-                    </Typography>
-                    <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      {bytesToMB(user.monthlyBytesQuota)} MB
-                    </Typography>
+              {!user.noDownloadQuota &&
+                (
+                  <Stack direction="column" spacing={0.2} minWidth={200}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={Theme.PrimaryGrey700}
+                      >
+                        Monthly Quota:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={Theme.PrimaryGrey700}
+                      >
+                        {bytesToMB(user.monthlyBytesQuota)}
+                        {' '}
+                        MB
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={Theme.PrimaryGrey700}
+                      >
+                        Quota Used:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        fontSize=".8rem"
+                        color={Theme.PrimaryGrey700}
+                      >
+                        {bytesToMB(user.monthlyBytesUsed)}
+                        {' '}
+                        MB
+                      </Typography>
+                    </Stack>
                   </Stack>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      Quota Used:
-                    </Typography>
-                    <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      {bytesToMB(user.monthlyBytesUsed)} MB
-                    </Typography>
-                  </Stack>
-                </Stack>
-              )}
+                )}
 
               {/* Right Column: Dates */}
               <Stack direction="column" spacing={0.2} minWidth={200}>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={Theme.PrimaryGrey700}
+                  >
                     Last Active:
                   </Typography>
-                  <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={Theme.PrimaryGrey700}
+                  >
                     {isoDateOrNotRecorded(new Date(user.lastActive).toISOString())}
                   </Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={Theme.PrimaryGrey700}
+                  >
                     Last Login:
                   </Typography>
-                  <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  <Typography
+                    variant="caption"
+                    fontSize=".8rem"
+                    color={Theme.PrimaryGrey700}
+                  >
                     {isoDateOrNotRecorded(new Date(user.lastLogIn).toISOString())}
                   </Typography>
                 </Stack>
@@ -371,7 +459,13 @@ function UserV2DetailOverview() {
           </Alert>
         )}
       </Stack>
-      <Grid container spacing={4} flex="flexwrap" width="100%" alignItems="stretch">
+      <Grid
+        container
+        spacing={4}
+        flex="flexwrap"
+        width="100%"
+        alignItems="stretch"
+      >
         <Grid size={{ xs: 12, md: 12, lg: 12, xl: 4.5 }}>
           <UserProperties
             user={user}

@@ -1,6 +1,6 @@
-import type { UserSliceState } from '../app/userSlice';
-import { hasScopeInRecord } from '../utilities/accessTableUtils';
-import { RoleName } from './roles';
+import { UserSliceState } from '../app/userSlice';
+import { RoleName, RoleV2SeededName } from './roles';
+import { hasRoleInRecord, hasScopeInRecord } from '../utilities/accessTableUtils';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
@@ -13,7 +13,7 @@ interface ResourcePrivileges {
 }
 
 const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
-  users: {
+  'users': {
     [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
   },
   'project/tabs/datasettab': {
@@ -43,12 +43,13 @@ export function hasPermission(
   if (user.admin) {
     return true;
   }
+  if (user.superUser) return true;
   const userRoles = user.groupRolesByGroup[group] ?? [];
   const allowedRoles = componentPermissions[domain]?.[permission] ?? [];
-  return userRoles.some((role) => allowedRoles.includes(role));
+  return userRoles.some(role => allowedRoles.includes(role));
 }
 
-export function hasPermissionV2(
+export function hasPermissionV2ByScope(
   user: UserSliceState,
   scope?: string,
   recordName: string = '',
@@ -57,7 +58,7 @@ export function hasPermissionV2(
   if (!user) return false;
   if (!scope) return false;
   // This is if they are admin
-  if (user.adminV2) {
+  if (user.superUser) {
     return true;
   }
 
@@ -66,4 +67,18 @@ export function hasPermissionV2(
   }
 
   return hasScopeInRecord(user.scopes, scope, recordName, recordType);
+}
+
+export function hasPermissionV2ByRole(
+  user:UserSliceState,
+  role: RoleV2SeededName,
+  recordName: string = '',
+  recordType = 'Tenant',
+): boolean {
+  if (!user) return false;
+  if (!role) return false;
+  if (user.superUser) return true;
+  if (!user.scopes || user.scopes.length === 0) return false;
+
+  return hasRoleInRecord(user.scopes, role, recordName, recordType);
 }

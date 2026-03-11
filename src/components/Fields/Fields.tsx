@@ -1,40 +1,31 @@
-import { EditOutlined } from '@mui/icons-material';
-import { Alert, Chip, Paper, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Alert, Paper, Typography, Chip } from '@mui/material';
+import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
+import { Column, ColumnEditorOptions, ColumnEvent } from 'primereact/column';
 import { FilterMatchMode } from 'primereact/api';
-import { Column, type ColumnEditorOptions, type ColumnEvent } from 'primereact/column';
-import {
-  DataTable,
-  type DataTableFilterMeta,
-  type DataTableFilterMetaData,
-} from 'primereact/datatable';
-import type React from 'react';
-import { useEffect, useState } from 'react';
-import { useApi } from '../../app/ApiContext';
-import { useAppSelector } from '../../app/store';
-import { selectUserState, type UserSliceState } from '../../app/userSlice';
-import LoadingState from '../../constants/loadingState';
-import { ResponseType } from '../../constants/responseType';
-import { ScopeDefinitions } from '../../constants/scopes';
-import { hasPermissionV2 } from '../../permissions/accessTable';
-import type { MetaDataColumn } from '../../types/dtos';
-import type { ResponseObject } from '../../types/responseObject.interface';
+import { EditOutlined } from '@mui/icons-material';
+import { MetaDataColumn } from '../../types/dtos';
+import { ResponseObject } from '../../types/responseObject.interface';
 import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
-import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import { useApi } from '../../app/ApiContext';
+import { ResponseType } from '../../constants/responseType';
+import LoadingState from '../../constants/loadingState';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
+import { UserSliceState, selectUserState } from '../../app/userSlice';
+import { useAppSelector } from '../../app/store';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import AllowedValues from './AllowedValues';
 import { NumericEditable, TextEditable } from './EditableFields';
-import { FIELD_TYPE_COLOURS, type FieldType } from './fieldsMeta';
+import { ScopeDefinitions } from '../../constants/scopes';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import AllowedValues from './AllowedValues';
+import { FieldType, FIELD_TYPE_COLOURS } from './fieldsMeta';
 
 function Fields() {
   const bodyValueWithEditIcon = (rowData: any, field: string) => (
     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
-      <EditOutlined
-        color="disabled"
-        fontSize="small"
-        sx={{ marginLeft: '10px', marginRight: '10px' }}
-      />
+      <EditOutlined color="disabled" fontSize="small" sx={{ marginLeft: '10px', marginRight: '10px' }} />
     </div>
   );
 
@@ -58,7 +49,9 @@ function Fields() {
 
   const renderAllowedValues = (allowedValues: string[] | null, field: string) => {
     if (allowedValues === null || allowedValues.length === 0) return '';
-    return <AllowedValues allowedValues={allowedValues} field={field} />;
+    return (
+      <AllowedValues allowedValues={allowedValues} field={field} />
+    );
   };
 
   const interactiveColumns = [
@@ -90,8 +83,10 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) =>
-        renderAllowedValues(rowData.metaDataColumnValidValues, rowData.columnName),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
     {
@@ -128,18 +123,25 @@ function Fields() {
     {
       field: 'metaDataColumnValidValues',
       header: 'Allowed Values',
-      body: (rowData: any) =>
-        renderAllowedValues(rowData.metaDataColumnValidValues, rowData.columnName),
+      body: (rowData: any) => renderAllowedValues(
+        rowData.metaDataColumnValidValues,
+        rowData.columnName,
+      ),
       hidden: false,
     },
   ];
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermissionV2(user, ScopeDefinitions.UpdateFieldTenant);
+  const interactionPermission = hasPermissionV2ByScope(
+    user,
+    ScopeDefinitions.UpdateFieldTenant,
+  );
 
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [columns, setColumns] = useState<any[]>(
-    interactionPermission ? interactiveColumns : nonInteractiveColumns,
+    interactionPermission ?
+      interactiveColumns :
+      nonInteractiveColumns,
   );
   const { token, tokenLoading } = useApi();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
@@ -167,7 +169,7 @@ function Fields() {
         } else if (response.status === ResponseType.Error) {
           setError(response.message);
         }
-      } catch (_e) {
+      } catch (e) {
         setError('An unexpected error occurred.');
       }
     };
@@ -180,9 +182,7 @@ function Fields() {
   }, [token, tokenLoading]);
 
   const header = (
-    <div
-      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
-    >
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <SearchInput
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
@@ -240,13 +240,10 @@ function Fields() {
 
     const response = await patchFieldV2(fieldName, token, fieldData);
     if (response.status === ResponseType.Success) {
-      setFields(
-        fields.map((fieldMetadata: MetaDataColumn) =>
-          fieldMetadata.columnName === fieldName
-            ? { ...fieldMetadata, ...fieldData }
-            : fieldMetadata,
-        ),
-      );
+      setFields(fields.map((fieldMetadata: MetaDataColumn) =>
+        (fieldMetadata.columnName === fieldName ?
+          { ...fieldMetadata, ...fieldData } :
+          fieldMetadata)));
     } else {
       setError(response.message);
     }
@@ -300,25 +297,26 @@ function Fields() {
           editMode={interactionPermission ? 'cell' : undefined}
           filters={globalFilter}
         >
-          {columns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              editor={interactionPermission ? (options) => cellEditor(options) : undefined}
-              sortable
-              resizeable
-              hidden={col.hidden}
-              headerClassName="custom-title"
-              style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
-              bodyStyle={{ verticalAlign: 'top' }}
-              onCellEditComplete={onCellEditComplete}
-              onBeforeCellEditShow={(e) =>
-                !col.editable ? e.originalEvent.preventDefault() : undefined
-              }
-            />
-          ))}
+          {
+            columns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                editor={interactionPermission ? (options) => cellEditor(options) : undefined}
+                sortable
+                resizeable
+                hidden={col.hidden}
+                headerClassName="custom-title"
+                style={{ whiteSpace: 'normal', maxWidth: '15rem' }}
+                bodyStyle={{ verticalAlign: 'top' }}
+                onCellEditComplete={onCellEditComplete}
+                onBeforeCellEditShow={(e) => (!col.editable ?
+                  e.originalEvent.preventDefault() : undefined)}
+              />
+            ))
+          }
         </DataTable>
       </Paper>
     </>
