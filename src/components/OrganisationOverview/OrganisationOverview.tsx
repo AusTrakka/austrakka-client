@@ -1,3 +1,5 @@
+// first lets make the get organisation information
+
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';

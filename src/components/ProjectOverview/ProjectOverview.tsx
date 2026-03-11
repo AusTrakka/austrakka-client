@@ -5,7 +5,6 @@ import { useApi } from '../../app/ApiContext';
 import { NavigationProvider } from '../../app/NavigationContext';
 import { fetchProjectMetadata, selectProjectMergeAlgorithm } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Project } from '../../types/dtos';
@@ -40,17 +39,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const { token, tokenLoading } = useApi();
   const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
-
   const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
-  const user: UserSliceState = useAppSelector(selectUserState);
-
-  // Temporarily hiding activity tab for non SuperUsers
-  // If long-term, can drive tab visibility
-  // based on V2 permission similarly to <MainMenuLayout/>
-  const isSuperUser = Boolean(user?.adminV2);
-  const visibleProjTabs = isSuperUser
-    ? Object.values(PROJ_TABS)
-    : Object.values(PROJ_TABS).filter((projectTab) => projectTab !== PROJ_TABS.activity);
 
   const tabLoadingSetters = useMemo(
     () =>
@@ -121,7 +110,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
   ) : (
     <>
       <Typography className="pageTitle">{projectDetails ? projectDetails.name : ''}</Typography>
-      <CustomTabs value={tabValue} tabContent={visibleProjTabs} setValue={setTabValue} />
+      <CustomTabs value={tabValue} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
       <TabPanel value={tabValue} index={PROJ_TABS.dashboard.index}>
         <ProjectDashboard
           projectDesc={projectDetails ? projectDetails.description : ''}
