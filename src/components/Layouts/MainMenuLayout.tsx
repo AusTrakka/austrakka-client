@@ -33,12 +33,19 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
-import { ScopeDefinitions } from '../../constants/scopes';
 import useUsername from '../../hooks/useUsername';
-import { hasPermission, hasPermissionV2, PermissionLevel } from '../../permissions/accessTable';
+import { hasPermissionV2ByRole } from '../../permissions/accessTable';
+import { RoleV2SeededName } from '../../permissions/roles';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
 import styles from './MainMenuLayout.module.css';
+
+interface SideBarItemProps {
+  title: string;
+  link: string;
+  icon: React.ReactNode;
+  permissionDomain?: string;
+}
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -125,7 +132,7 @@ function MainMenuLayout() {
   const account = useAccount(accounts[0] || {});
   const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const pages = [
+  const pages: SideBarItemProps[] = [
     {
       title: 'Dashboard',
       link: '/',
@@ -152,41 +159,28 @@ function MainMenuLayout() {
       icon: <ViewColumn />,
     },
     {
-      // TODO: Drive content pane visibility based on V2 permission.
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
-      requirePermission: true,
-      permissionDomain: null,
-      requiredTenantScope: ScopeDefinitions.GetTenantActivityLog,
+      permissionDomain: 'tenantPlatform',
     },
     {
       title: 'Users',
       link: '/users',
       icon: <People />,
-      requirePermission: true,
       permissionDomain: 'users',
     },
     {
       title: 'Users (V2)',
       link: '/usersV2',
       icon: <People color="warning" />,
-      requirePermission: true,
       permissionDomain: 'usersV2',
     },
   ];
 
-  const hasV1Perm = (domain: string | null): boolean =>
-    hasPermission(user, 'AusTrakka-Owner', domain, PermissionLevel.CanShow);
+  const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
 
-  const hasV2TenantPerm = (scope: string | undefined): boolean => hasPermissionV2(user, scope);
-
-  const visiblePages = pages.filter(
-    (page) =>
-      !page.requirePermission ||
-      hasV1Perm(page.permissionDomain) ||
-      hasV2TenantPerm(page.requiredTenantScope),
-  );
+  const visiblePages = pages.filter((page) => !page.permissionDomain || hasAdminRights);
 
   const showSidebarBrandingName = (): boolean =>
     import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';

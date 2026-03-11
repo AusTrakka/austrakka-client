@@ -1,5 +1,6 @@
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
+import type { RoleV2SeededName } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordTypeWithScopes,
   PrivilegeWithRolesWithScopes,
@@ -48,4 +49,32 @@ export function hasScopeInRecord(
 
   // Check if any role within this recordRole contains the specified scope
   return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.scopes.includes(scope));
+}
+
+export function hasRoleInRecord(
+  privileges: GroupedPrivilegesByRecordTypeWithScopes[],
+  role: RoleV2SeededName,
+  recordName: string = '',
+  recordType = 'Tenant',
+): boolean {
+  if (recordType === 'Tenant' && recordName !== '') {
+    throw new Error('Cannot provide recordName with recordType of Tenant');
+  }
+  if (recordType !== 'Tenant' && recordName === '') {
+    throw new Error('Must provide recordName');
+  }
+  let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
+  const targetGroup = privileges.find((priv) => priv.recordType === recordType);
+  if (recordType === 'Tenant') {
+    targetRecordRole = targetGroup?.recordRoles[0];
+  } else {
+    targetRecordRole = targetGroup?.recordRoles.find(
+      (recordRole) => recordRole.recordName === recordName,
+    );
+  }
+  if (!targetRecordRole) {
+    return false;
+  }
+
+  return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.roleName === role);
 }

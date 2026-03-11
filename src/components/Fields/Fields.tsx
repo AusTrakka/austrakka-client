@@ -15,7 +15,7 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { ScopeDefinitions } from '../../constants/scopes';
-import { hasPermissionV2 } from '../../permissions/accessTable';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
 import type { MetaDataColumn } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
@@ -134,7 +134,7 @@ function Fields() {
     },
   ];
   const user: UserSliceState = useAppSelector(selectUserState);
-  const interactionPermission = hasPermissionV2(user, ScopeDefinitions.UpdateFieldTenant);
+  const interactionPermission = hasPermissionV2ByScope(user, ScopeDefinitions.UpdateFieldTenant);
 
   const [fields, setFields] = useState<MetaDataColumn[]>([]);
   const [error, setError] = useState<string | null>(null);

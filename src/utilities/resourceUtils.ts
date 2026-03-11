@@ -86,8 +86,12 @@ export const getGroupMembers = (groupId: number, token: string) =>
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> =>
   callGET(`/api/Group/${groupName}`, token);
-export const replaceAssignments = (userId: string, token: string, assignments: any) =>
-  callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
+export const replaceAssignments = (
+  userId: string,
+  token: string,
+  assignments: any,
+  clientSessionId?: string,
+) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments, clientSessionId);
 
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
@@ -192,8 +196,8 @@ export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
 export const patchUserContactEmail = (userObjectId: string, token: string, email: any) =>
   callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const putUser = (userObjectId: string, token: string, user: any) =>
-  callPUT(`/api/Users/${userObjectId}`, token, user);
+export const putUser = (userObjectId: string, token: string, user: any, clientSessionId?: string) =>
+  callPUT(`/api/Users/${userObjectId}`, token, user, clientSessionId);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/RolesV2', token);
@@ -245,17 +249,20 @@ export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost('/api/Tenant/Privilege', token, privilegeBody);
+  clientSessionId?: string,
+) => callPost('/api/Tenant/Privilege', token, privilegeBody, clientSessionId);
 
 export const deleteTenantPrivilege = (
   _: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) =>
   callDELETE(
     `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
+    clientSessionId,
   );
 
 // User
@@ -266,14 +273,18 @@ export const getUserListV2 = (includeAll: boolean, token: string) =>
 export const getUserV2 = (userGlobalId: string, token: string) =>
   callGET(`/api/UserV2/${userGlobalId}`, token);
 
-export const patchUserV2 = (userGlobalId: string, userPatchDto: UserPatchV2, token: string) =>
-  callPATCH(`/api/UserV2/${userGlobalId}`, token, userPatchDto);
+export const patchUserV2 = (
+  userGlobalId: string,
+  userPatchDto: UserPatchV2,
+  token: string,
+  clientSessionId?: string,
+) => callPATCH(`/api/UserV2/${userGlobalId}`, token, userPatchDto, clientSessionId);
 
-export const disableUserV2 = (userGlobalId: string, token: string) =>
-  callPATCH(`/api/UserV2/disable/${userGlobalId}`, token);
+export const disableUserV2 = (userGlobalId: string, token: string, clientSessionId?: string) =>
+  callPATCH(`/api/UserV2/disable/${userGlobalId}`, token, clientSessionId);
 
-export const enableUserV2 = (userGlobalId: string, token: string) =>
-  callPATCH(`/api/UserV2/enable/${userGlobalId}`, token);
+export const enableUserV2 = (userGlobalId: string, token: string, clientSessionId?: string) =>
+  callPATCH(`/api/UserV2/enable/${userGlobalId}`, token, clientSessionId);
 
 // OrganisationV2
 
@@ -296,17 +307,26 @@ export const postOrgPrivilege = (
   recordGlobalId: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost(`/api/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
+  clientSessionId?: string,
+) =>
+  callPost(
+    `/api/OrganisationV2/${recordGlobalId}/Privilege`,
+    token,
+    privilegeBody,
+    clientSessionId,
+  );
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
   assigneeGlobalId: string,
   roleGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) =>
   callDELETE(
     `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
+    clientSessionId,
   );
 
 // Tenant
