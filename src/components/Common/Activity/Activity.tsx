@@ -301,7 +301,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 sortIcon={sortIcon}
                 paginator
                 rows={500}
-                rowsPerPageOptions={[500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]}
+                rowsPerPageOptions={[500, 1000, 1500, 2000]}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
                 currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
                 paginatorPosition="bottom"

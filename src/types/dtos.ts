@@ -462,7 +462,7 @@ export interface DerivedLog {
   // Server fields
   globalId: string,
   rawLogGlobalId: string,
-  clientSessionId: string,
+  clientSessionId: string | null,
   callId: string,
   eventType: string
   eventTime: string,

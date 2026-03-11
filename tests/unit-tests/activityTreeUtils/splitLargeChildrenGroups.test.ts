@@ -7,11 +7,11 @@ describe('splitLargeChildrenGroups', () => {
       key: 'parent',
       label: 'Parent',
       data: {},
-      children: Array.from({ length: 3 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
+      children: Array.from({ length: 100 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
     };
-    const result = splitLargeChildrenGroups(parent, 5);
+    const result = splitLargeChildrenGroups(parent, 500);
     expect(result.length).toBe(1);
-    expect(result[0].children!.length).toBe(3);
+    expect(result[0].children!.length).toBe(100);
   });
 
   it('should split children into chunks if over maxSize', () => {
@@ -19,12 +19,12 @@ describe('splitLargeChildrenGroups', () => {
       key: 'parent',
       label: 'Parent',
       data: {},
-      children: Array.from({ length: 12 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
+      children: Array.from({ length: 1200 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
     };
-    const result = splitLargeChildrenGroups(parent, 5);
+    const result = splitLargeChildrenGroups(parent, 500);
     expect(result.length).toBe(3);
-    expect(result[0].children!.length).toBe(5);
-    expect(result[1].children!.length).toBe(5);
-    expect(result[2].children!.length).toBe(2);
+    expect(result[0].children!.length).toBe(500);
+    expect(result[1].children!.length).toBe(500);
+    expect(result[2].children!.length).toBe(200);
   });
 });
