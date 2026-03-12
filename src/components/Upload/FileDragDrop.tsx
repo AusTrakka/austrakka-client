@@ -14,7 +14,6 @@ import {
 } from 'react';
 import muiTheme, { Theme } from '../../assets/themes/theme';
 import type { DropFileUpload } from '../../types/DropFileUpload';
-import { generateHash } from '../../utilities/file';
 import type {
   CustomUploadValidator,
   CustomUploadValidatorReturn,
@@ -23,10 +22,10 @@ import type {
 interface FileDragDropProps {
   files: DropFileUpload[];
   setFiles: Dispatch<SetStateAction<DropFileUpload[]>>;
-  validFormats: Record<string, string>; // TODO when FASTA, must revalidate when this changes
+  validFormats: Record<string, string>;
   multiple?: boolean | undefined;
-  calculateHash?: boolean | undefined;
   customValidators?: CustomUploadValidator[] | undefined;
+  fileTransform?: (f: File[]) => Promise<File[]>;
   validated: boolean;
   setValidated: Dispatch<SetStateAction<boolean>>;
   disabled?: boolean;
@@ -37,8 +36,8 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
   setFiles,
   validFormats,
   multiple = false,
-  calculateHash = false,
   customValidators = [],
+  fileTransform = (f: File[]) => Promise.resolve(f),
   validated,
   setValidated,
   disabled,
@@ -50,7 +49,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
   const textColour = disabled ? 'text.disabled' : 'primary';
   const iconColour = disabled ? 'disabled' : 'primary';
 
-  const validateUpload = useCallback(
+  const validateAndTransformUpload = useCallback(
     (uploadedFiles: File[]): boolean => {
       const validateFilesAreOfType = {
         func: (_files: File[]) =>
@@ -90,22 +89,39 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
           return false;
         }
       }
+
+      // Apply transform to file list and fail validation if it fails
+      // By default this is the trivial transform, no change to the file list
+      fileTransform(uploadedFiles)
+        .then((transformedFiles) => {
+          setFiles(transformedFiles.map((file) => ({ file }) as DropFileUpload));
+        })
+        .catch((e) => {
+          enqueueSnackbar(`File processing failed: ${e.message}`, {
+            variant: 'error',
+            autoHideDuration: 8000,
+          });
+          setValidated(false);
+          setFiles([]);
+          return false;
+        });
+
       setValidated(true);
       return true;
     },
-    [customValidators, enqueueSnackbar, multiple, setFiles, setValidated, validFormats],
+    [
+      customValidators,
+      enqueueSnackbar,
+      multiple,
+      fileTransform,
+      setFiles,
+      setValidated,
+      validFormats,
+    ],
   );
 
   const handleFiles = async (uploadedFiles: File[]) => {
-    const fileUploads = await Promise.all(
-      uploadedFiles.map(
-        async (file) =>
-          ({
-            file,
-            hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
-          }) as DropFileUpload,
-      ),
-    );
+    const fileUploads = uploadedFiles.map((file) => ({ file }) as DropFileUpload);
     setFiles([...files, ...fileUploads]);
   };
 
@@ -133,7 +149,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
     }
 
     const uploadedFiles = Array.from(e.dataTransfer?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -145,7 +161,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
   const handleBrowseChange = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const uploadedFiles = Array.from(e.target?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -155,11 +171,12 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
     setFiles([]);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (files.length > 0 && !validated) {
-      validateUpload(files.map((f) => f.file));
+      validateAndTransformUpload(files.map((f) => f.file));
     }
-  }, [validated, validateUpload, files]);
+  }, [validated, validateAndTransformUpload, setFiles, files]);
 
   return (
     <>
@@ -178,8 +195,9 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
           border: dragActive ? 4 : 0,
           borderColor: Theme.PrimaryMainBackground,
           borderStyle: dragActive ? 'dashed' : 'solid',
-          transition: muiTheme.transitions?.create?.(['background-color', 'border'], {
-            duration: muiTheme.transitions?.duration?.standard,
+          // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: historic
+          transition: muiTheme.transitions?.create!(['background-color', 'border'], {
+            duration: muiTheme.transitions.duration?.standard,
           }),
         }}
       >

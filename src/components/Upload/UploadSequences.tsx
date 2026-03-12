@@ -7,7 +7,6 @@ import {
   FormControlLabel,
   FormGroup,
   InputLabel,
-  Link,
   MenuItem,
   Paper,
   Select,
@@ -40,6 +39,7 @@ import {
   SeqUploadRowState,
   SkipForce,
   seqTypeNames,
+  validFormats,
 } from '../../types/sequploadtypes';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
@@ -49,6 +49,7 @@ import {
   createSingleSeqUploadRows,
   getSharableProjects,
   getUploadableOrgs,
+  splitFastaByContig,
   validateAllHaveSampleNamesWithOneFileOnly,
   validateAllHaveSampleNamesWithTwoFilesOnly,
   validateEvenNumberOfFiles,
@@ -58,19 +59,16 @@ import HelpSidebar from '../Help/HelpSidebar';
 import FileDragDrop from './FileDragDrop';
 import UploadPairedSequenceRow from './UploadPairedSequenceRow';
 import UploadSequencesHelp from './UploadSequencesHelp';
+import UploadSingleFastaContigRow from './UploadSingleFastaContigRow';
 import UploadSingleSequenceRow from './UploadSingleSequenceRow';
 
-const validFormats = {
-  '.fq': '',
-  '.fastq': '',
-  '.fq.gz': 'application/x-gzip',
-  '.fastq.gz': 'application/x-gzip',
-};
-
-const uploadRowTypes = {
+// biome-ignore lint/complexity/noBannedTypes: historic
+const uploadRowTypes: Record<SeqType, Function> = {
   [SeqType.FastqIllPe]: UploadPairedSequenceRow,
   [SeqType.FastqIllSe]: UploadSingleSequenceRow,
   [SeqType.FastqOnt]: UploadSingleSequenceRow,
+  [SeqType.FastaAsm]: UploadSingleSequenceRow,
+  [SeqType.FastaCns]: UploadSingleFastaContigRow,
 };
 
 const validatorsPerSeqType = {
@@ -81,7 +79,13 @@ const validatorsPerSeqType = {
   ],
   [SeqType.FastqIllSe]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
   [SeqType.FastqOnt]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
+  [SeqType.FastaAsm]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
+  // FastaCns is a special case: validation is applied during file-splitting transform
+  [SeqType.FastaCns]: [],
 };
+
+const fileTransformPerSeqType = (seqType: SeqType) =>
+  seqType === SeqType.FastaCns ? splitFastaByContig : undefined;
 
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
@@ -137,7 +141,7 @@ function UploadSequences() {
         sur.state === SeqUploadRowState.Incomplete,
     );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: don't want to trigger on updateRow
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const getRowsOfState = (state: SeqUploadRowState) =>
       seqUploadRows.filter((sur) => sur.state === state);
@@ -162,16 +166,20 @@ function UploadSequences() {
   }, [seqUploadRows, seqUploadRowStates, selectedCreateSampleRecords]);
 
   useEffect(() => {
-    if (selectedSeqType === SeqType.FastqIllPe) {
-      setSeqUploadRows(createPairedSeqUploadRows(files, selectedSeqType));
-    } else if (selectedSeqType === SeqType.FastqIllSe || selectedSeqType === SeqType.FastqOnt) {
-      setSeqUploadRows(createSingleSeqUploadRows(files, selectedSeqType));
+    const rowType = uploadRowTypes[selectedSeqType];
+    let rows: SeqUploadRow[] = [];
+    if (rowType === UploadPairedSequenceRow) {
+      rows = createPairedSeqUploadRows(files);
+    } else if (rowType === UploadSingleSequenceRow || rowType === UploadSingleFastaContigRow) {
+      rows = createSingleSeqUploadRows(files, selectedSeqType);
     }
+    setSeqUploadRows(rows);
   }, [files, selectedSeqType]);
 
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
     setSelectedSeqType(seqType);
+    setFiles([]);
     setFilesValidated(false);
   };
 
@@ -223,6 +231,8 @@ function UploadSequences() {
   }, [user.groupRoles, user.loading, user.orgAbbrev]);
 
   // Projects
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (!selectedCreateSampleRecords) {
       setAvailableProjects([]);
@@ -235,7 +245,7 @@ function UploadSequences() {
     }
     const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
     setProjectAbbrevs(abbrevs);
-  }, [selectedCreateSampleRecords, user.groupRoles, user.loading]);
+  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
 
   useEffect(() => {
     async function getProjects() {
@@ -259,6 +269,64 @@ function UploadSequences() {
     }
   }, [token, tokenLoading, projectAbbrevs]);
 
+  const renderUploadHeader = () => {
+    if (uploadRowTypes[selectedSeqType] === UploadPairedSequenceRow) {
+      return (
+        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Seq ID
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Read 1
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Read 2
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            State
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Actions
+          </TableCell>
+        </TableRow>
+      );
+    }
+    if (uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow) {
+      return (
+        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Seq ID
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            File
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            State
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Actions
+          </TableCell>
+        </TableRow>
+      );
+    }
+    if (uploadRowTypes[selectedSeqType] === UploadSingleFastaContigRow) {
+      return (
+        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Seq ID
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            State
+          </TableCell>
+          <TableCell sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+            Actions
+          </TableCell>
+        </TableRow>
+      );
+    }
+    throw new Error('Unable to render table, unknown upload row type');
+  };
+
   const renderUploadRow = (row: SeqUploadRow) => {
     if (uploadRowTypes[row.seqType] === UploadPairedSequenceRow) {
       return (
@@ -271,16 +339,29 @@ function UploadSequences() {
         />
       );
     }
-    // uploadRowTypes[row.seqType] === UploadSingleSequenceRow)
-    return (
-      <UploadSingleSequenceRow
-        seqUploadRow={row as SeqSingleUploadRow}
-        updateRow={updateRow}
-        modeOption={selectedSkipForce}
-        owner={selectedDataOwner}
-        sharedProjects={selectedProjectShare}
-      />
-    );
+    if (uploadRowTypes[row.seqType] === UploadSingleSequenceRow) {
+      return (
+        <UploadSingleSequenceRow
+          seqUploadRow={row as SeqSingleUploadRow}
+          updateRow={updateRow}
+          modeOption={selectedSkipForce}
+          owner={selectedDataOwner}
+          sharedProjects={selectedProjectShare}
+        />
+      );
+    }
+    if (uploadRowTypes[row.seqType] === UploadSingleFastaContigRow) {
+      return (
+        <UploadSingleFastaContigRow
+          seqUploadRow={row as SeqSingleUploadRow}
+          updateRow={updateRow}
+          modeOption={selectedSkipForce}
+          owner={selectedDataOwner}
+          sharedProjects={selectedProjectShare}
+        />
+      );
+    }
+    throw new Error('Unable to render table, unknown upload row type');
   };
 
   return (
@@ -304,16 +385,6 @@ function UploadSequences() {
           <Grid size={{ md: 12, lg: 9 }}>
             <Typography variant="subtitle2" paddingBottom={1}>
               Drag and drop files below, or click, to upload sequences.
-              <br />
-              Only FASTQ uploads are handled via the portal currently. Please&nbsp;
-              <Link
-                href={`${import.meta.env.VITE_DOCS_URL}/docs/AusTrakka CLI/CLI-sequence-upload`}
-                target="_blank"
-                color="primary.light"
-              >
-                use the CLI
-              </Link>
-              for any FASTA uploads.
             </Typography>
           </Grid>
           <Grid>
@@ -402,7 +473,7 @@ function UploadSequences() {
               sx={{ minWidth: 200, maxWidth: 400, marginTop: 1, marginBottom: 1 }}
               variant="standard"
             >
-              <InputLabel id="fastq-simple-select-label">FASTQ Type</InputLabel>
+              <InputLabel id="fastq-simple-select-label">Sequence Type</InputLabel>
               <Select
                 labelId="fastq-simple-select-label"
                 id="fastq-simple-select-label"
@@ -476,10 +547,10 @@ function UploadSequences() {
               disabled={!selectedDataOwner}
               files={files}
               setFiles={setFiles}
-              validFormats={validFormats}
+              validFormats={validFormats(selectedSeqType)}
               multiple
-              calculateHash={false}
               customValidators={validatorsPerSeqType[selectedSeqType]}
+              fileTransform={fileTransformPerSeqType(selectedSeqType)}
               validated={filesValidated}
               setValidated={setFilesValidated}
             />
@@ -497,63 +568,7 @@ function UploadSequences() {
               <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
                   <TableHead>
-                    {seqUploadRows.length > 0 &&
-                      filesValidated &&
-                      uploadRowTypes[selectedSeqType] === UploadPairedSequenceRow && (
-                        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Seq ID
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Read 1
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Read 2
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            State
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Actions
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    {seqUploadRows.length > 0 &&
-                      filesValidated &&
-                      uploadRowTypes[selectedSeqType] === UploadSingleSequenceRow && (
-                        <TableRow sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Seq ID
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            File
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            State
-                          </TableCell>
-                          <TableCell
-                            sx={{ padding: '8px', paddingLeft: '4px', paddingRight: '4px' }}
-                          >
-                            Actions
-                          </TableCell>
-                        </TableRow>
-                      )}
+                    {seqUploadRows.length > 0 && filesValidated && renderUploadHeader()}
                   </TableHead>
                   <TableBody>
                     {filesValidated &&
