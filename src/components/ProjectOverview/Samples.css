@@ -1,13 +1,11 @@
-.datatable-container-proj
-{
+.datatable-container-proj {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 200px);
 }
 
-.datatable-container-org
-{
- display: flex;
+.datatable-container-org {
+  display: flex;
   flex-direction: column;
   height: calc(100vh - 310px);
 }
@@ -62,7 +60,7 @@
 /* Header content wrapper */
 .vertical-table-mode .p-column-header-content {
   flex-direction: column;
-  align-items: flex-start;   /* align content to left */
+  align-items: flex-start; /* align content to left */
 }
 
 /* Vertically rendered text */

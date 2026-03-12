@@ -1,42 +1,36 @@
-import React, { memo } from 'react';
-import {
-  Card, CardContent, Alert, Tooltip, Box,
-} from '@mui/material';
 import { ErrorOutline } from '@mui/icons-material';
+import { Alert, Box, Card, CardContent, Tooltip } from '@mui/material';
+import { memo } from 'react';
 import styles from './ProjectOverview.module.css';
 
 interface SummaryProps {
-  projectDesc: string,
-  totalSamples: number,
-  lastUpload: string,
-  isOverviewLoading: boolean,
+  projectDesc: string;
+  totalSamples: number;
+  lastUpload: string;
+  isOverviewLoading: boolean;
   isOverviewError: {
-    detailsError: boolean,
-    detailsErrorMessage: string,
-    totalSamplesError: boolean,
-    totalSamplesErrorMessage: string,
-    latestDateError: boolean,
-    latestDateErrorMessage: string,
-  }
+    detailsError: boolean;
+    detailsErrorMessage: string;
+    totalSamplesError: boolean;
+    totalSamplesErrorMessage: string;
+    latestDateError: boolean;
+    latestDateErrorMessage: string;
+  };
 }
 
 function Summary(props: SummaryProps) {
-  const {
-    projectDesc, totalSamples, lastUpload, isOverviewError, isOverviewLoading,
-  } = props;
+  const { projectDesc, totalSamples, lastUpload, isOverviewError, isOverviewLoading } = props;
 
   if (isOverviewLoading) return null;
 
   return (
     <>
       <p className={styles.h1}>Project description</p>
-      { isOverviewError.detailsError
-        ? <Alert severity="error">{isOverviewError.detailsErrorMessage}</Alert>
-        : (
-          <p>
-            { projectDesc }
-          </p>
-        )}
+      {isOverviewError.detailsError ? (
+        <Alert severity="error">{isOverviewError.detailsErrorMessage}</Alert>
+      ) : (
+        <p>{projectDesc}</p>
+      )}
       <br />
       <br />
       <br />
@@ -45,19 +39,20 @@ function Summary(props: SummaryProps) {
           <CardContent>
             <p className={styles.cardCategory}>Samples</p>
             <p className={styles.cardTitle}>Total uploaded samples</p>
-            { isOverviewError.totalSamplesError
-              ? <Alert severity="error">{isOverviewError.totalSamplesErrorMessage}</Alert>
-              : <p className={styles.cardStat}>{totalSamples.toLocaleString('en-US')}</p>}
+            {isOverviewError.totalSamplesError ? (
+              <Alert severity="error">{isOverviewError.totalSamplesErrorMessage}</Alert>
+            ) : (
+              <p className={styles.cardStat}>{totalSamples.toLocaleString('en-US')}</p>
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ paddingRight: 1 }}>
-                Last sample upload:
-              </Box>
-              { isOverviewError.latestDateError ? (
+              <Box sx={{ paddingRight: 1 }}>Last sample upload:</Box>
+              {isOverviewError.latestDateError ? (
                 <Tooltip title={isOverviewError.latestDateErrorMessage}>
                   <ErrorOutline color="error" />
                 </Tooltip>
-              )
-                : <p>{ lastUpload }</p>}
+              ) : (
+                <p>{lastUpload}</p>
+              )}
             </Box>
           </CardContent>
         </Card>

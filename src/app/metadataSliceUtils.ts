@@ -1,9 +1,9 @@
-import { Field, ProjectField } from '../types/dtos';
-import { Sample } from '../types/sample.interface';
-import { MergeAlgorithm } from '../constants/mergeAlgorithm';
+import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
+import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
-import { MapRegistry, MapSupportInfo } from '../components/Maps/mapMeta';
+import type { Field, ProjectField } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 
 export function getCountryCode(code: string): string | null {
   if (!code) return null;
@@ -31,22 +31,17 @@ function isSubdivision(code: string): boolean {
   return /^[A-Z]{2}-/.test(code.toUpperCase());
 }
 
-export function getFieldDetails(
-  fieldNames: string[],
-  fields: Field[],
-): Field[] {
-  return fieldNames.map(
-    field => {
-      const fieldDetail = fields.find(f => f.columnName === field);
-      if (!fieldDetail) {
-        throw new Error(
-          'Unexpected error fetching metadata: ' +
+export function getFieldDetails(fieldNames: string[], fields: Field[]): Field[] {
+  return fieldNames.map((field) => {
+    const fieldDetail = fields.find((f) => f.columnName === field);
+    if (!fieldDetail) {
+      throw new Error(
+        'Unexpected error fetching metadata: ' +
           `field ${field} in data not found in expected fields`,
-        );
-      }
-      return fieldDetail;
-    },
-  );
+      );
+    }
+    return fieldDetail;
+  });
 }
 
 export function replaceNullsWithEmpty(data: Sample[]): void {
@@ -66,8 +61,7 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
 export function getEmptyStringColumns(data: Sample[], fields: string[]): string[] {
   if (data.length === 0) return [];
 
-  return fields.filter(field =>
-    data.every(sample => sample[field] === ''));
+  return fields.filter((field) => data.every((sample) => sample[field] === ''));
 }
 
 export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
@@ -84,9 +78,9 @@ export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
 // Given sample data and field details, replace date strings with Date objects
 export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
   const fieldDetails = getFieldDetails(fieldNames, fields);
-  const dateFields = fieldDetails.filter(field => field.primitiveType === 'date');
-  dateFields.forEach(field => {
-    data.forEach(sample => {
+  const dateFields = fieldDetails.filter((field) => field.primitiveType === 'date');
+  dateFields.forEach((field) => {
+    data.forEach((sample) => {
       const dateString = sample[field.columnName];
 
       // Date filter function dont handle strings thus making null if it is empty
@@ -116,31 +110,32 @@ export function calculateUniqueValues(
   fieldNames: string[],
   fields: Field[],
   data: Sample[],
-) : Record<string, string[]> {
+): Record<string, string[]> {
   const uniqueValues: Record<string, string[]> = {};
   const fieldDetails: Field[] = getFieldDetails(fieldNames, fields);
   // we calculate unique values for both visualisable categorical and string fields
   // this means we are ignoring validValues; values won't be in legends if not in data
-  const visualisableFields = fieldDetails.filter(field =>
-    field.canVisualise && (!field.primitiveType || field.primitiveType === 'string'));
-  
-  const valueSets : Record<string, Set<string>> = {};
-  visualisableFields.forEach(field => {
+  const visualisableFields = fieldDetails.filter(
+    (field) => field.canVisualise && (!field.primitiveType || field.primitiveType === 'string'),
+  );
+
+  const valueSets: Record<string, Set<string>> = {};
+  visualisableFields.forEach((field) => {
     valueSets[field.columnName] = new Set();
   });
-  
-  data.forEach(sample => {
-    visualisableFields.forEach(field => {
+
+  data.forEach((sample) => {
+    visualisableFields.forEach((field) => {
       const rawValue = sample[field.columnName];
       // Treat null and undefined as empty string; coerce non-strings safely
       const value = rawValue == null ? '' : rawValue.toString();
       valueSets[field.columnName].add(value);
     });
   });
-  
+
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  
-  visualisableFields.forEach(field => {
+
+  visualisableFields.forEach((field) => {
     const values = Array.from(valueSets[field.columnName]);
 
     // Remove a single [""] array case
@@ -151,7 +146,7 @@ export function calculateUniqueValues(
       uniqueValues[field.columnName] = values.sort(collator.compare);
     }
   });
-  
+
   return uniqueValues;
 }
 
@@ -195,9 +190,9 @@ export function calculateSupportedMaps(
   for (const entry of MapRegistry) {
     if (entry.key === 'WORLD') continue;
 
-    const intersects = [...datasetKeys].some(k => entry.supports?.has(k));
+    const intersects = [...datasetKeys].some((k) => entry.supports?.has(k));
     if (intersects) {
-      const hasRegions = [...datasetRegions].some(r => entry.supports?.has(r));
+      const hasRegions = [...datasetRegions].some((r) => entry.supports?.has(r));
       result.push([entry.key, hasRegions]);
     }
   }
@@ -211,13 +206,9 @@ export function calculateSupportedMaps(
 }
 
 // Given a list of field names, calculate the viewFields for that field
-export function calculateViewFieldNames(
-  field: ProjectField,
-  mergeAlgorithm: string,
-): string[] {
-  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL &&
-      field.fieldSource === FieldSource.DATASET) {
-    return (field.analysisLabels ?? []).map(label => `${field.fieldName}_${label}`);
+export function calculateViewFieldNames(field: ProjectField, mergeAlgorithm: string): string[] {
+  if (mergeAlgorithm === MergeAlgorithm.SHOW_ALL && field.fieldSource === FieldSource.DATASET) {
+    return (field.analysisLabels ?? []).map((label) => `${field.fieldName}_${label}`);
   }
   // override mode, or fieldSource is sample, or fieldSource is both (Seq_ID)
   return [field.fieldName];

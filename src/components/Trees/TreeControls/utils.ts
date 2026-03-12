@@ -1,4 +1,4 @@
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -14,8 +14,8 @@ export const MenuProps = {
 export default function getStyles(column: string, selectedColumns: string[], theme: Theme) {
   return {
     fontWeight:
-        selectedColumns.indexOf(column) === -1
-          ? theme.typography.fontWeightRegular
-          : theme.typography.fontWeightMedium,
+      selectedColumns.indexOf(column) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
   };
 }

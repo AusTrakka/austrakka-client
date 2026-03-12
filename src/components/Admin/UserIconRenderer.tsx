@@ -1,5 +1,4 @@
-import React from 'react';
-import { Person, PersonOff, AdminPanelSettings, PrecisionManufacturing } from '@mui/icons-material';
+import { AdminPanelSettings, Person, PersonOff, PrecisionManufacturing } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { Theme } from '../../assets/themes/theme';
 
@@ -9,18 +8,15 @@ function renderIcon(rowData: any, size: any = 'small') {
   if (!isAusTrakkaAdmin && !isAusTrakkaProcess) {
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        {
-        (isActive)
-          ? (
-            <Tooltip title="User" placement="top" arrow>
-              <Person color="primary" fontSize={size} style={{ margin: '0.5rem' }} />
-            </Tooltip>
-          ) : (
-            <Tooltip title="Disabled-User" placement="top" arrow>
-              <PersonOff fontSize={size} style={{ margin: '0.5rem', color: Theme.SecondaryRed }} />
-            </Tooltip>
-          )
-    }
+        {isActive ? (
+          <Tooltip title="User" placement="top" arrow>
+            <Person color="primary" fontSize={size} style={{ margin: '0.5rem' }} />
+          </Tooltip>
+        ) : (
+          <Tooltip title="Disabled-User" placement="top" arrow>
+            <PersonOff fontSize={size} style={{ margin: '0.5rem', color: Theme.SecondaryRed }} />
+          </Tooltip>
+        )}
       </div>
     );
   }

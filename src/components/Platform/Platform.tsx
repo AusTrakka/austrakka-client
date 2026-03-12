@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
 import { Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
-import TabPanel from '../Common/TabPanel';
-import Activity from '../Common/Activity/Activity';
 import { NavigationProvider } from '../../app/NavigationContext';
+import Activity from '../Common/Activity/Activity';
+import TabPanel from '../Common/TabPanel';
+import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
 
 interface PlatformProps {
-  tab: string,
+  tab: string;
 }
 
 function Platform(props: PlatformProps) {
   const { tab } = props;
   const [tabValue, setTabValue] = useState<number | null>(null);
-  
+
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
     const tabObj = PLATFORM_TABS[tabKey];
@@ -23,18 +23,15 @@ function Platform(props: PlatformProps) {
     }
   }, [tab]);
 
-  if (tabValue === null) { return null; }
-  
+  if (tabValue === null) {
+    return null;
+  }
+
   return (
     <>
-      <Typography className="pageTitle">
-        Platform
-      </Typography>
+      <Typography className="pageTitle">Platform</Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
-        <Activity
-          recordType="Tenant"
-          rGuid=""
-        />
+        <Activity recordType="Tenant" rGuid="" />
       </TabPanel>
     </>
   );

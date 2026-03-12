@@ -1,59 +1,52 @@
 import * as d3 from 'd3';
 
 // I don't know if this a good structure for types, but it works for now
-export type ColorSchemeRange = Record<string,
-d3.ScaleSequential<string, never> |
-d3.ScaleDiverging<string, never>>;
+export type ColorSchemeRange = Record<
+  string,
+  d3.ScaleSequential<string, never> | d3.ScaleDiverging<string, never>
+>;
 
-export type ColorSchemeDiscrete = Record<string,
-d3.ScaleOrdinal<string, string>>;
+export type ColorSchemeDiscrete = Record<string, d3.ScaleOrdinal<string, string>>;
 
-type ColorSchemeAll = Record<string,
-d3.ScaleOrdinal<string, string> |
-d3.ScaleSequential<string, never> |
-d3.ScaleDiverging<string, never>>;
+type ColorSchemeAll = Record<
+  string,
+  | d3.ScaleOrdinal<string, string>
+  | d3.ScaleSequential<string, never>
+  | d3.ScaleDiverging<string, never>
+>;
 
-export const defaultDiscreteColorScheme : string = 'set3';
-export const defaultContinuousColorScheme : string = 'greens';
+export const defaultDiscreteColorScheme: string = 'set3';
+export const defaultContinuousColorScheme: string = 'greens';
 
 // Colorblind friendly color scheme
-const schemeColorBlindFriendly: string[] =
-    [
-      '#000000',
-      '#e69f00',
-      '#56b4e9',
-      '#009e73',
-      '#f0e442',
-      '#0072b2',
-      '#d55e00',
-      '#cc79a7',
-    ];
+const schemeColorBlindFriendly: string[] = [
+  '#000000',
+  '#e69f00',
+  '#56b4e9',
+  '#009e73',
+  '#f0e442',
+  '#0072b2',
+  '#d55e00',
+  '#cc79a7',
+];
 
 // Special Jurisdiction colour scheme, used by convention
 // Maps hard-coded domain, so only works with Jurisdiction or State fields if configured correctly
 // For now, not included for selection in plots
-export const schemeJurisdiction : d3.ScaleOrdinal<string, string> = d3
-  .scaleOrdinal<string, string>().range([
-  '#5FA2EB',
-  '#363C99',
-  '#762063',
-  '#EF877A',
-  '#E4AF37',
-  '#206747',
-  '#C75B12',
-  '#BEC2CB',
-  '#000000',
-]).domain([
-  'NSW',
-  'VIC',
-  'QLD',
-  'SA',
-  'WA',
-  'TAS',
-  'NT',
-  'ACT',
-  'NZ',
-]);
+export const schemeJurisdiction: d3.ScaleOrdinal<string, string> = d3
+  .scaleOrdinal<string, string>()
+  .range([
+    '#5FA2EB',
+    '#363C99',
+    '#762063',
+    '#EF877A',
+    '#E4AF37',
+    '#206747',
+    '#C75B12',
+    '#BEC2CB',
+    '#000000',
+  ])
+  .domain(['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT', 'NZ']);
 // Allow Jurisdiction to work for ISO State values by adding to the domain in the correct order
 schemeJurisdiction('AU-NSW');
 schemeJurisdiction('AU-VIC');

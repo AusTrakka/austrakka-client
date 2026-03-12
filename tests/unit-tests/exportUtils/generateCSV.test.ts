@@ -13,9 +13,7 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -30,9 +28,7 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -50,9 +46,7 @@ describe('generateCSV', () => {
           key2: new Date('2022-01-02'),
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","2022-01-01"\n' +
-                '"value3","2022-01-02"';
+      const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -67,13 +61,11 @@ describe('generateCSV', () => {
           key2: null,
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1",""\n' +
-                '"value3",""';
+      const expectedOutput = 'key1,key2\n' + '"value1",""\n' + '"value3",""';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
-    
+
     test('given data to export contains date strings', () => {
       const data = [
         {
@@ -85,9 +77,7 @@ describe('generateCSV', () => {
           key2: '2022-01-02',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","2022-01-01"\n' +
-                '"value3","2022-01-02"';
+      const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -104,9 +94,7 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -122,9 +110,8 @@ describe('generateCSV', () => {
           key2: '"value4"',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"""value1""","""value2"""\n' +
-                '"""value3""","""value4"""';
+      const expectedOutput =
+        'key1,key2\n' + '"""value1""","""value2"""\n' + '"""value3""","""value4"""';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -140,9 +127,7 @@ describe('generateCSV', () => {
           key2: 'v"alue4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"""value1","value2"\n' +
-                '"value3""","v""alue4"';
+      const expectedOutput = 'key1,key2\n' + '"""value1","value2"\n' + '"value3""","v""alue4"';
       const actualOutput = generateCSV(data);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -161,9 +146,7 @@ describe('generateCSV', () => {
           key3: 'value5',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"';
       const actualOutput = generateCSV(data, ['key1', 'key2']);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -181,9 +164,7 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key2,key1\n' +
-                '"value2","value1"\n' +
-                '"value4","value3"';
+      const expectedOutput = 'key2,key1\n' + '"value2","value1"\n' + '"value4","value3"';
       const actualOutput = generateCSV(data, ['key2', 'key1']);
       expect(actualOutput).toEqual(expectedOutput);
     });
@@ -197,16 +178,17 @@ describe('generateCSV', () => {
           key2: 'dsi29-}*&^%$#@!',
         },
         {
-          key1: '\'DDS-*&^%$#@![}[]po-=><<>',
+          key1: "'DDS-*&^%$#@![}[]po-=><<>",
           // all special characters next
-          // eslint-disable-next-line no-useless-escape
+          // biome-ignore lint/suspicious/noUselessEscapeInString: historic
           key2: '\"\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^',
         },
       ];
 
-      const expectedOutput = 'key1,key2\n' +
-          '"!DDS-*&^%$#@!","dsi29-}*&^%$#@!"\n' +
-          '"\'DDS-*&^%$#@![}[]po-=><<>","""\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^"';
+      const expectedOutput =
+        'key1,key2\n' +
+        '"!DDS-*&^%$#@!","dsi29-}*&^%$#@!"\n' +
+        '"\'DDS-*&^%$#@![}[]po-=><<>","""\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^"';
 
       const actualOutput = generateCSV(data);
 
@@ -223,8 +205,9 @@ describe('generateCSV', () => {
       }));
 
       // Expected output - CSV headers and rows. Each value should be wrapped in quotes.
-      const expectedOutput = `key1,key2\n${
-        largeData.map(row => `"${row.key1}","${row.key2}"`).join('\n')}`;
+      const expectedOutput = `key1,key2\n${largeData
+        .map((row) => `"${row.key1}","${row.key2}"`)
+        .join('\n')}`;
 
       // Call the function under test
       const actualOutput = generateCSV(largeData);
@@ -239,7 +222,10 @@ describe('generateCSV', () => {
       // Generate large data with many columns and long column names
       const numColumns = 1000; // Large number of columns
       const numRows = 10; // Moderate number of rows for simplicity
-      const columnNames = Array.from({ length: numColumns }, (_, i) => `column_${i}_with_a_very_long_name`);
+      const columnNames = Array.from(
+        { length: numColumns },
+        (_, i) => `column_${i}_with_a_very_long_name`,
+      );
 
       // Generate rows where each value has special characters
       const largeData = Array.from({ length: numRows }, () => {
@@ -254,8 +240,9 @@ describe('generateCSV', () => {
       let expectedOutput = `${columnNames.join(',')}\n`;
 
       // Add each row with values wrapped in quotes
-      expectedOutput += largeData.map(row =>
-        columnNames.map(col => `"${row[col]}"`).join(',')).join('\n');
+      expectedOutput += largeData
+        .map((row) => columnNames.map((col) => `"${row[col]}"`).join(','))
+        .join('\n');
 
       // Call the function under test
       const actualOutput = generateCSV(largeData);

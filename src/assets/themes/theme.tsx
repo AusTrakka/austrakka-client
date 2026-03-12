@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material';
-import { ThemeOptions } from '@mui/material/styles';
+import type { ThemeOptions } from '@mui/material/styles';
 
 export const Theme = Object.freeze({
   PrimaryMain: import.meta.env.VITE_THEME_PRIMARY_MAIN,
@@ -58,7 +58,7 @@ const muiTheme: ThemeOptions = createTheme({
       main: Theme.SecondaryMain,
     },
     background: {
-      // @ts-ignore
+      // @ts-expect-error
       main: Theme.Background,
     },
     success: {
@@ -100,7 +100,7 @@ function hexToRgb(hex: string) {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
 
-  // return {r, g, b} 
+  // return {r, g, b}
   return `${r}, ${g}, ${b}`;
 }
 
@@ -122,7 +122,7 @@ export const globalStyles = {
     '--secondary-orange': Theme.SecondaryOrange,
     '--secondary-red': Theme.SecondaryRed,
     '--secondary-yellow': Theme.SecondaryYellow,
-    'colorScheme': 'light',
+    colorScheme: 'light',
 
     // primereact
     '--primary-50': Theme.SecondaryMain50,
@@ -178,14 +178,14 @@ export const globalStyles = {
 //   SecondaryMain700 = '#388e3c',
 //   SecondaryMain800 = '#2e7d32',
 //   SecondaryMain900 = '#1b5e20',
-//   PrimaryGrey50 = '#fafafa', 
-//   PrimaryGrey100 = '#f5f5f5', 
-//   PrimaryGrey200 = '#eeeeee', 
-//   PrimaryGrey300 = '#e0e0e0', 
-//   PrimaryGrey400 = '#bdbdbd', 
-//   PrimaryGrey500 = '#9e9e9e', 
-//   PrimaryGrey600 = '#757575', 
-//   PrimaryGrey700 = '#616161', 
-//   PrimaryGrey800 = '#424242', 
+//   PrimaryGrey50 = '#fafafa',
+//   PrimaryGrey100 = '#f5f5f5',
+//   PrimaryGrey200 = '#eeeeee',
+//   PrimaryGrey300 = '#e0e0e0',
+//   PrimaryGrey400 = '#bdbdbd',
+//   PrimaryGrey500 = '#9e9e9e',
+//   PrimaryGrey600 = '#757575',
+//   PrimaryGrey700 = '#616161',
+//   PrimaryGrey800 = '#424242',
 //   PrimaryGrey900 = '#212121',
 //   PrimaryMainBackground = '#eef2f6',

@@ -1,5 +1,5 @@
-import { TreeNode } from 'primereact/treenode';
-import { DerivedLog } from '../types/dtos';
+import type { TreeNode } from 'primereact/treenode';
+import type { DerivedLog } from '../types/dtos';
 
 // Aggregates logs into a tree structure
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
@@ -49,6 +49,13 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
 
       const parent = groups.get(groupKey)!;
 
+      // Update parent's eventTime if this log is more recent
+      const parentTime = new Date(parent.data.eventTime).getTime();
+      const logTime = new Date(log.eventTime).getTime();
+      if (logTime > parentTime) {
+        parent.data.eventTime = log.eventTime;
+      }
+
       parent.children!.push({
         key: log.globalId,
         label: log.resourceUniqueString,
@@ -86,7 +93,7 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
 
 // Builds information to annotate the table, including counts and previews
 export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
-  return nodes.map(node => {
+  return nodes.map((node) => {
     const children = node.children ?? [];
     const childCount = children.length;
 
@@ -96,7 +103,7 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
     if (childCount > 1) {
       const firstChild = children[0].data as DerivedLog;
       const uniqueResourceTypes = Array.from(
-        new Set(children.map(child => (child.data as DerivedLog).resourceType)),
+        new Set(children.map((child) => (child.data as DerivedLog).resourceType)),
       );
 
       return {
@@ -109,7 +116,7 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
           resourceTypeCount: uniqueResourceTypes.length,
           resourceTypePreview: uniqueResourceTypes[0],
         },
-        children: children.map(child => ({ ...child, data: { ...child.data } })),
+        children: children.map((child) => ({ ...child, data: { ...child.data } })),
       };
     }
 
@@ -124,15 +131,24 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
 
   const chunks: TreeNode[] = [];
   for (let i = 0; i < children.length; i += maxSize) {
-    const chunkChildren = children.slice(i, i + maxSize);
+    // Create a unique key for the chunk based on the parent key and chunk index
+    const chunkKey = `${parent.key}_${i / maxSize}`;
+    // Assign the chunk's children and update their parentKey reference
+    const chunkChildren = children.slice(i, i + maxSize).map((child) => ({
+      ...child,
+      data: {
+        ...child.data,
+        parentKey: chunkKey,
+      },
+    }));
 
     // Recompute resourcePreview and resourceTypePreview for the chunk
     const firstChild = chunkChildren[0]?.data;
     const uniqueResourceTypes = Array.from(
-      new Set(chunkChildren.map(child => child.data?.resourceType)),
+      new Set(chunkChildren.map((child) => child.data?.resourceType)),
     );
     chunks.push({
-      key: `${parent.key}_${i / maxSize}`,
+      key: chunkKey,
       label: `${parent.label} (${i + 1}-${i + chunkChildren.length})`,
       data: {
         ...parent.data,
@@ -145,4 +161,27 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
     });
   }
   return chunks;
+}
+
+// Default node sorting function to order nodes
+export function defaultNodeSort(nodes: TreeNode[]): TreeNode[] {
+  // Sort parents reverse chronologically by eventTime
+  const sortedParents = [...nodes].sort((a, b) => {
+    const aTime = new Date(a.data.eventTime).getTime();
+    const bTime = new Date(b.data.eventTime).getTime();
+    return bTime - aTime;
+  });
+
+  // Sort children alphabetically by resourceUniqueString
+  const sortedParentsWithSortedChildren = sortedParents.map((parent) => {
+    const children = parent.children ?? [];
+    const sortedChildren = [...children].sort((a, b) => {
+      const aStr = (a.data as DerivedLog).resourceUniqueString || '';
+      const bStr = (b.data as DerivedLog).resourceUniqueString || '';
+      return aStr.localeCompare(bStr, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return { ...parent, children: sortedChildren };
+  });
+
+  return sortedParentsWithSortedChildren;
 }

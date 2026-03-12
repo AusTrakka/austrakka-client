@@ -1,16 +1,16 @@
-import React from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
+import type React from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 
 /// / Types
 export interface TabContentProps {
-  index: number,
-  title: string
+  index: number;
+  title: string;
 }
 interface CustomTabsProps {
-  tabContent: TabContentProps[],
-  value: number,
-  setValue: React.Dispatch<React.SetStateAction<number | null>>
+  tabContent: TabContentProps[];
+  value: number;
+  setValue: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 export type TabObjectRecord = Record<string, TabContentProps>;
@@ -29,8 +29,10 @@ export default function CustomTabs(props: CustomTabsProps) {
 
     // Check if the last segment is the project abbreviation
     let newPath: string;
-    if (pathSegments.length > 1 &&
-        !tabContent.some(tab => tab.title.toLowerCase() === lastSegment)) {
+    if (
+      pathSegments.length > 1 &&
+      !tabContent.some((tab) => tab.title.toLowerCase() === lastSegment)
+    ) {
       newPath = currentPath + tabUrl + currentSearch;
     } else {
       // Replace the last part of the path
@@ -39,7 +41,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     navigate(newPath);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
 
     // Generate the URL for the selected tab and navigate to it
@@ -54,7 +56,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     <Tab
       key={tab.index}
       label={tab.title}
-      sx={{ 'textTransform': 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
+      sx={{ textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
       disableRipple
     />
   ));
@@ -62,7 +64,12 @@ export default function CustomTabs(props: CustomTabsProps) {
   return (
     <Box>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary" variant="scrollable">
+        <Tabs
+          value={value}
+          onChange={handleTabChange}
+          indicatorColor="secondary"
+          variant="scrollable"
+        >
           {InnerTabs}
         </Tabs>
       </Box>

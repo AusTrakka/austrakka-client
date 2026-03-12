@@ -1,28 +1,28 @@
+import { Alert, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Typography } from '@mui/material';
-import { Plot } from '../../types/dtos';
-import { getPlotDetails } from '../../utilities/resourceUtils';
-import ClusterTimeline from './PlotTypes/ClusterTimeline';
-import EpiCurve from './PlotTypes/EpiCurve';
-import BarChart from './PlotTypes/BarChart';
-import Custom from './PlotTypes/Custom';
-import HeatMap from './PlotTypes/HeatMap';
-import Histogram from './PlotTypes/Histogram';
-import PlotTypeProps from '../../types/plottypeprops.interface';
 import { useApi } from '../../app/ApiContext';
+import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import type { Plot } from '../../types/dtos';
+import type PlotTypeProps from '../../types/plottypeprops.interface';
+import { getPlotDetails } from '../../utilities/resourceUtils';
+import BarChart from './PlotTypes/BarChart';
+import ClusterTimeline from './PlotTypes/ClusterTimeline';
+import Custom from './PlotTypes/Custom';
+import EpiCurve from './PlotTypes/EpiCurve';
+import HeatMap from './PlotTypes/HeatMap';
+import Histogram from './PlotTypes/Histogram';
 
-const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
-  'ClusterTimeline': ClusterTimeline,
-  'EpiCurve': EpiCurve,
-  'BarChart': BarChart,
-  'Histogram': Histogram,
-  'HeatMap': HeatMap,
-  'Custom': Custom,
+const plotTypes: { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
+  ClusterTimeline: ClusterTimeline,
+  EpiCurve: EpiCurve,
+  BarChart: BarChart,
+  Histogram: Histogram,
+  HeatMap: HeatMap,
+  Custom: Custom,
 };
 
 function PlotDetail() {
@@ -32,8 +32,9 @@ function PlotDetail() {
   const [plot, setPlot] = useState<Plot | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const dataErrorMsg = useAppSelector(state =>
-    selectProjectMetadataError(state, plot?.projectAbbreviation));
+  const dataErrorMsg = useAppSelector((state) =>
+    selectProjectMetadataError(state, plot?.projectAbbreviation),
+  );
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
@@ -84,18 +85,15 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    if (typeof plotTypes[plot!.plotType] === 'undefined') { return null; }
-    return React.createElement(
-      plotTypes[plot!.plotType],
-      { plot, setPlotErrorMsg: setErrorMsg },
-    );
+    if (typeof plotTypes[plot!.plotType] === 'undefined') {
+      return null;
+    }
+    return React.createElement(plotTypes[plot!.plotType], { plot, setPlotErrorMsg: setErrorMsg });
   };
 
   return (
     <>
-      <Typography className="pageTitle">
-        {plot ? plot.name : ''}
-      </Typography>
+      <Typography className="pageTitle">{plot ? plot.name : ''}</Typography>
       {renderPlot()}
     </>
   );

@@ -1,29 +1,25 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import UserRecordRolesRow from './UserRecordRolesRow';
-import {
+import React, { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
+import { ResponseType } from '../../../constants/responseType';
+import type {
   GroupedPrivilegesByRecordType,
   PrivilegeWithRoles,
   RecordRole,
   RolesV2,
 } from '../../../types/dtos';
-import GroupHeaderRowV2 from './GroupHeaderRowV2';
-import { useApi } from '../../../app/ApiContext';
+import type { ResponseObject } from '../../../types/responseObject.interface';
+import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { getRoles } from '../../../utilities/resourceUtils';
-import { ResponseType } from '../../../constants/responseType';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import LoadingState from '../../../constants/loadingState';
-import { RoleAssignments } from '../../../types/userDetailEdit.interface';
+import GroupHeaderRowV2 from './GroupHeaderRowV2';
+import UserRecordRolesRow from './UserRecordRolesRow';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupedPrivileges: GroupedPrivilegesByRecordType[];
   openGroupRoles: string[];
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
-  onSelectionAdd: (
-    recordType: string,
-    AssignedRoles: RoleAssignments[],
-  ) => void;
+  onSelectionAdd: (recordType: string, AssignedRoles: RoleAssignments[]) => void;
   onSelectionRemove: (
     role: RecordRole,
     recordType: string,
@@ -42,12 +38,12 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     editing,
     onSelectionAdd,
     onSelectionRemove,
-  }
-      = props;
+  } = props;
 
   const [rolesForV2, setRolesForV2] = useState<RolesV2[] | null>(null);
-  const [ugpFilledAndSorted, setUgpFilledAndSorted] =
-      useState<GroupedPrivilegesByRecordType[]>(userGroupedPrivileges ?? []);
+  const [ugpFilledAndSorted, setUgpFilledAndSorted] = useState<GroupedPrivilegesByRecordType[]>(
+    userGroupedPrivileges ?? [],
+  );
   const { token, tokenLoading } = useApi();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -60,14 +56,14 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
       }
       const allRoles: RolesV2[] = response?.data ?? [];
 
-      const rolesV2: RolesV2[] = allRoles.filter((role) =>
-        role.resourceTypes?.length).sort((a, b) => a.name.localeCompare(b.name));
+      const rolesV2: RolesV2[] = allRoles
+        .filter((role) => role.resourceTypes?.length)
+        .sort((a, b) => a.name.localeCompare(b.name));
 
       setRolesForV2(rolesV2);
     }
 
-    if (token !== LoadingState.LOADING &&
-        tokenLoading !== LoadingState.IDLE) {
+    if (token !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       fetchRoles();
     }
   }, [token, tokenLoading]);
@@ -104,8 +100,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     // Sort final list according to REQUIRED_RECORD_TYPES order
     processedPrivileges.sort(
       (a, b) =>
-        REQUIRED_RECORD_TYPES.indexOf(a.recordType)
-          - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
+        REQUIRED_RECORD_TYPES.indexOf(a.recordType) - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
     );
 
     setUgpFilledAndSorted(processedPrivileges);
@@ -113,17 +108,17 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
 
   const handleGroupRoleToggle = (groupName: string) => {
     setOpenGroupRoles((prevOpenGroupRoles) =>
-      (prevOpenGroupRoles.includes(groupName)
+      prevOpenGroupRoles.includes(groupName)
         ? prevOpenGroupRoles.filter((name) => name !== groupName)
-        : [...prevOpenGroupRoles, groupName]));
+        : [...prevOpenGroupRoles, groupName],
+    );
   };
 
   const getRolesForRecordType = (recordType: string) => {
     if (!rolesForV2) return [];
     return rolesForV2.filter((role) =>
-      role.resourceTypes
-        .some((rt) => rt === recordType ||
-                rt === 'All'));
+      role.resourceTypes.some((rt) => rt === recordType || rt === 'All'),
+    );
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {
