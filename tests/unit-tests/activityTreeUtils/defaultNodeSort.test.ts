@@ -1,4 +1,4 @@
-import { TreeNode } from 'primereact/treenode';
+import type { TreeNode } from 'primereact/treenode';
 import { defaultNodeSort } from '../../../src/utilities/activityTreeUtils';
 
 describe('defaultNodeSort', () => {
@@ -53,9 +53,27 @@ describe('defaultNodeSort', () => {
     expect(sorted[3].key).toBe('3'); // 2023
 
     // Children sorted by resourceUniqueString ascending (alphanumeric)
-    expect(sorted[0].children?.map(c => c.data.resourceUniqueString)).toEqual(['Z2', 'Z9', 'Z10']);
-    expect(sorted[1].children?.map(c => c.data.resourceUniqueString)).toEqual(['B1', 'B10', 'beta', 'gamma']);
-    expect(sorted[2].children?.map(c => c.data.resourceUniqueString)).toEqual(['A2', 'A10', 'alpha', 'zeta']);
-    expect(sorted[3].children?.map(c => c.data.resourceUniqueString)).toEqual(['123', 'A1', 'abc']);
+    expect(sorted[0].children?.map((c) => c.data.resourceUniqueString)).toEqual([
+      'Z2',
+      'Z9',
+      'Z10',
+    ]);
+    expect(sorted[1].children?.map((c) => c.data.resourceUniqueString)).toEqual([
+      'B1',
+      'B10',
+      'beta',
+      'gamma',
+    ]);
+    expect(sorted[2].children?.map((c) => c.data.resourceUniqueString)).toEqual([
+      'A2',
+      'A10',
+      'alpha',
+      'zeta',
+    ]);
+    expect(sorted[3].children?.map((c) => c.data.resourceUniqueString)).toEqual([
+      '123',
+      'A1',
+      'abc',
+    ]);
   });
 });

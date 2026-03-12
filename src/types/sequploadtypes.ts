@@ -25,13 +25,13 @@ export const seqTypeClasses: Record<SeqType, string> = {
 };
 
 const validFormatsPerClass: Record<string, Record<string, string>> = {
-  'fastq': {
+  fastq: {
     '.fq': '',
     '.fastq': '',
     '.fq.gz': 'application/x-gzip',
     '.fastq.gz': 'application/x-gzip',
   },
-  'fasta': {
+  fasta: {
     '.fa': '',
     '.fasta': '',
     '.fa.gz': 'application/x-gzip',
@@ -39,8 +39,7 @@ const validFormatsPerClass: Record<string, Record<string, string>> = {
   },
 };
 
-export const validFormats = (seqType: SeqType) =>
-  validFormatsPerClass[seqTypeClasses[seqType]];
+export const validFormats = (seqType: SeqType) => validFormatsPerClass[seqTypeClasses[seqType]];
 
 export interface OrgDescriptor {
   abbreviation: string;
@@ -84,7 +83,7 @@ export interface SeqPairedUploadRow extends SeqUploadRow {
   clientSessionId?: string;
 }
 
-// This represents any single-file upload, including single-end fastq of different types, and 
+// This represents any single-file upload, including single-end fastq of different types, and
 // fasta files we have produced by splitting a multi-sample fasta
 export interface SeqSingleUploadRow extends SeqUploadRow {
   id: string;

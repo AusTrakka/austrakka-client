@@ -1,5 +1,5 @@
-import { TreeNode } from 'primereact/treenode';
-import { DerivedLog } from '../types/dtos';
+import type { TreeNode } from 'primereact/treenode';
+import type { DerivedLog } from '../types/dtos';
 
 // Aggregates logs into a tree structure
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
@@ -93,7 +93,7 @@ export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
 
 // Builds information to annotate the table, including counts and previews
 export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
-  return nodes.map(node => {
+  return nodes.map((node) => {
     const children = node.children ?? [];
     const childCount = children.length;
 
@@ -103,7 +103,7 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
     if (childCount > 1) {
       const firstChild = children[0].data as DerivedLog;
       const uniqueResourceTypes = Array.from(
-        new Set(children.map(child => (child.data as DerivedLog).resourceType)),
+        new Set(children.map((child) => (child.data as DerivedLog).resourceType)),
       );
 
       return {
@@ -116,7 +116,7 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
           resourceTypeCount: uniqueResourceTypes.length,
           resourceTypePreview: uniqueResourceTypes[0],
         },
-        children: children.map(child => ({ ...child, data: { ...child.data } })),
+        children: children.map((child) => ({ ...child, data: { ...child.data } })),
       };
     }
 
@@ -134,7 +134,7 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
     // Create a unique key for the chunk based on the parent key and chunk index
     const chunkKey = `${parent.key}_${i / maxSize}`;
     // Assign the chunk's children and update their parentKey reference
-    const chunkChildren = children.slice(i, i + maxSize).map(child => ({
+    const chunkChildren = children.slice(i, i + maxSize).map((child) => ({
       ...child,
       data: {
         ...child.data,
@@ -145,7 +145,7 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
     // Recompute resourcePreview and resourceTypePreview for the chunk
     const firstChild = chunkChildren[0]?.data;
     const uniqueResourceTypes = Array.from(
-      new Set(chunkChildren.map(child => child.data?.resourceType)),
+      new Set(chunkChildren.map((child) => child.data?.resourceType)),
     );
     chunks.push({
       key: chunkKey,
@@ -171,9 +171,9 @@ export function defaultNodeSort(nodes: TreeNode[]): TreeNode[] {
     const bTime = new Date(b.data.eventTime).getTime();
     return bTime - aTime;
   });
- 
+
   // Sort children alphabetically by resourceUniqueString
-  const sortedParentsWithSortedChildren = sortedParents.map(parent => {
+  const sortedParentsWithSortedChildren = sortedParents.map((parent) => {
     const children = parent.children ?? [];
     const sortedChildren = [...children].sort((a, b) => {
       const aStr = (a.data as DerivedLog).resourceUniqueString || '';
