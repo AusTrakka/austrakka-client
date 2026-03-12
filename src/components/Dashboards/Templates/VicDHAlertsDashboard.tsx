@@ -1,18 +1,13 @@
 import { Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import React from 'react';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import PhessIdStatus from '../../Widgets/ProjectWidgets/PhessIdStatus';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 import ThresholdAlerts from '../../Widgets/ProjectWidgets/ThresholdAlerts';
-import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 
 function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
 
   return (
     <Grid container spacing={2}>
@@ -50,11 +45,17 @@ function VicDHAlertsDashboard(props: ProjectDashboardTemplateProps) {
         </Card>
       </Grid>
       <Grid size={{ xl: 5, md: 5 }}>
-        <Card sx={{ padding: 1, border: 'none', boxShadow: 'none', maxHeight: '70vh', overflow: 'auto' }}>
+        <Card
+          sx={{
+            padding: 1,
+            border: 'none',
+            boxShadow: 'none',
+            maxHeight: '70vh',
+            overflow: 'auto',
+          }}
+        >
           <CardContent>
-            <ThresholdAlerts
-              projectAbbrev={projectAbbrev}
-            />
+            <ThresholdAlerts projectAbbrev={projectAbbrev} />
           </CardContent>
         </Card>
       </Grid>

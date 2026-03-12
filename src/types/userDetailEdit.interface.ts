@@ -1,4 +1,4 @@
-import { RolesV2 } from './dtos';
+import type { RolesV2 } from './dtos';
 
 export interface PendingChange {
   type: 'POST' | 'DELETE';

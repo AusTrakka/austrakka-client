@@ -6,9 +6,9 @@
                                                 colours should be some sort of grey */
 }
 
-.p-datatable.p-datatable-gridlines .p-datatable-thead>tr>th,
-.p-datatable.p-datatable-gridlines .p-datatable-tbody>tr>td,
-.p-datatable.p-datatable-gridlines .p-datatable-tfoot>tr>td {
+.p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th,
+.p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td,
+.p-datatable.p-datatable-gridlines .p-datatable-tfoot > tr > td {
   border-color: var(--data-table-border-color) !important;
 }
 

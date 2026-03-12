@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+import { Cancel, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
-import {
-  Cancel,
-  CheckCircleOutlined,
-  ContentCopy,
-} from '@mui/icons-material';
-import { UserV2 } from '../../../types/dtos';
+import { useState } from 'react';
+import type { UserV2 } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
-import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
-import { bytesToMB } from '../../../utilities/renderUtils';
 import { Theme } from '../../../assets/themes/theme';
+import { bytesToMB } from '../../../utilities/renderUtils';
+import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 
 interface BasicRowProps {
   field: keyof UserV2;
@@ -28,10 +24,7 @@ function BasicRow(props: BasicRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
-  const immutableGuids = [
-    'objectId',
-    'globalId',
-  ];
+  const immutableGuids = ['objectId', 'globalId'];
 
   return (
     <TableRow key={field} style={{ borderBottom: 'none' }}>
@@ -43,15 +36,12 @@ function BasicRow(props: BasicRowProps) {
           switch (true) {
             case field === 'created':
               return isoDateLocalDate(value);
-           
+
             case immutableGuids.includes(field):
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '8px' }}>{value}</span>
-                  <Tooltip
-                    title={copied ? 'Copied!' : 'Copy to clipboard'}
-                    placement="top"
-                  >
+                  <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
                     <IconButton size="small" onClick={() => handleCopy(value)}>
                       <ContentCopy style={{ fontSize: '1rem' }} />
                     </IconButton>
@@ -63,16 +53,19 @@ function BasicRow(props: BasicRowProps) {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Switch disabled checked={value} size="small" />
                   <Tooltip title={value ? 'Active' : 'Disabled'} arrow placement="top">
-                    {value ?
-                      <CheckCircleOutlined fontSize="small" style={{ color: Theme.SecondaryLightGreen }} /> :
-                      <Cancel style={{ fontSize: '1rem' }} />}
+                    {value ? (
+                      <CheckCircleOutlined
+                        fontSize="small"
+                        style={{ color: Theme.SecondaryLightGreen }}
+                      />
+                    ) : (
+                      <Cancel style={{ fontSize: '1rem' }} />
+                    )}
                   </Tooltip>
                 </div>
               );
             case typeof value === 'number':
-              return (
-                `${bytesToMB(value)} MB per month`
-              );
+              return `${bytesToMB(value)} MB per month`;
             default:
               return value;
           }

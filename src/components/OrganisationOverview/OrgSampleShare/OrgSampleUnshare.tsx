@@ -1,20 +1,37 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import {
+  CheckCircle,
+  Error as ErrorIcon,
+  IosShare,
+  RemoveCircleOutline,
+  Send,
+} from '@mui/icons-material';
 import {
   Alert,
-  Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
-  FormControl, Grid2, InputLabel, MenuItem, Select, Typography,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid2,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
 } from '@mui/material';
-import { CheckCircle, Error, IosShare, RemoveCircleOutline, Send } from '@mui/icons-material';
-import { Sample } from '../../../types/sample.interface';
-import { selectUserState, UserSliceState } from '../../../app/userSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
-import { unshareSamples } from '../../../utilities/resourceUtils';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
-import { ResponseType } from '../../../constants/responseType';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import LoadingState from '../../../constants/loadingState';
-import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
 import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/store';
+import { selectUserState, type UserSliceState } from '../../../app/userSlice';
+import LoadingState from '../../../constants/loadingState';
+import { ResponseType } from '../../../constants/responseType';
+import type { ResponseObject } from '../../../types/responseObject.interface';
+import type { Sample } from '../../../types/sample.interface';
+import { unshareSamples } from '../../../utilities/resourceUtils';
+import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
 
 type SourceType = 'project' | 'orgGroup';
 const sourceTypes = [
@@ -64,36 +81,45 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
-    if (user && user.groupRoles) {
+    if (user?.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
       const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
       // Check if selected samples have Shared_groups configured
-      const allHaveSharedGroups = selectedSamples.every(s =>
-        s.Shared_groups !== null && s.Shared_groups !== undefined);
+      const allHaveSharedGroups = selectedSamples.every(
+        (s) => s.Shared_groups !== null && s.Shared_groups !== undefined,
+      );
 
       if (!allHaveSharedGroups) {
         // Cannot validate if samples don't have Shared_groups column
         setCanValidate(false);
-        setValidationMessage('Cannot validate selection as shared groups are not configured in this view.');
+        setValidationMessage(
+          'Cannot validate selection as shared groups are not configured in this view.',
+        );
         setSelectableProjects(projectsThatCanBeSelected);
         setSelectableOrgGroups(orgGroupsThatCanBeSelected);
         return;
       }
       setCanValidate(true);
       const groupSet = new Set<string>();
-      selectedSamples.forEach(sample => {
+      selectedSamples.forEach((sample) => {
         try {
-          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => groupSet.add(group));
-        } catch { /* empty */ }
+          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => {
+            groupSet.add(group);
+          });
+        } catch {
+          /* empty */
+        }
       });
       const unique = Array.from(groupSet);
-      const cleanUnique = unique.map(v => v.replace(/-Group$/, '')); // Clean for projects
+      const cleanUnique = unique.map((v) => v.replace(/-Group$/, '')); // Clean for projects
 
       // Intersection of shareable and shared (unique)
-      const intersectProjects = projectsThatCanBeSelected.filter(opt => cleanUnique.includes(opt));
-      const intersectOrgGroups = orgGroupsThatCanBeSelected.filter(opt => unique.includes(opt));
-      
+      const intersectProjects = projectsThatCanBeSelected.filter((opt) =>
+        cleanUnique.includes(opt),
+      );
+      const intersectOrgGroups = orgGroupsThatCanBeSelected.filter((opt) => unique.includes(opt));
+
       setSelectableProjects(intersectProjects);
       setSelectableOrgGroups(intersectOrgGroups);
     }
@@ -109,8 +135,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       if (count < selectedSamples.length) {
         setValidationMessage(
           `${count} out of ${selectedSamples.length} selected samples ` +
-          `are currently shared with "${source.replace(/-Group$/, '')}". ` +
-          `No changes will be made to the other ${selectedSamples.length - count} sample${selectedSamples.length - count > 1 ? 's' : ''}.`,
+            `are currently shared with "${source.replace(/-Group$/, '')}". ` +
+            `No changes will be made to the other ${selectedSamples.length - count} sample${selectedSamples.length - count > 1 ? 's' : ''}.`,
         );
       } else {
         setValidationMessage(
@@ -130,16 +156,14 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
   const handleUnsharingSamples = async () => {
     try {
       setStatus(LoadingState.LOADING);
-      const unshareResponse: ResponseObject = await unshareSamples(
-        token,
-        source!,
-        selectedIds,
-      );
+      const unshareResponse: ResponseObject = await unshareSamples(token, source!, selectedIds);
       if (unshareResponse.status === ResponseType.Success) {
         setStatus(LoadingState.SUCCESS);
         setStatusMessage('Samples unshared successfully.');
         // Delay to allow sampleFlat to update; required while sample sharing comes via sampleFlat
-        await new Promise<void>((resolve) => { setTimeout(resolve, 500); });
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 500);
+        });
         dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
       } else {
         setStatus(LoadingState.ERROR);
@@ -148,7 +172,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     } catch (error: any) {
       setStatus(LoadingState.ERROR);
       setStatusMessage('An unexpected error occurred while unsharing samples. Please try again.');
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Unexpected error unsharing samples:', error);
     }
   };
@@ -178,12 +202,12 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
         open={open}
         onClose={status === LoadingState.LOADING ? undefined : onClose}
         disableEscapeKeyDown={status === LoadingState.LOADING}
-        maxWidth={(status === LoadingState.IDLE || status === LoadingState.LOADING) ? 'md' : 'xs'}
+        maxWidth={status === LoadingState.IDLE || status === LoadingState.LOADING ? 'md' : 'xs'}
         fullWidth
       >
         {status === LoadingState.ERROR &&
           renderUnshareStatus({
-            icon: <Error fontSize="large" color="error" />,
+            icon: <ErrorIcon fontSize="large" color="error" />,
             iconColor: 'error',
             title: 'Error unsharing samples',
             message: statusMessage,
@@ -217,8 +241,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                 Unshare Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only unshare samples from projects or
-                organisation groups in which you have Uploader permissions in.
+                Please note you can only unshare samples from projects or organisation groups in
+                which you have Uploader permissions in.
               </Typography>
             </DialogTitle>
             <DialogContent>
@@ -228,12 +252,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                     Samples for unsharing
                   </Typography>
                   <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                    <b>{selectedSamples.length}</b>
-                    {' '}
-                    sample
-                    {selectedSamples.length !== 1 ? 's' : ''}
-                    {' '}
-                    selected for unsharing
+                    <b>{selectedSamples.length}</b> sample
+                    {selectedSamples.length !== 1 ? 's' : ''} selected for unsharing
                   </Typography>
                   <FormControl
                     variant="standard"
@@ -261,15 +281,13 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                     error={false}
                   >
                     <InputLabel shrink>
-                      Select
-                      {' '}
-                      {sourceTypes.find(st => st.value === sourceType)?.label.toLowerCase()}
-                      *
+                      Select{' '}
+                      {sourceTypes.find((st) => st.value === sourceType)?.label.toLowerCase()}*
                     </InputLabel>
                     <Select
                       value={source}
                       onChange={(e) => handleSourceChange(e.target.value)}
-                      label={`Select ${sourceTypes.find(st => st.value === sourceType)?.label.toLowerCase() ?? ''}*`}
+                      label={`Select ${sourceTypes.find((st) => st.value === sourceType)?.label.toLowerCase() ?? ''}*`}
                       notched
                       disabled={status === LoadingState.LOADING}
                     >
@@ -277,7 +295,10 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                         options.map((opt) => (
                           // For projects, append "-Group" to match group naming convention
                           // Prevents added complexity when checking perms for validation/unsharing
-                          <MenuItem key={opt} value={sourceType === 'project' ? `${opt}-Group` : opt}>
+                          <MenuItem
+                            key={opt}
+                            value={sourceType === 'project' ? `${opt}-Group` : opt}
+                          >
                             {opt}
                           </MenuItem>
                         ))
@@ -289,21 +310,27 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                 </Grid2>
                 {source && (
                   <Grid2 size={{ xs: 12, md: 7 }} sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <Alert severity="info">
-                      {validationMessage}
-                    </Alert>
+                    <Alert severity="info">{validationMessage}</Alert>
                   </Grid2>
                 )}
               </Grid2>
             </DialogContent>
             <DialogActions sx={{ padding: 2 }}>
-              <Button onClick={onClose} disabled={status === LoadingState.LOADING}>Cancel</Button>
+              <Button onClick={onClose} disabled={status === LoadingState.LOADING}>
+                Cancel
+              </Button>
               <Button
                 variant="contained"
                 color="success"
                 onClick={handleUnsharingSamples}
-                disabled={!source || (status === LoadingState.LOADING)}
-                startIcon={!(status === LoadingState.LOADING) ? <Send /> : <CircularProgress size={16} sx={{ color: 'inherit' }} />}
+                disabled={!source || status === LoadingState.LOADING}
+                startIcon={
+                  !(status === LoadingState.LOADING) ? (
+                    <Send />
+                  ) : (
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                  )
+                }
               >
                 Unshare
               </Button>

@@ -1,4 +1,4 @@
-import { Field } from '../../../types/dtos';
+import type { Field } from '../../../types/dtos';
 
 export const EVENT_NAME_COLUMN: string = 'eventType';
 export const supportedColumns: Field[] = [

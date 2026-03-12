@@ -1,21 +1,16 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import React from 'react';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
-import Organisations from '../../Widgets/ProjectWidgets/Organisations';
-import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
-import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
-import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
+import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
+import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
+import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 // TODO: Set a max card height and handle scroll overflow
 function PublicHealthDefaultDashboard(props: ProjectDashboardTemplateProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
