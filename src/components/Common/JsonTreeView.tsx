@@ -1,6 +1,6 @@
-import React, { useState, memo } from 'react';
-import { List, ListItem, Collapse, Typography, Box } from '@mui/material';
 import { KeyboardArrowDown } from '@mui/icons-material';
+import { Box, Collapse, List, ListItem, Typography } from '@mui/material';
+import React, { memo, useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 
 type JsonTreeViewProps = {
@@ -30,16 +30,16 @@ function JsonTreeView(props: JsonTreeViewProps) {
     // Handle arrays
     if (Array.isArray(entry)) {
       return entry
-        .filter(item => !shouldHideNullValue(item))
-        .map(item => {
+        .filter((item) => !shouldHideNullValue(item))
+        .map((item) => {
           if (!isObject(item)) {
             return [null, item]; // primitive array item
           }
-          const visibleKeys = Object.keys(item).filter(key => !hiddenKeys.includes(key));
+          const visibleKeys = Object.keys(item).filter((key) => !hiddenKeys.includes(key));
 
           // Don't expand if singular key-value pair
           if (visibleKeys.length === 1) {
-            const key = visibleKeys[0];
+            const [key] = visibleKeys;
             const value = item[key];
             return [key, value];
           }
@@ -47,7 +47,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
           // Expand multiple key-value pairs and use first key as label
           // This may not be the most effective way to label as
           // the first key may always be the most informative
-          const firstKey = visibleKeys[0];
+          const [firstKey] = visibleKeys;
           return [firstKey, item];
         });
     }
@@ -60,7 +60,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
 
     return [];
   };
-  
+
   // Render primitive values
   if (!isObject(data) && !Array.isArray(data)) {
     if (shouldHideNullValue(data)) return null;
@@ -82,15 +82,15 @@ function JsonTreeView(props: JsonTreeViewProps) {
   return (
     <Box
       sx={{
-        'pl': level === 0 && open ? 1 : 0,
-        'transition': theme =>
+        pl: level === 0 && open ? 1 : 0,
+        transition: (theme) =>
           theme.transitions.create(['padding-left', 'background-color'], {
             duration: theme.transitions.duration.shortest,
             easing: theme.transitions.easing.easeInOut,
           }),
-        'backgroundColor': open ? Theme.PrimaryGrey50 : 'transparent',
-        'borderRadius': 2,
-        'mb': 1,
+        backgroundColor: open ? Theme.PrimaryGrey50 : 'transparent',
+        borderRadius: 2,
+        mb: 1,
       }}
     >
       <ListItem
@@ -109,10 +109,10 @@ function JsonTreeView(props: JsonTreeViewProps) {
         </Typography>
         <KeyboardArrowDown
           sx={{
-            'fontSize': 'large',
-            'color': open ? Theme.PrimaryMain : Theme.PrimaryGrey500,
-            'transform': open ? 'rotate(180deg)' : 'rotate(0deg)',
-            'transition': 'transform 0.25s ease-in-out',
+            fontSize: 'large',
+            color: open ? Theme.PrimaryMain : Theme.PrimaryGrey500,
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.25s ease-in-out',
           }}
         />
       </ListItem>

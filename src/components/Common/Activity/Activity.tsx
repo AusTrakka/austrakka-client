@@ -1,35 +1,43 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
-import { Column } from 'primereact/column';
 import { Cancel } from '@mui/icons-material';
+import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import { TreeTable, TreeTableExpandedKeysType } from 'primereact/treetable';
-import { TreeNode } from 'primereact/treenode';
-import { ActivityDetailInfo } from './activityViewModels.interface';
-import ActivityDetails from './ActivityDetails';
-import useActivityLogs from '../../../hooks/useActivityLogs';
-import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
-import sortIcon from '../../TableComponents/SortIcon';
+import { Column } from 'primereact/column';
+import type { TreeNode } from 'primereact/treenode';
+import { TreeTable, type TreeTableExpandedKeysType } from 'primereact/treetable';
 import { Theme } from '../../../assets/themes/theme';
-import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
-import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
-import ActivityFilters, { Filters } from './ActivityFilters';
+import useActivityLogs from '../../../hooks/useActivityLogs';
+import {
+  buildPrimeReactColumnDefinitions,
+  type PrimeReactColumnDefinition,
+} from '../../../utilities/tableUtils';
 import CollapseTreeNodes from '../../TableComponents/CollapseTreeNodes';
+import sortIcon from '../../TableComponents/SortIcon';
+import ActivityDetails from './ActivityDetails';
+import ActivityFilters, { type Filters } from './ActivityFilters';
+import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
+import type { ActivityDetailInfo } from './activityViewModels.interface';
+import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import '../../../styles/TreeTable.css';
-import { aggregateLogsToTree, defaultNodeSort, processTreeNodes, splitLargeChildrenGroups } from '../../../utilities/activityTreeUtils';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  aggregateLogsToTree,
+  defaultNodeSort,
+  processTreeNodes,
+  splitLargeChildrenGroups,
+} from '../../../utilities/activityTreeUtils';
 
 interface ActivityProps {
-  recordType: string,
-  rGuid?: string,
+  recordType: string;
+  rGuid?: string;
 }
 
 const emptyDetailInfo: ActivityDetailInfo = {
-  'Event': '',
+  Event: '',
   'Time stamp': '',
   'Event initiated by': '',
-  'Resource': '',
+  Resource: '',
   'Resource Type': '',
-  'Details': null,
+  Details: null,
 };
 
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
@@ -38,8 +46,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
   const [nodes, setNodes] = useState<TreeNode[]>([]);
-  const [expandedKeys, setExpandedKeys] =
-    useState<TreeTableExpandedKeysType>({});
+  const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>({});
   const MAX_VISIBLE_CHILDREN = 600;
 
   const today = dayjs();
@@ -53,17 +60,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     eventType: null,
     submitterDisplayName: null,
   });
-  
-  const routeSegment = recordType === 'Tenant'
-    ? recordType
-    : `${recordType}V2`;
 
-  const {
-    refinedLogs,
-    httpStatusCode,
-    isLoadingErrorMsg,
-    dataLoading,
-  } = useActivityLogs(
+  const routeSegment = recordType === 'Tenant' ? recordType : `${recordType}V2`;
+
+  const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
     routeSegment,
     filters,
     rGuid,
@@ -78,24 +78,24 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   useEffect(() => {
     if (columns.length > 0) return;
 
-    const firstCol = supportedColumns.filter(c => c.columnName === EVENT_NAME_COLUMN)[0];
-    const firstColBuilder = buildPrimeReactColumnDefinitions([firstCol])[0];
+    const [firstCol] = supportedColumns.filter((c) => c.columnName === EVENT_NAME_COLUMN);
+    const [firstColBuilder] = buildPrimeReactColumnDefinitions([firstCol]);
     firstColBuilder.isDecorated = true;
-    const remainingCols = supportedColumns.filter(c => c.columnName !== EVENT_NAME_COLUMN);
+    const remainingCols = supportedColumns.filter((c) => c.columnName !== EVENT_NAME_COLUMN);
     const remainingColsBuilder = buildPrimeReactColumnDefinitions(remainingCols);
     const columnBuilder = [firstColBuilder];
     columnBuilder.push(...remainingColsBuilder);
     setColumns(columnBuilder);
-  }, [recordType, rGuid, columns.length]);
+  }, [columns.length]);
 
   const onLeafRowClick = (node: TreeNode) => {
     const info: ActivityDetailInfo = {
-      'Event': node.data[EVENT_NAME_COLUMN],
+      Event: node.data[EVENT_NAME_COLUMN],
       'Time stamp': node.data.eventTime,
       'Event initiated by': node.data.submitterDisplayName,
-      'Resource': node.data.resourceUniqueString,
+      Resource: node.data.resourceUniqueString,
       'Resource Type': node.data.resourceType,
-      'Details': node.data.data || null,
+      Details: node.data.data || null,
     };
     setDetailInfo(info);
     setOpenDetails(true);
@@ -104,7 +104,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const collapseParents = (nodeKey: string | number | undefined, childrenCount: number) => {
     const currentlyExpandedKeys = { ...expandedKeys };
     const getChildrenCount = (key: string | number | undefined) =>
-      nodes.find(n => n.key === key)?.children?.length || 0;
+      nodes.find((n) => n.key === key)?.children?.length || 0;
 
     // Total currently rendered children count
     let renderedChildren = Object.keys(currentlyExpandedKeys).reduce(
@@ -156,7 +156,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       const { countKey, previewKey, valueKey } = params;
 
       const isExpanded = Boolean(expandedKeys && rowNode.key && expandedKeys[rowNode.key]);
-      const isParent = Boolean(children && children.length);
+      const isParent = Boolean(children?.length);
 
       if (isParent && isExpanded) {
         return null;
@@ -186,7 +186,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       const { data, children } = rowNode;
 
       const isExpanded = Boolean(expandedKeys && rowNode.key && expandedKeys[rowNode.key]);
-      const isParent = Boolean(children && children.length);
+      const isParent = Boolean(children?.length);
 
       if (isParent && isExpanded) {
         return null;
@@ -199,34 +199,31 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     [expandedKeys],
   );
 
-  const firstColumnTemplate = useCallback(
-    (row: any) => {
-      if (row.data.eventStatus === 'Failed') {
-        return (
-          <span>
-            <Cancel
-              style={{
-                marginRight: '5px',
-                cursor: 'pointer',
-                color: Theme.SecondaryRed,
-                fontSize: '14px',
-                verticalAlign: 'middle',
-              }}
-            />
-            {row.data[EVENT_NAME_COLUMN]}
-          </span>
-        );
-      }
-      return row.data[EVENT_NAME_COLUMN];
-    },
-    [],
-  );
+  const firstColumnTemplate = useCallback((row: any) => {
+    if (row.data.eventStatus === 'Failed') {
+      return (
+        <span>
+          <Cancel
+            style={{
+              marginRight: '5px',
+              cursor: 'pointer',
+              color: Theme.SecondaryRed,
+              fontSize: '14px',
+              verticalAlign: 'middle',
+            }}
+          />
+          {row.data[EVENT_NAME_COLUMN]}
+        </span>
+      );
+    }
+    return row.data[EVENT_NAME_COLUMN];
+  }, []);
 
   const rowClassName = useCallback(
     (rowNode: TreeNode) => {
       const { key, children } = rowNode;
       const classes: Record<string, boolean> = {};
-      const isParent = Boolean(children && children.length);
+      const isParent = Boolean(children?.length);
       const isExpanded = Boolean(expandedKeys && key && expandedKeys[key]);
 
       if (isParent && isExpanded) classes['parent-row-event'] = true;
@@ -246,19 +243,18 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       const aggregatedNodes = aggregateLogsToTree(refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
       const defaultSortedNodes = defaultNodeSort(processedNodes);
-      const splitNodes = defaultSortedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
+      const splitNodes = defaultSortedNodes.flatMap((node) => splitLargeChildrenGroups(node, 500));
       setNodes(splitNodes);
       setProcessingData(false);
     }
   }, [dataLoading, refinedLogs]);
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <CollapseTreeNodes
-          expandedKeys={expandedKeys}
-          setExpandedKeys={setExpandedKeys}
-        />
+        <CollapseTreeNodes expandedKeys={expandedKeys} setExpandedKeys={setExpandedKeys} />
       </div>
     </div>
   );
@@ -287,78 +283,82 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
             <Box sx={{ p: 4 }}>
               <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
             </Box>
-          ) :
-            (
-              <TreeTable
-                className="tree-table-custom"
-                header={header}
-                rowClassName={rowClassName}
-                value={nodes || []}
-                expandedKeys={expandedKeys}
-                onToggle={(e) => setExpandedKeys(e.value)}
-                onRowClick={handleTreeRowClick}
-                showGridlines
-                removableSort
-                sortIcon={sortIcon}
-                paginator
-                rows={500}
-                rowsPerPageOptions={[500, 1000, 1500, 2000]}
-                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-                currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-                paginatorPosition="bottom"
-                paginatorRight
-                rowHover
-                selectionMode="single"
-                emptyMessage={httpStatusCode === 413 ? (
+          ) : (
+            <TreeTable
+              className="tree-table-custom"
+              header={header}
+              rowClassName={rowClassName}
+              value={nodes || []}
+              expandedKeys={expandedKeys}
+              onToggle={(e) => setExpandedKeys(e.value)}
+              onRowClick={handleTreeRowClick}
+              showGridlines
+              removableSort
+              sortIcon={sortIcon}
+              paginator
+              rows={500}
+              rowsPerPageOptions={[500, 1000, 1500, 2000]}
+              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+              currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+              paginatorPosition="bottom"
+              paginatorRight
+              rowHover
+              selectionMode="single"
+              emptyMessage={
+                httpStatusCode === 413 ? (
                   <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
                     <AlertTitle>Error</AlertTitle>
-                    {isLoadingErrorMsg || 'The activity log is too large to display. Please narrow your filters.'}
+                    {isLoadingErrorMsg ||
+                      'The activity log is too large to display. Please narrow your filters.'}
                   </Alert>
                 ) : (
                   <Typography variant="subtitle1" color="textSecondary" align="center">
                     No activity found
                   </Typography>
-                )}
-              >
-                <Column
-                  key={EVENT_NAME_COLUMN}
-                  field={EVENT_NAME_COLUMN}
-                  header="Event"
-                  hidden={false}
-                  body={firstColumnTemplate}
-                  sortable
-                  expander
-                />
-                {columns ? columns.filter((col: PrimeReactColumnDefinition) =>
-                  col.field !== EVENT_NAME_COLUMN)
-                  .map((col: any) => (
-                    <Column
-                      key={col.field}
-                      field={col.field}
-                      header={col.header}
-                      hidden={false}
-                      body={(node: TreeNode) => {
-                        if (col.field === 'resourceUniqueString') {
-                          return aggregatedCellTemplate(node, {
-                            countKey: 'resourceCount',
-                            previewKey: 'resourcePreview',
-                            valueKey: 'resourceUniqueString',
-                          });
-                        }
-                        if (col.field === 'resourceType') {
-                          return aggregatedCellTemplate(node, {
-                            countKey: 'resourceTypeCount',
-                            previewKey: 'resourceTypePreview',
-                            valueKey: 'resourceType',
-                          });
-                        }
-                        return unaggregatedCellTemplate(node, col);
-                      }}
-                      sortable
-                    />
-                  )) : null}
-              </TreeTable>
-            )}
+                )
+              }
+            >
+              <Column
+                key={EVENT_NAME_COLUMN}
+                field={EVENT_NAME_COLUMN}
+                header="Event"
+                hidden={false}
+                body={firstColumnTemplate}
+                sortable
+                expander
+              />
+              {columns
+                ? columns
+                    .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                    .map((col: any) => (
+                      <Column
+                        key={col.field}
+                        field={col.field}
+                        header={col.header}
+                        hidden={false}
+                        body={(node: TreeNode) => {
+                          if (col.field === 'resourceUniqueString') {
+                            return aggregatedCellTemplate(node, {
+                              countKey: 'resourceCount',
+                              previewKey: 'resourcePreview',
+                              valueKey: 'resourceUniqueString',
+                            });
+                          }
+                          if (col.field === 'resourceType') {
+                            return aggregatedCellTemplate(node, {
+                              countKey: 'resourceTypeCount',
+                              previewKey: 'resourceTypePreview',
+                              valueKey: 'resourceType',
+                            });
+                          }
+                          return unaggregatedCellTemplate(node, col);
+                        }}
+                        sortable
+                      />
+                    ))
+                : null}
+            </TreeTable>
+          )}
         </Paper>
       )}
     </Box>
@@ -384,11 +384,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     contentPane = tableContent;
   }
 
-  return (
-    <>
-      {contentPane}
-    </>
-  );
+  return <>{contentPane}</>;
 }
 
 export default Activity;

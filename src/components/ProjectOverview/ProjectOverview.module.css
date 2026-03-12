@@ -1,52 +1,54 @@
 .h1 {
-    font-size: 20px;
-    font-weight: bold;
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.h1, .h2, .h3 {
-    color: var(--primary-main);
-    margin-bottom: 10px;
-    line-height: 1.2;
+.h1,
+.h2,
+.h3 {
+  color: var(--primary-main);
+  margin-bottom: 10px;
+  line-height: 1.2;
 }
 
 .tabs button {
-    color: var(--secondary-dark-grey);
-    text-transform: none;
+  color: var(--secondary-dark-grey);
+  text-transform: none;
 }
 
 .tabs :global .Mui-selected {
-    color: var(--primary-main);
-    font-weight: bold;
+  color: var(--primary-main);
+  font-weight: bold;
 }
 
 .tabs :global .MuiTabs-indicator {
-    background-color: var(--primary-main);
+  background-color: var(--primary-main);
 }
 
 .squareTile {
-    max-width: 400px;
-    color: var(--primary-grey-800);
-    background-color: var(--primary-grey-100);
+  max-width: 400px;
+  color: var(--primary-grey-800);
+  background-color: var(--primary-grey-100);
 }
 
 .cardTitle {
-    font-size: 16px;
-    font-weight: bold;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .cardStat {
-    font-size: 36px;
-    font-weight: bold;
-    padding-left: 20px;
+  font-size: 36px;
+  font-weight: bold;
+  padding-left: 20px;
 }
 
 .cardCategory {
-    font-size: 12px;
-    opacity: 70%;
-    font-weight: bold;
+  font-size: 12px;
+  opacity: 70%;
+  font-weight: bold;
 }
 .cardFooter {
-    font-size: 10px;
-    opacity: 70%;
-    font-weight: bold;
+  font-size: 10px;
+  opacity: 70%;
+  font-weight: bold;
 }

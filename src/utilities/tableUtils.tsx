@@ -1,18 +1,17 @@
-import React from 'react';
-import { Field, ProjectViewField } from '../types/dtos';
+import type React from 'react';
+import type { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export type PrimeReactColumnDefinition = {
-  field: string,
-  header: string,
-  dataType?: string,
-  hidden?: boolean,
-  body?: (rowData: any) => React.ReactNode,
+  field: string;
+  header: string;
+  dataType?: string;
+  hidden?: boolean;
+  body?: (rowData: any) => React.ReactNode;
   isDecorated?: boolean;
 };
 
-export function buildPrimeReactColumnDefinitions(fields: Field[]):
-PrimeReactColumnDefinition[] {
+export function buildPrimeReactColumnDefinitions(fields: Field[]): PrimeReactColumnDefinition[] {
   const columnBuilders: PrimeReactColumnDefinition[] = [];
   const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 

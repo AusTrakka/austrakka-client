@@ -1,4 +1,3 @@
-import React from 'react';
 import { ErrorOutline, Https, Inbox } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 
@@ -28,19 +27,11 @@ function EmptyContentPane({ message, icon, subText }: EmptyContentProps) {
 
   return (
     <div className="empty-container">
-      <div className="icon-background">
-        {component}
-      </div>
+      <div className="icon-background">{component}</div>
 
-      <p className="main-text">
-        {message || 'No content to show'}
-      </p>
+      <p className="main-text">{message || 'No content to show'}</p>
 
-      {subText && (
-        <p className="sub-text">
-          {subText}
-        </p>
-      )}
+      {subText && <p className="sub-text">{subText}</p>}
     </div>
   );
 }

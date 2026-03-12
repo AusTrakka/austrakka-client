@@ -1,7 +1,6 @@
-import React from 'react';
 import { UnfoldLess } from '@mui/icons-material';
 import { Box, IconButton, Tooltip } from '@mui/material';
-import { TreeTableExpandedKeysType } from 'primereact/treetable';
+import type { TreeTableExpandedKeysType } from 'primereact/treetable';
 
 interface CollapseTreeNodesProps {
   expandedKeys: TreeTableExpandedKeysType | undefined;
@@ -20,10 +19,7 @@ function CollapseTreeNodes(props: CollapseTreeNodesProps) {
       <Tooltip title="Collapse all rows" arrow>
         <IconButton
           onClick={handleCollapseAll}
-          disabled={
-            expandedKeys === undefined ||
-            Object.keys(expandedKeys).length === 0
-          }
+          disabled={expandedKeys === undefined || Object.keys(expandedKeys).length === 0}
         >
           <UnfoldLess />
         </IconButton>

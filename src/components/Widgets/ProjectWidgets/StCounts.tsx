@@ -1,24 +1,29 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-
-import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
-import { InlineData } from 'vega-lite/build/src/data';
-import { DataTable, DataTableFilterMeta, DataTableRowClickEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { parse, View as VegaView } from 'vega';
+import { compile, type TopLevelSpec } from 'vega-lite';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
+import {
+  type ProjectMetadataState,
+  selectProjectMetadata,
+} from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
-import ExportVegaPlot from '../../Plots/ExportVegaPlot';
-import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import { CountRow, aggregateArrayObjects } from '../../../utilities/dataProcessingUtils';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
+import { aggregateArrayObjects, type CountRow } from '../../../utilities/dataProcessingUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { legendSpec } from '../../../utilities/plotUtils';
+import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
@@ -37,21 +42,30 @@ function STChart(props: any) {
     height: 350,
     mark: { type: 'bar', tooltip: true },
     encoding: {
-      x: { field: 'Date_coll', type: 'temporal', title: 'Sample collected date (Date_coll)', bin: { maxbins: 20 }, axis: { format: ' %d %b %Y' } },
+      x: {
+        field: 'Date_coll',
+        type: 'temporal',
+        title: 'Sample collected date (Date_coll)',
+        bin: { maxbins: 20 },
+        axis: { format: ' %d %b %Y' },
+      },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: {
         field: stFieldName,
         title: `${stFieldName} Value`,
         // NB not currently using defaultColorSchemeName
-        scale: { scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10' },
+        scale: {
+          scheme: stDataAggregated && stDataAggregated.length > 10 ? 'category20' : 'category10',
+        },
         legend: {
-          ...legendSpec as object,
+          ...(legendSpec as object),
           columns: 15,
         },
       },
     },
   };
-  
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaView = async () => {
       if (vegaView) {
@@ -62,16 +76,13 @@ function STChart(props: any) {
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;
-      const view = await new VegaView(parse(compiledSpec))
-        .initialize(plotDiv.current!)
-        .runAsync();
+      const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
     };
 
     if (stData && plotDiv?.current) {
       createVegaView();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stData, plotDiv]);
 
   return (
@@ -80,44 +91,43 @@ function STChart(props: any) {
         <div id="#plot-container" ref={plotDiv} />
       </Grid>
       <Grid size={1}>
-        <ExportVegaPlot
-          vegaView={vegaView}
-        />
+        <ExportVegaPlot vegaView={vegaView} />
       </Grid>
     </Grid>
   );
 }
 
 export default function StCounts(props: ProjectWidgetProps) {
-  const {
-    projectAbbrev, filteredData, timeFilterObject,
-  } = props;
-  const data: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const data: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   const [aggregatedCounts, setAggregatedCounts] = useState<CountRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigation = useNavigate();
 
   useEffect(() => {
-    if (data?.loadingState === MetadataLoadingState.DATA_LOADED ||
+    if (
+      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS)) {
+        data.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS)
+    ) {
       const counts = aggregateArrayObjects(stFieldName, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
   }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(stFieldName)) {
+    if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(stFieldName)) {
       setErrorMessage(`Field ${stFieldName} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
     } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${stFieldName} values`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.fields, data?.loadingState]);
-  
+
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
 
@@ -134,70 +144,63 @@ export default function StCounts(props: ProjectWidgetProps) {
     };
     // Append timeFilterObject for last_week and last_month filters
     if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-      const appendedFilters: DataTableFilterMeta =
-          {
-            ...drilldownFilter,
-            ...timeFilterObject,
-          };
+      const appendedFilters: DataTableFilterMeta = {
+        ...drilldownFilter,
+        ...timeFilterObject,
+      };
       updateTabUrlWithSearch(navigation, '/samples', appendedFilters);
     } else {
       updateTabUrlWithSearch(navigation, '/samples', drilldownFilter);
     }
   };
 
-  const columns = useMemo<any[]>(() => [
-    { field: 'value', header: `${stFieldName} Value` },
-    { field: 'count', header: 'Sample count' },
-  ], []);
+  const columns = useMemo<any[]>(
+    () => [
+      { field: 'value', header: `${stFieldName} Value` },
+      { field: 'count', header: 'Sample count' },
+    ],
+    [],
+  );
 
   return (
     // <Box sx={{ flexGrow: 1 }}>
     <Box>
       <Typography variant="h5" paddingBottom={1} color="primary">
-        {stFieldName}
-        {' '}
-        Counts
+        {stFieldName} Counts
       </Typography>
-      { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
-      <Grid container direction="row" alignItems="flex-start" spacing={2}>
-        <Grid size={{ lg: 3, md: 4, xs: 12 }}>
-          <DataTable
-            value={aggregatedCounts}
-            size="small"
-            selectionMode="single"
-            onRowClick={rowClickHandler}
-            scrollable
-            scrollHeight="500px"
-          >
-            {columns.map((col: any) => (
-              <Column
-                key={col.field}
-                field={col.field}
-                header={col.header}
-              />
-            ))}
-          </DataTable>
+      {data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
+        <Grid container direction="row" alignItems="flex-start" spacing={2}>
+          <Grid size={{ lg: 3, md: 4, xs: 12 }}>
+            <DataTable
+              value={aggregatedCounts}
+              size="small"
+              selectionMode="single"
+              onRowClick={rowClickHandler}
+              scrollable
+              scrollHeight="500px"
+            >
+              {columns.map((col: any) => (
+                <Column key={col.field} field={col.field} header={col.header} />
+              ))}
+            </DataTable>
+          </Grid>
+          <Grid size={{ lg: 9, md: 8, xs: 12 }}>
+            <STChart stData={filteredData} stDataAggregated={aggregatedCounts} />
+          </Grid>
         </Grid>
-        <Grid size={{ lg: 9, md: 8, xs: 12 }}>
-          <STChart
-            stData={filteredData}
-            stDataAggregated={aggregatedCounts}
-          />
-        </Grid>
-      </Grid>
       )}
-      { errorMessage && (
+      {errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       )}
-      { (!data?.loadingState ||
-          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-            data.loadingState === MetadataLoadingState.ERROR ||
-            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-            <div>Loading...</div>
-      )}
+      {(!data?.loadingState ||
+        !(
+          data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+        )) && <div>Loading...</div>}
     </Box>
   );
 }

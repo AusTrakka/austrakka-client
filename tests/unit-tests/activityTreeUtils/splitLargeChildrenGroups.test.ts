@@ -1,4 +1,4 @@
-import { TreeNode } from 'primereact/treenode';
+import type { TreeNode } from 'primereact/treenode';
 import { splitLargeChildrenGroups } from '../../../src/utilities/activityTreeUtils';
 
 describe('splitLargeChildrenGroups', () => {
@@ -7,7 +7,12 @@ describe('splitLargeChildrenGroups', () => {
       key: 'parent',
       label: 'Parent',
       data: {},
-      children: Array.from({ length: 100 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
+      children: Array.from({ length: 100 }, (_, i) => ({
+        key: `c${i}`,
+        label: `C${i}`,
+        data: {},
+        leaf: true,
+      })),
     };
     const result = splitLargeChildrenGroups(parent, 500);
     expect(result.length).toBe(1);
@@ -19,7 +24,12 @@ describe('splitLargeChildrenGroups', () => {
       key: 'parent',
       label: 'Parent',
       data: {},
-      children: Array.from({ length: 1200 }, (_, i) => ({ key: `c${i}`, label: `C${i}`, data: {}, leaf: true })),
+      children: Array.from({ length: 1200 }, (_, i) => ({
+        key: `c${i}`,
+        label: `C${i}`,
+        data: {},
+        leaf: true,
+      })),
     };
     const result = splitLargeChildrenGroups(parent, 500);
     expect(result.length).toBe(3);

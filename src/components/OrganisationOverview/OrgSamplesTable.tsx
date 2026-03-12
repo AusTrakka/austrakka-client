@@ -1,54 +1,71 @@
-import React, {
-  memo, useEffect, useState,
-} from 'react';
-import { Close, IosShare, RemoveCircleOutline, Settings, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import {
+  Close,
+  IosShare,
+  RemoveCircleOutline,
+  Settings,
+  Visibility,
+  VisibilityOffOutlined,
+} from '@mui/icons-material';
+import {
+  Alert,
+  AlertTitle,
+  Backdrop,
+  Box,
+  CircularProgress,
+  Dialog,
   IconButton,
-  CircularProgress, Dialog,
-  Backdrop, Alert, AlertTitle, Paper,
-  Tooltip,
   ListItemIcon,
   Menu,
   MenuItem,
-  Box,
   MenuList,
+  Paper,
+  Tooltip,
 } from '@mui/material';
-import { DataTable, DataTableRowClickEvent, DataTableSelectAllChangeEvent, DataTableSelectionMultipleChangeEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Sample } from '../../types/sample.interface';
-import LoadingState from '../../constants/loadingState';
-import { buildPrimeReactColumnDefinitions, PrimeReactColumnDefinition } from '../../utilities/tableUtils';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import {
+  DataTable,
+  type DataTableRowClickEvent,
+  type DataTableSelectAllChangeEvent,
+  type DataTableSelectionMultipleChangeEvent,
+} from 'primereact/datatable';
+import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
-import sortIcon from '../TableComponents/SortIcon';
-import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
-import ExportTableData from '../Common/ExportTableData';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
-import { useAppDispatch, useAppSelector } from '../../app/store';
 import {
   fetchGroupMetadata,
-  GroupMetadataState,
+  type GroupMetadataState,
   selectAwaitingGroupMetadata,
   selectGroupMetadata,
 } from '../../app/groupMetadataSlice';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import { useStableNavigate } from '../../app/NavigationContext';
-import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
-import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
-import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
-import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
+import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
+import type { Sample } from '../../types/sample.interface';
+import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  buildPrimeReactColumnDefinitions,
+  type PrimeReactColumnDefinition,
+} from '../../utilities/tableUtils';
+import ExportTableData from '../Common/ExportTableData';
+import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
+import sortIcon from '../TableComponents/SortIcon';
+import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
+import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
+import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 
-// TODO: 
+// TODO:
 // - Check if there is a clean way to make sure openShareDialog && openUnshareDialog != true
-// - 
+// -
 
 interface SamplesProps {
-  groupContext: number,
-  groupContextName: string | undefined,
-  canShare: boolean,
-  orgAbbrev: string
+  groupContext: number;
+  groupContextName: string | undefined;
+  canShare: boolean;
+  orgAbbrev: string;
 }
 
 function OrgSamplesTable(props: SamplesProps) {
@@ -86,23 +103,29 @@ function OrgSamplesTable(props: SamplesProps) {
   const dispatch = useAppDispatch();
 
   const { token, tokenLoading } = useApi();
-  const metadata: GroupMetadataState | null =
-      useAppSelector(state => selectGroupMetadata(state, groupContext));
-  const isSamplesLoading : boolean = useAppSelector((state) =>
-    selectAwaitingGroupMetadata(state, groupContext));
+  const metadata: GroupMetadataState | null = useAppSelector((state) =>
+    selectGroupMetadata(state, groupContext),
+  );
+  const isSamplesLoading: boolean = useAppSelector((state) =>
+    selectAwaitingGroupMetadata(state, groupContext),
+  );
 
   useEffect(() => {
-    if (groupContext !== undefined &&
+    if (
+      groupContext !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+      tokenLoading !== LoadingState.IDLE
+    ) {
       setAllFieldsLoaded(false);
       dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
     }
   }, [groupContext, token, tokenLoading, dispatch]);
 
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.ERROR ||
-        metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (
+      metadata?.loadingState === MetadataLoadingState.ERROR ||
+      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+    ) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -112,8 +135,9 @@ function OrgSamplesTable(props: SamplesProps) {
     if (!metadata?.fields || !metadata?.columnLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
-    if (Object.values(metadata.columnLoadingStates)
-      .every(field => field === LoadingState.SUCCESS)) {
+    if (
+      Object.values(metadata.columnLoadingStates).every((field) => field === LoadingState.SUCCESS)
+    ) {
       setAllFieldsLoaded(true);
     }
   }, [metadata?.columnLoadingStates, metadata?.fields]);
@@ -129,16 +153,16 @@ function OrgSamplesTable(props: SamplesProps) {
       const url = `/records/${sampleId}`;
       navigate(url);
     } else {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error(`${SAMPLE_ID_FIELD} not found in selectedRow.`);
     }
   };
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredSampleList(metadata?.metadata!);
-      setFormattedData(metadata?.metadata!);
-      setDisplayRows(metadata?.metadata!);
+      setFilteredSampleList(metadata?.metadata ?? []);
+      setFormattedData(metadata?.metadata ?? []);
+      setDisplayRows(metadata?.metadata ?? []);
     }
   }, [metadata?.loadingState, metadata?.metadata]);
 
@@ -167,20 +191,19 @@ function OrgSamplesTable(props: SamplesProps) {
       setDisplayRows(selectedSamples);
     } else if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
       setShowSelectedRowsOnly(false);
-      setDisplayRows(metadata?.metadata!);
+      setDisplayRows(metadata?.metadata ?? []);
     }
-  }, [selectedSamples, filteredSampleList, showSelectedRowsOnly,
-    metadata?.metadata, metadata?.loadingState]);
+  }, [selectedSamples, showSelectedRowsOnly, metadata?.metadata, metadata?.loadingState]);
 
   const toggleShowSelectedRowsOnly = () => {
     setShowSelectedRowsOnly((prev) => !prev);
     if (showSelectedRowsOnly) {
-      setDisplayRows(metadata?.metadata!);
+      setDisplayRows(metadata?.metadata ?? []);
     } else {
       setDisplayRows(selectedSamples);
     }
   };
-  
+
   const onSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
     const { checked } = e;
     if (checked) {
@@ -224,9 +247,14 @@ function OrgSamplesTable(props: SamplesProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Tooltip title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'} placement="top">
+        <Tooltip
+          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+          placement="top"
+        >
           <IconButton
             onClick={toggleShowSelectedRowsOnly}
             color={showSelectedRowsOnly ? 'success' : 'default'}
@@ -238,59 +266,64 @@ function OrgSamplesTable(props: SamplesProps) {
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {showShare && (
-          <>
-            <Tooltip title="Share or unshare samples" placement="top" arrow>
-              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                  <IosShare sx={{ fontSize: 24 }} />
-                  <Settings
-                    sx={{
-                      position: 'absolute',
-                      bottom: -5,
-                      right: -5,
-                      fontSize: 16,
-                      backgroundColor: 'white',
-                      borderRadius: '50%',
-                    }}
-                  />
-                </Box>
-              </IconButton>
-            </Tooltip>
+            <>
+              <Tooltip title="Share or unshare samples" placement="top" arrow>
+                <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                    <IosShare sx={{ fontSize: 24 }} />
+                    <Settings
+                      sx={{
+                        position: 'absolute',
+                        bottom: -5,
+                        right: -5,
+                        fontSize: 16,
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  </Box>
+                </IconButton>
+              </Tooltip>
 
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-              
-            >
-              <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
-                <MenuItem onClick={() => { setAnchorEl(null); handleShareClick(); }}>
-                  <ListItemIcon>
-                    <IosShare fontSize="small" />
-                  </ListItemIcon>
-                  Share samples
-                </MenuItem>
-                <MenuItem onClick={() => { setAnchorEl(null); handleUnshareClick(); }}>
-                  <ListItemIcon>
-                    <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                      <IosShare sx={{ fontSize: 24 }} />
-                      <RemoveCircleOutline
-                        sx={{
-                          position: 'absolute',
-                          bottom: -5,
-                          right: -5,
-                          transform: 'scale(0.7)',
-                          backgroundColor: 'white',
-                          borderRadius: '50%',
-                        }}
-                      />
-                    </Box>
-                  </ListItemIcon>
-                  Unshare samples
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </>
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+                <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
+                  <MenuItem
+                    onClick={() => {
+                      setAnchorEl(null);
+                      handleShareClick();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <IosShare fontSize="small" />
+                    </ListItemIcon>
+                    Share samples
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setAnchorEl(null);
+                      handleUnshareClick();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                        <IosShare sx={{ fontSize: 24 }} />
+                        <RemoveCircleOutline
+                          sx={{
+                            position: 'absolute',
+                            bottom: -5,
+                            right: -5,
+                            transform: 'scale(0.7)',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                          }}
+                        />
+                      </Box>
+                    </ListItemIcon>
+                    Unshare samples
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </>
           )}
           <ColumnVisibilityMenu
             columns={sampleTableColumns}
@@ -308,11 +341,9 @@ function OrgSamplesTable(props: SamplesProps) {
           />
           <ExportTableData
             dataToExport={
-              metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-                ? []
-                : exportData
+              metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ? [] : exportData
             }
-            headers={sampleTableColumns.filter(col => !col.hidden).map(col => col.header)}
+            headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
             disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
             fileNamePrefix={groupContextName || 'org_samples'}
           />
@@ -343,11 +374,7 @@ function OrgSamplesTable(props: SamplesProps) {
              CSV export will not be available. Refresh to reload.`
           : 'An error occurred loading organisation metadata. Refresh to reload.'}
         <br />
-        Please contact the
-        {' '}
-        {import.meta.env.VITE_BRANDING_NAME}
-        {' '}
-        team if this error persists.
+        Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
       </Alert>
     </Dialog>
   );
@@ -403,11 +430,7 @@ function OrgSamplesTable(props: SamplesProps) {
           </AlertTitle>
           There has been an error exporting your data to CSV.
           <br />
-          Please try again later, or contact the
-          {' '}
-          {import.meta.env.VITE_BRANDING_NAME}
-          {' '}
-          team.
+          Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
         </Alert>
       </Dialog>
       <DataFilters

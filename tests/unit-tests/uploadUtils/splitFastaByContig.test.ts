@@ -27,10 +27,10 @@ GGCATGCATGCA
 TTTTTTTTTTTT
 `;
     const file = mockFile(testFileContent);
-        
+
     // Act
     const result = await splitFastaByContig([file]);
-        
+
     // Assert
     expect(result).toHaveLength(3);
     expect(result[0].name).toBe('contig1.fa');
@@ -40,7 +40,7 @@ TTTTTTTTTTTT
     expect(result[2].name).toBe('contig3.fa');
     expect(await readFileAsText(result[2])).toBe('>contig3 description\nTTTTTTTTTTTT\n');
   });
-  
+
   test('should throw an error if the file contains duplicate Seq_IDs', async () => {
     const testFileContent = `>contig1 description
 ATGCATGCATGC
@@ -50,10 +50,10 @@ GGCATGCATGCA
 TTTTTTTTTTTT
 `;
     const file = mockFile(testFileContent);
-    
+
     await expect(() => splitFastaByContig([file])).rejects.toThrow();
   });
-  
+
   test('given multiple files, should parse Seq_IDs from all', async () => {
     const testFileContent1 = `>contig1 description
 ATGCATGCATGC
@@ -93,7 +93,7 @@ CCCCCCCCCCCC
 
     await expect(() => splitFastaByContig([file1, file2])).rejects.toThrow();
   });
-  
+
   test('given pipe characters in contig names, should split on first pipe and use the part before the pipe as the Seq_ID', async () => {
     const testFileContent = `>contig1|restofheader
 ATGCATGCATGC

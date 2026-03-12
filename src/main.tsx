@@ -1,17 +1,15 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
-import { StyledEngineProvider } from '@mui/material/styles';
-import { Provider } from 'react-redux';
 import { MsalProvider } from '@azure/msal-react';
-import { Button, GlobalStyles } from '@mui/material';
-import { SnackbarProvider, closeSnackbar } from 'notistack';
+import { Button, GlobalStyles, StyledEngineProvider } from '@mui/material';
+import { closeSnackbar, SnackbarProvider } from 'notistack';
+import { Provider } from 'react-redux';
 import App from './App';
-import { msalInstance } from './utilities/authUtils';
-import store from './app/store';
 import ApiProvider from './app/ApiContext';
+import store from './app/store';
 import { globalStyles } from './assets/themes/theme';
+import { msalInstance } from './utilities/authUtils';
 
 if (import.meta.env.DEV) {
   await import('./wdyr');

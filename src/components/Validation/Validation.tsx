@@ -1,7 +1,9 @@
-import React, { ReactElement, useState } from 'react';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
   Alert,
-  AlertColor,
+  type AlertColor,
   Box,
   Button,
   Dialog,
@@ -11,46 +13,44 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { ResponseMessage } from '../../types/apiResponse.interface';
+import { type ReactElement, useState } from 'react';
 import { ResponseType } from '../../constants/responseType';
+import type { ResponseMessage } from '../../types/apiResponse.interface';
 
 interface ValidationProps {
-  messages: ResponseMessage[],
-  title: string,
-  showTitle: boolean,
+  messages: ResponseMessage[];
+  title: string;
+  showTitle: boolean;
 }
 
 interface ValidationModalProps {
-  messages: ResponseMessage[],
-  title: string,
-  openModal: boolean,
-  handleModalClose: ((event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void)
+  messages: ResponseMessage[];
+  title: string;
+  openModal: boolean;
+  handleModalClose: (event: object, reason: 'backdropClick' | 'escapeKeyDown') => void;
 }
 
 interface ValidationPopupProps {
-  messages: ResponseMessage[],
-  title: string,
-  disabled: boolean,
+  messages: ResponseMessage[];
+  title: string;
+  disabled: boolean;
 }
 
 function getIcon(messages: ResponseMessage[]): ReactElement {
-  if (messages.some(m => m.ResponseType === ResponseType.Error)) {
+  if (messages.some((m) => m.ResponseType === ResponseType.Error)) {
     return <ErrorOutlineOutlinedIcon />;
   }
-  if (messages.some(m => m.ResponseType === ResponseType.Warning)) {
+  if (messages.some((m) => m.ResponseType === ResponseType.Warning)) {
     return <WarningAmberOutlinedIcon />;
   }
   return <CheckCircleOutlineOutlinedIcon />;
 }
 
 function getColor(messages: ResponseMessage[]): 'error' | 'warning' | 'success' {
-  if (messages.some(m => m.ResponseType === ResponseType.Error)) {
+  if (messages.some((m) => m.ResponseType === ResponseType.Error)) {
     return 'error';
   }
-  if (messages.some(m => m.ResponseType === ResponseType.Warning)) {
+  if (messages.some((m) => m.ResponseType === ResponseType.Warning)) {
     return 'warning';
   }
   return 'success';
@@ -61,54 +61,36 @@ export function Validation(props: ValidationProps) {
 
   return (
     <>
-      {showTitle && (<Typography variant="h4" color="primary">{title}</Typography>)}
+      {showTitle && (
+        <Typography variant="h4" color="primary">
+          {title}
+        </Typography>
+      )}
       <Stack direction="column" spacing={1}>
-        {messages.map(
-          (message: ResponseMessage) => (
-            <Alert
-              key={message.ResponseMessage}
-              severity={message.ResponseType.toLowerCase() as AlertColor}
-            >
-              <strong>{message.ResponseType}</strong>
-              {' '}
-              -
-              {' '}
-              {message.ResponseMessage}
-            </Alert>
-          ),
-        )}
+        {messages.map((message: ResponseMessage) => (
+          <Alert
+            key={message.ResponseMessage}
+            severity={message.ResponseType.toLowerCase() as AlertColor}
+          >
+            <strong>{message.ResponseType}</strong> - {message.ResponseMessage}
+          </Alert>
+        ))}
       </Stack>
     </>
   );
 }
 
 export function ValidationModal(props: ValidationModalProps) {
-  const {
-    messages,
-    title,
-    openModal,
-    handleModalClose,
-  } = props;
+  const { messages, title, openModal, handleModalClose } = props;
   return (
-    <Dialog
-      open={openModal}
-      onClose={handleModalClose}
-    >
+    <Dialog open={openModal} onClose={handleModalClose}>
       <Box>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
-          <Validation
-            messages={messages}
-            title={title}
-            showTitle={false}
-          />
+          <Validation messages={messages} title={title} showTitle={false} />
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => handleModalClose({ undefined }, 'backdropClick')}
-          >
-            Close
-          </Button>
+          <Button onClick={() => handleModalClose({ undefined }, 'backdropClick')}>Close</Button>
         </DialogActions>
       </Box>
     </Dialog>
@@ -116,11 +98,7 @@ export function ValidationModal(props: ValidationModalProps) {
 }
 
 export function ValidationPopupButton(props: ValidationPopupProps) {
-  const {
-    messages,
-    title,
-    disabled,
-  } = props;
+  const { messages, title, disabled } = props;
   const [showValidation, setShowValidation] = useState(false);
   return (
     <>
