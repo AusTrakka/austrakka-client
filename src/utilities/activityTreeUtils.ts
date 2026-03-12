@@ -131,7 +131,16 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
 
   const chunks: TreeNode[] = [];
   for (let i = 0; i < children.length; i += maxSize) {
-    const chunkChildren = children.slice(i, i + maxSize);
+    // Create a unique key for the chunk based on the parent key and chunk index
+    const chunkKey = `${parent.key}_${i / maxSize}`;
+    // Assign the chunk's children and update their parentKey reference
+    const chunkChildren = children.slice(i, i + maxSize).map(child => ({
+      ...child,
+      data: {
+        ...child.data,
+        parentKey: chunkKey,
+      },
+    }));
 
     // Recompute resourcePreview and resourceTypePreview for the chunk
     const firstChild = chunkChildren[0]?.data;
@@ -139,7 +148,7 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
       new Set(chunkChildren.map(child => child.data?.resourceType)),
     );
     chunks.push({
-      key: `${parent.key}_${i / maxSize}`,
+      key: chunkKey,
       label: `${parent.label} (${i + 1}-${i + chunkChildren.length})`,
       data: {
         ...parent.data,
