@@ -1,12 +1,4 @@
-import {
-  Chip,
-  CircularProgress,
-  FormControl,
-  MenuItem,
-  Select,
-  TableCell,
-  TextField,
-} from '@mui/material';
+import { Chip, CircularProgress, FormControl, TableCell, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
@@ -19,7 +11,7 @@ import {
 import type { ResponseMessage } from '../../types/apiResponse.interface';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import {
-  type SeqPairedUploadRow,
+  type SeqSingleUploadRow,
   SeqUploadRowState,
   type SkipForce,
 } from '../../types/sequploadtypes';
@@ -28,14 +20,14 @@ import { createSample, shareSamples, uploadSequence } from '../../utilities/reso
 import { ValidationPopupButton } from '../Validation/Validation';
 
 interface UploadSequenceRowProps {
-  seqUploadRow: SeqPairedUploadRow;
-  updateRow: (newSur: SeqPairedUploadRow) => void;
+  seqUploadRow: SeqSingleUploadRow;
+  updateRow: (newSur: SeqSingleUploadRow) => void;
   modeOption: SkipForce;
   owner: string | null;
   sharedProjects: string[];
 }
 
-export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
+export default function UploadSingleFastaContigRow(props: UploadSequenceRowProps) {
   const { seqUploadRow } = props;
   const { updateRow } = props;
   const { modeOption } = props;
@@ -52,49 +44,17 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     updateRow({
       ...seqUploadRow,
       state,
-    } as SeqPairedUploadRow);
+    } as SeqSingleUploadRow);
   };
 
   const calculateHash = async () => {
     updateRow({
       ...seqUploadRow,
-      read1: {
-        ...seqUploadRow.read1,
-        hash: await generateHash(await seqUploadRow.read1.file.arrayBuffer()),
-      },
-      read2: {
-        ...seqUploadRow.read2,
-        hash: await generateHash(await seqUploadRow.read2.file.arrayBuffer()),
+      file: {
+        ...seqUploadRow.file,
+        hash: await generateHash(await seqUploadRow.file.file.arrayBuffer()),
       },
     });
-  };
-
-  const handleSeqId = (seqId: string) => {
-    updateRow({
-      ...seqUploadRow,
-      seqId,
-    } as SeqPairedUploadRow);
-  };
-
-  const handleSelectRead1 = (read1File: string) => {
-    if (read1File === seqUploadRow.read1.file.name) {
-      return;
-    }
-    updateRow({
-      ...seqUploadRow,
-      read1: seqUploadRow.read2,
-      read2: seqUploadRow.read1,
-    } as SeqPairedUploadRow);
-  };
-  const handleSelectRead2 = (read2File: string) => {
-    if (read2File === seqUploadRow.read2.file.name) {
-      return;
-    }
-    updateRow({
-      ...seqUploadRow,
-      read1: seqUploadRow.read2,
-      read2: seqUploadRow.read1,
-    } as SeqPairedUploadRow);
   };
 
   const handleSampleCreate = async () => {
@@ -149,17 +109,14 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     });
     const optionString = '';
     const formData = new FormData();
-    formData.append('file', seqUploadRow.read1.file);
-    formData.append('file', seqUploadRow.read2.file);
+    formData.append('file', seqUploadRow.file.file);
 
     const headers = {
       mode: modeOption,
       'seq-type': seqUploadRow.seqType,
       'seq-id': seqUploadRow.seqId,
-      filename1: seqUploadRow.read1.file.name,
-      'filename1-hash': seqUploadRow.read1.hash,
-      filename2: seqUploadRow.read2.file.name,
-      'filename2-hash': seqUploadRow.read2.hash,
+      filename: seqUploadRow.file.file.name,
+      'filename-hash': seqUploadRow.file.hash,
       'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
 
@@ -191,9 +148,6 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
     seqUploadRow.state !== SeqUploadRowState.Errored &&
     seqUploadRow.state !== SeqUploadRowState.Incomplete;
 
-  const requestCompleted = (): boolean | undefined =>
-    seqUploadRow.state === SeqUploadRowState.Complete;
-
   const requestWaiting = (): boolean => seqUploadRow.state === SeqUploadRowState.Waiting;
 
   const rowInProgress = (): boolean =>
@@ -219,62 +173,16 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (seqUploadRow.read1.hash !== undefined && seqUploadRow.read2.hash !== undefined) {
+    if (seqUploadRow.file.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash);
     }
-  }, [seqUploadRow.read1.hash, seqUploadRow.read2.hash]);
+  }, [seqUploadRow.file.hash]);
 
   return (
     <>
       <TableCell sx={tableCellStyle}>
         <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <TextField
-            id={`seqid-select-${seqUploadRow.id}`}
-            name="seqid"
-            variant="standard"
-            slotProps={{ input: { disableUnderline: requestCompleted() } }}
-            value={seqUploadRow?.seqId ?? ''}
-            onChange={(e) => handleSeqId(e.target.value)}
-            disabled={requestCompleted()}
-          />
-        </FormControl>
-      </TableCell>
-      <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <Select
-            id={`read1-select-${seqUploadRow.id}`}
-            name="read1"
-            disableUnderline
-            value={seqUploadRow?.read1?.file.name ?? ''}
-            onChange={(e) => handleSelectRead1(e.target.value)}
-            disabled={requestCompleted()}
-          >
-            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
-              {`${seqUploadRow?.read1?.file.name}`}
-            </MenuItem>
-            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
-              {`${seqUploadRow?.read2?.file.name}`}
-            </MenuItem>
-          </Select>
-        </FormControl>
-      </TableCell>
-      <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <Select
-            id={`read2-select-${seqUploadRow.id}`}
-            name="read2"
-            disableUnderline
-            value={seqUploadRow?.read2?.file.name ?? ''}
-            onChange={(e) => handleSelectRead2(e.target.value)}
-            disabled={requestCompleted()}
-          >
-            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
-              {`${seqUploadRow?.read1?.file.name}`}
-            </MenuItem>
-            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
-              {`${seqUploadRow?.read2?.file.name}`}
-            </MenuItem>
-          </Select>
+          <Typography>{seqUploadRow?.seqId ?? ''}</Typography>
         </FormControl>
       </TableCell>
       <TableCell sx={tableCellStyle}>

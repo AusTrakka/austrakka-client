@@ -1,0 +1,96 @@
+.tree-table-custom {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Ensure column headers and icons are properly aligned */
+.tree-table-custom .p-column-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Ensure table layout is automatic */
+.tree-table-custom .p-treetable-table {
+  table-layout: auto;
+}
+
+/* Container that hold sort icon */
+.custom-icon-container {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+
+/* Ensure table cells do not wrap */
+.p-treetable td,
+.p-treetable th {
+  white-space: nowrap;
+}
+
+.p-treetable-scrollable-header-table,
+.p-treetable-scrollable-body-table {
+  min-width: max-content;
+  table-layout: auto;
+}
+
+/* Ensure the header row is sticky and above other elements */
+.tree-table-custom thead th {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+/* Decrease the default, wide padding of TreeTable cells */
+.tree-table-custom td,
+.tree-table-custom th {
+  padding: 6px 6px;
+  padding-right: 15px;
+}
+
+/* Ensure the last column takes up remaining space white space */
+.tree-table-custom td:last-child,
+.tree-table-custom th:last-child {
+  width: 100%;
+}
+
+/* Colour the children rows slightly darker */
+.child-row-event {
+  background-color: var(--primary-grey-100);
+}
+
+/* Bold the first column of parent rows */
+.parent-row-event td:nth-child(1) {
+  font-weight: 600;
+}
+
+/* Decrease size of expansion toggler */
+.tree-table-custom .p-treetable-toggler {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* Ensure paginator stays at bottom of table */
+.tree-table-custom .p-paginator {
+  margin-top: auto;
+}
+
+/* Ensure gridlines are visible */
+.p-treetable.p-treetable-gridlines {
+  --tree-table-border-color: var(--primary-grey-300);
+}
+
+.p-treetable.p-treetable-gridlines .p-treetable-thead > tr > th,
+.p-treetable.p-treetable-gridlines .p-treetable-tbody > tr > td,
+.p-treetable.p-treetable-gridlines .p-treetable-tfoot > tr > td {
+  border-color: var(--tree-table-border-color) !important;
+}
+
+.tree-table-custom .p-treetable-header {
+  padding: 6px 6px;
+}
