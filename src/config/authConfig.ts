@@ -1,4 +1,4 @@
-import { Configuration, RedirectRequest } from '@azure/msal-browser';
+import type { Configuration, RedirectRequest } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {

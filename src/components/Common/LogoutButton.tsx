@@ -1,7 +1,6 @@
-import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { MenuItem, ListItemText, ListItemIcon, Tooltip } from '@mui/material';
 import { Logout } from '@mui/icons-material';
+import { ListItemIcon, ListItemText, MenuItem, Tooltip } from '@mui/material';
 
 export default function LogoutButton(props: any) {
   const { instance } = useMsal();
@@ -19,12 +18,17 @@ export default function LogoutButton(props: any) {
   return (
     <Tooltip title={showText ? '' : 'Logout'} arrow placement="right">
       <MenuItem onClick={() => handleLogout('redirect')}>
-        <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: showText ? 1 : 'auto', justifyContent: 'center' }}><Logout /></ListItemIcon>
-        {
-          showText ?
-            <ListItemText sx={{ color: 'primary.main' }}>Logout</ListItemText>
-            : null
-        }
+        <ListItemIcon
+          sx={{
+            color: 'primary.main',
+            minWidth: 0,
+            mr: showText ? 1 : 'auto',
+            justifyContent: 'center',
+          }}
+        >
+          <Logout />
+        </ListItemIcon>
+        {showText ? <ListItemText sx={{ color: 'primary.main' }}>Logout</ListItemText> : null}
       </MenuItem>
     </Tooltip>
   );

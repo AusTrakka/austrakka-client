@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
 import {
-  IconButton,
-  MenuItem,
-  Menu,
-  Checkbox,
-  Button,
-  Stack,
-  Tooltip,
-  Paper,
-  Box,
-  Typography,
-} from '@mui/material';
-import {
-  ViewColumn,
-  VisibilityOff,
-  Visibility,
   InfoOutlined,
+  ViewColumn,
+  Visibility,
+  VisibilityOff,
   VisibilityOffOutlined,
 } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Checkbox,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import React, { useState } from 'react';
 
 interface ColumnVisibilityMenuProps {
   columns: any[];
@@ -28,9 +28,7 @@ interface ColumnVisibilityMenuProps {
 function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   const { columns, onColumnVisibilityChange, emptyColumnNames } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedColumns, setSelectedColumns] = useState<any>(
-    columns.filter((c) => c.hidden),
-  );
+  const [selectedColumns, setSelectedColumns] = useState<any>(columns.filter((c) => c.hidden));
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -60,8 +58,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   };
 
   const onColumnHideEmpty = () => {
-    const columnsToToggle = columns.filter((c) =>
-      emptyColumnNames?.includes(c.field));
+    const columnsToToggle = columns.filter((c) => emptyColumnNames?.includes(c.field));
     setSelectedColumns(columnsToToggle);
     onColumnVisibilityChange(columnsToToggle);
   };
@@ -123,7 +120,11 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
                 <Typography variant="subtitle2" fontWeight="bold">
                   Manage column visibility
                 </Typography>
-                <Tooltip title="Use these options to show or hide columns." placement="top-start" arrow>
+                <Tooltip
+                  title="Use these options to show or hide columns."
+                  placement="top-start"
+                  arrow
+                >
                   <InfoOutlined fontSize="small" color="action" />
                 </Tooltip>
               </Stack>
@@ -189,11 +190,7 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
                 value={column.field}
                 onClick={() => handleColumnSelect(column)}
               >
-                <Checkbox
-                  checked={!selectedColumns.some(
-                    (p: any) => p.header === column.header,
-                  )}
-                />
+                <Checkbox checked={!selectedColumns.some((p: any) => p.header === column.header)} />
                 <Typography>{column.header}</Typography>
               </MenuItem>
             ))}

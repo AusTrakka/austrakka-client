@@ -1,5 +1,5 @@
 import { FilterMatchMode } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { encodeFilterObj } from '../../../src/utilities/urlUtils';
 
 describe('encodeFilterObj', () => {
@@ -84,8 +84,8 @@ describe('encodeFilterObj', () => {
       };
       const result = encodeFilterObj(filterObj);
       expect(result).toBe(
-        '(name:John%20Doe%20%26%20Co.:equals,address:123%20Main%20St.%20Apt%20%234A:contains,'
-          + 'notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)',
+        '(name:John%20Doe%20%26%20Co.:equals,address:123%20Main%20St.%20Apt%20%234A:contains,' +
+          'notes:Check-in%3A%2010%3A00%20AM%3B%20Check-out%3A%202%3A00%20PM:custom)',
       );
     });
   });

@@ -1,4 +1,4 @@
-import { TabObjectRecord } from '../Common/CustomTabs';
+import type { TabObjectRecord } from '../Common/CustomTabs';
 
 export const PLATFORM_TABS: TabObjectRecord = {
   activity: { index: 0, title: 'Activity' },

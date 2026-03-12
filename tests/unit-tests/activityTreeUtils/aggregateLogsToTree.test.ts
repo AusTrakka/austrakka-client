@@ -1,5 +1,5 @@
+import type { DerivedLog } from '../../../src/types/dtos';
 import { aggregateLogsToTree } from '../../../src/utilities/activityTreeUtils';
-import { DerivedLog } from '../../../src/types/dtos';
 
 describe('aggregateLogsToTree', () => {
   it('should aggregate logs into a tree structure by primary and secondary keys', () => {
@@ -68,22 +68,24 @@ describe('aggregateLogsToTree', () => {
     const tree = aggregateLogsToTree(logs);
     expect(tree.length).toBeGreaterThan(0);
     // Should group by clientSessionId_eventType and callId_eventType
-    expect(tree.some(node => node.key === 'A_CREATE')).toBe(true);
-    expect(tree.some(node => node.key === 'Q_DELETE')).toBe(true);
-    
+    expect(tree.some((node) => node.key === 'A_CREATE')).toBe(true);
+    expect(tree.some((node) => node.key === 'Q_DELETE')).toBe(true);
+
     // Unaggregated log should appear
-    expect(tree.some(node => node.children?.some(child => child.data.globalId === '3'))).toBe(true);
+    expect(tree.some((node) => node.children?.some((child) => child.data.globalId === '3'))).toBe(
+      true,
+    );
 
     // Children should be present
-    const aCreate = tree.find(node => node.key === 'A_CREATE');
-    const qDelete = tree.find(node => node.key === 'Q_DELETE');
-    expect(aCreate!.children!.some(child => child.data.globalId === '1')).toBe(true);
-    expect(aCreate!.children!.some(child => child.data.globalId === '2')).toBe(true);
-    expect(qDelete!.children!.some(child => child.data.globalId === '4')).toBe(true);
-    expect(qDelete!.children!.some(child => child.data.globalId === '5')).toBe(true);
-    tree.forEach(node => {
+    const aCreate = tree.find((node) => node.key === 'A_CREATE');
+    const qDelete = tree.find((node) => node.key === 'Q_DELETE');
+    expect(aCreate!.children!.some((child) => child.data.globalId === '1')).toBe(true);
+    expect(aCreate!.children!.some((child) => child.data.globalId === '2')).toBe(true);
+    expect(qDelete!.children!.some((child) => child.data.globalId === '4')).toBe(true);
+    expect(qDelete!.children!.some((child) => child.data.globalId === '5')).toBe(true);
+    tree.forEach((node) => {
       expect(Array.isArray(node.children)).toBe(true);
-      node.children!.forEach(child => {
+      node.children!.forEach((child) => {
         expect(child.leaf).toBe(true);
       });
     });

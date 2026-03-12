@@ -1,5 +1,5 @@
-import { NavigationClient, NavigationOptions } from '@azure/msal-browser';
-import { NavigateFunction } from 'react-router-dom';
+import { NavigationClient, type NavigationOptions } from '@azure/msal-browser';
+import type { NavigateFunction } from 'react-router-dom';
 
 export default class CustomNavigationClient extends NavigationClient {
   private navigate: NavigateFunction;

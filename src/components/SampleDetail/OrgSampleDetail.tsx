@@ -1,17 +1,31 @@
-import { Alert, FormControl, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import {
+  Alert,
+  FormControl,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Typography,
+} from '@mui/material';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-import { MetaDataColumn, Group, Field } from '../../types/dtos';
-import { Sample } from '../../types/sample.interface';
-import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { ResponseType } from '../../constants/responseType';
-import { renderValue } from '../../utilities/renderUtils';
-import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
+import type { Field, Group, MetaDataColumn } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import type { Sample } from '../../types/sample.interface';
+import { renderValue } from '../../utilities/renderUtils';
+import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
+import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
 
 function SampleDetail() {
   const { seqId } = useParams();
@@ -31,7 +45,7 @@ function SampleDetail() {
   const [errToast, setErrToast] = useState<boolean>(false);
   const { token, tokenLoading } = useApi();
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       setErrToast(false);
       return;
@@ -45,19 +59,23 @@ function SampleDetail() {
         const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
         if (sampleResponse.status === ResponseType.Success) {
           const groupsData = sampleResponse.data as Group[];
-          const ownerAbbrev = groupsData.find(g => g.name.endsWith('-Everyone'))?.organisation.abbreviation;
+          const ownerAbbrev = groupsData.find((g) => g.name.endsWith('-Everyone'))?.organisation
+            .abbreviation;
           if (ownerAbbrev === undefined) {
-            // eslint-disable-next-line no-console
+            // biome-ignore lint/suspicious/noConsole: historic
             console.error('Organisation Everyone group cannot be found for the current user');
           }
           const sortedGroups = groupsData.sort((groupA, groupB) => {
             if (groupA.name.endsWith('-Owner') && !groupB.name.endsWith('-Owner')) {
               return -1;
-            } if (!groupA.name.endsWith('-Owner') && groupB.name.endsWith('-Owner')) {
+            }
+            if (!groupA.name.endsWith('-Owner') && groupB.name.endsWith('-Owner')) {
               return 1;
-            } if (groupA.name.includes(ownerAbbrev!) && !groupB.name.includes(ownerAbbrev!)) {
+            }
+            if (groupA.name.includes(ownerAbbrev!) && !groupB.name.includes(ownerAbbrev!)) {
               return -1;
-            } if (!groupA.name.includes(ownerAbbrev!) && groupB.name.includes(ownerAbbrev!)) {
+            }
+            if (!groupA.name.includes(ownerAbbrev!) && groupB.name.includes(ownerAbbrev!)) {
               return 1;
             }
             return 0;
@@ -67,21 +85,25 @@ function SampleDetail() {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error updating project:', error);
       }
     };
-    if ((seqId || groupName) && tokenLoading !== LoadingState.LOADING &&
-    tokenLoading !== LoadingState.IDLE) {
+    if (
+      (seqId || groupName) &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       updateProject();
     }
-  }, [token, seqId, groupName, selectedGroup, tokenLoading]);
+  }, [token, seqId, groupName, tokenLoading]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (groups) {
       // Check if selectedGroup is already set, otherwise set it
-      if (!selectedGroup && (groups.some(g => g.name === groupName))) {
-        setSelectedGroup(groups?.find(group => group.name === groupName));
+      if (!selectedGroup && groups.some((g) => g.name === groupName)) {
+        setSelectedGroup(groups?.find((group) => group.name === groupName));
       } else if (!selectedGroup) {
         if (groupName) {
           setErrToast(true);
@@ -93,7 +115,6 @@ function SampleDetail() {
         setGroupName(selectedGroup.name);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupName, groups, selectedGroup]);
 
   useEffect(() => {
@@ -108,14 +129,17 @@ function SampleDetail() {
           }
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error updating display fields:', error);
       }
     };
 
     // Make sure selectedGroup is not null before updating display fields
-    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (
+      selectedGroup &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       updateDisplayFields();
     }
   }, [token, tokenLoading, selectedGroup]);
@@ -129,11 +153,16 @@ function SampleDetail() {
       if (response.status === ResponseType.Success && response.data.length > 0) {
         setData(response.data[0] as Sample);
       } else {
-        setErrMsg(`Record ${seqId} could not be found within the context of ${selectedGroup!.name}`);
+        setErrMsg(
+          `Record ${seqId} could not be found within the context of ${selectedGroup!.name}`,
+        );
       }
     };
-    if (selectedGroup && tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (
+      selectedGroup &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       updateSampleData();
     }
   }, [token, tokenLoading, selectedGroup, seqId]);
@@ -141,7 +170,7 @@ function SampleDetail() {
   useEffect(() => {
     if (displayFields.length > 0) {
       const longestFieldLength = displayFields
-        .map(field => field.columnName.length)
+        .map((field) => field.columnName.length)
         .reduce((a, b) => Math.max(a, b));
       setColWidth(longestFieldLength);
     }
@@ -165,16 +194,10 @@ function SampleDetail() {
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="warning">
-          The group
-          {' '}
-          {errorGroupName}
-          {' '}
-          is not available or does not exist
+          The group {errorGroupName} is not available or does not exist
         </Alert>
       </Snackbar>
-      <Typography className="pageTitle">
-        {`${seqId} (${selectedGroup?.name} view)`}
-      </Typography>
+      <Typography className="pageTitle">{`${seqId} (${selectedGroup?.name} view)`}</Typography>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography>
           {`Information available through ${selectedGroup?.name} for record ${seqId} is listed here.`}
@@ -190,20 +213,20 @@ function SampleDetail() {
             value={selectedGroup ? selectedGroup.name : ''}
             onChange={(e) => {
               const selectedGroupName = e.target.value;
-              const selected = groups?.find(group => group.name === selectedGroupName);
+              const selected = groups?.find((group) => group.name === selectedGroupName);
 
               if (selected) {
                 setSelectedGroup(selected);
                 setGroupName(selected.name);
               } else {
-                // eslint-disable-next-line no-console
+                // biome-ignore lint/suspicious/noConsole: historic
                 console.error(`Group with name ${selectedGroupName} not found.`);
               }
             }}
             label="Organisation group"
             autoWidth
           >
-            {groups?.map(group => (
+            {groups?.map((group) => (
               <MenuItem key={group.groupId} value={group.name}>
                 {group.name}
               </MenuItem>
@@ -211,14 +234,16 @@ function SampleDetail() {
           </Select>
         </FormControl>
       </div>
-      {errMsg ? <Alert severity="error">{errMsg}</Alert> : (
+      {errMsg ? (
+        <Alert severity="error">{errMsg}</Alert>
+      ) : (
         <TableContainer component={Paper} sx={{ mt: 3 }}>
           <Table>
             <TableBody>
               {data &&
                 displayFields
                   .sort((a, b) => a.columnOrder - b.columnOrder)
-                  .map(field => renderRow(field, (data as any)[field.columnName]))}
+                  .map((field) => renderRow(field, (data as any)[field.columnName]))}
             </TableBody>
           </Table>
         </TableContainer>

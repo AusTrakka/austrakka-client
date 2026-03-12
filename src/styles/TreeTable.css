@@ -71,7 +71,7 @@
 
 /* Decrease size of expansion toggler */
 .tree-table-custom .p-treetable-toggler {
-  width: 0.8rem;          
+  width: 0.8rem;
   height: 0.8rem;
 }
 
@@ -85,9 +85,9 @@
   --tree-table-border-color: var(--primary-grey-300);
 }
 
-.p-treetable.p-treetable-gridlines .p-treetable-thead>tr>th,
-.p-treetable.p-treetable-gridlines .p-treetable-tbody>tr>td,
-.p-treetable.p-treetable-gridlines .p-treetable-tfoot>tr>td {
+.p-treetable.p-treetable-gridlines .p-treetable-thead > tr > th,
+.p-treetable.p-treetable-gridlines .p-treetable-tbody > tr > td,
+.p-treetable.p-treetable-gridlines .p-treetable-tfoot > tr > td {
   border-color: var(--tree-table-border-color) !important;
 }
 

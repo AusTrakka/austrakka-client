@@ -1,20 +1,26 @@
-import React, { memo, useEffect, useState } from 'react';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { Paper } from '@mui/material';
-import { PlotListing, Project } from '../../types/dtos';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { getPlots } from '../../utilities/resourceUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
 import { ResponseType } from '../../constants/responseType';
+import type { PlotListing, Project } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
+import { getPlots } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { useStableNavigate } from '../../app/NavigationContext';
 
 interface PlotListProps {
-  projectDetails: Project | null
+  projectDetails: Project | null;
   setIsLoading: (isLoading: boolean) => void;
 }
 
@@ -30,20 +36,24 @@ function PlotList(props: PlotListProps) {
   const { navigate } = useStableNavigate();
   const [plotList, setPlotList] = useState<PlotListing[]>([]);
   const { token } = useApi();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
-  const columns = [{
-    field: 'name',
-    header: 'Name',
-  }, {
-    field: 'description',
-    header: 'Description',
-  }, {
-    field: 'created',
-    header: 'Created',
-    body: (rowData: any) => isoDateLocalDate(rowData.created),
-  }];
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+  const columns = [
+    {
+      field: 'name',
+      header: 'Name',
+    },
+    {
+      field: 'description',
+      header: 'Description',
+    },
+    {
+      field: 'created',
+      header: 'Created',
+      body: (rowData: any) => isoDateLocalDate(rowData.created),
+    },
+  ];
 
   useEffect(() => {
     async function getPlotList() {

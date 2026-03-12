@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
-import { Alert, Button, Card, CardContent, CardMedia, CircularProgress, Grid, Snackbar, Tooltip, Typography } from '@mui/material';
-import { Email, Error } from '@mui/icons-material';
-import { Member } from '../../types/dtos';
+import { Email, Error as ErrorIcon } from '@mui/icons-material';
+import {
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  CircularProgress,
+  Grid,
+  Snackbar,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { useState } from 'react';
+import type { Member } from '../../types/dtos';
 
 interface OrgMembersProps {
-  isMembersLoading: boolean,
-  memberList: Member[],
-  memberListError: boolean,
-  memberListErrorMessage: string,
+  isMembersLoading: boolean;
+  memberList: Member[];
+  memberListError: boolean;
+  memberListErrorMessage: string;
 }
 
 // WORK IN PROGRESS
@@ -52,9 +63,13 @@ function UserCard({ user }: { user: Member }) {
 
         {/* User Information */}
         <CardContent>
-          <Typography variant="h5" paddingLeft={11}>{user.displayName}</Typography>
+          <Typography variant="h5" paddingLeft={11}>
+            {user.displayName}
+          </Typography>
           {/* Would need to grab more information somehow */}
-          <Typography variant="caption" paddingLeft={10}>{user.organization.abbreviation}</Typography>
+          <Typography variant="caption" paddingLeft={10}>
+            {user.organization.abbreviation}
+          </Typography>
         </CardContent>
       </div>
 
@@ -81,25 +96,20 @@ function UserCard({ user }: { user: Member }) {
         autoHideDuration={2000}
         onClose={handleCloseSnackbar}
       >
-        <Alert severity="success">
-          Copied to clipboard
-        </Alert>
+        <Alert severity="success">Copied to clipboard</Alert>
       </Snackbar>
     </Card>
   );
 }
 
 function OrgMembers(props: OrgMembersProps) {
-  const { memberList,
-    memberListError,
-    memberListErrorMessage,
-    isMembersLoading } = props;
+  const { memberList, memberListError, memberListErrorMessage, isMembersLoading } = props;
   return (
     <>
       {isMembersLoading ? <CircularProgress /> : null}
       {memberListError ? (
         <Tooltip title={memberListErrorMessage}>
-          <Error color="error" />
+          <ErrorIcon color="error" />
         </Tooltip>
       ) : (
         <Grid container spacing={2}>

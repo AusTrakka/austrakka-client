@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
-import { Alert, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Tooltip, Typography } from '@mui/material';
-import { Error } from '@mui/icons-material';
+import { Error as ErrorIcon } from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  FormControl,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { useState } from 'react';
 import LoadingState from '../../constants/loadingState';
-import { Group } from '../../types/dtos';
+import type { Group } from '../../types/dtos';
 import OrgSamplesTable from './OrgSamplesTable';
 
 interface OrganisationSampleProps {
@@ -26,13 +36,11 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
   const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
   return (
     <>
-      {groupStatus === LoadingState.ERROR
-        ? (
-          <Tooltip title={groupStatusMessage}>
-            <Error color="error" />
-          </Tooltip>
-        )
-        : null }
+      {groupStatus === LoadingState.ERROR ? (
+        <Tooltip title={groupStatusMessage}>
+          <ErrorIcon color="error" />
+        </Tooltip>
+      ) : null}
       <FormControl
         variant="standard"
         sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
@@ -45,8 +53,7 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
           value={selectedGroup.groupId} // Use a unique identifier as the value
           onChange={(e) => {
             const selectedGroupId = e.target.value;
-            const selectedGroupObject = groups
-              .find(group => group.groupId === selectedGroupId);
+            const selectedGroupObject = groups.find((group) => group.groupId === selectedGroupId);
 
             if (selectedGroupObject) {
               setSelectedGroup(selectedGroupObject);
@@ -62,18 +69,10 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
             >
               {rg.name}
             </MenuItem>
-          )) }
-          { groups.length === 0 ? (
-            <MenuItem disabled>No owner groups available</MenuItem>
-          ) : null}
+          ))}
+          {groups.length === 0 ? <MenuItem disabled>No owner groups available</MenuItem> : null}
         </Select>
-        {groupStatus === LoadingState.LOADING
-          ? (
-            <LinearProgress
-              color="secondary"
-            />
-          )
-          : null }
+        {groupStatus === LoadingState.LOADING ? <LinearProgress color="secondary" /> : null}
       </FormControl>
     </>
   );
@@ -84,26 +83,18 @@ function OrganisationSamples(props: OrganisationSampleProps) {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
   if (groupStatus === LoadingState.ERROR) {
-    return (
-      <Alert severity="error">
-        {groupStatusMessage}
-      </Alert>
-    );
+    return <Alert severity="error">{groupStatusMessage}</Alert>;
   }
 
   // Now, you can safely access selectedGroup and its properties
   return (
     <Box>
       <Typography sx={{ paddingBottom: 2 }} align="left" variant="subtitle2" color="primary">
-        View samples owned by your organisation.
-        Please note you will only be able to view
+        View samples owned by your organisation. Please note you will only be able to view
         <em> all </em>
-        data for the organisation you are in,
-        if you are a
-        <b> viewer </b>
+        data for the organisation you are in, if you are a<b> viewer </b>
         in your organisation&lsquo;s
-        <b> Owner group</b>
-        .
+        <b> Owner group</b>.
       </Typography>
       <OrgGroupSelector
         groups={groups}

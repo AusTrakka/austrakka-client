@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
-import CopyChip from '../Common/CopyChip';
+import { useState } from 'react';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
+import CopyChip from '../Common/CopyChip';
 import CustomDrawer from '../Common/CustomDrawer';
 
 interface AllowedValuesProps {
-  field: string,
-  allowedValues: string[],
+  field: string;
+  allowedValues: string[];
 }
 
 export default function AllowedValues(props: AllowedValuesProps) {
@@ -19,13 +19,10 @@ export default function AllowedValues(props: AllowedValuesProps) {
   const handleMoreClick = () => {
     setDrawerOpen(true);
   };
-    
+
   return (
     <>
-      <CustomDrawer
-        drawerOpen={drawerOpen}
-        setDrawerOpen={setDrawerOpen}
-      >
+      <CustomDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
         <Typography variant="subtitle2" color="textDisabled" gutterBottom>
           Field
         </Typography>
@@ -35,19 +32,19 @@ export default function AllowedValues(props: AllowedValuesProps) {
         <Typography variant="subtitle2" paddingTop={2} color="textDisabled" gutterBottom>
           Allowed values
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%' }} className={columnStyleRules[field]}>
+        <Box
+          sx={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}
+          className={columnStyleRules[field]}
+        >
           {allowedValues.map((value) => (
-            <CopyChip
-              key={value}
-              value={value}
-            />
+            <CopyChip key={value} value={value} />
           ))}
         </Box>
       </CustomDrawer>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', overflow: 'hidden', width: '100%' }}>
         {visibleValues.map((value) => (
-          <Box className={columnStyleRules[field]}>
-            <CopyChip key={value} value={value} />
+          <Box key={value} className={columnStyleRules[field]}>
+            <CopyChip value={value} />
           </Box>
         ))}
         {remainingCount > 0 && (

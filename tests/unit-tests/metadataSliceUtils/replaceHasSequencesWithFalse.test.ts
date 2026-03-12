@@ -33,11 +33,7 @@ describe('replaceHasSequencesNullsWithFalse', () => {
 
   describe('when objects do not have Has_sequences property', () => {
     test('handles objects without the Has_sequences property', () => {
-      const data = [
-        { otherProperty: 'value' },
-        { Has_sequences: null },
-        { Has_sequences: '' },
-      ];
+      const data = [{ otherProperty: 'value' }, { Has_sequences: null }, { Has_sequences: '' }];
       const expectedOutput = [
         { otherProperty: 'value' },
         { Has_sequences: false },

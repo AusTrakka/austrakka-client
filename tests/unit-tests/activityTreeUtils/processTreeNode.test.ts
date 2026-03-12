@@ -1,4 +1,4 @@
-import { TreeNode } from 'primereact/treenode';
+import type { TreeNode } from 'primereact/treenode';
 import { processTreeNodes } from '../../../src/utilities/activityTreeUtils';
 
 describe('processTreeNodes', () => {
@@ -8,9 +8,7 @@ describe('processTreeNodes', () => {
         key: 'parent',
         label: 'Parent',
         data: {},
-        children: [
-          { key: 'child', label: 'Child', data: {}, leaf: true },
-        ],
+        children: [{ key: 'child', label: 'Child', data: {}, leaf: true }],
       },
     ];
     const processed = processTreeNodes(nodes);
@@ -26,8 +24,18 @@ describe('processTreeNodes', () => {
         label: 'Parent',
         data: { eventType: 'CREATE' },
         children: [
-          { key: 'c1', label: 'C1', data: { resourceType: 'A', resourceUniqueString: 'R1' }, leaf: true },
-          { key: 'c2', label: 'C2', data: { resourceType: 'B', resourceUniqueString: 'R2' }, leaf: true },
+          {
+            key: 'c1',
+            label: 'C1',
+            data: { resourceType: 'A', resourceUniqueString: 'R1' },
+            leaf: true,
+          },
+          {
+            key: 'c2',
+            label: 'C2',
+            data: { resourceType: 'B', resourceUniqueString: 'R2' },
+            leaf: true,
+          },
         ],
       },
     ];
@@ -40,9 +48,7 @@ describe('processTreeNodes', () => {
   });
 
   it('should mark nodes with no children as leaf', () => {
-    const nodes: TreeNode[] = [
-      { key: 'parent', label: 'Parent', data: {}, children: [] },
-    ];
+    const nodes: TreeNode[] = [{ key: 'parent', label: 'Parent', data: {}, children: [] }];
     const processed = processTreeNodes(nodes);
     expect(processed[0].leaf).toBe(true);
     expect(processed[0].children).toBeUndefined();

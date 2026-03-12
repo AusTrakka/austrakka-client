@@ -16,7 +16,10 @@ describe('calculateSupportedMaps', () => {
   test('detects regions and top-level countries correctly', () => {
     const values = { country: ['AU-NSW', 'NZ'] };
     const result = calculateSupportedMaps(values, ['country']);
-    expect(result).toEqual([['AUS_NZ', true], ['WORLD', false]]);
+    expect(result).toEqual([
+      ['AUS_NZ', true],
+      ['WORLD', false],
+    ]);
   });
 
   test('does not add WORLD if no top-level country', () => {
@@ -32,7 +35,10 @@ describe('calculateSupportedMaps', () => {
       city: ['SYD'],
     };
     const result = calculateSupportedMaps(values, ['country', 'region']);
-    expect(result).toEqual([['AUS_NZ', true], ['WORLD', false]]);
+    expect(result).toEqual([
+      ['AUS_NZ', true],
+      ['WORLD', false],
+    ]);
   });
 
   test('returns WORLD if no supported maps intersect', () => {
@@ -44,6 +50,12 @@ describe('calculateSupportedMaps', () => {
   test('works with multiple map entries intersecting', () => {
     const values = { country: ['AU', 'MY'] };
     const result = calculateSupportedMaps(values, ['country']);
-    expect(result).toEqual(expect.arrayContaining([['AUS_NZ', false], ['MALAYSIA', false], ['WORLD', false]]));
+    expect(result).toEqual(
+      expect.arrayContaining([
+        ['AUS_NZ', false],
+        ['MALAYSIA', false],
+        ['WORLD', false],
+      ]),
+    );
   });
 });

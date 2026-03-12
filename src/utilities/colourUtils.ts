@@ -1,7 +1,12 @@
 import * as d3 from 'd3';
-import { allColorSchemes, discreteColorSchemes, rangeColorSchemes, valueMappedColorSchemes } from '../constants/schemes';
-import { Legend } from '../types/phylocanvas.interface';
 import { Theme } from '../assets/themes/theme';
+import {
+  allColorSchemes,
+  discreteColorSchemes,
+  rangeColorSchemes,
+  valueMappedColorSchemes,
+} from '../constants/schemes';
+import type { Legend } from '../types/phylocanvas.interface';
 
 export const NULL_COLOUR = Theme.PrimaryGrey500;
 
@@ -44,12 +49,12 @@ export function createColourMapping(uniqueValues: string[], colorScheme: string)
   }
 
   // filter out empty strings
-  const values = uniqueValues.filter(val => val !== '') ?? [];
+  const values = uniqueValues.filter((val) => val !== '') ?? [];
 
   // create a palette of depending on the type of color scheme
-  const mapping = rangeColorSchemes[colorScheme] ?
-    getPaletteForRangeColorScheme(colorScheme, values) :
-    getPaletteForDiscreteColorScheme(colorScheme, values);
+  const mapping = rangeColorSchemes[colorScheme]
+    ? getPaletteForRangeColorScheme(colorScheme, values)
+    : getPaletteForDiscreteColorScheme(colorScheme, values);
   // We did not include null in the mapping
 
   if (uniqueValues.includes('')) {
