@@ -9,6 +9,7 @@ import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlerts
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
 import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
+import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'public-health-default': PublicHealthDefaultDashboard,
@@ -20,5 +21,6 @@ const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>
   apg: ApgDashboard,
   withqc: WithQC,
   'se-demo': SEDemoDashboard,
+  ofn: OFNDashboard
 };
 export default DashboardTemplates;
