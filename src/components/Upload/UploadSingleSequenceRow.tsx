@@ -3,35 +3,30 @@ import {
   CircularProgress,
   FormControl,
   TableCell,
-  TextField,
-  Typography,
+  TextField, Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import { ResponseType } from '../../constants/responseType';
+import React, { useEffect, useState } from 'react';
 import {
-  seqStateStyles,
-  tableCellStyle,
-  tableFormControlStyle,
-} from '../../styles/uploadPageStyles';
-import type { ResponseMessage } from '../../types/apiResponse.interface';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import {
-  type SeqSingleUploadRow,
+  SeqSingleUploadRow,
   SeqUploadRowState,
-  type SkipForce,
+  SkipForce,
 } from '../../types/sequploadtypes';
-import { generateHash } from '../../utilities/file';
-import { createSample, shareSamples, uploadFastqSequence } from '../../utilities/resourceUtils';
+import LoadingState from '../../constants/loadingState';
+import { ResponseMessage } from '../../types/apiResponse.interface';
+import { useApi } from '../../app/ApiContext';
+import { createSample, shareSamples, uploadSequence } from '../../utilities/resourceUtils';
+import { ResponseType } from '../../constants/responseType';
 import { ValidationPopupButton } from '../Validation/Validation';
+import { generateHash } from '../../utilities/file';
+import { tableCellStyle, tableFormControlStyle, seqStateStyles } from '../../styles/uploadPageStyles';
+import { ResponseObject } from '../../types/responseObject.interface';
 
 interface UploadSequenceRowProps {
-  seqUploadRow: SeqSingleUploadRow;
-  updateRow: (newSur: SeqSingleUploadRow) => void;
-  modeOption: SkipForce;
-  owner: string | null;
-  sharedProjects: string[];
+  seqUploadRow: SeqSingleUploadRow,
+  updateRow: (newSur: SeqSingleUploadRow) => void,
+  modeOption: SkipForce,
+  owner: string | null,
+  sharedProjects: string[],
 }
 
 export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
@@ -92,7 +87,7 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     );
     if (sampleResp.httpStatusCode === 409) {
       // If it's a conflict, display this as a warning.
-      const [message] = sampleResp.messages;
+      const message = sampleResp.messages[0];
       message.ResponseType = ResponseType.Warning;
       messages.push(message);
     } else {
@@ -100,13 +95,10 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     }
     const sampleSharePromises = [] as Promise<ResponseObject<any>>[];
 
-    sharedProjects.forEach((r) => {
-      sampleSharePromises.push(
-        shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId),
-      );
-    });
+    sharedProjects.forEach(r =>
+      sampleSharePromises.push(shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId)));
 
-    for (const resp of await Promise.all(sampleSharePromises)) {
+    for (const resp of (await Promise.all(sampleSharePromises))) {
       messages.push(...resp.messages);
     }
     setSeqSubmission({
@@ -126,22 +118,22 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     formData.append('file', seqUploadRow.file.file);
 
     const headers = {
-      mode: modeOption,
+      'mode': modeOption,
       'seq-type': seqUploadRow.seqType,
       'seq-id': seqUploadRow.seqId,
-      filename: seqUploadRow.file.file.name,
+      'filename': seqUploadRow.file.file.name,
       'filename-hash': seqUploadRow.file.hash,
       'X-Client-Session-ID': seqUploadRow.clientSessionId,
     };
 
-    const sequenceResponse = await uploadFastqSequence(formData, optionString, token, headers);
+    const sequenceResponse = await uploadSequence(formData, optionString, token, headers);
     if (sequenceResponse.status === ResponseType.Success) {
       setSeqSubmission({
         ...seqSubmission,
         status: LoadingState.SUCCESS,
         messages: [...seqSubmission.messages, ...sequenceResponse.messages],
       });
-      if (seqSubmission.messages.some((m) => m.ResponseType === ResponseType.Error)) {
+      if (seqSubmission.messages.some(m => m.ResponseType === ResponseType.Error)) {
         // If any other api requests returned errors, users need to know
         updateState(SeqUploadRowState.Incomplete);
       } else {
@@ -158,24 +150,22 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
   };
 
   const disableResponse = (): boolean =>
-    seqUploadRow.state !== SeqUploadRowState.Complete &&
-    seqUploadRow.state !== SeqUploadRowState.Errored &&
-    seqUploadRow.state !== SeqUploadRowState.Incomplete;
+    seqUploadRow.state !== SeqUploadRowState.Complete
+    && seqUploadRow.state !== SeqUploadRowState.Errored
+    && seqUploadRow.state !== SeqUploadRowState.Incomplete;
 
   const requestCompleted = (): boolean | undefined =>
     seqUploadRow.state === SeqUploadRowState.Complete;
 
   const requestWaiting = (): boolean => seqUploadRow.state === SeqUploadRowState.Waiting;
 
-  const rowInProgress = (): boolean =>
-    ![
-      SeqUploadRowState.Waiting,
-      SeqUploadRowState.Complete,
-      SeqUploadRowState.Errored,
-      SeqUploadRowState.Incomplete,
-    ].includes(seqUploadRow.state);
+  const rowInProgress = (): boolean => ![
+    SeqUploadRowState.Waiting,
+    SeqUploadRowState.Complete,
+    SeqUploadRowState.Errored,
+    SeqUploadRowState.Incomplete,
+  ].includes(seqUploadRow.state);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.state === SeqUploadRowState.CreateSample) {
       handleSampleCreate();
@@ -186,32 +176,39 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
       handleSubmit();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.state]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.file.hash !== undefined) {
       updateState(SeqUploadRowState.CalculatedHash);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seqUploadRow.file.hash]);
 
   return (
     <>
       <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
+        <FormControl
+          size="small"
+          sx={tableFormControlStyle}
+          variant="standard"
+        >
           <TextField
             id={`seqid-select-${seqUploadRow.id}`}
             name="seqid"
             variant="standard"
             slotProps={{ input: { disableUnderline: requestCompleted() } }}
             value={seqUploadRow?.seqId ?? ''}
-            onChange={(e) => handleSeqId(e.target.value)}
+            onChange={e => handleSeqId(e.target.value)}
             disabled={requestCompleted()}
           />
         </FormControl>
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <Typography>{seqUploadRow?.file?.file.name ?? ''}</Typography>
+        <Typography>
+          {seqUploadRow?.file?.file.name ?? ''}
+        </Typography>
       </TableCell>
       <TableCell sx={tableCellStyle}>
         {/* Would JoyUI LinearProgress be an option here? */}
@@ -231,9 +228,9 @@ export default function UploadSingleSequenceRow(props: UploadSequenceRowProps) {
                 messages={seqSubmission.messages ?? []}
                 title="Response Messages"
                 disabled={disableResponse()}
+
               />
-            )
-          )}
+            ))}
         </>
       </TableCell>
     </>

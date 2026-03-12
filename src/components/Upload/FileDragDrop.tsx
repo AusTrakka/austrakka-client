@@ -1,48 +1,37 @@
-import { AttachFile, UploadFile } from '@mui/icons-material';
+import React, { DragEvent, useState, useEffect, useRef, ChangeEvent, SetStateAction, Dispatch, useCallback } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
+import { AttachFile, UploadFile } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import type React from 'react';
-import {
-  type ChangeEvent,
-  type Dispatch,
-  type DragEvent,
-  type SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
 import muiTheme, { Theme } from '../../assets/themes/theme';
-import type { DropFileUpload } from '../../types/DropFileUpload';
-import { generateHash } from '../../utilities/file';
-import type {
-  CustomUploadValidator,
-  CustomUploadValidatorReturn,
-} from '../../utilities/uploadUtils';
+import { DropFileUpload } from '../../types/DropFileUpload';
+import { CustomUploadValidator, CustomUploadValidatorReturn } from '../../utilities/uploadUtils';
 
 interface FileDragDropProps {
-  files: DropFileUpload[];
-  setFiles: Dispatch<SetStateAction<DropFileUpload[]>>;
-  validFormats: Record<string, string>; // TODO when FASTA, must revalidate when this changes
-  multiple?: boolean | undefined;
-  calculateHash?: boolean | undefined;
-  customValidators?: CustomUploadValidator[] | undefined;
-  validated: boolean;
-  setValidated: Dispatch<SetStateAction<boolean>>;
-  disabled?: boolean;
+  files: DropFileUpload[],
+  setFiles: Dispatch<SetStateAction<DropFileUpload[]>>,
+  validFormats: Record<string, string>,
+  multiple?: boolean | undefined, // eslint-disable-line react/require-default-props
+  customValidators?: CustomUploadValidator[] | undefined, // eslint-disable-line react/require-default-props, max-len
+  fileTransform?: (f: File[]) => Promise<File[]>, // eslint-disable-line react/require-default-props
+  validated: boolean,
+  setValidated: Dispatch<SetStateAction<boolean>>,
+  disabled?: boolean,
 }
 
-const FileDragDrop: React.FC<FileDragDropProps> = ({
-  files,
-  setFiles,
-  validFormats,
-  multiple = false,
-  calculateHash = false,
-  customValidators = [],
-  validated,
-  setValidated,
-  disabled,
-}) => {
+// eslint-disable-next-line react/function-component-definition
+const FileDragDrop: React.FC<FileDragDropProps> = (
+  {
+    files,
+    setFiles,
+    validFormats,
+    multiple = false,
+    customValidators = [],
+    fileTransform = (f: File[]) => Promise.resolve(f),
+    validated,
+    setValidated,
+    disabled,
+  },
+) => {
   const { enqueueSnackbar } = useSnackbar();
   const fileInputRef = useRef<null | HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState<boolean>(false);
@@ -50,62 +39,63 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
   const textColour = disabled ? 'text.disabled' : 'primary';
   const iconColour = disabled ? 'disabled' : 'primary';
 
-  const validateUpload = useCallback(
-    (uploadedFiles: File[]): boolean => {
-      const validateFilesAreOfType = {
-        func: (_files: File[]) =>
-          ({
-            success:
-              Object.entries(validFormats).length === 0 ||
-              _files.every((f) => Object.keys(validFormats).some((ex) => f.name.endsWith(ex))),
-            message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
-          }) as CustomUploadValidatorReturn,
-      } as CustomUploadValidator;
+  const validateAndTransformUpload = useCallback((uploadedFiles: File[]): boolean => {
+    const validateFilesAreOfType = {
+      func: (_files: File[]) => ({
+        success: Object.entries(validFormats).length === 0 ||
+          _files.every(f => Object.keys(validFormats).some(ex => f.name.endsWith(ex))),
+        message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
+      } as CustomUploadValidatorReturn),
+    } as CustomUploadValidator;
 
-      const validateSingleFile = {
-        func: (_files: File[]) =>
-          ({
-            success: _files.length === 1,
-            message: 'Only one file can be selected',
-          }) as CustomUploadValidatorReturn,
-      } as CustomUploadValidator;
+    const validateSingleFile = {
+      func: (_files: File[]) => ({
+        success: _files.length === 1,
+        message: 'Only one file can be selected',
+      } as CustomUploadValidatorReturn),
+    } as CustomUploadValidator;
 
-      const getBuiltInValidators = (): CustomUploadValidator[] => {
-        const validators: CustomUploadValidator[] = [];
-        if (!multiple) {
-          validators.push(validateSingleFile);
-        }
-        if (Object.entries(validFormats).length > 0) {
-          validators.push(validateFilesAreOfType);
-        }
-        return validators;
-      };
-
-      for (const validator of [...getBuiltInValidators(), ...customValidators]) {
-        const validatorReturn = validator.func(uploadedFiles);
-        if (!validatorReturn.success) {
-          enqueueSnackbar(validatorReturn.message, { variant: 'error', autoHideDuration: 8000 });
-          setValidated(false);
-          setFiles([]);
-          return false;
-        }
+    const getBuiltInValidators = (): CustomUploadValidator[] => {
+      const validators: CustomUploadValidator[] = [];
+      if (!multiple) {
+        validators.push(validateSingleFile);
       }
-      setValidated(true);
-      return true;
-    },
-    [customValidators, enqueueSnackbar, multiple, setFiles, setValidated, validFormats],
-  );
+      if (Object.entries(validFormats).length > 0) {
+        validators.push(validateFilesAreOfType);
+      }
+      return validators;
+    };
+
+    for (const validator of [...getBuiltInValidators(), ...customValidators]) {
+      const validatorReturn = validator.func(uploadedFiles);
+      if (!validatorReturn.success) {
+        enqueueSnackbar(validatorReturn.message, { variant: 'error', autoHideDuration: 8000 });
+        setValidated(false);
+        setFiles([]);
+        return false;
+      }
+    }
+    
+    // Apply transform to file list and fail validation if it fails
+    // By default this is the trivial transform, no change to the file list
+    fileTransform(uploadedFiles)
+      .then(transformedFiles => {
+        setFiles(transformedFiles.map(file => ({ file } as DropFileUpload)));
+      })
+      .catch((e) => {
+        enqueueSnackbar(`File processing failed: ${e.message}`, { variant: 'error', autoHideDuration: 8000 });
+        setValidated(false);
+        setFiles([]);
+        return false;
+      });
+    
+    setValidated(true);
+    return true;
+  }, [customValidators, enqueueSnackbar, multiple, fileTransform, setFiles,
+    setValidated, validFormats]);
 
   const handleFiles = async (uploadedFiles: File[]) => {
-    const fileUploads = await Promise.all(
-      uploadedFiles.map(
-        async (file) =>
-          ({
-            file,
-            hash: calculateHash ? await generateHash(await file.arrayBuffer()) : undefined,
-          }) as DropFileUpload,
-      ),
-    );
+    const fileUploads = uploadedFiles.map(file => ({ file } as DropFileUpload));
     setFiles([...files, ...fileUploads]);
   };
 
@@ -113,9 +103,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (disabled) {
-      return;
-    }
+    if (disabled) { return; }
 
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
@@ -128,12 +116,10 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
     e.stopPropagation();
     setDragActive(false);
 
-    if (disabled) {
-      return;
-    }
+    if (disabled) { return; }
 
     const uploadedFiles = Array.from(e.dataTransfer?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -145,7 +131,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
   const handleBrowseChange = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const uploadedFiles = Array.from(e.target?.files ?? []);
-    if (!validateUpload(uploadedFiles)) {
+    if (!validateAndTransformUpload(uploadedFiles)) {
       return;
     }
     await handleFiles(uploadedFiles);
@@ -157,11 +143,12 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
 
   useEffect(() => {
     if (files.length > 0 && !validated) {
-      validateUpload(files.map((f) => f.file));
+      validateAndTransformUpload(files.map(f => f.file));
     }
-  }, [validated, validateUpload, files]);
+  }, [validated, validateAndTransformUpload, setFiles, files]);
 
   return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
       <Box
         onDragEnter={handleDrag}
@@ -178,9 +165,10 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
           border: dragActive ? 4 : 0,
           borderColor: Theme.PrimaryMainBackground,
           borderStyle: dragActive ? 'dashed' : 'solid',
-          transition: muiTheme.transitions?.create?.(['background-color', 'border'], {
-            duration: muiTheme.transitions?.duration?.standard,
-          }),
+          transition: muiTheme.transitions?.create!(
+            ['background-color', 'border'],
+            { duration: muiTheme.transitions.duration?.standard },
+          ),
         }}
       >
         <Stack spacing={1} justifyContent="center" alignItems="center">
@@ -190,9 +178,7 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
               <Typography variant="h5" color={textColour}>
                 {multiple ? 'Drag and drop files here' : 'Drag and drop file here'}
               </Typography>
-              <Typography variant="subtitle1" color={textColour}>
-                or
-              </Typography>
+              <Typography variant="subtitle1" color={textColour}>or</Typography>
               <Button variant="outlined" component="label" disabled={disabled}>
                 Browse
                 <input
@@ -202,36 +188,44 @@ const FileDragDrop: React.FC<FileDragDropProps> = ({
                   onClick={onBrowseClick}
                   multiple={multiple}
                   onChange={handleBrowseChange}
-                  accept={[
-                    ...new Set(
-                      Object.entries(validFormats)
-                        .flat()
-                        .filter((x) => x !== ''),
-                    ),
-                  ].join(',')}
+                  accept={[...new Set(Object.entries(validFormats).flat().filter(x => x !== ''))].join(',')}
                   hidden
                 />
               </Button>
-              {Object.entries(validFormats).length > 0 && (
-                <Typography variant="subtitle2" color={textColour}>
-                  Valid file types are: {Object.keys(validFormats).join(', ')}
-                </Typography>
-              )}
+              {
+                Object.entries(validFormats).length > 0 &&
+                (
+                  <Typography variant="subtitle2" color={textColour}>
+                    Valid file types are:
+                    {' '}
+                    {Object.keys(validFormats).join(', ')}
+                  </Typography>
+                )
+              }
             </>
           ) : (
             <>
               <AttachFile fontSize="large" color="primary" />
-              <Typography variant="h5" color="primary">
+              <Typography
+                variant="h5"
+                color="primary"
+              >
                 {multiple ? 'Selected files:' : 'Selected file:'}
               </Typography>
               <>
                 {files.map((file) => (
                   <div key={file.file.name}>
-                    <Typography variant="subtitle1">{file.file.name}</Typography>
+                    <Typography variant="subtitle1">
+                      {file.file.name}
+                    </Typography>
                   </div>
                 ))}
               </>
-              <Button variant="outlined" color="error" onClick={handleClearFiles}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleClearFiles}
+              >
                 Clear
               </Button>
             </>
