@@ -16,7 +16,7 @@ import { supportedColumns, EVENT_NAME_COLUMN } from './ActivityTableFields';
 import ActivityFilters, { Filters } from './ActivityFilters';
 import CollapseTreeNodes from '../../TableComponents/CollapseTreeNodes';
 import '../../../styles/TreeTable.css';
-import { aggregateLogsToTree, processTreeNodes, splitLargeChildrenGroups } from '../../../utilities/activityTreeUtils';
+import { aggregateLogsToTree, defaultNodeSort, processTreeNodes, splitLargeChildrenGroups } from '../../../utilities/activityTreeUtils';
 
 interface ActivityProps {
   recordType: string,
@@ -245,7 +245,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     if (!dataLoading) {
       const aggregatedNodes = aggregateLogsToTree(refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
-      const splitNodes = processedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
+      const defaultSortedNodes = defaultNodeSort(processedNodes);
+      const splitNodes = defaultSortedNodes.flatMap(node => splitLargeChildrenGroups(node, 500));
       setNodes(splitNodes);
       setProcessingData(false);
     }
