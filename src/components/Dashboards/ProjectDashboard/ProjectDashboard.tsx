@@ -1,9 +1,12 @@
+import FilterListIcon from '@mui/icons-material/FilterList';
 import {
   Alert,
   AlertTitle,
   Box,
+  Button,
   FormControl,
   InputLabel,
+  Menu,
   MenuItem,
   Select,
   type SelectChangeEvent,
@@ -50,8 +53,13 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
+  const openFilter = Boolean(filterAnchorEl);
   const [dateField, setDateField] = useState<string>(DefaultDashboardTimeFilterField);
-  // const [projectDateFields, setProjectDateFields] = useState<string[]>([]);
+  const [customDateRange, setCustomDateRange] = useState({
+    start: null,
+    end: null,
+  });
   const [timeFilter, setTimeFilter] = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
   const [timeFilterThreshold, setTimeFilterThreshold] = useState<Date | null>(null);
   // this state variable will be passed as prop for line-list filters
@@ -69,6 +77,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       },
     };
   }, [timeFilterThreshold, dateField]);
+
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setFilterAnchorEl(null);
+  };
 
   const projectDateFields = React.useMemo(() => {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data.fields) return [];
@@ -170,7 +186,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     return (
       <Tooltip title={enabled ? '' : `${dateField} field not found`}>
         <FormControl variant="standard" disabled={!enabled}>
-          <InputLabel>{dateField} filter</InputLabel>
+          <InputLabel>Range</InputLabel>
           <Select autoWidth sx={{ minWidth: 120 }} value={timeFilter} onChange={onTimeFilterChange}>
             <MenuItem value={DashboardTimeFilter.ALL}>All time</MenuItem>
             <MenuItem value={DashboardTimeFilter.LAST_WEEK}>Last week</MenuItem>
@@ -180,6 +196,58 @@ function ProjectDashboard(props: ProjectDashboardProps) {
           </Select>
         </FormControl>
       </Tooltip>
+    );
+  };
+
+  const renderDashboardFilter = () => {
+    return (
+      <>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<FilterListIcon />}
+          onClick={handleFilterClick}
+          sx={{ textTransform: 'none' }}
+        >
+          Date filter
+        </Button>
+
+        <Menu
+          anchorEl={filterAnchorEl}
+          open={openFilter}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          slotProps={{
+            paper: {
+              sx: { mt: 1 },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 2,
+              paddingTop: 1,
+              gap: 2,
+              minWidth: 200,
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }} color="primary">
+              Date filter
+            </Typography>
+            {renderDateFieldSelector()}
+            {renderDateSelector()}
+          </Box>
+        </Menu>
+      </>
     );
   };
 
@@ -197,8 +265,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               >
                 <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  {renderDateFieldSelector()}
-                  {renderDateSelector()}
+                  {renderDashboardFilter()}
                 </Stack>
               </Stack>
             </Grid>
