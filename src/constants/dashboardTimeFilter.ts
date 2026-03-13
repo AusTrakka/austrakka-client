@@ -6,4 +6,4 @@ export enum DashboardTimeFilter {
   CURRENT_YEAR = 'current_year',
 }
 
-export const DashboardTimeFilterField = 'Date_created';
+export const DefaultDashboardTimeFilterField = 'Date_created';

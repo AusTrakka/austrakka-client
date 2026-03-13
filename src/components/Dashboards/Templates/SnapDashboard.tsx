@@ -9,7 +9,7 @@ import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePie
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function SnapDashboard(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -40,6 +40,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  dateFilterField={dateFilterField}
                   preferredColourField="Country"
                 />
               </CardContent>

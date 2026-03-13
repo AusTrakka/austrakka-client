@@ -26,7 +26,7 @@ import { Theme } from '../../../assets/themes/theme';
 import DashboardTemplates from '../../../config/dashboardTemplates';
 import {
   DashboardTimeFilter,
-  DashboardTimeFilterField,
+  DefaultDashboardTimeFilterField,
 } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
@@ -50,13 +50,15 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+  const [dateField, setDateField] = useState<string>(DefaultDashboardTimeFilterField);
+  // const [projectDateFields, setProjectDateFields] = useState<string[]>([]);
   const [timeFilter, setTimeFilter] = useState<DashboardTimeFilter>(DashboardTimeFilter.ALL);
   const [timeFilterThreshold, setTimeFilterThreshold] = useState<Date | null>(null);
   // this state variable will be passed as prop for line-list filters
   const timeFilterObject: DataTableFilterMeta = React.useMemo(() => {
     if (!timeFilterThreshold) return {} as DataTableFilterMeta;
     return {
-      [DashboardTimeFilterField]: {
+      [dateField]: {
         operator: FilterOperator.AND,
         constraints: [
           {
@@ -66,16 +68,23 @@ function ProjectDashboard(props: ProjectDashboardProps) {
         ],
       },
     };
-  }, [timeFilterThreshold]);
+  }, [timeFilterThreshold, dateField]);
+
+  const projectDateFields = React.useMemo(() => {
+    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data.fields) return [];
+    return data.fields
+      .filter((field) => field.primitiveType === 'date')
+      .map((field) => field.projectFieldName);
+  }, [data]);
 
   const filteredDataMemo = React.useMemo(() => {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
     if (!timeFilterThreshold) return data.metadata!;
     // Re-use your filtering function here or inline logic
     return data.metadata!.filter((sample) =>
-      dayjs(sample[DashboardTimeFilterField]!).isAfter(dayjs(timeFilterThreshold)),
+      dayjs(sample[dateField]!).isAfter(dayjs(timeFilterThreshold)),
     );
-  }, [data, timeFilterThreshold]);
+  }, [data, timeFilterThreshold, dateField]);
 
   const dashBoardElements = React.useMemo(() => {
     if (!dashboardName || !projectAbbrev) {
@@ -90,10 +99,11 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       projectAbbrev,
       filteredData: filteredDataMemo,
       timeFilterObject,
+      dateFilterField: dateField,
     };
 
     return createElement(DashboardTemplates[dashboardName], dashboardProps);
-  }, [dashboardName, projectAbbrev, filteredDataMemo, timeFilterObject]);
+  }, [dashboardName, projectAbbrev, filteredDataMemo, timeFilterObject, dateField]);
 
   useEffect(() => {
     async function getDashboardName() {
@@ -134,16 +144,34 @@ function ProjectDashboard(props: ProjectDashboardProps) {
     setTimeFilter(event.target.value as DashboardTimeFilter);
   };
 
-  const renderDateSelector = () => {
-    const enabled = data?.projectFields?.some(
-      (field) => field.fieldName === DashboardTimeFilterField,
+  const renderDateFieldSelector = () => {
+    return (
+      <FormControl variant="standard">
+        <InputLabel>Date field</InputLabel>
+        <Select
+          autoWidth
+          sx={{ minWidth: 100 }}
+          value={dateField}
+          onChange={(e) => setDateField(e.target.value)}
+        >
+          {projectDateFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     );
+  };
+
+  const renderDateSelector = () => {
+    const enabled = data?.projectFields?.some((field) => field.fieldName === dateField);
 
     return (
-      <Tooltip title={enabled ? '' : `${DashboardTimeFilterField} field not found`}>
+      <Tooltip title={enabled ? '' : `${dateField} field not found`}>
         <FormControl variant="standard" disabled={!enabled}>
-          <InputLabel>Upload date filter</InputLabel>
-          <Select autoWidth value={timeFilter} onChange={onTimeFilterChange}>
+          <InputLabel>{dateField} filter</InputLabel>
+          <Select autoWidth sx={{ minWidth: 120 }} value={timeFilter} onChange={onTimeFilterChange}>
             <MenuItem value={DashboardTimeFilter.ALL}>All time</MenuItem>
             <MenuItem value={DashboardTimeFilter.LAST_WEEK}>Last week</MenuItem>
             <MenuItem value={DashboardTimeFilter.LAST_MONTH}>Last month</MenuItem>
@@ -168,7 +196,10 @@ function ProjectDashboard(props: ProjectDashboardProps) {
                 alignItems="center"
               >
                 <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
-                {renderDateSelector()}
+                <Stack direction="row" spacing={2} alignItems="center">
+                  {renderDateFieldSelector()}
+                  {renderDateSelector()}
+                </Stack>
               </Stack>
             </Grid>
             <Grid

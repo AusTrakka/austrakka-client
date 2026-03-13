@@ -10,7 +10,6 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
-import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
@@ -34,6 +33,7 @@ const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 
 interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
+  dateFilterField: string;
 }
 
 /** Widget displaying a basic Epi Curve
@@ -41,7 +41,13 @@ interface EpiCurveChartProps extends ProjectWidgetProps {
  * Colour by Jurisdiction-style field if these fields present; otherwise dark green
  * */
 function EpiCurveChart(props: EpiCurveChartProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, preferredColourField = null } = props;
+  const {
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
+    dateFilterField,
+    preferredColourField = null,
+  } = props;
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
@@ -123,14 +129,13 @@ function EpiCurveChart(props: EpiCurveChartProps) {
 
   useEffect(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
-      const { value } = (
-        timeFilterObject[DashboardTimeFilterField] as DataTableOperatorFilterMetaData
-      ).constraints[0];
-      setTimeFilterDescription(`uploaded after ${formatDate(value)}`);
+      const { value } = (timeFilterObject[dateFilterField] as DataTableOperatorFilterMetaData)
+        .constraints[0];
+      setTimeFilterDescription(`${dateFilterField} after ${formatDate(value)}`);
     } else {
       setTimeFilterDescription('all time');
     }
-  }, [timeFilterObject]);
+  }, [timeFilterObject, dateFilterField]);
 
   useEffect(() => {
     // If there is no data, we cannot update range, so check filteredData length, not loadingState
