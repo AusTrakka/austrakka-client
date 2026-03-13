@@ -1,11 +1,8 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import { cardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
-import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
-import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
-import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function OFNDashboard(props: ProjectDashboardTemplateProps) {
@@ -31,13 +28,25 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={12}>
+          <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
             <Card sx={cardStyle}>
               <CardContent>
                 <EpiCurveChart
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
+            <Card sx={cardStyle}>
+              <CardContent>
+                <EpiCurveChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  preferredColourField="Place_of_acquisition_category"
                 />
               </CardContent>
             </Card>
