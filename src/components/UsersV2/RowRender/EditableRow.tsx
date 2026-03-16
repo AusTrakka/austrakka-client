@@ -36,7 +36,14 @@ function EditableRow(props: EditableRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
-  const nonEditableFields = ['created', 'objectId', 'username', 'globalId', 'orgName', 'monthlyBytesUsed'];
+  const nonEditableFields = [
+    'created',
+    'objectId',
+    'username',
+    'globalId',
+    'orgName',
+    'monthlyBytesUsed',
+  ];
 
   const immutableGuids = ['objectId', 'globalId'];
 
