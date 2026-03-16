@@ -4,6 +4,7 @@ export enum DashboardTimeFilter {
   LAST_MONTH = 'last_month',
   LAST_3_MONTHS = 'last_3_months',
   CURRENT_YEAR = 'current_year',
+  CUSTOM = 'custom',
 }
 
 export const DefaultDashboardTimeFilterField = 'Date_created';
