@@ -2,6 +2,7 @@ import type React from 'react';
 import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
 import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
 import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
+import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
@@ -9,7 +10,6 @@ import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlerts
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
 import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
-import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'public-health-default': PublicHealthDefaultDashboard,
@@ -21,6 +21,6 @@ const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>
   apg: ApgDashboard,
   withqc: WithQC,
   'se-demo': SEDemoDashboard,
-  ofn: OFNDashboard
+  ofn: OFNDashboard,
 };
 export default DashboardTemplates;
