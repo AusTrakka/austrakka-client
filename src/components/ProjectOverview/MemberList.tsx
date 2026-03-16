@@ -141,13 +141,13 @@ function MemberList(props: MemberListProps) {
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
-    if ('objectId' in selectedRow.data) {
-      const { objectId } = selectedRow.data; // Replace "objectId" with the actual property name
-      const url = `/users/${objectId}`;
+    if ('username' in selectedRow.data) {
+      const { objectId: username } = selectedRow.data; // Replace "objectId" with the actual property name
+      const url = `/users/${username}`;
       navigate(url);
     } else {
       // biome-ignore lint/suspicious/noConsole: historic
-      console.error('Object Id not found in selectedRow.');
+      console.error('Username not found in selectedRow.');
     }
   };
 

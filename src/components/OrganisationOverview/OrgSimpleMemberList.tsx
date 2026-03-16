@@ -26,8 +26,7 @@ function UserCard({ user }: { user: Member }) {
   };
 
   function handleCardClick() {
-    // Check if the "Object Id" property exists in the selected row
-    const url = `/users/${user.objectId}`;
+    const url = `/users/${user.username}`;
     navigate(url);
   }
 

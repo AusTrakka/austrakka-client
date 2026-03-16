@@ -69,6 +69,7 @@ function UserV2DetailOverview() {
 
   const readableNames: Record<string, string> = {
     objectId: 'Object ID',
+    username: 'Username',
     globalId: 'Global ID',
     position: 'Position',
     displayName: 'Name',

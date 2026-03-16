@@ -94,8 +94,8 @@ function Users() {
   }, [includeAll, token, tokenLoading]);
 
   const rowClickHandler = (selectedRow: DataTableRowClickEvent) => {
-    const { id } = selectedRow.data;
-    const url = `/users/${id}`;
+    const { username } = selectedRow.data;
+    const url = `/users/${username}`;
     navigate(url);
   };
 

@@ -104,6 +104,7 @@ export interface PlotListing {
 // may need to add the property position here perchance
 export interface Member {
   objectId: string;
+  username: string;
   roles: string[];
   organization: {
     id: number;
@@ -115,6 +116,7 @@ export interface Member {
 
 export interface User {
   objectId: string;
+  username: string;
   globalId: string;
   isActive: boolean;
   orgId: number;
@@ -139,6 +141,7 @@ export interface User {
 
 export interface UserV2 {
   objectId: string;
+  username: string;
   globalId: string;
   isActive: boolean;
   orgGlobalId: string;
@@ -162,6 +165,7 @@ export interface UserV2 {
 
 export interface UserMe {
   objectId: string;
+  username: string;
   displayName: string;
   contactEmail: string;
   orgId: number;
