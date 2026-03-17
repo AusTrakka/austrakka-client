@@ -197,6 +197,8 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       value = dayjs().subtract(3, 'months').toDate();
     } else if (event.target.value === DashboardTimeFilter.CURRENT_YEAR) {
       value = dayjs().startOf('year').toDate();
+    } else if (event.target.value === DashboardTimeFilter.LAST_12_MONTHS) {
+      value = dayjs().subtract(1, 'year').toDate();
     }
 
     setTimeFilterThreshold(value || null);
@@ -250,6 +252,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
               <MenuItem value={DashboardTimeFilter.LAST_MONTH}>Last month</MenuItem>
               <MenuItem value={DashboardTimeFilter.LAST_3_MONTHS}>Last 3 months</MenuItem>
               <MenuItem value={DashboardTimeFilter.CURRENT_YEAR}>Current year</MenuItem>
+              <MenuItem value={DashboardTimeFilter.LAST_12_MONTHS}>Last 12 months</MenuItem>
               <MenuItem value={DashboardTimeFilter.CUSTOM}>Custom</MenuItem>
             </Select>
           </FormControl>
