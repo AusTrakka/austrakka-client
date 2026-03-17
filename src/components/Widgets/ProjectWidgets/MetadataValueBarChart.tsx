@@ -144,41 +144,39 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     return createVegaScale(uniqueValues, colourScheme || DEFAULT_COLOUR_SCHEME);
   };
 
-  const createSpec = () => {
-    return {
-      $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-      data: { name: 'inputdata' },
-      width: 'container',
-      height: 30,
-      layer: [
-        {
-          mark: { type: 'bar', height: 30, tooltip: true, cursor: 'pointer' },
-          encoding: {
-            y: { value: 'all' },
-            x: {
-              aggregate: 'count',
-              type: 'quantitative',
-              axis: { title: 'Count' },
-            },
-            color: {
-              field,
-              scale: createCustomScale(),
-              legend: {
-                title: field,
-                orient: 'bottom',
-                columns: legendColumns,
-                labelExpr: "datum.label || 'unknown'",
-              },
-            },
-            order: { aggregate: 'count', sort: 'descending' },
+  const createSpec = () => ({
+    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+    data: { name: 'inputdata' },
+    width: 'container',
+    height: 30,
+    layer: [
+      {
+        mark: { type: 'bar', height: 30, tooltip: true, cursor: 'pointer' },
+        encoding: {
+          y: { value: 'all' },
+          x: {
+            aggregate: 'count',
+            type: 'quantitative',
+            axis: { title: 'Count' },
           },
+          color: {
+            field,
+            scale: createCustomScale(),
+            legend: {
+              title: field,
+              orient: 'bottom',
+              columns: legendColumns,
+              labelExpr: "datum.label || 'unknown'",
+            },
+          },
+          order: { aggregate: 'count', sort: 'descending' },
         },
-      ],
-      usermeta: {
-        dateCollField: field,
       },
-    };
-  };
+    ],
+    usermeta: {
+      dateCollField: field,
+    },
+  });
 
   const truncateData = (data: any[]) => {
     const counts: Record<string, number> = {};
@@ -268,7 +266,7 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
       )}
       {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
       {!errorMessage && !infoMessage && (
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid size={11}>
             <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
           </Grid>
