@@ -455,11 +455,7 @@ function UploadMetadata() {
           <Typography variant="h4" color="primary" paddingTop={1}>
             Select metadata file
           </Typography>
-          <FileDragDrop
-            files={files}
-            setFiles={setFiles}
-            validFormats={validFormats}
-          />
+          <FileDragDrop files={files} setFiles={setFiles} validFormats={validFormats} />
           {canUpload &&
             !options.validate &&
             !options.append &&
