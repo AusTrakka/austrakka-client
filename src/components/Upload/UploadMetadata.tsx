@@ -95,7 +95,6 @@ function UploadMetadata() {
     append: false,
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  const [fileValidated, setFileValidated] = useState(false);
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
   const [projectAbbrevs, setProjectAbbrevs] = useState<string[]>([]);
@@ -460,8 +459,6 @@ function UploadMetadata() {
             files={files}
             setFiles={setFiles}
             validFormats={validFormats}
-            validated={fileValidated}
-            setValidated={setFileValidated}
           />
           {canUpload &&
             !options.validate &&
