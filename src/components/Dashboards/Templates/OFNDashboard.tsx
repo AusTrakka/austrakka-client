@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid2';
 import { cardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
+import MetadataValueBarChart from '../../Widgets/ProjectWidgets/MetadataValueBarChart';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function OFNDashboard(props: ProjectDashboardTemplateProps) {
@@ -11,15 +12,10 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
-        <Grid
-          container
-          sx={{ alignItems: 'flex-start' }}
-          spacing={2}
-          size={{ xl: 12, lg: 12, md: 12 }}
-        >
-          <Grid size={{ xl: 7, lg: 9, md: 12, sm: 12 }}>
-            <Card sx={cardStyle}>
-              <CardContent>
+        <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={{ sm: 12 }}>
+          <Grid size={{ sm: 12 }}>
+            <Card sx={{ ...cardStyle, height: '100%' }}>
+              <CardContent sx={{ height: '100%' }}>
                 <SampleSummary
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -28,28 +24,61 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
-            <Card sx={cardStyle}>
-              <CardContent>
-                <EpiCurveChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                />
-              </CardContent>
-            </Card>
+          <Grid container spacing={2} alignItems="stretch" size={{ sm: 12 }}>
+            <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
+              <Card sx={{ ...cardStyle, height: '100%' }}>
+                <CardContent>
+                  <MetadataValueBarChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="Jurisdiction"
+                    title="Samples by jurisdiction"
+                    legendColumns={8}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
+              <Card sx={{ ...cardStyle, height: '100%' }}>
+                <CardContent>
+                  <MetadataValueBarChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="cgMLST"
+                    title="Top 5 cgMLST"
+                    categoryLimit={5}
+                    legendColumns={5}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-          <Grid size={{ xl: 6, lg: 6, md: 12, sm: 12 }}>
-            <Card sx={cardStyle}>
-              <CardContent>
-                <EpiCurveChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  preferredColourField="Place_of_acquisition_category"
-                />
-              </CardContent>
-            </Card>
+          <Grid container spacing={2} alignItems="stretch" size={{ sm: 12 }}>
+            <Grid size={{ xl: 6, lg: 12, md: 12, sm: 12 }}>
+              <Card sx={{ ...cardStyle, height: '100%' }}>
+                <CardContent>
+                  <EpiCurveChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xl: 6, lg: 12, md: 12, sm: 12 }}>
+              <Card sx={{ ...cardStyle, height: '100%' }}>
+                <CardContent>
+                  <EpiCurveChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    preferredColourField="Place_of_acquisition_category"
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
