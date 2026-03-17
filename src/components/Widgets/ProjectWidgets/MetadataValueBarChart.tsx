@@ -117,20 +117,33 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   };
 
+  // Function to get top categories based on categoryLimit prop
+  const topCategories = (data: any) => {
+    const categoryCounts: Record<string, number> = {};
+    for (const item of data) {
+      const value = isNullOrEmpty(item[field]) ? 'unknown' : item[field];
+      categoryCounts[value] = (categoryCounts[value] || 0) + 1;
+    }
+
+    const sortedCategories = Object.entries(categoryCounts)
+      .sort(([, countA], [, countB]) => countB - countA)
+      .map(([category]) => category);
+
+    if (categoryLimit) {
+      return sortedCategories.slice(0, categoryLimit);
+    } else {
+      // Just in case of no category limit, return all categories sorted by count
+      return sortedCategories;
+    }
+  };
+
   // Move to utility file if used outside this widget
   const createCustomScale = () => {
     let uniqueValues = data!.fieldUniqueValues![field] ?? [];
 
     if (categoryLimit) {
-      const counts: Record<string, number> = {};
-      filteredData.forEach((d) => {
-        const key = isNullOrEmpty(d[field]) ? 'unknown' : d[field];
-        counts[key] = (counts[key] || 0) + 1;
-      });
-      uniqueValues = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(([k]) => k)
-        .slice(0, categoryLimit);
+      const categories = topCategories(filteredData);
+      uniqueValues = uniqueValues.filter((val) => categories.includes(val));
     }
 
     if (colourMapping) {
@@ -179,22 +192,11 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   });
 
   const truncateData = (data: any[]) => {
-    const counts: Record<string, number> = {};
-    // Count occurrences for each category
-    data.forEach((d) => {
-      const key = isNullOrEmpty(d[field]) ? 'unknown' : d[field];
-      counts[key] = (counts[key] || 0) + 1;
-    });
-
-    const sortedCategories = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([k]) => k);
-    const limit = categoryLimit || sortedCategories.length;
-    const topCategories = sortedCategories.slice(0, limit);
-
-    return data.filter((d) => {
-      const key = isNullOrEmpty(d[field]) ? 'unknown' : d[field];
-      return topCategories.includes(key);
+    const categories = topCategories(data);
+    // Filter data to only include items in the top categories
+    return data.filter((item) => {
+      const value = isNullOrEmpty(item[field]) ? 'unknown' : item[field];
+      return categories.includes(value);
     });
   };
 
