@@ -49,10 +49,9 @@ function Feedback(props: FeedbackProps) {
       };
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
-        enqueueSnackbar(
-          `Feedback received. Id: ${feedbackResp.data?.msgId}`,
-          { variant: 'success' },
-        );
+        enqueueSnackbar(`Feedback received. Id: ${feedbackResp.data?.msgId}`, {
+          variant: 'success',
+        });
         setTitle('');
         setDescription('');
       } else {

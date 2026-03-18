@@ -427,7 +427,7 @@ export interface FeedbackPost {
 }
 
 export interface CreateMsg {
-  msgId: number,
+  msgId: number;
 }
 
 export interface ProjectDashboardDetails {

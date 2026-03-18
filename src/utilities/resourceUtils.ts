@@ -239,7 +239,11 @@ export const getOrganisation = (
   token: string,
 ): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
-export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<CreateMsg>> => callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
+export const postFeedback = (
+  feedbackPostDto: FeedbackPost,
+  token: string,
+): Promise<ResponseObject<CreateMsg>> =>
+  callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
 export const postTenantPrivilege = (
