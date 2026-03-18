@@ -1,7 +1,7 @@
-.MuiAutocomplete-inputRoot { 
-    flex-wrap: nowrap !important;
+.MuiAutocomplete-inputRoot {
+  flex-wrap: nowrap !important;
 }
 
 .Mui-focused {
-    flex-wrap: wrap !important;
+  flex-wrap: wrap !important;
 }

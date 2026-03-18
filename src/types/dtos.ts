@@ -1,58 +1,58 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
-  projectId: number,
-  abbreviation: string,
-  globalId: string,
-  name: string,
-  description: string,
-  type: string,
-  clientType: string,
+  projectId: number;
+  abbreviation: string;
+  globalId: string;
+  name: string;
+  description: string;
+  type: string;
+  clientType: string;
   projectMembers: {
-    id: number,
-    name: string
-  },
+    id: number;
+    name: string;
+  };
   trees: {
-    id: number,
-    name: string
-  }[],
-  isActive: boolean,
-  created: Date,
-  mergeAlgorithm: string,
+    id: number;
+    name: string;
+  }[];
+  isActive: boolean;
+  created: Date;
+  mergeAlgorithm: string;
   // could add auditable fields - created, createdBy
 }
 
 // Summary statistics about a project
 export interface ProjectSummary {
-  projectId: number,
-  clientType: string,
-  globalId: string,
-  abbreviation: string,
-  name: string,
-  sampleCount: number,
-  sequencedSampleCount: number,
-  latestSampleDate: string, // TODO date?
-  latestSequenceDate: string,
-  latestTreeDate: string,
+  projectId: number;
+  clientType: string;
+  globalId: string;
+  abbreviation: string;
+  name: string;
+  sampleCount: number;
+  sequencedSampleCount: number;
+  latestSampleDate: string; // TODO date?
+  latestSequenceDate: string;
+  latestTreeDate: string;
 }
 
 export interface Plot {
-  plotId: number,
-  abbreviation: string,
-  name: string,
-  description: string,
-  plotType: string,
-  spec: string,
-  projectId: number,
-  projectName: string
-  projectAbbreviation: string
-  projectGroupId: number
-  isActive: boolean
+  plotId: number;
+  abbreviation: string;
+  name: string;
+  description: string;
+  plotType: string;
+  spec: string;
+  projectId: number;
+  projectName: string;
+  projectAbbreviation: string;
+  projectGroupId: number;
+  isActive: boolean;
 }
 
 export interface UserDashboardOverview {
-  latestUploadedDateUtc: string,
-  total: number,
-  samplesNotSequenced: number,
+  latestUploadedDateUtc: string;
+  total: number;
+  samplesNotSequenced: number;
 }
 
 export interface Tree {
@@ -62,7 +62,7 @@ export interface Tree {
   description: string;
   latestTreeLastUpdated: Date;
   project: {
-    abbreviation: string,
+    abbreviation: string;
   };
   projectName: string;
   isActive: boolean;
@@ -92,309 +92,309 @@ export interface TreeVersion {
 }
 
 export interface PlotListing {
-  plotId: number,
-  abbreviation: string,
-  name: string,
-  description: string,
-  plotType: string,
-  projectId: number,
+  plotId: number;
+  abbreviation: string;
+  name: string;
+  description: string;
+  plotType: string;
+  projectId: number;
   // also projectName, and isActive. projectAbbrev??
 }
 
 // may need to add the property position here perchance
 export interface Member {
-  objectId: string,
-  roles: string[],
+  objectId: string;
+  roles: string[];
   organization: {
-    id: number,
-    abbreviation: string,
-  },
-  displayName: string,
-  contactEmail: string,
+    id: number;
+    abbreviation: string;
+  };
+  displayName: string;
+  contactEmail: string;
 }
 
 export interface User {
-  objectId: string,
-  globalId: string,
-  isActive: boolean,
-  orgId: number,
-  orgAbbrev: string,
-  orgName: string,
-  orgGlobalId: string,
-  isAusTrakkaAdmin: boolean,
-  groupRoles: GroupRole[],
-  displayName: string,
-  position: string,
-  created: Date,
-  lastLogIn: Date,
-  lastActive: Date,
-  contactEmail: string,
-  IsAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
-  privileges: GroupedPrivilegesByRecordType[],
-  monthlyBytesUsed: number,
-  monthlyBytesQuota: number,
-  noDownloadQuota: boolean
+  objectId: string;
+  globalId: string;
+  isActive: boolean;
+  orgId: number;
+  orgAbbrev: string;
+  orgName: string;
+  orgGlobalId: string;
+  isAusTrakkaAdmin: boolean;
+  groupRoles: GroupRole[];
+  displayName: string;
+  position: string;
+  created: Date;
+  lastLogIn: Date;
+  lastActive: Date;
+  contactEmail: string;
+  IsAusTrakkaProcess: boolean;
+  analysisServerUsername: string;
+  privileges: GroupedPrivilegesByRecordType[];
+  monthlyBytesUsed: number;
+  monthlyBytesQuota: number;
+  noDownloadQuota: boolean;
 }
 
 export interface UserV2 {
-  objectId: string,
-  globalId: string,
-  isActive: boolean,
-  orgGlobalId: string,
-  orgAbbrev: string,
-  orgName: string,
-  isAusTrakkaAdmin: boolean,
-  displayName: string,
-  position: string,
-  analysisServerUsername: string,
-  lastLogIn: Date,
-  lastActive: Date,
-  contactEmail: string,
-  IsAusTrakkaProcess: boolean,
-  privileges: GroupedPrivilegesByRecordType[],
-  monthlyBytesUsed: number,
-  monthlyBytesQuota: number,
-  noDownloadQuota: boolean,
-  lastDownloadDate: Date,
-  created: Date,
+  objectId: string;
+  globalId: string;
+  isActive: boolean;
+  orgGlobalId: string;
+  orgAbbrev: string;
+  orgName: string;
+  isAusTrakkaAdmin: boolean;
+  displayName: string;
+  position: string;
+  analysisServerUsername: string;
+  lastLogIn: Date;
+  lastActive: Date;
+  contactEmail: string;
+  IsAusTrakkaProcess: boolean;
+  privileges: GroupedPrivilegesByRecordType[];
+  monthlyBytesUsed: number;
+  monthlyBytesQuota: number;
+  noDownloadQuota: boolean;
+  lastDownloadDate: Date;
+  created: Date;
 }
 
 export interface UserMe {
-  objectId: string,
-  displayName: string,
-  contactEmail: string,
-  orgId: number,
-  orgAbbrev: string,
-  orgName: string,
-  analysisServerUsername: string,
-  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
+  objectId: string;
+  displayName: string;
+  contactEmail: string;
+  orgId: number;
+  orgAbbrev: string;
+  orgName: string;
+  analysisServerUsername: string;
+  scopes: GroupedPrivilegesByRecordTypeWithScopes[];
 }
 
 export interface GroupedPrivilegesByRecordTypeWithScopes {
-  recordType: string,
-  recordRoles: PrivilegeWithRolesWithScopes[],
+  recordType: string;
+  recordRoles: PrivilegeWithRolesWithScopes[];
 }
 
 export interface PrivilegeWithRolesWithScopes {
-  recordName: string,
-  recordGlobalId: string,
-  roles: RecordRoleWithScopes[],
+  recordName: string;
+  recordGlobalId: string;
+  roles: RecordRoleWithScopes[];
 }
 
 export interface RecordRoleWithScopes {
-  roleName: string,
-  privilegeLevel: string,
-  privilegeGlobalId: string,
-  scopes: string[],
+  roleName: string;
+  privilegeLevel: string;
+  privilegeGlobalId: string;
+  scopes: string[];
 }
 
 export interface GroupedPrivilegesByRecordType {
-  recordType: string,
-  recordRoles: PrivilegeWithRoles[],
+  recordType: string;
+  recordRoles: PrivilegeWithRoles[];
 }
 
 export interface PrivilegeWithRoles {
-  recordName: string,
-  recordGlobalId: string,
-  roles: RecordRole[],
+  recordName: string;
+  recordGlobalId: string;
+  roles: RecordRole[];
 }
 
 export interface RecordRole {
-  roleName: string,
-  privilegeGlobalId?: string,
+  roleName: string;
+  privilegeGlobalId?: string;
 }
 
 export interface UserList {
-  name: string,
-  id: string,
-  globalId: string,
-  organisation: string,
-  contactEmail: string,
-  isActive: boolean,
-  created: string,
-  createdBy: string,
-  lastLogIn: Date,
-  lastActive: Date,
-  isAusTrakkaAdmin: boolean,
-  isAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
+  name: string;
+  id: string;
+  globalId: string;
+  organisation: string;
+  contactEmail: string;
+  isActive: boolean;
+  created: string;
+  createdBy: string;
+  lastLogIn: Date;
+  lastActive: Date;
+  isAusTrakkaAdmin: boolean;
+  isAusTrakkaProcess: boolean;
+  analysisServerUsername: string;
 }
 
 export interface UserListV2 {
-  name: string,
-  position: string,
-  id: string,
-  organisation: string,
-  contactEmail: string,
-  isActive: boolean,
-  created: string,
-  createdBy: string,
-  lastLogIn: Date,
-  lastActive: Date,
-  isAusTrakkaAdmin: boolean,
-  isAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
+  name: string;
+  position: string;
+  id: string;
+  organisation: string;
+  contactEmail: string;
+  isActive: boolean;
+  created: string;
+  createdBy: string;
+  lastLogIn: Date;
+  lastActive: Date;
+  isAusTrakkaAdmin: boolean;
+  isAusTrakkaProcess: boolean;
+  analysisServerUsername: string;
 }
 
 export interface MetaDataColumnMapping {
-  metaDataColumnMappingId: number,
-  metaDataColumnName: string,
-  metaDataColumnPrimitiveType: string,
-  metaDataColumnValidValues: string[],
-  isRequired: boolean,
-  isDispalyedByDefault: boolean,
-  isActive: boolean,
-  canVisualise: boolean,
+  metaDataColumnMappingId: number;
+  metaDataColumnName: string;
+  metaDataColumnPrimitiveType: string;
+  metaDataColumnValidValues: string[];
+  isRequired: boolean;
+  isDispalyedByDefault: boolean;
+  isActive: boolean;
+  canVisualise: boolean;
 }
 
 // INFO: this is a common interface representing metadata fields and general table fields,
 // with information about types and display order
 export interface Field {
-  columnName: string,
+  columnName: string;
   // INFO: this is the only field that is not actually part of any dto
   // this is needed for activity log compatibility
-  headerName?: string,
-  primitiveType: string | null,
-  metaDataColumnTypeName: string,
-  metaDataColumnValidValues: string[] | null,
-  canVisualise: boolean,
-  geoField: boolean,
-  columnOrder: number,
+  headerName?: string;
+  primitiveType: string | null;
+  metaDataColumnTypeName: string;
+  metaDataColumnValidValues: string[] | null;
+  canVisualise: boolean;
+  geoField: boolean;
+  columnOrder: number;
 }
 
 export interface MetaDataColumn extends Field {
-  metaDataColumnId: number
-  columnName: string
-  metaDataColumnTypeId: number
-  metaDataColumnValidValues: string[] | null
-  primitiveType: string | null
-  description: string
-  nndssFieldLabel: string
-  canVisualise: boolean
-  geoField: boolean
-  columnOrder: number
-  isDisplayedAsDefault: boolean
-  isActive: boolean
-  minWidth: number
+  metaDataColumnId: number;
+  columnName: string;
+  metaDataColumnTypeId: number;
+  metaDataColumnValidValues: string[] | null;
+  primitiveType: string | null;
+  description: string;
+  nndssFieldLabel: string;
+  canVisualise: boolean;
+  geoField: boolean;
+  columnOrder: number;
+  isDisplayedAsDefault: boolean;
+  isActive: boolean;
+  minWidth: number;
 }
 
 // This is not a DTO, but a calculated field representing a column found in a project view
 // The projectFieldId and projectFieldName will not be unique
 // The columnName is formed from the projectFieldName and the analysisLabel
 export interface ProjectViewField extends Field {
-  columnName: string,
-  projectFieldId: number,
-  projectFieldName: string,
-  primitiveType: string,
-  metaDataColumnTypeName: string,
-  fieldSource: string,
-  columnOrder: number,
-  canVisualise: boolean,
-  geoField: boolean,
-  hidden: boolean,
-  metaDataColumnValidValues: string[] | null,
+  columnName: string;
+  projectFieldId: number;
+  projectFieldName: string;
+  primitiveType: string;
+  metaDataColumnTypeName: string;
+  fieldSource: string;
+  columnOrder: number;
+  canVisualise: boolean;
+  geoField: boolean;
+  hidden: boolean;
+  metaDataColumnValidValues: string[] | null;
 }
 
 // This represents the ProjectFieldDTO, with nested analysisLabels
 // It is appropriate for use in project management interfaces
 // It is not appropriate for representing the columns that will be found in a project view
 export interface ProjectField {
-  projectFieldId: number,
-  fieldName: string,
-  primitiveType: string,
-  metaDataColumnTypeName: string,
-  fieldSource: string,
-  columnOrder: number,
-  canVisualise: boolean,
-  geoField: boolean,
-  hidden: boolean,
-  metaDataColumnValidValues: string[] | null,
-  analysisLabels: string[],
-  createdBy: string,
+  projectFieldId: number;
+  fieldName: string;
+  primitiveType: string;
+  metaDataColumnTypeName: string;
+  fieldSource: string;
+  columnOrder: number;
+  canVisualise: boolean;
+  geoField: boolean;
+  hidden: boolean;
+  metaDataColumnValidValues: string[] | null;
+  analysisLabels: string[];
+  createdBy: string;
 }
 
 export interface ProjectView {
-  id: number,
-  fileName: string,
-  blobFilePath: string,
-  originalFileName: string,
-  isBase: boolean,
-  fields: string[],
-  viewFields: string[] // this is currently calculated client-side
+  id: number;
+  fileName: string;
+  blobFilePath: string;
+  originalFileName: string;
+  isBase: boolean;
+  fields: string[];
+  viewFields: string[]; // this is currently calculated client-side
 }
 
 export interface Proforma {
-  proformaId: number,
-  proFormaVersionId: number,
-  version: number,
-  name: string,
-  abbreviation: string,
-  description: string,
-  isActive: boolean,
-  isCurrent: boolean,
-  hasAttached: boolean,
-  created: string,
-  lastUpdated: string,
-  createdBy: string,
-  lastUpdatedBy: string,
-  columnMappings: MetaDataColumnMapping[],
+  proformaId: number;
+  proFormaVersionId: number;
+  version: number;
+  name: string;
+  abbreviation: string;
+  description: string;
+  isActive: boolean;
+  isCurrent: boolean;
+  hasAttached: boolean;
+  created: string;
+  lastUpdated: string;
+  createdBy: string;
+  lastUpdatedBy: string;
+  columnMappings: MetaDataColumnMapping[];
 }
 
 export interface ProFormaVersion {
-  proFormaVersionId: number,
-  proFormaId: number,
-  version: number,
-  abbreviation: string,
-  originalFileName: string,
-  fileName: string,
-  columnMappings: MetaDataColumnMapping[],
-  isCurrent: boolean,
-  assetId: number,
-  created: Date,
-  createdBy: string,
+  proFormaVersionId: number;
+  proFormaId: number;
+  version: number;
+  abbreviation: string;
+  originalFileName: string;
+  fileName: string;
+  columnMappings: MetaDataColumnMapping[];
+  isCurrent: boolean;
+  assetId: number;
+  created: Date;
+  createdBy: string;
 }
 
 export interface GroupRole {
   role: {
-    id: number,
-    name: string,
-  }
-  group: Group
+    id: number;
+    name: string;
+  };
+  group: Group;
 }
 
 export interface MinimalScope {
-  scopePath: string,
-  shortDescription: string,
+  scopePath: string;
+  shortDescription: string;
 }
 
 export interface Group {
-  groupId: number,
-  name: string,
-  lastUpdated: string,
-  lastUpdatedBy: string,
-  created: string,
-  createdBy: string,
+  groupId: number;
+  name: string;
+  lastUpdated: string;
+  lastUpdatedBy: string;
+  created: string;
+  createdBy: string;
   organisation: {
-    abbreviation: string
-    name: string
-  }
+    abbreviation: string;
+    name: string;
+  };
 }
 
 export interface Organisation {
-  abbreviation: string,
-  name: string,
-  isActive: boolean,
-  country: string,
-  state: string,
-  primaryContact: string,
-  logo: string,
-  organisationId: number,
-  globalId: string,
-  created: Date,
-  lastUpdated: Date,
-  createdBy: string,
-  lastUpdatedBy: string,
+  abbreviation: string;
+  name: string;
+  isActive: boolean;
+  country: string;
+  state: string;
+  primaryContact: string;
+  logo: string;
+  organisationId: number;
+  globalId: string;
+  created: Date;
+  lastUpdated: Date;
+  createdBy: string;
+  lastUpdatedBy: string;
 }
 
 export interface DataSetEntry {
@@ -408,22 +408,22 @@ export interface DataSetEntry {
 }
 
 export interface Role {
-  roleId: number,
-  name: string,
-  description: string,
+  roleId: number;
+  name: string;
+  description: string;
 }
 
 export interface RolesV2 {
-  name: string,
-  globalId: string,
-  resourceTypes: string[]
-  privilegeLevel: string,
+  name: string;
+  globalId: string;
+  resourceTypes: string[];
+  privilegeLevel: string;
 }
 
 export interface FeedbackPost {
-  title: string,
-  description: string,
-  currentPage: string,
+  title: string;
+  description: string;
+  currentPage: string;
 }
 
 export interface CreateMsg {
@@ -431,49 +431,50 @@ export interface CreateMsg {
 }
 
 export interface ProjectDashboardDetails {
-  projectDashboardId: number,
-  name: string,
+  projectDashboardId: number;
+  name: string;
 }
 
 export interface UserPatch {
-  displayName: string,
-  contactEmail: string,
-  orgAbbrev: string,
-  isActive: boolean,
-  analysisServerUsername: string,
+  displayName: string;
+  contactEmail: string;
+  orgAbbrev: string;
+  isActive: boolean;
+  analysisServerUsername: string;
 }
 
 export interface UserPatchV2 {
-  displayName: string,
-  contactEmail: string,
-  analysisServerUsername: string,
-  position: string,
-  noDownloadQuota: boolean,
-  monthlyBytesQuota: number,
+  displayName: string;
+  contactEmail: string;
+  analysisServerUsername: string;
+  position: string;
+  noDownloadQuota: boolean;
+  monthlyBytesQuota: number;
 }
 
 export interface UserRoleRecordPrivilegePost {
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeGlobalId: string;
+  roleGlobalId: string;
 }
 
 export interface DerivedLog {
   // Server fields
-  globalId: string,
-  rawLogGlobalId: string,
-  clientSessionId: string,
-  callId: string,
-  eventType: string
-  eventTime: string,
-  resourceGlobalId: string,
-  resourceUniqueString: string,
-  resourceType: string,
-  submitterGlobalId: string,
-  submitterDisplayName: string,
-  eventStatus: string,
-  data: string, // TODO needs to be parsed
-
-  // UI-specific fields
-  children: DerivedLog[] | null,
-  level: number | null,
+  globalId: string;
+  rawLogGlobalId: string;
+  clientSessionId: string | null;
+  callId: string;
+  eventType: string;
+  eventTime: string;
+  resourceGlobalId: string;
+  resourceUniqueString: string;
+  resourceType: string;
+  submitterGlobalId: string;
+  submitterDisplayName: string;
+  eventStatus: string;
+  data: string; // TODO needs to be parsed
+  visChain: {
+    globalId: string;
+    resourceType: string;
+    uniqueStringId: string;
+  }[];
 }

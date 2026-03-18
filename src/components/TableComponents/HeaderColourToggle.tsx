@@ -1,6 +1,6 @@
-import React, { Dispatch, SetStateAction } from 'react';
 import { Palette } from '@mui/icons-material';
-import { Tooltip, IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
+import type { Dispatch, SetStateAction } from 'react';
 import { Theme } from '../../assets/themes/theme';
 
 interface HeaderColourToggleProps {
@@ -10,9 +10,15 @@ interface HeaderColourToggleProps {
 
 function HeaderColourToggle(props: HeaderColourToggleProps) {
   const { colourBySource, setColourBySource } = props;
-  
+
   return (
-    <Tooltip title={colourBySource ? 'Hide column header colours' : 'Colour column headers by field source'} placement="top" arrow>
+    <Tooltip
+      title={
+        colourBySource ? 'Hide column header colours' : 'Colour column headers by field source'
+      }
+      placement="top"
+      arrow
+    >
       <IconButton
         onClick={() => setColourBySource(!colourBySource)}
         aria-label="toggle coloured headers"

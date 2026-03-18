@@ -1,4 +1,3 @@
-import React, { ChangeEvent, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -7,31 +6,28 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
-  Stack,
   Divider,
+  Stack,
+  TextField,
 } from '@mui/material';
-import { Location } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { FeedbackPost } from '../../types/dtos';
-import { postFeedback } from '../../utilities/resourceUtils';
+import { type ChangeEvent, useRef, useState } from 'react';
+import type { Location } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
-import { ResponseType } from '../../constants/responseType';
 import LoadingState from '../../constants/loadingState';
+import { ResponseType } from '../../constants/responseType';
+import type { FeedbackPost } from '../../types/dtos';
+import { postFeedback } from '../../utilities/resourceUtils';
 
 interface FeedbackProps {
   help: boolean;
-  handleHelpClose: ((event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void);
-  location: Location<any>;
+  handleHelpClose: (event: object, reason: 'backdropClick' | 'escapeKeyDown') => void;
+  location: Location;
 }
 
 function Feedback(props: FeedbackProps) {
   const { enqueueSnackbar } = useSnackbar();
-  const {
-    help,
-    handleHelpClose,
-    location,
-  } = props;
+  const { help, handleHelpClose, location } = props;
   const { token, tokenLoading } = useApi();
   const formValid = useRef({
     title: false,
@@ -43,11 +39,8 @@ function Feedback(props: FeedbackProps) {
   const [descError, setDescError] = useState(false);
   const submitFeedback = async (e: any) => {
     e.preventDefault();
-    if (Object.values(formValid.current).every(isValid => isValid)) {
-      enqueueSnackbar(
-        'Feedback sent',
-        { variant: 'info' },
-      );
+    if (Object.values(formValid.current).every((isValid) => isValid)) {
+      enqueueSnackbar('Feedback sent', { variant: 'info' });
       handleHelpClose({}, 'escapeKeyDown');
       const feedbackDto: FeedbackPost = {
         title,
@@ -96,20 +89,14 @@ function Feedback(props: FeedbackProps) {
   };
 
   return (
-    <Dialog
-      open={help}
-      onClose={handleHelpClose}
-    >
+    <Dialog open={help} onClose={handleHelpClose}>
       <Box ref={formRef} component="form" onSubmit={submitFeedback} noValidate>
         <DialogTitle>Support Requests</DialogTitle>
         <DialogContent>
           <DialogContentText variant="subtitle2">
-            Use this form to submit bug reports, support requests, or general feedback
-            directly to the
-            {' '}
-            {import.meta.env.VITE_BRANDING_NAME}
-            {' '}
-            team. The current page you are on will also be submitted.
+            Use this form to submit bug reports, support requests, or general feedback directly to
+            the {import.meta.env.VITE_BRANDING_NAME} team. The current page you are on will also be
+            submitted.
           </DialogContentText>
           <Stack direction="column" paddingY={2} spacing={3}>
             <Divider orientation="horizontal" flexItem />
@@ -143,11 +130,7 @@ function Feedback(props: FeedbackProps) {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={cancelFeedback}
-          >
-            Cancel
-          </Button>
+          <Button onClick={cancelFeedback}>Cancel</Button>
           <Button
             type="submit"
             disabled={tokenLoading === LoadingState.LOADING || tokenLoading === LoadingState.IDLE}

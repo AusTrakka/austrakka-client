@@ -1,6 +1,7 @@
-import React, { memo, useState } from 'react';
-import { IconButton, Menu, MenuItem, Dialog, Alert, AlertTitle } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
+import { Alert, AlertTitle, Dialog, IconButton, Menu, MenuItem } from '@mui/material';
+import type React from 'react';
+import { memo, useState } from 'react';
 import { generateFilename } from '../../utilities/file';
 
 function ExportVegaPlot(props: any) {
@@ -22,16 +23,19 @@ function ExportVegaPlot(props: any) {
     handleMenuClose();
 
     if (vegaView) {
-      vegaView.toImageURL(format).then((url: string) => {
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('target', '_blank');
-        link.setAttribute('download', generateFilename());
-        link.dispatchEvent(new MouseEvent('click'));
-      }).catch((error: any) => {
-        setExportError(true);
-        setExportErrorMsg(error);
-      });
+      vegaView
+        .toImageURL(format)
+        .then((url: string) => {
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('target', '_blank');
+          link.setAttribute('download', generateFilename());
+          link.dispatchEvent(new MouseEvent('click'));
+        })
+        .catch((error: any) => {
+          setExportError(true);
+          setExportErrorMsg(error);
+        });
     }
   };
 
@@ -49,12 +53,8 @@ function ExportVegaPlot(props: any) {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={() => exportClickHandler('png')}>
-          Export to PNG
-        </MenuItem>
-        <MenuItem onClick={() => exportClickHandler('svg')}>
-          Export to SVG
-        </MenuItem>
+        <MenuItem onClick={() => exportClickHandler('png')}>Export to PNG</MenuItem>
+        <MenuItem onClick={() => exportClickHandler('svg')}>Export to SVG</MenuItem>
       </Menu>
       <Dialog open={exportError} onClose={handleDialogClose}>
         <Alert severity="error">

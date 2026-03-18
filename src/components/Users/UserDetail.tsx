@@ -1,21 +1,38 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  type AlertColor,
+  Paper,
+  Snackbar,
+  Stack,
+  Table,
+  TableBody,
+  TableContainer,
+  Typography,
+} from '@mui/material';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, AlertColor, Paper, Snackbar, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
 import { deepEqual } from 'vega-lite';
-import { getGroupList, getOrganisations, getRoles, getUser, putUser, replaceAssignments } from '../../utilities/resourceUtils';
-import { Group, GroupRole, Role, User } from '../../types/dtos';
 import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
-import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
-import renderIcon from '../Admin/UserIconRenderer';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
+import LoadingState from '../../constants/loadingState';
+import { ResponseType } from '../../constants/responseType';
+import type { Group, GroupRole, Role, User } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import {
+  getGroupList,
+  getOrganisations,
+  getRoles,
+  getUser,
+  putUser,
+  replaceAssignments,
+} from '../../utilities/resourceUtils';
+import renderIcon from '../Admin/UserIconRenderer';
 import EditButtons from './EditButtons';
-import EditableRow from './RowRender/EditableRow';
+import RenderGroupedRolesAndGroups from './RoleSortingAndRender/RenderGroupedRolesAndGroups';
 import BasicRow from './RowRender/BasicRow';
+import EditableRow from './RowRender/EditableRow';
 
 function UserDetail() {
   const { userObjectId } = useParams();
@@ -35,28 +52,25 @@ function UserDetail() {
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
   const [orgChanged, setOrgChanged] = useState<boolean>(false);
-  const {
-    loading,
-    admin,
-  } = useAppSelector(selectUserState);
+  const { loading, admin } = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
-    'objectId': 'Object ID',
-    'displayName': 'Display Name',
-    'position': 'Position',
-    'orgName': 'Organisation',
-    'orgAbbrev': 'Organisation Abbreviation',
-    'created': 'Created Date',
-    'lastLogIn': 'Last Log In',
-    'lastActive': 'Last Active',
-    'contactEmail': 'Email',
-    'isAusTrakkaAdmin': 'Austrakka Admin',
-    'isActive': 'Active',
-    'isAusTrakkaProcess': 'Austrakka Process',
-    'analysisServerUsername': 'Analysis Server Username',
-    'monthlyBytesUsed': 'Monthly Bytes Used',
-    'monthlyBytesQuota': 'Download Quota',
-    'noDownloadQuota': 'No Download Quota',
+    objectId: 'Object ID',
+    displayName: 'Display Name',
+    position: 'Position',
+    orgName: 'Organisation',
+    orgAbbrev: 'Organisation Abbreviation',
+    created: 'Created Date',
+    lastLogIn: 'Last Log In',
+    lastActive: 'Last Active',
+    contactEmail: 'Email',
+    isAusTrakkaAdmin: 'Austrakka Admin',
+    isActive: 'Active',
+    isAusTrakkaProcess: 'Austrakka Process',
+    analysisServerUsername: 'Analysis Server Username',
+    monthlyBytesUsed: 'Monthly Bytes Used',
+    monthlyBytesQuota: 'Download Quota',
+    noDownloadQuota: 'No Download Quota',
   };
 
   let nonDisplayFields = [
@@ -68,8 +82,8 @@ function UserDetail() {
     'lastDownloadDate',
     'orgGlobalId',
   ];
-  
-  if (user && user.noDownloadQuota) {
+
+  if (user?.noDownloadQuota) {
     nonDisplayFields.push('monthlyBytesUsed', 'monthlyBytesQuota');
   }
 
@@ -160,9 +174,9 @@ function UserDetail() {
     });
   };
 
-  const canSee = () => (loading === LoadingState.SUCCESS && admin);
+  const canSee = () => loading === LoadingState.SUCCESS && admin;
 
-  const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -170,7 +184,7 @@ function UserDetail() {
     setOpenSnackbar(false);
   };
 
-  const handleDupClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleDupClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -194,20 +208,14 @@ function UserDetail() {
           />
         );
       }
-      return (
-        <BasicRow
-          key={field}
-          field={field}
-          value={value}
-          readableNames={readableNames}
-        />
-      );
+      return <BasicRow key={field} field={field} value={value} readableNames={readableNames} />;
     }
     return null;
   };
 
   const editUserDetails = async () => {
     const { groupRoles, ...otherValues } = editedValues as User;
+    const clientSessionId: string = crypto.randomUUID();
 
     // Mapping groupRoles to the desired format
     const groupAssignmentsFormat = groupRoles.map((groupRole: GroupRole) => ({
@@ -234,6 +242,7 @@ function UserDetail() {
         userObjectId!,
         token,
         groupAssignmentsFormat,
+        clientSessionId,
       );
 
       if (assignmentResponse.status !== ResponseType.Success) {
@@ -244,6 +253,7 @@ function UserDetail() {
         userObjectId!,
         token,
         editedValuesDtoFormat,
+        clientSessionId,
       );
 
       if (userResponse.status !== ResponseType.Success) {
@@ -280,14 +290,9 @@ function UserDetail() {
 
   const hasChanges = !deepEqual(user, editedValues);
 
-  return (user && !dataError) ? (
+  return user && !dataError ? (
     <div>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        display="flex"
-      >
+      <Stack direction="row" justifyContent="space-between" alignItems="center" display="flex">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {renderIcon(user, 'large')}
           <Typography className="pageTitle" style={{ paddingBottom: 0 }}>
@@ -303,15 +308,20 @@ function UserDetail() {
           canSee={canSee}
         />
       </Stack>
-      {orgChanged ?
-        <Alert style={{ marginTop: '15px' }} severity="warning">Changing the organisation will change the group roles</Alert>
-        : null}
+      {orgChanged ? (
+        <Alert style={{ marginTop: '15px' }} severity="warning">
+          Changing the organisation will change the group roles
+        </Alert>
+      ) : null}
       {errMsg ? <Alert severity="error">{errMsg}</Alert> : null}
       <TableContainer component={Paper} sx={{ mt: 3, borderRadius: '10px' }}>
         <Table>
           <TableBody>
             {Object.entries(user).map(([field, value]) => {
-              if ((typeof value !== 'object' || value === null) && !nonDisplayFields.includes(field)) {
+              if (
+                (typeof value !== 'object' || value === null) &&
+                !nonDisplayFields.includes(field)
+              ) {
                 return renderRow(field as keyof User, value);
               }
               if (field === 'groupRoles') {

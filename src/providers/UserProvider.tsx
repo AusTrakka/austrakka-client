@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import LoadingState from '../constants/loadingState';
 import { logoOnlyUrl } from '../constants/logoPaths';
 import './UserProvider.css';
@@ -27,14 +27,11 @@ function UserProvider({ children }: UserProviderProps) {
         setShowChildren(true);
       }, 400);
     };
-    
-    if (
-      tokenLoading !== LoadingState.IDLE &&
-      tokenLoading !== LoadingState.LOADING
-    ) {
+
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
       fetchRolesData();
     }
-  }, [token, tokenLoading, rolesLoading, dispatch]);
+  }, [token, tokenLoading, dispatch]);
 
   return (
     <>

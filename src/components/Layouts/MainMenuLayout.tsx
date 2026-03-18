@@ -1,29 +1,51 @@
-/* eslint-disable no-nested-ternary */
-import React, { useState } from 'react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import {
-  NavLink, useLocation, Link, Outlet, useNavigate,
-} from 'react-router-dom';
-import {
-  Inventory, Upload, Help,
-  Dashboard, AccountTree, Description, AccountCircle,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, People, ViewColumn, Domain,
+  AccountCircle,
+  AccountTree,
+  Dashboard,
+  Description,
+  Domain,
+  Help,
+  Inventory,
+  KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight,
+  People,
+  Upload,
+  ViewColumn,
 } from '@mui/icons-material';
 import {
-  Box, Drawer, IconButton, List,
-  MenuItem, Typography,
-  Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip, Grid,
+  Box,
+  Breadcrumbs,
+  Divider,
+  Drawer,
+  Grid,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { useMsal, useAccount } from '@azure/msal-react';
-import styles from './MainMenuLayout.module.css';
-import LogoutButton from '../Common/LogoutButton';
+import React, { useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../app/store';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
-import { PermissionLevel, hasPermission, hasPermissionV2 } from '../../permissions/accessTable';
-import Feedback from '../Feedback/Feedback';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
+import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
-import { ScopeDefinitions } from '../../constants/scopes';
-import { Theme } from '../../assets/themes/theme';
+import { hasPermissionV2ByRole } from '../../permissions/accessTable';
+import { RoleV2SeededName } from '../../permissions/roles';
+import LogoutButton from '../Common/LogoutButton';
+import Feedback from '../Feedback/Feedback';
+import styles from './MainMenuLayout.module.css';
+
+interface SideBarItemProps {
+  title: string;
+  link: string;
+  icon: React.ReactNode;
+  permissionDomain?: string;
+}
 
 function MainMenuLayout() {
   const navigate = useNavigate();
@@ -79,8 +101,15 @@ function MainMenuLayout() {
    * The project tabs can only be routed through bread crumbs when they are not the leaf node.
    */
 
-  const noBreadCrumbIfLast: string[] =
-    ['dashboard', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
+  const noBreadCrumbIfLast: string[] = [
+    'dashboard',
+    'samples',
+    'trees',
+    'plots',
+    'members',
+    'proformas',
+    'datasets',
+  ];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -89,9 +118,12 @@ function MainMenuLayout() {
     pathnames[1] = '';
   }
 
-  if (pathnames.length > 0 && pathnames.length <= 3 &&
-    noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
-    && (pathnames[0] === 'projects' || pathnames[0] === 'org')) {
+  if (
+    pathnames.length > 0 &&
+    pathnames.length <= 3 &&
+    noBreadCrumbIfLast.some((item) => pathnames[pathnames.length - 1].endsWith(item)) &&
+    (pathnames[0] === 'projects' || pathnames[0] === 'org')
+  ) {
     pathnames.pop();
   }
 
@@ -100,7 +132,7 @@ function MainMenuLayout() {
   const account = useAccount(accounts[0] || {});
   const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const pages = [
+  const pages: SideBarItemProps[] = [
     {
       title: 'Dashboard',
       link: '/',
@@ -127,48 +159,31 @@ function MainMenuLayout() {
       icon: <ViewColumn />,
     },
     {
-      // TODO: Drive content pane visibility based on V2 permission.
       title: 'Platform',
       link: '/platform',
       icon: <Domain />,
-      requirePermission: true,
-      permissionDomain: null,
-      requiredTenantScope: ScopeDefinitions.GetTenantActivityLog,
+      permissionDomain: 'tenantPlatform',
     },
     {
       title: 'Users',
       link: '/users',
       icon: <People />,
-      requirePermission: true,
       permissionDomain: 'users',
     },
     {
       title: 'Users (V2)',
       link: '/usersV2',
       icon: <People color="warning" />,
-      requirePermission: true,
       permissionDomain: 'usersV2',
     },
   ];
 
-  const hasV1Perm = (domain: string | null): boolean => hasPermission(
-    user,
-    'AusTrakka-Owner',
-    domain,
-    PermissionLevel.CanShow,
-  );
+  const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
 
-  const hasV2TenantPerm = (scope: string | undefined): boolean => hasPermissionV2(
-    user,
-    scope,
-  );
+  const visiblePages = pages.filter((page) => !page.permissionDomain || hasAdminRights);
 
-  const visiblePages = pages.filter((page) =>
-    !page.requirePermission
-    || hasV1Perm(page.permissionDomain)
-    || hasV2TenantPerm(page.requiredTenantScope));
-
-  const showSidebarBrandingName = (): boolean => import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
+  const showSidebarBrandingName = (): boolean =>
+    import.meta.env.VITE_BRANDING_SIDEBAR_NAME_ENABLED === 'true';
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
@@ -197,35 +212,40 @@ function MainMenuLayout() {
             },
           }}
         >
-          <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: drawer ? 'row' : 'column',
+              justifyContent: 'center',
+            }}
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
-              {drawer ? (<img src={logoUrl} alt="logo" className={styles.logo} />) : <img src={logoOnlyUrl} alt="logo" className={styles.logo} />}
+              {drawer ? (
+                <img src={logoUrl} alt="logo" className={styles.logo} />
+              ) : (
+                <img src={logoOnlyUrl} alt="logo" className={styles.logo} />
+              )}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <IconButton
-                onClick={() => handleDrawer()}
-                aria-label="menu-toggle"
-              >
+              <IconButton onClick={() => handleDrawer()} aria-label="menu-toggle">
                 {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight />}
               </IconButton>
             </Box>
           </Box>
-          {
-            drawer && showSidebarBrandingName() && (
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'primary.main',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  fontWeight: '800',
-                }}
-              >
-                {import.meta.env.VITE_BRANDING_NAME}
-              </Typography>
-            )
-          }
+          {drawer && showSidebarBrandingName() && (
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'primary.main',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontWeight: '800',
+              }}
+            >
+              {import.meta.env.VITE_BRANDING_NAME}
+            </Typography>
+          )}
           <Divider />
           <List className={styles.pagelist}>
             {visiblePages.map((page) => (
@@ -240,18 +260,14 @@ function MainMenuLayout() {
                     fontWeight: isActive ? 'bold' : '',
                   })}
                 >
-                  <Tooltip
-                    title={drawer ? '' : page.title}
-                    arrow
-                    placement="right"
-                  >
+                  <Tooltip title={drawer ? '' : page.title} arrow placement="right">
                     <MenuItem
                       key={page.title}
                       sx={{
                         '&:hover': {
                           backgroundColor: Theme.PrimaryGrey300,
                         },
-                        'width': '100%',
+                        width: '100%',
                       }}
                     >
                       <ListItemIcon
@@ -273,8 +289,18 @@ function MainMenuLayout() {
           </List>
           <Divider />
           <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
-            <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
-              <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
+            <Tooltip
+              title={drawer ? username : `${user.displayName} - ${username}`}
+              arrow
+              placement="right"
+            >
+              <Grid
+                container
+                direction="column"
+                alignContent="center"
+                alignItems="center"
+                sx={{ padding: 2 }}
+              >
                 <Grid item>
                   <IconButton color="primary">
                     <AccountCircle />
@@ -286,8 +312,7 @@ function MainMenuLayout() {
                       {user.displayName}
                     </Typography>
                   </Grid>
-                )
-                  : null}
+                ) : null}
               </Grid>
             </Tooltip>
           </Link>
@@ -295,15 +320,19 @@ function MainMenuLayout() {
           <List>
             {settings.map((setting) => (
               <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
-                <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
+                <ListItemIcon
+                  sx={{
+                    color: 'primary.main',
+                    minWidth: 0,
+                    mr: drawer ? 1 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
                   {setting.icon}
                 </ListItemIcon>
                 {drawer ? (
-                  <ListItemText sx={{ color: 'primary.main' }}>
-                    {setting.title}
-                  </ListItemText>
-                )
-                  : null}
+                  <ListItemText sx={{ color: 'primary.main' }}>{setting.title}</ListItemText>
+                ) : null}
               </MenuItem>
             ))}
             <LogoutButton showText={drawer} />
@@ -320,8 +349,8 @@ function MainMenuLayout() {
               padding: '10px',
             }}
           >
-            This is the new user interface with an in-progress permissions system.
-            Not all new roles have been implemented.
+            This is the new user interface with an in-progress permissions system. Not all new roles
+            have been implemented.
           </Typography>
         </div>
       ) : null}
@@ -329,16 +358,14 @@ function MainMenuLayout() {
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link to="/">
-                Home
-              </Link>
+              <Link to="/">Home</Link>
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
                 const nolink = breadcrumbNoLink.includes(value);
                 const to = `/${pathnames.slice(0, index + 1).join('/')}`;
                 const displayValue = value in breadcrumbNameMap ? breadcrumbNameMap[value] : value;
 
-                return (last || nolink) ? (
+                return last || nolink ? (
                   <Typography color="text.primary" key={to}>
                     {displayValue}
                   </Typography>
@@ -351,7 +378,7 @@ function MainMenuLayout() {
             </Breadcrumbs>
           </div>
         </div>
-        {pathnames.map((value, index) => {
+        {pathnames.map((_value, index) => {
           const last: boolean = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 

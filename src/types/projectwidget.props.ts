@@ -1,5 +1,5 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { Sample } from './sample.interface';
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import type { Sample } from './sample.interface';
 
 export default interface ProjectWidgetProps {
   projectAbbrev: string;

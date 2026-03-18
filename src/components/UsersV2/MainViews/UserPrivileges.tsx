@@ -1,9 +1,9 @@
 import { Box, Paper, Stack, Table, TableBody, TableContainer, Typography } from '@mui/material';
-import React, { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import type { GroupedPrivilegesByRecordType, RecordRole } from '../../../types/dtos';
+import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 import EditButtonsV2 from '../EditButtonsV2';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
-import { GroupedPrivilegesByRecordType, RecordRole } from '../../../types/dtos';
-import { RoleAssignments } from '../../../types/userDetailEdit.interface';
 
 interface UserPrivilegesProps {
   editingPrivileges: boolean;
@@ -20,10 +20,9 @@ interface UserPrivilegesProps {
     role: RecordRole,
     recordType: string,
     recordName: string,
-    recordGlobalId: string) => void;
-  onSelectionAdd: (
-    recordType: string,
-    assignedRoles:RoleAssignments[]) => void;
+    recordGlobalId: string,
+  ) => void;
+  onSelectionAdd: (recordType: string, assignedRoles: RoleAssignments[]) => void;
 }
 
 export default function UserPrivileges({
@@ -62,11 +61,7 @@ export default function UserPrivileges({
           onSaveLoading={onSaveLoading}
         />
       </Stack>
-      <TableContainer
-        component={Box}
-        className="table-container"
-        sx={{ borderRadius: '6px' }}
-      >
+      <TableContainer component={Box} className="table-container" sx={{ borderRadius: '6px' }}>
         <Table>
           <TableBody>
             <RenderGroupedPrivileges

@@ -1,10 +1,9 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
-import UserGroupRolesRow from './UserGroupRolesRow';
-import { User, GroupRole, Group, Role } from '../../../types/dtos';
-import GroupHeaderRow from './GroupHeaderRow';
+import type { Dispatch, SetStateAction } from 'react';
+import type { Group, GroupRole, Role, User } from '../../../types/dtos';
 import { GroupHeadings } from '../Enums/GroupHeadings';
 import { sortGroupRoles } from '../groupSorting';
+import GroupHeaderRow from './GroupHeaderRow';
+import UserGroupRolesRow from './UserGroupRolesRow';
 
 interface RenderGroupedRolesAndGroupsProps {
   userGroupRoles: GroupRole[];
@@ -14,12 +13,13 @@ interface RenderGroupedRolesAndGroupsProps {
   setOpenGroupRoles: Dispatch<SetStateAction<string[]>>;
   editing: boolean;
   updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
-  allGroups: Group[]
+  allGroups: Group[];
   allRoles: Role[];
 }
 
 function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
-  const { userGroupRoles,
+  const {
+    userGroupRoles,
     setOpenDupSnackbar,
     openGroupRoles,
     user,
@@ -27,15 +27,17 @@ function RenderGroupedRolesAndGroups(props: RenderGroupedRolesAndGroupsProps) {
     editing,
     updateUserGroupRoles,
     allRoles,
-    allGroups } = props;
+    allGroups,
+  } = props;
 
   const [personalOrgs, foriegnOrgs, otherGroups] = sortGroupRoles(userGroupRoles, user);
 
   const handleGroupRoleToggle = (groupName: string) => {
     setOpenGroupRoles((prevOpenGroupRoles) =>
-      (prevOpenGroupRoles.includes(groupName)
+      prevOpenGroupRoles.includes(groupName)
         ? prevOpenGroupRoles.filter((name) => name !== groupName)
-        : [...prevOpenGroupRoles, groupName]));
+        : [...prevOpenGroupRoles, groupName],
+    );
   };
 
   const renderGroupRoles = (groupRoles: GroupRole[], groupType: string) => {

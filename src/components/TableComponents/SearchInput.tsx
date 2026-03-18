@@ -1,6 +1,6 @@
-import React, { memo, useRef } from 'react';
-import { Box, IconButton, IconButtonProps, styled, TextField, Tooltip } from '@mui/material';
 import { ManageSearch } from '@mui/icons-material';
+import { Box, IconButton, type IconButtonProps, styled, TextField, Tooltip } from '@mui/material';
+import React, { memo, useRef } from 'react';
 
 interface SearchInputProps {
   value: string;
@@ -46,13 +46,14 @@ function SearchInput({ placeholder = '', label = 'Search', value, onChange }: Se
         onMouseLeave={() => setIsHovered(false)}
       />
 
-      <Box style={{
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-        zIndex: 2,
-        pointerEvents: 'none',
-      }}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
       >
         <Tooltip title="Keyword Search" placement="top">
           <HoverableIconButton
@@ -66,13 +67,13 @@ function SearchInput({ placeholder = '', label = 'Search', value, onChange }: Se
         <TextField
           inputRef={inputRef}
           sx={{
-            'marginBottom': 1,
-            'width': value ? '200px' : '0',
+            marginBottom: 1,
+            width: value ? '200px' : '0',
             '&:focus-within': {
               width: 200,
             },
-            'transition': 'width 0.5s',
-            'pointerEvents': 'auto',
+            transition: 'width 0.5s',
+            pointerEvents: 'auto',
           }}
           id="global-filter"
           label={label}

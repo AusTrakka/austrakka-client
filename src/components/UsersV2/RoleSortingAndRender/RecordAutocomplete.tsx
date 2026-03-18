@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { Dispatch, SetStateAction } from 'react';
-import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
-import { MinifiedRecord } from '../../../types/userDetailEdit.interface';
+import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
+import type { Dispatch, SetStateAction } from 'react';
+import type { MinifiedRecord } from '../../../types/userDetailEdit.interface';
 
 interface RecordAutocompleteProps {
   records: MinifiedRecord[];
@@ -16,7 +15,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
 
   return (
     <Autocomplete
-      options={records?.filter(r => !selectedRecords?.some(sr => sr.id === r.id)) || []}
+      options={records?.filter((r) => !selectedRecords?.some((sr) => sr.id === r.id)) || []}
       multiple
       disabled={recordType === 'Tenant'}
       limitTags={1}
@@ -25,7 +24,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
       disableCloseOnSelect
       isOptionEqualToValue={(option, value) => option.id === value.id}
       getOptionLabel={(option) => option.abbrev}
-      onChange={(e, v) => setSelectedRecords(v)}
+      onChange={(_e, v) => setSelectedRecords(v)}
       renderOption={(_props, option, { selected }) => (
         <li {..._props} style={{ fontSize: '0.9em' }} key={option.id}>
           <Checkbox
@@ -55,7 +54,8 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
               />
             </Tooltip>
           );
-        })}
+        })
+      }
       renderInput={(params) => (
         <TextField
           {...params}

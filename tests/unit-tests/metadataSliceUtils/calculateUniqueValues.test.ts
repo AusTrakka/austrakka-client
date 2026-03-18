@@ -1,6 +1,6 @@
-import { Field } from '../../../src/types/dtos';
-import { Sample } from '../../../src/types/sample.interface';
 import { calculateUniqueValues } from '../../../src/app/metadataSliceUtils';
+import type { Field } from '../../../src/types/dtos';
+import type { Sample } from '../../../src/types/sample.interface';
 
 describe('calculateUniqueValues', () => {
   const fields: Field[] = [
@@ -60,10 +60,30 @@ describe('calculateUniqueValues', () => {
 
   describe('when data is not empty, or in general', () => {
     const data: Sample[] = [
-      { visualisableStringField: 'a', nonVisualisableStringField: 'a', datefield: new Date('2021-01-01'), categoricalfield: 'val1' },
-      { visualisableStringField: 'a', nonVisualisableStringField: 'b', datefield: new Date('2021-01-01'), categoricalfield: 'val2' },
-      { visualisableStringField: 'c', nonVisualisableStringField: 'b', datefield: new Date('2021-01-03'), categoricalfield: 'val2' },
-      { visualisableStringField: 'd', nonVisualisableStringField: 'd', datefield: new Date('2021-01-04'), categoricalfield: 'val1' },
+      {
+        visualisableStringField: 'a',
+        nonVisualisableStringField: 'a',
+        datefield: new Date('2021-01-01'),
+        categoricalfield: 'val1',
+      },
+      {
+        visualisableStringField: 'a',
+        nonVisualisableStringField: 'b',
+        datefield: new Date('2021-01-01'),
+        categoricalfield: 'val2',
+      },
+      {
+        visualisableStringField: 'c',
+        nonVisualisableStringField: 'b',
+        datefield: new Date('2021-01-03'),
+        categoricalfield: 'val2',
+      },
+      {
+        visualisableStringField: 'd',
+        nonVisualisableStringField: 'd',
+        datefield: new Date('2021-01-04'),
+        categoricalfield: 'val1',
+      },
     ];
 
     test('field names not in data should throw an error', () => {
@@ -93,8 +113,18 @@ describe('calculateUniqueValues', () => {
     });
     test('empty and null values should be included as empty strings', () => {
       const localData: Sample[] = data.concat([
-        { visualisableStringField: '', nonVisualisableStringField: '', datefield: null, categoricalfield: null },
-        { visualisableStringField: null, nonVisualisableStringField: null, datefield: null, categoricalfield: '' },
+        {
+          visualisableStringField: '',
+          nonVisualisableStringField: '',
+          datefield: null,
+          categoricalfield: null,
+        },
+        {
+          visualisableStringField: null,
+          nonVisualisableStringField: null,
+          datefield: null,
+          categoricalfield: '',
+        },
       ]);
       const fieldNames = ['visualisableStringField', 'categoricalfield'];
       const result = calculateUniqueValues(fieldNames, fields, localData);

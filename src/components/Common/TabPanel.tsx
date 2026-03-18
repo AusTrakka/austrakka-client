@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useState } from 'react';
 import { Box, LinearProgress } from '@mui/material';
+import React, { memo, useEffect, useState } from 'react';
 
 type WithSetIsLoading = {
   setIsLoading: (loading: boolean) => void;
@@ -8,18 +8,12 @@ type WithSetIsLoading = {
 interface TabPanelProps {
   index: number;
   value: number;
-  loadingState?: boolean ;
+  loadingState?: boolean;
   setIsLoading?: (loading: boolean) => void;
   children: React.ReactNode;
 }
 
-function TabPanel({
-  children,
-  value,
-  index,
-  loadingState,
-  setIsLoading,
-}: TabPanelProps) {
+function TabPanel({ children, value, index, loadingState, setIsLoading }: TabPanelProps) {
   const [visited, setVisited] = useState(false);
   const isActive = value === index;
 
@@ -32,18 +26,16 @@ function TabPanel({
   const loading = loadingState ?? false;
 
   const childElement =
-        setIsLoading && React.isValidElement<WithSetIsLoading>(children)
-          ? React.cloneElement(children, { setIsLoading })
-          : children;
-  
+    setIsLoading && React.isValidElement<WithSetIsLoading>(children)
+      ? React.cloneElement(children, { setIsLoading })
+      : children;
+
   return (
-    <div
-      role="tabpanel"
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-    >
+    <div role="tabpanel" id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`}>
       {loading && <LinearProgress color="secondary" />}
-      <Box hidden={!isActive || loading} sx={{ marginTop: 2 }}>{childElement}</Box>
+      <Box hidden={!isActive || loading} sx={{ marginTop: 2 }}>
+        {childElement}
+      </Box>
     </div>
   );
 }
