@@ -14,6 +14,8 @@ import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
+import { NULL_COLOUR } from '../../../utilities/colourUtils';
+import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -34,6 +36,7 @@ const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
   dateFilterField: string;
+  colourMapping?: Record<string, string> | undefined;
 }
 
 /** Widget displaying a basic Epi Curve
@@ -46,6 +49,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     filteredData,
     timeFilterObject,
     dateFilterField,
+    colourMapping,
     preferredColourField = null,
   } = props;
   const data: ProjectMetadataState | null = useAppSelector((state) =>
@@ -83,14 +87,39 @@ function EpiCurveChart(props: EpiCurveChartProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
+    // Not ideal, but only used for the case where the widget colourMapping is specified incorrectly
+    const randomColour = () => {
+      const hue = Math.floor(Math.random() * 360);
+      const saturation = 70;
+      const lightness = 70;
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    };
+
     const setColourSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
-      const colSpec = {
-        field: field,
-        scale: createVegaScale(values, colourScheme),
-        legend: legendSpec,
-      };
-      setColourSpec(colSpec);
+      if (colourMapping) {
+        const colSpec = {
+          field: field,
+          scale: {
+            domain: values,
+            range: values.map((val) =>
+              isNullOrEmpty(val) ? NULL_COLOUR : (colourMapping[val] ?? randomColour()),
+            ),
+          },
+          legend: {
+            ...legendSpec,
+            labelExpr: "datum.label || 'unknown'",
+          },
+        };
+        setColourSpec(colSpec);
+      } else {
+        const colSpec = {
+          field: field,
+          scale: createVegaScale(values, colourScheme),
+          legend: legendSpec,
+        };
+        setColourSpec(colSpec);
+      }
     };
 
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
