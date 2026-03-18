@@ -5,9 +5,7 @@ import { Alert, Box, Button, Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { loginRequest } from '../../config/authConfig';
-
-const logoUrl = new URL(`/src/assets/logos/${import.meta.env.VITE_LOGO_PATH}`, import.meta.url)
-  .href;
+import { logoUrl } from '../../constants/logoPaths';
 
 const autoLoginParam = 'auto_login';
 

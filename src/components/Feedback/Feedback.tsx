@@ -49,7 +49,7 @@ function Feedback(props: FeedbackProps) {
       };
       const feedbackResp = await postFeedback(feedbackDto, token);
       if (feedbackResp.status === ResponseType.Success) {
-        enqueueSnackbar(`Feedback received. Ticket number: ${feedbackResp.data?.id}`, {
+        enqueueSnackbar(`Feedback received. Id: ${feedbackResp.data?.msgId}`, {
           variant: 'success',
         });
         setTitle('');
