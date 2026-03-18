@@ -8,7 +8,7 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function OFNDashboard(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -77,6 +77,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
                     timeFilterObject={timeFilterObject}
+                    dateFilterField={dateFilterField}
                   />
                 </CardContent>
               </Card>
@@ -89,6 +90,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                     filteredData={filteredData}
                     timeFilterObject={timeFilterObject}
                     preferredColourField="Place_of_acquisition_category"
+                    dateFilterField={dateFilterField}
                   />
                 </CardContent>
               </Card>
