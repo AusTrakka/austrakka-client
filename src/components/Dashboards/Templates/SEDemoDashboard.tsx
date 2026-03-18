@@ -8,7 +8,7 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 // This dashboard is intended to be used for demo projects,
 // and to be updated without impacting real investigations
 function DemoDashboard(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -37,6 +37,7 @@ function DemoDashboard(props: ProjectDashboardTemplateProps) {
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  dateFilterField={dateFilterField}
                 />
               </CardContent>
             </Card>
