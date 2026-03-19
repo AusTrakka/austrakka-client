@@ -124,7 +124,7 @@ function SampleSummary(props: ProjectWidgetProps) {
   };
 
   return (
-    <Box>
+    <Box maxWidth={900} mr="auto">
       <Grid container spacing={2} direction="row" justifyContent="space-between">
         {data?.loadingState === MetadataLoadingState.DATA_LOADED && (
           <>
