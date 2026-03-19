@@ -430,9 +430,8 @@ export interface FeedbackPost {
   currentPage: string;
 }
 
-export interface Feedback {
-  feedbackPost: FeedbackPost;
-  id: string;
+export interface CreateMsg {
+  msgId: number;
 }
 
 export interface ProjectDashboardDetails {

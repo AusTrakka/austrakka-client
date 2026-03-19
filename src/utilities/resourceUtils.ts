@@ -1,6 +1,6 @@
 import type {
+  CreateMsg,
   DerivedLog,
-  Feedback,
   FeedbackPost,
   Group,
   Organisation,
@@ -242,7 +242,8 @@ export const getOrganisation = (
 export const postFeedback = (
   feedbackPostDto: FeedbackPost,
   token: string,
-): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
+): Promise<ResponseObject<CreateMsg>> =>
+  callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
 export const postTenantPrivilege = (

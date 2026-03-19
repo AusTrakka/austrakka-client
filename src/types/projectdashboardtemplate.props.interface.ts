@@ -5,4 +5,5 @@ export default interface ProjectDashboardTemplateProps {
   projectAbbrev: string;
   filteredData: Sample[];
   timeFilterObject: DataTableFilterMeta;
+  dateFilterField: string;
 }
