@@ -50,8 +50,8 @@ function LabDataDashboard(props: ProjectDashboardTemplateProps) {
                       projectAbbrev={projectAbbrev}
                       filteredData={filteredData}
                       timeFilterObject={timeFilterObject}
-                      field="AMR_mechanisms_submitted"
-                      title="Top 10 AMR_mechanisms_submitted"
+                      field="AMR_reportable_submitted"
+                      title="Top 10 AMR_reportable_submitted"
                       categoryLimit={10}
                       legendColumns={3}
                     />
