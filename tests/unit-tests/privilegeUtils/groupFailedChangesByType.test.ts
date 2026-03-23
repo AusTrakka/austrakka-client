@@ -1,4 +1,4 @@
-import { PendingChange } from '../../../src/types/userDetailEdit.interface';
+import type { PendingChange } from '../../../src/types/userDetailEdit.interface';
 import { groupFailedChangesByType } from '../../../src/utilities/privilegeUtils';
 
 describe('groupFailedChangesByType', () => {

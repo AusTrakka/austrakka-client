@@ -1,28 +1,27 @@
-import React from 'react';
 import { Alert, AlertTitle, Box, Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { useAppSelector } from '../../../app/store';
-import DrilldownButton from '../../Common/DrilldownButton';
-import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
-import { maxObj } from '../../../utilities/dataProcessingUtils';
-import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import { useStableNavigate } from '../../../app/NavigationContext';
+import {
+  type ProjectMetadataState,
+  selectProjectMetadata,
+} from '../../../app/projectMetadataSlice';
+import { useAppSelector } from '../../../app/store';
+import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
+import { maxObj } from '../../../utilities/dataProcessingUtils';
+import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import DrilldownButton from '../../Common/DrilldownButton';
 
 function SampleSummary(props: ProjectWidgetProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
-  const data: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const data: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   const { navigate } = useStableNavigate();
   // Drilldown filters
-  const allSamplesFilter: any [] = [];
+  const allSamplesFilter: any[] = [];
 
   const hasSequenceFilter: DataTableFilterMeta = {
     Has_sequences: {
@@ -67,7 +66,7 @@ function SampleSummary(props: ProjectWidgetProps) {
       updateTabUrlWithSearch(navigate, '/samples', drilldownFilters);
     }
   };
-  
+
   const renderLatestSampleUpload = () => {
     // If there are no samples
     // Should only be called if state DATA_LOADED, but check metadata exists anyway
@@ -80,9 +79,9 @@ function SampleSummary(props: ProjectWidgetProps) {
         </Tooltip>
       );
     }
-    
+
     // If there are samples but we don't know Date_created
-    if (!(data!.fields!.some((field) => field.columnName === 'Date_created'))) {
+    if (!data!.fields!.some((field) => field.columnName === 'Date_created')) {
       return (
         <Tooltip
           title="Date_created is not a project field, so latest uploaded sample is not known"
@@ -94,7 +93,7 @@ function SampleSummary(props: ProjectWidgetProps) {
         </Tooltip>
       );
     }
-    
+
     // Success case
     return (
       <>
@@ -103,37 +102,41 @@ function SampleSummary(props: ProjectWidgetProps) {
         </Typography>
         <Stack direction="row" spacing={5}>
           <Typography variant="subtitle2" paddingBottom={1} color="primary">
-            {formatDateAsTwoStrings(
-              maxObj(data!.metadata!.map((sample) => sample.Date_created)),
-            )[1]}
+            {
+              formatDateAsTwoStrings(
+                maxObj(data!.metadata!.map((sample) => sample.Date_created)),
+              )[1]
+            }
           </Typography>
           <DrilldownButton
             title="View Samples"
             enabled={data!.metadata!.length > 0}
-            onClick={() => handleDrilldownFilters(
-              'latest_upload',
-              getLastUploadFilter(
-                maxObj(data!.metadata!.map((sample) => sample.Date_created)),
-              ),
-            )}
+            onClick={() =>
+              handleDrilldownFilters(
+                'latest_upload',
+                getLastUploadFilter(maxObj(data!.metadata!.map((sample) => sample.Date_created))),
+              )
+            }
           />
         </Stack>
       </>
     );
   };
-  
+
   return (
-    <Box>
+    <Box maxWidth={900} mr="auto">
       <Grid container spacing={2} direction="row" justifyContent="space-between">
-        { data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+        {data?.loadingState === MetadataLoadingState.DATA_LOADED && (
           <>
             <Grid item>
               <Typography variant="h5" paddingBottom={1} color="primary">
                 Total samples
               </Typography>
               <Typography variant="h2" paddingBottom={1} color="primary.main">
-                {filteredData!.length.toLocaleString('en-US') + (
-                  (timeFilterObject && Object.keys(timeFilterObject).length > 0) ? ` (${data!.metadata!.length.toLocaleString('en-US')})` : '')}
+                {filteredData!.length.toLocaleString('en-US') +
+                  (timeFilterObject && Object.keys(timeFilterObject).length > 0
+                    ? ` (${data!.metadata!.length.toLocaleString('en-US')})`
+                    : '')}
               </Typography>
               <DrilldownButton
                 title="View Samples"
@@ -150,13 +153,15 @@ function SampleSummary(props: ProjectWidgetProps) {
               <Typography variant="h5" paddingBottom={1} color="primary">
                 Records without sequences
               </Typography>
-              {(data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
+              {data!.fields!.some((field) => field.columnName === 'Has_sequences') ? (
                 <>
                   <Typography variant="h2" paddingBottom={1} color="primary">
-                    {(filteredData!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US') + (
-                      (timeFilterObject && Object.keys(timeFilterObject).length > 0) ?
-                        ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})` : ''
-                    )}
+                    {filteredData!
+                      .filter((sample) => !sample.Has_sequences)
+                      .length.toLocaleString('en-US') +
+                      (timeFilterObject && Object.keys(timeFilterObject).length > 0
+                        ? ` (${(data!.metadata!.filter((sample) => !sample.Has_sequences).length).toLocaleString('en-US')})`
+                        : '')}
                   </Typography>
                   <DrilldownButton
                     title="View Samples"
@@ -164,30 +169,35 @@ function SampleSummary(props: ProjectWidgetProps) {
                   />
                 </>
               ) : (
-                <Tooltip title="Has_sequences is not a project field, so this count is not known" placement="top">
+                <Tooltip
+                  title="Has_sequences is not a project field, so this count is not known"
+                  placement="top"
+                >
                   <Typography variant="h2" paddingBottom={1} color="primary">
                     Unknown
                   </Typography>
                 </Tooltip>
-              ))}
+              )}
             </Grid>
           </>
         )}
-        { data?.errorMessage && (
-        <Grid container item>
-          <Alert severity="error">
-            <AlertTitle>Error</AlertTitle>
-            {data!.errorMessage}
-          </Alert>
-        </Grid>
+        {data?.errorMessage && (
+          <Grid container item>
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              {data!.errorMessage}
+            </Alert>
+          </Grid>
         )}
-        { (!data?.loadingState ||
-          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
+        {(!data?.loadingState ||
+          !(
+            data.loadingState === MetadataLoadingState.DATA_LOADED ||
             data.loadingState === MetadataLoadingState.ERROR ||
-            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-            <Grid container item>
-              Loading...
-            </Grid>
+            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+          )) && (
+          <Grid container item>
+            Loading...
+          </Grid>
         )}
       </Grid>
     </Box>

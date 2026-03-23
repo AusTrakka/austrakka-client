@@ -1,4 +1,4 @@
 export interface DropFileUpload {
-  file: File
-  hash: string | undefined
+  file: File;
+  hash: string | undefined;
 }

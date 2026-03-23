@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { TopLevelSpec } from 'vega-lite';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import { ColorScheme } from 'vega';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStartingField, setColorAggregateInSpecToValue, setFieldInSpec } from '../../../utilities/plotUtils';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
-import VegaDataPlot from '../VegaDataPlot';
-import { useAppSelector } from '../../../app/store';
+import type { ColorScheme } from 'vega';
+import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
-import { ProjectViewField } from '../../../types/dtos';
+import { useAppSelector } from '../../../app/store';
+import { defaultContinuousColorScheme } from '../../../constants/schemes';
+import type { ProjectViewField } from '../../../types/dtos';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
+import {
+  getStartingField,
+  setColorAggregateInSpecToValue,
+  setFieldInSpec,
+} from '../../../utilities/plotUtils';
 import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { defaultContinuousColorScheme } from '../../../constants/schemes';
+import VegaDataPlot from '../VegaDataPlot';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredCatFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
+const preferredCatFields = [
+  'cgMLST',
+  'MLST',
+  'ST',
+  'Serotype',
+  'SNP_cluster',
+  'Lineage_family',
+  'Jurisdiction',
+];
 
 const defaultSpec: TopLevelSpec = {
   $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -45,8 +57,8 @@ const defaultSpec: TopLevelSpec = {
 function HeatMap(props: PlotTypeProps) {
   const { plot, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, plot?.projectAbbreviation),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, plot?.projectAbbreviation),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -77,12 +89,14 @@ function HeatMap(props: PlotTypeProps) {
     }
   }, [plot]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
-      const localCatFields : ProjectViewField[] = fields
-        .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null));
-      setCategoricalFields(localCatFields.map(field => field.columnName));
+      const localCatFields: ProjectViewField[] = fields.filter(
+        (field) =>
+          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+      );
+      setCategoricalFields(localCatFields.map((field) => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
@@ -93,13 +107,14 @@ function HeatMap(props: PlotTypeProps) {
       }
       if (yAxisField === '') {
         // This will still set y=x if x is the only field; we just prefer y!=x
-        setYAxisField(getStartingField(
-          preferredCatFields.filter(fld => !(fld === xAxisField)),
-          localCatFields,
-        ));
+        setYAxisField(
+          getStartingField(
+            preferredCatFields.filter((fld) => !(fld === xAxisField)),
+            localCatFields,
+          ),
+        );
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -114,10 +129,7 @@ function HeatMap(props: PlotTypeProps) {
   useEffect(() => {
     // TODO this will not currently set a domain of 0-max
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
-      setColorAggregateInSpecToValue(
-        oldSpec,
-        colourScheme,
-      );
+      setColorAggregateInSpecToValue(oldSpec, colourScheme);
 
     if (fieldUniqueValues) {
       setSpec(setColorInSpec);
@@ -144,9 +156,11 @@ function HeatMap(props: PlotTypeProps) {
           label="X-Axis"
           onChange={(e) => setXAxisField(e.target.value)}
         >
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -158,9 +172,11 @@ function HeatMap(props: PlotTypeProps) {
           label="Y-Axis"
           onChange={(e) => setYAxisField(e.target.value)}
         >
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <ColorSchemeSelector
@@ -175,10 +191,7 @@ function HeatMap(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={plot?.projectAbbreviation}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
     </>
   );
 }

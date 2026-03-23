@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
-import { User } from '../../../types/dtos';
+import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
+import { useState } from 'react';
+import type { User } from '../../../types/dtos';
 import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 import { bytesToMB } from '../../../utilities/renderUtils';
 
@@ -38,10 +38,7 @@ function BasicRow(props: BasicRowProps) {
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <span style={{ marginRight: '8px' }}>{value}</span>
-                  <Tooltip
-                    title={copied ? 'Copied!' : 'Copy to clipboard'}
-                    placement="top"
-                  >
+                  <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
                     <IconButton size="small" onClick={() => handleCopy(value)}>
                       <ContentCopy fontSize="small" />
                     </IconButton>
@@ -52,7 +49,7 @@ function BasicRow(props: BasicRowProps) {
             case typeof value === 'boolean':
               return <Switch disabled checked={value} size="small" />;
             case typeof value === 'number': // just for now all numbers are referring to bytes
-              return (`${bytesToMB(value)} MB per month`);
+              return `${bytesToMB(value)} MB per month`;
             default:
               return value;
           }

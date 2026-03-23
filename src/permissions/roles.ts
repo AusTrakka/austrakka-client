@@ -5,26 +5,26 @@ export enum RoleName {
   SeqViewer = 'SeqViewer',
   Uploader = 'Uploader',
   ProjectAnalyst = 'ProjectAnalyst',
-  ResultWriter = 'ResultWriter',
 }
 
-// This information should perhaps be moved to server-side
+// WARN: might be missing some here
+export enum RoleV2SeededName {
+  SuperUser = 'SuperUser',
+  User = 'User',
+  Admin = 'Admin',
+  ProjectAnalyst = 'ProjectAnalyst',
+  ProjectViewer = 'ProjectViewer',
+  OrgViewer = 'OrgViewer',
+  GuestViewer = 'GuestViewer',
+  ProjectContributor = 'ProjectContributor',
+  GuestUploader = 'GuestUploader',
+}
 
-export const austrakkaRoles = [
-  RoleName.AusTrakkaAdmin,
-  RoleName.ProFormaEditor,
-];
-
-export const orgRoles = [
-  RoleName.Viewer,
-  RoleName.SeqViewer,
-  RoleName.Uploader,
-];
+export const orgRoles = [RoleName.Viewer, RoleName.SeqViewer, RoleName.Uploader];
 
 export const projectRoles = [
   RoleName.Viewer,
   RoleName.SeqViewer,
   RoleName.Uploader,
   RoleName.ProjectAnalyst,
-  RoleName.ResultWriter,
 ];

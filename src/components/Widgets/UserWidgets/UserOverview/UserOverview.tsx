@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
 import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { Event, FileUploadOutlined, RuleOutlined } from '@mui/icons-material';
-import LoadingState from '../../../../constants/loadingState';
+import { useEffect, useState } from 'react';
 import { useApi } from '../../../../app/ApiContext';
-import { formatDateAsTwoStrings } from '../../../../utilities/dateUtils';
-import { ResponseObject } from '../../../../types/responseObject.interface';
-import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
+import LoadingState from '../../../../constants/loadingState';
 import { ResponseType } from '../../../../constants/responseType';
-import { UserDashboardOverview } from '../../../../types/dtos';
+import type { UserDashboardOverview } from '../../../../types/dtos';
+import type { ResponseObject } from '../../../../types/responseObject.interface';
+import { formatDateAsTwoStrings } from '../../../../utilities/dateUtils';
+import { getUserDashboardOverview } from '../../../../utilities/resourceUtils';
 
 export default function UserOverview() {
   const { token, tokenLoading } = useApi();
@@ -36,64 +36,60 @@ export default function UserOverview() {
       getOverview();
     }
   }, [token, tokenLoading]);
-  
+
   return (
     <Box>
       <Grid container spacing={2} direction="row" justifyContent="space-between">
-        { isLoading || errorMessage != null || (
-        <>
-          <Grid>
-            <FileUploadOutlined color="primary" />
-            <Typography variant="h5" paddingBottom={1} color="primary">
-              Total viewable samples
-            </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary.main">
-              {totalSamples.toLocaleString('en-US')}
-            </Typography>
-          </Grid>
-          <Grid>
-            <Event color="primary" />
-            <Typography variant="h5" paddingBottom={1} color="primary">
-              Latest sample upload
-            </Typography>
-            {latestUploadDate ? (
-              <>
-                <Typography variant="h2" paddingBottom={1} color="primary">
-                  {formatDateAsTwoStrings(latestUploadDate)[0]}
-                </Typography>
-                <Typography variant="subtitle2" paddingBottom={1} color="primary">
-                  {formatDateAsTwoStrings(latestUploadDate)[1]}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant="h2" paddingBottom={1} color="primary">
-                -
+        {isLoading || errorMessage != null || (
+          <>
+            <Grid>
+              <FileUploadOutlined color="primary" />
+              <Typography variant="h5" paddingBottom={1} color="primary">
+                Total viewable samples
               </Typography>
-            )}
-          </Grid>
-          <Grid>
-            <RuleOutlined color="primary" />
-            <Typography variant="h5" paddingBottom={1} color="primary">
-              Records without sequences
-            </Typography>
-            <Typography variant="h2" paddingBottom={1} color="primary">
-              {samplesWithoutSequences.toLocaleString('en-US')}
-            </Typography>
-          </Grid>
-        </>
+              <Typography variant="h2" paddingBottom={1} color="primary.main">
+                {totalSamples.toLocaleString('en-US')}
+              </Typography>
+            </Grid>
+            <Grid>
+              <Event color="primary" />
+              <Typography variant="h5" paddingBottom={1} color="primary">
+                Latest sample upload
+              </Typography>
+              {latestUploadDate ? (
+                <>
+                  <Typography variant="h2" paddingBottom={1} color="primary">
+                    {formatDateAsTwoStrings(latestUploadDate)[0]}
+                  </Typography>
+                  <Typography variant="subtitle2" paddingBottom={1} color="primary">
+                    {formatDateAsTwoStrings(latestUploadDate)[1]}
+                  </Typography>
+                </>
+              ) : (
+                <Typography variant="h2" paddingBottom={1} color="primary">
+                  -
+                </Typography>
+              )}
+            </Grid>
+            <Grid>
+              <RuleOutlined color="primary" />
+              <Typography variant="h5" paddingBottom={1} color="primary">
+                Records without sequences
+              </Typography>
+              <Typography variant="h2" paddingBottom={1} color="primary">
+                {samplesWithoutSequences.toLocaleString('en-US')}
+              </Typography>
+            </Grid>
+          </>
         )}
       </Grid>
-      { errorMessage != null && (
+      {errorMessage != null && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       )}
-      { isLoading && errorMessage == null && (
-        <Typography>
-          Loading...
-        </Typography>
-      )}
+      {isLoading && errorMessage == null && <Typography>Loading...</Typography>}
     </Box>
   );
 }

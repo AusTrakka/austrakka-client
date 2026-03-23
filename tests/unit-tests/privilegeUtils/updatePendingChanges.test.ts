@@ -1,5 +1,5 @@
+import type { PendingChange, RoleAssignments } from '../../../src/types/userDetailEdit.interface';
 import { updatePendingChanges } from '../../../src/utilities/privilegeUtils';
-import { PendingChange, RoleAssignments } from '../../../src/types/userDetailEdit.interface';
 
 describe('updatePendingChanges', () => {
   const mockRecordType = 'User';
@@ -14,9 +14,7 @@ describe('updatePendingChanges', () => {
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
-      roles: [
-        { name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
-      ],
+      roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
     },
   ];
 
@@ -65,11 +63,7 @@ describe('updatePendingChanges', () => {
   });
 
   test('should handle empty pendingChanges by adding POST changes for all roles', () => {
-    const result = updatePendingChanges(
-      [],
-      mockRecordType,
-      mockFilteredAssignedRoles,
-    );
+    const result = updatePendingChanges([], mockRecordType, mockFilteredAssignedRoles);
 
     expect(result).toEqual([
       {
@@ -106,11 +100,7 @@ describe('updatePendingChanges', () => {
   });
 
   test('should handle empty filteredAssignedRoles by returning pendingChanges unchanged', () => {
-    const result = updatePendingChanges(
-      mockPendingChanges,
-      mockRecordType,
-      [],
-    );
+    const result = updatePendingChanges(mockPendingChanges, mockRecordType, []);
 
     expect(result).toEqual(mockPendingChanges);
   });
@@ -133,9 +123,7 @@ describe('updatePendingChanges', () => {
       [
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
-          roles: [
-            { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
-          ],
+          roles: [{ name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' }],
         },
       ],
     );
