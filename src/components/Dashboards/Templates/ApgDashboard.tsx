@@ -10,7 +10,7 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function ApgDashboard(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box>
@@ -36,6 +36,7 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
+                dateFilterField={dateFilterField}
               />
             </CardContent>
           </Card>
