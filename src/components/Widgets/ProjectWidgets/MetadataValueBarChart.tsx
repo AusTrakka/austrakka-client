@@ -34,9 +34,8 @@ interface MetadataValueWidgetProps extends ProjectWidgetProps {
   colourMapping?: Record<string, string> | undefined;
   legendColumns?: number | undefined;
   categoryLimit?: number | undefined; // Optional limit for number of categories to show
+  vertical?: boolean | undefined; // Whether to display bar vertically or horizontally
 }
-
-// TODO: Add optional flag whether categories outside of 'categoryLimit' should be grouped into "Other" category, and implement if so
 
 export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   const {
@@ -49,6 +48,7 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     colourMapping,
     legendColumns = 4,
     categoryLimit,
+    vertical = false,
   } = props;
   if (colourScheme && colourMapping) {
     // biome-ignore lint/suspicious/noConsole: historic
@@ -162,18 +162,22 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
-    width: 'container',
-    height: 30,
+    ...(vertical ? { width: '30' } : { height: 30, width: 'container' }),
     layer: [
       {
-        mark: { type: 'bar', height: 30, tooltip: true, cursor: 'pointer' },
+        mark: {
+          type: 'bar',
+          tooltip: true,
+          cursor: 'pointer',
+          ...(vertical ? { width: 30 } : { height: 30 }),
+        },
         encoding: {
-          y: { value: 'all' },
-          x: {
-            aggregate: 'count',
-            type: 'quantitative',
-            axis: { title: 'Count' },
-          },
+          y: vertical
+            ? { aggregate: 'count', type: 'quantitative', axis: { title: 'Count' } }
+            : { value: 'all' },
+          x: vertical
+            ? { value: 'all' }
+            : { aggregate: 'count', type: 'quantitative', axis: { title: 'Count' } },
           color: {
             field,
             scale: createCustomScale(),
