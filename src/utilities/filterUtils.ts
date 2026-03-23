@@ -1,5 +1,9 @@
-import {FilterMatchMode} from 'primereact/api';
-import type {DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData} from 'primereact/datatable';
+import { FilterMatchMode } from 'primereact/api';
+import type {
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableOperatorFilterMetaData,
+} from 'primereact/datatable';
 
 export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = {
   [FilterMatchMode.EQUALS]: '==',
@@ -50,7 +54,7 @@ export function generateDateFilterString(dateFilterObject: DataTableFilterMeta):
     // Handle operator type with a single constraint
     if (filterData.constraints.length > 0) {
       const [first1] = filterData.constraints;
-      const constraint = first1
+      const constraint = first1;
       dateValue = constraint.value;
       matchMode = constraint.matchMode as FilterMatchMode;
     }

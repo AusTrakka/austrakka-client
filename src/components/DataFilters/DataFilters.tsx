@@ -18,13 +18,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type React from 'react';
-import { type SetStateAction, useEffect, useState } from 'react'
-import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import type { DateValidationError } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type React from 'react';
+import { type SetStateAction, useEffect, useState } from 'react';
 import FieldTypes from '../../constants/fieldTypes';
 import type { Field } from '../../types/dtos';
 import {
@@ -41,13 +40,6 @@ import {
   stringConditions,
   stringInConditions,
 } from './fieldTypeOperators';
-import type { Field } from '../../types/dtos';
-import {
-  getConditionName,
-  getDisplayValue,
-  isDataTableFiltersEqual,
-  isOperatorFilterMetaData,
-} from '../../utilities/filterUtils';
 
 export const defaultState = {
   global: {
@@ -185,7 +177,7 @@ function DataFilters(props: DataFiltersProps) {
 
       let defaultCondition = '';
       let fieldType: FieldTypes = FieldTypes.STRING;
-      
+
       const uniqueValuesForField = fieldUniqueValues?.[value];
 
       // this changes the filter options based on the field type
@@ -280,8 +272,8 @@ function DataFilters(props: DataFiltersProps) {
 
   const handleStringValueSelector = () => {
     // this will check if the selectedField has unique values to pull from
-    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field];
-    
+    const uniqueValues: string[] | null = fieldUniqueValues?.[filterFormValues.field] ?? [];
+
     // only show drop-down if it has valid values and the condition in a direct comparison or is In
     if (
       uniqueValues &&
@@ -304,13 +296,7 @@ function DataFilters(props: DataFiltersProps) {
                 },
               });
             }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Value"
-                name="value"
-              />
-            )}
+            renderInput={(params) => <TextField {...params} label="Value" name="value" />}
             sx={{ minWidth: 200, maxHeight: 300 }}
           />
         </>
@@ -339,13 +325,7 @@ function DataFilters(props: DataFiltersProps) {
               },
             });
           }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Value"
-              name="value"
-            />
-          )}
+          renderInput={(params) => <TextField {...params} label="Value" name="value" />}
           sx={{ minWidth: 200, maxHeight: 300 }}
         />
       );
