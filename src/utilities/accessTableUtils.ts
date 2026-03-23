@@ -1,6 +1,10 @@
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
-import { RoleV2SeededName } from '../permissions/roles';
+import type { RoleV2SeededName } from '../permissions/roles';
+import type {
+  GroupedPrivilegesByRecordTypeWithScopes,
+  PrivilegeWithRolesWithScopes,
+} from '../types/dtos';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
   const targetGroup = groups.find((group) => group.recordType === RecordTypes.TENANT);
@@ -60,17 +64,17 @@ export function hasRoleInRecord(
     throw new Error('Must provide recordName');
   }
   let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
-  const targetGroup = privileges.find(priv => priv.recordType === recordType);
+  const targetGroup = privileges.find((priv) => priv.recordType === recordType);
   if (recordType === 'Tenant') {
     targetRecordRole = targetGroup?.recordRoles[0];
   } else {
-    targetRecordRole = targetGroup?.recordRoles
-      .find(recordRole => recordRole.recordName === recordName);
+    targetRecordRole = targetGroup?.recordRoles.find(
+      (recordRole) => recordRole.recordName === recordName,
+    );
   }
   if (!targetRecordRole) {
     return false;
   }
 
-  return targetRecordRole.roles.some(roleWithScopes =>
-    roleWithScopes.roleName === role);
+  return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.roleName === role);
 }

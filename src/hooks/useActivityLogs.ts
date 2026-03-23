@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApi } from '../app/ApiContext';
-import { ResponseObject } from '../types/responseObject.interface';
-import { getActivities } from '../utilities/resourceUtils';
-import { ResponseType } from '../constants/responseType';
+import type { Filters } from '../components/Common/Activity/ActivityFilters';
 import LoadingState from '../constants/loadingState';
 import { ResponseType } from '../constants/responseType';
 import type { DerivedLog } from '../types/dtos';
@@ -50,9 +48,7 @@ export default function useActivityLogs(recordType: string, filters: Filters, rg
       setDataLoading(false);
     };
 
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       setDataLoading(true);
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);

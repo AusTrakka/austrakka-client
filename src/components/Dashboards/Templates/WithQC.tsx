@@ -11,7 +11,7 @@ import Organisations from '../../Widgets/ProjectWidgets/Organisations';
 import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function WithQC(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -35,6 +35,7 @@ function WithQC(props: ProjectDashboardTemplateProps) {
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  dateFilterField={dateFilterField}
                 />
               </CardContent>
             </Card>

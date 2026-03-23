@@ -215,7 +215,7 @@ function UserDetail() {
 
   const editUserDetails = async () => {
     const { groupRoles, ...otherValues } = editedValues as User;
-    const clientSessionId : string = crypto.randomUUID();
+    const clientSessionId: string = crypto.randomUUID();
 
     // Mapping groupRoles to the desired format
     const groupAssignmentsFormat = groupRoles.map((groupRole: GroupRole) => ({

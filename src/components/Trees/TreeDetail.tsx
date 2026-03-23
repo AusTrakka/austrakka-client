@@ -1,39 +1,60 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
-import type React from 'react';
-import { type SyntheticEvent, createRef, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Grid, type SelectChangeEvent, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import type { TreeVersion } from '../../types/dtos';
-import type { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../../types/phylocanvas.interface';
-import { getTreeData, getLatestTreeData, getTreeVersions } from '../../utilities/resourceUtils';
-import Tree, { type TreeExportFuctions } from './Tree';
-import { TreeTypes } from './PhylocanvasGL';
-import MetadataControls from './TreeControls/Metadata';
-import ExportButton from './TreeControls/Export';
-import Search from './TreeControls/Search';
-import NodeAndLabelControls from './TreeControls/NodeAndLabel';
-import TreeNavigation from './TreeControls/TreeNavigation';
-import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
-import type TreeState from '../../types/tree.interface';
-import { useApi } from '../../app/ApiContext';
-import LoadingState from '../../constants/loadingState';
-import ColorSchemeSelector from './TreeControls/SchemeSelector';
-import TreeSamplesTable from './TreeSamplesTable';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import { ResponseType } from '../../constants/responseType';
 import {
-  selectProjectMetadata, type ProjectMetadataState, fetchProjectMetadata,
-} from '../../app/projectMetadataSlice';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
-import { useAppDispatch, useAppSelector } from '../../app/store';
-import type { Sample } from '../../types/sample.interface';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
-import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
-import { defaultDiscreteColorScheme } from '../../constants/schemes';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { Theme } from '../../assets/themes/theme';
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  AlertTitle,
+  Box,
+  Grid,
+  type SelectChangeEvent,
+  Stack,
+  Typography,
+} from '@mui/material';
+import type React from 'react';
+import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useApi } from '../../app/ApiContext';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
+import {
+  fetchProjectMetadata,
+  type ProjectMetadataState,
+  selectProjectMetadata,
+} from '../../app/projectMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { Theme } from '../../assets/themes/theme';
+import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { ResponseType } from '../../constants/responseType';
+import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import type { TreeVersion } from '../../types/dtos';
+import type {
+  FieldAndColourScheme,
+  PhylocanvasLegends,
+  PhylocanvasMetadata,
+} from '../../types/phylocanvas.interface';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import type { Sample } from '../../types/sample.interface';
+import type TreeState from '../../types/tree.interface';
+import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
+import { getLatestTreeData, getTreeData, getTreeVersions } from '../../utilities/resourceUtils';
+import {
+  useStateFromSearchParamsForObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
+import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
+import { TreeTypes } from './PhylocanvasGL';
+import type { TreeExportFuctions } from './Tree';
+import Tree from './Tree';
+import ExportButton from './TreeControls/Export';
+import MetadataControls from './TreeControls/Metadata';
+import NodeAndLabelControls from './TreeControls/NodeAndLabel';
+import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import Search from './TreeControls/Search';
+import TreeNavigation from './TreeControls/TreeNavigation';
+import TreeSamplesTable from './TreeSamplesTable';
 
 const defaultState: TreeState = {
   blocks: [],
@@ -82,18 +103,16 @@ function TreeDetail() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
-  const [state, setState] = useStateFromSearchParamsForObject(
-    defaultState,
-    navigate,
-  );
+  const [state, setState] = useStateFromSearchParamsForObject(defaultState, navigate);
   const rootIdDefault: string = '0';
   const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
     'rootId',
     rootIdDefault,
     navigate,
   );
-  const projectMetadata : ProjectMetadataState | null =
-    useAppSelector(st => selectProjectMetadata(st, projectAbbrev));
+  const projectMetadata: ProjectMetadataState | null = useAppSelector((st) =>
+    selectProjectMetadata(st, projectAbbrev),
+  );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { token, tokenLoading } = useApi();
@@ -101,9 +120,11 @@ function TreeDetail() {
 
   // Request redux data if not loaded
   useEffect(() => {
-    if (projectAbbrev &&
-       tokenLoading !== LoadingState.LOADING &&
-       tokenLoading !== LoadingState.IDLE) {
+    if (
+      projectAbbrev &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
   }, [projectAbbrev, dispatch, token, tokenLoading]);
@@ -111,7 +132,7 @@ function TreeDetail() {
   useEffect(() => {
     // Get list of Seq_IDs from newick
     if (tree) {
-      const matches = Array.from(tree.newickTree.matchAll(treenameRegex), m => m[1]);
+      const matches = Array.from(tree.newickTree.matchAll(treenameRegex), (m) => m[1]);
       // natural sort with collator
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
       matches.sort(collator.compare);
@@ -125,8 +146,8 @@ function TreeDetail() {
     // Filter metadata by tree samples
     if (projectMetadata?.metadata && treeSampleNames.length > 0) {
       const treeSamplesSet = new Set(treeSampleNames);
-      const filteredMetadata = projectMetadata.metadata.filter(
-        (row) => treeSamplesSet.has(row.Seq_ID),
+      const filteredMetadata = projectMetadata.metadata.filter((row) =>
+        treeSamplesSet.has(row.Seq_ID),
       );
       setTableMetadata(filteredMetadata);
     }
@@ -136,12 +157,14 @@ function TreeDetail() {
   useEffect(() => {
     if (tree && tableMetadata && tableMetadata.length > 0 && projectMetadata?.fields) {
       if (Object.keys(colourSchemeMapping).length === 0) {
-        projectMetadata.fields.filter((fi) => fi.canVisualise).forEach((fi) => {
-          setColourSchemeMapping((oldScheme) => ({
-            ...oldScheme,
-            [fi.columnName]: defaultDiscreteColorScheme,
-          }));
-        });
+        projectMetadata.fields
+          .filter((fi) => fi.canVisualise)
+          .forEach((fi) => {
+            setColourSchemeMapping((oldScheme) => ({
+              ...oldScheme,
+              [fi.columnName]: defaultDiscreteColorScheme,
+            }));
+          });
       }
 
       const tableUniqueValues = calculateUniqueValues(
@@ -185,8 +208,7 @@ function TreeDetail() {
       // Determine which leaf nodes are currently visible under the current rootId
       // Prefer using the Phylocanvas API exposed via the ref; fallback to all keys if unavailable
       const visibleLeafIDs: string[] =
-        (treeRef.current?.getVisibleLeafIDs?.())
-        || Object.keys(phylocanvasMetadata);
+        treeRef.current?.getVisibleLeafIDs?.() || Object.keys(phylocanvasMetadata);
 
       const visibleSet = new Set(visibleLeafIDs);
 
@@ -220,25 +242,23 @@ function TreeDetail() {
       // build styles only for visible leaves
       for (const [nodeId, value] of Object.entries(phylocanvasMetadata)) {
         if (!visibleSet.has(nodeId)) continue;
-        const label = state.labelBlocks.map(
-          (block) => {
-            let prefix = '';
-            const blockLength = blockLengths[block];
-            if (state.keyValueLabelBlocks) {
-              prefix = `${block}=`;
-            }
-            if (!value[block]?.label) {
-              return prefix + ' '.repeat(blockLength);
-            }
-            if (state.alignLabels) {
-              // Assume label is already a string
-              const labelString = value[block].label.toString();
+        const label = state.labelBlocks.map((block) => {
+          let prefix = '';
+          const blockLength = blockLengths[block];
+          if (state.keyValueLabelBlocks) {
+            prefix = `${block}=`;
+          }
+          if (!value[block]?.label) {
+            return prefix + ' '.repeat(blockLength);
+          }
+          if (state.alignLabels) {
+            // Assume label is already a string
+            const labelString = value[block].label.toString();
 
-              return prefix + labelString.padEnd(blockLength, ' ');
-            }
-            return prefix + value[block].label;
-          },
-        );
+            return prefix + labelString.padEnd(blockLength, ' ');
+          }
+          return prefix + value[block].label;
+        });
         const formattedBlocksString = `${label.join(delimiter)}`;
         // If no labels were selected AND showLeafLabels is true, show the nodeId as the label
         if (formattedBlocksString.length === 0) {
@@ -247,7 +267,8 @@ function TreeDetail() {
           } else {
             newStyles[nodeId] = { label: '' };
           }
-        } else { // formattedBlocksString has length > 0, don't force showing nodeId
+        } else {
+          // formattedBlocksString has length > 0, don't force showing nodeId
           newStyles[nodeId] = { label: `${formattedBlocksString}` };
         }
         if (state.nodeColumn !== '') {
@@ -257,13 +278,15 @@ function TreeDetail() {
       setStyles(newStyles);
     }
     // Don't include treeRef in deps:
-  }, [state.labelBlocks,
+  }, [
+    state.labelBlocks,
     state.keyValueLabelBlocks,
     phylocanvasMetadata,
     state.alignLabels,
     state.showLeafLabels,
     rootId,
-    state.nodeColumn]);
+    state.nodeColumn,
+  ]);
 
   useEffect(() => {
     // Get tree details, including tree type
@@ -286,8 +309,7 @@ function TreeDetail() {
       }
       setIsTreeLoading(false);
     };
-    if (tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE) {
+    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       getTree();
     }
   }, [treeId, treeVersionId, token, tokenLoading]);
@@ -345,10 +367,7 @@ function TreeDetail() {
     return <></>;
   };
 
-  const handleSearch = (
-    _event: SyntheticEvent<Element, Event>,
-    value: string[],
-  ) => {
+  const handleSearch = (_event: SyntheticEvent<Element, Event>, value: string[]) => {
     setSelectedIds(value);
   };
 
@@ -359,17 +378,18 @@ function TreeDetail() {
     const isCheckbox = (event.target as HTMLInputElement).checked !== undefined;
     setState({
       ...state,
-      [event.target.name]:
-        isCheckbox ? (event.target as HTMLInputElement).checked : event.target.value,
+      [event.target.name]: isCheckbox
+        ? (event.target as HTMLInputElement).checked
+        : event.target.value,
     });
   };
 
   const renderControls = () => {
     const availableFields = projectMetadata?.fields || [];
-    const allColumns = availableFields.map(field => field.columnName);
-    const visualisableColumns = availableFields.filter(
-      (field) => field.canVisualise,
-    ).map(field => field.columnName);
+    const allColumns = availableFields.map((field) => field.columnName);
+    const visualisableColumns = availableFields
+      .filter((field) => field.canVisualise)
+      .map((field) => field.columnName);
     const ids = treeSampleNames ?? [];
 
     const handleJumpToSubtree = (id: string) => {
@@ -381,16 +401,10 @@ function TreeDetail() {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
           <Grid item sx={{ marginBottom: 1 }}>
-            <Search
-              options={ids}
-              selectedIds={selectedIds}
-              onChange={handleSearch}
-            />
+            <Search options={ids} selectedIds={selectedIds} onChange={handleSearch} />
           </Grid>
           <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Tree & Navigation</Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -407,9 +421,7 @@ function TreeDetail() {
             </AccordionDetails>
           </Accordion>
           <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Nodes & Labels</Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -422,9 +434,7 @@ function TreeDetail() {
             </AccordionDetails>
           </Accordion>
           <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Metadata blocks</Typography>
             </AccordionSummary>
             <AccordionDetails>
@@ -435,20 +445,15 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <ExportButton
-            treeName={tree.treeName}
-            phylocanvasRef={treeRef}
-            legendRef={legRef}
-          />
+          <ExportButton treeName={tree.treeName} phylocanvasRef={treeRef} legendRef={legRef} />
         </Grid>
-
       );
     }
     return <></>;
   };
 
   const renderLegend = () => {
-    function generateLegend(selectedColumn : string) {
+    function generateLegend(selectedColumn: string) {
       const legendValues = phylocanvasLegends[selectedColumn];
       if (!legendValues) {
         return null; // Handle the case where the selected column doesn't exist
@@ -456,7 +461,9 @@ function TreeDetail() {
 
       return (
         <>
-          <Typography variant="body2" fontWeight="bold">{selectedColumn}</Typography>
+          <Typography variant="body2" fontWeight="bold">
+            {selectedColumn}
+          </Typography>
           <Grid container spacing={1} sx={{ marginBottom: '8px' }}>
             {Object.entries(legendValues).map(([label, color]) => (
               <Grid item key={label}>
@@ -479,43 +486,60 @@ function TreeDetail() {
     }
     if (tree && (state.nodeColumn !== '' || state.blocks.length !== 0)) {
       return (
-        <Stack direction="column" spacing={6} alignContent="space-between" justifyContent="space-between">
+        <Stack
+          direction="column"
+          spacing={6}
+          alignContent="space-between"
+          justifyContent="space-between"
+        >
           <Box sx={{ marginTop: '20px', paddingLeft: 2 }} ref={legRef} width="100%">
             {/* Only render node colour entry if not already in the legend  */}
-            {(state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn)) && (
-              <Stack direction="row" spacing={2} display="flex" alignContent="space-between" justifyContent="space-between">
-                <div>
-                  {generateLegend(state.nodeColumn)}
-                </div>
+            {state.nodeColumn !== '' && !state.blocks.includes(state.nodeColumn) && (
+              <Stack
+                direction="row"
+                spacing={2}
+                display="flex"
+                alignContent="space-between"
+                justifyContent="space-between"
+              >
+                <div>{generateLegend(state.nodeColumn)}</div>
                 <ColorSchemeSelector
                   selectedScheme={colourSchemeMapping[state.nodeColumn]}
-                  onColourChange={(newColor) => setColourSchemeMapping((oldScheme) => ({
-                    ...oldScheme,
-                    [state.nodeColumn]: newColor,
-                  }))}
+                  onColourChange={(newColor) =>
+                    setColourSchemeMapping((oldScheme) => ({
+                      ...oldScheme,
+                      [state.nodeColumn]: newColor,
+                    }))
+                  }
                   variant="standard"
                   size="medium"
                 />
               </Stack>
             )}
-            {state.blocks.map((block) => (
-              block !== '' && (
-                <Stack direction="row" spacing={2} alignContent="space-between" justifyContent="space-between">
-                  <div key={block}>
-                    {generateLegend(block)}
-                  </div>
-                  <ColorSchemeSelector
-                    selectedScheme={colourSchemeMapping[block]}
-                    onColourChange={(newColor) => setColourSchemeMapping((oldScheme) => ({
-                      ...oldScheme,
-                      [block]: newColor,
-                    }))}
-                    variant="standard"
-                    size="medium"
-                  />
-                </Stack>
-              )
-            ))}
+            {state.blocks.map(
+              (block) =>
+                block !== '' && (
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignContent="space-between"
+                    justifyContent="space-between"
+                  >
+                    <div key={block}>{generateLegend(block)}</div>
+                    <ColorSchemeSelector
+                      selectedScheme={colourSchemeMapping[block]}
+                      onColourChange={(newColor) =>
+                        setColourSchemeMapping((oldScheme) => ({
+                          ...oldScheme,
+                          [block]: newColor,
+                        }))
+                      }
+                      variant="standard"
+                      size="medium"
+                    />
+                  </Stack>
+                ),
+            )}
           </Box>
         </Stack>
       );
@@ -524,8 +548,10 @@ function TreeDetail() {
   };
 
   const renderWarning = () => {
-    if (projectMetadata?.loadingState === MetadataLoadingState.ERROR ||
-        projectMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) {
+    if (
+      projectMetadata?.loadingState === MetadataLoadingState.ERROR ||
+      projectMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+    ) {
       return (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
@@ -541,7 +567,9 @@ function TreeDetail() {
       {renderControls()}
       <Grid item xs={9} className="treeContainer">
         <Typography className="pageTitle">
-          {tree ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}` : ''}
+          {tree
+            ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
+            : ''}
           {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
         </Typography>
         {renderWarning()}
@@ -550,7 +578,6 @@ function TreeDetail() {
         {renderTable()}
       </Grid>
     </Grid>
-
   );
 }
 export default TreeDetail;

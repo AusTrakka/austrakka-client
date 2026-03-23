@@ -1,30 +1,39 @@
+import { ResponseType } from '../../constants/responseType';
 import type { UserRoleRecordPrivilegePost } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
+import type { PendingChange } from '../../types/userDetailEdit.interface';
 import {
-  deleteOrgPrivilege, deleteTenantPrivilege,
+  deleteOrgPrivilege,
+  deleteTenantPrivilege,
   postOrgPrivilege,
   postTenantPrivilege,
 } from '../../utilities/resourceUtils';
-import type { PendingChange } from '../../types/userDetailEdit.interface';
-import { ResponseType } from '../../constants/responseType';
 
-const postApiMap: Record<string,
-(recordGlobalId: string,
-  body: UserRoleRecordPrivilegePost,
-  token: string,
-  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
-  'Organisation': postOrgPrivilege,
-  'Tenant': postTenantPrivilege,
+const postApiMap: Record<
+  string,
+  (
+    recordGlobalId: string,
+    body: UserRoleRecordPrivilegePost,
+    token: string,
+    clientSessionId?: string,
+  ) => Promise<ResponseObject<any>>
+> = {
+  Organisation: postOrgPrivilege,
+  Tenant: postTenantPrivilege,
 };
 
-const deleteApiMap: Record<string,
-(recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
-  token: string,
-  clientSessionId?: string) => Promise<ResponseObject<any>>> = {
-  'Organisation': deleteOrgPrivilege,
-  'Tenant': deleteTenantPrivilege,
+const deleteApiMap: Record<
+  string,
+  (
+    recordGlobalId: string,
+    assigneeGlobalId: string,
+    roleGlobalId: string,
+    token: string,
+    clientSessionId?: string,
+  ) => Promise<ResponseObject<any>>
+> = {
+  Organisation: deleteOrgPrivilege,
+  Tenant: deleteTenantPrivilege,
 };
 
 export async function processPrivilegeChanges(

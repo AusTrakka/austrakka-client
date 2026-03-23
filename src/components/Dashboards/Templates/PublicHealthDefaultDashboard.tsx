@@ -10,7 +10,7 @@ import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 // TODO: Set a max card height and handle scroll overflow
 function PublicHealthDefaultDashboard(props: ProjectDashboardTemplateProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -34,6 +34,7 @@ function PublicHealthDefaultDashboard(props: ProjectDashboardTemplateProps) {
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  dateFilterField={dateFilterField}
                 />
               </CardContent>
             </Card>
