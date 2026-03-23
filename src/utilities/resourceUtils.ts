@@ -35,7 +35,7 @@ export const getProjectList = (token: string): Promise<ResponseObject<Project[]>
 export const getProjectDetails = (
   abbrev: string,
   token: string,
-): Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
 
 // Plots endpoints
 export const getPlots = (
