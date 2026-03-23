@@ -1,6 +1,6 @@
 import { Close, SimCardDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
 import { estimateCSVSize, generateCSVStream } from '../../utilities/exportUtils';
