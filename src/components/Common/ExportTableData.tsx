@@ -1,9 +1,9 @@
 import { Close, SimCardDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
-import { useRef, useState } from 'react';
-import { CSVLink } from 'react-csv';
+import { useState } from 'react';
+import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
-import { generateCSV } from '../../utilities/exportUtils';
+import { estimateCSVSize, generateCSVStream } from '../../utilities/exportUtils';
 import { generateFilename } from '../../utilities/file';
 
 // Do not recalculate CSV data when filters are reapplied or removed
@@ -18,27 +18,28 @@ interface ExportTableDataProps {
 function ExportTableData(props: ExportTableDataProps) {
   const { dataToExport, disabled, fileNamePrefix, headers } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
-  const exportData = () => {
+  const exportData = async () => {
     setExportCSVStatus(LoadingState.LOADING);
-    if (dataToExport.length > 0) {
-      try {
-        const csvData = generateCSV(dataToExport, headers);
-        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
 
-        csvLink.current?.link.setAttribute('href', url);
-        csvLink.current?.link.setAttribute('download', generateFilename(fileNamePrefix));
+    if (dataToExport.length === 0) {
+      setExportCSVStatus(LoadingState.IDLE);
+      return;
+    }
 
-        // Trigger click to download
-        csvLink.current?.link.click();
-        setExportCSVStatus(LoadingState.IDLE);
-      } catch (error) {
-        // biome-ignore lint/suspicious/noConsole: historic
-        console.error('Error exporting data to CSV:', error);
-        setExportCSVStatus(LoadingState.ERROR);
-      }
+    try {
+      const fileName = generateFilename(fileNamePrefix);
+      const filesize = estimateCSVSize(dataToExport);
+      const fileStream = streamSaver.createWriteStream(`${fileName}.csv`, {
+        size: filesize,
+      });
+
+      const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
+
+      await readable.pipeTo(fileStream);
+      setExportCSVStatus(LoadingState.IDLE);
+    } catch (_error) {
+      setExportCSVStatus(LoadingState.ERROR);
     }
   };
 
@@ -65,7 +66,6 @@ function ExportTableData(props: ExportTableDataProps) {
           Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
         </Alert>
       </Dialog>
-      <CSVLink data={[]} ref={csvLink} filename={generateFilename()} headers={headers} />
       <Tooltip title="Export to CSV" placement="top" arrow>
         <span>
           <IconButton
