@@ -11,6 +11,10 @@ import store from './app/store';
 import { globalStyles } from './assets/themes/theme';
 import { msalInstance } from './utilities/authUtils';
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+
 if (import.meta.env.DEV) {
   await import('./wdyr');
 }
