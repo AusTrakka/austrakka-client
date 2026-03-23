@@ -124,23 +124,25 @@ export default function Counts(props: CountsWidgetProps) {
   };
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" height="100%">
       <Typography variant="h5" paddingBottom={3} color="primary">
         {title}
       </Typography>
       {data?.fieldLoadingStates[field] === LoadingState.SUCCESS && (
-        <DataTable
-          value={aggregatedCounts}
-          size="small"
-          onRowClick={rowClickHandler}
-          selectionMode="single"
-          scrollable
-          scrollHeight="800px"
-        >
-          {columns.map((col: any) => (
-            <Column key={col.field} field={col.field} header={col.header} body={col.body} />
-          ))}
-        </DataTable>
+        <Box flex={1} minHeight={0}>
+          <DataTable
+            value={aggregatedCounts}
+            size="small"
+            onRowClick={rowClickHandler}
+            selectionMode="single"
+            scrollable
+            scrollHeight="flex"
+          >
+            {columns.map((col: any) => (
+              <Column key={col.field} field={col.field} header={col.header} body={col.body} />
+            ))}
+          </DataTable>
+        </Box>
       )}
       {errorMessage && (
         <Alert severity="error">
