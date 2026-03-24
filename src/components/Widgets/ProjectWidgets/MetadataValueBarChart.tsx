@@ -16,7 +16,11 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import {
+  filterExcluded,
+  isNullOrEmpty,
+  topCategories,
+} from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { createVegaScale } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -34,6 +38,7 @@ interface MetadataValueWidgetProps extends ProjectWidgetProps {
   colourMapping?: Record<string, string> | undefined;
   legendColumns?: number | undefined;
   categoryLimit?: number | undefined; // Optional limit for number of categories to show
+  exclude?: { field: string; value: string }[] | undefined; // Optional field/value pairs to exclude
   vertical?: boolean | undefined; // Whether to display bar vertically or horizontally
 }
 
@@ -49,6 +54,7 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     legendColumns = 4,
     categoryLimit,
     vertical = false,
+    exclude,
   } = props;
   if (colourScheme && colourMapping) {
     // biome-ignore lint/suspicious/noConsole: historic
@@ -117,34 +123,18 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   };
 
-  // Function to get top categories based on categoryLimit prop
-  const topCategories = (data: any) => {
-    const categoryCounts: Record<string, number> = {};
-    for (const item of data) {
-      // Only ignore empty values if categoryLimit is set
-      if (categoryLimit && isNullOrEmpty(item[field])) continue;
-      const value = item[field];
-      categoryCounts[value] = (categoryCounts[value] || 0) + 1;
-    }
-
-    const sortedCategories = Object.entries(categoryCounts)
-      .sort(([, countA], [, countB]) => countB - countA)
-      .map(([category]) => category);
-
-    if (categoryLimit) {
-      return sortedCategories.slice(0, categoryLimit);
-    } else {
-      // Just in case of no category limit, return all categories sorted by count
-      return sortedCategories;
-    }
-  };
-
   // Move to utility file if used outside this widget
   const createCustomScale = () => {
     let uniqueValues = data!.fieldUniqueValues![field] ?? [];
+    let widgetData = filteredData;
+
+    if (exclude && exclude.length > 0) {
+      const excluded = filterExcluded(filteredData, exclude);
+      widgetData = excluded;
+    }
 
     if (categoryLimit) {
-      const categories = topCategories(filteredData);
+      const categories = topCategories(widgetData, field, categoryLimit);
       uniqueValues = uniqueValues.filter((val) => categories.includes(val));
     }
 
@@ -198,7 +188,10 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   });
 
   const truncateData = (data: any[]) => {
-    const categories = topCategories(data);
+    if (exclude && exclude.length > 0) {
+      data = filterExcluded(data, exclude);
+    }
+    const categories = topCategories(data, field, categoryLimit);
     // Filter data to only include items in the top categories
     return data.filter((item) => {
       if (categoryLimit && isNullOrEmpty(item[field])) return false;
@@ -233,7 +226,7 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
 
-      if (categoryLimit) {
+      if (categoryLimit || (exclude && exclude.length > 0)) {
         const truncatedData = truncateData(filteredData);
         const copy = truncatedData!.map((item: any) => ({ ...item }));
         (compiledSpec.data![0] as InlineData).values = copy;
