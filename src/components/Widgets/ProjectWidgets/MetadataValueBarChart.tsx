@@ -121,7 +121,9 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   const topCategories = (data: any) => {
     const categoryCounts: Record<string, number> = {};
     for (const item of data) {
-      const value = isNullOrEmpty(item[field]) ? 'unknown' : item[field];
+      // Only ignore empty values if categoryLimit is set
+      if (categoryLimit && isNullOrEmpty(item[field])) continue;
+      const value = item[field];
       categoryCounts[value] = (categoryCounts[value] || 0) + 1;
     }
 
@@ -195,7 +197,8 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     const categories = topCategories(data);
     // Filter data to only include items in the top categories
     return data.filter((item) => {
-      const value = isNullOrEmpty(item[field]) ? 'unknown' : item[field];
+      if (categoryLimit && isNullOrEmpty(item[field])) return false;
+      const value = item[field];
       return categories.includes(value);
     });
   };

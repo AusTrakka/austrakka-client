@@ -27,7 +27,7 @@ function LabDataDashboard(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
           <Grid container spacing={2} alignItems="stretch" size={{ sm: 12 }}>
-            <Grid container direction="column" spacing={2} size={{ xl: 8, lg: 7, md: 12, sm: 12 }}>
+            <Grid container spacing={2} size={{ xl: 8, lg: 7, md: 12, sm: 12 }}>
               <Grid size={{ sm: 12 }}>
                 <Card sx={{ ...cardStyle, height: '100%' }}>
                   <CardContent>
@@ -50,8 +50,8 @@ function LabDataDashboard(props: ProjectDashboardTemplateProps) {
                       projectAbbrev={projectAbbrev}
                       filteredData={filteredData}
                       timeFilterObject={timeFilterObject}
-                      field="AMR_mechanisms_submitted"
-                      title="Top 10 AMR_mechanisms_submitted"
+                      field="AMR_reportable_submitted"
+                      title="Top 10 AMR_reportable_submitted"
                       categoryLimit={10}
                       legendColumns={3}
                     />
@@ -60,8 +60,25 @@ function LabDataDashboard(props: ProjectDashboardTemplateProps) {
               </Grid>
             </Grid>
             <Grid size={{ xl: 4, lg: 5, md: 12, sm: 12 }}>
-              <Card sx={{ ...tallCardStyle, height: '100%' }}>
-                <CardContent>
+              <Card
+                sx={{
+                  ...tallCardStyle,
+                  // Below needed to add scroll to the counts table
+                  height: '100%',
+                  maxHeight: 600,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <CardContent
+                  // Below needed to add scroll to the counts table
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
+                  }}
+                >
                   <Counts
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}

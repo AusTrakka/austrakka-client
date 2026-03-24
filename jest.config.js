@@ -5,6 +5,7 @@ export default {
     "^.+.tsx?$": ["ts-jest", {}],
   },
   collectCoverage: true,
+    setupFiles: ['./tests/setup.ts'],
   collectCoverageFrom: [
     "src/**/*Utils.ts"
   ]
