@@ -474,6 +474,7 @@ export interface DerivedLog {
   resourceType: string;
   submitterGlobalId: string;
   submitterDisplayName: string;
+  submitterUsername: string;
   eventStatus: string;
   data: string; // TODO needs to be parsed
   visChain: {
