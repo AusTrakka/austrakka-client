@@ -76,7 +76,7 @@ function UserDetail() {
 
   let nonDisplayFields = [
     'objectId',
-    'username',
+    'globalId',
     'orgAbbrev',
     'orgId',
     'isAusTrakkaAdmin',

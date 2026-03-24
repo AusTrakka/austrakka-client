@@ -84,6 +84,7 @@ function UserV2DetailOverview() {
 
   let nonDisplayFields = [
     'objectId',
+    'globalId',
     'orgAbbrev',
     'orgGlobalId',
     'lastLogIn',
