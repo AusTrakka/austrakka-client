@@ -81,7 +81,7 @@ function App() {
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />
                   <Route path="users/:username" element={<UserDetail />} />
-                  <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
+                  <Route path="usersV2/:username" element={<UserV2DetailOverview />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

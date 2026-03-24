@@ -44,7 +44,7 @@ import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
 function UserV2DetailOverview() {
-  const { userGlobalId } = useParams();
+  const { username } = useParams();
   const { token, tokenLoading } = useApi();
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingPrivileges, setEditingPrivileges] = useState(false);
@@ -162,7 +162,7 @@ function UserV2DetailOverview() {
 
   useEffect(() => {
     const updateUser = async () => {
-      const userResponse: ResponseObject = await getUserV2(userGlobalId!, token);
+      const userResponse: ResponseObject = await getUserV2(username!, token);
 
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as UserV2;
@@ -178,14 +178,14 @@ function UserV2DetailOverview() {
       tokenLoading !== LoadingState.IDLE &&
       tokenLoading !== LoadingState.LOADING &&
       loading === LoadingState.SUCCESS &&
-      userGlobalId
+      username
     ) {
       updateUser();
     }
-  }, [loading, token, tokenLoading, userGlobalId]);
+  }, [loading, token, tokenLoading, username]);
 
   async function fetchUserDto(): Promise<UserV2> {
-    const userFetchResponse: ResponseObject = await getUserV2(userGlobalId!, token);
+    const userFetchResponse: ResponseObject = await getUserV2(username!, token);
 
     if (userFetchResponse.status !== ResponseType.Success) {
       throw new Error('User could not be accessed');
@@ -199,7 +199,7 @@ function UserV2DetailOverview() {
 
     const failedRequests = await processPrivilegeChanges(
       pendingChanges,
-      userGlobalId!,
+      username!,
       token,
       clientSessionId,
     );
@@ -241,7 +241,7 @@ function UserV2DetailOverview() {
       const clientSessionId: string = crypto.randomUUID();
       // basic patch
       const userResponse: ResponseObject = await patchUserV2(
-        userGlobalId!,
+        username!,
         editedValuesDtoFormat,
         token,
         clientSessionId,
@@ -251,9 +251,9 @@ function UserV2DetailOverview() {
       if (editedActiveState) {
         let userActivateResponse: ResponseObject;
         if (isActive) {
-          userActivateResponse = await enableUserV2(userGlobalId!, token, clientSessionId);
+          userActivateResponse = await enableUserV2(username!, token, clientSessionId);
         } else {
-          userActivateResponse = await disableUserV2(userGlobalId!, token, clientSessionId);
+          userActivateResponse = await disableUserV2(username!, token, clientSessionId);
         }
         if (userActivateResponse.status !== ResponseType.Success) {
           throw new Error('User could not be activated/deactivated');
