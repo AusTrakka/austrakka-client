@@ -134,4 +134,18 @@ export function filterExcluded(data: any[], exclude?: { field: string; value: st
     }
     return true; // Keep
   });
-} 
+}
+
+// Filter data based on array of field/value pairs to include
+// This is currently inclusive OR, can be updated to AND logic if needed in future (e.g. all field/value pairs must match to include)
+export function filterIncluded(data: any[], include?: { field: string; value: string }[]) {
+  if (!include || include.length === 0) return data;
+  return data.filter((item) => {
+    for (const { field, value } of include) {
+      if (item[field] === value) {
+        return true; // Include
+      }
+    }
+    return false; // Remove
+  });
+}
