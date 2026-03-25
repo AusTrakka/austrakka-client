@@ -35,7 +35,7 @@ interface SummaryMetadataTableProps extends ProjectWidgetProps {
   include?: { field: string; value: string }[];
 }
 
-const ID_COLUMN = 'Seq_ID';
+const SAMPLE_ID_FIELD = 'Seq_ID';
 
 export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   const {
@@ -57,9 +57,11 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   // Use displayFields if provided (and in project), otherwise show default only
   const getFields = () => {
     if (displayFields.length > 0) {
-      return displayFields.includes(ID_COLUMN) ? displayFields : [ID_COLUMN, ...displayFields];
+      return displayFields.includes(SAMPLE_ID_FIELD)
+        ? displayFields
+        : [SAMPLE_ID_FIELD, ...displayFields];
     }
-    return [ID_COLUMN];
+    return [SAMPLE_ID_FIELD];
   };
 
   const fields = getFields();
@@ -102,28 +104,8 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   // Drilldown on click - navigate to samples page with filters for the clicked value + existing time filters
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
-    let drillDownTableMetaFilters: DataTableFilterMeta = {};
-
-    drillDownTableMetaFilters = {
-      [ID_COLUMN]: {
-        operator: FilterOperator.AND,
-        constraints: [
-          {
-            matchMode: FilterMatchMode.EQUALS,
-            value: selectedRow[ID_COLUMN],
-          },
-        ],
-      },
-    };
-
-    if (timeFilterObject && Object.keys(timeFilterObject).length !== 0) {
-      const combinedFilters: DataTableFilterMeta = {
-        ...drillDownTableMetaFilters,
-        ...timeFilterObject,
-      };
-      updateTabUrlWithSearch(navigate, '/samples', combinedFilters);
-    } else {
-      updateTabUrlWithSearch(navigate, '/samples', drillDownTableMetaFilters);
+    if (SAMPLE_ID_FIELD in selectedRow) {
+      navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
   };
 
