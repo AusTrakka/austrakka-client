@@ -1,3 +1,5 @@
+import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
+
 export function isNullOrEmpty(value: any) {
   // null, undefined, empty; but not false or 0
   return value == null || value === '';
@@ -128,8 +130,18 @@ export function filterExcluded(data: any[], exclude?: { field: string; value: st
   if (!exclude || exclude.length === 0) return data;
   return data.filter((item) => {
     for (const { field, value } of exclude) {
-      if (item[field] === value) {
-        return false; // Exclude 
+      if (value === CustomFilterOperators.NULL_OR_EMPTY) {
+        if (isNullOrEmpty(item[field])) {
+          return false; // Exclude if null or empty
+        }
+      } else if (value === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+        if (!isNullOrEmpty(item[field])) {
+          return false; // Exclude if not null or empty
+        }
+      } else {
+        if (item[field] === value) {
+          return false; // Exclude if value matches
+        }
       }
     }
     return true; // Keep
@@ -143,8 +155,18 @@ export function filterIncluded(data: any[], include?: { field: string; value: st
   if (!include || include.length === 0) return data;
   return data.filter((item) => {
     for (const { field, value } of include) {
-      if (item[field] !== value) {
-        return false; // If any field does not match, exclude
+      if (value === CustomFilterOperators.NULL_OR_EMPTY) {
+        if (!isNullOrEmpty(item[field])) {
+          return false; // Exclude if not null or empty
+        }
+      } else if (value === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+        if (isNullOrEmpty(item[field])) {
+          return false; // Exclude if null or empty
+        }
+      } else {
+        if (item[field] !== value) {
+          return false; // If any field does not match, exclude
+        }
       }
     }
     return true; // All fields matched, include
