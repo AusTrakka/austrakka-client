@@ -65,7 +65,8 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
 
   function handleItemClick(item: any) {
     if (!item || !item.datum) return;
-
+    const markName: string = item.mark.name;
+    if (markName.includes('legend')) return;
     const value = item.datum[field];
     let drillDownTableMetaFilters: DataTableFilterMeta = {};
 
