@@ -62,7 +62,7 @@ function SpeciesLabDataDashboard(props: ProjectDashboardTemplateProps) {
               <Card sx={{ ...cardStyle, height: '100%' }}>
                 <CardContent>
                   <MetadataValuePieChart
-                    field="MLST"
+                    field="MLST_submitted"
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
                     timeFilterObject={timeFilterObject}

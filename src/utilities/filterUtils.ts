@@ -153,9 +153,14 @@ export function getDisplayValue(
   if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
 
   const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
-
   if (Array.isArray(raw)) return raw.join(', ');
-  if (dateConditions.some((c) => c.name === conditionName))
-    return new Date(raw).toLocaleDateString('en-CA');
+
+  if (dateConditions.some((c) => c.name === conditionName)) {
+    const date = new Date(raw);
+    if (constraint.matchMode === FilterMatchMode.DATE_AFTER) date.setDate(date.getDate() + 1);
+    if (constraint.matchMode === FilterMatchMode.DATE_BEFORE) date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString('en-CA');
+  }
+
   return String(raw);
 }

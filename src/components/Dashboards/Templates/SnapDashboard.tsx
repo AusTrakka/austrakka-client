@@ -118,12 +118,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
           </Grid>
         </Grid>{' '}
         {/* big left column */}
-        <Grid
-          container
-          sx={{ alignItems: 'flex-start' }}
-          spacing={2}
-          size={{ xl: 3, lg: 4, md: 12 }}
-        >
+        <Grid container spacing={2} size={{ xl: 3, lg: 4, md: 12 }}>
           {' '}
           {/* narrow right column */}
           <Grid size={{ lg: 12, md: 6, sm: 12 }}>
@@ -143,8 +138,25 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
           <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            <Card sx={tallCardStyle}>
-              <CardContent>
+            <Card
+              sx={{
+                ...tallCardStyle,
+                // Below needed to add scroll to the counts table
+                height: '100%',
+                maxHeight: 900,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <CardContent
+                // Below needed to add scroll to the counts table
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                }}
+              >
                 <Counts
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}

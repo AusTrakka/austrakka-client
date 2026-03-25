@@ -1,7 +1,6 @@
 import { Close, SimCardDownload } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Tooltip } from '@mui/material';
-import { useRef, useState } from 'react';
-import { CSVLink } from 'react-csv';
+import { useState } from 'react';
 import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
 import { estimateCSVSize, generateCSVStream } from '../../utilities/exportUtils';
@@ -19,7 +18,6 @@ interface ExportTableDataProps {
 function ExportTableData(props: ExportTableDataProps) {
   const { dataToExport, disabled, fileNamePrefix, headers } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
 
   const exportData = async () => {
     setExportCSVStatus(LoadingState.LOADING);
@@ -68,7 +66,6 @@ function ExportTableData(props: ExportTableDataProps) {
           Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
         </Alert>
       </Dialog>
-      <CSVLink data={[]} ref={csvLink} filename={generateFilename()} headers={headers} />
       <Tooltip title="Export to CSV" placement="top" arrow>
         <span>
           <IconButton
