@@ -177,9 +177,16 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
             scrollable
             scrollHeight="flex"
             emptyMessage="No data to display"
+            className="my-flexible-table"
           >
             {tableColumns.map((col: PrimeReactColumnDefinition) => (
-              <Column key={col.field} field={col.field} header={col.header} body={col.body} />
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                className="flexible-column"
+              />
             ))}
             <Column
               key="viewDetails"
