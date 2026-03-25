@@ -134,6 +134,13 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
     width: 'container',
     layer: [
       {
+        params: [
+          {
+            name: 'selectedcolour',
+            select: { type: 'point', fields: [field] },
+            bind: 'legend',
+          },
+        ],
         mark: { type: 'arc', radius: 90, radius2: 40, tooltip: true, cursor: 'pointer' },
         encoding: {
           theta: {
@@ -150,6 +157,13 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
               columns: legendColumns,
               labelExpr: "datum.label || 'unknown'",
             },
+          },
+          opacity: {
+            condition: {
+              selection: 'selectedcolour',
+              value: 1,
+            },
+            value: 0.15,
           },
         },
       },
@@ -188,7 +202,13 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
       const copy = filteredData!.map((item: any) => ({ ...item }));
-      (compiledSpec.data![0] as InlineData).values = copy;
+      const inputDataset = compiledSpec.data!.find((d) => d.name === 'inputdata') as InlineData;
+
+      if (!inputDataset) {
+        throw new Error('The vega spec is in a bad state: no inputdata dataset found');
+      }
+
+      (inputDataset as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
