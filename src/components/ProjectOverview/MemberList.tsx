@@ -1,14 +1,5 @@
-import { Close, FileDownload } from '@mui/icons-material';
-import {
-  Alert,
-  AlertTitle,
-  Chip,
-  CircularProgress,
-  Dialog,
-  IconButton,
-  Paper,
-  Tooltip,
-} from '@mui/material';
+import { Close } from '@mui/icons-material';
+import { Alert, AlertTitle, Chip, Dialog, IconButton, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import {
@@ -19,15 +10,15 @@ import {
 } from 'primereact/datatable';
 import type React from 'react';
 import { type JSX, memo, useEffect, useRef, useState } from 'react';
-import { CSVLink } from 'react-csv';
+import type { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Member, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { generateFilename } from '../../utilities/file';
 import { getGroupMembers } from '../../utilities/resourceUtils';
+import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 
@@ -61,7 +52,6 @@ function MemberList(props: MemberListProps) {
 
   const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
-  const [transformedData, setTransformedData] = useState<any[]>([]);
   const [exportData, setExportData] = useState<Member[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
@@ -93,6 +83,7 @@ function MemberList(props: MemberListProps) {
       );
       if (memberListResponse.status === ResponseType.Success) {
         setMemberList(memberListResponse.data as Member[]);
+        setExportData(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsLoading(false);
       } else {
@@ -121,23 +112,6 @@ function MemberList(props: MemberListProps) {
     }
   }, [exportCSVStatus]);
 
-  const handleExportCSV = () => {
-    try {
-      setExportCSVStatus(LoadingState.LOADING);
-      const td = memberList.map((member) => ({
-        roles: member.roles,
-        organization: member.organization?.abbreviation, // Assuming organization is an object with a 'name' property
-        displayName: member.displayName,
-      }));
-      setTransformedData(td);
-      setExportCSVStatus(LoadingState.SUCCESS);
-    } catch (error) {
-      // biome-ignore lint/suspicious/noConsole: historic
-      console.error('Error exporting data:', error);
-      setExportCSVStatus(LoadingState.ERROR);
-    }
-  };
-
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
@@ -151,39 +125,6 @@ function MemberList(props: MemberListProps) {
     }
   };
 
-  const ExportButton = (
-    <>
-      <CSVLink
-        data={exportData.length > 0 ? exportData : transformedData}
-        headers={[
-          { label: 'Name', key: 'displayName' },
-          { label: 'Organizations', key: 'organization' },
-          { label: 'Roles', key: 'roles' },
-        ]}
-        ref={csvLink}
-        style={{ display: 'none' }}
-        filename={generateFilename(projectDetails?.abbreviation ?? '')}
-      />
-      <Tooltip title="Export to CSV" placement="top" arrow>
-        <IconButton
-          onClick={handleExportCSV}
-          disabled={exportCSVStatus === LoadingState.LOADING || memberList.length < 1}
-        >
-          {exportCSVStatus === LoadingState.LOADING ? (
-            <CircularProgress
-              color="secondary"
-              size={40}
-              sx={{
-                position: 'absolute',
-                zIndex: 1,
-              }}
-            />
-          ) : null}
-          <FileDownload />
-        </IconButton>
-      </Tooltip>
-    </>
-  );
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
@@ -202,7 +143,16 @@ function MemberList(props: MemberListProps) {
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        {ExportButton}
+        <ExportTableData
+          disabled={exportData.length < 1}
+          dataToExport={exportData.map((data) => ({
+            displayName: data.displayName,
+            organization: data.organization.abbreviation,
+            roles: data.roles,
+          }))}
+          fileNamePrefix={`${projectDetails?.abbreviation ?? 'project'}_members`}
+          headers={['displayName', 'organization', 'roles']}
+        />
       </div>
     </div>
   );
