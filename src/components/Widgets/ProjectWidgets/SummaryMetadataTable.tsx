@@ -1,5 +1,5 @@
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Alert, AlertTitle, Box, Button, Link, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Column } from 'primereact/column';
 import {
@@ -24,6 +24,7 @@ import {
   buildPrimeReactColumnDefinitionsPVF,
   type PrimeReactColumnDefinition,
 } from '../../../utilities/tableUtils';
+import { CustomFilterOperators } from '../../DataFilters/fieldTypeOperators';
 
 interface SummaryMetadataTableProps extends ProjectWidgetProps {
   projectAbbrev: string;
@@ -34,7 +35,7 @@ interface SummaryMetadataTableProps extends ProjectWidgetProps {
   include?: { field: string; value: string }[];
 }
 
-const DEFAULT_COLUMN = 'Seq_ID';
+const ID_COLUMN = 'Seq_ID';
 
 export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   const {
@@ -56,11 +57,9 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   // Use displayFields if provided (and in project), otherwise show default only
   const getFields = () => {
     if (displayFields.length > 0) {
-      return displayFields.includes(DEFAULT_COLUMN)
-        ? displayFields
-        : [DEFAULT_COLUMN, ...displayFields];
+      return displayFields.includes(ID_COLUMN) ? displayFields : [ID_COLUMN, ...displayFields];
     }
-    return [DEFAULT_COLUMN];
+    return [ID_COLUMN];
   };
 
   const fields = getFields();
@@ -106,12 +105,12 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
     let drillDownTableMetaFilters: DataTableFilterMeta = {};
 
     drillDownTableMetaFilters = {
-      [DEFAULT_COLUMN]: {
+      [ID_COLUMN]: {
         operator: FilterOperator.AND,
         constraints: [
           {
             matchMode: FilterMatchMode.EQUALS,
-            value: selectedRow[DEFAULT_COLUMN],
+            value: selectedRow[ID_COLUMN],
           },
         ],
       },
@@ -135,12 +134,23 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
     if (include && include.length > 0) {
       // Multiple include filters are appended together in the table, so do the same for drilldown
       include.forEach((inc) => {
+        let matchMode = FilterMatchMode.EQUALS;
+        let { value } = inc;
+
+        if (value === CustomFilterOperators.NULL_OR_EMPTY) {
+          matchMode = FilterMatchMode.CUSTOM;
+          value = 'true';
+        } else if (value === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+          matchMode = FilterMatchMode.CUSTOM;
+          value = 'false';
+        }
+
         drillDownTableMetaFilters[inc.field] = {
           operator: FilterOperator.AND,
           constraints: [
             {
-              matchMode: FilterMatchMode.EQUALS,
-              value: inc.value,
+              matchMode,
+              value,
             },
           ],
         };
@@ -174,7 +184,7 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
           endIcon={<NavigateNextIcon />}
           sx={{ textTransform: 'none' }}
         >
-          View in Samples table
+          View all in Samples table
         </Button>
       </Box>
       {fields.every((field) => data?.fieldLoadingStates[field] === LoadingState.SUCCESS) && (
@@ -186,31 +196,27 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
             scrollHeight="flex"
             emptyMessage="No data to display"
           >
-            {tableColumns.map((col: PrimeReactColumnDefinition) =>
-              col.field === DEFAULT_COLUMN ? (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={col.header}
-                  body={(rowData: any) => {
-                    // Custom body to add click handler for drilldown, wrapping existing body if it exists
-                    const content = col.body ? col.body(rowData) : rowData[DEFAULT_COLUMN];
-                    return (
-                      <Link
-                        component="button"
-                        variant="body2"
-                        underline="hover"
-                        onClick={() => rowClickHandler({ data: rowData } as any)}
-                      >
-                        {content}
-                      </Link>
-                    );
-                  }}
-                />
-              ) : (
-                <Column key={col.field} field={col.field} header={col.header} body={col.body} />
-              ),
-            )}
+            {tableColumns.map((col: PrimeReactColumnDefinition) => (
+              <Column key={col.field} field={col.field} header={col.header} body={col.body} />
+            ))}
+            <Column
+              key="viewDetails"
+              body={(rowData: any) => {
+                return (
+                  <Tooltip title="View sample detail" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => rowClickHandler({ data: rowData } as any)}
+                      aria-label="view sample detail"
+                    >
+                      <NavigateNextIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                );
+              }}
+              frozen
+              alignFrozen="right"
+            />
           </DataTable>
         </Box>
       )}
