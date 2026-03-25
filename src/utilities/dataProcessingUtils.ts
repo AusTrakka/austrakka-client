@@ -137,15 +137,16 @@ export function filterExcluded(data: any[], exclude?: { field: string; value: st
 }
 
 // Filter data based on array of field/value pairs to include
-// This is currently inclusive OR, can be updated to AND logic if needed in future (e.g. all field/value pairs must match to include)
+// This is currently inclusive AND as this is how filters are applied in sample table
+// Can extend to OR or other logic if needed in the future (and if sample table supports this it)
 export function filterIncluded(data: any[], include?: { field: string; value: string }[]) {
   if (!include || include.length === 0) return data;
   return data.filter((item) => {
     for (const { field, value } of include) {
-      if (item[field] === value) {
-        return true; // Include
+      if (item[field] !== value) {
+        return false; // If any field does not match, exclude
       }
     }
-    return false; // Remove
+    return true; // All fields matched, include
   });
 }
