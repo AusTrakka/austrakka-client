@@ -215,7 +215,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ sm: 12, md: 12, lg: 8, xl: 4 }}>
+        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 8, xl: 4 }}>
           <Card
             sx={{
               ...tallCardStyle,
