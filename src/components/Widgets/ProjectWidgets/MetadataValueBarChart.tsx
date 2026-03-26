@@ -267,16 +267,27 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
         </Alert>
       )}
       {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
-      {!errorMessage && !infoMessage && (
-        <Grid container spacing={2}>
-          <Grid size={11}>
-            <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
+      {!errorMessage &&
+        !infoMessage &&
+        (vertical ? (
+          <Grid container>
+            <Grid sx={{ minHeight: 0 }}>
+              <div id="plot-container" ref={plotDiv} />
+            </Grid>
+            <Grid>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-          <Grid size={1}>
-            <ExportVegaPlot vegaView={vegaView} />
+        ) : (
+          <Grid container>
+            <Grid size={11}>
+              <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
+            </Grid>
+            <Grid size={1}>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        ))}
       {(!data?.loadingState ||
         !(
           data.loadingState === MetadataLoadingState.DATA_LOADED ||
