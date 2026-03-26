@@ -104,26 +104,25 @@ export function compareProperties(
 
 // Function to get top X categories based on categoryLimit prop
 export function topCategories(data: any, field: string, categoryLimit?: number) {
-    const categoryCounts: Record<string, number> = {};
-    for (const item of data) {
-      // Only ignore empty values if categoryLimit is set
-      if (categoryLimit && isNullOrEmpty(item[field])) continue;
-      const value = item[field];
-      categoryCounts[value] = (categoryCounts[value] || 0) + 1;
-    }
+  const categoryCounts: Record<string, number> = {};
+  for (const item of data) {
+    // Only ignore empty values if categoryLimit is set
+    if (categoryLimit && isNullOrEmpty(item[field])) continue;
+    const value = item[field];
+    categoryCounts[value] = (categoryCounts[value] || 0) + 1;
+  }
 
-    const sortedCategories = Object.entries(categoryCounts)
-      .sort(([, countA], [, countB]) => countB - countA)
-      .map(([category]) => category);
+  const sortedCategories = Object.entries(categoryCounts)
+    .sort(([, countA], [, countB]) => countB - countA)
+    .map(([category]) => category);
 
-    if (categoryLimit) {
-      return sortedCategories.slice(0, categoryLimit);
-    } else {
-      // Just in case of no category limit, return all categories sorted by count
-      return sortedCategories;
-    }
-  };
-
+  if (categoryLimit) {
+    return sortedCategories.slice(0, categoryLimit);
+  } else {
+    // Just in case of no category limit, return all categories sorted by count
+    return sortedCategories;
+  }
+}
 
 // Filter data based on array of field/value pairs to exclude
 export function filterExcluded(data: any[], exclude?: { field: string; value: string }[]) {
