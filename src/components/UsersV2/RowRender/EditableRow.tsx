@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import type React from 'react';
 import { type Dispatch, type SetStateAction, useState } from 'react';
-import type { UserV2 } from '../../../types/dtos';
+import type { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import './RowAndCell.css';
@@ -19,10 +19,10 @@ import { Theme } from '../../../assets/themes/theme';
 import { bytesToMB } from '../../../utilities/renderUtils';
 
 interface EditableRowProps {
-  field: keyof UserV2;
+  field: keyof User;
   detailValue: any;
-  editedValues: UserV2 | null;
-  setEditedValues: Dispatch<SetStateAction<UserV2 | null>>;
+  editedValues: User | null;
+  setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
 }
 

@@ -17,7 +17,7 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Member, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupMembers } from '../../utilities/resourceUtils';
+import { getProjectMembers } from '../../utilities/resourceUtils';
 import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -77,8 +77,8 @@ function MemberList(props: MemberListProps) {
 
   useEffect(() => {
     async function getMemberList() {
-      const memberListResponse: ResponseObject = await getGroupMembers(
-        projectDetails!.projectMembers.id,
+      const memberListResponse: ResponseObject = await getProjectMembers(
+        projectDetails!.abbreviation,
         token,
       );
       if (memberListResponse.status === ResponseType.Success) {

@@ -9,17 +9,17 @@ import {
   Typography,
 } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
-import type { UserV2 } from '../../../types/dtos';
+import type { User } from '../../../types/dtos';
 import EditButtonsV2 from '../EditButtonsV2';
 import BasicRow from '../RowRender/BasicRow';
 import EditableRow from '../RowRender/EditableRow';
 
 interface UserPropertiesProps {
-  user: UserV2;
+  user: User;
   editingBasic: boolean;
   setEditingBasic: Dispatch<SetStateAction<boolean>>;
-  editedValues: UserV2 | null;
-  setEditedValues: Dispatch<SetStateAction<UserV2 | null>>;
+  editedValues: User | null;
+  setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
   onSave: () => Promise<void>;
   handleCancel: () => void;
@@ -47,7 +47,7 @@ export default function UserProperties(props: UserPropertiesProps) {
     setEditedValues,
   } = props;
 
-  const renderRow = (field: keyof UserV2, value: any) => {
+  const renderRow = (field: keyof User, value: any) => {
     if (editingBasic) {
       return (
         <EditableRow
@@ -94,7 +94,7 @@ export default function UserProperties(props: UserPropertiesProps) {
                 (typeof value !== 'object' || value === null) &&
                 !nonDisplayFields.includes(field)
               ) {
-                return renderRow(field as keyof UserV2, value);
+                return renderRow(field as keyof User, value);
               }
               return null;
             })}

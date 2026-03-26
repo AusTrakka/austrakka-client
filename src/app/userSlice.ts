@@ -9,7 +9,7 @@ import type {
 } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
-import { getMe, getMeV2 } from '../utilities/resourceUtils';
+import { getMe } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 
 export interface UserSliceState {
@@ -46,7 +46,7 @@ const fetchUserRoles = createAsyncThunk(
         return thunkAPI.rejectWithValue(groupResponse.message);
       }
 
-      const scopeResponse: ResponseObject = await getMeV2(token);
+      const scopeResponse: ResponseObject = await getMe(token);
       if (scopeResponse.status !== ResponseType.Success) {
         return thunkAPI.rejectWithValue(scopeResponse.message);
       }

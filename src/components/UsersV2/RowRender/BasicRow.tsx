@@ -1,7 +1,7 @@
 import { Cancel, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
 import { useState } from 'react';
-import type { UserV2 } from '../../../types/dtos';
+import type { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
@@ -9,7 +9,7 @@ import { bytesToMB } from '../../../utilities/renderUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 
 interface BasicRowProps {
-  field: keyof UserV2;
+  field: keyof User;
   value: any;
   readableNames: Record<string, string>;
 }

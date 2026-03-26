@@ -19,7 +19,7 @@ import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
 import type { UserList } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
-import { getUserListV2 } from '../../utilities/resourceUtils';
+import { getUserList } from '../../utilities/resourceUtils';
 import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -76,7 +76,7 @@ function UsersV2() {
 
   useEffect(() => {
     const getUsers = async () => {
-      const getUsersResponse: ResponseObject = await getUserListV2(includeAll, token);
+      const getUsersResponse: ResponseObject = await getUserList(includeAll, token);
       if (getUsersResponse.status === ResponseType.Success) {
         setUsers(getUsersResponse.data as UserList[]);
         setExportData(getUsersResponse.data as UserList[]);
