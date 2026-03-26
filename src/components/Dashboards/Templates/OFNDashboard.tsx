@@ -1,5 +1,4 @@
-//
-import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
@@ -39,7 +38,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                   dateFilterField={dateFilterField}
                 />
               </Grid>
-              <Grid size={{ xs: 2, sm: 5, lg: 2 }}>
+              <Grid size={{ xs: 12, sm: 5, lg: 2 }}>
                 <MetadataValueBarChart
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -51,7 +50,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                   vertical
                 />
               </Grid>
-              <Grid size={{ xs: 10, sm: 7, lg: 3 }}>
+              <Grid size={{ xs: 12, sm: 7, lg: 3 }}>
                 <Counts
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -105,6 +104,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                     'Reference_group_information',
                     'Jurisdiction',
                     'cgMLST',
+                    'MLST',
                     'Place_of_acquisition_category',
                   ]}
                   title="Representative sequences"
@@ -124,7 +124,6 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
             sx={{
               ...tallCardStyle,
               height: '100%',
-              maxHeight: 500,
               display: 'flex',
               flexDirection: 'column',
             }}
@@ -140,32 +139,30 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
               <Typography variant="h5" color="primary">
                 Top 5 cgMLST (overall)
               </Typography>
-              <Stack
-                direction={{ sm: 'column', md: 'row' }}
-                justifyContent="space-evenly"
-                spacing={1}
-                paddingBottom={2}
-                sx={{ flex: 1, minHeight: 0 }}
-              >
-                <Counts
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="cgMLST"
-                  title=""
-                  categoryLimit={5}
-                />
-                <MetadataValueBarChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="cgMLST"
-                  title=""
-                  categoryLimit={5}
-                  legendColumns={1}
-                  vertical
-                />
-              </Stack>
+              <Grid container spacing={2} size={12}>
+                <Grid size={{ sm: 12, md: 8 }}>
+                  <Counts
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="cgMLST"
+                    title=""
+                    categoryLimit={5}
+                  />
+                </Grid>
+                <Grid size={{ sm: 12, md: 4 }}>
+                  <MetadataValueBarChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="cgMLST"
+                    title=""
+                    categoryLimit={5}
+                    legendColumns={1}
+                    vertical
+                  />
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
@@ -174,7 +171,6 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
             sx={{
               ...tallCardStyle,
               height: '100%',
-              maxHeight: 500,
               display: 'flex',
               flexDirection: 'column',
             }}
@@ -190,35 +186,32 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
               <Typography variant="h5" color="primary">
                 Top 5 cgMLST (excluding MLST 11)
               </Typography>
-              <Stack
-                direction={{ sm: 'column', md: 'row' }}
-                justifyContent="space-evenly"
-                alignItems="stretch"
-                spacing={1}
-                paddingBottom={2}
-                sx={{ flex: 1, minHeight: 0 }}
-              >
-                <Counts
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="cgMLST"
-                  title=""
-                  categoryLimit={5}
-                  exclude={[{ field: 'MLST', value: '11' }]}
-                />
-                <MetadataValueBarChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="cgMLST"
-                  title=""
-                  categoryLimit={5}
-                  legendColumns={1}
-                  exclude={[{ field: 'MLST', value: '11' }]}
-                  vertical
-                />
-              </Stack>
+              <Grid container spacing={2} size={12}>
+                <Grid size={{ sm: 12, md: 8 }}>
+                  <Counts
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="cgMLST"
+                    title=""
+                    categoryLimit={5}
+                    exclude={[{ field: 'MLST', value: '11' }]}
+                  />
+                </Grid>
+                <Grid size={{ sm: 12, md: 4 }}>
+                  <MetadataValueBarChart
+                    projectAbbrev={projectAbbrev}
+                    filteredData={filteredData}
+                    timeFilterObject={timeFilterObject}
+                    field="cgMLST"
+                    title=""
+                    categoryLimit={5}
+                    legendColumns={1}
+                    exclude={[{ field: 'MLST', value: '11' }]}
+                    vertical
+                  />
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
