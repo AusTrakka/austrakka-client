@@ -80,8 +80,8 @@ function App() {
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />
-                  <Route path="users/:userObjectId" element={<UserDetail />} />
-                  <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
+                  <Route path="users/:username" element={<UserDetail />} />
+                  <Route path="usersV2/:username" element={<UserV2DetailOverview />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

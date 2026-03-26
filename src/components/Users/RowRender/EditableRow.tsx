@@ -38,7 +38,7 @@ function EditableRow(props: EditableRowProps) {
   const nonEditableFields = [
     'created',
     'objectId',
-    'globalId',
+    'username',
     'lastLogIn',
     'lastActive',
     'monthlyBytesUsed',

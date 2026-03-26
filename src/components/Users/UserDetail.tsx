@@ -35,7 +35,7 @@ import BasicRow from './RowRender/BasicRow';
 import EditableRow from './RowRender/EditableRow';
 
 function UserDetail() {
-  const { userObjectId } = useParams();
+  const { username } = useParams();
   const { token, tokenLoading } = useApi();
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -56,6 +56,7 @@ function UserDetail() {
 
   const readableNames: Record<string, string> = {
     objectId: 'Object ID',
+    username: 'Username',
     displayName: 'Display Name',
     position: 'Position',
     orgName: 'Organisation',
@@ -75,6 +76,7 @@ function UserDetail() {
 
   let nonDisplayFields = [
     'objectId',
+    'globalId',
     'orgAbbrev',
     'orgId',
     'isAusTrakkaAdmin',
@@ -93,7 +95,7 @@ function UserDetail() {
 
   useEffect(() => {
     const updateUser = async () => {
-      const userResponse: ResponseObject = await getUser(userObjectId!, token);
+      const userResponse: ResponseObject = await getUser(username!, token);
 
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as User;
@@ -109,7 +111,7 @@ function UserDetail() {
     if (token && tokenLoading === LoadingState.SUCCESS) {
       updateUser();
     }
-  }, [userObjectId, token, tokenLoading]);
+  }, [username, token, tokenLoading]);
 
   useEffect(() => {
     const getOrgData = async () => {
@@ -239,7 +241,7 @@ function UserDetail() {
       // Updating user details
       // Replacing group assignments
       const assignmentResponse: ResponseObject = await replaceAssignments(
-        userObjectId!,
+        username!,
         token,
         groupAssignmentsFormat,
         clientSessionId,
@@ -250,7 +252,7 @@ function UserDetail() {
       }
 
       const userResponse: ResponseObject = await putUser(
-        userObjectId!,
+        username!,
         token,
         editedValuesDtoFormat,
         clientSessionId,
