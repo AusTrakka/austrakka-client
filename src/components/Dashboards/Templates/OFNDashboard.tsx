@@ -30,7 +30,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
         <Card sx={{ ...cardStyle }}>
           <CardContent>
             <Grid container spacing={2} size={12}>
-              <Grid size={{ sm: 12, lg: 7 }}>
+              <Grid size={{ sm: 12, md: 12, lg: 6, xl: 8 }}>
                 <EpiCurveChart
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -38,7 +38,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                   dateFilterField={dateFilterField}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 5, lg: 2 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
                 <MetadataValueBarChart
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -50,7 +50,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                   vertical
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 7, lg: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 7, lg: 3, xl: 2 }}>
                 <Counts
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
@@ -140,7 +140,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                 Top 5 cgMLST (overall)
               </Typography>
               <Grid container spacing={2} size={12}>
-                <Grid size={{ sm: 12, md: 8 }}>
+                <Grid size={{ sm: 12, md: 7, lg: 7, xl: 7 }}>
                   <Counts
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
@@ -150,7 +150,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                     categoryLimit={5}
                   />
                 </Grid>
-                <Grid size={{ sm: 12, md: 4 }}>
+                <Grid size={{ sm: 12, md: 5, lg: 5, xl: 5 }}>
                   <MetadataValueBarChart
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
@@ -187,7 +187,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                 Top 5 cgMLST (excluding MLST 11)
               </Typography>
               <Grid container spacing={2} size={12}>
-                <Grid size={{ sm: 12, md: 8 }}>
+                <Grid size={{ sm: 12, md: 7, lg: 7, xl: 7 }}>
                   <Counts
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
@@ -198,7 +198,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
                     exclude={[{ field: 'MLST', value: '11' }]}
                   />
                 </Grid>
-                <Grid size={{ sm: 12, md: 4 }}>
+                <Grid size={{ sm: 12, md: 5, lg: 5, xl: 5 }}>
                   <MetadataValueBarChart
                     projectAbbrev={projectAbbrev}
                     filteredData={filteredData}
