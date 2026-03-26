@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 import type { User } from '../../../types/dtos';
-import EditButtonsV2 from '../EditButtonsV2';
+import EditButtons from '../EditButtons';
 import BasicRow from '../RowRender/BasicRow';
 import EditableRow from '../RowRender/EditableRow';
 
@@ -75,7 +75,7 @@ export default function UserProperties(props: UserPropertiesProps) {
         <Typography variant="h4" color="primary">
           User Details
         </Typography>
-        <EditButtonsV2
+        <EditButtons
           editing={editingBasic}
           setEditing={setEditingBasic}
           onSave={onSave}

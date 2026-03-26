@@ -32,13 +32,13 @@ import {
   updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
 import { bytesToMB } from '../../../utilities/renderUtils';
-import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
+import { processPrivilegeChanges } from '../privilegeBulkApiCall';
 import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
-function UserV2DetailOverview() {
+function UserDetailOverview() {
   const { username } = useParams();
   const { token, tokenLoading } = useApi();
   const [editingBasic, setEditingBasic] = useState(false);
@@ -464,4 +464,4 @@ function UserV2DetailOverview() {
   ) : null;
 }
 
-export default UserV2DetailOverview;
+export default UserDetailOverview;
