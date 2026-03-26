@@ -268,11 +268,11 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
       )}
       {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
       {!errorMessage && !infoMessage && (
-        <Grid container>
-          <Grid>
+        <Grid container spacing={2}>
+          <Grid size={11}>
             <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
           </Grid>
-          <Grid>
+          <Grid size={1}>
             <ExportVegaPlot vegaView={vegaView} />
           </Grid>
         </Grid>
