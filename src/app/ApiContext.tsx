@@ -40,6 +40,7 @@ export default function ApiProvider({ children }: any) {
           if (error.errorCode === 'invalid_grant') {
             // biome-ignore lint/suspicious/noConsole: historic
             console.log('Caught invalid_grant; redirecting to interactive login');
+            instance.acquireTokenRedirect(accessTokenRequest);
           }
           // biome-ignore lint/suspicious/noConsole: historic
           console.log('Uncaught auth error');
