@@ -1,7 +1,8 @@
 import { Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
 import { formatDate } from '../../../utilities/dateUtils';
 import JsonTreeView from '../JsonTreeView';
-import type { ActivityDetailInfo } from './activityViewModels.interface';
+import type { ActivityDetailInfo, VisChainEntry } from './activityViewModels.interface';
+import LogVisChain from './LogVisChain';
 
 interface ContentBoxProps {
   entry: ActivityDetailInfo;
@@ -15,6 +16,7 @@ const displayFields: string[] = [
   'Event initiated by',
   'Resource',
   'Resource Type',
+  'Visible to',
 ];
 
 function ActivityContentBox({ entry }: ContentBoxProps): JSX.Element {
@@ -30,6 +32,22 @@ function ActivityContentBox({ entry }: ContentBoxProps): JSX.Element {
       >
         <TableBody>
           {displayFields.map((f) => {
+            if (f === 'Visible to') {
+              return (
+                <TableRow key={f}>
+                  <TableCell sx={{ p: '8px 0px', verticalAlign: 'top' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {f}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ p: '8px 8px 8px 100px', verticalAlign: 'top' }}>
+                    <LogVisChain
+                      visChain={entry[f as keyof ActivityDetailInfo] as VisChainEntry[]}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            }
             const value =
               f === 'Time stamp'
                 ? formatDate(entry[f as keyof ActivityDetailInfo])

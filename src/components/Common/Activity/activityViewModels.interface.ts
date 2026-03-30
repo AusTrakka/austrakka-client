@@ -1,3 +1,9 @@
+export type VisChainEntry = {
+  GlobalId: string;
+  ResourceType: string;
+  UniqueStringId: string;
+};
+
 export interface ActivityDetailInfo {
   Event: string;
   GlobalId?: string;
@@ -5,5 +11,6 @@ export interface ActivityDetailInfo {
   'Event initiated by': string;
   Resource: string;
   'Resource Type': string;
+  'Visible to'?: VisChainEntry[];
   Details: any;
 }
