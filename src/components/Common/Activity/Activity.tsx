@@ -3,7 +3,11 @@ import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { Column } from 'primereact/column';
 import type { TreeNode } from 'primereact/treenode';
-import { TreeTable, type TreeTableExpandedKeysType } from 'primereact/treetable';
+import {
+  TreeTable,
+  type TreeTableExpandedKeysType,
+  type TreeTableToggleEvent,
+} from 'primereact/treetable';
 import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import {
@@ -150,6 +154,30 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     }
   };
 
+  const handleToggleClick = (e: TreeTableToggleEvent) => {
+    const expandedEvent = e.value;
+    // Find which node was toggled
+    const newlyOpenedNodeKey = Object.keys(expandedEvent).find(
+      (key) => expandedEvent[key] && !expandedKeys[key],
+    );
+
+    // If not newly opened, it means this node was already open and needs to be closed
+    if (!newlyOpenedNodeKey) {
+      setExpandedKeys(expandedEvent);
+      return;
+    }
+
+    // Otherwise, check if max children limit is exceeded and collapse other nodes if needed
+    const toggledNode = nodes.find((n) => n.key === newlyOpenedNodeKey);
+    const toggledNodeChildrenCount = toggledNode?.children?.length || 0;
+    const newExpandedKeys = collapseParents(newlyOpenedNodeKey, toggledNodeChildrenCount);
+
+    if (newExpandedKeys[newlyOpenedNodeKey!]) delete newExpandedKeys[newlyOpenedNodeKey!];
+    else newExpandedKeys[newlyOpenedNodeKey!] = true;
+
+    setExpandedKeys(newExpandedKeys);
+  };
+
   const aggregatedCellTemplate = useCallback(
     (rowNode: any, params: { countKey: string; previewKey: string; valueKey: string }) => {
       const { data, children } = rowNode;
@@ -290,7 +318,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               rowClassName={rowClassName}
               value={nodes || []}
               expandedKeys={expandedKeys}
-              onToggle={(e) => setExpandedKeys(e.value)}
+              onToggle={(e) => handleToggleClick(e)}
               onRowClick={handleTreeRowClick}
               showGridlines
               removableSort
