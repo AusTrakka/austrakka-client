@@ -61,7 +61,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     submitterDisplayName: null,
   });
 
-  const routeSegment = recordType === 'Tenant' ? recordType : `${recordType}V2`;
+  const routeSegment = recordType === 'Organisation' ? `${recordType}V2` : recordType;
 
   const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
     routeSegment,
