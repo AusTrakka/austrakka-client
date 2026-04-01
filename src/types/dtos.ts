@@ -105,7 +105,6 @@ export interface PlotListing {
 
 // may need to add the property position here perchance
 export interface Member {
-  objectId: string;
   username: string;
   roles: string[];
   organization: {
