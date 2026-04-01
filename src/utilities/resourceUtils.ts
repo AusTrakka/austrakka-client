@@ -342,7 +342,13 @@ export const getActivities = (
   rguid?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
-  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Organisation') {
+    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Project') {
+    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
 };

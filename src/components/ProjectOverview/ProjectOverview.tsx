@@ -168,7 +168,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
         <Datasets projectDetails={projectDetails} mergeAlgorithm={mergeAlgorithm} />
       </TabPanel>
       <TabPanel value={tabValue} index={PROJ_TABS.activity.index}>
-        <Activity recordType="Projects" rGuid={projectDetails?.globalId ?? ''} />
+        <Activity recordType="Project" rGuid={projectDetails?.globalId ?? ''} />
       </TabPanel>
     </>
   );
