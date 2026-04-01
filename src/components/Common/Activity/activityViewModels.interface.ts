@@ -11,6 +11,6 @@ export interface ActivityDetailInfo {
   'Event initiated by': string;
   Resource: string;
   'Resource Type': string;
-  'Visible to'?: VisChainEntry[];
+  Context?: VisChainEntry[];
   Details: any;
 }

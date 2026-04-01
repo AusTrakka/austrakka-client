@@ -37,6 +37,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Event initiated by': '',
   Resource: '',
   'Resource Type': '',
+  Context: [],
   Details: null,
 };
 
@@ -95,7 +96,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       'Event initiated by': node.data.submitterDisplayName,
       Resource: node.data.resourceUniqueString,
       'Resource Type': node.data.resourceType,
-      'Visible to': node.data.visChain,
+      Context: node.data.visChain,
       Details: node.data.data || null,
     };
     setDetailInfo(info);
@@ -266,6 +267,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
+        recordType={recordType}
       />
       <ActivityFilters
         isOpen={filtersOpen}
