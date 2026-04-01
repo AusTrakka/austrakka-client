@@ -1,29 +1,27 @@
-import React from 'react';
-import { PrimeReactField, ProjectViewField } from '../types/dtos';
+import type React from 'react';
+import type { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
 
 export type PrimeReactColumnDefinition = {
-  field: string,
-  header: string,
-  dataType?: string,
-  hidden?: boolean,
-  body?: (rowData: any) => React.ReactNode,
+  field: string;
+  header: string;
+  dataType?: string;
+  hidden?: boolean;
+  body?: (rowData: any) => React.ReactNode;
   isDecorated?: boolean;
 };
-  
-export function buildPrimeReactColumnDefinitions(fields: PrimeReactField[]):
-PrimeReactColumnDefinition[] {
-  const columnBuilders: PrimeReactColumnDefinition[] = [];
 
+export function buildPrimeReactColumnDefinitions(fields: Field[]): PrimeReactColumnDefinition[] {
+  const columnBuilders: PrimeReactColumnDefinition[] = [];
   const assign = (original: any, newPart: any): any => ({ ...original, ...newPart });
 
-  fields.forEach(({ columnName, primitiveType, columnDisplayName }: PrimeReactField) => {
+  fields.forEach(({ columnName, primitiveType, headerName }: Field) => {
     let c = {
       field: columnName,
-      header: columnDisplayName || columnName,
+      header: headerName ?? columnName,
       isDecorated: false,
     };
-    
+
     if (columnName in fieldRenderFunctions) {
       const body = {
         body: (rowData: any) => fieldRenderFunctions[columnName](rowData[columnName]),

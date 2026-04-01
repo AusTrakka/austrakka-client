@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import * as echarts from 'echarts';
-import { GeoJSON, GeoJSONSourceInput } from 'echarts/types/src/coord/geo/geoTypes';
 import { Alert, Box, Chip, Stack, Typography } from '@mui/material';
+import * as echarts from 'echarts';
+import type { GeoJSON } from 'geojson';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Theme } from '../../assets/themes/theme';
+import type { Field } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
-import { Sample } from '../../types/sample.interface';
-import { FeatureLookupFieldType, GeoCountRow, MapKey, Maps } from './mapMeta';
 import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
-import { Field } from '../../types/dtos';
+import { type FeatureLookupFieldType, type GeoCountRow, type MapKey, Maps } from './mapMeta';
 
 interface MapTestProps {
   colourScheme: string;
@@ -26,7 +27,7 @@ function MapChart(props: MapTestProps) {
   const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
   const [showAlert, setShowAlert] = useState(true);
   const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
-  
+
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
     const mapJson = Maps[mapSpec];
@@ -34,12 +35,10 @@ function MapChart(props: MapTestProps) {
     if (mapSpec === 'WORLD') {
       return mapJson;
     }
-    
+
     return {
       ...mapJson,
-      features: mapJson.features.filter(
-        f => regionView || !f.properties.is_region,
-      ),
+      features: mapJson.features.filter((f) => regionView || !f.properties?.is_region),
     };
   }, [mapSpec, regionView]);
 
@@ -56,6 +55,7 @@ function MapChart(props: MapTestProps) {
     };
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: explained below
   useEffect(() => {
     if (!chartRef.current) return undefined;
 
@@ -84,7 +84,7 @@ function MapChart(props: MapTestProps) {
   const updateChart = useCallback(() => {
     if (!chartInstance.current || !aggregateData.length) return;
 
-    const counts = aggregateData.map(item => item.count);
+    const counts = aggregateData.map((item) => item.count);
     const minValue = counts.length > 0 ? Math.min(...counts) : 0;
     const maxValue = counts.length > 0 ? Math.max(...counts) : 1;
 
@@ -92,7 +92,7 @@ function MapChart(props: MapTestProps) {
       title: {
         text: 'Choropleth Visualisation',
       },
-      backgroundColor: import.meta.env.VITE_THEME_PRIMARY_GREY,
+      backgroundColor: Theme.PrimaryGrey,
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => `${params.name}: ${params.value ?? 'N/A'}`,
@@ -138,7 +138,7 @@ function MapChart(props: MapTestProps) {
           roam: true,
           map: 'currentMap',
           nameProperty: isoType,
-          data: aggregateData.map(item => ({ name: item.geoFeature, value: item.count })),
+          data: aggregateData.map((item) => ({ name: item.geoFeature, value: item.count })),
           encode: {
             name: 'name',
             value: 'value',
@@ -154,7 +154,7 @@ function MapChart(props: MapTestProps) {
 
     chartInstance.current.setOption(option, true);
   }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
-  
+
   useEffect(() => {
     if (!geoField) return;
     const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
@@ -168,7 +168,7 @@ function MapChart(props: MapTestProps) {
     setIsoType(isoCode);
     setRegionView(isoCode === 'iso_region');
   }, [geoField]);
-  
+
   useEffect(() => {
     if (!data || data.length === 0 || !geoField || !filteredMapSpec || !isoType) {
       setAggregateData([]);
@@ -180,7 +180,7 @@ function MapChart(props: MapTestProps) {
       setAggregateData(counts);
       setMissingData(missing);
       setShowAlert(true);
-    } catch (err) {
+    } catch (_err) {
       setMapRenderingError(true);
     }
   }, [data, geoField, filteredMapSpec, isoType]);
@@ -195,18 +195,18 @@ function MapChart(props: MapTestProps) {
         echarts.registerMap('currentMap', {
           type: 'FeatureCollection',
           features: [],
-        } as GeoJSONSourceInput);
+        });
       }
-    } catch (error) {
+    } catch (_error) {
       setMapRenderingError(true);
     }
 
     // Register new map with validation
     try {
       if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
-        echarts.registerMap('currentMap', filteredMapSpec as GeoJSONSourceInput);
+        echarts.registerMap('currentMap', filteredMapSpec as any);
       }
-    } catch (error) {
+    } catch (_error) {
       setMapRenderingError(true);
     }
   }, [filteredMapSpec]);
@@ -217,13 +217,11 @@ function MapChart(props: MapTestProps) {
 
     updateChart();
   }, [aggregateData, updateChart]);
-  
+
   if (mapRenderingError) {
     return (
       <Alert severity="error">
-        <Typography>
-          There was an error rendering the map, please refresh.
-        </Typography>
+        <Typography>There was an error rendering the map, please refresh.</Typography>
       </Alert>
     );
   }
@@ -232,17 +230,12 @@ function MapChart(props: MapTestProps) {
     <Stack spacing={1}>
       {regionView && mapSpec === 'WORLD' && (
         <Alert severity="error">
-          <Typography>
-            Regional fields are not supported with the world map
-          </Typography>
+          <Typography>Regional fields are not supported with the world map</Typography>
         </Alert>
       )}
 
       {showAlert && missingData.length > 0 && (
-        <Alert
-          severity="info"
-          onClose={() => setShowAlert(false)}
-        >
+        <Alert severity="info" onClose={() => setShowAlert(false)}>
           <Typography fontSize="small" gutterBottom>
             Some data values are not shown on the map because they don’t match any map regions:
           </Typography>
@@ -259,7 +252,11 @@ function MapChart(props: MapTestProps) {
             }}
           >
             {missingData.map((item) => (
-              <Chip key={item.geoFeature} label={`${item.geoFeature} (${item.count})`} size="small" />
+              <Chip
+                key={item.geoFeature}
+                label={`${item.geoFeature} (${item.count})`}
+                size="small"
+              />
             ))}
           </Box>
         </Alert>
@@ -275,7 +272,6 @@ function MapChart(props: MapTestProps) {
         }}
       />
     </Stack>
-
   );
 }
 

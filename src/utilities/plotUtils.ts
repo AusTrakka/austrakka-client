@@ -1,13 +1,12 @@
 // Pure functions used in plot pages
 
 /* Disabling to make e.g. newSpec['encoding'][field]['field'] clearer */
-/* eslint-disable @typescript-eslint/dot-notation */
 
-import { TopLevelSpec } from 'vega-lite';
+import type { TopLevelSpec } from 'vega-lite';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { defaultContinuousColorScheme, defaultDiscreteColorScheme } from '../constants/schemes';
+import type { ProjectViewField } from '../types/dtos';
 import { createColourMapping } from './colourUtils';
-import { ProjectViewField } from '../types/dtos';
-import { defaultDiscreteColorScheme, defaultContinuousColorScheme } from '../constants/schemes';
 import { maxObj, minObj } from './dataProcessingUtils';
 
 const ONE_SAMPLE_POINT_SIZE = 40;
@@ -40,8 +39,11 @@ export const getStartingField = (
 };
 
 // Update a spec to replace a field value, returning the new object
-export const setFieldInSpec
-= (oldSpec: TopLevelSpec | null, field: string, value: string): TopLevelSpec | null => {
+export const setFieldInSpec = (
+  oldSpec: TopLevelSpec | null,
+  field: string,
+  value: string,
+): TopLevelSpec | null => {
   // Note that we cast TopLevelSpecs to any here as .encoding is not guaranteed on TopLevelSpec.
   // We are reliant on using specs which do have .encoding, but more specific types are not
   // currently exported from vega-lite for us to assert this.
@@ -52,8 +54,8 @@ export const setFieldInSpec
   // Note we do not change other properties of specified field, e.g. type
   const newSpec: any = { ...oldSpec };
   newSpec.encoding = { ...(oldSpec as any).encoding };
-  newSpec['encoding'][field] = { ...(oldSpec as any)['encoding'][field] };
-  newSpec['encoding'][field]['field'] = value;
+  newSpec.encoding[field] = { ...(oldSpec as any).encoding[field] };
+  newSpec.encoding[field].field = value;
   return newSpec as TopLevelSpec;
 };
 
@@ -101,11 +103,13 @@ export const setColorInSpecToValue = (
       value: unselectedOpacity,
     };
     // Add params for selection
-    newSpec.params = [{
-      name: 'selectedcolour',
-      select: { type: 'point', fields: [colourField] },
-      bind: 'legend',
-    }];
+    newSpec.params = [
+      {
+        name: 'selectedcolour',
+        select: { type: 'point', fields: [colourField] },
+        bind: 'legend',
+      },
+    ];
   }
   return newSpec as TopLevelSpec;
 };
@@ -129,24 +133,25 @@ export const setColorAggregateInSpecToValue = (
 };
 
 // Facet row. Does not use generic setFieldInSpec, as we handle 'none'
-export const setRowInSpecToValue =
-    (oldSpec: TopLevelSpec | null, rowField: string): TopLevelSpec | null => {
-      if (oldSpec == null) return null;
-      const newSpec: any = { ...oldSpec };
-      if (rowField === 'none') {
-        // Remove row from encoding
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { row, ...newEncoding } = (oldSpec as any).encoding;
-        newSpec.encoding = newEncoding;
-      } else {
-        // Set row in encoding
-        newSpec.encoding = { ...(oldSpec as any).encoding };
-        newSpec.encoding.row = {
-          field: rowField,
-        };
-      }
-      return newSpec as TopLevelSpec;
+export const setRowInSpecToValue = (
+  oldSpec: TopLevelSpec | null,
+  rowField: string,
+): TopLevelSpec | null => {
+  if (oldSpec == null) return null;
+  const newSpec: any = { ...oldSpec };
+  if (rowField === 'none') {
+    // Remove row from encoding
+    const { row, ...newEncoding } = (oldSpec as any).encoding;
+    newSpec.encoding = newEncoding;
+  } else {
+    // Set row in encoding
+    newSpec.encoding = { ...(oldSpec as any).encoding };
+    newSpec.encoding.row = {
+      field: rowField,
     };
+  }
+  return newSpec as TopLevelSpec;
+};
 
 export const setAxisResolutionInSpecToValue = (
   oldSpec: TopLevelSpec | null,
@@ -180,15 +185,13 @@ export const setTimeAggregationInSpecToValue = (
   } else {
     transforms = [
       {
-        'timeUnit': timeUnit,
-        'field': dateField,
-        'as': dateField,
+        timeUnit: timeUnit,
+        field: dateField,
+        as: dateField,
       },
       {
-        'aggregate': [
-          { 'op': 'count', 'as': 'count' },
-        ],
-        'groupby': [dateField, ...groupFields],
+        aggregate: [{ op: 'count', as: 'count' }],
+        groupby: [dateField, ...groupFields],
       },
       ...defaultTransforms,
     ];
@@ -225,7 +228,7 @@ export const setTimeAggregationInSpecToValue = (
 // Depends on browser width but:
 // Need 15 or 20 columns to look ok; 60 looks good; 80 is ok; 120 is dense but still ok
 // Note we return 3 months rather than a quarter, since quarter does not work everywhere
-export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: number } => {
+export const selectGoodTimeBinUnit = (dates: any[]): { unit: string; step: number } => {
   const nonNullDates = dates.filter((date) => date !== null);
   if (nonNullDates.length === 0) return { unit: 'yearmonthdate', step: 1 };
   const maxDate = new Date(maxObj(nonNullDates));
@@ -243,9 +246,7 @@ export const selectGoodTimeBinUnit = (dates: any[]) : { unit: string, step: numb
 export const ownerGroupVegaTransform = (field: string | undefined) => {
   if (!field) return [];
   if (field === 'Owner_group') {
-    return [
-      { calculate: `split(datum['${field}'],'-Owner')[0]`, as: field },
-    ];
+    return [{ calculate: `split(datum['${field}'],'-Owner')[0]`, as: field }];
   }
   return [];
 };

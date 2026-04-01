@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { TextField } from '@mui/material';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
-function TextEditable({ value, editorCallback }:
-{ value: string, editorCallback: (newValue: any) => void }) {
+function TextEditable({
+  value,
+  editorCallback,
+}: {
+  value: string;
+  editorCallback: (newValue: any) => void;
+}) {
   const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,8 +65,13 @@ function TextEditable({ value, editorCallback }:
   );
 }
 
-function NumericEditable({ value, editorCallback }:
-{ value: string, editorCallback: (newValue: any) => void }) {
+function NumericEditable({
+  value,
+  editorCallback,
+}: {
+  value: string;
+  editorCallback: (newValue: any) => void;
+}) {
   const [internalValue, setInternalValue] = useState(value);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

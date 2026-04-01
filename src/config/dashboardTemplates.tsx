@@ -1,24 +1,30 @@
-import React from 'react';
+import type React from 'react';
+import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
 import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
+import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
+import LabDataDashboard from '../components/Dashboards/Templates/LabDataDashboard';
+import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
+import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
+import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
+import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
+import SpeciesLabDataDashboard from '../components/Dashboards/Templates/SpeciesLabDataDashboard';
 import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlertsDashboard';
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
-import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
-import ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
-import BasicDashboard from '../components/Dashboards/Templates/BasicDashboard';
-import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
-import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
-import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
+import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
 
-const DashboardTemplates : Record<string, React.FC<ProjectDashboardTemplateProps>> = {
-  'default': DefaultDashboard,
-  'demo': DemoDashboard,
-  'basic': BasicDashboard,
-  'snap': SnapDashboard,
-  'vicdh': VicDHDashboard,
+const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
+  'public-health-default': PublicHealthDefaultDashboard,
+  demo: DemoDashboard,
+  default: DefaultDashboard,
+  snap: SnapDashboard,
+  vicdh: VicDHDashboard,
   'vicdh-alerts': VicDHAlertsDashboard,
-  'apg': ApgDashboard,
-  'withqc': WithQC,
+  apg: ApgDashboard,
+  withqc: WithQC,
   'se-demo': SEDemoDashboard,
+  ofn: OFNDashboard,
+  'lab-data': LabDataDashboard,
+  'species-lab-data': SpeciesLabDataDashboard,
 };
 export default DashboardTemplates;

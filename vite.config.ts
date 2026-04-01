@@ -1,7 +1,6 @@
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 import {Schema, ValidateEnv} from '@julr/vite-plugin-validate-env'
-import eslint from 'vite-plugin-eslint'
 import fs from 'fs'
 import path from 'path'
 
@@ -157,13 +156,6 @@ export default defineConfig({
         return defaultConfigValueBoolean(key, value, DocsDefaultValues.Enabled)
       },
     }),
-    {
-      apply: 'build',
-      ...eslint({
-        failOnWarning: true,
-        failOnError: true,
-      })
-    },
   ]
 })
 

@@ -1,26 +1,15 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
-import {
-  TableRow,
-  TableCell,
-  IconButton,
-  Typography,
-  Stack,
-  Alert,
-} from '@mui/material';
-import {
-  AddCircle,
-  KeyboardArrowDown,
-  KeyboardArrowRight,
-} from '@mui/icons-material';
-import { getOrganisations } from '../../../utilities/resourceUtils';
-import { ResponseObject } from '../../../types/responseObject.interface';
-import { ResponseType } from '../../../constants/responseType';
+import { AddCircle, KeyboardArrowRight } from '@mui/icons-material';
+import { Alert, IconButton, Stack, TableCell, TableRow, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import { ResponseType } from '../../../constants/responseType';
+import type { ResponseObject } from '../../../types/responseObject.interface';
+import { getOrganisations } from '../../../utilities/resourceUtils';
 import './autocompleteStyleOverride.css';
-import { RolesV2 } from '../../../types/dtos';
-import { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { Theme } from '../../../assets/themes/theme';
+import type { RolesV2 } from '../../../types/dtos';
+import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
 
@@ -32,10 +21,7 @@ interface GroupHeaderRowProps {
   rolesErrorMessage: string | null;
   roles: RolesV2[];
   empty: boolean;
-  onSelectionChange: (
-    recordType: string,
-    assignments: RoleAssignments[],
-  ) => void;
+  onSelectionChange: (recordType: string, assignments: RoleAssignments[]) => void;
 }
 
 function GroupHeaderRowV2(props: GroupHeaderRowProps) {
@@ -49,7 +35,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     rolesErrorMessage,
     onSelectionChange,
   } = props;
-  
+
   const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
   const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
   const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
@@ -69,7 +55,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             response = await getOrganisations(false, token);
             break;
           default:
-            // Will need to add more calls once endpoints have been added
+            // TODO: Will need to add more calls once endpoints have been added
             // I think project is technically there but I dont think roles can be added for it.
             // for the cli
             return;
@@ -79,16 +65,19 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
           setRecordFetchError(response.message);
           return;
         }
-        
+
         const rolesV2: any[] = response.data;
 
-        setRecords(rolesV2.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
-          .map((item: any) => ({
-            id: item.globalId,
-            abbrev: item.abbreviation,
-            name: item.name,
-          })));
-      } catch (error) {
+        setRecords(
+          rolesV2
+            .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+            .map((item: any) => ({
+              id: item.globalId,
+              abbrev: item.abbreviation,
+              name: item.name,
+            })),
+        );
+      } catch (_error) {
         setRecordFetchError('An error occurred while fetching records.');
       }
     }
@@ -113,7 +102,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       setFetchError(rolesErrorMessage || recordFetchError);
     }
   }, [rolesErrorMessage, recordFetchError]);
-  
+
   useEffect(() => {
     if (!editing) {
       if (recordType !== 'Tenant') {
@@ -124,19 +113,22 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       }
     }
   }, [editing, recordType]);
-    
+
   const handleAddPrivilege = () => {
     if (selectedRecords && selectedRoles) {
       const assignedRoles: RoleAssignments[] = [];
 
       for (const record of selectedRecords) {
-        const existingAssignment =
-            assignedRoles.find((assignment) => assignment.record.id === record.id);
+        const existingAssignment = assignedRoles.find(
+          (assignment) => assignment.record.id === record.id,
+        );
 
         if (existingAssignment) {
-          existingAssignment.roles.push(...selectedRoles.filter(
-            (role) => !existingAssignment.roles.some((r) => r.globalId === role.globalId),
-          ));
+          existingAssignment.roles.push(
+            ...selectedRoles.filter(
+              (role) => !existingAssignment.roles.some((r) => r.globalId === role.globalId),
+            ),
+          );
         } else {
           assignedRoles.push({
             record,
@@ -156,7 +148,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     <TableRow
       key={recordType}
       style={{
-        backgroundColor: 'var(--primary-grey)',
+        backgroundColor: Theme.PrimaryGrey,
         borderRadius: '6px',
         border: 'none',
       }}
@@ -167,55 +159,59 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
             disabled={empty}
             aria-label="expand row"
             size="small"
+            disableRipple
             onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(recordType) ? <KeyboardArrowDown /> :
-            <KeyboardArrowRight />}
+            <KeyboardArrowRight
+              sx={{
+                transform: openGroupRoles.includes(recordType) ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.125s ease-in-out',
+              }}
+            />
           </IconButton>
           <Typography variant="body2">{recordType}</Typography>
         </div>
       </TableCell>
       <TableCell>
-        { fetchError && editing ? (
+        {fetchError && editing ? (
           <Alert severity="error" variant="standard">
             {rolesErrorMessage}
           </Alert>
-        ) :
-          (
-            <Stack direction="row" spacing={1}>
-              {editing && records ? (
-                <>
-                  <RecordAutocomplete
-                    records={records}
-                    selectedRecords={selectedRecords}
-                    setSelectedRecords={setSelectedRecords}
-                    recordType={recordType}
-                  />
-                  <RoleAutocomplete
-                    roles={roles}
-                    selectedRoles={selectedRoles}
-                    setSelectedRoles={setSelectedRoles}
-                  />
-                  <div style={{ display: 'flex' }}>
-                    <IconButton
-                      aria-label="add"
-                      size="small"
-                      color={isAddButtonEnabled ? 'success' : 'default'}
-                      onClick={() => {
-                        handleAddPrivilege();
-                        if (!openGroupRoles.includes(recordType)) {
-                          handleGroupRoleToggle(recordType);
-                        }
-                      }}
-                      disabled={!isAddButtonEnabled}
-                    >
-                      <AddCircle />
-                    </IconButton>
-                  </div>
-                </>
-              ) : null}
-            </Stack>
-          )}
+        ) : (
+          <Stack direction="row" spacing={1}>
+            {editing && records ? (
+              <>
+                <RecordAutocomplete
+                  records={records}
+                  selectedRecords={selectedRecords}
+                  setSelectedRecords={setSelectedRecords}
+                  recordType={recordType}
+                />
+                <RoleAutocomplete
+                  roles={roles}
+                  selectedRoles={selectedRoles}
+                  setSelectedRoles={setSelectedRoles}
+                />
+                <div style={{ display: 'flex' }}>
+                  <IconButton
+                    aria-label="add"
+                    size="small"
+                    color={isAddButtonEnabled ? 'success' : 'default'}
+                    onClick={() => {
+                      handleAddPrivilege();
+                      if (!openGroupRoles.includes(recordType)) {
+                        handleGroupRoleToggle(recordType);
+                      }
+                    }}
+                    disabled={!isAddButtonEnabled}
+                  >
+                    <AddCircle />
+                  </IconButton>
+                </div>
+              </>
+            ) : null}
+          </Stack>
+        )}
       </TableCell>
     </TableRow>
   );

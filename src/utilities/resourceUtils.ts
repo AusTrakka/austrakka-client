@@ -1,57 +1,72 @@
-/* eslint-disable @typescript-eslint/indent */
-// ^ rule is broken for some typescript-specific syntax features
+import type {
+  CreateMsg,
+  DerivedLog,
+  FeedbackPost,
+  Group,
+  Organisation,
+  Plot,
+  PlotListing,
+  Project,
+  ProjectSummary,
+  Tree,
+  TreeVersion,
+  UserPatchV2,
+  UserRoleRecordPrivilegePost,
+} from '../types/dtos';
+import type { ResponseObject } from '../types/responseObject.interface';
 import {
-  callDELETE,
   buildUploadHeaders,
+  callDELETE,
   callGET,
   callPATCH,
-  callPost,
   callPOSTForm,
+  callPost,
   callPostMultipart,
   callPUT,
   callSimpleGET,
   downloadFile,
   previewFile,
 } from './api';
-import {
-  Feedback,
-  FeedbackPost,
-  DerivedLog,
-  Plot,
-  PlotListing,
-  Organisation,
-  Project,
-  ProjectSummary,
-  Tree,
-  TreeVersion,
-  UserPatchV2,
-  UserRoleRecordPrivilegePost, Group,
-} from '../types/dtos';
-import { ResponseObject } from '../types/responseObject.interface';
 
 // Definition of endpoints
 
 // Project endpoints
-export const getProjectList = (token: string):
-  Promise<ResponseObject<Project[]>> => callGET('/api/Projects?&includeall=false', token);
-export const getProjectDetails = (abbrev: string, token: string):
-  Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
+  callGET('/api/Projects?&includeall=false', token);
+export const getProjectDetails = (
+  abbrev: string,
+  token: string,
+): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
 
 // Plots endpoints
-export const getPlots = (projectId: number, token: string):
-  Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
-export const getPlotDetails = (abbrev: string, token: string):
-  Promise<ResponseObject<Plot>> => callGET(`/api/Plots/abbrev/${abbrev}`, token);
+export const getPlots = (
+  projectId: number,
+  token: string,
+): Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+export const getPlotDetails = (abbrev: string, token: string): Promise<ResponseObject<Plot>> =>
+  callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
 // Tree endpoints
-export const getTrees = (projectAbbrev: string, includeAll: boolean, token: string):
-  Promise<ResponseObject<Tree[]>> => callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
-export const getTreeData = (treeVersionId: number, token: string):
-  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
-export const getLatestTreeData = (treeId: number, token: string):
-  Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
-export const getTreeVersions = (treeId: number, token: string):
-  Promise<ResponseObject<TreeVersion[]>> => callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
+export const getTrees = (
+  projectAbbrev: string,
+  includeAll: boolean,
+  token: string,
+): Promise<ResponseObject<Tree[]>> =>
+  callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
+export const getTreeData = (
+  treeVersionId: number,
+  token: string,
+): Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+export const getLatestTreeData = (
+  treeId: number,
+  token: string,
+): Promise<ResponseObject<TreeVersion>> =>
+  callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+export const getTreeVersions = (
+  treeId: number,
+  token: string,
+): Promise<ResponseObject<TreeVersion[]>> =>
+  callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
 // Metadata endpoints
 export const getMetadata = (groupId: number, fields: string[], token: string) => {
@@ -65,40 +80,65 @@ export const getSamples = (token: string, groupId: number, searchParams?: URLSea
 };
 
 // Group endpoints
-export const getDisplayFields = (groupId: number, token: string) => callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
-export const getGroupMembers = (groupId: number, token: string) => callGET(`/api/Group/Members?groupContext=${groupId}`, token);
+export const getDisplayFields = (groupId: number, token: string) =>
+  callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
+export const getGroupMembers = (groupId: number, token: string) =>
+  callGET(`/api/Group/Members?groupContext=${groupId}`, token);
 export const getGroupList = (token: string) => callGET('/api/Group', token);
-export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> => callGET(`/api/Group/${groupName}`, token);
-export const replaceAssignments = (userId: string, token: string, assignments: any) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments);
+export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> =>
+  callGET(`/api/Group/${groupName}`, token);
+export const replaceAssignments = (
+  userId: string,
+  token: string,
+  assignments: any,
+  clientSessionId?: string,
+) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments, clientSessionId);
 
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
 // and we don't need to do anything
-export const getGroupProFormaVersions = (groupId: number, token: string) => callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
+export const getGroupProFormaVersions = (groupId: number, token: string) =>
+  callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
-export const getProformaDetails = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
-export const getProformaVersions = (proFormaAbbrev: string, token: string) => callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+export const getProformaDetails = (proFormaAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
+export const getProformaVersions = (proFormaAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
-  const response = id != null ? await downloadFile(`/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`, token)
-    : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
+  const response =
+    id != null
+      ? await downloadFile(
+          `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
+          token,
+        )
+      : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
 
 // Project metadata
-export const getProjectFields = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
-export const getProjectViews = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) => callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`, token);
+export const getProjectFields = (projectAbbrev: string, token: string) =>
+  callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
+export const getProjectViews = (projectAbbrev: string, token: string) =>
+  callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
+export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) =>
+  callSimpleGET(
+    `/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`,
+    token,
+  );
 
 // Project dashboards endpoints
-export const getProjectDashboard = (projectAbbrev: string, token: string) => callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
+export const getProjectDashboard = (projectAbbrev: string, token: string) =>
+  callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
 
 // User dashboard endpoints
-export const getUserDashboardOverview = (token: string) => callGET('/api/DashboardSearch/user-dashboard/overview', token);
+export const getUserDashboardOverview = (token: string) =>
+  callGET('/api/DashboardSearch/user-dashboard/overview', token);
 
 // has to be split to 3 different lines as it was getting too long
-export const getUserDashboardProjects =
-  (token: string): Promise<ResponseObject<ProjectSummary[]>> =>
-    callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
+export const getUserDashboardProjects = (
+  token: string,
+): Promise<ResponseObject<ProjectSummary[]>> =>
+  callGET('/api/DashboardSearch/user-dashboard/projects-total', token);
 
 // Submission endpoints
 export const validateSubmissions = (
@@ -109,7 +149,12 @@ export const validateSubmissions = (
   shareProjectAbbrevs: string[] = [],
 ) => {
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
-  return callPOSTForm(`/api/Submissions/ValidateSubmissions${params}`, formData, token, customHeaders);
+  return callPOSTForm(
+    `/api/Submissions/ValidateSubmissions${params}`,
+    formData,
+    token,
+    customHeaders,
+  );
 };
 export const uploadSubmissions = (
   formData: FormData,
@@ -119,7 +164,12 @@ export const uploadSubmissions = (
   shareProjectAbbrevs: string[] = [],
 ) => {
   const customHeaders = buildUploadHeaders(ownerOrgAbbrev, shareProjectAbbrevs);
-  return callPOSTForm(`/api/Submissions/UploadSubmissions${params}`, formData, token, customHeaders);
+  return callPOSTForm(
+    `/api/Submissions/UploadSubmissions${params}`,
+    formData,
+    token,
+    customHeaders,
+  );
 };
 export const createSample = (
   token: string,
@@ -131,7 +181,7 @@ export const createSample = (
 
 // Sequence endpoints
 // TODO: this should parse the response
-export const uploadFastqSequence = (
+export const uploadSequence = (
   formData: FormData,
   params: string,
   token: string,
@@ -141,170 +191,194 @@ export const uploadFastqSequence = (
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
-export const getUser = (userObjectId: string, token: string) => callGET(`/api/Users/userId/${userObjectId}`, token);
-export const getUserList = (includeAll: boolean, token: string) => callGET(`/api/Users?includeall=${includeAll}`, token);
-export const patchUserContactEmail = (userObjectId: string, token: string, email: any) => callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const putUser = (userObjectId: string, token: string, user: any) => callPUT(`/api/Users/${userObjectId}`, token, user);
+export const getUser = (identifier: string, token: string) =>
+  callGET(`/api/Users/userId/${identifier}`, token);
+export const getUserList = (includeAll: boolean, token: string) =>
+  callGET(`/api/Users?includeall=${includeAll}`, token);
+export const patchUserContactEmail = (identifier: string, token: string, email: any) =>
+  callPATCH(`/api/Users/${identifier}/contactEmail`, token, email);
+export const putUser = (identifier: string, token: string, user: any, clientSessionId?: string) =>
+  callPUT(`/api/Users/${identifier}`, token, user, clientSessionId);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/Roles', token);
+export const getRoles = (token: string) => callGET('/api/RolesV2', token);
 
 // Dataset endpoints
-export const getDatasets = (projectAbbrev: string, token: string) => callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
-export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) => callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
+export const getDatasets = (projectAbbrev: string, token: string) =>
+  callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
+export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
-export const getSampleGroups = (sampleName: string, token: string) => callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const getSampleGroups = (sampleName: string, token: string) =>
+  callGET(`/api/Sample/${sampleName}/Groups`, token);
 export const shareSamples = (
   token: string,
   groupName: string,
   samples: string[],
   clientSessionId?: string,
-) => callPATCH('/api/Sample/Share', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
+) =>
+  callPATCH('/api/Sample/Share', token, { groupName: groupName, seqIds: samples }, clientSessionId);
 export const unshareSamples = (
   token: string,
   groupName: string,
   samples: string[],
   clientSessionId?: string,
-) => callPATCH('/api/Sample/UnShare', token, { 'groupName': groupName, 'seqIds': samples }, clientSessionId);
+) =>
+  callPATCH(
+    '/api/Sample/UnShare',
+    token,
+    { groupName: groupName, seqIds: samples },
+    clientSessionId,
+  );
 
 // Organisation endpoints
-export const getOrganisations = (includeAll: boolean, token: string) => callGET(`/api/Organisations?includeall=${includeAll}`, token);
-export const getOrganisation = (abbrev: string, token: string): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
+export const getOrganisations = (includeAll: boolean, token: string) =>
+  callGET(`/api/Organisations?includeall=${includeAll}`, token);
+export const getOrganisation = (
+  abbrev: string,
+  token: string,
+): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 
-export const postFeedback = (feedbackPostDto: FeedbackPost, token: string): Promise<ResponseObject<Feedback>> => callPost<Feedback>('/api/Feedback', token, feedbackPostDto);
+export const postFeedback = (
+  feedbackPostDto: FeedbackPost,
+  token: string,
+): Promise<ResponseObject<CreateMsg>> =>
+  callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
 export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost('/api/Tenant/Privilege', token, privilegeBody);
+  clientSessionId?: string,
+) => callPost('/api/Tenant/Privilege', token, privilegeBody, clientSessionId);
 
 export const deleteTenantPrivilege = (
   _: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
+  clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Tenant/Privilege/${privilegeGlobalId}`,
+    `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
     token,
+    clientSessionId,
   );
 
 // User
 export const getMeV2 = (token: string) => callGET('/api/UserV2/Me', token);
-export const getUserListV2 = (
-  includeAll: boolean,
-  token: string,
-) => callGET(`/api/UserV2?includeall=${includeAll}`, token);
+export const getUserListV2 = (includeAll: boolean, token: string) =>
+  callGET(`/api/UserV2?includeall=${includeAll}`, token);
 
-export const getUserV2 = (
-  userGlobalId: string,
-  token: string,
-) => callGET(`/api/UserV2/${userGlobalId}`, token);
+export const getUserV2 = (userGlobalId: string, token: string) =>
+  callGET(`/api/UserV2/${userGlobalId}`, token);
 
 export const patchUserV2 = (
   userGlobalId: string,
   userPatchDto: UserPatchV2,
   token: string,
-) => callPATCH(
-  `/api/UserV2/${userGlobalId}`,
-  token,
-  userPatchDto,
-);
+  clientSessionId?: string,
+) => callPATCH(`/api/UserV2/${userGlobalId}`, token, userPatchDto, clientSessionId);
 
-export const disableUserV2 = (
-  userGlobalId: string,
-  token: string,
-) => callPATCH(
-  `/api/UserV2/disable/${userGlobalId}`,
-  token,
-);
+export const disableUserV2 = (userGlobalId: string, token: string, clientSessionId?: string) =>
+  callPATCH(`/api/UserV2/disable/${userGlobalId}`, token, clientSessionId);
 
-export const enableUserV2 = (
-  userGlobalId: string,
-  token: string,
-) => callPATCH(
-  `/api/UserV2/enable/${userGlobalId}`,
-  token,
-);
+export const enableUserV2 = (userGlobalId: string, token: string, clientSessionId?: string) =>
+  callPATCH(`/api/UserV2/enable/${userGlobalId}`, token, clientSessionId);
 
 // OrganisationV2
 
-export const getOrganisationsV2 = (
-  organisationGlobalId: string,
-  token: string,
-) => callGET(`/api/OrganisationV2/${organisationGlobalId}`, token);
+export const getOrganisationsV2 = (organisationGlobalId: string, token: string) =>
+  callGET(`/api/OrganisationV2/${organisationGlobalId}`, token);
 
 export const patchUserOrganisationV2 = (
   userGlobalId: string,
   organisationGlobalId: string,
   targetOrgGlobalId: string,
   token: string,
-) => callPATCH(
-  `/api/OrganisationV2/${organisationGlobalId}/User/${userGlobalId}`,
-  token,
-  targetOrgGlobalId,
-);
+) =>
+  callPATCH(
+    `/api/OrganisationV2/${organisationGlobalId}/User/${userGlobalId}`,
+    token,
+    targetOrgGlobalId,
+  );
 
 export const postOrgPrivilege = (
   recordGlobalId: string,
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
-) => callPost(`/api/OrganisationV2/${recordGlobalId}/Privilege`, token, privilegeBody);
+  clientSessionId?: string,
+) =>
+  callPost(
+    `/api/OrganisationV2/${recordGlobalId}/Privilege`,
+    token,
+    privilegeBody,
+    clientSessionId,
+  );
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
-  privilegeGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
   token: string,
-) => callDELETE(
-  `/api/OrganisationV2/${recordGlobalId}/Privilege/${privilegeGlobalId}`,
-  token,
-);
+  clientSessionId?: string,
+) =>
+  callDELETE(
+    `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    token,
+    clientSessionId,
+  );
 
 // Tenant
-export const getFieldsV2 = (
-  token: string,
-) =>
-  callGET('/api/MetaDataColumnsV2', token);
-export const patchFieldV2 = (
-  metaDataColumnName: string,
-  token: string,
-  field: any,
-) =>
+export const getFieldsV2 = (token: string) => callGET('/api/MetaDataColumnsV2', token);
+export const patchFieldV2 = (metaDataColumnName: string, token: string, field: any) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
 
 // Activity log
 export const getActivities = (
   recordType: string,
-  rguid: string,
   token: string,
+  rguid?: string,
+  searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
-  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog`, token);
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Organisation') {
+    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Project') {
+    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
 };
 
-// Project documents endpoints 
-export const getDocuments = (projectAbbrev: string, token: string) => callGET(`/api/ProjectV2/${projectAbbrev}/documents`, token);
-export const uploadDocument = (projectAbbrev: string, formData: FormData, token: string) => callPOSTForm(`/api/ProjectV2/${projectAbbrev}/documents`, formData, token);
-export const deleteDocument = (projectAbbrev: string, documentId: number, token: string) => callDELETE(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/delete`, token);
+// Project documents endpoints
+export const getDocuments = (projectAbbrev: string, token: string) =>
+  callGET(`/api/ProjectV2/${projectAbbrev}/documents`, token);
+export const uploadDocument = (projectAbbrev: string, formData: FormData, token: string) =>
+  callPOSTForm(`/api/ProjectV2/${projectAbbrev}/documents`, formData, token);
+export const deleteDocument = (projectAbbrev: string, documentId: number, token: string) =>
+  callDELETE(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/delete`, token);
 // TODO: Fix this and maybe have "default file name" as a parameter to "downloadFile" function
 export const downloadDocument = async (
   projectAbbrev: string,
   documentId: number,
   token: string,
 ) => {
-  const response = await downloadFile(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`, token);
+  const response = await downloadFile(
+    `/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`,
+    token,
+  );
   return response;
 };
 
 // TODO: make sure preview is calling its own endpoint
-export const previewDocument = async (
-  projectAbbrev: string,
-  documentId: number,
-  token: string,
-) => {
-  const response = await previewFile(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`, token);
+export const previewDocument = async (projectAbbrev: string, documentId: number, token: string) => {
+  const response = await previewFile(
+    `/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`,
+    token,
+  );
   return response;
 };

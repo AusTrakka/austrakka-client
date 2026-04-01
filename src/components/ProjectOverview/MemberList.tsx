@@ -1,68 +1,89 @@
-/* eslint-disable react/jsx-pascal-case */
-import React, { memo, useEffect, useRef, useState, JSX } from 'react';
-import { Alert, AlertTitle, Chip, CircularProgress, Dialog, IconButton, Paper, Tooltip } from '@mui/material';
-import { Close, FileDownload } from '@mui/icons-material';
-import { CSVLink } from 'react-csv';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Close } from '@mui/icons-material';
+import { Alert, AlertTitle, Chip, Dialog, IconButton, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import LoadingState from '../../constants/loadingState';
-import { Member, Project } from '../../types/dtos';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import type React from 'react';
+import { type JSX, memo, useEffect, useRef, useState } from 'react';
+import type { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupMembers } from '../../utilities/resourceUtils';
+import { useStableNavigate } from '../../app/NavigationContext';
+import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
+import type { Member, Project } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { getGroupMembers } from '../../utilities/resourceUtils';
+import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { generateFilename } from '../../utilities/file';
-import { useStableNavigate } from '../../app/NavigationContext';
 
 interface MemberListProps {
-  projectDetails: Project | null
+  projectDetails: Project | null;
   setIsLoading: (isLoading: boolean) => void;
 }
 
-function renderList(cell : any): JSX.Element[] {
+function renderList(cell: any): JSX.Element[] {
   const roles = cell;
   if (Array.isArray(roles)) {
-    return roles.sort().map((r) => (
-      <Chip key={r} label={r} variant="filled" color="secondary" size="small" style={{ margin: '3px' }} />
-    ));
+    return roles
+      .sort()
+      .map((r) => (
+        <Chip
+          key={r}
+          label={r}
+          variant="filled"
+          color="secondary"
+          size="small"
+          style={{ margin: '3px' }}
+        />
+      ));
   }
 
   return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
 
 function MemberList(props: MemberListProps) {
-  const {
-    projectDetails,
-    setIsLoading,
-  } = props;
+  const { projectDetails, setIsLoading } = props;
 
   const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
-  const [transformedData, setTransformedData] = useState<any[]>([]);
   const [exportData, setExportData] = useState<Member[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
   const columns = [
     { field: 'displayName', header: 'Name' },
-    { field: 'contactEmail', header: 'Email', body: (rowData: any) => rowData.contactEmail ?? 'Unavailable' },
-    { field: 'organization.abbreviation', header: 'Organizations', body: (rowData: any) => rowData.organization?.abbreviation },
+    {
+      field: 'contactEmail',
+      header: 'Email',
+      body: (rowData: any) => rowData.contactEmail ?? 'Unavailable',
+    },
+    {
+      field: 'organization.abbreviation',
+      header: 'Organizations',
+      body: (rowData: any) => rowData.organization?.abbreviation,
+    },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
   ];
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
   const [memberListError, setMemberListError] = useState(false);
   const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   const { token } = useApi();
 
   useEffect(() => {
     async function getMemberList() {
-      // eslint-disable-next-line max-len
-      const memberListResponse : ResponseObject = await getGroupMembers(projectDetails!.projectMembers.id, token);
+      const memberListResponse: ResponseObject = await getGroupMembers(
+        projectDetails!.projectMembers.id,
+        token,
+      );
       if (memberListResponse.status === ResponseType.Success) {
         setMemberList(memberListResponse.data as Member[]);
+        setExportData(memberListResponse.data as Member[]);
         setMemberListError(false);
         setIsLoading(false);
       } else {
@@ -85,78 +106,25 @@ function MemberList(props: MemberListProps) {
       try {
         csvLink.current?.link.click();
         setExportCSVStatus(LoadingState.IDLE);
-      } catch (error) {
+      } catch (_error) {
         setExportCSVStatus(LoadingState.ERROR);
       }
     }
   }, [exportCSVStatus]);
 
-  const handleExportCSV = () => {
-    try {
-      setExportCSVStatus(LoadingState.LOADING);
-      const td = memberList.map((member) => ({
-        roles: member.roles,
-        // eslint-disable-next-line max-len
-        organization: member.organization?.abbreviation, // Assuming organization is an object with a 'name' property
-        displayName: member.displayName,
-      }));
-      setTransformedData(td);
-      setExportCSVStatus(LoadingState.SUCCESS);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error exporting data:', error);
-      setExportCSVStatus(LoadingState.ERROR);
-    }
-  };
-
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row; // Assuming "original" contains the row data
     // Check if the "Object Id" property exists in the selected row
-    if ('objectId' in selectedRow.data) {
-      const { objectId } = selectedRow.data; // Replace "objectId" with the actual property name
-      const url = `/users/${objectId}`;
+    if ('username' in selectedRow.data) {
+      const { username } = selectedRow.data; // Replace "objectId" with the actual property name
+      const url = `/users/${username}`;
       navigate(url);
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Object Id not found in selectedRow.');
+      // biome-ignore lint/suspicious/noConsole: historic
+      console.error('Username not found in selectedRow.');
     }
   };
 
-  const ExportButton = (
-    <>
-      <CSVLink
-        data={exportData.length > 0 ? exportData : transformedData}
-        headers={[
-          { label: 'Name', key: 'displayName' },
-          { label: 'Organizations', key: 'organization' },
-          { label: 'Roles', key: 'roles' },
-        ]}
-        ref={csvLink}
-        style={{ display: 'none' }}
-        filename={generateFilename(projectDetails?.abbreviation ?? '')}
-      />
-      <Tooltip title="Export to CSV" placement="top" arrow>
-        <IconButton
-          onClick={handleExportCSV}
-          disabled={exportCSVStatus === LoadingState.LOADING || memberList.length < 1}
-        >
-          {exportCSVStatus === LoadingState.LOADING
-            ? (
-              <CircularProgress
-                color="secondary"
-                size={40}
-                sx={{
-                  position: 'absolute',
-                  zIndex: 1,
-                }}
-              />
-            )
-            : null}
-          <FileDownload />
-        </IconButton>
-      </Tooltip>
-    </>
-  );
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
@@ -175,17 +143,24 @@ function MemberList(props: MemberListProps) {
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        {ExportButton}
+        <ExportTableData
+          disabled={exportData.length < 1}
+          dataToExport={exportData.map((data) => ({
+            displayName: data.displayName,
+            organization: data.organization.abbreviation,
+            roles: data.roles,
+          }))}
+          fileNamePrefix={`${projectDetails?.abbreviation ?? 'project'}_members`}
+          headers={['displayName', 'organization', 'roles']}
+        />
       </div>
     </div>
   );
-  
+
   return (
     <>
       {memberListError ? (
-        <Alert severity="error">
-          {memberListErrorMessage}
-        </Alert>
+        <Alert severity="error">{memberListErrorMessage}</Alert>
       ) : (
         <>
           <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
@@ -202,11 +177,7 @@ function MemberList(props: MemberListProps) {
               </AlertTitle>
               There has been an error exporting your data to CSV.
               <br />
-              Please try again later, or contact the
-              {' '}
-              {import.meta.env.VITE_BRANDING_NAME}
-              {' '}
-              team.
+              Please try again later, or contact the {import.meta.env.VITE_BRANDING_NAME} team.
             </Alert>
           </Dialog>
           <Paper elevation={2} sx={{ marginBottom: 10 }}>

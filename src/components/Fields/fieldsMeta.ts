@@ -1,15 +1,13 @@
-const { VITE_THEME_SECONDARY_BLUE, VITE_THEME_SECONDARY_PURPLE, VITE_THEME_SECONDARY_YELLOW,
-  VITE_THEME_SECONDARY_ORANGE, VITE_THEME_SECONDARY_TEAL, VITE_THEME_SECONDARY_LIGHT_GREEN,
-  VITE_THEME_PRIMARY_GREY_400 } = import.meta.env;
+import { Theme } from '../../assets/themes/theme';
 
 export const FIELD_TYPE_COLOURS: { [key: string]: string } = {
-  string: VITE_THEME_SECONDARY_BLUE,
-  categorical: VITE_THEME_SECONDARY_PURPLE,
-  number: VITE_THEME_SECONDARY_YELLOW,
-  double: VITE_THEME_SECONDARY_ORANGE,
-  boolean: VITE_THEME_SECONDARY_TEAL,
-  date: VITE_THEME_SECONDARY_LIGHT_GREEN,
-  default: VITE_THEME_PRIMARY_GREY_400,
+  string: Theme.SecondaryBlue,
+  categorical: Theme.SecondaryPurple,
+  number: Theme.SecondaryYellow,
+  double: Theme.SecondaryOrange,
+  boolean: Theme.SecondaryTeal,
+  date: Theme.SecondaryLightGreen,
+  default: Theme.PrimaryGrey400,
 } as const;
 
 export type FieldType = keyof typeof FIELD_TYPE_COLOURS;

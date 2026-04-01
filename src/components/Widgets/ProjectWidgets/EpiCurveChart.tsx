@@ -1,20 +1,24 @@
-/* eslint-disable react/require-default-props */
-import React, { useEffect, useRef, useState } from 'react';
 import { Alert, AlertTitle, Box, Grid, Typography } from '@mui/material';
+import type { DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import { useEffect, useRef, useState } from 'react';
 import { parse, View as VegaView } from 'vega';
-import { TopLevelSpec, compile } from 'vega-lite';
-import { DataTableOperatorFilterMetaData } from 'primereact/datatable';
-import { InlineData } from 'vega-lite/build/src/data';
+import { compile, type TopLevelSpec } from 'vega-lite';
+import type { InlineData } from 'vega-lite/types_unstable/data.js';
+import {
+  type ProjectMetadataState,
+  selectProjectMetadata,
+} from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
+import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-import ExportVegaPlot from '../../Plots/ExportVegaPlot';
-import { ProjectMetadataState, selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
-import ProjectWidgetProps from '../../../types/projectwidget.props';
-import { DashboardTimeFilterField } from '../../../constants/dashboardTimeFilter';
-import { Sample } from '../../../types/sample.interface';
-import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
+import type ProjectWidgetProps from '../../../types/projectwidget.props';
+import type { Sample } from '../../../types/sample.interface';
+import { NULL_COLOUR } from '../../../utilities/colourUtils';
+import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
 import { formatDate } from '../../../utilities/dateUtils';
+import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
+import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 const TIME_AXIS_FIELD = 'Date_coll';
 
@@ -27,28 +31,41 @@ const FIELDS_AND_COLOURS: string[][] = [
 ];
 const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
-const UniformColourSpec = { value: import.meta.env.VITE_THEME_SECONDARY_DARK_GREEN };
+const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 
 interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
+  dateFilterField: string;
+  colourMapping?: Record<string, string> | undefined;
 }
- 
+
 /** Widget displaying a basic Epi Curve
-* Requires Date_coll for x-axis
-* Colour by Jurisdiction-style field if these fields present; otherwise dark green
+ * Requires Date_coll for x-axis
+ * Colour by Jurisdiction-style field if these fields present; otherwise dark green
  * */
 function EpiCurveChart(props: EpiCurveChartProps) {
   const {
-    projectAbbrev, filteredData, timeFilterObject, preferredColourField = null,
+    projectAbbrev,
+    filteredData,
+    timeFilterObject,
+    dateFilterField,
+    colourMapping,
+    preferredColourField = null,
   } = props;
-  const data: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
+  const data: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [timeFilterDescription, setTimeFilterDescription] = useState<string>('');
-  const [timeBinSpec, setTimeBinSpec] = useState<{ unit: string, step: number }>({ unit: 'yearweek', step: 1 });
+  const [timeBinSpec, setTimeBinSpec] = useState<{ unit: string; step: number }>({
+    unit: 'yearweek',
+    step: 1,
+  });
   const [colourSpec, setColourSpec] = useState<object>(UniformColourSpec);
+  const [paramSpec, setParamSpec] = useState<object[] | null>(null);
+  const [opacitySpec, setOpacitySpec] = useState<object | null>(null);
 
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -58,6 +75,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     width: 'container',
     height: 250,
     mark: { type: 'bar', tooltip: true },
+    ...(paramSpec ? { params: paramSpec } : {}),
     encoding: {
       x: {
         field: TIME_AXIS_FIELD,
@@ -67,128 +85,172 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: colourSpec,
+      ...(opacitySpec ? { opacity: opacitySpec } : {}),
     },
   });
-  
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    const setColourSpecFromField = (field: string, colourScheme: string) => {
-      const values: string[] = data!.fieldUniqueValues![field]!;
-      const colSpec = {
-        // eslint-disable-next-line object-shorthand
-        field: field,
-        scale: createVegaScale(values, colourScheme),
-        legend: legendSpec,
-      };
-      setColourSpec(colSpec);
+    // Not ideal, but only used for the case where the widget colourMapping is specified incorrectly
+    const randomColour = () => {
+      const hue = Math.floor(Math.random() * 360);
+      const saturation = 70;
+      const lightness = 70;
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
-    
+
+    const setSpecFromField = (field: string, colourScheme: string) => {
+      const values: string[] = data!.fieldUniqueValues![field]!;
+
+      const paramSpec = [
+        {
+          name: 'selectedcolour',
+          select: { type: 'point', fields: [field] },
+          bind: 'legend',
+        },
+      ];
+
+      const opacitySpec = {
+        condition: {
+          selection: 'selectedcolour',
+          value: 1,
+        },
+        value: 0.15,
+      };
+
+      if (colourMapping) {
+        const colSpec = {
+          field: field,
+          scale: {
+            domain: values,
+            range: values.map((val) =>
+              isNullOrEmpty(val) ? NULL_COLOUR : (colourMapping[val] ?? randomColour()),
+            ),
+          },
+          legend: {
+            ...legendSpec,
+            // labelExpr: "datum.label || 'unknown'",
+          },
+        };
+        setColourSpec(colSpec);
+      } else {
+        const colSpec = {
+          field: field,
+          scale: createVegaScale(values, colourScheme),
+          legend: legendSpec,
+        };
+        setColourSpec(colSpec);
+      }
+      setParamSpec(paramSpec);
+      setOpacitySpec(opacitySpec);
+    };
+
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
       return;
     }
-    
+
     // If preferred colour field specified and available, use it, otherwise go through list
-    if (preferredColourField &&
-        data.fields.map(fld => fld.columnName).includes(preferredColourField)
+    if (
+      preferredColourField &&
+      data.fields.map((fld) => fld.columnName).includes(preferredColourField)
     ) {
-      const colourSchemePair = FIELDS_AND_COLOURS.find(fld => fld[0] === preferredColourField) ?? ['', DEFAULT_COLOUR_SCHEME];
-      setColourSpecFromField(preferredColourField, colourSchemePair[1]);
+      const colourSchemePair = FIELDS_AND_COLOURS.find(
+        (fld) => fld[0] === preferredColourField,
+      ) ?? ['', DEFAULT_COLOUR_SCHEME];
+      setSpecFromField(preferredColourField, colourSchemePair[1]);
     } else {
       for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
-        if (data!.fields!.map(fld => fld.columnName).includes(field)) {
-          setColourSpecFromField(field, colourScheme);
+        if (data!.fields!.map((fld) => fld.columnName).includes(field)) {
+          setSpecFromField(field, colourScheme);
           break;
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.loadingState]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (data?.fields && !data.fields.map(fld => fld.columnName).includes(TIME_AXIS_FIELD)) {
+    if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(TIME_AXIS_FIELD)) {
       setErrorMessage(`Field ${TIME_AXIS_FIELD} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
     } else if (data?.fieldLoadingStates[TIME_AXIS_FIELD] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${TIME_AXIS_FIELD} values`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.fields, data?.loadingState]);
-  
+
   useEffect(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
-      const { value } =
-        (timeFilterObject[DashboardTimeFilterField] as DataTableOperatorFilterMetaData)
-          .constraints[0];
-      setTimeFilterDescription(`uploaded after ${formatDate(value)}`);
+      const { value } = (timeFilterObject[dateFilterField] as DataTableOperatorFilterMetaData)
+        .constraints[0];
+      setTimeFilterDescription(`${dateFilterField} after ${formatDate(value)}`);
     } else {
       setTimeFilterDescription('all time');
     }
-  }, [timeFilterObject]);
-  
+  }, [timeFilterObject, dateFilterField]);
+
   useEffect(() => {
     // If there is no data, we cannot update range, so check filteredData length, not loadingState
     if (data?.fields && filteredData && filteredData.length > 0) {
-      if (data.fields.some(field => field.columnName === TIME_AXIS_FIELD)) {
-        const bin = selectGoodTimeBinUnit(
-          filteredData.map((row: Sample) => row[TIME_AXIS_FIELD]),
-        );
+      if (data.fields.some((field) => field.columnName === TIME_AXIS_FIELD)) {
+        const bin = selectGoodTimeBinUnit(filteredData.map((row: Sample) => row[TIME_AXIS_FIELD]));
         setTimeBinSpec(bin);
       }
     }
   }, [data?.fields, filteredData]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     const createVegaView = async () => {
       if (vegaView) {
         vegaView.finalize();
       }
       const spec = createSpec();
-      const compiledSpec = compile(spec as TopLevelSpec).spec;
+      const compiledSpec = compile(spec as TopLevelSpec)!.spec;
       const copy = filteredData!.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as InlineData).values = copy;
-      const view = await new VegaView(parse(compiledSpec))
-        .initialize(plotDiv.current!)
-        .runAsync();
+      const inputDataset = compiledSpec.data!.find((d) => d.name === 'inputdata');
+
+      if (!inputDataset) throw new Error('The vega spec is in a bad state');
+
+      (inputDataset as InlineData).values = copy ?? [];
+      const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
     };
 
     if (filteredData && plotDiv?.current) {
       createVegaView();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
-  
+  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec, paramSpec, opacitySpec]);
+
   return (
     <Box>
       <Typography variant="h5" paddingBottom={5} color="primary">
         {`Samples (${timeFilterDescription})`}
       </Typography>
-      { data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
-      <Grid container direction="row" spacing={0}>
-        <Grid item xs={11}>
-          <div id="#plot-container" ref={plotDiv} />
+      {data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
+        <Grid container direction="row" spacing={0}>
+          <Grid item xs={11}>
+            <div id="#plot-container" ref={plotDiv} />
+          </Grid>
+          <Grid item xs={1}>
+            <ExportVegaPlot vegaView={vegaView} />
+          </Grid>
         </Grid>
-        <Grid item xs={1}>
-          <ExportVegaPlot
-            vegaView={vegaView}
-          />
-        </Grid>
-      </Grid>
       )}
-      { errorMessage && (
+      {errorMessage && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       )}
-      { (!data?.loadingState ||
-          !(data.loadingState === MetadataLoadingState.DATA_LOADED ||
-            data.loadingState === MetadataLoadingState.ERROR ||
-            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR)) && (
-            <div>Loading...</div>
-      )}
+      {(!data?.loadingState ||
+        !(
+          data.loadingState === MetadataLoadingState.DATA_LOADED ||
+          data.loadingState === MetadataLoadingState.ERROR ||
+          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+        )) && <div>Loading...</div>}
     </Box>
   );
 }

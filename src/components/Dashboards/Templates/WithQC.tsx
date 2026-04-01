@@ -1,22 +1,18 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import React from 'react';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
-import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import { Theme } from '../../../assets/themes/theme';
+import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
-import ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
-import HasSeq from '../../Widgets/ProjectWidgets/HasSeq';
-import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import Organisations from '../../Widgets/ProjectWidgets/Organisations';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function WithQC(props: ProjectDashboardTemplateProps) {
-  const {
-    projectAbbrev,
-    filteredData,
-    timeFilterObject,
-  } = props;
-  
+  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
@@ -39,6 +35,7 @@ function WithQC(props: ProjectDashboardTemplateProps) {
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  dateFilterField={dateFilterField}
                 />
               </CardContent>
             </Card>
@@ -51,9 +48,9 @@ function WithQC(props: ProjectDashboardTemplateProps) {
                 <MetadataValuePieChart
                   field="QC"
                   colourMapping={{
-                    'FAIL': '#bf1515',
-                    'FLAG': '#fac45a',
-                    'PASS': '#78c95d',
+                    FAIL: Theme.SecondaryRed,
+                    FLAG: Theme.SecondaryYellow,
+                    PASS: Theme.SecondaryMain,
                   }}
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}

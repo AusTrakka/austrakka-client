@@ -1,9 +1,9 @@
-import {
+import type { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
+import type {
   MinifiedRecord,
   PendingChange,
   RoleAssignments,
 } from '../../../src/types/userDetailEdit.interface';
-import { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
 import { filterAssignedRoles } from '../../../src/utilities/privilegeUtils';
 
 describe('filterAssignedRoles', () => {
@@ -13,15 +13,13 @@ describe('filterAssignedRoles', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' } as MinifiedRecord,
       roles: [
-        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
-        { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 2 },
+        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
+        { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
-      roles: [
-        { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 3 },
-      ],
+      roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
     },
   ];
 
@@ -32,9 +30,7 @@ describe('filterAssignedRoles', () => {
         {
           recordName: 'User1',
           recordGlobalId: '1',
-          roles: [
-            { roleName: 'Admin', privilegeLevel: 1 },
-          ],
+          roles: [{ roleName: 'Admin' }],
         },
       ],
     },
@@ -65,7 +61,7 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 2 },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
     ]);
@@ -77,9 +73,7 @@ describe('filterAssignedRoles', () => {
       [
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
-          roles: [
-            { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
-          ],
+          roles: [{ name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' }],
         },
       ],
       mockEditedPrivileges,
@@ -101,55 +95,38 @@ describe('filterAssignedRoles', () => {
   });
 
   test('should handle null editedPrivileges', () => {
-    const result = filterAssignedRoles(
-      mockRecordType,
-      mockAssignedRoles,
-      null,
-      mockPendingChanges,
-    );
+    const result = filterAssignedRoles(mockRecordType, mockAssignedRoles, null, mockPendingChanges);
 
     expect(result).toEqual([
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 2 },
+          { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
     ]);
   });
 
   test('should handle empty pendingChanges', () => {
-    const result = filterAssignedRoles(
-      mockRecordType,
-      mockAssignedRoles,
-      mockEditedPrivileges,
-      [],
-    );
+    const result = filterAssignedRoles(mockRecordType, mockAssignedRoles, mockEditedPrivileges, []);
 
     expect(result).toEqual([
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', allowedRootResourceTypes: [], privilegeLevel: 2 },
+          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
         ],
       },
       {
         record: { id: '2', name: 'User2', abbrev: 'U2' },
-        roles: [
-          { name: 'Viewer', globalId: 'role3', allowedRootResourceTypes: [], privilegeLevel: 3 },
-        ],
+        roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
       },
     ]);
   });
 
   test('should handle both editedPrivileges and pendingChanges being empty', () => {
-    const result = filterAssignedRoles(
-      mockRecordType,
-      mockAssignedRoles,
-      [],
-      [],
-    );
+    const result = filterAssignedRoles(mockRecordType, mockAssignedRoles, [], []);
 
     expect(result).toEqual(mockAssignedRoles);
   });

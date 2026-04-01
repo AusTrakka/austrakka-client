@@ -1,14 +1,13 @@
-import React from 'react';
+import { Error as ErrorIcon } from '@mui/icons-material';
 import { Card, CardContent, CircularProgress, Grid, Tooltip, Typography } from '@mui/material';
-import { Error } from '@mui/icons-material';
-import { Member } from '../../types/dtos';
 import { useStableNavigate } from '../../app/NavigationContext';
+import type { Member } from '../../types/dtos';
 
 interface OrgMembersProps {
-  memberList: Member[],
-  memberListError: boolean,
-  memberListErrorMessage: string,
-  isMembersLoading: boolean,
+  memberList: Member[];
+  memberListError: boolean;
+  memberListErrorMessage: string;
+  isMembersLoading: boolean;
 }
 
 function UserCard({ user }: { user: Member }) {
@@ -27,17 +26,12 @@ function UserCard({ user }: { user: Member }) {
   };
 
   function handleCardClick() {
-    // Check if the "Object Id" property exists in the selected row
-    const url = `/users/${user.objectId}`;
+    const url = `/users/${user.username}`;
     navigate(url);
   }
 
   return (
-    <Card
-      sx={cardStyle}
-      onClick={() => handleCardClick()}
-      style={{ cursor: 'pointer' }}
-    >
+    <Card sx={cardStyle} onClick={() => handleCardClick()} style={{ cursor: 'pointer' }}>
       <CardContent sx={contentStyle}>
         <Typography variant="h5">{user.displayName}</Typography>
         <Typography variant="caption">{user.organization.abbreviation}</Typography>
@@ -47,16 +41,13 @@ function UserCard({ user }: { user: Member }) {
 }
 
 function OrgMembers(props: OrgMembersProps) {
-  const { memberList,
-    memberListError,
-    memberListErrorMessage,
-    isMembersLoading } = props;
+  const { memberList, memberListError, memberListErrorMessage, isMembersLoading } = props;
   return (
     <>
       {isMembersLoading ? <CircularProgress /> : null}
       {memberListError ? (
         <Tooltip title={memberListErrorMessage}>
-          <Error color="error" />
+          <ErrorIcon color="error" />
         </Tooltip>
       ) : (
         <Grid container spacing={2}>

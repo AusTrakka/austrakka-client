@@ -1,19 +1,19 @@
-import React from 'react';
+import { ErrorOutline } from '@mui/icons-material';
 import {
-  Box, Button,
-  Dialog, DialogActions,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   List,
   ListItem,
-  ListItemIcon, ListItemText,
+  ListItemIcon,
+  ListItemText,
   Typography,
 } from '@mui/material';
-import { ErrorOutline } from '@mui/icons-material';
-import { PendingChange } from '../../../types/userDetailEdit.interface';
-import {
-  groupFailedChangesByType,
-} from '../../../utilities/privilegeUtils';
+import type { PendingChange } from '../../../types/userDetailEdit.interface';
+import { groupFailedChangesByType } from '../../../utilities/privilegeUtils';
 
 interface FailedChangesDialogProps {
   open: boolean;
@@ -31,12 +31,7 @@ export function FailedChangesDialog({
   const groupedChanges = groupFailedChangesByType(failedChanges);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="md"
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Failed Privilege Updates</DialogTitle>
       <DialogContent>
         <Typography variant="body1" gutterBottom>
@@ -52,8 +47,7 @@ export function FailedChangesDialog({
             {Object.entries(groupedChanges.POST).map(([recordType, changes]) => (
               <Box key={`post-${recordType}`} sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" sx={{ ml: 2 }}>
-                  {recordType}
-                  :
+                  {recordType}:
                 </Typography>
                 <List dense>
                   {changes.map(([errorMessage, change]) => (
@@ -63,25 +57,19 @@ export function FailedChangesDialog({
                       </ListItemIcon>
                       <ListItemText
                         primary={`Failed to add to ${change.recordType}`}
-                        secondary={(
+                        secondary={
                           <>
                             <Typography component="span" display="block">
-                              Record:
-                              {' '}
-                              {change.payload.recordName}
+                              Record: {change.payload.recordName}
                             </Typography>
                             <Typography component="span" display="block">
-                              Role:
-                              {' '}
-                              {change.payload.roleName}
+                              Role: {change.payload.roleName}
                             </Typography>
                             <Typography component="span" display="block" color="error">
-                              Error:
-                              {' '}
-                              {errorMessage}
+                              Error: {errorMessage}
                             </Typography>
                           </>
-                                  )}
+                        }
                       />
                     </ListItem>
                   ))}
@@ -100,8 +88,7 @@ export function FailedChangesDialog({
             {Object.entries(groupedChanges.DELETE).map(([recordType, changes]) => (
               <Box key={`delete-${recordType}`} sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" sx={{ ml: 2 }}>
-                  {recordType}
-                  :
+                  {recordType}:
                 </Typography>
                 <List dense>
                   {changes.map(([errorMessage, change]) => (
@@ -111,25 +98,19 @@ export function FailedChangesDialog({
                       </ListItemIcon>
                       <ListItemText
                         primary={`Failed to remove from ${change.recordType}`}
-                        secondary={(
+                        secondary={
                           <>
                             <Typography component="span" display="block">
-                              Record:
-                              {' '}
-                              {change.payload.recordName}
+                              Record: {change.payload.recordName}
                             </Typography>
                             <Typography component="span" display="block">
-                              Role:
-                              {' '}
-                              {change.payload.roleName}
+                              Role: {change.payload.roleName}
                             </Typography>
                             <Typography component="span" display="block" color="error">
-                              Error:
-                              {' '}
-                              {errorMessage}
+                              Error: {errorMessage}
                             </Typography>
                           </>
-                                  )}
+                        }
                       />
                     </ListItem>
                   ))}

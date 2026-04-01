@@ -1,11 +1,15 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  BrowserAuthError,
+  InteractionRequiredAuthError,
+  InteractionStatus,
+} from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
-import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import LoadingState from '../constants/loadingState';
 
 interface ApiContextInterface {
-  token: any,
-  tokenLoading: LoadingState,
+  token: any;
+  tokenLoading: LoadingState;
 }
 
 const ApiContext = createContext<ApiContextInterface>({
@@ -14,7 +18,7 @@ const ApiContext = createContext<ApiContextInterface>({
 });
 
 // ApiProvider: Implements the ApiContext
-export default function ApiProvider({ children } : any) {
+export default function ApiProvider({ children }: any) {
   const { instance, inProgress, accounts } = useMsal();
   const [authToken, setAuthToken] = useState<any>(null);
   const [authTokenLoading, setAuthTokenLoading] = useState<LoadingState>(LoadingState.IDLE);
@@ -25,6 +29,8 @@ export default function ApiProvider({ children } : any) {
         scopes: [import.meta.env.VITE_API_SCOPE],
         account: accounts[0],
       };
+      // biome-ignore lint/suspicious/noConsole: historic
+      console.log('Handling access token request');
       instance
         .acquireTokenSilent(accessTokenRequest)
         .then((accessTokenResponse) => {
@@ -32,10 +38,19 @@ export default function ApiProvider({ children } : any) {
           setAuthTokenLoading(LoadingState.SUCCESS);
         })
         .catch((error) => {
-          if (error instanceof InteractionRequiredAuthError) {
+          if (error instanceof InteractionRequiredAuthError || error instanceof BrowserAuthError) {
+            // biome-ignore lint/suspicious/noConsole: historic
+            console.log('Redirecting to interactive login');
             instance.acquireTokenRedirect(accessTokenRequest);
           }
-          // eslint-disable-next-line no-console
+          if (error.errorCode === 'invalid_grant') {
+            // biome-ignore lint/suspicious/noConsole: historic
+            console.log('Caught invalid_grant; redirecting to interactive login');
+            instance.acquireTokenRedirect(accessTokenRequest);
+          }
+          // biome-ignore lint/suspicious/noConsole: historic
+          console.log('Uncaught auth error');
+          // biome-ignore lint/suspicious/noConsole: historic
           console.log(error);
           setAuthToken(null);
           setAuthTokenLoading(LoadingState.ERROR);
@@ -43,15 +58,12 @@ export default function ApiProvider({ children } : any) {
     }
   }, [instance, accounts, inProgress]);
 
-  const tokenState = useMemo(() => (
-    { token: authToken, tokenLoading: authTokenLoading }
-  ), [authToken, authTokenLoading]);
-
-  return (
-    <ApiContext.Provider value={tokenState}>
-      {children}
-    </ApiContext.Provider>
+  const tokenState = useMemo(
+    () => ({ token: authToken, tokenLoading: authTokenLoading }),
+    [authToken, authTokenLoading],
   );
+
+  return <ApiContext.Provider value={tokenState}>{children}</ApiContext.Provider>;
 }
 
 // useApi: custom hook so that other components can utilse the context

@@ -1,6 +1,6 @@
-import { RoleAssignments } from '../../../src/types/userDetailEdit.interface';
+import type { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
+import type { RoleAssignments } from '../../../src/types/userDetailEdit.interface';
 import { updateEditedPrivileges } from '../../../src/utilities/privilegeUtils';
-import { GroupedPrivilegesByRecordType } from '../../../src/types/dtos';
 
 describe('updateEditedPrivileges', () => {
   const mockRecordType = 'User';
@@ -9,12 +9,12 @@ describe('updateEditedPrivileges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', allowedRootResourceTypes: [], privilegeLevel: 1 },
+        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
         {
           name: 'Editor',
           globalId: 'role2',
-          allowedRootResourceTypes: [],
-          privilegeLevel: 2,
+          resourceTypes: [],
+          privilegeLevel: 'TrakkaAdmin',
         },
       ],
     },
@@ -24,8 +24,8 @@ describe('updateEditedPrivileges', () => {
         {
           name: 'Viewer',
           globalId: 'role3',
-          allowedRootResourceTypes: [],
-          privilegeLevel: 3,
+          resourceTypes: [],
+          privilegeLevel: 'Admin',
         },
       ],
     },
@@ -38,9 +38,7 @@ describe('updateEditedPrivileges', () => {
         {
           recordName: 'U1',
           recordGlobalId: '1',
-          roles: [
-            { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
-          ],
+          roles: [{ roleName: 'Admin', privilegeGlobalId: undefined }],
         },
       ],
     },
@@ -61,17 +59,15 @@ describe('updateEditedPrivileges', () => {
             recordName: 'U1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Admin', privilegeLevel: 1 },
-              { roleName: 'Admin', privilegeLevel: 1 },
-              { roleName: 'Editor', privilegeLevel: 2 },
+              { roleName: 'Admin' },
+              { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
+              { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
           },
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [
-              { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -79,11 +75,7 @@ describe('updateEditedPrivileges', () => {
   });
 
   test('should add new privileges if recordType does not exist', () => {
-    const result = updateEditedPrivileges(
-      [],
-      mockRecordType,
-      mockFilteredAssignedRoles,
-    );
+    const result = updateEditedPrivileges([], mockRecordType, mockFilteredAssignedRoles);
 
     expect(result).toEqual([
       {
@@ -93,16 +85,14 @@ describe('updateEditedPrivileges', () => {
             recordName: 'U1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
-              { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+              { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
+              { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
           },
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [
-              { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -110,11 +100,7 @@ describe('updateEditedPrivileges', () => {
   });
 
   test('should handle null prev input by treating it as an empty array', () => {
-    const result = updateEditedPrivileges(
-      null,
-      mockRecordType,
-      mockFilteredAssignedRoles,
-    );
+    const result = updateEditedPrivileges(null, mockRecordType, mockFilteredAssignedRoles);
 
     expect(result).toEqual([
       {
@@ -124,16 +110,14 @@ describe('updateEditedPrivileges', () => {
             recordName: 'U1',
             recordGlobalId: '1',
             roles: [
-              { roleName: 'Admin', privilegeLevel: 1, privilegeGlobalId: undefined },
-              { roleName: 'Editor', privilegeLevel: 2, privilegeGlobalId: undefined },
+              { roleName: 'Admin', privilegeLevel: 'Root', privilegeGlobalId: undefined },
+              { roleName: 'Editor', privilegeLevel: 'TrakkaAdmin', privilegeGlobalId: undefined },
             ],
           },
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [
-              { roleName: 'Viewer', privilegeLevel: 3, privilegeGlobalId: undefined },
-            ],
+            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -141,11 +125,7 @@ describe('updateEditedPrivileges', () => {
   });
 
   test('should handle empty filteredAssignedRoles by returning prev unchanged', () => {
-    const result = updateEditedPrivileges(
-      mockExistingPrivileges,
-      mockRecordType,
-      [],
-    );
+    const result = updateEditedPrivileges(mockExistingPrivileges, mockRecordType, []);
 
     expect(result).toEqual(mockExistingPrivileges);
   });

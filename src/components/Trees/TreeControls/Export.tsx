@@ -1,19 +1,10 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Menu } from '@mui/material';
+import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import html2canvas from 'html2canvas';
-import { TreeExportFuctions } from '../Tree';
-
-interface Option {
-  exportFunction: CallableFunction
-  label: string
-  fileName: string
-  encode: boolean
-}
+import * as React from 'react';
+import type { TreeExportFuctions } from '../Tree';
 
 const base64toBlob = (base64Image: string) => {
   // Remove the data URL prefix
@@ -34,14 +25,12 @@ const base64toBlob = (base64Image: string) => {
 };
 
 interface Props {
-  treeName: string,
-  phylocanvasRef: React.RefObject<TreeExportFuctions>,
-  legendRef: React.RefObject<HTMLDivElement>,
+  treeName: string;
+  phylocanvasRef: React.RefObject<TreeExportFuctions>;
+  legendRef: React.RefObject<HTMLDivElement>;
 }
 
-export default function ExportButton(
-  { treeName, phylocanvasRef, legendRef }: Props,
-) {
+export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Props) {
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
     if (typeof blob === 'string' && encode) {
@@ -50,15 +39,10 @@ export default function ExportButton(
       blobData = blob as Blob;
     }
 
-    const url = window.URL.createObjectURL(
-      new Blob([blobData]),
-    );
+    const url = window.URL.createObjectURL(new Blob([blobData]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute(
-      'download',
-      filename,
-    );
+    link.setAttribute('download', filename);
 
     // Append to html link element page
     document.body.appendChild(link);
@@ -111,6 +95,7 @@ export default function ExportButton(
 
         return imgDataUrl;
       } catch (error) {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('Error converting HTML to PNG data URL:', error);
       } finally {
         // Restore the original scroll position
@@ -118,7 +103,7 @@ export default function ExportButton(
       }
 
       return null; // Returning null since we opened the image in a new window
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };
@@ -133,27 +118,30 @@ export default function ExportButton(
       if (pngURL !== null) {
         download(pngURL, 'legend.png', true);
       } else {
+        // biome-ignore lint/suspicious/noConsole: historic
         console.error('legendRef.current is null or undefined.');
       } // Use 'legend.png' as the filename
     } catch (error) {
+      // biome-ignore lint/suspicious/noConsole: historic
       console.error('Error exporting legend as PNG:', error);
     }
   };
 
-  const options: Option[] = [
-    {
-      exportFunction: () => phylocanvasRef.current?.exportSVG(),
-      label: 'Export tree as SVG',
-      fileName: `${treeName}.svg`,
-      encode: false,
-    },
-    {
-      exportFunction: () => phylocanvasRef.current?.exportPNG(),
-      label: 'Export tree as PNG',
-      fileName: `${treeName}.png`,
-      encode: true,
-    },
-  ];
+  const getSVGBlob = async () => {
+    const svgBlob = phylocanvasRef.current?.exportSVG();
+
+    if (!svgBlob) {
+      throw new Error('SVG export failed');
+    }
+    const svgText = await svgBlob.text();
+
+    const fixedSvgText = svgText
+      .replace(/<text(?![^>]*xml:space)/g, '<text xml:space="preserve"')
+      .replace(/<tspan(?![^>]*xml:space)/g, '<tspan xml:space="preserve"');
+
+    const svg = new Blob([fixedSvgText], { type: 'image/svg+xml' });
+    return svg;
+  };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -175,23 +163,26 @@ export default function ExportButton(
       >
         Export
       </Button>
-      <Menu
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        onClick={handleClose}
-      >
-        {options.map((option) => (
-          <MenuItem
-            key={option.label}
-            onClick={() => download(option.exportFunction(), option.fileName, option.encode)}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
-        <MenuItem onClick={() => handleTipExport()}>
-          Export leaves
+      <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}>
+        <MenuItem
+          key="Export tree as SVG"
+          onClick={async () => {
+            const blob = await getSVGBlob();
+            if (blob) download(blob, `${treeName}.svg`, false);
+          }}
+        >
+          Export tree as SVG
         </MenuItem>
+        <MenuItem
+          key="Export tree as PNG"
+          onClick={async () => {
+            const blob = phylocanvasRef.current?.exportPNG();
+            if (blob) download(blob, `${treeName}.png`, true);
+          }}
+        >
+          Export tree as PNG
+        </MenuItem>
+        <MenuItem onClick={() => handleTipExport()}>Export leaves</MenuItem>
         <MenuItem onClick={() => handleLegendExport()} disabled={!legendRef.current}>
           Export legend
         </MenuItem>
