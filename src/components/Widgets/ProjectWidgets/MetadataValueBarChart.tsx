@@ -19,6 +19,7 @@ import { NULL_COLOUR } from '../../../utilities/colourUtils';
 import {
   filterExcluded,
   isNullOrEmpty,
+  pruneColumns,
   topCategories,
 } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
@@ -225,15 +226,15 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
+      let plotData = [];
 
       if (categoryLimit || (exclude && exclude.length > 0)) {
-        const truncatedData = truncateData(filteredData);
-        const copy = truncatedData!.map((item: any) => ({ ...item }));
-        (compiledSpec.data![0] as InlineData).values = copy;
-      } else {
-        const copy = filteredData!.map((item: any) => ({ ...item }));
-        (compiledSpec.data![0] as InlineData).values = copy;
+        plotData = truncateData(filteredData);
       }
+
+      const pruned = pruneColumns(plotData, [field]);
+      const copy = pruned.map((item: any) => ({ ...item }));
+      (compiledSpec.data![0] as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
