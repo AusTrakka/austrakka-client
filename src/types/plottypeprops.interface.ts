@@ -1,7 +1,7 @@
-import type { Plot } from './dtos';
 
+// TODO look into unifying with map props
 export default interface PlotTypeProps {
-  plot: Plot | undefined | null;
-  // biome-ignore lint/complexity/noBannedTypes: legacy
-  setPlotErrorMsg: Function;
+  projectAbbrev: string | undefined;
+  customSpec: string | undefined | null,
+  setPlotErrorMsg: Function,
 }

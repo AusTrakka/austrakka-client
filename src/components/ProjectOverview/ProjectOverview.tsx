@@ -61,9 +61,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
     detailsError: false,
     detailsErrorMessage: '',
   });
-
-  // Tab loading states
-
+  
   const dispatch = useAppDispatch();
 
   useEffect(() => {

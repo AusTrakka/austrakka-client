@@ -10,19 +10,24 @@ import type PlotTypeProps from '../../../types/plottypeprops.interface';
 import VegaDataPlot from '../VegaDataPlot';
 
 function Custom(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
 
   // Set spec on load
   useEffect(() => {
-    if (plot?.spec && plot?.spec.length > 0) {
-      setSpec(JSON.parse(plot.spec) as TopLevelSpec);
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
     } else {
       setPlotErrorMsg('PlotType Custom requires a spec but plot has no spec');
     }
-  }, [plot, setPlotErrorMsg]);
-
-  return <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />;
+  }, [customSpec, setPlotErrorMsg]);
+  
+  return (
+    <VegaDataPlot
+      spec={spec}
+      projectAbbrev={projectAbbrev}
+    />
+  );
 }
 
 export default Custom;
