@@ -4,7 +4,7 @@ import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { FieldSource } from '../constants/fieldSource';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 
-export function getFieldDetails(
+function getFieldDetails(
   fieldNames: string[],
   fields: Field[],
 ): Field[] {

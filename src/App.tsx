@@ -15,29 +15,24 @@ import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
 import LocalUpload from './components/Upload/LocalUpload';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
-import Fields from './components/Fields/Fields';
-import UserProvider from './providers/UserProvider';
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-          <UserProvider>
-            <Routes>
-              {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
-              <Route element={<MainMenuLayout />}>
-                <Route path="/" element={<LocalUpload />} />
-                <Route path="upload" element={<LocalUpload />} />
-                <Route path="data/plots/:plotType" element={<PlotDetail />} />
-                <Route path="data/trees/:treeId" element={<TreeDetail />} />
-                <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />
-                <Route path="data/:tab" element={<ProjectOverview />} />
-                <Route path="data" element={<ProjectOverview />} />
-                <Route path="fields" element={<Fields />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-        </UserProvider>
+          <Routes>
+            {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+            <Route element={<MainMenuLayout />}>
+              <Route path="/" element={<LocalUpload />} />
+              <Route path="upload" element={<LocalUpload />} />
+              <Route path="data/plots/:plotType" element={<PlotDetail />} />
+              <Route path="data/trees/:treeId" element={<TreeDetail />} />
+              <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />
+              <Route path="data/:tab" element={<ProjectOverview />} />
+              <Route path="data" element={<ProjectOverview />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
       </LocalizationProvider>
     </ThemeProvider>
   );

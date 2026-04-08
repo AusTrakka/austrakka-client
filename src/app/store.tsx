@@ -3,13 +3,11 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { listenerMiddleware } from './listenerMiddleware';
 import projectMetadataReducer from './projectMetadataSlice';
 import treeReducer from './treeSlice';
-import userReducer from './userSlice';
 
 const store = configureStore({
   reducer: {
     projectMetadataState: projectMetadataReducer,
     treeState: treeReducer,
-    userState: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })

@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import {
   Upload, Help, AccountTree,
-  Description, AccountCircle,
+  Description,
   KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, ViewColumn,
 } from '@mui/icons-material';
 import {
@@ -13,10 +13,7 @@ import {
   MenuItem, Typography,
   Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip, Grid,
 } from '@mui/material';
-import { useMsal, useAccount } from '@azure/msal-react';
 import styles from './MainMenuLayout.module.css';
-import { useAppSelector } from '../../app/store';
-import { UserSliceState, selectUserState } from '../../app/userSlice';
 import Feedback from '../Feedback/Feedback';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 
@@ -34,12 +31,6 @@ function MainMenuLayout() {
       onClick: () => {
         window.open(import.meta.env.VITE_DOCS_URL, '_blank')?.focus();
       },
-    },
-    {
-      title: 'Support',
-      icon: <Help fontSize="small" />,
-      disabled: false,
-      onClick: () => setHelp((prev) => !prev),
     },
   ];
   const breadcrumbNameMap: { [key: string]: any } = {
@@ -77,12 +68,7 @@ function MainMenuLayout() {
       && (pathnames[0] === 'data')) {
     pathnames.pop();
   }
-
-  const [username, setUsername] = useState('');
-  const { accounts } = useMsal();
-
-  const account = useAccount(accounts[0] || {});
-  const user: UserSliceState = useAppSelector(selectUserState);
+  
   const pages = [
     {
       title: 'Visualise',
@@ -94,19 +80,8 @@ function MainMenuLayout() {
       link: '/upload',
       icon: <Upload />,
     },
-    {
-      title: 'Fields',
-      link: '/fields',
-      icon: <ViewColumn />,
-    },
   ];
   const visiblePages = pages;
-
-  useEffect(() => {
-    if (account && account.username) {
-      setUsername(account.username); // seems to be login email
-    }
-  }, [account]);
 
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
@@ -195,22 +170,6 @@ function MainMenuLayout() {
               </React.Fragment>
             ))}
           </List>
-          <Divider />
-          <Tooltip title={drawer ? username : `${user.displayName} - ${username}`} arrow placement="right">
-            <Grid container direction="column" alignContent="center" alignItems="center" sx={{ padding: 2 }}>
-              <Grid item>
-                <AccountCircle color="primary" />
-              </Grid>
-              {drawer ? (
-                <Grid item width="100%" textAlign="center">
-                  <Typography noWrap color="primary.main">
-                    {user.displayName}
-                  </Typography>
-                </Grid>
-              )
-                : null}
-            </Grid>
-          </Tooltip>
           <Divider />
           <List>
             {settings.map((setting) => (
