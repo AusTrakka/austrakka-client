@@ -18,37 +18,6 @@ export interface Project {
   // could add auditable fields - created, createdBy
 }
 
-export interface Plot extends PlotListing {
-  plotId: number,
-  abbreviation: string,
-  name: string,
-  description: string,
-  plotType: string,
-  spec: string,
-  projectId: number,
-  projectName: string
-  projectAbbreviation: string
-  projectGroupId: number
-  isActive: boolean
-}
-
-export interface Tree {
-  treeId: number;
-  abbreviation: string;
-  name: string;
-  description: string;
-  latestTreeLastUpdated: Date;
-  project: {
-    abbreviation: string,
-  };
-  projectName: string;
-  isActive: boolean;
-  created: Date;
-  lastUpdated: Date;
-  createdBy: string;
-  lastUpdatedBy: string;
-}
-
 export interface TreeVersion {
   treeVersionId: number;
   treeId: number;
@@ -78,96 +47,6 @@ export interface PlotListing {
   // also projectName, and isActive. projectAbbrev??
 }
 
-export interface User {
-  objectId: string,
-  globalId: string,
-  isActive: boolean,
-  orgId: number,
-  orgAbbrev: string,
-  orgName: string,
-  isAusTrakkaAdmin: boolean,
-  groupRoles: GroupRole[],
-  displayName: string,
-  created: Date,
-  contactEmail: string,
-  IsAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
-  privileges: GroupedPrivilegesByRecordType[],
-}
-
-export interface UserV2 {
-  objectId: string,
-  globalId: string,
-  isActive: boolean,
-  orgGlobalId:string,
-  orgAbbrev: string,
-  orgName: string,
-  isAusTrakkaAdmin: boolean,
-  displayName: string,
-  created: Date,
-  contactEmail: string,
-  IsAusTrakkaProcess: boolean,
-  analysisServerUsername: string,
-  privileges: GroupedPrivilegesByRecordType[],
-}
-
-export interface UserMe {
-  objectId: string,
-  displayName: string,
-  contactEmail: string,
-  orgId: number,
-  orgAbbrev: string,
-  orgName: string,
-  analysisServerUsername: string,
-  scopes: GroupedPrivilegesByRecordTypeWithScopes[],
-}
-
-export interface GroupedPrivilegesByRecordTypeWithScopes {
-  recordType: string,
-  recordRoles: PrivilegeWithRolesWithScopes[],
-}
-
-export interface PrivilegeWithRolesWithScopes {
-  recordName: string,
-  recordGlobalId: string,
-  roles: RecordRoleWithScopes[],
-}
-
-export interface RecordRoleWithScopes {
-  roleName: string,
-  privilegeLevel: number,
-  privilegeGlobalId: string,
-  scopes: string[],
-}
-
-export interface GroupedPrivilegesByRecordType {
-  recordType: string,
-  recordRoles: PrivilegeWithRoles[],
-}
-
-export interface PrivilegeWithRoles {
-  recordName: string,
-  recordGlobalId: string,
-  roles: RecordRole[],
-}
-
-export interface RecordRole {
-  roleName: string,
-  privilegeLevel: number,
-  privilegeGlobalId?: string,
-}
-
-export interface MetaDataColumnMapping {
-  metaDataColumnMappingId: number,
-  metaDataColumnName: string,
-  metaDataColumnPrimitiveType: string,
-  metaDataColumnValidValues: string[],
-  isRequired: boolean,
-  isDispalyedByDefault: boolean,
-  isActive: boolean,
-  canVisualise: boolean,
-}
-
 // this is a common interface representing metadata fields,
 // with information about types and display order
 export interface Field {
@@ -183,21 +62,6 @@ export interface Field {
 export interface DeducedField extends Field {
   displayedFieldType: string,
   fieldTypeSource: string,
-}
-
-export interface MetaDataColumn extends Field {
-  metaDataColumnId: number
-  columnName: string
-  metaDataColumnTypeId: number
-  metaDataColumnValidValues: string[] | null
-  primitiveType: string | null
-  description: string
-  nndssFieldLabel: string
-  canVisualise: boolean
-  columnOrder: number
-  isDisplayedAsDefault: boolean
-  isActive: boolean
-  minWidth: number
 }
 
 // This represents the ProjectFieldDTO, with nested analysisLabels
@@ -243,92 +107,3 @@ export interface ProjectView {
   viewFields: string[] // this is currently calculated client-side
 }
 
-export interface GroupRole {
-  role: {
-    id: number,
-    name: string,
-  }
-  group: Group
-}
-
-export interface MinimalScope {
-  scopePath: string,
-  shortDescription: string,
-}
-
-export interface Group {
-  groupId: number,
-  name: string,
-  lastUpdated: string,
-  lastUpdatedBy: string,
-  created: string,
-  createdBy: string,
-  organisation: {
-    abbreviation: string
-    name: string
-  }
-}
-
-export interface DataSetEntry {
-  entryId: number;
-  dataSetId: number;
-  fileName: string;
-  analysisLabel: string;
-  createdBy: string;
-  uploadedDate: Date;
-  fields: string[];
-}
-
-export interface Role {
-  roleId: number,
-  name: string,
-  description: string,
-}
-
-export interface RolesV2 {
-  name: string,
-  globalId: string,
-  allowedRootResourceTypes: AllowedResourceTypes[]
-  privilegeLevel: number,
-}
-
-export interface AllowedResourceTypes {
-  globalId: string
-  name: string,
-  isAggregateRoot: boolean,
-}
-
-export interface FeedbackPost {
-  title: string,
-  description: string,
-  currentPage: string,
-}
-
-export interface Feedback {
-  feedbackPost: FeedbackPost,
-  id: string,
-}
-
-export interface ProjectDashboardDetails {
-  projectDashboardId: number,
-  name: string,
-}
-
-export interface UserPatch {
-  displayName: string,
-  contactEmail: string,
-  orgAbbrev: string,
-  isActive: boolean,
-  analysisServerUsername: string,
-}
-
-export interface UserPatchV2 {
-  displayName: string,
-  contactEmail: string,
-  analysisServerUsername: string,
-}
-
-export interface UserRoleRecordPrivilegePost {
-  assigneeGlobalId: string,
-  roleGlobalId: string,
-}
