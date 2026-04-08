@@ -3,12 +3,10 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-// import Summary from './Summary';
 import Samples from './Samples';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
 import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
-import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import {
   selectAwaitingProjectMetadata,
 } from '../../app/projectMetadataSlice';
@@ -50,21 +48,15 @@ function ProjectOverview() {
           </Typography>
           <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
           <TabPanel value={tabValue} index={0} tabLoader={isSamplesLoading}>
-            <ProjectDashboard
-              projectDesc={projectDetails ? projectDetails.description : ''}
-              projectAbbrev="local"
-            />
-          </TabPanel>
-          <TabPanel value={tabValue} index={1} tabLoader={isSamplesLoading}>
             <Samples
               projectAbbrev={LOCAL_PROJECT.abbreviation}
               isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} tabLoader={false}>
+          <TabPanel value={tabValue} index={1} tabLoader={false}>
             <TreeList />
           </TabPanel>
-          <TabPanel value={tabValue} index={3} tabLoader={false}>
+          <TabPanel value={tabValue} index={2} tabLoader={false}>
             <PlotList
               projectDetails={projectDetails}
             />
