@@ -192,13 +192,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         ...item,
       }));
 
-      const inputDataset = compiledSpec.data!.find((d) => d.name === 'inputdata') as InlineData;
-
-      if (!inputDataset) {
-        throw new Error('The vega spec is in a bad state: no inputdata dataset found');
-      }
-
-      (inputDataset as InlineData).values = copy;
+      (compiledSpec.data![0] as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
