@@ -77,7 +77,7 @@ function PlotList(props: PlotListProps) {
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     if (row.data.abbreviation === '__MAP__') {
       // Special logic for the map
-      navigate(`/projects/${projectDetails!.abbreviation}/map`);
+      navigate(`/projects/${projectDetails!.abbreviation}/plots/map`);
     } else {
       // Regular plot row
       navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);

@@ -73,7 +73,6 @@ function MainMenuLayout() {
   ];
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
-    plots: 'Plots',
     trees: 'Trees',
     records: 'Records',
     versions: 'Versions',
@@ -91,6 +90,8 @@ function MainMenuLayout() {
     datasets: 'Datasets',
     share: 'Share',
     documents: 'Documents',
+    plots: 'Plots',
+    map: 'Map',
   };
 
   const breadcrumbNoLink: string[] = ['versions', 'records', 'org'];
