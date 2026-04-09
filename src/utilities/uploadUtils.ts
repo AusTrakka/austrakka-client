@@ -1,8 +1,8 @@
 export interface CustomUploadValidatorReturn {
-  success: boolean,
-  message: string,
+  success: boolean;
+  message: string;
 }
 
 export interface CustomUploadValidator {
-  func: (files: File[]) => CustomUploadValidatorReturn,
+  func: (files: File[]) => CustomUploadValidatorReturn;
 }

@@ -1,6 +1,7 @@
 import { Alert, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
 import { Field } from '../../types/dtos';
 import { Sample } from '../../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -14,20 +15,23 @@ function SampleDetail() {
   const [colWidth, setColWidth] = useState<number>(100);
 
   // Would there be any benefit in more refined selectors which select out sample?
-  const projectMetadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const awaitingMetadata : boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectAbbrev));
+  const projectMetadata: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
+  const awaitingMetadata: boolean = useAppSelector((state) =>
+    selectAwaitingProjectMetadata(state, projectAbbrev),
+  );
   // If not awaiting metadata, at least one view and therefore Seq_ID should be loaded
-  const sample = !awaitingMetadata &&
-    projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS ?
-    projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId) :
-    null;
+  const sample =
+    !awaitingMetadata &&
+    projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS
+      ? projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId)
+      : null;
 
   useEffect(() => {
     if (projectMetadata?.fields && projectMetadata.fields.length > 0) {
       const longestFieldLength = projectMetadata.fields
-        .map(field => field.columnName.length)
+        .map((field) => field.columnName.length)
         .reduce((a, b) => Math.max(a, b));
       setColWidth(longestFieldLength);
     }
@@ -36,22 +40,24 @@ function SampleDetail() {
   const renderRow = (field: Field, value: any) => (
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
-      <TableCell>
-        {(projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.IDLE ||
-          projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.LOADING) ?
-            <Skeleton variant="text" animation="wave" width="20em" /> :
-          renderValue(value, field.columnName, field.primitiveType ?? 'category')}
+      <TableCell className={columnStyleRules[field.columnName]}>
+        {projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.IDLE ||
+        projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.LOADING ? (
+          <Skeleton variant="text" animation="wave" width="20em" />
+        ) : (
+          renderValue(value, field.columnName, field.primitiveType ?? 'category')
+        )}
       </TableCell>
     </TableRow>
   );
 
   return (
     <>
-      <Typography className="pageTitle">
-        {`${seqId} (${projectAbbrev} project view)`}
-      </Typography>
-      {projectMetadata?.errorMessage && <Alert severity="error">{projectMetadata.errorMessage}</Alert>}
-      {(sample && projectMetadata?.fields) ? (
+      <Typography className="pageTitle">{`${seqId} (${projectAbbrev} project view)`}</Typography>
+      {projectMetadata?.errorMessage && (
+        <Alert severity="error">{projectMetadata.errorMessage}</Alert>
+      )}
+      {sample && projectMetadata?.fields ? (
         <>
           <Typography>
             {`Information available through project ${projectAbbrev} for record ${seqId} is listed here.`}
@@ -59,15 +65,14 @@ function SampleDetail() {
           <TableContainer component={Paper} sx={{ mt: 3 }}>
             <Table>
               <TableBody>
-                {projectMetadata?.fields.map(
-                  field => renderRow(field, sample[field.columnName]),
-                )}
+                {projectMetadata?.fields.map((field) => renderRow(field, sample[field.columnName]))}
               </TableBody>
             </Table>
           </TableContainer>
         </>
-      ) :
-        <Typography>Loading...</Typography>}
+      ) : (
+        <Typography>Loading...</Typography>
+      )}
     </>
   );
 }

@@ -13,6 +13,7 @@ const SAMPLE_ID_FIELD_OBJECT: DeducedField = {
   columnOrder: 0,
   displayedFieldType: 'Free text',
   fieldTypeSource: 'Primary ID',
+  geoField: false,
 };
 
 function makeDeducedField(data: Sample[], fieldName: string, idx :number = 0) : DeducedField {
@@ -30,6 +31,7 @@ function makeDeducedField(data: Sample[], fieldName: string, idx :number = 0) : 
     columnOrder: idx,
     displayedFieldType: displayedType,
     fieldTypeSource: 'Deduced',
+    geoField: false, // TODO need to support this through type deduction / user-specified types
   };
 }
 
@@ -49,6 +51,7 @@ function makeField(data: Sample[], fieldName: string, idx: number, typeCode: str
       columnOrder: idx,
       displayedFieldType: displayedType,
       fieldTypeSource: 'Header',
+      geoField: false,
     };
   }
   // TODO should be user-facing error message

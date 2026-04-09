@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/brace-style */
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { MapSupportInfo } from '../components/Maps/mapMeta';
 import LoadingState from '../constants/loadingState';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { Field, ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
@@ -8,7 +9,9 @@ import { Sample } from '../types/sample.interface';
 import type { RootState } from './store';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import {
+  calculateSupportedMaps,
   calculateUniqueValues,
+  getEmptyStringColumns,
   replaceDateStrings,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
@@ -16,23 +19,26 @@ import { FieldSource } from '../constants/fieldSource';
 import { localProjectAbbrev } from '../constants/standaloneClientConstants';
 
 export interface ProjectMetadataState {
-  projectAbbrev: string | null
-  mergeAlgorithm: string | null
-  loadingState: MetadataLoadingState,
-  projectFields: ProjectField[] | null
-  fields: ProjectViewField[] | null
-  fieldUniqueValues: Record<string, string[] | null> | null
-  views: Record<number, ProjectView>
-  viewLoadingStates: Record<number, LoadingState>
-  viewToFetch: number
-  metadata: Sample[] | null
-  fieldLoadingStates: Record<string, LoadingState>
-  errorMessage: string | null
+  projectAbbrev: string | null;
+  mergeAlgorithm: string | null;
+  supportedMaps: MapSupportInfo[];
+  loadingState: MetadataLoadingState;
+  projectFields: ProjectField[] | null;
+  fields: ProjectViewField[] | null;
+  fieldUniqueValues: Record<string, string[] | null> | null;
+  views: Record<number, ProjectView>;
+  viewLoadingStates: Record<number, LoadingState>;
+  viewToFetch: number;
+  metadata: Sample[] | null;
+  emptyColumns: string[];
+  fieldLoadingStates: Record<string, LoadingState>;
+  errorMessage: string | null;
 }
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
   mergeAlgorithm: null,
+  supportedMaps: [],
   loadingState: MetadataLoadingState.IDLE,
   projectFields: null,
   fields: null,
@@ -41,6 +47,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   viewLoadingStates: {},
   viewToFetch: 0,
   metadata: null,
+  emptyColumns: [],
   fieldLoadingStates: {},
   errorMessage: null,
 });
@@ -111,7 +118,11 @@ export const projectMetadataSlice = createSlice({
       };
 
       replaceNullsWithEmpty(uploadedData);
-
+      metadataState.emptyColumns = getEmptyStringColumns(
+        uploadedData,
+        uploadedFields.map(field => field.columnName),
+      );
+      
       metadataState.metadata = uploadedData;
       replaceDateStrings(
         uploadedData,
@@ -127,6 +138,11 @@ export const projectMetadataSlice = createSlice({
         metadataState.fields,
         uploadedData, // should be resulting merged data, if merging
       );
+      const geoFields = uploadedFields
+        .filter((field) => field.geoField)
+        .map((field) => field.columnName!);
+
+      metadataState.supportedMaps = calculateSupportedMaps(uniqueVals, geoFields);
       metadataState.fields!.forEach((field) => {
         metadataState.fieldUniqueValues![field.columnName] = uniqueVals[field.columnName!];
       });
@@ -137,7 +153,8 @@ export const projectMetadataSlice = createSlice({
       fieldNames.forEach(fld => {
         metadataState.fieldLoadingStates[fld] = LoadingState.SUCCESS;
       });
-
+      
+      
       // Might want to add in default sort data by Seq_ID, from deleted reducers
       // - but maybe better to respect order of user-added CSV file and let user sort
       // if (state.data[projectAbbrev].metadata!.length > 0 &&
@@ -194,7 +211,7 @@ export const selectAwaitingProjectMetadata =
       loadingState === MetadataLoadingState.FETCH_REQUESTED ||
       loadingState === MetadataLoadingState.AWAITING_FIELDS ||
       loadingState === MetadataLoadingState.FIELDS_LOADED ||
-      loadingState === MetadataLoadingState.AWAITING_DATA;
+          loadingState === MetadataLoadingState.AWAITING_DATA;
   };
 
 export const selectProjectMergeAlgorithm =

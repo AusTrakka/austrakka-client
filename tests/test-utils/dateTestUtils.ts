@@ -38,8 +38,9 @@ export function formatTestDateTime(date: Date, timezone?: string): string {
 export function formatTestDate(date: Date, timezone?: string): string {
   const options: Intl.DateTimeFormatOptions = {
     ...TEST_DATE_FORMAT_OPTIONS,
-    timeZone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZone: timezone || 'utc',
   };
 
+  // console.error(date.toLocaleString(TEST_LOCALE, options));
   return date.toLocaleString(TEST_LOCALE, options);
 }

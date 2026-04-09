@@ -1,4 +1,3 @@
-import React from 'react';
 import './App.css';
 import './assets/themes/custom-style.css';
 import {
@@ -10,21 +9,24 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/en-gb';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import ProjectOverview from './components/ProjectOverview/ProjectOverview';
-import theme from './assets/themes/theme';
 import PlotDetail from './components/Plots/PlotDetail';
 import TreeDetail from './components/Trees/TreeDetail';
+import MapPage from './components/Maps/MapPage';
 import LocalUpload from './components/Upload/LocalUpload';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
+import muiTheme from './assets/themes/theme';
 
 function App() {
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={muiTheme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
           <Routes>
             {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
             <Route element={<MainMenuLayout />}>
               <Route path="/" element={<LocalUpload />} />
               <Route path="upload" element={<LocalUpload />} />
+              <Route path="data/plots/map" element={<MapPage />} />
               <Route path="data/plots/:plotType" element={<PlotDetail />} />
               <Route path="data/trees/:treeId" element={<TreeDetail />} />
               <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />

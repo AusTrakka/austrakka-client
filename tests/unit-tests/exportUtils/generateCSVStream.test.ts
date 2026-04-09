@@ -1,8 +1,9 @@
-import { generateCSV } from '../../../src/utilities/exportUtils';
+import { generateCSVStream } from '../../../src/utilities/exportUtils';
+import { streamToString } from '../../test-utils/streamUtils';
 
 describe('generateCSV', () => {
   describe('given data to export and no specific selection criteria', () => {
-    test('expect correct number of rows', () => {
+    test('expect correct number of rows', async () => {
       const data = [
         {
           key1: 'value1',
@@ -13,13 +14,11 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
-    test('expect correct number of columns', () => {
+    test('expect correct number of columns', async () => {
       const data = [
         {
           key1: 'value1',
@@ -30,16 +29,14 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
 
   describe('expect date values to be in yyyy-mm-dd format', () => {
-    test('given data to export contains date objects', () => {
+    test('given data to export contains date objects', async () => {
       const data = [
         {
           key1: 'value1',
@@ -50,13 +47,11 @@ describe('generateCSV', () => {
           key2: new Date('2022-01-02'),
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","2022-01-01"\n' +
-                '"value3","2022-01-02"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
-    test('given data to export contains a null date object', () => {
+    test('given data to export contains a null date object', async () => {
       const data = [
         {
           key1: 'value1',
@@ -67,14 +62,12 @@ describe('generateCSV', () => {
           key2: null,
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1",""\n' +
-                '"value3",""';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1",""\n' + '"value3",""\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
-    
-    test('given data to export contains date strings', () => {
+
+    test('given data to export contains date strings', async () => {
       const data = [
         {
           key1: 'value1',
@@ -85,15 +78,13 @@ describe('generateCSV', () => {
           key2: '2022-01-02',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","2022-01-01"\n' +
-                '"value3","2022-01-02"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
   describe('expect string values to be double-quoted in output', () => {
-    test('given data to export contains strings', () => {
+    test('given data to export contains strings', async () => {
       const data = [
         {
           key1: 'value1',
@@ -104,14 +95,12 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
 
-    test('given data contains quotes expect quotes to be escaped and the value to be quoted', () => {
+    test('given data contains quotes expect quotes to be escaped and the value to be quoted', async () => {
       const data = [
         {
           key1: '"value1"',
@@ -122,14 +111,13 @@ describe('generateCSV', () => {
           key2: '"value4"',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"""value1""","""value2"""\n' +
-                '"""value3""","""value4"""';
-      const actualOutput = generateCSV(data);
+      const expectedOutput =
+        'key1,key2\n' + '"""value1""","""value2"""\n' + '"""value3""","""value4"""\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
 
-    test('random quote should be escaped', () => {
+    test('random quote should be escaped', async () => {
       const data = [
         {
           key1: '"value1',
@@ -140,15 +128,13 @@ describe('generateCSV', () => {
           key2: 'v"alue4',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"""value1","value2"\n' +
-                '"value3""","v""alue4"';
-      const actualOutput = generateCSV(data);
+      const expectedOutput = 'key1,key2\n' + '"""value1","value2"\n' + '"value3""","v""alue4"\n';
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
   describe('data to export is passed with specific subset of headers', () => {
-    test('expect only specified columns in output', () => {
+    test('expect only specified columns in output', async () => {
       const data = [
         {
           key1: 'value1',
@@ -161,16 +147,14 @@ describe('generateCSV', () => {
           key3: 'value5',
         },
       ];
-      const expectedOutput = 'key1,key2\n' +
-                '"value1","value2"\n' +
-                '"value3","value4"';
-      const actualOutput = generateCSV(data, ['key1', 'key2']);
+      const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
+      const actualOutput = await streamToString(generateCSVStream(data, ['key1', 'key2']));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
 
   describe('data to export is passed with specific column order', () => {
-    test('expect output to sort columns as requested', () => {
+    test('expect output to sort columns as requested', async () => {
       const data = [
         {
           key1: 'value1',
@@ -181,41 +165,39 @@ describe('generateCSV', () => {
           key2: 'value4',
         },
       ];
-      const expectedOutput = 'key2,key1\n' +
-                '"value2","value1"\n' +
-                '"value4","value3"';
-      const actualOutput = generateCSV(data, ['key2', 'key1']);
+      const expectedOutput = 'key2,key1\n' + '"value2","value1"\n' + '"value4","value3"\n';
+      const actualOutput = await streamToString(generateCSVStream(data, ['key2', 'key1']));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
 
   describe('when data contains special characters', () => {
-    test('expect method to not be affected by special characters', () => {
+    test('expect method to not be affected by special characters', async () => {
       const data = [
         {
           key1: '!DDS-*&^%$#@!',
           key2: 'dsi29-}*&^%$#@!',
         },
         {
-          key1: '\'DDS-*&^%$#@![}[]po-=><<>',
+          key1: "'DDS-*&^%$#@![}[]po-=><<>",
           // all special characters next
-          // eslint-disable-next-line no-useless-escape
+          // biome-ignore lint/suspicious/noUselessEscapeInString: historic
           key2: '\"\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^',
         },
       ];
 
-      const expectedOutput = 'key1,key2\n' +
-          '"!DDS-*&^%$#@!","dsi29-}*&^%$#@!"\n' +
-          '"\'DDS-*&^%$#@![}[]po-=><<>","""\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^"';
+      const expectedOutput =
+        'key1,key2\n' +
+        '"!DDS-*&^%$#@!","dsi29-}*&^%$#@!"\n' +
+        '"\'DDS-*&^%$#@![}[]po-=><<>","""\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^"\n';
 
-      const actualOutput = generateCSV(data);
-
+      const actualOutput = await streamToString(generateCSVStream(data));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
 
   describe('when a large piece of data is given', () => {
-    test('expect output to be fully correct', () => {
+    test('expect output to be fully correct', async () => {
       // Generate a large dataset with random special characters and strings
       const largeData = Array.from({ length: 10000 }, (_, i) => ({
         key1: `value${i}-*&^%$#@!`,
@@ -223,11 +205,12 @@ describe('generateCSV', () => {
       }));
 
       // Expected output - CSV headers and rows. Each value should be wrapped in quotes.
-      const expectedOutput = `key1,key2\n${
-        largeData.map(row => `"${row.key1}","${row.key2}"`).join('\n')}`;
+      const expectedOutput = `key1,key2\n${largeData
+        .map((row) => `"${row.key1}","${row.key2}"`)
+        .join('\n')}\n`;
 
       // Call the function under test
-      const actualOutput = generateCSV(largeData);
+      const actualOutput = await streamToString(generateCSVStream(largeData));
 
       // Compare the actual output with the expected output
       expect(actualOutput).toEqual(expectedOutput);
@@ -235,11 +218,14 @@ describe('generateCSV', () => {
   });
 
   describe('when a large piece of data with many columns is given', () => {
-    test('expect output to be fully correct', () => {
+    test('expect output to be fully correct', async () => {
       // Generate large data with many columns and long column names
       const numColumns = 1000; // Large number of columns
       const numRows = 10; // Moderate number of rows for simplicity
-      const columnNames = Array.from({ length: numColumns }, (_, i) => `column_${i}_with_a_very_long_name`);
+      const columnNames = Array.from(
+        { length: numColumns },
+        (_, i) => `column_${i}_with_a_very_long_name`,
+      );
 
       // Generate rows where each value has special characters
       const largeData = Array.from({ length: numRows }, () => {
@@ -254,12 +240,12 @@ describe('generateCSV', () => {
       let expectedOutput = `${columnNames.join(',')}\n`;
 
       // Add each row with values wrapped in quotes
-      expectedOutput += largeData.map(row =>
-        columnNames.map(col => `"${row[col]}"`).join(',')).join('\n');
+      expectedOutput +=
+        largeData.map((row) => columnNames.map((col) => `"${row[col]}"`).join(',')).join('\n') +
+        '\n';
 
       // Call the function under test
-      const actualOutput = generateCSV(largeData);
-
+      const actualOutput = await streamToString(generateCSVStream(largeData));
       // Compare the actual output with the expected output
       expect(actualOutput).toEqual(expectedOutput);
     });

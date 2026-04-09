@@ -3,20 +3,21 @@ import React, {
 } from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, Typography } from '@mui/material';
-import Samples from './Samples';
+import ProjectSamplesTable from './ProjectSamplesTable';
 import TreeList from './TreeList';
 import PlotList from './PlotList';
-import CustomTabs, { TabPanel, TabContentProps } from '../Common/CustomTabs';
+import TabPanel from '../Common/TabPanel';
+import CustomTabs, { TabContentProps } from '../Common/CustomTabs';
 import {
   selectAwaitingProjectMetadata,
 } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import { PROJECT_OVERVIEW_TABS } from './projTabConstants';
+import { PROJ_TABS, PROJ_TABS_LIST } from './projTabConstants';
 import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 
 function ProjectOverview() {
   const { tab } = useParams();
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState<number | null>(0);
 
   const projectDetails = LOCAL_PROJECT;
 
@@ -24,13 +25,15 @@ function ProjectOverview() {
   const isSamplesLoading : boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, projectDetails?.abbreviation));
 
-  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJECT_OVERVIEW_TABS, []);
+  const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJ_TABS_LIST, []);
 
   useEffect(() => {
     const initialTabValue = projectOverviewTabs
       .findIndex((t) => tab === t.title.toLowerCase());
     if (initialTabValue !== -1) {
       setTabValue(initialTabValue);
+    } else {
+      setTabValue(0);
     }
   }, [tab, projectOverviewTabs]);
 
@@ -46,17 +49,16 @@ function ProjectOverview() {
           <Typography className="pageTitle">
             {/* {projectDetails ? projectDetails.name : ''} */}
           </Typography>
-          <CustomTabs value={tabValue} tabContent={projectOverviewTabs} setValue={setTabValue} />
-          <TabPanel value={tabValue} index={0} tabLoader={isSamplesLoading}>
-            <Samples
+          <CustomTabs value={tabValue!} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
+          <TabPanel value={tabValue!} index={PROJ_TABS.samples.index}>
+            <ProjectSamplesTable
               projectAbbrev={LOCAL_PROJECT.abbreviation}
-              isSamplesLoading={isSamplesLoading}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={1} tabLoader={false}>
+          <TabPanel value={tabValue!} index={PROJ_TABS.trees.index}>
             <TreeList />
           </TabPanel>
-          <TabPanel value={tabValue} index={2} tabLoader={false}>
+          <TabPanel value={tabValue!} index={PROJ_TABS.plots.index}>
             <PlotList
               projectDetails={projectDetails}
             />

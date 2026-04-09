@@ -16,7 +16,7 @@ import LoadingState from '../../constants/loadingState';
 import FileDragDrop from './FileDragDrop';
 import { ResponseMessage } from '../../types/apiResponse.interface';
 import { DropFileUpload } from '../../types/DropFileUpload';
-import Validation from '../Validation/Validation';
+import { Validation } from '../Validation/Validation';
 import { useAppDispatch } from '../../app/store';
 import { addMetadata } from '../../app/projectMetadataSlice';
 import { Sample } from '../../types/sample.interface';

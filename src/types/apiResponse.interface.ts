@@ -1,11 +1,11 @@
-import { ResponseType } from '../constants/responseType';
+import type { ResponseType } from '../constants/responseType';
 
 export interface ApiResponse<T> {
-  data: T
-  messages: ResponseMessage[]
+  data: T;
+  messages: ResponseMessage[];
 }
 
 export interface ResponseMessage {
-  ResponseType: ResponseType,
-  ResponseMessage: string,
+  ResponseType: ResponseType;
+  ResponseMessage: string;
 }

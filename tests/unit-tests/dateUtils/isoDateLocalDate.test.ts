@@ -1,7 +1,7 @@
-import { describe, test, expect } from '@jest/globals';
-import { TimeZone, register, unregister } from 'timezone-mock';
-import { formatTestDateTime, parseTestDateTime } from '../../test-utils/dateTestUtils';
+import { describe, expect, test } from '@jest/globals';
+import { register, type TimeZone, unregister } from 'timezone-mock';
 import { isoDateLocalDate } from '../../../src/utilities/dateUtils';
+import { formatTestDateTime, parseTestDateTime } from '../../test-utils/dateTestUtils';
 
 describe('isoDateLocalDate', () => {
   beforeAll(() => {
@@ -97,12 +97,9 @@ describe('isoDateLocalDate', () => {
 
   describe('when handling extreme dates', () => {
     test('processes dates from 1900 to 2100 without errors', () => {
-      const extremeDates = [
-        '1900-01-01T00:00:00Z',
-        '2100-12-31T23:59:59Z',
-      ];
+      const extremeDates = ['1900-01-01T00:00:00Z', '2100-12-31T23:59:59Z'];
 
-      extremeDates.forEach(date => {
+      extremeDates.forEach((date) => {
         const result = isoDateLocalDate(date);
         expect(result).not.toEqual('Invalid Date');
         const parsed = parseTestDateTime(result);
@@ -132,7 +129,7 @@ describe('isoDateLocalDate', () => {
         return result;
       });
 
-      const hours = results.map(r => parseTestDateTime(r).getHours());
+      const hours = results.map((r) => parseTestDateTime(r).getHours());
       expect(new Set(hours).size).toBeGreaterThan(1);
 
       let currentTimezone = 'US/Pacific';

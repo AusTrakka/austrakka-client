@@ -1,66 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box, Tab, Tabs, LinearProgress,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box, Tab, Tabs } from '@mui/material';
+import type React from 'react';
+import { useStableNavigate } from '../../app/NavigationContext';
 
 /// / Types
 export interface TabContentProps {
-  index: number,
-  title: string
-}
-interface TabPanelProps {
-  children: React.ReactNode;
-  tabLoader : boolean,
   index: number;
-  value: number;
+  title: string;
 }
 interface CustomTabsProps {
-  tabContent: TabContentProps[],
-  value: number,
-  setValue: React.Dispatch<React.SetStateAction<number>>
+  tabContent: TabContentProps[];
+  value: number;
+  setValue: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
-export function TabPanel(props: TabPanelProps) {
-  const {
-    children, tabLoader, value, index,
-  } = props;
-
-  // Mount the panel when it is first selected, and do not unmount it when it is deselected
-  // Keeping the set tab state just for this thing I'm not sure the effects of it but lets see
-  const [visited, setVisited] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (value === index) {
-      setVisited(true);
-    }
-  }, [value, index]);
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-    >
-      {
-        tabLoader && <LinearProgress color="secondary" />
-      }
-      { visited && (
-        <div>
-          <Box sx={{ marginTop: 2 }}>
-            {children}
-          </Box>
-        </div>
-      )}
-    </div>
-  );
-}
+export type TabObjectRecord = Record<string, TabContentProps>;
 
 export default function CustomTabs(props: CustomTabsProps) {
   const { tabContent, value, setValue } = props;
-  const navigate = useNavigate();
-
+  const { navigate } = useStableNavigate();
   // Function to update the URL to match the selected tab
   const updateTabUrl = (tabUrl: string) => {
     const currentPath = window.location.pathname;
@@ -72,8 +29,10 @@ export default function CustomTabs(props: CustomTabsProps) {
 
     // Check if the last segment is the project abbreviation
     let newPath: string;
-    if (pathSegments.length > 1 &&
-        !tabContent.some(tab => tab.title.toLowerCase() === lastSegment)) {
+    if (
+      pathSegments.length > 1 &&
+      !tabContent.some((tab) => tab.title.toLowerCase() === lastSegment)
+    ) {
       newPath = currentPath + tabUrl + currentSearch;
     } else {
       // Replace the last part of the path
@@ -82,7 +41,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     navigate(newPath);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
 
     // Generate the URL for the selected tab and navigate to it
@@ -97,7 +56,7 @@ export default function CustomTabs(props: CustomTabsProps) {
     <Tab
       key={tab.index}
       label={tab.title}
-      sx={{ 'textTransform': 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
+      sx={{ textTransform: 'none', '&.Mui-selected': { fontWeight: 'bold' } }}
       disableRipple
     />
   ));
@@ -105,7 +64,12 @@ export default function CustomTabs(props: CustomTabsProps) {
   return (
     <Box>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleTabChange} indicatorColor="secondary">
+        <Tabs
+          value={value}
+          onChange={handleTabChange}
+          indicatorColor="secondary"
+          variant="scrollable"
+        >
           {InnerTabs}
         </Tabs>
       </Box>

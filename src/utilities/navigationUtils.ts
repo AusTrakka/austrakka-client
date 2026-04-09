@@ -1,7 +1,7 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
-import { NavigateFunction } from 'react-router-dom';
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import type { NavigateFunction } from 'react-router-dom';
+import { PROJ_TABS } from '../components/ProjectOverview/projTabConstants';
 import { encodeFilterObj } from './urlUtils';
-import { PROJECT_OVERVIEW_TABS } from '../components/ProjectOverview/projTabConstants';
 
 function parse<T>(value: string | null, defaultValue: T): T {
   if (value === undefined || value === null) {
@@ -33,17 +33,20 @@ function parse<T>(value: string | null, defaultValue: T): T {
 export default function getQueryParamOrDefault<T>(
   paramName: string | number | symbol,
   defaultState: T,
-  searchParams: URLSearchParams,
+  searchParams: Record<string, string | null>,
 ): T {
-  const paramValue = searchParams.get(String(paramName));
-  return parse(paramValue, defaultState);
+  const rawValue = searchParams[String(paramName)];
+  return parse(rawValue, defaultState);
 }
 
 // Helper function to determine if the last segment matches any tab title
-const shouldReplaceLastSegment =
-    (lastSegment: string) =>
-      PROJECT_OVERVIEW_TABS
-        .some(tab => tab.title.toLowerCase() === lastSegment);
+const shouldReplaceLastSegment = (lastSegment: string) => {
+  const lowerSegment = lastSegment.toLowerCase();
+
+  return (
+    Object.values(PROJ_TABS).some((tab) => tab.title.toLowerCase() === lowerSegment)
+  );
+};
 
 // Helper function to build the new path based on current path and tabs
 const buildNewPath = (currentPath: string, tabUrl: string) => {

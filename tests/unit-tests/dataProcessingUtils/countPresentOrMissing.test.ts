@@ -10,7 +10,7 @@ describe('countPresentOrMissing', () => {
       { status: 'Missing', sampleCount: 0 },
     ]);
   });
-  
+
   test('given an array with all relevant values populated, returns correct counts', () => {
     const input = [
       { someProperty: 'value1', anotherProperty: 'value1' },
@@ -24,7 +24,7 @@ describe('countPresentOrMissing', () => {
       { status: 'Missing', sampleCount: 0 },
     ]);
   });
-  
+
   test('given an array with some relevant values empty, returns correct counts', () => {
     const input = [
       { someProperty: 'value1', anotherProperty: 'value1' },
@@ -38,7 +38,7 @@ describe('countPresentOrMissing', () => {
       { status: 'Missing', sampleCount: 1 },
     ]);
   });
-  
+
   test('given an array with some relevant values null, returns correct counts', () => {
     const input = [
       { someProperty: 'value1', anotherProperty: 'value1' },

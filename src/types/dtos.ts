@@ -1,20 +1,23 @@
 // These are view models; should correspond to server-side DTO.
 export interface Project {
-  projectId: number,
-  globalId: string,
-  abbreviation: string,
-  name: string,
-  description: string,
-  type: string,
+  projectId: number;
+  abbreviation: string;
+  globalId: string;
+  name: string;
+  description: string;
+  type: string;
+  clientType: string;
   projectMembers: {
-    id: number,
-    name: string
-  },
-  projectAnalyses: {
-    id: number,
-    name: string
-  }[],
-  created: Date,
+    id: number;
+    name: string;
+  };
+  trees: {
+    id: number;
+    name: string;
+  }[];
+  isActive: boolean;
+  created: Date;
+  mergeAlgorithm: string;
   // could add auditable fields - created, createdBy
 }
 
@@ -38,12 +41,12 @@ export interface TreeVersion {
 }
 
 export interface PlotListing {
-  plotId: number,
-  abbreviation: string,
-  name: string,
-  description: string,
-  plotType: string,
-  projectId: number,
+  plotId: number;
+  abbreviation: string;
+  name: string;
+  description: string;
+  plotType: string;
+  projectId: number;
   // also projectName, and isActive. projectAbbrev??
 }
 
@@ -55,6 +58,7 @@ export interface Field {
   metaDataColumnTypeName: string,
   metaDataColumnValidValues: string[] | null,
   canVisualise: boolean,
+  geoField: boolean;
   columnOrder: number,
 }
 
@@ -75,6 +79,7 @@ export interface ProjectField {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  geoField: boolean;
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
   analysisLabels: string[],
@@ -93,17 +98,18 @@ export interface ProjectViewField extends Field {
   fieldSource: string,
   columnOrder: number,
   canVisualise: boolean,
+  geoField: boolean;
   hidden: boolean,
   metaDataColumnValidValues: string[] | null,
 }
 
 export interface ProjectView {
-  id: number,
-  fileName: string,
-  blobFilePath: string,
-  originalFileName: string,
-  isBase: boolean,
-  fields: string[],
-  viewFields: string[] // this is currently calculated client-side
+  id: number;
+  fileName: string;
+  blobFilePath: string;
+  originalFileName: string;
+  isBase: boolean;
+  fields: string[];
+  viewFields: string[]; // this is currently calculated client-side
 }
 

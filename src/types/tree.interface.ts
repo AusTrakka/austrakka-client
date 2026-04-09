@@ -10,7 +10,7 @@ export default interface TreeState {
   showLeafLabels: boolean;
   fontSize: number;
   nodeSize: number;
-  fillColour: string,
+  fillColour: string;
   type: string; // replace with the correct type of TreeTypes
   showInternalLabels: boolean;
   showBranchLengths: boolean;

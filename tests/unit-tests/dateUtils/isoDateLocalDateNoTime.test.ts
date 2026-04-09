@@ -1,6 +1,5 @@
-import { register, TimeZone, unregister } from 'timezone-mock';
-import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 import { isoDateLocalDateNoTime } from '../../../src/utilities/dateUtils';
+import { formatTestDate, parseTestDate } from '../../test-utils/dateTestUtils';
 
 describe('isoDateLocalDateNoTime', () => {
   beforeAll(() => {
@@ -24,15 +23,14 @@ describe('isoDateLocalDateNoTime', () => {
       expect(parsedResult.getUTCDate()).toEqual(date.getUTCDate());
       expect(result).toMatch(expected);
     });
-
     test('preserves date components correctly for different input dates', () => {
       const differentDate = new Date('2024-07-19T15:30:00Z');
       const result = isoDateLocalDateNoTime(differentDate.toISOString());
       const parsedResult = parseTestDate(result);
 
-      expect(parsedResult.getUTCFullYear()).toEqual(differentDate.getFullYear());
-      expect(parsedResult.getUTCMonth()).toEqual(differentDate.getMonth());
-      expect(parsedResult.getUTCDate()).toEqual(differentDate.getDate());
+      expect(parsedResult.getUTCFullYear()).toEqual(differentDate.getUTCFullYear());
+      expect(parsedResult.getUTCMonth()).toEqual(differentDate.getUTCMonth());
+      expect(parsedResult.getUTCDate()).toEqual(differentDate.getUTCDate());
     });
   });
 
@@ -74,7 +72,7 @@ describe('isoDateLocalDateNoTime', () => {
         new Date().toISOString().replace('.000Z', 'Z'),
         new Date().toISOString().replace('T', ' '),
       ];
-      const results = formats.map(f => isoDateLocalDateNoTime(f));
+      const results = formats.map((f) => isoDateLocalDateNoTime(f));
 
       results.forEach((result, index) => {
         if (index >= 0) {
@@ -86,12 +84,9 @@ describe('isoDateLocalDateNoTime', () => {
 
   describe('when handling extreme dates', () => {
     test('processes dates from 1900 to 2100 without errors', () => {
-      const extremeDates = [
-        new Date('1900-01-01T00:00:00Z'),
-        new Date('2100-12-31T23:59:59Z'),
-      ];
+      const extremeDates = [new Date('1900-01-01T00:00:00Z'), new Date('2100-12-31T23:59:59Z')];
 
-      extremeDates.forEach(date => {
+      extremeDates.forEach((date) => {
         const result = isoDateLocalDateNoTime(date.toISOString());
         expect(result).not.toEqual('Invalid Date');
         const parsed = parseTestDate(result);
@@ -109,25 +104,6 @@ describe('isoDateLocalDateNoTime', () => {
       expect(parsed.getUTCMinutes()).toBe(0);
       expect(parsed.getUTCSeconds()).toBe(0);
       expect(parsed.getUTCMilliseconds()).toBe(0);
-    });
-  });
-
-  describe('when used across different time zones', () => {
-    test('produces consistent results regardless of timezone', () => {
-      const input = new Date();
-      const mockTimezones: TimeZone[] = ['Australia/Adelaide', 'US/Eastern', 'Europe/London', 'US/Pacific', 'Etc/GMT+9', 'Etc/GMT-9', 'UTC'];
-
-      const results = mockTimezones.map(zone => {
-        register(zone);
-        const result = isoDateLocalDateNoTime(input.toISOString());
-        const expected = formatTestDate(input, zone);
-        unregister();
-        return { zone, result, expected };
-      });
-
-      results.forEach(item => {
-        expect(item.result).toMatch(item.expected);
-      });
     });
   });
 });

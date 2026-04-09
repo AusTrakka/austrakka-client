@@ -1,21 +1,35 @@
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { TopLevelSpec } from 'vega-lite';
-import { ColorScheme } from 'vega';
+import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { ColorScheme } from 'vega';
+import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { SAMPLE_ID_FIELD } from '../../../constants/metadataConsts';
-import PlotTypeProps from '../../../types/plottypeprops.interface';
-import { getStartingField, setColorInSpecToValue, setFieldInSpec, setTimeAggregationInSpecToValue } from '../../../utilities/plotUtils';
-import VegaDataPlot from '../VegaDataPlot';
-import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
-import { ProjectViewField } from '../../../types/dtos';
-import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
+import type { ProjectViewField } from '../../../types/dtos';
+import type PlotTypeProps from '../../../types/plottypeprops.interface';
+import {
+  getStartingField,
+  setColorInSpecToValue,
+  setFieldInSpec,
+  setTimeAggregationInSpecToValue,
+} from '../../../utilities/plotUtils';
+import { useStateFromSearchParamsForPrimitive } from '../../../utilities/stateUtils';
+import ColorSchemeSelector from '../../Trees/TreeControls/SchemeSelector';
+import VegaDataPlot from '../VegaDataPlot';
 
 // We will check for these in order in the given dataset, and use the first found as default
 // Possible enhancement: allow preferred field to be specified in the database, overriding these
-const preferredYAxisFields = ['cgMLST', 'MLST', 'ST', 'Serotype', 'SNP_cluster', 'Lineage_family', 'Jurisdiction'];
+const preferredYAxisFields = [
+  'cgMLST',
+  'MLST',
+  'ST',
+  'Serotype',
+  'SNP_cluster',
+  'Lineage_family',
+  'Jurisdiction',
+];
 const preferredDateFields = ['Date_coll'];
 
 // The opacity to use for points when they are selected, or when all points are selected
@@ -42,7 +56,10 @@ const defaultSpec: TopLevelSpec = {
     x: {
       field: 'Date_coll',
       type: 'temporal',
-      axis: { grid: false },
+      axis: {
+        grid: false,
+        labelAngle: 0,
+      },
     },
     y: {
       field: 'cgMLST',
@@ -60,38 +77,48 @@ const defaultSpec: TopLevelSpec = {
 
 function ClusterTimeline(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
+  const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector(
     state => selectProjectMetadataFields(state, projectAbbrev),
   );
-  const urlSearchParams = new URLSearchParams(window.location.search);
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
-    urlSearchParams,
+    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    urlSearchParams,
+    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    urlSearchParams,
+    navigate,
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    urlSearchParams,
+    navigate,
+  );
+  const [axisLabelAngle, setAxisLabelAngle] = useStateFromSearchParamsForPrimitive<number>(
+    'axisLabelAngle',
+    0,
+    navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     'yearmonthdate',
-    urlSearchParams,
+    navigate,
+  );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
+    'fontSize',
+    11,
+    navigate,
   );
 
   // Set spec on load
@@ -104,17 +131,20 @@ function ClusterTimeline(props: PlotTypeProps) {
   }, [customSpec]);
 
   // Get project's total fields and visualisable (psuedo-categorical) fields on load
+  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (fields && fields.length > 0) {
       // Note this does not include numerical or date fields
       // For now this selection need only depend on canVisualise
-      const localCatFields : ProjectViewField[] = fields
-        .filter(field => field.canVisualise &&
-          (field.primitiveType === 'string' || field.primitiveType === null));
-      setCategoricalFields(localCatFields.map(field => field.columnName));
-      const localDateFields : ProjectViewField[] = fields
-        .filter(field => field.primitiveType === 'date');
-      setDateFields(localDateFields.map(field => field.columnName));
+      const localCatFields: ProjectViewField[] = fields.filter(
+        (field) =>
+          field.canVisualise && (field.primitiveType === 'string' || field.primitiveType === null),
+      );
+      setCategoricalFields(localCatFields.map((field) => field.columnName));
+      const localDateFields: ProjectViewField[] = fields.filter(
+        (field) => field.primitiveType === 'date',
+      );
+      setDateFields(localDateFields.map((field) => field.columnName));
       // Mandatory fields: one categorical field
       if (localCatFields.length === 0) {
         setPlotErrorMsg('No visualisable categorical fields found in project, cannot render plot');
@@ -124,7 +154,6 @@ function ClusterTimeline(props: PlotTypeProps) {
       if (yAxisField === '') setYAxisField(getStartingField(preferredYAxisFields, localCatFields));
       if (dateField === '') setDateField(getStartingField(preferredDateFields, localDateFields));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, setPlotErrorMsg]);
 
   useEffect(() => {
@@ -135,7 +164,7 @@ function ClusterTimeline(props: PlotTypeProps) {
       setSpec(addYAxisToSpec);
     }
   }, [yAxisField]);
-  
+
   useEffect(() => {
     const setColorInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null =>
       setColorInSpecToValue(
@@ -181,6 +210,37 @@ function ClusterTimeline(props: PlotTypeProps) {
     setSpec(addTimeAggregationToSpec);
   }, [dateBinUnit, yAxisField, colourField, dateField]);
 
+  useEffect(() => {
+    const setAxisLabelAngleInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.encoding = { ...(oldSpec as any).encoding };
+      newSpec.encoding.x = { ...(oldSpec as any).encoding.x };
+      newSpec.encoding.x.axis = { ...(oldSpec as any).encoding.x.axis, labelAngle: axisLabelAngle };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setAxisLabelAngleInSpec);
+  }, [axisLabelAngle]);
+
+  useEffect(() => {
+    const setFontSizeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.config = {
+        ...oldSpec.config,
+        axis: { ...oldSpec.config?.axis, labelFontSize: fontSize, titleFontSize: fontSize },
+        legend: { ...oldSpec.config?.legend, labelFontSize: fontSize, titleFontSize: fontSize },
+        header: { ...oldSpec.config?.header, labelFontSize: fontSize, titleFontSize: fontSize },
+      };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setFontSizeInSpec);
+  }, [fontSize]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -192,9 +252,11 @@ function ClusterTimeline(props: PlotTypeProps) {
           label="Y-Axis"
           onChange={(e) => setYAxisField(e.target.value)}
         >
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -207,9 +269,11 @@ function ClusterTimeline(props: PlotTypeProps) {
           onChange={(e) => setColourField(e.target.value)}
         >
           <MenuItem value="none">None</MenuItem>
-          {
-            categoricalFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {categoricalFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       {colourField !== 'none' && (
@@ -229,10 +293,24 @@ function ClusterTimeline(props: PlotTypeProps) {
           label="X-Axis Date Field"
           onChange={(e) => setDateField(e.target.value)}
         >
-          {
-            dateFields.map(field => <MenuItem key={field} value={field}>{field}</MenuItem>)
-          }
+          {dateFields.map((field) => (
+            <MenuItem key={field} value={field}>
+              {field}
+            </MenuItem>
+          ))}
         </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="axis-angle-select"
+          label="Axis angle"
+          size="small"
+          inputProps={{ min: -90, max: 90, step: 45 }}
+          value={axisLabelAngle}
+          onChange={(e) => setAxisLabelAngle(parseInt(e.target.value, 10) || 0)}
+        />
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
         <InputLabel id="date-bin-unit-select-label">Bin Unit</InputLabel>
@@ -245,16 +323,36 @@ function ClusterTimeline(props: PlotTypeProps) {
             setDateBinUnit(e.target.value);
           }}
         >
-          {
-            [
-              <MenuItem key="none" value="none">None</MenuItem>,
-              <MenuItem key="yearmonthdate" value="yearmonthdate">Day</MenuItem>,
-              <MenuItem key="yearweek" value="yearweek">Week</MenuItem>,
-              <MenuItem key="yearmonth" value="yearmonth">Month</MenuItem>,
-              <MenuItem key="year" value="year">Year</MenuItem>,
-            ]
-          }
+          {[
+            <MenuItem key="none" value="none">
+              None
+            </MenuItem>,
+            <MenuItem key="yearmonthdate" value="yearmonthdate">
+              Day
+            </MenuItem>,
+            <MenuItem key="yearweek" value="yearweek">
+              Week
+            </MenuItem>,
+            <MenuItem key="yearmonth" value="yearmonth">
+              Month
+            </MenuItem>,
+            <MenuItem key="year" value="year">
+              Year
+            </MenuItem>,
+          ]}
         </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="font-size-select"
+          label="Font Size"
+          size="small"
+          inputProps={{ min: 6, max: 24, step: 1 }}
+          value={fontSize}
+          onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 11)}
+        />
       </FormControl>
     </Box>
   );

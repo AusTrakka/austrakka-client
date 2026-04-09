@@ -12,7 +12,10 @@ export const LOCAL_PROJECT: Project = {
     id: 1,
     name: 'Local-Group',
   },
-  projectAnalyses: [],
+  clientType: 'local',
+  mergeAlgorithm: 'override',
+  trees: [],
+  isActive: true,
   created: new Date(),
 };
 

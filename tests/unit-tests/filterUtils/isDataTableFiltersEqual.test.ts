@@ -1,4 +1,4 @@
-import { DataTableFilterMeta } from 'primereact/datatable';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 
 import { isDataTableFiltersEqual } from '../../../src/utilities/filterUtils';
 
@@ -100,9 +100,7 @@ describe('isDataTableFiltersEqual', () => {
       const obj2: DataTableFilterMeta = {
         name: {
           operator: 'or',
-          constraints: [
-            { value: 'John', matchMode: 'equals' },
-          ],
+          constraints: [{ value: 'John', matchMode: 'equals' }],
         },
       };
       expect(isDataTableFiltersEqual(obj1, obj2)).toBe(false);

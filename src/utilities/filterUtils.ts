@@ -1,5 +1,9 @@
 import { FilterMatchMode } from 'primereact/api';
-import { DataTableFilterMeta, DataTableFilterMetaData, DataTableOperatorFilterMetaData } from 'primereact/datatable';
+import type {
+  DataTableFilterMeta,
+  DataTableFilterMetaData,
+  DataTableOperatorFilterMetaData,
+} from 'primereact/datatable';
 
 export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = {
   [FilterMatchMode.EQUALS]: '==',
@@ -9,6 +13,8 @@ export const filterMatchModeToOperator: { [key in FilterMatchMode]?: string } = 
   [FilterMatchMode.GREATER_THAN_OR_EQUAL_TO]: '>=',
   [FilterMatchMode.LESS_THAN_OR_EQUAL_TO]: '<=',
   [FilterMatchMode.CONTAINS]: '@=',
+  [FilterMatchMode.IN]: undefined, // Not sure if this will work with dates
+  [FilterMatchMode.NOT_IN]: undefined, // Same with this
   [FilterMatchMode.STARTS_WITH]: '_=',
   [FilterMatchMode.ENDS_WITH]: '_-=',
   [FilterMatchMode.NOT_CONTAINS]: '!@=',
@@ -27,15 +33,14 @@ export function isOperatorFilterMetaData(
 }
 
 // Generic function to create filter string in SSKV format from date filter object
-export function generateDateFilterString(
-  dateFilterObject: DataTableFilterMeta,
-): string {
+export function generateDateFilterString(dateFilterObject: DataTableFilterMeta): string {
   if (Object.keys(dateFilterObject).length === 0) {
     return '';
   }
 
   // Assuming we're working with the first key in the dateObject
-  const key = Object.keys(dateFilterObject)[0];
+  const [first] = Object.keys(dateFilterObject);
+  const key = first;
   const filterData = dateFilterObject[key];
 
   if (!filterData) {
@@ -48,7 +53,8 @@ export function generateDateFilterString(
   if (isOperatorFilterMetaData(filterData)) {
     // Handle operator type with a single constraint
     if (filterData.constraints.length > 0) {
-      const constraint = filterData.constraints[0];
+      const [first1] = filterData.constraints;
+      const constraint = first1;
       dateValue = constraint.value;
       matchMode = constraint.matchMode as FilterMatchMode;
     }
@@ -59,9 +65,9 @@ export function generateDateFilterString(
 
   if (
     dateValue instanceof Date &&
-      !Number.isNaN(dateValue.getTime()) && // Ensure it's a valid date
-      matchMode &&
-      filterMatchModeToOperator[matchMode]
+    !Number.isNaN(dateValue.getTime()) && // Ensure it's a valid date
+    matchMode &&
+    filterMatchModeToOperator[matchMode]
   ) {
     const date = dateValue.toISOString();
     const condition = filterMatchModeToOperator[matchMode];
@@ -78,13 +84,15 @@ function isEqualFilterMetaData(
   return filter1.value === filter2.value && filter1.matchMode === filter2.matchMode;
 }
 
-export function
-isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): boolean {
+export function isDataTableFiltersEqual(
+  obj1: DataTableFilterMeta,
+  obj2: DataTableFilterMeta,
+): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
   // first we could check if the keys have the same values
-  if (!keys1.every(key => keys2.includes(key))) {
+  if (!keys1.every((key) => keys2.includes(key))) {
     return false;
   }
 
@@ -104,7 +112,6 @@ isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
       if (val1.operator !== val2.operator || val1.constraints.length !== val2.constraints.length) {
         return false;
       }
-      // eslint-disable-next-line no-plusplus
       for (let i = 0; i < val1.constraints.length; i++) {
         if (!isEqualFilterMetaData(val1.constraints[i], val2.constraints[i])) {
           return false;
@@ -120,4 +127,40 @@ isDataTableFiltersEqual(obj1: DataTableFilterMeta, obj2: DataTableFilterMeta): b
   }
 
   return true;
+}
+
+export function getConditionName(
+  constraint: DataTableFilterMetaData,
+  conditions: { value: string; name: string }[],
+) {
+  const found = conditions.find((c) => c.value === constraint.matchMode)?.name;
+  if (found) return found;
+
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) {
+    if (constraint.value === true || constraint.value === 'true') return 'Null or Empty';
+    if (constraint.value === false || constraint.value === 'false') return 'Not Null or Empty';
+  }
+
+  return 'Unknown';
+}
+
+// Determine how to display the value
+export function getDisplayValue(
+  constraint: DataTableFilterMetaData,
+  conditionName: string,
+  dateConditions: { value: string; name: string }[],
+) {
+  if (constraint.matchMode === FilterMatchMode.CUSTOM) return null;
+
+  const raw = Array.isArray(constraint.value) ? [...constraint.value] : constraint.value;
+  if (Array.isArray(raw)) return raw.join(', ');
+
+  if (dateConditions.some((c) => c.name === conditionName)) {
+    const date = new Date(raw);
+    if (constraint.matchMode === FilterMatchMode.DATE_AFTER) date.setDate(date.getDate() + 1);
+    if (constraint.matchMode === FilterMatchMode.DATE_BEFORE) date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString('en-CA');
+  }
+
+  return String(raw);
 }

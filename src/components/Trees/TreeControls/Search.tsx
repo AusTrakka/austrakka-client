@@ -1,17 +1,25 @@
-import * as React from 'react';
-import { Autocomplete, AutocompleteChangeDetails, AutocompleteChangeReason, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  type AutocompleteChangeDetails,
+  type AutocompleteChangeReason,
+  TextField,
+} from '@mui/material';
+import type * as React from 'react';
 
-export default function Search(
-  { options, selectedIds, onChange }: {
-    options: string[],
-    selectedIds: string[],
-    onChange: (
-      event: React.SyntheticEvent<Element, Event>,
-      value: string[],
-      reason: AutocompleteChangeReason,
-      details?: AutocompleteChangeDetails<string> | undefined
-    ) => void; },
-) {
+export default function Search({
+  options,
+  selectedIds,
+  onChange,
+}: {
+  options: string[];
+  selectedIds: string[];
+  onChange: (
+    event: React.SyntheticEvent<Element, Event>,
+    value: string[],
+    reason: AutocompleteChangeReason,
+    details?: AutocompleteChangeDetails<string> | undefined,
+  ) => void;
+}) {
   return (
     <Autocomplete
       multiple
@@ -40,28 +48,31 @@ export default function Search(
             matches = options.filter((o) => o === option);
           }
 
-          selected = newValue.slice(0, -1).concat(matches).filter((v, i, a) => a.indexOf(v) === i);
+          selected = newValue
+            .slice(0, -1)
+            .concat(matches)
+            .filter((v, i, a) => a.indexOf(v) === i);
         } else {
           selected = newValue;
         }
         onChange(event, selected, reason);
       }}
-      renderInput={params => {
+      renderInput={(params) => {
         const { InputProps, ...restParams } = params;
         const { startAdornment, ...restInputProps } = InputProps;
         return (
           <TextField
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...restParams}
             label="Search"
             placeholder="..."
             InputProps={{
               ...restInputProps,
               startAdornment: (
-                <div style={{
-                  maxHeight: '250px',
-                  overflowY: 'auto',
-                }}
+                <div
+                  style={{
+                    maxHeight: '250px',
+                    overflowY: 'auto',
+                  }}
                 >
                   {startAdornment}
                 </div>

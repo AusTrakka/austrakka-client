@@ -1,5 +1,5 @@
 import { PhylocanvasGL, plugins } from '@phylocanvas/phylocanvas.gl';
-import { PhylocanvasProps, PhylocanvasNode } from '../../types/phylocanvas.interface';
+import type { PhylocanvasNode, PhylocanvasProps } from '../../types/phylocanvas.interface';
 
 export const TreeTypes: Record<string, string> = {
   Circular: 'cr',
@@ -11,11 +11,7 @@ export const TreeTypes: Record<string, string> = {
 
 export class Phylocanvas extends PhylocanvasGL {
   constructor(view: HTMLDivElement, props: PhylocanvasProps) {
-    super(
-      view,
-      props,
-      [plugins.scalebar],
-    );
+    super(view, props, [plugins.scalebar]);
     this.deck.props.useDevicePixels = 2; // resolution for rendering
     this.clickHandlers = [];
     this.view.style.backgroundImage = ''; // remove logo
@@ -23,20 +19,21 @@ export class Phylocanvas extends PhylocanvasGL {
     this.addClickHandler((info: any, event: any) => {
       // select clade
       const node = this.pickNodeFromLayer(info);
-      this.selectLeavesFromInternalNode(
-        node,
-        event.srcEvent.metaKey || event.srcEvent.ctrlKey,
-      );
+      this.selectLeavesFromInternalNode(node, event.srcEvent.metaKey || event.srcEvent.ctrlKey);
     });
   }
 
+  // biome-ignore lint/complexity/noBannedTypes: legacy code, not worth refactoring right now
   addClickHandler(fn: Function) {
     this.clickHandlers.push(fn);
   }
 
   handleClick(info: any, event: any) {
     super.handleClick(info, event);
-    this.clickHandlers.forEach((fn: Function) => fn(info, event));
+    // biome-ignore lint/complexity/noBannedTypes: legacy code, not worth refactoring right now
+    this.clickHandlers.forEach((fn: Function) => {
+      fn(info, event);
+    });
   }
 
   static getLeafNodeIds(node: any) {

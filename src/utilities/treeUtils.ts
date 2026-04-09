@@ -1,11 +1,14 @@
-/* eslint-disable no-plusplus */
-import { FieldAndColourScheme, PhylocanvasLegends, PhylocanvasMetadata } from '../types/phylocanvas.interface';
-import { Field } from '../types/dtos';
-import { createColourMapping } from './colourUtils';
-import { Sample } from '../types/sample.interface';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
-import { isoDateLocalDate, isoDateLocalDateNoTime } from './dateUtils';
 import { defaultDiscreteColorScheme } from '../constants/schemes';
+import type { Field } from '../types/dtos';
+import type {
+  FieldAndColourScheme,
+  PhylocanvasLegends,
+  PhylocanvasMetadata,
+} from '../types/phylocanvas.interface';
+import type { Sample } from '../types/sample.interface';
+import { createColourMapping } from './colourUtils';
+import { renderValue } from './renderUtils';
 
 export default function mapMetadataToPhylocanvas(
   dataArray: Sample[],
@@ -32,18 +35,9 @@ export default function mapMetadataToPhylocanvas(
     const sampleName = sample[SAMPLE_ID_FIELD];
     result[sampleName] = {};
     fieldInformation.forEach((fi) => {
-      if (fi.columnName === SAMPLE_ID_FIELD) return;
-
       const value = sample[fi.columnName] ?? 'null';
       const colour = fi.canVisualise ? fieldPalettes[fi.columnName][value] : 'rgba(0,0,0,0)';
-
-      let label: string | undefined;
-      if (fi.primitiveType === 'date') {
-        label = fi.columnName === 'Date_coll' ? isoDateLocalDateNoTime(value) : isoDateLocalDate(value);
-      } else {
-        label = value;
-      }
-
+      const label: string | undefined = renderValue(value, fi.columnName, fi.primitiveType!);
       result[sampleName][fi.columnName] = {
         colour,
         label: label ?? '',

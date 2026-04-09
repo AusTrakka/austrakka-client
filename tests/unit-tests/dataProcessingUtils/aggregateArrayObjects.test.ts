@@ -12,17 +12,16 @@ describe('aggregateArrayObjects', () => {
         { category: 'A' },
       ];
       const expectedOutput = [
-        { category: 'A', sampleCount: 3 },
-        { category: 'B', sampleCount: 2 },
-        { category: 'C', sampleCount: 1 },
+        { value: 'A', count: 3 },
+        { value: 'B', count: 2 },
+        { value: 'C', count: 1 },
       ];
 
       const result = aggregateArrayObjects('category', inputArray);
       expect(result).toEqual(expectedOutput);
     });
   });
-  describe('when given variations of invalid' +
-         'input or values within the input', () => {
+  describe('when given variations of invalid' + 'input or values within the input', () => {
     test('undefined arrays are converted to empty arrays', () => {
       const inputArray = undefined;
       const expectedOutput: any[] = [];
@@ -39,7 +38,7 @@ describe('aggregateArrayObjects', () => {
       expect(result).toEqual(expectedOutput);
     });
 
-    test('merge array with null or undefined values as its own unique value', () => {
+    test('treat null or undefined values as distinct', () => {
       const inputArray = [
         { category: 'A' },
         { category: null },
@@ -49,10 +48,10 @@ describe('aggregateArrayObjects', () => {
         { category: 'A' },
       ];
       const expectedOutput = [
-        { category: 'A', sampleCount: 3 },
-        { category: null, sampleCount: 1 },
-        { category: 'B', sampleCount: 1 },
-        { category: undefined, sampleCount: 1 },
+        { value: undefined, count: 1 },
+        { value: null, count: 1 },
+        { value: 'A', count: 3 },
+        { value: 'B', count: 1 },
       ];
 
       const result = aggregateArrayObjects('category', inputArray);
@@ -70,9 +69,9 @@ describe('aggregateArrayObjects', () => {
         { category: 1 },
       ];
       const expectedOutput = [
-        { category: 'A', sampleCount: 2 },
-        { category: 1, sampleCount: 2 },
-        { category: '1', sampleCount: 1 },
+        { value: 'A', count: 2 },
+        { value: 1, count: 2 },
+        { value: '1', count: 1 },
       ];
 
       const result = aggregateArrayObjects('category', inputArray);
@@ -89,8 +88,8 @@ describe('aggregateArrayObjects', () => {
         { category: 'A' },
       ];
       const expectedOutput = [
-        { category: 'A', sampleCount: 3 },
-        { category: 'B', sampleCount: 1 },
+        { value: 'A', count: 3 },
+        { value: 'B', count: 1 },
       ];
 
       const result = aggregateArrayObjects('category', inputArray);
@@ -98,11 +97,7 @@ describe('aggregateArrayObjects', () => {
     });
 
     test('input without specified property will return empty array', () => {
-      const inputArray = [
-        { name: 'A' },
-        { name: 'B' },
-        { name: 'A' },
-      ];
+      const inputArray = [{ name: 'A' }, { name: 'B' }, { name: 'A' }];
       const expectedOutput: any[] = [];
 
       const result = aggregateArrayObjects('category', inputArray);
@@ -114,6 +109,26 @@ describe('aggregateArrayObjects', () => {
       const expectedOutput: any[] = [];
 
       const result = aggregateArrayObjects('category', input as any);
+      expect(result).toEqual(expectedOutput);
+    });
+
+    test('when nullPropertyName is set, it is used for empty and null values', () => {
+      const inputArray = [
+        { category: 'A' },
+        { category: null },
+        { category: 'B' },
+        { category: 'A' },
+        { category: undefined },
+        { category: '' },
+        { category: 'A' },
+      ];
+      const expectedOutput = [
+        { value: 'Missing', count: 3 },
+        { value: 'A', count: 3 },
+        { value: 'B', count: 1 },
+      ];
+
+      const result = aggregateArrayObjects('category', inputArray, 'Missing');
       expect(result).toEqual(expectedOutput);
     });
   });

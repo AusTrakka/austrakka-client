@@ -1,11 +1,11 @@
-export const AlertLevels : Record<string, string> = {
+export const AlertLevels: Record<string, string> = {
   NoAlert: 'No Alert',
   Monitor: 'Monitor',
   Review: 'Review',
   Investigate: 'Investigate',
 };
 
-export const AlertThresholds : Record<string, number> = {
+export const AlertThresholds: Record<string, number> = {
   NoAlert: 0.0,
   Monitor: 1.5,
   Review: 3.0,

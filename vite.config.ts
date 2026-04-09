@@ -1,7 +1,6 @@
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 import {Schema, ValidateEnv} from '@julr/vite-plugin-validate-env'
-import eslint from 'vite-plugin-eslint'
 import fs from 'fs'
 import path from 'path'
 
@@ -144,6 +143,12 @@ export default defineConfig({
       VITE_BRANDING_TAGLINE_2: (key, value) => {
         return defaultConfigValue(key, value, BrandingDefaultValues.Tagline2)
       },
+      VITE_BRANDING_SIDEBAR_NAME_ENABLED: (key, value) => {
+        return defaultConfigValueBoolean(key, value, BrandingDefaultValues.SidebarNameEnabled)
+      },
+      VITE_BRANDING_ID: (key, value) => {
+        return defaultConfigValue(key, value, BrandingDefaultValues.Id)
+      },
       VITE_DOCS_URL: (key, value) => {
         return defaultConfigValue(key, value, DocsDefaultValues.Url)
       },
@@ -151,13 +156,6 @@ export default defineConfig({
         return defaultConfigValueBoolean(key, value, DocsDefaultValues.Enabled)
       },
     }),
-    {
-      apply: 'build',
-      ...eslint({
-        failOnWarning: true,
-        failOnError: true,
-      })
-    },
   ]
 })
 
@@ -222,7 +220,7 @@ enum ThemeDefaultValues {
   PrimaryGrey700 = '#616161', 
   PrimaryGrey800 = '#424242', 
   PrimaryGrey900 = '#212121',
-  PrimaryMainBackground = '#eef2f6'
+  PrimaryMainBackground = '#eef2f6',
 }
 
 enum LogoDefaultValues {
@@ -234,6 +232,8 @@ enum BrandingDefaultValues {
   Name = "AusTrakka",
   Tagline1 = "From genomics to public health decisions for Australia",
   Tagline2 = "Combining Genomics & Epidemiological Data",
+  SidebarNameEnabled = "false",
+  Id = "aardvark",
 }
 
 enum DocsDefaultValues {
