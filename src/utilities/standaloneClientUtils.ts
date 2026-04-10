@@ -1,7 +1,7 @@
-import { typeCodes, UNIQUE_VALUE_THRESHOLD } from '../constants/standaloneClientConstants';
-import { Sample } from '../types/sample.interface';
-import { DeducedField } from '../types/dtos';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import { typeCodes, UNIQUE_VALUE_THRESHOLD } from '../constants/standaloneClientConstants';
+import type { DeducedField } from '../types/dtos';
+import type { Sample } from '../types/sample.interface';
 
 // Special handling for Seq_ID
 const SAMPLE_ID_FIELD_OBJECT: DeducedField = {
@@ -16,7 +16,7 @@ const SAMPLE_ID_FIELD_OBJECT: DeducedField = {
   geoField: false,
 };
 
-function makeDeducedField(data: Sample[], fieldName: string, idx :number = 0) : DeducedField {
+function makeDeducedField(data: Sample[], fieldName: string, idx: number = 0): DeducedField {
   if (fieldName === SAMPLE_ID_FIELD) {
     return SAMPLE_ID_FIELD_OBJECT;
   }
@@ -60,13 +60,10 @@ function makeField(data: Sample[], fieldName: string, idx: number, typeCode: str
 }
 
 // Note this function is not pure; the original data is modified
-export function buildFieldListAndUpdateData(
-  data: Sample[],
-  fieldNames: string[],
-) : DeducedField[] {
+export function buildFieldListAndUpdateData(data: Sample[], fieldNames: string[]): DeducedField[] {
   const fieldTypePattern = /^(\w+):(\w)$/;
-  const fields : DeducedField[] = [];
-  const renamedFields : [string, string][] = [];
+  const fields: DeducedField[] = [];
+  const renamedFields: [string, string][] = [];
   fieldNames.forEach((fieldName, idx) => {
     const fieldTypeMatch = fieldName.match(fieldTypePattern);
     if (fieldTypeMatch) {
@@ -93,7 +90,7 @@ export function buildFieldListAndUpdateData(
       });
     });
   }
-  
+
   return fields;
 }
 
@@ -110,7 +107,8 @@ function deduceFieldType(data: Sample[], fieldName: string): string {
       isNumeric = false;
     }
     // Check for date (ISO 8601 format)
-    if (isDate && isNaN(Date.parse(value))) { // TODO check, risky if American dates?
+    if (isDate && isNaN(Date.parse(value))) {
+      // TODO check, risky if American dates?
       isDate = false;
     }
     // Early exit if both are false

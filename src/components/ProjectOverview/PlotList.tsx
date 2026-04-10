@@ -1,34 +1,40 @@
-import React, { memo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData, DataTableRowClickEvent } from 'primereact/datatable';
+import { Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { Paper } from '@mui/material';
-import { PlotListing, Project } from '../../types/dtos';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+  type DataTableRowClickEvent,
+} from 'primereact/datatable';
+import type React from 'react';
+import { memo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { plotTypeListing } from '../../config/plotTypes';
+import type { Project } from '../../types/dtos';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import { plotTypeListing } from '../../config/plotTypes';
 
 interface PlotListProps {
-  projectDetails: Project | null
+  projectDetails: Project | null;
 }
 
 function PlotList(props: PlotListProps) {
-  const { projectDetails } = props;
-  const [customPlotsLoading, setCustomPlotsLoading] = useState(true);
-  const [customPlotList, setCustomPlotList] = useState<PlotListing[]>([]);
   const navigate = useNavigate();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
-  
-  const columns = [{
-    field: 'name',
-    header: 'Name',
-  }, {
-    field: 'description',
-    header: 'Description',
-  }];
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  const columns = [
+    {
+      field: 'name',
+      header: 'Name',
+    },
+    {
+      field: 'description',
+      header: 'Description',
+    },
+  ];
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/data/plots/${row.data.plotType}`);
@@ -40,7 +46,7 @@ function PlotList(props: PlotListProps) {
     (filters.global as DataTableFilterMetaData).value = value;
     setGlobalFilter(filters);
   };
-  
+
   const header = (
     <div style={{ display: 'flex' }}>
       <SearchInput

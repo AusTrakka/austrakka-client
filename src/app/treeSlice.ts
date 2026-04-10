@@ -1,10 +1,10 @@
 /* eslint-disable no-param-reassign */
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TreeVersion } from '../types/dtos';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { LOCAL_PROJECT } from '../constants/standaloneClientConstants';
+import type { TreeVersion } from '../types/dtos';
 import type { RootState } from './store';
 
-// Note that the projectMetadataSlice interfaces mimic the 
+// Note that the projectMetadataSlice interfaces mimic the
 // "per-project" structure needed to support server-side functionality.
 // The treeSlice however is only used in the standalone client and
 // the slice state supports only one "project".
@@ -29,10 +29,9 @@ const treeSlice = createSlice({
   initialState,
   reducers: {
     addTree: (state, action: PayloadAction<UploadedTree>) => {
-      const nextTreeId = state.trees.length > 0
-        ? Math.max(...state.trees.map((tree) => tree.treeVersionId)) + 1
-        : 1;
-      const now : string = new Date().toISOString();
+      const nextTreeId =
+        state.trees.length > 0 ? Math.max(...state.trees.map((tree) => tree.treeVersionId)) + 1 : 1;
+      const now: string = new Date().toISOString();
       const newTreeVersion = {
         treeId: nextTreeId,
         treeVersionId: nextTreeId,
@@ -63,7 +62,7 @@ export const { addTree } = treeSlice.actions;
 export const selectTrees = (state: RootState) => state.treeState.trees;
 
 // return tree, or errorMsg if cannot return tree
-export const selectTreeById = (state: RootState, treeId: number) : [TreeVersion | null, string] => {
+export const selectTreeById = (state: RootState, treeId: number): [TreeVersion | null, string] => {
   // Find matching tree in list
   const tree = state.treeState.trees.find((tree) => tree.treeId === treeId);
   if (tree) {

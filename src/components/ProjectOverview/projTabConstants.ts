@@ -13,5 +13,4 @@ export const PROJ_TABS: TabObjectRecord = {
 //   PROJ_TABS.samples, PROJ_TABS.trees, PROJ_TABS.plots
 // ]
 
-export const PROJ_TABS_LIST = Object.values(PROJ_TABS)
-  .sort((a, b) => a.index - b.index);
+export const PROJ_TABS_LIST = Object.values(PROJ_TABS).sort((a, b) => a.index - b.index);

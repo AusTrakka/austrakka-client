@@ -1,4 +1,4 @@
-import { Project } from '../types/dtos';
+import type { Project } from '../types/dtos';
 
 // This currently mimics the back-end Project DTO, but some info is redundant
 export const LOCAL_PROJECT: Project = {
@@ -34,16 +34,18 @@ export const UNIQUE_VALUE_THRESHOLD = 100;
 // X : free text, non-visualisable except as text
 
 // gives typeCode: (primitiveType, canVisualise, displayedFieldType)
-export const typeCodes : Record<string, [string, boolean, string]> = {
-  'N': ['string', true, 'Categorical'],
-  'X': ['string', false, 'Free text'],
-  'Q': ['double', true, 'Numeric'],
-  'T': ['date', true, 'Date'],
+export const typeCodes: Record<string, [string, boolean, string]> = {
+  N: ['string', true, 'Categorical'],
+  X: ['string', false, 'Free text'],
+  Q: ['double', true, 'Numeric'],
+  T: ['date', true, 'Date'],
 };
 
 // gives displayedFieldType: (primitiveType, canVisualise)
-export const typesByName: Record<string, [string, boolean]> = Object.entries(typeCodes)
-  .reduce((acc, [_typeCode, [primitiveType, canVisualise, typeName]]) => {
+export const typesByName: Record<string, [string, boolean]> = Object.entries(typeCodes).reduce(
+  (acc, [_typeCode, [primitiveType, canVisualise, typeName]]) => {
     acc[typeName] = [primitiveType, canVisualise];
     return acc;
-  }, {} as Record<string, [string, boolean]>);
+  },
+  {} as Record<string, [string, boolean]>,
+);

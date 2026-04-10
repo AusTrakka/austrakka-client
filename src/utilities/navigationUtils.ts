@@ -43,9 +43,7 @@ export default function getQueryParamOrDefault<T>(
 const shouldReplaceLastSegment = (lastSegment: string) => {
   const lowerSegment = lastSegment.toLowerCase();
 
-  return (
-    Object.values(PROJ_TABS).some((tab) => tab.title.toLowerCase() === lowerSegment)
-  );
+  return Object.values(PROJ_TABS).some((tab) => tab.title.toLowerCase() === lowerSegment);
 };
 
 // Helper function to build the new path based on current path and tabs

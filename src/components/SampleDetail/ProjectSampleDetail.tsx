@@ -1,13 +1,27 @@
-import { Alert, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import {
+  Alert,
+  Paper,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { columnStyleRules } from '../../styles/metadataFieldStyles';
-import { Field } from '../../types/dtos';
-import { Sample } from '../../types/sample.interface';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import LoadingState from '../../constants/loadingState';
-import { ProjectMetadataState, selectAwaitingProjectMetadata, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { useParams } from 'react-router-dom';
+import {
+  type ProjectMetadataState,
+  selectAwaitingProjectMetadata,
+  selectProjectMetadata,
+} from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
+import LoadingState from '../../constants/loadingState';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { columnStyleRules } from '../../styles/metadataFieldStyles';
+import type { Field } from '../../types/dtos';
+import type { Sample } from '../../types/sample.interface';
 import { renderValue } from '../../utilities/renderUtils';
 
 function SampleDetail() {

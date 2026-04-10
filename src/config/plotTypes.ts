@@ -1,19 +1,19 @@
-import React from 'react';
-import PlotTypeProps from '../types/plottypeprops.interface';
-import ClusterTimeline from '../components/Plots/PlotTypes/ClusterTimeline';
-import EpiCurve from '../components/Plots/PlotTypes/EpiCurve';
+import type React from 'react';
 import BarChart from '../components/Plots/PlotTypes/BarChart';
-import Histogram from '../components/Plots/PlotTypes/Histogram';
-import HeatMap from '../components/Plots/PlotTypes/HeatMap';
+import ClusterTimeline from '../components/Plots/PlotTypes/ClusterTimeline';
 import Custom from '../components/Plots/PlotTypes/Custom';
+import EpiCurve from '../components/Plots/PlotTypes/EpiCurve';
+import HeatMap from '../components/Plots/PlotTypes/HeatMap';
+import Histogram from '../components/Plots/PlotTypes/Histogram';
+import type PlotTypeProps from '../types/plottypeprops.interface';
 
-export const plotTypes : { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
-  'ClusterTimeline': ClusterTimeline,
-  'EpiCurve': EpiCurve,
-  'BarChart': BarChart,
-  'Histogram': Histogram,
-  'HeatMap': HeatMap,
-  'Custom': Custom,
+export const plotTypes: { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
+  ClusterTimeline: ClusterTimeline,
+  EpiCurve: EpiCurve,
+  BarChart: BarChart,
+  Histogram: Histogram,
+  HeatMap: HeatMap,
+  Custom: Custom,
 };
 
 // Does not include Custom

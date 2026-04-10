@@ -19,24 +19,24 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
           autoHideDuration={5000}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           maxSnack={10}
-              hideIconVariant
-              action={(key) => (
-                <Button
-                  onClick={() => closeSnackbar(key)}
-                  // an invisible button overlaying the whole snackbar
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: 'transparent',
-                    color: 'transparent',
-                  }}
-                >
-                  Dismiss
-                </Button>
-              )}
+          hideIconVariant
+          action={(key) => (
+            <Button
+              onClick={() => closeSnackbar(key)}
+              // an invisible button overlaying the whole snackbar
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'transparent',
+                color: 'transparent',
+              }}
+            >
+              Dismiss
+            </Button>
+          )}
         >
           <App />
         </SnackbarProvider>

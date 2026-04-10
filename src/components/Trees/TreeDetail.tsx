@@ -1,7 +1,5 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
-import type React from 'react';
-import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -15,36 +13,41 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import type React from 'react';
+import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
-import { TreeVersion } from '../../types/dtos';
-import Tree, { TreeExportFuctions } from './Tree';
-import { TreeTypes } from './PhylocanvasGL';
-import MetadataControls from './TreeControls/Metadata';
-import ExportButton from './TreeControls/Export';
-import Search from './TreeControls/Search';
-import NodeAndLabelControls from './TreeControls/NodeAndLabel';
-import TreeNavigation from './TreeControls/TreeNavigation';
-import TreeState from '../../types/tree.interface';
-import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
+import { useAppSelector } from '../../app/store';
+import { selectTreeById } from '../../app/treeSlice';
 import { Theme } from '../../assets/themes/theme';
+import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState from '../../constants/metadataLoadingState';
-import {
-  selectProjectMetadata, ProjectMetadataState,
-} from '../../app/projectMetadataSlice';import type {
+import { defaultDiscreteColorScheme } from '../../constants/schemes';
+import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
+import type { TreeVersion } from '../../types/dtos';
+import type {
   FieldAndColourScheme,
   PhylocanvasLegends,
   PhylocanvasMetadata,
 } from '../../types/phylocanvas.interface';
 import type { Sample } from '../../types/sample.interface';
-import { useAppSelector } from '../../app/store';
+import type TreeState from '../../types/tree.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
+import {
+  useStateFromSearchParamsForObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
+import { TreeTypes } from './PhylocanvasGL';
+import Tree, { type TreeExportFuctions } from './Tree';
+import ExportButton from './TreeControls/Export';
+import MetadataControls from './TreeControls/Metadata';
+import NodeAndLabelControls from './TreeControls/NodeAndLabel';
+import ColorSchemeSelector from './TreeControls/SchemeSelector';
+import Search from './TreeControls/Search';
+import TreeNavigation from './TreeControls/TreeNavigation';
 import TreeSamplesTable from './TreeSamplesTable';
-import { useStateFromSearchParamsForObject, useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
-import { defaultDiscreteColorScheme } from '../../constants/schemes';
-import { selectTreeById } from '../../app/treeSlice';
-import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import { LOCAL_PROJECT } from '../../constants/standaloneClientConstants';
 
 // TODO need to inform user if CSV and tree don't match, and which way they don't match
 
@@ -101,10 +104,12 @@ function TreeDetail() {
     rootIdDefault,
     navigate,
   );
-  const projectMetadata : ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, LOCAL_PROJECT.abbreviation));
-  const [tree, errorMsg] : [TreeVersion | null, string] =
-    useAppSelector(state => selectTreeById(state, Number(treeId)));
+  const projectMetadata: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, LOCAL_PROJECT.abbreviation),
+  );
+  const [tree, errorMsg]: [TreeVersion | null, string] = useAppSelector((state) =>
+    selectTreeById(state, Number(treeId)),
+  );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -258,7 +263,7 @@ function TreeDetail() {
     rootId,
     state.nodeColumn,
   ]);
-  
+
   const renderTree = () => {
     if (errorMsg && errorMsg.length > 0) {
       return (

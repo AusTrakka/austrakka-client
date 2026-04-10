@@ -713,8 +713,7 @@ function DataFilters(props: DataFiltersProps) {
                                 key={`${field}-${constraint.matchMode}-${constraint.value}`}
                                 label={
                                   <>
-                                    {field}{' '}
-                                    <b>{conditionName}</b> {displayValue}
+                                    {field} <b>{conditionName}</b> {displayValue}
                                   </>
                                 }
                                 onDelete={() =>

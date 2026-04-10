@@ -1,10 +1,10 @@
-import { DataTable } from 'primereact/datatable';
+import { MenuItem, Paper, Select, Typography } from '@mui/material';
 import { Column } from 'primereact/column';
-import React from 'react';
-import { Paper, Typography, Select, MenuItem } from '@mui/material';
-import { DeducedField } from '../../types/dtos';
-import { typesByName } from '../../constants/standaloneClientConstants';
+import { DataTable } from 'primereact/datatable';
+import type React from 'react';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { typesByName } from '../../constants/standaloneClientConstants';
+import type { DeducedField } from '../../types/dtos';
 
 const TYPE_OPTIONS = ['Categorical', 'Numeric', 'Date', 'Free text'];
 
@@ -20,13 +20,16 @@ function FieldUploadCheck(props: FieldUploadCheckProps) {
     setFields((prev) => {
       if (!prev) return prev;
       return prev.map((f) =>
-        (f.columnName === rowData.columnName
-          ? { ...f,
-            displayedFieldType: newType,
-            fieldTypeSource: 'Manual',
-            primitiveType: typesByName[newType][0],
-            canVisualise: typesByName[newType][1] }
-          : f));
+        f.columnName === rowData.columnName
+          ? {
+              ...f,
+              displayedFieldType: newType,
+              fieldTypeSource: 'Manual',
+              primitiveType: typesByName[newType][0],
+              canVisualise: typesByName[newType][1],
+            }
+          : f,
+      );
     });
   };
 
@@ -56,7 +59,9 @@ function FieldUploadCheck(props: FieldUploadCheckProps) {
   return (
     <Paper>
       <>
-        <Typography variant="h4" color="primary">Detected fields</Typography>
+        <Typography variant="h4" color="primary">
+          Detected fields
+        </Typography>
         <DataTable value={fields ?? []} size="small">
           <Column field="columnName" header="Field" />
           <Column field="displayedFieldType" header="Type" body={typeBodyTemplate} />

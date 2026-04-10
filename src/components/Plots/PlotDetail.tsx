@@ -1,17 +1,18 @@
+import { Alert, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Typography } from '@mui/material';
-import { plotTypes } from '../../config/plotTypes';
-import PlotTypeProps from '../../types/plottypeprops.interface';
-import { useAppSelector } from '../../app/store';
 import { selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import { useAppSelector } from '../../app/store';
+import { plotTypes } from '../../config/plotTypes';
 import { localProjectAbbrev } from '../../constants/standaloneClientConstants';
+import PlotTypeProps from '../../types/plottypeprops.interface';
 
 function PlotDetail() {
   const { plotType } = useParams();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const dataErrorMsg = useAppSelector(state =>
-    selectProjectMetadataError(state, localProjectAbbrev));
+  const dataErrorMsg = useAppSelector((state) =>
+    selectProjectMetadataError(state, localProjectAbbrev),
+  );
 
   useEffect(() => {
     if (dataErrorMsg) {
@@ -34,18 +35,19 @@ function PlotDetail() {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    if (!plotType || typeof plotTypes[plotType] === 'undefined') { return null; }
-    return React.createElement(
-      plotTypes[plotType],
-      { projectAbbrev: localProjectAbbrev, customSpec: null, setPlotErrorMsg: setErrorMsg },
-    );
+    if (!plotType || typeof plotTypes[plotType] === 'undefined') {
+      return null;
+    }
+    return React.createElement(plotTypes[plotType], {
+      projectAbbrev: localProjectAbbrev,
+      customSpec: null,
+      setPlotErrorMsg: setErrorMsg,
+    });
   };
 
   return (
     <>
-      <Typography className="pageTitle">
-        {plotType}
-      </Typography>
+      <Typography className="pageTitle">{plotType}</Typography>
       {renderPlot()}
     </>
   );

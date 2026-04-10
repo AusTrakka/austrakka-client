@@ -22,12 +22,7 @@ function Custom(props: PlotTypeProps) {
     }
   }, [customSpec, setPlotErrorMsg]);
 
-  return (
-    <VegaDataPlot
-      spec={spec}
-      projectAbbrev={projectAbbrev}
-    />
-  );
+  return <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />;
 }
 
 export default Custom;
