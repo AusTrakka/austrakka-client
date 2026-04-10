@@ -135,8 +135,6 @@ function LocalUpload() {
       Papa.parse(file, {
         header: true,
         complete: (result: any) => {
-          console.log(result);
-
           // TODO need to handle papaparse errors and set parseError
 
           const csvData = result.data as Sample[];
