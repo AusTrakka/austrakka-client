@@ -1,28 +1,36 @@
 /* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
+
 import {
-  NavLink, useLocation, Link, Outlet, useNavigate,
-} from 'react-router-dom';
-import {
-  Upload, Help, AccountTree,
+  AccountTree,
   Description,
-  KeyboardDoubleArrowRight, KeyboardDoubleArrowLeft, ViewColumn,
+  KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight,
+  Upload,
 } from '@mui/icons-material';
 import {
-  Box, Drawer, IconButton, List,
-  MenuItem, Typography,
-  Breadcrumbs, Divider, ListItemText, ListItemIcon, Tooltip, Grid,
+  Box,
+  Breadcrumbs,
+  Divider,
+  Drawer,
+  Grid,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import styles from './MainMenuLayout.module.css';
-import Feedback from '../Feedback/Feedback';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
+import styles from './MainMenuLayout.module.css';
 
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
-  const [help, setHelp] = useState(false);
   const settings = [
     {
       title: 'Documentation',
@@ -53,8 +61,15 @@ function MainMenuLayout() {
 
   const breadcrumbNoLink: string[] = ['versions', 'records'];
 
-  const noBreadCrumbIfLast: string[] =
-    ['summary', 'samples', 'trees', 'plots', 'members', 'proformas', 'datasets'];
+  const noBreadCrumbIfLast: string[] = [
+    'summary',
+    'samples',
+    'trees',
+    'plots',
+    'members',
+    'proformas',
+    'datasets',
+  ];
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -63,12 +78,15 @@ function MainMenuLayout() {
     pathnames[1] = '';
   }
 
-  if (pathnames.length > 0 && pathnames.length <= 3 &&
-      noBreadCrumbIfLast.some(item => pathnames[pathnames.length - 1].endsWith(item))
-      && (pathnames[0] === 'data')) {
+  if (
+    pathnames.length > 0 &&
+    pathnames.length <= 3 &&
+    noBreadCrumbIfLast.some((item) => pathnames[pathnames.length - 1].endsWith(item)) &&
+    pathnames[0] === 'data'
+  ) {
     pathnames.pop();
   }
-  
+
   const pages = [
     {
       title: 'Visualise',
@@ -112,16 +130,23 @@ function MainMenuLayout() {
             },
           }}
         >
-          <Box sx={{ display: 'flex', flexDirection: drawer ? 'row' : 'column', justifyContent: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: drawer ? 'row' : 'column',
+              justifyContent: 'center',
+            }}
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
-              {drawer ? (<img src={logoUrl} alt="logo" className={styles.logo} />) : <img src={logoOnlyUrl} alt="logo" className={styles.logo} />}
+              {drawer ? (
+                <img src={logoUrl} alt="logo" className={styles.logo} />
+              ) : (
+                <img src={logoOnlyUrl} alt="logo" className={styles.logo} />
+              )}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <IconButton
-                onClick={() => handleDrawer()}
-                aria-label="menu-toggle"
-              >
-                {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight /> }
+              <IconButton onClick={() => handleDrawer()} aria-label="menu-toggle">
+                {drawer ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight />}
               </IconButton>
             </Box>
           </Box>
@@ -139,18 +164,14 @@ function MainMenuLayout() {
                     fontWeight: isActive ? 'bold' : '',
                   })}
                 >
-                  <Tooltip
-                    title={drawer ? '' : page.title}
-                    arrow
-                    placement="right"
-                  >
+                  <Tooltip title={drawer ? '' : page.title} arrow placement="right">
                     <MenuItem
                       key={page.title}
                       sx={{
                         '&:hover': {
                           backgroundColor: 'var(--primary-grey-300)',
                         },
-                        'width': '100%',
+                        width: '100%',
                       }}
                     >
                       <ListItemIcon
@@ -174,15 +195,19 @@ function MainMenuLayout() {
           <List>
             {settings.map((setting) => (
               <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
-                <ListItemIcon sx={{ color: 'primary.main', minWidth: 0, mr: drawer ? 1 : 'auto', justifyContent: 'center' }}>
+                <ListItemIcon
+                  sx={{
+                    color: 'primary.main',
+                    minWidth: 0,
+                    mr: drawer ? 1 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
                   {setting.icon}
                 </ListItemIcon>
-                { drawer ? (
-                  <ListItemText sx={{ color: 'primary.main' }}>
-                    {setting.title}
-                  </ListItemText>
-                )
-                  : null}
+                {drawer ? (
+                  <ListItemText sx={{ color: 'primary.main' }}>{setting.title}</ListItemText>
+                ) : null}
               </MenuItem>
             ))}
           </List>
@@ -198,8 +223,8 @@ function MainMenuLayout() {
               padding: '10px',
             }}
           >
-            This is the new user interface with an in-progress permissions system.
-            Not all new roles have been implemented.
+            This is the new user interface with an in-progress permissions system. Not all new roles
+            have been implemented.
           </Typography>
         </div>
       ) : null}
@@ -207,16 +232,14 @@ function MainMenuLayout() {
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link to="/">
-                Home
-              </Link>
+              <Link to="/">Home</Link>
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
                 const nolink = breadcrumbNoLink.includes(value);
                 const to = `/${pathnames.slice(0, index + 1).join('/')}`;
                 const displayValue = value in breadcrumbNameMap ? breadcrumbNameMap[value] : value;
 
-                return (last || nolink) ? (
+                return last || nolink ? (
                   <Typography color="text.primary" key={to}>
                     {displayValue}
                   </Typography>
@@ -241,7 +264,6 @@ function MainMenuLayout() {
         })}
         <Outlet />
       </div>
-      <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
     </>
   );
 }
