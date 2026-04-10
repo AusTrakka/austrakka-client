@@ -24,8 +24,6 @@ function TreeList() {
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
-  const [treeListError, setTreeListError] = useState(false);
-  const [treeListErrorMessage, setTreeListErrorMessage] = useState('');
   const navigate = useNavigate();
   const treeList: TreeVersion[] = useAppSelector((state) => selectTrees(state));
 
@@ -51,9 +49,7 @@ function TreeList() {
     </div>
   );
 
-  return treeListError ? (
-    <Alert severity="error">{treeListErrorMessage}</Alert>
-  ) : (
+  return (
     <Paper elevation={2} sx={{ marginBottom: 10 }}>
       <DataTable
         value={treeList}
