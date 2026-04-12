@@ -14,12 +14,10 @@ import TreeList from './TreeList';
 function ProjectOverview() {
   const { tab } = useParams();
   const [tabValue, setTabValue] = useState<number | null>(0);
-
-  const projectDetails = LOCAL_PROJECT;
-
+  
   // Tab loading states
   const isSamplesLoading: boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectDetails?.abbreviation),
+    selectAwaitingProjectMetadata(state, LOCAL_PROJECT.abbreviation),
   );
 
   const projectOverviewTabs: TabContentProps[] = useMemo(() => PROJ_TABS_LIST, []);
@@ -37,9 +35,6 @@ function ProjectOverview() {
     <Alert severity="error">Add data to visualise!</Alert>
   ) : (
     <>
-      <Typography className="pageTitle">
-        {/* {projectDetails ? projectDetails.name : ''} */}
-      </Typography>
       <CustomTabs value={tabValue!} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
       <TabPanel value={tabValue!} index={PROJ_TABS.samples.index}>
         <ProjectSamplesTable projectAbbrev={LOCAL_PROJECT.abbreviation} />
@@ -48,7 +43,7 @@ function ProjectOverview() {
         <TreeList />
       </TabPanel>
       <TabPanel value={tabValue!} index={PROJ_TABS.plots.index}>
-        <PlotList projectDetails={projectDetails} />
+        <PlotList projectDetails={LOCAL_PROJECT} />
       </TabPanel>
     </>
   );
