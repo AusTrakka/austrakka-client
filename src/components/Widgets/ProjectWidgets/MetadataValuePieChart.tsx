@@ -16,7 +16,7 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import { isNullOrEmpty, pruneColumns } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { createVegaScale } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -186,7 +186,12 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
-      const copy = filteredData!.map((item: any) => ({ ...item }));
+
+      const pruned = pruneColumns(filteredData!, [field]);
+      const copy = pruned.map((item: any) => ({
+        ...item,
+      }));
+
       (compiledSpec.data![0] as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))

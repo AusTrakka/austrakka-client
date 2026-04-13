@@ -15,7 +15,7 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import { isNullOrEmpty, pruneColumns } from '../../../utilities/dataProcessingUtils';
 import { formatDate } from '../../../utilities/dateUtils';
 import { createVegaScale, legendSpec, selectGoodTimeBinUnit } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -183,8 +183,10 @@ function EpiCurveChart(props: EpiCurveChartProps) {
         vegaView.finalize();
       }
       const spec = createSpec();
-      const compiledSpec = compile(spec as TopLevelSpec).spec;
-      const copy = filteredData!.map((item: any) => ({
+      const compiledSpec = compile(spec as TopLevelSpec)!.spec;
+      const colourField = (colourSpec as any)?.field; // Get field from colourSpec
+      const pruned = pruneColumns(filteredData!, [TIME_AXIS_FIELD, colourField]);
+      const copy = pruned.map((item: any) => ({
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;
