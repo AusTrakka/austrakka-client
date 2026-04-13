@@ -63,13 +63,13 @@ function EpiCurve(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const navigate = useNavigate();
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, projectAbbrev),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   // This plot also accesses the data itself, to determine an initial date binning
-  const data: ProjectMetadataState | null =
-    useAppSelector(state => selectProjectMetadata(state, projectAbbrev));
-  const searchParams = new URLSearchParams(window.location.search);
+  const data: ProjectMetadataState | null = useAppSelector((state) =>
+    selectProjectMetadata(state, projectAbbrev),
+  );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
@@ -456,10 +456,7 @@ function EpiCurve(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={projectAbbrev}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

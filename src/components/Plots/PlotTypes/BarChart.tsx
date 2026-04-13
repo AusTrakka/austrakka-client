@@ -49,8 +49,8 @@ function BarChart(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const navigate = useNavigate();
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, projectAbbrev),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
@@ -237,10 +237,7 @@ function BarChart(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={projectAbbrev}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

@@ -21,13 +21,8 @@ function Custom(props: PlotTypeProps) {
       setPlotErrorMsg('PlotType Custom requires a spec but plot has no spec');
     }
   }, [customSpec, setPlotErrorMsg]);
-  
-  return (
-    <VegaDataPlot
-      spec={spec}
-      projectAbbrev={projectAbbrev}
-    />
-  );
+
+  return <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />;
 }
 
 export default Custom;

@@ -11,6 +11,7 @@ import type React from 'react';
 import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { useStableNavigate } from '../../app/NavigationContext';
+import { plotTypeListing } from '../../config/plotTypes';
 import { ResponseType } from '../../constants/responseType';
 import type { PlotListing, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
@@ -18,11 +19,9 @@ import { getPlots } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 
-import { plotTypeListing } from '../../config/plotTypes';
-
 interface PlotListProps {
-  projectDetails: Project | null,
-  setIsLoading: Function,
+  projectDetails: Project | null;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function PlotList(props: PlotListProps) {
@@ -30,24 +29,28 @@ function PlotList(props: PlotListProps) {
   const { navigate } = useStableNavigate();
   const [plotList, setPlotList] = useState<PlotListing[]>([]);
   const { token } = useApi();
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
-  
-  const columns = [{
-    field: 'name',
-    header: 'Name',
-  }, {
-    field: 'description',
-    header: 'Description',
-  }];
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  const columns = [
+    {
+      field: 'name',
+      header: 'Name',
+    },
+    {
+      field: 'description',
+      header: 'Description',
+    },
+  ];
 
   useEffect(() => {
+    //biome-ignore lint/correctness/noUnusedVariables: gated code
     async function getPlotList() {
       const plotsResponse: ResponseObject = await getPlots(projectDetails!.projectId, token);
       if (plotsResponse.status === ResponseType.Success) {
         const tableData: PlotListing[] = plotsResponse.data;
-        setPlotList(tableData); 
+        setPlotList(tableData);
         setIsLoading(false);
       } else {
         setPlotList([]);
@@ -56,7 +59,7 @@ function PlotList(props: PlotListProps) {
     }
 
     if (projectDetails) {
-      // TODO to enable display of custom plots, uncomment. 
+      // TODO to enable display of custom plots, uncomment.
       //  Check layout first! Current layout is a placeholder
       //getPlotList();
       setIsLoading(false);
@@ -67,19 +70,19 @@ function PlotList(props: PlotListProps) {
   const staticRowClickHandler = (row: DataTableRowClickEvent) => {
     navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.plotType}`);
   };
-  
+
   const customRowClickHandler = (row: DataTableRowClickEvent) => {
     // TODO later may want plot configString suffix
     navigate(`/projects/${projectDetails!.abbreviation}/plots/${row.data.abbreviation}`);
   };
-  
+
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     const filters = { ...globalFilter };
     (filters.global as DataTableFilterMetaData).value = value;
     setGlobalFilter(filters);
   };
-  
+
   const header = (
     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <SearchInput
@@ -90,51 +93,14 @@ function PlotList(props: PlotListProps) {
   );
   return (
     <>
-    <Paper elevation={2} sx={{ marginBottom: 10 }}>
-      <DataTable
-        value={plotTypeListing}
-        selectionMode="single"
-        onRowClick={staticRowClickHandler}
-        showGridlines
-        resizableColumns
-        scrollable
-        size="small"
-        scrollHeight="calc(100vh - 300px)"
-        columnResizeMode="expand"
-        removableSort
-        className="my-flexible-table"
-        sortIcon={sortIcon}
-      >
-        {columns.map((col: any) => (
-          <Column
-            key={col.field}
-            field={col.field}
-            header={col.header}
-            body={col.body}
-            resizeable
-            style={{ minWidth: '150px' }}
-            headerClassName="custom-title"
-            className="flexible-column"
-          />
-        ))}
-      </DataTable>
-    </Paper>
-    { // TODO this placeholder layout will not trigger unless plot fetch is enabled, above
-      plotList.length > 0 && (
-      <Paper>
-        <Typography variant="h6" color="textSecondary" sx={{ flexGrow: 1 }}>
-          Project plots
-        </Typography>
+      <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
-          value={plotList}
+          value={plotTypeListing}
           selectionMode="single"
-          onRowClick={customRowClickHandler}
+          onRowClick={staticRowClickHandler}
           showGridlines
           resizableColumns
           scrollable
-          filters={globalFilter}
-          header={header}
-          globalFilterFields={columns.map((col) => col.field)}
           size="small"
           scrollHeight="calc(100vh - 300px)"
           columnResizeMode="expand"
@@ -156,7 +122,46 @@ function PlotList(props: PlotListProps) {
           ))}
         </DataTable>
       </Paper>
-    )}
+      {
+        // TODO this placeholder layout will not trigger unless plot fetch is enabled, above
+        plotList.length > 0 && (
+          <Paper>
+            <Typography variant="h6" color="textSecondary" sx={{ flexGrow: 1 }}>
+              Project plots
+            </Typography>
+            <DataTable
+              value={plotList}
+              selectionMode="single"
+              onRowClick={customRowClickHandler}
+              showGridlines
+              resizableColumns
+              scrollable
+              filters={globalFilter}
+              header={header}
+              globalFilterFields={columns.map((col) => col.field)}
+              size="small"
+              scrollHeight="calc(100vh - 300px)"
+              columnResizeMode="expand"
+              removableSort
+              className="my-flexible-table"
+              sortIcon={sortIcon}
+            >
+              {columns.map((col: any) => (
+                <Column
+                  key={col.field}
+                  field={col.field}
+                  header={col.header}
+                  body={col.body}
+                  resizeable
+                  style={{ minWidth: '150px' }}
+                  headerClassName="custom-title"
+                  className="flexible-column"
+                />
+              ))}
+            </DataTable>
+          </Paper>
+        )
+      }
     </>
   );
 }

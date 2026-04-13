@@ -1,7 +1,7 @@
+import type React from "react";
 
-// TODO look into unifying with map props
 export default interface PlotTypeProps {
   projectAbbrev: string | undefined;
-  customSpec: string | undefined | null,
-  setPlotErrorMsg: Function,
+  customSpec: string | undefined | null;
+  setPlotErrorMsg: React.Dispatch<React.SetStateAction<string | null>>;
 }

@@ -61,7 +61,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
     detailsError: false,
     detailsErrorMessage: '',
   });
-  
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {

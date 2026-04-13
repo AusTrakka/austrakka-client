@@ -57,8 +57,8 @@ const defaultSpec: TopLevelSpec = {
 function HeatMap(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, projectAbbrev),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -223,10 +223,7 @@ function HeatMap(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={projectAbbrev}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

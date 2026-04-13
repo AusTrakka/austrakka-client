@@ -79,8 +79,8 @@ function ClusterTimeline(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const { fields, fieldUniqueValues } = useAppSelector(
-    state => selectProjectMetadataFields(state, projectAbbrev),
+  const { fields, fieldUniqueValues } = useAppSelector((state) =>
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   // This represents psuedo-ordinal fields: categorical, and string fields with canVisualise=true
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -360,10 +360,7 @@ function ClusterTimeline(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot
-        spec={spec}
-        projectAbbrev={projectAbbrev}
-      />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }
