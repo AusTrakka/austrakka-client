@@ -38,6 +38,8 @@ import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
+import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
+import { PROJ_TABS } from '../ProjectOverview/projTabConstants';
 import styles from './MainMenuLayout.module.css';
 
 interface SideBarItemProps {
@@ -79,7 +81,6 @@ function MainMenuLayout() {
     sequences: 'Sequences',
     metadata: 'Metadata',
     dashboard: 'Dashboard',
-    samples: 'Samples',
     proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
@@ -110,21 +111,21 @@ function MainMenuLayout() {
     'members',
     'proformas',
     'datasets',
+    'activity',
   ];
+
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // when on a users detail page, do not show objectID that appears in URL
-  if (pathnames.length > 1 && pathnames[0] === 'users') {
-    pathnames[1] = '';
-  }
+  const lastPath = pathnames.at(-1) ?? '';
+  const validTabKeys = new Set([...Object.keys(PROJ_TABS), ...Object.keys(ORG_TABS)]);
 
-  if (
-    pathnames.length > 0 &&
-    pathnames.length <= 3 &&
-    noBreadCrumbIfLast.some((item) => pathnames[pathnames.length - 1].endsWith(item)) &&
-    (pathnames[0] === 'projects' || pathnames[0] === 'org')
-  ) {
+  const isShortPath = pathnames.length > 0 && pathnames.length <= 3;
+  const isNoBreadcrumbItem = noBreadCrumbIfLast.some((item) => lastPath.endsWith(item));
+  const isProjectOrOrg = pathnames[0] === 'projects' || pathnames[0] === 'org';
+  const isUnknownTab = isProjectOrOrg && !validTabKeys.has(lastPath);
+
+  if (isShortPath && (isNoBreadcrumbItem || isUnknownTab) && isProjectOrOrg) {
     pathnames.pop();
   }
 

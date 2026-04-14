@@ -177,9 +177,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
 function ProjectOverviewWrapper() {
   const { projectAbbrev, tab } = useParams();
   if (!projectAbbrev) return null;
+  let resolvedTab: string = tab ?? PROJ_HOME_TAB;
+  const allowedKeys: string[] = Object.keys(PROJ_TABS) as Array<string>;
+  if (!allowedKeys.includes(resolvedTab)) {
+    window.history.replaceState(null, '', `/projects/${projectAbbrev}`);
+    resolvedTab = PROJ_HOME_TAB;
+  }
   return (
     <NavigationProvider>
-      <ProjectOverview projectAbbrev={projectAbbrev} tab={tab ?? PROJ_HOME_TAB} />
+      <ProjectOverview projectAbbrev={projectAbbrev} tab={resolvedTab} />
     </NavigationProvider>
   );
 }

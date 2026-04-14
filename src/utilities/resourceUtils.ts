@@ -35,7 +35,7 @@ export const getProjectList = (token: string): Promise<ResponseObject<Project[]>
 export const getProjectDetails = (
   abbrev: string,
   token: string,
-): Promise<ResponseObject<Project>> => callGET(`/api/Projects/abbrev/${abbrev}`, token);
+): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
 
 // Plots endpoints
 export const getPlots = (
@@ -190,14 +190,14 @@ export const uploadSequence = (
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
-export const getUser = (userObjectId: string, token: string) =>
-  callGET(`/api/Users/userId/${userObjectId}`, token);
+export const getUser = (identifier: string, token: string) =>
+  callGET(`/api/Users/userId/${identifier}`, token);
 export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
-export const patchUserContactEmail = (userObjectId: string, token: string, email: any) =>
-  callPATCH(`/api/Users/${userObjectId}/contactEmail`, token, email);
-export const putUser = (userObjectId: string, token: string, user: any, clientSessionId?: string) =>
-  callPUT(`/api/Users/${userObjectId}`, token, user, clientSessionId);
+export const patchUserContactEmail = (identifier: string, token: string, email: any) =>
+  callPATCH(`/api/Users/${identifier}/contactEmail`, token, email);
+export const putUser = (identifier: string, token: string, user: any, clientSessionId?: string) =>
+  callPUT(`/api/Users/${identifier}`, token, user, clientSessionId);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/RolesV2', token);
@@ -342,7 +342,13 @@ export const getActivities = (
   rguid?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
-  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Organisation') {
+    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+  } else if (recordType === 'Project') {
+    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
 };

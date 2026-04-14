@@ -64,6 +64,8 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     step: 1,
   });
   const [colourSpec, setColourSpec] = useState<object>(UniformColourSpec);
+  const [paramSpec, setParamSpec] = useState<object[] | null>(null);
+  const [opacitySpec, setOpacitySpec] = useState<object | null>(null);
 
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -73,6 +75,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     width: 'container',
     height: 250,
     mark: { type: 'bar', tooltip: true },
+    ...(paramSpec ? { params: paramSpec } : {}),
     encoding: {
       x: {
         field: TIME_AXIS_FIELD,
@@ -82,6 +85,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       },
       y: { aggregate: 'count', title: 'Count of Samples' },
       color: colourSpec,
+      ...(opacitySpec ? { opacity: opacitySpec } : {}),
     },
   });
 
@@ -95,8 +99,25 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
 
-    const setColourSpecFromField = (field: string, colourScheme: string) => {
+    const setSpecFromField = (field: string, colourScheme: string) => {
       const values: string[] = data!.fieldUniqueValues![field]!;
+
+      const paramSpec = [
+        {
+          name: 'selectedcolour',
+          select: { type: 'point', fields: [field] },
+          bind: 'legend',
+        },
+      ];
+
+      const opacitySpec = {
+        condition: {
+          selection: 'selectedcolour',
+          value: 1,
+        },
+        value: 0.15,
+      };
+
       if (colourMapping) {
         const colSpec = {
           field: field,
@@ -108,7 +129,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
           },
           legend: {
             ...legendSpec,
-            labelExpr: "datum.label || 'unknown'",
+            // labelExpr: "datum.label || 'unknown'",
           },
         };
         setColourSpec(colSpec);
@@ -120,6 +141,8 @@ function EpiCurveChart(props: EpiCurveChartProps) {
         };
         setColourSpec(colSpec);
       }
+      setParamSpec(paramSpec);
+      setOpacitySpec(opacitySpec);
     };
 
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
@@ -134,11 +157,11 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       const colourSchemePair = FIELDS_AND_COLOURS.find(
         (fld) => fld[0] === preferredColourField,
       ) ?? ['', DEFAULT_COLOUR_SCHEME];
-      setColourSpecFromField(preferredColourField, colourSchemePair[1]);
+      setSpecFromField(preferredColourField, colourSchemePair[1]);
     } else {
       for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
         if (data!.fields!.map((fld) => fld.columnName).includes(field)) {
-          setColourSpecFromField(field, colourScheme);
+          setSpecFromField(field, colourScheme);
           break;
         }
       }
@@ -189,7 +212,11 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       const copy = pruned.map((item: any) => ({
         ...item,
       }));
-      (compiledSpec.data![0] as InlineData).values = copy;
+      const inputDataset = compiledSpec.data!.find((d) => d.name === 'inputdata');
+
+      if (!inputDataset) throw new Error('The vega spec is in a bad state');
+
+      (inputDataset as InlineData).values = copy ?? [];
       const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
     };
@@ -197,7 +224,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     if (filteredData && plotDiv?.current) {
       createVegaView();
     }
-  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec]);
+  }, [filteredData, plotDiv, timeBinSpec, timeFilterObject, colourSpec, paramSpec, opacitySpec]);
 
   return (
     <Box>
