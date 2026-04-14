@@ -71,6 +71,11 @@ function Histogram(props: PlotTypeProps) {
     1,
     navigate,
   );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
+    'fontSize',
+    11,
+    navigate,
+  );
 
   // Set spec on load
   useEffect(() => {
@@ -102,6 +107,7 @@ function Histogram(props: PlotTypeProps) {
       // Mandatory fields: one numeric field
       if (localNumericFields.length === 0) {
         setPlotErrorMsg('No numeric fields found in project, cannot render plot');
+        return;
       }
       // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
@@ -150,6 +156,23 @@ function Histogram(props: PlotTypeProps) {
 
     setSpec(addBinningToSpec);
   }, [binMode, stepSize]);
+
+  useEffect(() => {
+    const setFontSizeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.config = {
+        ...oldSpec.config,
+        axis: { ...oldSpec.config?.axis, labelFontSize: fontSize, titleFontSize: fontSize },
+        legend: { ...oldSpec.config?.legend, labelFontSize: fontSize, titleFontSize: fontSize },
+        header: { ...oldSpec.config?.header, labelFontSize: fontSize, titleFontSize: fontSize },
+      };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setFontSizeInSpec);
+  }, [fontSize]);
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
@@ -218,6 +241,18 @@ function Histogram(props: PlotTypeProps) {
           inputProps={{ min: 1, step: 'any' }}
           value={stepSize}
           onChange={(e) => setStepSize(parseFloat(e.target.value))}
+        />
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="font-size-select"
+          label="Font Size"
+          size="small"
+          inputProps={{ min: 6, max: 24, step: 1 }}
+          value={fontSize}
+          onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 11)}
         />
       </FormControl>
     </Box>

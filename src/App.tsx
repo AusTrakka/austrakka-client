@@ -60,6 +60,7 @@ function App() {
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
+                  <Route path="projects/:projectAbbrev/plots/map" element={<MapPage />} />
                   <Route
                     path="projects/:projectAbbrev/plots/:plotAbbrev"
                     element={<PlotDetail />}
@@ -76,12 +77,11 @@ function App() {
                     path="projects/:projectAbbrev/:tab?"
                     element={<ProjectOverviewWrapper />}
                   />
-                  <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />
-                  <Route path="users/:userObjectId" element={<UserDetail />} />
-                  <Route path="usersV2/:userGlobalId" element={<UserV2DetailOverview />} />
+                  <Route path="users/:username" element={<UserDetail />} />
+                  <Route path="usersV2/:username" element={<UserV2DetailOverview />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

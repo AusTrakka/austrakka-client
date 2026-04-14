@@ -1,3 +1,5 @@
+import type { VisChainEntry } from '../components/Common/Activity/activityViewModels.interface';
+
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number;
@@ -103,7 +105,7 @@ export interface PlotListing {
 
 // may need to add the property position here perchance
 export interface Member {
-  objectId: string;
+  username: string;
   roles: string[];
   organization: {
     id: number;
@@ -115,6 +117,7 @@ export interface Member {
 
 export interface User {
   objectId: string;
+  username: string;
   globalId: string;
   isActive: boolean;
   orgId: number;
@@ -139,6 +142,7 @@ export interface User {
 
 export interface UserV2 {
   objectId: string;
+  username: string;
   globalId: string;
   isActive: boolean;
   orgGlobalId: string;
@@ -162,6 +166,7 @@ export interface UserV2 {
 
 export interface UserMe {
   objectId: string;
+  username: string;
   displayName: string;
   contactEmail: string;
   orgId: number;
@@ -470,11 +475,8 @@ export interface DerivedLog {
   resourceType: string;
   submitterGlobalId: string;
   submitterDisplayName: string;
+  submitterUsername: string;
   eventStatus: string;
   data: string; // TODO needs to be parsed
-  visChain: {
-    globalId: string;
-    resourceType: string;
-    uniqueStringId: string;
-  }[];
+  visChain: VisChainEntry[];
 }

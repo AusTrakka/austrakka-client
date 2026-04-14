@@ -21,7 +21,7 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
@@ -89,7 +89,6 @@ const fileTransformPerSeqType = (seqType: SeqType) =>
 
 function UploadSequences() {
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  const [filesValidated, setFilesValidated] = useState<boolean>(false);
   const [seqUploadRows, setSeqUploadRows] = useState<SeqUploadRow[]>([]);
   const seqUploadRowStates = useMemo(() => seqUploadRows.map((sur) => sur.state), [seqUploadRows]);
   const [selectedSeqType, setSelectedSeqType] = useState<SeqType>(SeqType.FastqIllPe);
@@ -101,6 +100,7 @@ function UploadSequences() {
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
+  const fileDragDropRef = useRef<any>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
   const { token, tokenLoading } = useApi();
 
@@ -179,8 +179,6 @@ function UploadSequences() {
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
     setSelectedSeqType(seqType);
-    setFiles([]);
-    setFilesValidated(false);
   };
 
   const handleSelectSkipForce = (event: ChangeEvent<HTMLInputElement>, skipForceStr: string) => {
@@ -190,7 +188,7 @@ function UploadSequences() {
   };
 
   const handleClearFiles = () => {
-    setFiles([]);
+    fileDragDropRef.current?.clearFiles();
   };
 
   const handleUpload = async () => {
@@ -544,6 +542,7 @@ function UploadSequences() {
               Select sequence files
             </Typography>
             <FileDragDrop
+              ref={fileDragDropRef}
               disabled={!selectedDataOwner}
               files={files}
               setFiles={setFiles}
@@ -551,8 +550,6 @@ function UploadSequences() {
               multiple
               customValidators={validatorsPerSeqType[selectedSeqType]}
               fileTransform={fileTransformPerSeqType(selectedSeqType)}
-              validated={filesValidated}
-              setValidated={setFilesValidated}
             />
           </Box>
           {files.length > 0 && (
@@ -568,10 +565,10 @@ function UploadSequences() {
               <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
                   <TableHead>
-                    {seqUploadRows.length > 0 && filesValidated && renderUploadHeader()}
+                    {seqUploadRows.length > 0 && files.length > 0 && renderUploadHeader()}
                   </TableHead>
                   <TableBody>
-                    {filesValidated &&
+                    {files.length > 0 &&
                       seqUploadRows.map((sur) => (
                         <TableRow
                           key={sur.id}
@@ -583,7 +580,7 @@ function UploadSequences() {
                   </TableBody>
                 </Table>
               </TableContainer>
-              {files.length !== 0 && filesValidated && (
+              {files.length > 0 && (
                 <Grid
                   container
                   alignItems="center"
