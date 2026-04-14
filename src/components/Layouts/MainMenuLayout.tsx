@@ -117,11 +117,6 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // when on a users detail page, do not show objectID that appears in URL
-  if (pathnames.length > 1 && pathnames[0] === 'users') {
-    pathnames[1] = '';
-  }
-
   const lastPath = pathnames.at(-1) ?? '';
   const validTabKeys = new Set([...Object.keys(PROJ_TABS), ...Object.keys(ORG_TABS)]);
 
