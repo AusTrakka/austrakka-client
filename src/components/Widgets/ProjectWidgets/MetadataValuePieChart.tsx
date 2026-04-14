@@ -206,7 +206,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
       const copy = pruned.map((item: any) => ({
         ...item,
       }));
-      
+
       const inputDataset = compiledSpec.data!.find((d) => d.name === 'inputdata') as InlineData;
 
       if (!inputDataset) {
