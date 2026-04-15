@@ -208,6 +208,7 @@ export const selectAwaitingProjectMetadata = (
   projectAbbrev: string | undefined,
 ) => {
   if (!projectAbbrev) return true;
+  if (!state.projectMetadataState.data[projectAbbrev]) return true;
   const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
   return (
     loadingState === MetadataLoadingState.IDLE ||
