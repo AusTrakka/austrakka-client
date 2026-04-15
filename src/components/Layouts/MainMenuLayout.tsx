@@ -89,15 +89,15 @@ function MainMenuLayout() {
 
   const pages = [
     {
-      title: 'Visualise',
-      link: '/data',
-      icon: <AccountTree />,
-    },
-    {
       title: 'Add Data',
       link: '/upload',
       icon: <Upload />,
     },
+    {
+      title: 'Visualise',
+      link: '/data',
+      icon: <AccountTree />,
+    }
   ];
   const visiblePages = pages;
 
