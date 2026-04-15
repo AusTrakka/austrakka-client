@@ -23,7 +23,7 @@ function App() {
           <Route element={<MainMenuLayout />}>
             <Route path="/" element={<LocalUpload />} />
             <Route path="upload" element={<LocalUpload />} />
-            <Route path="data/plots/map" element={<MapPage />} />
+            <Route path="data/plots/Map" element={<MapPage />} />
             <Route path="data/plots/:plotType" element={<PlotDetail />} />
             <Route path="data/trees/:treeId" element={<TreeDetail />} />
             <Route path="data/records/:seqId" element={<ProjectSampleDetail />} />

@@ -5,7 +5,6 @@ import { selectProjectMetadataError } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
 import { plotTypes } from '../../config/plotTypes';
 import { localProjectAbbrev } from '../../constants/standaloneClientConstants';
-import PlotTypeProps from '../../types/plottypeprops.interface';
 
 function PlotDetail() {
   const { plotType } = useParams();
@@ -29,16 +28,13 @@ function PlotDetail() {
   }, [plotType]);
 
   const renderPlot = () => {
-    // TODO this will not display loading if the e.g. ClusterTimeline component is loading data.
-    //      Naively, we can't pass the loading state into a component without knowing which
-    //      plot type component to use. Will probably require a separate loading state
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
     if (!plotType || typeof plotTypes[plotType] === 'undefined') {
       return null;
     }
-    return React.createElement(plotTypes[plotType], {
+    return React.createElement(plotTypes[plotType].component, {
       projectAbbrev: localProjectAbbrev,
       customSpec: null,
       setPlotErrorMsg: setErrorMsg,
@@ -47,7 +43,9 @@ function PlotDetail() {
 
   return (
     <>
-      <Typography className="pageTitle">{plotType}</Typography>
+      <Typography className="pageTitle">
+        {plotType ? plotTypes[plotType].name : ''}
+      </Typography>
       {renderPlot()}
     </>
   );

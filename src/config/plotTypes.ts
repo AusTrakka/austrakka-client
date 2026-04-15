@@ -7,40 +7,54 @@ import HeatMap from '../components/Plots/PlotTypes/HeatMap';
 import Histogram from '../components/Plots/PlotTypes/Histogram';
 import type PlotTypeProps from '../types/plottypeprops.interface';
 
-export const plotTypes: { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
-  ClusterTimeline: ClusterTimeline,
-  EpiCurve: EpiCurve,
-  BarChart: BarChart,
-  Histogram: Histogram,
-  HeatMap: HeatMap,
-  Custom: Custom,
-};
+interface PlotTypeDescriptor {
+  component: React.FC<PlotTypeProps>;
+  name?: string;
+  description?: string;
+}
 
-// Does not include Custom
-export const plotTypeListing = [
-  {
-    plotType: 'ClusterTimeline',
+export const plotTypes: { [index: string]: PlotTypeDescriptor } = {
+  ClusterTimeline: {
+    component: ClusterTimeline,
     name: 'Cluster timeline',
     description: 'Plot of sample clusters by date',
   },
-  {
-    plotType: 'EpiCurve',
+  EpiCurve: {
+    component: EpiCurve,
     name: 'Epi curve',
     description: 'Histogram of sample counts by date',
   },
-  {
-    plotType: 'BarChart',
+  BarChart: {
+    component: BarChart,
     name: 'Bar chart',
     description: 'Bar chart of sample counts by category',
   },
-  {
-    plotType: 'Histogram',
+  Histogram: {
+    component: Histogram,
     name: 'Histogram',
     description: 'Histogram of sample counts against a numeric field',
   },
-  {
-    plotType: 'HeatMap',
+  HeatMap: {
+    component: HeatMap,
     name: 'Heat map',
     description: 'Heat map of sample counts by categorical fields',
   },
-];
+  Map: {
+    component: HeatMap,
+    name: 'Project Map',
+    description: 'Geographic distribution of samples',
+  },
+  Custom: {
+    // Should never be used as a generic type
+    component: Custom,
+  },
+};
+
+// Does not include Custom
+const plotTypeOrder = ['EpiCurve', 'ClusterTimeline', 'BarChart', 'Histogram', 'HeatMap', 'Map'];
+
+export const plotTypeListing = plotTypeOrder.map((plotType) => ({
+  plotType,
+  name: plotTypes[plotType].name,
+  description: plotTypes[plotType].description,
+}));
