@@ -29,8 +29,6 @@ export default function ApiProvider({ children }: any) {
         scopes: [import.meta.env.VITE_API_SCOPE],
         account: accounts[0],
       };
-      // biome-ignore lint/suspicious/noConsole: historic
-      console.log('Handling access token request');
       instance
         .acquireTokenSilent(accessTokenRequest)
         .then((accessTokenResponse) => {
@@ -39,17 +37,11 @@ export default function ApiProvider({ children }: any) {
         })
         .catch((error) => {
           if (error instanceof InteractionRequiredAuthError || error instanceof BrowserAuthError) {
-            // biome-ignore lint/suspicious/noConsole: historic
-            console.log('Redirecting to interactive login');
             instance.acquireTokenRedirect(accessTokenRequest);
           }
           if (error.errorCode === 'invalid_grant') {
-            // biome-ignore lint/suspicious/noConsole: historic
-            console.log('Caught invalid_grant; redirecting to interactive login');
             instance.acquireTokenRedirect(accessTokenRequest);
           }
-          // biome-ignore lint/suspicious/noConsole: historic
-          console.log('Uncaught auth error');
           // biome-ignore lint/suspicious/noConsole: historic
           console.log(error);
           setAuthToken(null);
