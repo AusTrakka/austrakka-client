@@ -29,19 +29,19 @@ import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
 import type { MapKey } from './mapMeta';
+import { localProjectAbbrev } from "../../constants/standaloneClientConstants";
 
 interface MapDetailProps {
   navigateFunction: NavigateFunction;
-  projectAbbrev: string;
 }
 
 function MapDetail(props: MapDetailProps) {
-  const { navigateFunction, projectAbbrev } = props;
+  const { navigateFunction } = props;
 
   const data: ProjectMetadataState | null = useAppSelector((state) =>
-    selectProjectMetadata(state, projectAbbrev),
+    selectProjectMetadata(state, localProjectAbbrev),
   );
-  const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
+  const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, localProjectAbbrev));
 
   // this I don't really needs to be in the url
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
@@ -122,7 +122,7 @@ function MapDetail(props: MapDetailProps) {
   const renderErrorAlert = () => (
     <div>
       <Alert severity="warning">
-        <Typography>This project has no compatible fields for map visualisations</Typography>
+        <Typography>No fields in uploaded data were marked as geo fields</Typography>
       </Alert>
     </div>
   );
@@ -232,7 +232,7 @@ function MapDetail(props: MapDetailProps) {
         <MapChart
           colourScheme={colourScheme}
           mapSpec={selectedMap!}
-          projAbbrev={projectAbbrev}
+          projAbbrev={localProjectAbbrev}
           data={filteredData ?? []}
           geoField={internalSelectedFieldObj}
         />

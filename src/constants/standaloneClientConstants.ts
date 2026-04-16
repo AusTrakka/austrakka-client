@@ -29,23 +29,24 @@ export const UNIQUE_VALUE_THRESHOLD = 100;
 // O : ordinal, a discrete ordered quantity
 // N : nominal, a discrete unordered category
 // T : temporal, a time or date value
-// G : geojson, a geographic shape
+// G : geojson, a geographic shape (for us currently used for geo ISO codes, i.e. mappable categorical fields)
 //  need to add one for free-text, i.e. nominal-like but do not allow user to select categorical
 // X : free text, non-visualisable except as text
 
-// gives typeCode: (primitiveType, canVisualise, displayedFieldType)
-export const typeCodes: Record<string, [string, boolean, string]> = {
-  N: ['string', true, 'Categorical'],
-  X: ['string', false, 'Free text'],
-  Q: ['double', true, 'Numeric'],
-  T: ['date', true, 'Date'],
+// gives typeCode: (primitiveType, canVisualise, geoField, displayedFieldType)
+export const typeCodes: Record<string, [string, boolean, boolean, string]> = {
+  N: ['string', true, false, 'Categorical'],
+  X: ['string', false, false, 'Free text'],
+  Q: ['double', true, false, 'Numeric'],
+  T: ['date', true, false, 'Date'],
+  G: ['string', true, true, 'Geo region (ISO)'],
 };
 
-// gives displayedFieldType: (primitiveType, canVisualise)
-export const typesByName: Record<string, [string, boolean]> = Object.entries(typeCodes).reduce(
-  (acc, [_typeCode, [primitiveType, canVisualise, typeName]]) => {
-    acc[typeName] = [primitiveType, canVisualise];
+// gives displayedFieldType: (primitiveType, canVisualise, geoField)
+export const typesByName: Record<string, [string, boolean, boolean, string]> = Object.entries(typeCodes).reduce(
+  (acc, [typeCode, [primitiveType, canVisualise, geoField, typeName]]) => {
+    acc[typeName] = [primitiveType, canVisualise, geoField, typeCode];
     return acc;
   },
-  {} as Record<string, [string, boolean]>,
+  {} as Record<string, [string, boolean, boolean, string]>,
 );

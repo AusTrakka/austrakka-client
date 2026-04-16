@@ -21,17 +21,20 @@ function makeDeducedField(data: Sample[], fieldName: string, idx: number = 0): D
     return SAMPLE_ID_FIELD_OBJECT;
   }
   const typeCode = deduceFieldType(data, fieldName);
-  const [primitiveType, canVisualise, displayedType] = typeCodes[typeCode];
+  const [primitiveType, canVisualise, geoField, displayedType] = typeCodes[typeCode];
+  const metaDataColumnValidValues = (typeCode === 'N' || typeCode === 'G')
+    ? getUniqueValuesArray(data, fieldName)
+    : null;
   return {
     columnName: fieldName,
     primitiveType,
     metaDataColumnTypeName: primitiveType,
-    metaDataColumnValidValues: null,
+    metaDataColumnValidValues,
     canVisualise,
     columnOrder: idx,
     displayedFieldType: displayedType,
     fieldTypeSource: 'Deduced',
-    geoField: false, // TODO need to support this through type deduction / user-specified types
+    geoField
   };
 }
 
@@ -41,17 +44,20 @@ function makeField(data: Sample[], fieldName: string, idx: number, typeCode: str
     return SAMPLE_ID_FIELD_OBJECT;
   }
   if (typeCode in typeCodes) {
-    const [primitiveType, canVisualise, displayedType] = typeCodes[typeCode];
+    const [primitiveType, canVisualise, geoField, displayedType] = typeCodes[typeCode];
+    const metaDataColumnValidValues = (typeCode === 'N' || typeCode === 'G')
+      ? getUniqueValuesArray(data, fieldName)
+      : null;
     return {
       columnName: fieldName,
       primitiveType,
       metaDataColumnTypeName: primitiveType,
-      metaDataColumnValidValues: null,
+      metaDataColumnValidValues,
       canVisualise,
       columnOrder: idx,
       displayedFieldType: displayedType,
       fieldTypeSource: 'Header',
-      geoField: false,
+      geoField,
     };
   }
   // TODO should be user-facing error message
@@ -123,12 +129,16 @@ function deduceFieldType(data: Sample[], fieldName: string): string {
 }
 
 function countUniqueValues(data: Sample[], fieldName: string): number {
+  return getUniqueValuesArray(data, fieldName).length;
+}
+
+export function getUniqueValuesArray(data: Sample[], fieldName: string): string[] {
   const uniqueValues = new Set<string>();
   data.forEach((sample) => {
     const value = sample[fieldName];
     if (value !== null && value !== undefined && value !== '') {
-      uniqueValues.add(value);
+      uniqueValues.add(String(value));
     }
   });
-  return uniqueValues.size;
+  return Array.from(uniqueValues).sort();
 }

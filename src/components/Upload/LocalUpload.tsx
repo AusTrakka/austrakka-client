@@ -275,7 +275,7 @@ function LocalUpload() {
         {/* </Grid> */}
         <Grid size={{ md: 6, xs: 12 }}>
           {showFieldsTable && (
-            <FieldUploadCheck fields={parsedFields} setFields={setParsedFields} />
+            <FieldUploadCheck fields={parsedFields} setFields={setParsedFields} csvData={parsedMetadata} />
           )}
         </Grid>
       </Grid>
