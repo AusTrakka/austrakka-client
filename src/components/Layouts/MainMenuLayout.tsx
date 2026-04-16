@@ -37,12 +37,12 @@ import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import useUsername from '../../hooks/useUsername';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
+import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
 import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
 import { PROJ_TABS } from '../ProjectOverview/projTabConstants';
 import styles from './MainMenuLayout.module.css';
-import Cli from '../Cli/Cli';
 
 interface SideBarItemProps {
   title: string;

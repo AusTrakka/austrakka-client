@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Typography,
 } from '@mui/material';
@@ -34,12 +33,12 @@ function Cli(props: CliProps) {
           <Typography
             variant="body2"
             sx={{
-              border: "1px solid",
-              borderRadius: "6px",
-              padding: "2px 4px",
+              border: '1px solid',
+              borderRadius: '6px',
+              padding: '2px 4px',
               backgroundColor: Theme.PrimaryGrey50,
               borderColor: Theme.PrimaryGrey300,
-              display: "inline"
+              display: 'inline',
             }}
           >
             <code>AT_URI={import.meta.env.VITE_REACT_API_URL}</code>
@@ -49,7 +48,7 @@ function Cli(props: CliProps) {
           <Button onClick={close}>Close</Button>
         </DialogActions>
       </Box>
-    </Dialog >
+    </Dialog>
   );
 }
 
