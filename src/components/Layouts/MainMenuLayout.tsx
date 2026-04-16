@@ -10,6 +10,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
+  PrecisionManufacturing,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -41,6 +42,7 @@ import Feedback from '../Feedback/Feedback';
 import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
 import { PROJ_TABS } from '../ProjectOverview/projTabConstants';
 import styles from './MainMenuLayout.module.css';
+import Cli from '../Cli/Cli';
 
 interface SideBarItemProps {
   title: string;
@@ -55,6 +57,7 @@ function MainMenuLayout() {
   const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
+  const [cli, setCli] = useState(false);
   const settings = [
     {
       title: 'Documentation',
@@ -63,6 +66,12 @@ function MainMenuLayout() {
       onClick: () => {
         window.open(`${import.meta.env.VITE_DOCS_URL}?auto_login=true`, '_blank')?.focus();
       },
+    },
+    {
+      title: 'CLI',
+      icon: <PrecisionManufacturing fontSize="small" />,
+      disabled: false,
+      onClick: () => setCli((prev) => !prev),
     },
     {
       title: 'Support',
@@ -393,6 +402,7 @@ function MainMenuLayout() {
         <Outlet />
       </div>
       <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
+      <Cli cli={cli} handleHelpClose={() => setCli(!cli)} />
     </>
   );
 }
