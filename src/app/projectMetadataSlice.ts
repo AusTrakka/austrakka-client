@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
 import type { MapSupportInfo } from '../components/Maps/mapMeta';
 import LoadingState from '../constants/loadingState';
+import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import type { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
@@ -17,6 +18,7 @@ import {
   calculateUniqueValues,
   calculateViewFieldNames,
   getEmptyStringColumns,
+  insertUnpopulatedOverrideFields,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
@@ -322,6 +324,11 @@ export const projectMetadataSlice = createSlice({
         replaceHasSequencesNullsWithFalse(data);
       }
       replaceNullsWithEmpty(data);
+
+      if (state.data[projectAbbrev].mergeAlgorithm === MergeAlgorithm.OVERRIDE) {
+        insertUnpopulatedOverrideFields(data, state.data[projectAbbrev].projectFields!, viewFields);
+      }
+
       state.data[projectAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
       // Each returned view is a superset of the previous; we always replace the data
