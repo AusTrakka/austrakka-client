@@ -4,7 +4,7 @@ import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import type { MetaDataColumn } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
-import { getDisplayFields, getMetadata } from '../utilities/resourceUtils';
+import { getDisplayFields, getLatestActivityTime, getMetadata } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
 import {
   getEmptyStringColumns,
@@ -27,8 +27,14 @@ const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
   return dataViews;
 };
 
+// Note that this state now includes orgAbbrev, which must be supplied as a param,
+// implying that groupMetadataSlice is only used for org data. This is currently the case.
+// If this were not the case we'd have to make orgAbbrev optional and skip the update checks when null.
+
 export interface GroupMetadataState {
   groupId: number | null;
+  orgAbbrev: string | null;
+  dataLoadTime: string | null;
   loadingState: MetadataLoadingState;
   fields: MetaDataColumn[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
@@ -43,6 +49,8 @@ export interface GroupMetadataState {
 
 const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState => ({
   groupId,
+  orgAbbrev: null,
+  dataLoadTime: null,
   loadingState: MetadataLoadingState.IDLE,
   fields: null,
   fieldUniqueValues: null,
@@ -70,6 +78,7 @@ const initialState: GroupMetadataSliceState = {
 interface FetchGroupMetadataParams {
   groupId: number;
   token: string;
+  orgAbbrev: string;
 }
 
 interface FetchGroupFieldsParams {
@@ -88,6 +97,31 @@ interface FetchDataViewParams {
 interface FetchDataViewResponse {
   data: Sample[];
 }
+
+interface FetchLatestActivityTimeParams {
+  groupId: number;
+  orgAbbrev: string; // could get from state, but would like to track in params
+}
+
+interface FetchLatestActivityTimeResponse {
+  timestamp: string;
+}
+
+const getGroupLatestActivityTime = createAsyncThunk(
+  'groupMetadata/getGroupLatestActivityTime',
+  async (
+    params: FetchLatestActivityTimeParams,
+    { rejectWithValue, fulfillWithValue, getState },
+  ): Promise<FetchLatestActivityTimeResponse | unknown> => {
+    const { orgAbbrev } = params;
+    const { token } = (getState() as RootState).groupMetadataState;
+    const response = await getLatestActivityTime('Organisation', token!, orgAbbrev!);
+    if (response.status !== 'Success') {
+      return rejectWithValue(response.error);
+    }
+    return fulfillWithValue<FetchLatestActivityTimeResponse>({ timestamp: response.data! });
+  },
+);
 
 const fetchGroupFields = createAsyncThunk(
   'groupMetadata/fetchGroupFields',
@@ -128,12 +162,10 @@ const fetchDataView = createAsyncThunk(
 // These listeners launch thunks in response to state changes or actions
 // The state update triggered by the listener will be the thunk's pending action
 
-// Launch fetchGroupFields in response to metadata fetch request
+// Launch getGroupLatestActivityTime in response to CHECK_FOR_UPDATE state
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read groupId
     if (action.type !== 'groupMetadata/fetchGroupMetadata') return false;
-    // Check that the reducer logic is telling us to trigger a new load process
     const previousLoadingState = (previousState as RootState).groupMetadataState.data[
       (action as any).payload.groupId
     ]?.loadingState;
@@ -141,20 +173,44 @@ listenerMiddleware.startListening({
       (action as any).payload.groupId
     ]?.loadingState;
     return (
+      previousLoadingState !== MetadataLoadingState.CHECK_FOR_UPDATE &&
+      loadingState === MetadataLoadingState.CHECK_FOR_UPDATE
+    );
+  },
+  effect: (action, listenerApi) => {
+    listenerApi.dispatch(
+      getGroupLatestActivityTime({
+        groupId: (action as any).payload.groupId,
+        orgAbbrev: (action as any).payload.orgAbbrev,
+      }),
+    );
+  },
+});
+
+// Launch fetchGroupFields when FETCH_REQUESTED is set (initial load, explicit reload request, or stale data check)
+const FETCH_REQUESTED_ACTIONS = [
+  'groupMetadata/fetchGroupMetadata',
+  'groupMetadata/reloadGroupMetadata',
+  getGroupLatestActivityTime.fulfilled.type,
+];
+listenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    // Return early if wrong action; don't spend time reading state
+    if (!FETCH_REQUESTED_ACTIONS.includes(action.type)) return false;
+    const groupId = (action as any)?.payload?.groupId ?? (action as any)?.meta?.arg?.groupId;
+    if (!groupId) return false;
+    const previousLoadingState =
+      (previousState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    const loadingState =
+      (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    return (
       previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
       loadingState === MetadataLoadingState.FETCH_REQUESTED
     );
   },
   effect: (action, listenerApi) => {
-    listenerApi.dispatch(fetchGroupFields({ groupId: (action as any).payload.groupId }));
-  },
-});
-
-// Launch fetchGroupFields in response to metadata reload request
-listenerMiddleware.startListening({
-  predicate: (action) => action.type === 'groupMetadata/reloadGroupMetadata',
-  effect: (action, listenerApi) => {
-    listenerApi.dispatch(fetchGroupFields({ groupId: (action as any).payload.groupId }));
+    const groupId = (action as any)?.payload?.groupId ?? (action as any)?.meta?.arg?.groupId;
+    listenerApi.dispatch(fetchGroupFields({ groupId }));
   },
 });
 
@@ -189,12 +245,14 @@ export const groupMetadataSlice = createSlice({
   initialState,
   reducers: {
     fetchGroupMetadata: (state, action: PayloadAction<FetchGroupMetadataParams>) => {
-      const { groupId, token } = action.payload;
+      const { groupId, token, orgAbbrev } = action.payload;
       if (!state.data[groupId]) {
         // Set initial state for this group
         state.data[groupId] = groupMetadataInitialStateCreator(groupId);
       }
-      // Only initialise fetch if in allowed state; do not reload loading data
+      // If data is not loaded, initialise fetch
+      // If data is loaded, dispatch call to check timestamp for data updates
+      // If we are in any other state (i.e. partway through load), do nothing, allow the load process to complete
       if (
         state.data[groupId].loadingState === MetadataLoadingState.IDLE ||
         state.data[groupId].loadingState === MetadataLoadingState.ERROR ||
@@ -206,19 +264,47 @@ export const groupMetadataSlice = createSlice({
         }
         state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
         state.token = token;
+        state.data[groupId].orgAbbrev = orgAbbrev;
+      } else if (state.data[groupId].loadingState === MetadataLoadingState.DATA_LOADED) {
+        state.data[groupId].loadingState = MetadataLoadingState.CHECK_FOR_UPDATE;
+        state.token = token;
+        state.data[groupId].orgAbbrev = orgAbbrev;
       }
     },
     reloadGroupMetadata: (state, action: PayloadAction<FetchGroupMetadataParams>) => {
-      const { groupId, token } = action.payload;
+      const { groupId, token, orgAbbrev } = action.payload;
       // Clear state and start again
       state.data[groupId] = groupMetadataInitialStateCreator(groupId);
       state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
       state.token = token;
+      state.data[groupId].orgAbbrev = orgAbbrev;
     },
   },
   extraReducers: (builder) => {
+    builder.addCase(getGroupLatestActivityTime.fulfilled, (state, action) => {
+      const { groupId } = action.meta.arg;
+      const { timestamp } = action.payload as FetchLatestActivityTimeResponse;
+      const currentTimestamp = state.data[groupId]?.dataLoadTime;
+      // If there is no stored timestamp, or the retrieved timestamp is newer, trigger a full reload
+      if (!currentTimestamp || new Date(timestamp) > new Date(currentTimestamp)) {
+        state.data[groupId].loadingState = MetadataLoadingState.FETCH_REQUESTED;
+      } else {
+        // Data is up to date; return to loaded state
+        state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+      }
+    });
+    builder.addCase(getGroupLatestActivityTime.rejected, (state, action) => {
+      const { groupId, orgAbbrev } = action.meta.arg;
+      state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+      //biome-ignore lint/suspicious/noConsole: interim error logging
+      console.error(
+        `Failed to check for data updates in group ${groupId}, organisation ${orgAbbrev}: ${action.payload}`,
+      );
+    });
+
     builder.addCase(fetchGroupFields.pending, (state, action) => {
       const { groupId } = action.meta.arg;
+      state.data[groupId] = groupMetadataInitialStateCreator(groupId);
       state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
     builder.addCase(fetchGroupFields.fulfilled, (state, action) => {
@@ -343,6 +429,7 @@ export const groupMetadataSlice = createSlice({
       if (viewIndex === Object.keys(state.data[groupId].views).length - 1) {
         // NB here expect also that fields.length === state.data[groupId].fields?.length
         state.data[groupId].loadingState = MetadataLoadingState.DATA_LOADED;
+        state.data[groupId].dataLoadTime = new Date().toISOString();
       } else {
         state.data[groupId].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
       }

@@ -2,6 +2,7 @@
 // Do we need a higher-level loading/success/error/partial-error state?
 enum MetadataLoadingState {
   IDLE = 'idle',
+  CHECK_FOR_UPDATE = 'check_for_update',
   FETCH_REQUESTED = 'fetch_requested',
   AWAITING_FIELDS = 'awaiting_fields',
   FIELDS_LOADED = 'fields_loaded',

@@ -117,9 +117,9 @@ function OrgSamplesTable(props: SamplesProps) {
       tokenLoading !== LoadingState.IDLE
     ) {
       setAllFieldsLoaded(false);
-      dispatch(fetchGroupMetadata({ groupId: groupContext!, token }));
+      dispatch(fetchGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
     }
-  }, [groupContext, token, tokenLoading, dispatch]);
+  }, [groupContext, orgAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
     if (
