@@ -1,4 +1,3 @@
-import { useAccount, useMsal } from '@azure/msal-react';
 import {
   AccountCircle,
   AccountTree,
@@ -33,7 +32,6 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
-import useUsername from '../../hooks/useUsername';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
 import LogoutButton from '../Common/LogoutButton';
@@ -128,10 +126,6 @@ function MainMenuLayout() {
     pathnames.pop();
   }
 
-  const { accounts } = useMsal();
-
-  const account = useAccount(accounts[0] || {});
-  const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages: SideBarItemProps[] = [
     {
@@ -289,9 +283,9 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
+          <Link to={`/users/${user.username}`} style={{ textDecoration: 'none' }}>
             <Tooltip
-              title={drawer ? username : `${user.displayName} - ${username}`}
+              title={drawer ? user.username : `${user.displayName} - ${user.username}`}
               arrow
               placement="right"
             >
