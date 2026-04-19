@@ -171,3 +171,17 @@ export function filterIncluded(data: any[], include?: { field: string; value: st
     return true; // All fields matched, include
   });
 }
+
+// Function to strip out all columns except some, based on array of column names to keep
+export function pruneColumns(data: any[], columnsToKeep: string[]) {
+  if (!columnsToKeep || columnsToKeep.length === 0) return data;
+  return data.map((item) => {
+    const newItem = { ...item };
+    for (const key of Object.keys(newItem)) {
+      if (!columnsToKeep.includes(key)) {
+        delete newItem[key];
+      }
+    }
+    return newItem;
+  });
+}

@@ -1,10 +1,10 @@
-import {defineConfig} from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import {Schema, ValidateEnv} from '@julr/vite-plugin-validate-env'
+import { Schema, ValidateEnv } from '@julr/vite-plugin-validate-env'
 import fs from 'fs'
 import path from 'path'
 
-const customLogoDir : string = path.join(__dirname, 'src', 'assets', 'logos')
+const customLogoDir: string = path.join(__dirname, 'src', 'assets', 'logos')
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -152,9 +152,6 @@ export default defineConfig({
       VITE_DOCS_URL: (key, value) => {
         return defaultConfigValue(key, value, DocsDefaultValues.Url)
       },
-      VITE_DOCS_ENABLED: (key, value) => {
-        return defaultConfigValueBoolean(key, value, DocsDefaultValues.Enabled)
-      },
     }),
   ]
 })
@@ -210,15 +207,15 @@ enum ThemeDefaultValues {
   SecondaryMain700 = '#388e3c',
   SecondaryMain800 = '#2e7d32',
   SecondaryMain900 = '#1b5e20',
-  PrimaryGrey50 = '#fafafa', 
-  PrimaryGrey100 = '#f5f5f5', 
-  PrimaryGrey200 = '#eeeeee', 
-  PrimaryGrey300 = '#e0e0e0', 
-  PrimaryGrey400 = '#bdbdbd', 
-  PrimaryGrey500 = '#9e9e9e', 
-  PrimaryGrey600 = '#757575', 
-  PrimaryGrey700 = '#616161', 
-  PrimaryGrey800 = '#424242', 
+  PrimaryGrey50 = '#fafafa',
+  PrimaryGrey100 = '#f5f5f5',
+  PrimaryGrey200 = '#eeeeee',
+  PrimaryGrey300 = '#e0e0e0',
+  PrimaryGrey400 = '#bdbdbd',
+  PrimaryGrey500 = '#9e9e9e',
+  PrimaryGrey600 = '#757575',
+  PrimaryGrey700 = '#616161',
+  PrimaryGrey800 = '#424242',
   PrimaryGrey900 = '#212121',
   PrimaryMainBackground = '#eef2f6',
 }
@@ -237,6 +234,5 @@ enum BrandingDefaultValues {
 }
 
 enum DocsDefaultValues {
-  Url = "https://docs.austrakka.net",
-  Enabled = "true",
+  Url = "https://docs.trakka.org",
 }

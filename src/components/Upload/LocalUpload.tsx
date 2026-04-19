@@ -69,7 +69,6 @@ function LocalUpload() {
     blank: false,
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  const [fileValidated, setFileValidated] = useState(false);
   const [showFieldsTable, setShowFieldsTable] = useState(false);
   const [parsedMetadata, setParsedMetadata] = useState<Sample[]>([]);
   const [parsedFields, setParsedFields] = useState<DeducedField[]>([]);
@@ -79,7 +78,7 @@ function LocalUpload() {
   const submitButton = () => {
     if (files.length > 0 && METADATA_FORMATS[getSuffix(files[0])]) {
       // Metadata file
-      const metadataReady = fileValidated && parseError == null;
+      const metadataReady = files.length > 0 && parseError == null;
       return (
         <Button
           variant="contained"
@@ -92,12 +91,9 @@ function LocalUpload() {
       );
     }
     if (files.length > 0 && TREE_FORMATS[getSuffix(files[0])]) {
-      // Tree file
-      const treeReady = fileValidated;
       return (
         <Button
           variant="contained"
-          disabled={!treeReady}
           endIcon={<FileUpload />}
           onClick={() => handleTreeAdded(files[0].file)}
         >
@@ -154,13 +150,12 @@ function LocalUpload() {
 
     const metadataFileAvailable: boolean =
       files.length > 0 &&
-      Object.keys(METADATA_FORMATS).includes(getSuffix(files[0])) &&
-      fileValidated;
+      Object.keys(METADATA_FORMATS).includes(getSuffix(files[0]))
     if (metadataFileAvailable) {
       parseCSV(files[0].file);
     }
     setShowFieldsTable(metadataFileAvailable);
-  }, [files, fileValidated]);
+  }, [files]);
 
   const handleMetadataAdded = async (file: File) => {
     // Needs to validate, and insert data into project redux state
@@ -238,8 +233,6 @@ function LocalUpload() {
               files={files}
               setFiles={setFiles}
               validFormats={validFormats}
-              validated={fileValidated}
-              setValidated={setFileValidated}
               multiple={false}
             />
           </Grid>
