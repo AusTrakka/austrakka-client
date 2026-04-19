@@ -5,6 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
   Typography,
 } from '@mui/material';
 import { Theme } from '../../assets/themes/theme';
@@ -27,7 +28,7 @@ function Cli(props: CliProps) {
         <DialogTitle>Connect CLI</DialogTitle>
         <DialogContent>
           <Typography variant="body1" paddingBottom={2}>
-            To connect a trakka CLI, set the following environment variable:
+            To connect a Trakka CLI, set the following environment variable:
             <br></br>
           </Typography>
           <Typography
@@ -42,6 +43,17 @@ function Cli(props: CliProps) {
             }}
           >
             <code>AT_URI={import.meta.env.VITE_REACT_API_URL}</code>
+          </Typography>
+          <Typography variant="body1" paddingTop={2}>
+            Instructions on setting up the Trakka CLI can be found&nbsp;
+            <Link
+              href={`${import.meta.env.VITE_DOCS_URL}/docs/CLI/CLI-introduction`}
+              target="_blank"
+              color="primary.light"
+            >
+              here
+            </Link>
+            .
           </Typography>
         </DialogContent>
         <DialogActions>
