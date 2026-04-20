@@ -288,7 +288,7 @@ function UploadMetadata() {
             <br />
             If you would prefer to upload metadata using the command line,&nbsp;
             <Link
-              href={`${import.meta.env.VITE_DOCS_URL}/docs/AusTrakka CLI/CLI-metadata-upload`}
+              href={`${import.meta.env.VITE_DOCS_URL}/docs/CLI/CLI-introduction`}
               target="_blank"
               color="primary.light"
             >
