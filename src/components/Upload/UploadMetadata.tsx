@@ -124,7 +124,7 @@ function UploadMetadata() {
     if (orgs.length === 0) {
       setPageErrorMsg(
         'Either you do not have uploader permissions in any organisation, or your permissions ' +
-        'could not be properly loaded. Please contact an admin.',
+          'could not be properly loaded. Please contact an admin.',
       );
     }
   }, [user.groupRoles, user.loading, user.orgAbbrev]);
@@ -216,19 +216,19 @@ function UploadMetadata() {
 
     const submissionResponse: ResponseObject = options.validate
       ? await validateSubmissions(
-        formData,
-        optionString,
-        token,
-        selectedDataOwner!,
-        selectedProjectShare,
-      )
+          formData,
+          optionString,
+          token,
+          selectedDataOwner!,
+          selectedProjectShare,
+        )
       : await uploadSubmissions(
-        formData,
-        optionString,
-        token,
-        selectedDataOwner!,
-        selectedProjectShare,
-      );
+          formData,
+          optionString,
+          token,
+          selectedDataOwner!,
+          selectedProjectShare,
+        );
 
     const newMessages = [...(submissionResponse.messages ?? [])];
     if (submissionResponse.status === ResponseType.Success) {
@@ -356,15 +356,15 @@ function UploadMetadata() {
               {/* If detailed project list isn't populated, use abbreviation list only */}
               {availableProjects && availableProjects.length > 0
                 ? availableProjects.map((project: Project) => (
-                  <MenuItem value={project.abbreviation} key={project.abbreviation}>
-                    {`${project.abbreviation} : ${project.name}`}
-                  </MenuItem>
-                ))
+                    <MenuItem value={project.abbreviation} key={project.abbreviation}>
+                      {`${project.abbreviation} : ${project.name}`}
+                    </MenuItem>
+                  ))
                 : projectAbbrevs.map((project: string) => (
-                  <MenuItem value={project} key={project}>
-                    {project}
-                  </MenuItem>
-                ))}
+                    <MenuItem value={project} key={project}>
+                      {project}
+                    </MenuItem>
+                  ))}
             </Select>
           </FormControl>
           <Typography variant="h4" color="primary">
