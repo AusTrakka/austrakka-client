@@ -107,9 +107,9 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
   const response =
     id != null
       ? await downloadFile(
-        `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
-        token,
-      )
+          `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
+          token,
+        )
       : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
