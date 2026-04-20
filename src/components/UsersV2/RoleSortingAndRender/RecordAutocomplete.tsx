@@ -17,7 +17,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
     <Autocomplete
       options={records?.filter((r) => !selectedRecords?.some((sr) => sr.id === r.id)) || []}
       multiple
-      disabled={recordType === 'Tenant'}
+      disabled={recordType === 'System'}
       limitTags={1}
       style={{ width: '19em' }}
       value={selectedRecords || []}

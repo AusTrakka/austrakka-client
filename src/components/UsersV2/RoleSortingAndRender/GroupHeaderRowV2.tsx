@@ -44,7 +44,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const { token, tokenLoading } = useApi();
 
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
-  const tenantName = 'Default Tenant';
+  const tenantName = 'System';
 
   useEffect(() => {
     async function fetchRecords() {
@@ -83,7 +83,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         fetchRecords();
       } else {
         const tenantDefaultRecord = {
@@ -105,7 +105,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
 
   useEffect(() => {
     if (!editing) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         setSelectedRoles(null);
         setSelectedRecords(null);
       } else {
@@ -138,7 +138,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       }
       onSelectionChange(recordType, assignedRoles);
       setSelectedRoles(null);
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         setSelectedRecords(null);
       }
     }

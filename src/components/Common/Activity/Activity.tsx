@@ -358,33 +358,33 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               />
               {columns
                 ? columns
-                    .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
-                    .map((col: any) => (
-                      <Column
-                        key={col.field}
-                        field={col.field}
-                        header={col.header}
-                        hidden={false}
-                        body={(node: TreeNode) => {
-                          if (col.field === 'resourceUniqueString') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceCount',
-                              previewKey: 'resourcePreview',
-                              valueKey: 'resourceUniqueString',
-                            });
-                          }
-                          if (col.field === 'resourceType') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceTypeCount',
-                              previewKey: 'resourceTypePreview',
-                              valueKey: 'resourceType',
-                            });
-                          }
-                          return unaggregatedCellTemplate(node, col);
-                        }}
-                        sortable
-                      />
-                    ))
+                  .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                  .map((col: any) => (
+                    <Column
+                      key={col.field}
+                      field={col.field}
+                      header={col.header}
+                      hidden={false}
+                      body={(node: TreeNode) => {
+                        if (col.field === 'resourceUniqueString') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceCount',
+                            previewKey: 'resourcePreview',
+                            valueKey: 'resourceUniqueString',
+                          });
+                        }
+                        if (col.field === 'resourceType') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceTypeCount',
+                            previewKey: 'resourceTypePreview',
+                            valueKey: 'resourceType',
+                          });
+                        }
+                        return unaggregatedCellTemplate(node, col);
+                      }}
+                      sortable
+                    />
+                  ))
                 : null}
             </TreeTable>
           )}
@@ -402,7 +402,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         You do not have permission to view activity logs.
       </Alert>
     );
-  } else if (!rGuid && recordType !== 'Tenant') {
+  } else if (!rGuid && recordType !== 'System') {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Error</AlertTitle>

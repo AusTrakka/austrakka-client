@@ -25,7 +25,7 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
 export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) =>
   scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === 'System' &&
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
@@ -56,7 +56,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
 
   return scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === 'System' &&
       scope.recordRoles.some(
         (record) =>
           record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||
@@ -140,24 +140,24 @@ export const updateEditedPrivileges = (
 
   return existingPrivileges.has(recordType)
     ? safePrev.map((priv) => {
-        if (priv.recordType === recordType) {
-          const existingRolesByRecord = new Map(
-            priv.recordRoles.map((record) => [record.recordName, record]),
-          );
+      if (priv.recordType === recordType) {
+        const existingRolesByRecord = new Map(
+          priv.recordRoles.map((record) => [record.recordName, record]),
+        );
 
-          newRecordRoles.forEach((newRecord) => {
-            const existing = existingRolesByRecord.get(newRecord.recordName);
-            if (existing) {
-              existing.roles = [...new Set([...existing.roles, ...newRecord.roles])];
-            } else {
-              priv.recordRoles.push(newRecord);
-            }
-          });
+        newRecordRoles.forEach((newRecord) => {
+          const existing = existingRolesByRecord.get(newRecord.recordName);
+          if (existing) {
+            existing.roles = [...new Set([...existing.roles, ...newRecord.roles])];
+          } else {
+            priv.recordRoles.push(newRecord);
+          }
+        });
 
-          return priv;
-        }
         return priv;
-      })
+      }
+      return priv;
+    })
     : [...safePrev, { recordType, recordRoles: newRecordRoles }];
 };
 

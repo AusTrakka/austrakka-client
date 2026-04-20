@@ -107,9 +107,9 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
   const response =
     id != null
       ? await downloadFile(
-          `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
-          token,
-        )
+        `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
+        token,
+      )
       : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
@@ -343,7 +343,7 @@ export const getActivities = (
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   let resourcePath = '';
-  if (recordType === 'Tenant') {
+  if (recordType === 'System') {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
   } else if (recordType === 'Organisation') {
     resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
