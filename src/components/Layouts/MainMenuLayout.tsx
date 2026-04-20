@@ -9,7 +9,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
-  PrecisionManufacturing,
+  Terminal,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -66,7 +66,7 @@ function MainMenuLayout() {
     },
     {
       title: 'CLI',
-      icon: <PrecisionManufacturing fontSize="small" />,
+      icon: <Terminal fontSize="small" />,
       disabled: false,
       onClick: () => setCli((prev) => !prev),
     },
