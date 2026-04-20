@@ -183,8 +183,8 @@ function defaultConfigValueBoolean(key: string, value: string, defaultValue: str
 }
 
 enum ThemeDefaultValues {
-  PrimaryMain = '#0a3546',
-  SecondaryMain = '#90CA6D',
+  PrimaryMain = '#37474F',
+  SecondaryMain = '#29B6F6',
   PrimaryGrey = '#F6F7F8',
   SecondaryDarkGrey = '#353333',
   SecondaryLightGrey = '#B3B3B3',
@@ -197,16 +197,16 @@ enum ThemeDefaultValues {
   SecondaryRed = '#A81E2C',
   SecondaryYellow = '#FCAF17',
   Background = '#FFFFFF',
-  SecondaryMain50 = '#e8f5e9',
-  SecondaryMain100 = '#c8e6c9',
-  SecondaryMain200 = '#a5d6a7',
-  SecondaryMain300 = '#81c784',
-  SecondaryMain400 = '#66bb6a',
-  SecondaryMain500 = '#4caf50',
-  SecondaryMain600 = '#43a047',
-  SecondaryMain700 = '#388e3c',
-  SecondaryMain800 = '#2e7d32',
-  SecondaryMain900 = '#1b5e20',
+  SecondaryMain50 = '#E1F5FE',
+  SecondaryMain100 = '#B3E5FC',
+  SecondaryMain200 = '#81D4FA',
+  SecondaryMain300 = '#4FC3F7',
+  SecondaryMain400 = '#29B6F6',
+  SecondaryMain500 = '#03A9F4',
+  SecondaryMain600 = '#039BE5',
+  SecondaryMain700 = '#0288D1',
+  SecondaryMain800 = '#0277BD',
+  SecondaryMain900 = '#01579B',
   PrimaryGrey50 = '#fafafa',
   PrimaryGrey100 = '#f5f5f5',
   PrimaryGrey200 = '#eeeeee',
@@ -221,14 +221,14 @@ enum ThemeDefaultValues {
 }
 
 enum LogoDefaultValues {
-  Logo = "AusTrakka_Logo_cmyk.png",
-  LogoSmall = "AusTrakka_Logo_only_cmyk.png",
+  Logo = "Trakka_Logo_cmyk.png",
+  LogoSmall = "Trakka_Logo_only_cmyk.png",
 }
 
 enum BrandingDefaultValues {
-  Name = "AusTrakka",
-  Tagline1 = "From genomics to public health decisions for Australia",
-  Tagline2 = "Combining Genomics & Epidemiological Data",
+  Name = "Trakka",
+  Tagline1 = "From genomics to public health decisions",
+  Tagline2 = "",
   SidebarNameEnabled = "false",
   Id = "aardvark",
 }
