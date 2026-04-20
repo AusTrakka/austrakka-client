@@ -9,6 +9,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
+  Terminal,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -34,6 +35,7 @@ import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
+import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
 import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
@@ -53,6 +55,7 @@ function MainMenuLayout() {
   const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
+  const [cli, setCli] = useState(false);
   const settings = [
     {
       title: 'Documentation',
@@ -60,6 +63,12 @@ function MainMenuLayout() {
       onClick: () => {
         window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
+    },
+    {
+      title: 'CLI',
+      icon: <Terminal fontSize="small" />,
+      disabled: false,
+      onClick: () => setCli((prev) => !prev),
     },
     {
       title: 'Support',
@@ -386,6 +395,7 @@ function MainMenuLayout() {
         <Outlet />
       </div>
       <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
+      <Cli cli={cli} handleHelpClose={() => setCli(!cli)} />
     </>
   );
 }
