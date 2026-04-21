@@ -343,7 +343,7 @@ export const getActivities = (
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   let resourcePath = '';
-  if (recordType === 'Tenant') {
+  if (recordType === 'System') {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
   } else if (recordType === 'Organisation') {
     resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
