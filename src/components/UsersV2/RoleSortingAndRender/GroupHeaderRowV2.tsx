@@ -7,7 +7,6 @@ import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import {
   getOrganisations,
-  getProformaVersions,
   getProjectList,
   getUserProformas,
 } from '../../../utilities/resourceUtils';
