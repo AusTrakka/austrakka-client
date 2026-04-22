@@ -1,5 +1,5 @@
 enum RecordTypes {
-  TENANT = 'Tenant',
+  SYSTEM = 'System',
   PROJECT = 'Project',
 }
 export default RecordTypes;

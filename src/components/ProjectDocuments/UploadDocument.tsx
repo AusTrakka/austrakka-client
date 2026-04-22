@@ -217,8 +217,6 @@ function UploadDocument(props: UploadDocumentProps) {
                 <FileDragDrop
                   files={file}
                   setFiles={setFile}
-                  validated={validated}
-                  setValidated={setValidated}
                   validFormats={VALID_FILE_UPLOAD_TYPES}
                   multiple={false}
                 />
@@ -235,7 +233,6 @@ function UploadDocument(props: UploadDocumentProps) {
               onClick={handleUpload}
               disabled={
                 file.length === 0 ||
-                !validated ||
                 filenameBase.trim().length === 0 ||
                 fileDescription.trim().length === 0 ||
                 fileNameInputError ||

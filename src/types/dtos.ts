@@ -1,3 +1,5 @@
+import type { VisChainEntry } from '../components/Common/Activity/activityViewModels.interface';
+
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number;
@@ -476,11 +478,7 @@ export interface DerivedLog {
   submitterUsername: string;
   eventStatus: string;
   data: string; // TODO needs to be parsed
-  visChain: {
-    globalId: string;
-    resourceType: string;
-    uniqueStringId: string;
-  }[];
+  visChain: VisChainEntry[];
 }
 
 export interface ProjectDocument {

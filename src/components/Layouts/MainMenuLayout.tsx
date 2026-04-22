@@ -1,4 +1,3 @@
-import { useAccount, useMsal } from '@azure/msal-react';
 import {
   AccountCircle,
   AccountTree,
@@ -10,6 +9,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
+  Terminal,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -33,9 +33,9 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
-import useUsername from '../../hooks/useUsername';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
+import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
 import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
@@ -55,14 +55,20 @@ function MainMenuLayout() {
   const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
+  const [cli, setCli] = useState(false);
   const settings = [
     {
       title: 'Documentation',
       icon: <Description fontSize="small" />,
-      disabled: import.meta.env.VITE_DOCS_ENABLED === 'false',
       onClick: () => {
-        window.open(`${import.meta.env.VITE_DOCS_URL}?auto_login=true`, '_blank')?.focus();
+        window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
+    },
+    {
+      title: 'CLI',
+      icon: <Terminal fontSize="small" />,
+      disabled: false,
+      onClick: () => setCli((prev) => !prev),
     },
     {
       title: 'Support',
@@ -119,11 +125,6 @@ function MainMenuLayout() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // when on a users detail page, do not show objectID that appears in URL
-  if (pathnames.length > 1 && pathnames[0] === 'users') {
-    pathnames[1] = '';
-  }
-
   const lastPath = pathnames.at(-1) ?? '';
   const validTabKeys = new Set([...Object.keys(PROJ_TABS), ...Object.keys(ORG_TABS)]);
 
@@ -136,10 +137,6 @@ function MainMenuLayout() {
     pathnames.pop();
   }
 
-  const { accounts } = useMsal();
-
-  const account = useAccount(accounts[0] || {});
-  const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages: SideBarItemProps[] = [
     {
@@ -297,9 +294,9 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
+          <Link to={`/users/${user.username}`} style={{ textDecoration: 'none' }}>
             <Tooltip
-              title={drawer ? username : `${user.displayName} - ${username}`}
+              title={drawer ? user.username : `${user.displayName} - ${user.username}`}
               arrow
               placement="right"
             >
@@ -400,6 +397,7 @@ function MainMenuLayout() {
         <Outlet />
       </div>
       <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
+      <Cli cli={cli} handleHelpClose={() => setCli(!cli)} />
     </>
   );
 }
