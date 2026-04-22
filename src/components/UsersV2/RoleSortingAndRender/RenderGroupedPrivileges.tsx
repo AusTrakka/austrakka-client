@@ -28,7 +28,7 @@ interface RenderGroupedRolesAndGroupsProps {
   ) => void;
 }
 
-const REQUIRED_RECORD_TYPES = ['Tenant', 'Organisation', 'Project', 'ProForma'];
+const REQUIRED_RECORD_TYPES = ['System', 'Organisation', 'Project', 'Proforma'];
 
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const {

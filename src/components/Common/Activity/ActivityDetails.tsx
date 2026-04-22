@@ -20,7 +20,7 @@ function ActivityDetails(props: ActivityDetailProps): JSX.Element {
 
   useEffect(() => {
     const contextEntries = (detailInfo.Context || [])
-      .filter((chain) => chain.ResourceType !== 'Tenant')
+      .filter((chain) => chain.ResourceType !== 'System')
       .filter((chain) => chain.ResourceType !== detailInfo['Resource Type'])
       .filter((chain) => chain.ResourceType !== recordType);
 
