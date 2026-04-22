@@ -50,7 +50,6 @@ interface UploadDocumentProps {
 function UploadDocument(props: UploadDocumentProps) {
   const { open, onClose, abbreviation, refresh } = props;
   const [file, setFile] = useState<DropFileUpload[]>([]);
-  const [validated, setValidated] = useState(false);
   const [filenameBase, setFilenameBase] = useState('');
   const [extension, setExtension] = useState<string | null>(null);
   const [fileDescription, setFileDescription] = useState('');
