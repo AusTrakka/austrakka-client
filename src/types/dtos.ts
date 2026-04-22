@@ -482,3 +482,12 @@ export interface DerivedLog {
     uniqueStringId: string;
   }[];
 }
+
+export interface ProjectDocument {
+  id: number;
+  fileName: string;
+  description: string;
+  fileSize: number;
+  uploadedDate: Date;
+  createdBy: string;
+}

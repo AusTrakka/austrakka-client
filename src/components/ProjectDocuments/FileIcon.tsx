@@ -1,11 +1,9 @@
-import React from 'react';
-
-import pdfIcon from '../../assets/icons/filetypes/pdf.svg';
+import csvIcon from '../../assets/icons/filetypes/csv.svg';
 import wordIcon from '../../assets/icons/filetypes/doc.svg';
 import excelIcon from '../../assets/icons/filetypes/excel.svg';
 import fileIcon from '../../assets/icons/filetypes/file.svg';
-import csvIcon from '../../assets/icons/filetypes/csv.svg';
 import htmlIcon from '../../assets/icons/filetypes/html.svg';
+import pdfIcon from '../../assets/icons/filetypes/pdf.svg';
 
 export const fileIcons = {
   pdf: pdfIcon,
@@ -34,13 +32,5 @@ interface FileIconProps {
 export function FileIcon({ filename, size = 18, className }: FileIconProps) {
   const icon = getFileIcon(filename);
 
-  return (
-    <img
-      src={icon}
-      alt="fileIcon"
-      width={size}
-      height={size}
-      className={className}
-    />
-  );
+  return <img src={icon} alt="fileIcon" width={size} height={size} className={className} />;
 }

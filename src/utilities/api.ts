@@ -26,6 +26,13 @@ export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs:
   };
 }
 
+export function buildDocumentUploadHeaders(filename: string, description: string): any {
+  return {
+    'X-Metadata-Filename': filename,
+    'X-Metadata-Description': description,
+  };
+}
+
 function getHeaders(token: string): any {
   return {
     Accept: 'application/json',
@@ -35,8 +42,8 @@ function getHeaders(token: string): any {
 }
 function getHeadersPreviewFile(token: string): any {
   return {
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
   };
 }
@@ -350,6 +357,7 @@ export async function previewFile(url: string, token: string) {
   };
 
   let filename = 'no-file-name.xlsx'; // Default filename
+
   const response = await fetch(base + url, options);
 
   if (!response.ok) {
@@ -360,7 +368,7 @@ export async function previewFile(url: string, token: string) {
   if (contentDisposition) {
     try {
       const parts = contentDisposition.split(';');
-      const filenamePart = parts.find(part => part.trim().startsWith('filename='));
+      const filenamePart = parts.find((part) => part.trim().startsWith('filename='));
       if (filenamePart) {
         filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
       }

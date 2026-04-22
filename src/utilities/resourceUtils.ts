@@ -15,6 +15,7 @@ import type {
 } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import {
+  buildDocumentUploadHeaders,
   buildUploadHeaders,
   callDELETE,
   callGET,
@@ -356,28 +357,53 @@ export const getActivities = (
 
 // Project documents endpoints
 export const getDocuments = (projectAbbrev: string, token: string) =>
-  callGET(`/api/ProjectV2/${projectAbbrev}/documents`, token);
-export const uploadDocument = (projectAbbrev: string, formData: FormData, token: string) =>
-  callPOSTForm(`/api/ProjectV2/${projectAbbrev}/documents`, formData, token);
-export const deleteDocument = (projectAbbrev: string, documentId: number, token: string) =>
-  callDELETE(`/api/ProjectV2/${projectAbbrev}/documents/${documentId}/delete`, token);
-// TODO: Fix this and maybe have "default file name" as a parameter to "downloadFile" function
+  callGET(`/api/Projects/${projectAbbrev}/documents`, token);
+export const getDocument = (projectAbbrev: string, documentId: number, token: string) =>
+  callGET(`/api/Projects/${projectAbbrev}/documents/${documentId}`, token);
+export const uploadDocument = (
+  projectAbbrev: string,
+  filename: string,
+  description: string,
+  formData: FormData,
+  token: string,
+) => {
+  const customHeaders = buildDocumentUploadHeaders(filename, description);
+  return callPOSTForm(
+    `/api/Projects/${projectAbbrev}/documents/upload`,
+    formData,
+    token,
+    customHeaders,
+  );
+};
+export const disableDocument = (projectAbbrev: string, documentId: number, token: string) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentId}/disable`, token);
+export const enableDocument = (projectAbbrev: string, documentId: number, token: string) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentId}/enable`, token);
+export const updateDocument = (
+  projectAbbrev: string,
+  documentId: number,
+  token: string,
+  filename: string,
+  description: string,
+) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentId}/update`, token, {
+    filename,
+    description,
+  });
 export const downloadDocument = async (
   projectAbbrev: string,
   documentId: number,
   token: string,
 ) => {
   const response = await downloadFile(
-    `/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`,
+    `/api/Projects/${projectAbbrev}/documents/${documentId}/download`,
     token,
   );
   return response;
 };
-
-// TODO: make sure preview is calling its own endpoint
 export const previewDocument = async (projectAbbrev: string, documentId: number, token: string) => {
   const response = await previewFile(
-    `/api/ProjectV2/${projectAbbrev}/documents/${documentId}/download`,
+    `/api/Projects/${projectAbbrev}/documents/${documentId}/preview`,
     token,
   );
   return response;

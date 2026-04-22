@@ -1,95 +1,135 @@
-import React, { useState, useEffect, memo } from 'react';
-import { DataTable, DataTableFilterMeta, DataTableFilterMetaData } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { IconButton, Paper, Menu, MenuItem, ListItemIcon, ListItemText, MenuList, Divider, Drawer, Box, Typography, Button, Stack, DialogTitle, CircularProgress, Dialog, DialogContent, DialogActions } from '@mui/material';
-import { DeleteOutline, DescriptionRounded, ErrorOutline, FileDownloadOutlined, MoreHoriz, OpenInNew, PreviewOutlined } from '@mui/icons-material';
-import { FilterMatchMode } from 'primereact/api';
+import {
+  CheckCircleOutlined,
+  DeleteOutline,
+  Edit,
+  FileDownloadOutlined,
+  MoreHoriz,
+  OpenInNew,
+  UploadFile,
+} from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  MenuList,
+  Paper,
+  Typography,
+} from '@mui/material';
+
 import Grid from '@mui/material/Grid2';
-import { Project } from '../../types/dtos';
-import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { ResponseObject } from '../../types/responseObject.interface';
-import { deleteDocument, downloadDocument, getDocuments, previewDocument } from '../../utilities/resourceUtils';
+import { FilterMatchMode } from 'primereact/api';
+import { Column } from 'primereact/column';
+import {
+  DataTable,
+  type DataTableFilterMeta,
+  type DataTableFilterMetaData,
+} from 'primereact/datatable';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
+import { useAppSelector } from '../../app/store';
+import { selectUserState, type UserSliceState } from '../../app/userSlice';
+import { Theme } from '../../assets/themes/theme';
+import LoadingState from '../../constants/loadingState';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
-import sortIcon from '../TableComponents/SortIcon';
-import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
-import SearchInput from '../TableComponents/SearchInput';
-import { FileIcon } from './FileIcon';
+import { hasPermissionV2ByRole } from '../../permissions/accessTable';
+import { RoleV2SeededName } from '../../permissions/roles';
+import type { Project, ProjectDocument } from '../../types/dtos';
+import type { ResponseObject } from '../../types/responseObject.interface';
+import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { formatFileSize } from '../../utilities/renderUtils';
-
-// TODO:
-// - After file is downloaded successfully show "FileDownloadDoneIcon" for a brief period
-// - Remove all "any" types and replace with proper typing
-// - Open "Quick preview" should set url id 
-// - "Quick preview" should use url id to get details and preview - so that ppl nav to link
-// - Update previewFile, preview, activeRow to something slightly cleaner
-// - Add download and delete buttons in file preview
-// - Permissions check 
-// - Clean up all styles and colour references (no --var(--primary-main) in components)
-// - Check loading/error states are present in all relevant locations
-// - Use proper DTOs for documents
-
-interface PreviewFileState {
-  name: string;
-  extension: string;
-  url?: string;
-  loading: boolean;
-  error?: string;
-  type: 'file' | 'icon';
-  row: any;
-}
+import { downloadDocument, getDocuments } from '../../utilities/resourceUtils';
+import type { PrimeReactColumnDefinition } from '../../utilities/tableUtils';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
+import DeleteDocument from './DeleteDocument';
+import EditDocumentDetails from './EditDocumentDetails';
+import { FileIcon } from './FileIcon';
+import UploadDocument from './UploadDocument';
 
 interface ProjectDocumentsProps {
   projectDetails: Project | null;
 }
+
 function ProjectDocuments(props: ProjectDocumentsProps) {
   const { projectDetails } = props;
   const { token } = useApi();
-  const [error, setError] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [downloading, setDownloading] = useState(false);
+
+  const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [documents, setDocuments] = useState<ProjectDocument[]>([]);
+  const [, setPreviewFile] = useState<LoadingState>(LoadingState.IDLE);
+  const [downloadingFiles, setDownloadingFiles] = useState<Map<number, LoadingState>>(new Map());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [activeRow, setActiveRow] = useState<any>(null);
+  const [activeRow, setActiveRow] = useState<ProjectDocument | null>(null);
   const rowMenuOpen = Boolean(anchorEl);
-  // const [documentsError, setDocumentsError] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewFile, setPreviewFile] = useState<any>(null);
-  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>(
-    { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-  );
-  const [preview, setPreview] = useState<PreviewFileState | null>(null);
+  const [editDetailsOpen, setEditDetailsOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const user: UserSliceState = useAppSelector(selectUserState);
+  const [canEditDelete, setCanEditDelete] = useState(false);
 
-  const PREVIEWABLE_EXTENSIONS = [
-    'pdf',
-    'txt',
-    'html',
-  ];
+  useEffect(() => {
+    if (user && projectDetails) {
+      const hasEditDeletePermission: boolean = hasPermissionV2ByRole(
+        user,
+        RoleV2SeededName.ProjectAnalyst,
+        projectDetails?.abbreviation,
+        RecordTypes.PROJECT,
+      );
+      setCanEditDelete(hasEditDeletePermission);
+    }
+  }, [user, projectDetails]);
 
-  // Custom file name column body to render file type icons
-  const fileNameColumnBody = (rowData: any, field: string) => (
+  const getDownloadState = (id: number) => downloadingFiles.get(id) ?? LoadingState.IDLE;
+  const setDownloadState = (id: number, state: LoadingState) => {
+    setDownloadingFiles((prev) => new Map(prev).set(id, state));
+  };
+
+  // Custom file type column body to render file type icons
+  const fileTypeColumnBody = (rowData: ProjectDocument) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <FileIcon filename={rowData[field]} />
-      {rowData[field] === null || rowData[field] === '' ? <div /> : rowData[field]}
+      <FileIcon filename={rowData.fileName} />
     </div>
   );
 
-  const [columns, setColumns] = useState([
-    { field: 'fileName', header: 'File name', body: (rowData: any) => fileNameColumnBody(rowData, 'fileName') },
-    { field: 'description', header: 'Description' },
-    { field: 'fileSize', header: 'File Size', body: (rowData: any) => formatFileSize(rowData.fileSize, true) },
+  const columns = [
+    {
+      field: 'fileName',
+      header: 'File name',
+    },
+    {
+      field: 'description',
+      header: 'Description',
+    },
+    {
+      field: 'fileSize',
+      header: 'File Size',
+      body: (rowData: ProjectDocument) => formatFileSize(rowData.fileSize, true),
+    },
     { field: 'createdBy', header: 'Created By' },
-    { field: 'uploadedDate', header: 'Uploaded Date', body: (rowData: any) => isoDateLocalDate(rowData.uploadedDate) },
-  ]);
-  // const user: UserSliceState = useAppSelector(selectUserState);
-  
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, rowData: any) => {
+    {
+      field: 'uploadedDate',
+      header: 'Uploaded Date',
+      body: (rowData: ProjectDocument) => isoDateLocalDate(rowData.uploadedDate.toString()),
+    },
+  ];
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, rowData: ProjectDocument) => {
     event.stopPropagation();
     setActiveRow(rowData);
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null);
     setActiveRow(null);
@@ -97,13 +137,13 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
 
   useEffect(() => {
     const fetchData = async () => {
+      setStatus(LoadingState.LOADING);
       const response: ResponseObject = await getDocuments(projectDetails!.abbreviation, token);
       if (response.status === ResponseType.Success) {
-        const newData = response.data;
-        setDocuments(newData as any);
-        setError(false);
+        setDocuments(response.data as ProjectDocument[]);
+        setStatus(LoadingState.SUCCESS);
       } else {
-        setError(true);
+        setStatus(LoadingState.ERROR);
       }
     };
     if (projectDetails) {
@@ -112,178 +152,67 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
   }, [projectDetails, token]);
 
   const refreshDocuments = async () => {
-    setDownloading(true);
+    setAnchorEl(null);
+    setActiveRow(null);
+    setStatus(LoadingState.LOADING);
     const response = await getDocuments(projectDetails!.abbreviation, token);
     if (response.status === ResponseType.Success) {
-      setDocuments(response.data);
-      setDownloading(false);
+      setDocuments(response.data as ProjectDocument[]);
+      setStatus(LoadingState.SUCCESS);
     } else {
-      setDownloading(false);
-      setError(true);
+      setStatus(LoadingState.ERROR);
     }
   };
 
-  // const response = await uploadDocument(projectDetails!.abbreviation, formData, token);
-  const handleDownload = async () => {
-    setDownloading(true);
-    // TODO: New document util just to handle downloading maybe?
+  const handleDownload = async (projectDoc: ProjectDocument) => {
+    const documentId = projectDoc.id;
+    setDownloadState(documentId, LoadingState.LOADING);
     try {
       const { blob, suggestedFilename } = await downloadDocument(
         projectDetails!.abbreviation,
-        activeRow.id,
+        documentId,
         token,
       );
-      
-      // Create a URL for the Blob object
-      const blobUrl = URL.createObjectURL(blob);
 
-      // Create a temporary link element to trigger the download
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = suggestedFilename;
       link.click();
 
-      // Clean up the URL and remove the link
       URL.revokeObjectURL(blobUrl);
       link.remove();
-      setError(false);
-      setDownloading(false);
-
-      // Hide the in row menu
-      setAnchorEl(null);
-      setActiveRow(null);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', e);
-      setError(true);
-      setDownloading(false);
+      setDownloadState(documentId, LoadingState.SUCCESS);
+      // Reset the download state after 3 seconds
+      setTimeout(() => {
+        setDownloadState(documentId, LoadingState.IDLE);
+      }, 3000);
+    } catch {
+      setDownloadState(documentId, LoadingState.ERROR);
     }
   };
 
-  const handlePreviewNewTab = async () => {
+  const handlePreviewNewTab = async (projectDoc: ProjectDocument) => {
+    if (!projectDoc) return;
     try {
-      const { blob } = await previewDocument(
-        projectDetails!.abbreviation,
-        activeRow.id,
-        token,
+      window.open(
+        `/projects/${projectDetails!.abbreviation}/documents/${projectDoc.id}/preview`,
+        '_blank',
       );
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-      setError(false);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', e);
-      setError(true);
+      setPreviewFile(LoadingState.SUCCESS);
+    } catch {
+      setPreviewFile(LoadingState.ERROR);
     }
   };
 
-  const handleDelete = async () => {
-    // Hide the in row menu
-    setAnchorEl(null);
-    setActiveRow(null);
-    try {
-      const response = await deleteDocument(
-        projectDetails!.abbreviation,
-        activeRow.id,
-        token,
-      );
-      if (response.status === ResponseType.Success) {
-        await refreshDocuments();
-      }
-      setError(false);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Error:', e);
-      setError(true);
-    }
-  };
-
-  const canPreviewFileByExtension = (row: any) => {
-    if (!row) return false;
-    const filename = row.fileName;
-    const ext = filename.split('.').pop()?.toLowerCase();
-    return ext ? PREVIEWABLE_EXTENSIONS.includes(ext) : false;
-  };
-
-  const getFileExtension = (filename: string = '') =>
-    filename.split('.').pop()?.toLowerCase() || '';
-
-  const handlePreviewQuick = async () => {
-    if (!activeRow) return;
-    const row = activeRow;
-    const ext = getFileExtension(row.fileName);
-    const isPreviewable = PREVIEWABLE_EXTENSIONS.includes(ext);
-
-    setPreviewFile(activeRow);
-    setPreviewLoading(true);
-    setDrawerOpen(true);
-
-    setAnchorEl(null);
-    try {
-      if (isPreviewable) {
-      // Fetch preview Blob via API
-        const { blob } = await previewDocument(
-          projectDetails!.abbreviation,
-          row.id,
-          token,
-        );
-
-        const blobUrl = URL.createObjectURL(blob);
-        setPreview({
-          type: 'file',
-          url: blobUrl,
-          extension: ext,
-          row,
-          name: row.fileName,
-          loading: false,
-          error: undefined,
-        });
-      } else {
-      // Non-previewable → fallback to icon mode
-        setPreview({
-          type: 'icon',
-          extension: ext,
-          row,
-          name: row.fileName,
-          loading: false,
-          error: undefined,
-        });
-      }
-
-      setError(false);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      setError(true);
-
-      // If API preview fails, fallback to icon
-      setPreview({
-        type: 'icon',
-        extension: ext,
-        row,
-        name: row.fileName,
-        loading: false,
-        error: undefined,
-      });
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
-
-  // const handleRowSelect = (row: any) => {
-  //   // TODO: Update so that quick preview is triggered (if wanted)
-  //   console.log(row);
-  // };
-
-  const rowActions = (rowData: any) => (
+  const rowActions = (rowData: ProjectDocument) => (
     <Grid sx={{ textAlign: 'right' }}>
       <IconButton
-        aria-label="more"
-        onClick={(e) => { handleMenuClick(e, rowData); }}
+        onClick={(e) => {
+          handleMenuClick(e, rowData);
+        }}
         id="basic-button"
-        aria-controls={rowMenuOpen ? 'basic-menu' : undefined}
-        aria-expanded={rowMenuOpen ? 'true' : undefined}
-        aria-haspopup="true"
+        sx={{ padding: 0.2, margin: 0 }}
       >
         <MoreHoriz />
       </IconButton>
@@ -298,178 +227,108 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
   };
 
   const header = (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
           value={(globalFilter.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'row', alignItems: 'center' }}>
-          <ColumnVisibilityMenu
-            columns={columns}
-            onColumnVisibilityChange={(selectedCols) => {
-              const newColumns = columns.map((col: any) => {
-                const newCol = { ...col };
-                newCol.hidden = selectedCols.some(
-                  (selectedCol: any) => selectedCol.field === col.field,
-                );
-                return newCol;
-              });
-              setColumns(newColumns);
-            }}
-          />
-        </div>
+        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          {canEditDelete && (
+            <Button
+              onClick={() => {
+                setUploadOpen(true);
+              }}
+              disabled={false}
+              variant="outlined"
+              startIcon={<UploadFile />}
+              sx={{ textTransform: 'none' }}
+            >
+              Upload
+            </Button>
+          )}
+        </Box>
       </div>
     </div>
   );
 
+  const getDownloadListRow = (documentId: number) => {
+    const downloadState = getDownloadState(documentId);
+
+    if (downloadState === LoadingState.LOADING) {
+      return (
+        <>
+          <ListItemIcon>
+            <CircularProgress size={18} />
+          </ListItemIcon>
+          <ListItemText sx={{ color: Theme.PrimaryMain }}>Downloading...</ListItemText>
+        </>
+      );
+    }
+    if (downloadState === LoadingState.SUCCESS) {
+      return (
+        <>
+          <ListItemIcon>
+            <CheckCircleOutlined fontSize="small" sx={{ color: 'success.main' }} />
+          </ListItemIcon>
+          <ListItemText sx={{ color: 'success.main' }}>Downloaded</ListItemText>
+        </>
+      );
+    }
+    return (
+      <>
+        <ListItemIcon>
+          <FileDownloadOutlined fontSize="small" sx={{ color: Theme.PrimaryMain }} />
+        </ListItemIcon>
+        <ListItemText sx={{ color: Theme.PrimaryMain }}>Download</ListItemText>
+      </>
+    );
+  };
+
   return (
     <>
-      <Dialog open={deleteAlertOpen} onClose={() => setDeleteAlertOpen(false)}>
-        <DialogTitle>
-          <DeleteOutline fontSize="large" color="error" />
-          <Typography variant="h4" color="error" sx={{ marginBottom: 1 }}>
-            Confirm Delete
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ marginBottom: 1 }}>
-            Are you sure you want to delete this document? This action cannot be undone.
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1,
-              padding: 1,
-            }}
-          >
-            <FileIcon filename={activeRow?.fileName} size={18} />
-            <Typography variant="body2" fontWeight="bold">
-              {activeRow?.fileName}
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" color="primary" onClick={() => setDeleteAlertOpen(false)}>
-            Cancel
-          </Button>
-          <Button variant="contained" color="error" onClick={() => { handleDelete(); setDeleteAlertOpen(false); }}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              maxWidth: 600,
-              minWidth: 500,
-              // padding: 4,
-              borderLeft: 6,
-              borderColor: 'secondary.main',
-              height: '100%',
-            },
-          },
-        }}
-      >
-        <Box role="presentation" onKeyDown={() => setDrawerOpen(false)} sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Grid container spacing={1} sx={{ width: 'fit-content', padding: 4 }} justifyContent="flex-start" alignItems="flex-start">
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="h5" color="primary">
-                {previewFile?.fileName}
-              </Typography>
-            </Grid>
-            <Grid container size={{ xs: 12 }} spacing={1} alignItems="center" justifyContent="flex-start">
-              <Grid size={{ sm: 'auto' }} sx={{ display: 'flex', alignItems: 'center' }}>
-                <FileIcon filename={previewFile?.fileName} size={18} />
-              </Grid>
-              <Grid size={{ sm: 'auto' }} sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography>
-                  {formatFileSize(previewFile?.fileSize)}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Divider />
-          <Grid container size={{ xs: 12 }} spacing={1} sx={{ px: 4, py: 2 }} alignItems="center">
-            <Stack spacing={1} direction="row" sx={{ width: '100%' }}>
-              <Button variant="contained" size="small" startIcon={<FileDownloadOutlined fontSize="small" />} sx={{ textTransform: 'none' }}>
-                Download
-              </Button>
-              <Button variant="contained" size="small" startIcon={<OpenInNew />} sx={{ textTransform: 'none' }}>
-                Open new tab
-              </Button>
-              <Button variant="contained" size="small" startIcon={<DeleteOutline />} sx={{ textTransform: 'none' }}>
-                Delete
-              </Button>
-            </Stack>
-          </Grid>
-          <Divider />
-          {preview && (
-            <>
-              {!previewLoading && preview.type === 'file' && preview.url && (
-              <Box sx={{ flex: 1, mt: 1, border: '1px solid #ccc', margin: 2, borderRadius: 1 }}>
-                {/* TODO: Try use <embed> with Blob instead of iframe */}
-                {/* <iframe
-                  title={preview.row.fileName}
-                  src={preview.url}
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                /> */}
-                <embed
-                  src={preview.url}
-                  type="application/pdf"
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                />
-              </Box>
-              )}
-              {!previewLoading && preview.type === 'icon' && (
-              <Box
-                sx={{
-                  flex: 1,
-                  mt: 1,
-                  border: '1px solid var(--primary-grey)',
-                  backgroundColor: 'var(--primary-grey)',
-                  color: 'var(--secondary-dark-grey)',
-                  borderRadius: 1,
-                  padding: 4,
-                  margin: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <DescriptionRounded sx={{ margin: 1, fontSize: 48 }} color="disabled" />
-                <Typography color="textDisabled">
-                  Sorry! Preview is not available for this file type.
-                </Typography>
-              </Box>
-              )}
-            </>
-          )}
-
-        </Box>
-      </Drawer>
-      {error ? <ErrorOutline color="error" /> : null}
+      {editDetailsOpen && canEditDelete && (
+        <EditDocumentDetails
+          open={editDetailsOpen}
+          onClose={() => setEditDetailsOpen(false)}
+          activeDocument={activeRow as ProjectDocument}
+          abbreviation={projectDetails?.abbreviation || ''}
+          refresh={refreshDocuments}
+        />
+      )}
+      {uploadOpen && canEditDelete && (
+        <UploadDocument
+          open={uploadOpen}
+          onClose={() => setUploadOpen(false)}
+          abbreviation={projectDetails?.abbreviation || ''}
+          refresh={refreshDocuments}
+        />
+      )}
+      {deleteAlertOpen && canEditDelete && (
+        <DeleteDocument
+          open={deleteAlertOpen}
+          onClose={() => setDeleteAlertOpen(false)}
+          activeDocument={activeRow as ProjectDocument}
+          projectAbbrev={projectDetails?.abbreviation || ''}
+          refreshDocuments={refreshDocuments}
+        />
+      )}
+      <Typography variant="subtitle2" paddingBottom={1}>
+        This page lists approved project documents and reports.
+      </Typography>
       <Paper elevation={2} sx={{ marginBottom: 10 }}>
         <DataTable
           value={documents}
+          loading={status === LoadingState.LOADING}
           size="small"
-          columnResizeMode="expand"
-          resizableColumns
           removableSort
           scrollable
           header={header}
           filters={globalFilter}
-          // onRowClick={(e) => handleRowSelect(e)}
-          // selectionMode="single"
           showGridlines
+          selectionMode="single"
           selection={activeRow}
           globalFilterFields={columns.map((col) => col.field)}
           sortIcon={sortIcon}
@@ -482,29 +341,35 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
         >
-          {columns.map((col: any) => (
+          <Column
+            key="fileType"
+            body={fileTypeColumnBody}
+            sortable
+            sortField="fileType"
+            headerClassName="custom-title"
+            style={{ width: '1rem' }}
+            sortFunction={(e) => {
+              const getExt = (name: string) => name.split('.').pop()?.toLowerCase() ?? '';
+              return [...e.data].sort((a, b) => {
+                const extA = getExt(a.fileName);
+                const extB = getExt(b.fileName);
+                return e.order! * extA.localeCompare(extB);
+              });
+            }}
+          />
+          {columns.map((col: PrimeReactColumnDefinition) => (
             <Column
               key={col.field}
               field={col.field}
               header={col.header}
               body={col.body}
               sortable
-              resizeable
               className="flexible-column"
-              style={{ minWidth: '150px' }}
-              headerClassName="custom-title"
               bodyClassName="value-cells"
+              headerClassName="custom-title"
             />
           ))}
-          <Column
-            header=""
-            body={(rowData) => rowActions(rowData)}
-            className="flexible-column"
-            headerClassName="custom-title"
-            bodyClassName="value-cells"
-            frozen
-            alignFrozen="right"
-          />
+          <Column header="" body={(rowData) => rowActions(rowData)} frozen alignFrozen="right" />
         </DataTable>
       </Paper>
       <Menu
@@ -519,33 +384,43 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           },
         }}
       >
-        <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
-          <MenuItem onClick={() => handleDownload()} disabled={downloading}>
-            <ListItemIcon>
-              { downloading ?
-                <CircularProgress size={8} />
-                :
-                <FileDownloadOutlined fontSize="small" sx={{ color: 'var(--primary-main)' }} />}
-            </ListItemIcon>
-            <ListItemText sx={{ color: 'var(--primary-main)' }}>Download</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handlePreviewQuick()}>
-            <ListItemIcon><PreviewOutlined fontSize="small" sx={{ color: 'var(--primary-main)' }} /></ListItemIcon>
-            <ListItemText sx={{ color: 'var(--primary-main)' }}>Quick preview</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handlePreviewNewTab()}
-            disabled={!canPreviewFileByExtension(activeRow)}
-          >
-            <ListItemIcon><OpenInNew fontSize="small" sx={{ color: 'var(--primary-main)' }} /></ListItemIcon>
-            <ListItemText sx={{ color: 'var(--primary-main)' }}>Preview in new tab</ListItemText>
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => setDeleteAlertOpen(true)}>
-            <ListItemIcon><DeleteOutline fontSize="small" sx={{ color: 'var(--secondary-red)' }} /></ListItemIcon>
-            <ListItemText sx={{ color: 'var(--secondary-red)' }}>Delete</ListItemText>
-          </MenuItem>
-        </MenuList>
+        {activeRow && (
+          <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
+            <MenuItem
+              onClick={() => handleDownload(activeRow as ProjectDocument)}
+              disabled={
+                getDownloadState((activeRow as ProjectDocument).id) === LoadingState.LOADING
+              }
+            >
+              {getDownloadListRow((activeRow as ProjectDocument).id)}
+            </MenuItem>
+            <MenuItem onClick={() => handlePreviewNewTab(activeRow as ProjectDocument)}>
+              <ListItemIcon>
+                <OpenInNew fontSize="small" sx={{ color: Theme.PrimaryMain }} />
+              </ListItemIcon>
+              <ListItemText sx={{ color: Theme.PrimaryMain }}>Preview in new tab</ListItemText>
+            </MenuItem>
+            {canEditDelete && (
+              <>
+                <MenuItem onClick={() => setEditDetailsOpen(true)}>
+                  <ListItemIcon>
+                    <Edit fontSize="small" sx={{ color: Theme.PrimaryMain }} />
+                  </ListItemIcon>
+                  <ListItemText sx={{ color: Theme.PrimaryMain }}>
+                    Edit document details
+                  </ListItemText>
+                </MenuItem>
+                <Divider component="li" />
+                <MenuItem onClick={() => setDeleteAlertOpen(true)}>
+                  <ListItemIcon>
+                    <DeleteOutline fontSize="small" sx={{ color: Theme.SecondaryRed }} />
+                  </ListItemIcon>
+                  <ListItemText sx={{ color: Theme.SecondaryRed }}>Delete</ListItemText>
+                </MenuItem>
+              </>
+            )}
+          </MenuList>
+        )}
       </Menu>
     </>
   );
