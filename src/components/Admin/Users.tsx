@@ -49,19 +49,38 @@ function Users() {
   const user: UserSliceState = useAppSelector(selectUserState);
 
   const emailBodyTemplate = (rowData: UserList) =>
-    !rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined
-      ? '~Not Filled~'
-      : rowData.contactEmail;
+    !rowData.contactEmail || rowData.contactEmail === '' || rowData.contactEmail === undefined ? (
+      <Typography variant="inherit" color="textDisabled">
+        Unavailable
+      </Typography>
+    ) : (
+      rowData.contactEmail
+    );
+
+  const analysisServerUsernameBodyTemplate = (rowData: UserList) =>
+    !rowData.analysisServerUsername ||
+    rowData.analysisServerUsername === '' ||
+    rowData.analysisServerUsername === undefined ? (
+      <Typography variant="inherit" color="textDisabled">
+        Unavailable
+      </Typography>
+    ) : (
+      rowData.analysisServerUsername
+    );
 
   const columns = [
     {
       field: 'name',
       header: 'Name',
-      body: (rowData: any) => renderDisplayName(rowData),
+      body: (rowData: UserList) => renderDisplayName(rowData),
     },
     { field: 'contactEmail', header: 'Email', body: emailBodyTemplate },
     { field: 'organisation', header: 'Organisation' },
-    { field: 'analysisServerUsername', header: 'Analysis Server Username' },
+    {
+      field: 'analysisServerUsername',
+      header: 'Analysis Server Username',
+      body: (rowData: UserList) => analysisServerUsernameBodyTemplate(rowData),
+    },
     {
       field: 'lastLogIn',
       header: 'Last Log In',
