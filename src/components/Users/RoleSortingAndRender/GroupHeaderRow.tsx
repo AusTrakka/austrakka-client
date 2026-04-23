@@ -12,6 +12,7 @@ import type { RolesV2 } from '../../../types/dtos';
 import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
+import RecordTypes from "../../../constants/record-type.enum";
 
 interface GroupHeaderRowProps {
   recordType: string;
@@ -44,7 +45,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
   const { token, tokenLoading } = useApi();
 
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
-  const tenantName = 'Default Tenant';
+  const tenantName = 'System';
 
   useEffect(() => {
     async function fetchRecords() {
@@ -83,7 +84,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== RecordTypes.SYSTEM) {
         fetchRecords();
       } else {
         const tenantDefaultRecord = {
@@ -105,7 +106,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
 
   useEffect(() => {
     if (!editing) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== RecordTypes.SYSTEM) {
         setSelectedRoles(null);
         setSelectedRecords(null);
       } else {
@@ -138,7 +139,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
       }
       onSelectionChange(recordType, assignedRoles);
       setSelectedRoles(null);
-      if (recordType !== 'Tenant') {
+      if (recordType !== RecordTypes.SYSTEM) {
         setSelectedRecords(null);
       }
     }

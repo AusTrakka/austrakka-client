@@ -5,6 +5,7 @@ import { NavigationProvider } from '../../app/NavigationContext';
 import Activity from '../Common/Activity/Activity';
 import TabPanel from '../Common/TabPanel';
 import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
+import RecordTypes from "../../constants/record-type.enum";
 
 interface PlatformProps {
   tab: string;
@@ -31,7 +32,7 @@ function Platform(props: PlatformProps) {
     <>
       <Typography className="pageTitle">Platform</Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
-        <Activity recordType="Tenant" rGuid="" />
+        <Activity recordType={RecordTypes.SYSTEM} rGuid="" />
       </TabPanel>
     </>
   );

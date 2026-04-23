@@ -6,6 +6,7 @@ import type {
   RecordRole,
 } from '../types/dtos';
 import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
+import RecordTypes from "../constants/record-type.enum";
 
 export const groupPendingChangesByType = (changes: PendingChange[]) =>
   changes.reduce(
@@ -25,7 +26,7 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
 export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) =>
   scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
@@ -56,7 +57,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
 
   return scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some(
         (record) =>
           record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||

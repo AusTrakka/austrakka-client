@@ -26,17 +26,17 @@ export function hasScopeInRecord(
   groups: GroupedPrivilegesByRecordTypeWithScopes[],
   scope: string,
   recordName: string = '',
-  recordType = 'Tenant',
+  recordType = RecordTypes.SYSTEM,
 ): boolean {
-  if (recordType === 'Tenant' && recordName !== '') {
-    throw new Error('Cannot provide recordName with recordType of Tenant');
+  if (recordType === RecordTypes.SYSTEM && recordName !== '') {
+    throw new Error(`Cannot provide recordName with recordType of ${RecordTypes.SYSTEM}`);
   }
-  if (recordType !== 'Tenant' && recordName === '') {
+  if (recordType !== RecordTypes.SYSTEM && recordName === '') {
     throw new Error('Must provide recordName');
   }
   let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
   const targetGroup = groups.find((group) => group.recordType === recordType);
-  if (recordType === 'Tenant') {
+  if (recordType === RecordTypes.SYSTEM) {
     targetRecordRole = targetGroup?.recordRoles[0];
   } else {
     targetRecordRole = targetGroup?.recordRoles.find(
@@ -55,17 +55,17 @@ export function hasRoleInRecord(
   privileges: GroupedPrivilegesByRecordTypeWithScopes[],
   role: RoleV2SeededName,
   recordName: string = '',
-  recordType = 'Tenant',
+  recordType = RecordTypes.SYSTEM,
 ): boolean {
-  if (recordType === 'Tenant' && recordName !== '') {
-    throw new Error('Cannot provide recordName with recordType of Tenant');
+  if (recordType === RecordTypes.SYSTEM && recordName !== '') {
+    throw new Error(`Cannot provide recordName with recordType of ${RecordTypes.SYSTEM}`);
   }
-  if (recordType !== 'Tenant' && recordName === '') {
+  if (recordType !== RecordTypes.SYSTEM && recordName === '') {
     throw new Error('Must provide recordName');
   }
   let targetRecordRole: PrivilegeWithRolesWithScopes | undefined;
   const targetGroup = privileges.find((priv) => priv.recordType === recordType);
-  if (recordType === 'Tenant') {
+  if (recordType === RecordTypes.SYSTEM) {
     targetRecordRole = targetGroup?.recordRoles[0];
   } else {
     targetRecordRole = targetGroup?.recordRoles.find(

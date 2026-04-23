@@ -1,5 +1,5 @@
 import { Close } from '@mui/icons-material';
-import { Alert, AlertTitle, Chip, Dialog, IconButton, Paper } from '@mui/material';
+import { Alert, AlertTitle, Dialog, IconButton, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import {
@@ -9,7 +9,7 @@ import {
   type DataTableRowClickEvent,
 } from 'primereact/datatable';
 import type React from 'react';
-import { type JSX, memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
 import { useStableNavigate } from '../../app/NavigationContext';
@@ -18,6 +18,8 @@ import { ResponseType } from '../../constants/responseType';
 import type { Member, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { getProjectMembers } from '../../utilities/resourceUtils';
+import { renderList } from '../../utilities/tableUtils';
+import renderIcon, { renderOrgIcon } from '../Admin/UserIconRenderer';
 import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -25,26 +27,6 @@ import sortIcon from '../TableComponents/SortIcon';
 interface MemberListProps {
   projectDetails: Project | null;
   setIsLoading: (isLoading: boolean) => void;
-}
-
-function renderList(cell: any): JSX.Element[] {
-  const roles = cell;
-  if (Array.isArray(roles)) {
-    return roles
-      .sort()
-      .map((r) => (
-        <Chip
-          key={r}
-          label={r}
-          variant="filled"
-          color="secondary"
-          size="small"
-          style={{ margin: '3px' }}
-        />
-      ));
-  }
-
-  return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
 }
 
 function MemberList(props: MemberListProps) {
@@ -63,7 +45,7 @@ function MemberList(props: MemberListProps) {
     },
     {
       field: 'organization.abbreviation',
-      header: 'Organizations',
+      header: 'Organisations',
       body: (rowData: any) => rowData.organization?.abbreviation,
     },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },

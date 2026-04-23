@@ -6,6 +6,7 @@ export const renderValueOrEmptyString = (value: any): string => {
   }
   return String(value);
 };
+
 // Maps from a hard-coded metadata field name to a function to render the data value
 // Note that some datetime fields are included here in order to render them as datetime,
 // not just dates, which is the type default below. Ideally the server should tell us
@@ -27,6 +28,7 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
   Date_updated: (value: string) => isoDateLocalDate(value),
   eventTime: (value: string) => isoDateLocalDate(value),
 };
+
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 // biome-ignore lint/complexity/noBannedTypes: historic

@@ -1,6 +1,7 @@
 import React, { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
 import type {
   GroupedPrivilegesByRecordType,
@@ -28,7 +29,12 @@ interface RenderGroupedRolesAndGroupsProps {
   ) => void;
 }
 
-const REQUIRED_RECORD_TYPES = ['Tenant', 'Organisation', 'Project', 'ProForma'];
+const REQUIRED_RECORD_TYPES = [
+  RecordTypes.SYSTEM,
+  RecordTypes.ORG,
+  RecordTypes.PROJECT,
+  RecordTypes.PROFORMA,
+];
 
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const {
@@ -75,7 +81,6 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     const existingTypes = new Set<string>();
     const processedPrivileges = userGroupedPrivileges
       .filter((group) => {
-        if (group.recordType === 'User') return false;
         existingTypes.add(group.recordType);
         return true;
       })
@@ -100,7 +105,8 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     // Sort final list according to REQUIRED_RECORD_TYPES order
     processedPrivileges.sort(
       (a, b) =>
-        REQUIRED_RECORD_TYPES.indexOf(a.recordType) - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
+        REQUIRED_RECORD_TYPES.indexOf(a.recordType as RecordTypes) -
+        REQUIRED_RECORD_TYPES.indexOf(b.recordType as RecordTypes),
     );
 
     setUgpFilledAndSorted(processedPrivileges);
