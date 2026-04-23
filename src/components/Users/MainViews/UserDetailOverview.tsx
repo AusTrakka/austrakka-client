@@ -82,6 +82,7 @@ function UserDetailOverview() {
     'globalId',
     'orgAbbrev',
     'orgGlobalId',
+    'orgId',
     'lastLogIn',
     'lastActive',
     'isAusTrakkaAdmin',

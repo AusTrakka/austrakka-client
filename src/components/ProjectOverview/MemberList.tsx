@@ -19,7 +19,6 @@ import type { Member, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { getProjectMembers } from '../../utilities/resourceUtils';
 import { renderList } from '../../utilities/tableUtils';
-import renderIcon, { renderOrgIcon } from '../Admin/UserIconRenderer';
 import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -174,8 +173,6 @@ function MemberList(props: MemberListProps) {
               scrollHeight="calc(100vh - 300px)"
               reorderableColumns
               showGridlines
-              selectionMode="single"
-              onRowClick={rowClickHandler}
               header={header}
               filters={globalFilter}
               globalFilterFields={columns.map((col) => col.field)}
