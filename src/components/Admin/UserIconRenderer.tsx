@@ -18,7 +18,7 @@ function renderIcon(rowData: any, size: any = 'small') {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         {isActive ? (
           <Tooltip title="User" placement="top" arrow>
-            <Home color="primary" fontSize={size} style={{ margin: '0.5rem' }} />
+            <Person color="primary" fontSize={size} style={{ margin: '0.5rem' }} />
           </Tooltip>
         ) : (
           <Tooltip title="Disabled-User" placement="top" arrow>
