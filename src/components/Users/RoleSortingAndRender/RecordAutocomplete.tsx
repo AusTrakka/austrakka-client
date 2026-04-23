@@ -1,6 +1,7 @@
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
+import RecordTypes from '../../../constants/record-type.enum';
 import type { MinifiedRecord } from '../../../types/userDetailEdit.interface';
 
 interface RecordAutocompleteProps {
@@ -17,7 +18,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
     <Autocomplete
       options={records?.filter((r) => !selectedRecords?.some((sr) => sr.id === r.id)) || []}
       multiple
-      disabled={recordType === 'Tenant'}
+      disabled={recordType === RecordTypes.SYSTEM}
       limitTags={1}
       style={{ width: '19em' }}
       value={selectedRecords || []}

@@ -19,7 +19,7 @@ const postApiMap: Record<
   ) => Promise<ResponseObject<any>>
 > = {
   Organisation: postOrgPrivilege,
-  Tenant: postTenantPrivilege,
+  System: postTenantPrivilege,
 };
 
 const deleteApiMap: Record<
@@ -33,7 +33,7 @@ const deleteApiMap: Record<
   ) => Promise<ResponseObject<any>>
 > = {
   Organisation: deleteOrgPrivilege,
-  Tenant: deleteTenantPrivilege,
+  System: deleteTenantPrivilege,
 };
 
 export async function processPrivilegeChanges(

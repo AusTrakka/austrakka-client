@@ -19,6 +19,7 @@ import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import '../../../styles/TreeTable.css';
 import React, { useCallback, useEffect, useState } from 'react';
+import RecordTypes from '../../../constants/record-type.enum';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -61,7 +62,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     submitterDisplayName: null,
   });
 
-  const routeSegment = recordType === 'Tenant' ? recordType : `${recordType}V2`;
+  const routeSegment = recordType === RecordTypes.SYSTEM ? recordType : `${recordType}V2`;
 
   const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
     routeSegment,
@@ -373,7 +374,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         You do not have permission to view activity logs.
       </Alert>
     );
-  } else if (!rGuid && recordType !== 'Tenant') {
+  } else if (!rGuid && recordType !== RecordTypes.SYSTEM) {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Error</AlertTitle>

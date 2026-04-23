@@ -1,3 +1,4 @@
+import RecordTypes from '../constants/record-type.enum';
 import type {
   CreateMsg,
   DerivedLog,
@@ -32,10 +33,12 @@ import {
 // Project endpoints
 export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
   callGET('/api/Projects?&includeall=false', token);
+
 export const getProjectDetails = (
   abbrev: string,
   token: string,
 ): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
+
 export const getProjectMembers = (identifier: string, token: string) =>
   callGET(`/api/Projects/${identifier}/Members`, token);
 
@@ -338,6 +341,7 @@ export const getActivities = (
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  const resourcePath = recordType === 'Tenant' ? `${recordType}` : `${recordType}/${rguid}`;
+  const resourcePath =
+    recordType === RecordTypes.SYSTEM ? `${recordType}` : `${recordType}/${rguid}`;
   return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
 };

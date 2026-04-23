@@ -1,4 +1,5 @@
 import type { UserSliceState } from '../app/userSlice';
+import RecordTypes from '../constants/record-type.enum';
 import { hasRoleInRecord, hasScopeInRecord } from '../utilities/accessTableUtils';
 import { RoleName, type RoleV2SeededName } from './roles';
 
@@ -53,7 +54,7 @@ export function hasPermissionV2ByScope(
   user: UserSliceState,
   scope?: string,
   recordName: string = '',
-  recordType = 'Tenant',
+  recordType = RecordTypes.SYSTEM,
 ): boolean {
   if (!user) return false;
   if (!scope) return false;
@@ -73,7 +74,7 @@ export function hasPermissionV2ByRole(
   user: UserSliceState,
   role: RoleV2SeededName,
   recordName: string = '',
-  recordType = 'Tenant',
+  recordType = RecordTypes.SYSTEM,
 ): boolean {
   if (!user) return false;
   if (!role) return false;

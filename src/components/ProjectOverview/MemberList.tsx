@@ -1,23 +1,22 @@
 import { Close } from '@mui/icons-material';
-import { Alert, AlertTitle, Chip, Dialog, IconButton, Paper } from '@mui/material';
+import { Alert, AlertTitle, Dialog, IconButton, Paper } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import {
   DataTable,
   type DataTableFilterMeta,
   type DataTableFilterMetaData,
-  type DataTableRowClickEvent,
 } from 'primereact/datatable';
 import type React from 'react';
-import { type JSX, memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
-import { useStableNavigate } from '../../app/NavigationContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Member, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { getProjectMembers } from '../../utilities/resourceUtils';
+import { renderList } from '../../utilities/tableUtils';
 import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
@@ -27,30 +26,8 @@ interface MemberListProps {
   setIsLoading: (isLoading: boolean) => void;
 }
 
-function renderList(cell: any): JSX.Element[] {
-  const roles = cell;
-  if (Array.isArray(roles)) {
-    return roles
-      .sort()
-      .map((r) => (
-        <Chip
-          key={r}
-          label={r}
-          variant="filled"
-          color="secondary"
-          size="small"
-          style={{ margin: '3px' }}
-        />
-      ));
-  }
-
-  return [<Chip key={roles} variant="filled" color="secondary" size="small" label={roles} />];
-}
-
 function MemberList(props: MemberListProps) {
   const { projectDetails, setIsLoading } = props;
-
-  const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Member[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
@@ -63,7 +40,7 @@ function MemberList(props: MemberListProps) {
     },
     {
       field: 'organization.abbreviation',
-      header: 'Organizations',
+      header: 'Organisations',
       body: (rowData: any) => rowData.organization?.abbreviation,
     },
     { field: 'roles', header: 'Roles', body: (rowData: any) => renderList(rowData.roles) },
@@ -111,19 +88,6 @@ function MemberList(props: MemberListProps) {
       }
     }
   }, [exportCSVStatus]);
-
-  const rowClickHandler = (row: DataTableRowClickEvent) => {
-    const selectedRow = row; // Assuming "original" contains the row data
-    // Check if the "Object Id" property exists in the selected row
-    if ('username' in selectedRow.data) {
-      const { username } = selectedRow.data; // Replace "objectId" with the actual property name
-      const url = `/users/${username}`;
-      navigate(url);
-    } else {
-      // biome-ignore lint/suspicious/noConsole: historic
-      console.error('Username not found in selectedRow.');
-    }
-  };
 
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
@@ -192,8 +156,6 @@ function MemberList(props: MemberListProps) {
               scrollHeight="calc(100vh - 300px)"
               reorderableColumns
               showGridlines
-              selectionMode="single"
-              onRowClick={rowClickHandler}
               header={header}
               filters={globalFilter}
               globalFilterFields={columns.map((col) => col.field)}
