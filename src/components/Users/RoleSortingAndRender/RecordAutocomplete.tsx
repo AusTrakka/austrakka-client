@@ -1,8 +1,8 @@
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
 import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
+import RecordTypes from '../../../constants/record-type.enum';
 import type { MinifiedRecord } from '../../../types/userDetailEdit.interface';
-import RecordTypes from "../../../constants/record-type.enum";
 
 interface RecordAutocompleteProps {
   records: MinifiedRecord[];

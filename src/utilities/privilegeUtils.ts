@@ -1,3 +1,4 @@
+import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
 import type {
   GroupedPrivilegesByRecordType,
@@ -6,7 +7,6 @@ import type {
   RecordRole,
 } from '../types/dtos';
 import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
-import RecordTypes from "../constants/record-type.enum";
 
 export const groupPendingChangesByType = (changes: PendingChange[]) =>
   changes.reduce(

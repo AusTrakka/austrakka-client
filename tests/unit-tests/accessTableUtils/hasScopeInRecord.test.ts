@@ -1,6 +1,6 @@
 import RecordTypes from '../../../src/constants/record-type.enum';
-import type {GroupedPrivilegesByRecordTypeWithScopes} from '../../../src/types/dtos';
-import {hasScopeInRecord} from '../../../src/utilities/accessTableUtils';
+import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
+import { hasScopeInRecord } from '../../../src/utilities/accessTableUtils';
 
 describe('hasScopeInRecord', () => {
   describe('when given valid input with expected record and scope', () => {

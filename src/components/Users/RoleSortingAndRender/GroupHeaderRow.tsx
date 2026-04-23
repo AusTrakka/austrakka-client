@@ -8,11 +8,11 @@ import type { ResponseObject } from '../../../types/responseObject.interface';
 import { getOrganisations } from '../../../utilities/resourceUtils';
 import './autocompleteStyleOverride.css';
 import { Theme } from '../../../assets/themes/theme';
+import RecordTypes from '../../../constants/record-type.enum';
 import type { RolesV2 } from '../../../types/dtos';
 import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
-import RecordTypes from "../../../constants/record-type.enum";
 
 interface GroupHeaderRowProps {
   recordType: string;

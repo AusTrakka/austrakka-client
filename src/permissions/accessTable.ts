@@ -1,8 +1,7 @@
 import type { UserSliceState } from '../app/userSlice';
+import RecordTypes from '../constants/record-type.enum';
 import { hasRoleInRecord, hasScopeInRecord } from '../utilities/accessTableUtils';
 import { RoleName, type RoleV2SeededName } from './roles';
-import RecordTypeEnum from "../constants/record-type.enum";
-import RecordTypes from "../constants/record-type.enum";
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract

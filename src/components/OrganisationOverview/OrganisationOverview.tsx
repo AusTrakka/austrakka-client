@@ -10,14 +10,14 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
-import type { Group, GroupRole, Member, Organisation } from '../../types/dtos';
+import type { Group, GroupRole, Organisation } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupList, getOrganisation, getOrgMembers } from '../../utilities/resourceUtils';
+import { getGroupList, getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import OrganisationSamples from './OrganisationSamples';
-import OrgSimpleMemberList from './OrgSimpleMemberList';
+import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
 
 const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
@@ -64,11 +64,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState<number | null>(null);
-  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [memberListError, setMemberListError] = useState(false);
-  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
 
@@ -202,7 +198,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <OrgSimpleMemberList orgAbbrev={orgAbbrev} />
+        <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <Activity recordType="Organisation" rGuid={organisation.globalId} />

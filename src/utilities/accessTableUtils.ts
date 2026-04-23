@@ -7,7 +7,7 @@ import type {
 } from '../types/dtos';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
-  const targetGroup = groups.find((group) => group.recordType === RecordTypes.TENANT);
+  const targetGroup = groups.find((group) => group.recordType === RecordTypes.SYSTEM);
   if (!targetGroup) {
     return false; // recordType not found
   }

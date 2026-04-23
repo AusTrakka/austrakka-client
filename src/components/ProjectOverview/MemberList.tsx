@@ -6,13 +6,11 @@ import {
   DataTable,
   type DataTableFilterMeta,
   type DataTableFilterMetaData,
-  type DataTableRowClickEvent,
 } from 'primereact/datatable';
 import type React from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
 import type { CSVLink } from 'react-csv';
 import { useApi } from '../../app/ApiContext';
-import { useStableNavigate } from '../../app/NavigationContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Member, Project } from '../../types/dtos';
@@ -30,8 +28,6 @@ interface MemberListProps {
 
 function MemberList(props: MemberListProps) {
   const { projectDetails, setIsLoading } = props;
-
-  const { navigate } = useStableNavigate();
   const [exportCSVStatus, setExportCSVStatus] = useState(LoadingState.IDLE);
   const [exportData, setExportData] = useState<Member[]>([]);
   const [memberList, setMemberList] = useState<Member[]>([]);
@@ -92,19 +88,6 @@ function MemberList(props: MemberListProps) {
       }
     }
   }, [exportCSVStatus]);
-
-  const rowClickHandler = (row: DataTableRowClickEvent) => {
-    const selectedRow = row; // Assuming "original" contains the row data
-    // Check if the "Object Id" property exists in the selected row
-    if ('username' in selectedRow.data) {
-      const { username } = selectedRow.data; // Replace "objectId" with the actual property name
-      const url = `/users/${username}`;
-      navigate(url);
-    } else {
-      // biome-ignore lint/suspicious/noConsole: historic
-      console.error('Username not found in selectedRow.');
-    }
-  };
 
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
