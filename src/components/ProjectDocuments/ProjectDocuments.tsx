@@ -31,7 +31,7 @@ import {
   type DataTableFilterMetaData,
 } from 'primereact/datatable';
 import type React from 'react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
@@ -44,7 +44,7 @@ import { RoleV2SeededName } from '../../permissions/roles';
 import type { Project, ProjectDocument } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { formatFileSize } from '../../utilities/renderUtils';
+import { formatDuplicateFileNames, formatFileSize } from '../../utilities/renderUtils';
 import { downloadDocument, getDocuments } from '../../utilities/resourceUtils';
 import type { PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import SearchInput from '../TableComponents/SearchInput';
@@ -108,6 +108,10 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
       header: 'File name',
     },
     {
+      field: 'id',
+      header: 'ID',
+    },
+    {
       field: 'description',
       header: 'Description',
     },
@@ -135,33 +139,28 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     setActiveRow(null);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setStatus(LoadingState.LOADING);
-      const response: ResponseObject = await getDocuments(projectDetails!.abbreviation, token);
-      if (response.status === ResponseType.Success) {
-        setDocuments(response.data as ProjectDocument[]);
-        setStatus(LoadingState.SUCCESS);
-      } else {
-        setStatus(LoadingState.ERROR);
-      }
-    };
-    if (projectDetails) {
-      fetchData();
-    }
-  }, [projectDetails, token]);
-
-  const refreshDocuments = async () => {
-    setAnchorEl(null);
-    setActiveRow(null);
+  const fetchDocuments = useCallback(async () => {
     setStatus(LoadingState.LOADING);
-    const response = await getDocuments(projectDetails!.abbreviation, token);
+    const response: ResponseObject = await getDocuments(projectDetails!.abbreviation, token);
     if (response.status === ResponseType.Success) {
-      setDocuments(response.data as ProjectDocument[]);
+      const documents = response.data as ProjectDocument[];
+      setDocuments(documents);
       setStatus(LoadingState.SUCCESS);
     } else {
       setStatus(LoadingState.ERROR);
     }
+  }, [projectDetails, token]);
+
+  useEffect(() => {
+    if (projectDetails) {
+      fetchDocuments();
+    }
+  }, [fetchDocuments, projectDetails]);
+
+  const refreshDocuments = async () => {
+    setAnchorEl(null);
+    setActiveRow(null);
+    await fetchDocuments();
   };
 
   const handleDownload = async (projectDoc: ProjectDocument) => {
