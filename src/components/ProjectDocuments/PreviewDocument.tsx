@@ -79,7 +79,7 @@ function DocumentPreview() {
         }
       } catch {
         setGetDetailsStatus(LoadingState.ERROR);
-        setErrorStatus('An error occurred while fetching document details.');
+        setErrorMessage('An error occurred while fetching document details.');
       }
     };
 
@@ -93,6 +93,7 @@ function DocumentPreview() {
         setPreviewStatus(LoadingState.SUCCESS);
       } catch {
         setPreviewStatus(LoadingState.ERROR);
+        setErrorMessage('An error occurred while loading the file preview.');
       }
     };
 
