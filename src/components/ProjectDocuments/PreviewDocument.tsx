@@ -27,6 +27,7 @@ function DocumentPreview() {
   const [getDetailsStatus, setGetDetailsStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [previewStatus, setPreviewStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [downloadingStatus, setDownloadingStatus] = useState<LoadingState>(LoadingState.IDLE);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { token } = useApi();
 
@@ -74,9 +75,11 @@ function DocumentPreview() {
           setGetDetailsStatus(LoadingState.SUCCESS);
         } else {
           setGetDetailsStatus(LoadingState.ERROR);
+          setErrorMessage(response.message);
         }
       } catch {
         setGetDetailsStatus(LoadingState.ERROR);
+        setErrorStatus('An error occurred while fetching document details.');
       }
     };
 
@@ -296,13 +299,14 @@ function DocumentPreview() {
           >
             {previewErrorIcon()}
             <Typography variant="h4" color="error" sx={{ marginTop: 2 }}>
-              Failed to load document preview
+              Failed to load file preview
             </Typography>
             <Typography variant="subtitle2" color={Theme.PrimaryGrey800}>
-              There has been an error loading the document preview.
+              There has been an error loading the file preview.
             </Typography>
             <Typography variant="subtitle2" color={Theme.PrimaryGrey800}>
-              Please contact {import.meta.env.VITE_BRANDING_NAME} Support if the issue persists.
+              {errorMessage ||
+                `Please contact ${import.meta.env.VITE_BRANDING_NAME} Support if the issue persists.`}
             </Typography>
           </Box>
         </>
