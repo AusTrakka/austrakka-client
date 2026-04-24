@@ -44,7 +44,7 @@ import { RoleV2SeededName } from '../../permissions/roles';
 import type { Project, ProjectDocument } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { formatDuplicateFileNames, formatFileSize } from '../../utilities/renderUtils';
+import { formatFileSize } from '../../utilities/renderUtils';
 import { downloadDocument, getDocuments } from '../../utilities/resourceUtils';
 import type { PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import SearchInput from '../TableComponents/SearchInput';
