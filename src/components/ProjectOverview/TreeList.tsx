@@ -21,7 +21,7 @@ import sortIcon from '../TableComponents/SortIcon';
 
 interface TreesProps {
   projectDetails: Project | null;
-  setIsLoading: (isLoading: boolean) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function TreeList(props: TreesProps) {

@@ -60,15 +60,15 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function EpiCurve(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
-    selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   // This plot also accesses the data itself, to determine an initial date binning
   const data: ProjectMetadataState | null = useAppSelector((state) =>
-    selectProjectMetadata(state, plot?.projectAbbreviation),
+    selectProjectMetadata(state, projectAbbrev),
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -130,14 +130,12 @@ function EpiCurve(props: PlotTypeProps) {
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -458,7 +456,7 @@ function EpiCurve(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }
