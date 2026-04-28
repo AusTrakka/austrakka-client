@@ -42,10 +42,63 @@ import { getProjectDashboard } from '../../../utilities/resourceUtils';
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
 
+function DashboardStatusAlert(
+  errorMessage: string | null,
+  dashboardName: string | null,
+  loadingState: MetadataLoadingState | undefined,
+): React.ReactElement | null {
+  if (errorMessage) {
+    return (
+      <Grid size={12}>
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error occurred while loading your dashboard - ${errorMessage}`}
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (!dashboardName) {
+    return (
+      <Grid size={12}>
+        <Alert severity="warning">
+          <AlertTitle>No Dashboard Selected</AlertTitle>
+          Please select a dashboard to view data.
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (loadingState === MetadataLoadingState.FIELDS_LOADED) {
+    return (
+      <Grid size={12}>
+        <Alert severity="warning">
+          <AlertTitle>No Data Available</AlertTitle>
+          Dashboard fields loaded but no data was returned.
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (loadingState !== MetadataLoadingState.DATA_LOADED) {
+    return (
+      <Grid size={12}>
+        <Alert severity="info">
+          <AlertTitle>Loading</AlertTitle>
+          Loading dashboard data...
+        </Alert>
+      </Grid>
+    );
+  }
+
+  return null;
+}
+
 interface ProjectDashboardProps {
   projectDesc: string;
   projectAbbrev: string | null;
 }
+
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectAbbrev } = props;
   const { token, tokenLoading } = useApi();
@@ -119,7 +172,6 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       .filter((field) => field.primitiveType === 'date')
       .map((field) => field.projectFieldName);
   }, [data]);
-
   const filteredDataMemo = React.useMemo(() => {
     if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
     if (timeFilter === DashboardTimeFilter.CUSTOM && customDateRange.start && customDateRange.end) {
@@ -352,7 +404,6 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       </>
     );
   };
-
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
@@ -384,16 +435,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             </Grid>
           </>
         )}
-        {errorMessage && (
-          <Grid size={12}>
-            <Alert severity="error">
-              <AlertTitle>Error</AlertTitle>
-              {`An error occurred while loading your dashboard - ${errorMessage}`}
-            </Alert>
-          </Grid>
-        )}
-        {!(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED) &&
-          !errorMessage && <Grid size={12}>Loading...</Grid>}
+        {DashboardStatusAlert(errorMessage, dashboardName, data?.loadingState)}
       </Grid>
     </Box>
   );
