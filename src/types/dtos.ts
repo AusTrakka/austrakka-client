@@ -120,7 +120,6 @@ export interface User {
   username: string;
   globalId: string;
   isActive: boolean;
-  orgId: number;
   orgAbbrev: string;
   orgName: string;
   orgGlobalId: string;
@@ -145,7 +144,6 @@ export interface UserMe {
   username: string;
   displayName: string;
   contactEmail: string;
-  orgId: number;
   orgAbbrev: string;
   orgName: string;
   analysisServerUsername: string;
