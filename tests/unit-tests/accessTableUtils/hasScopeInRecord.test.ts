@@ -6,7 +6,7 @@ describe('hasScopeInRecord', () => {
     test('return true when record has the specified scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -31,7 +31,7 @@ describe('hasScopeInRecord', () => {
     test('return true when record has multiple roles and one contains the scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -62,7 +62,7 @@ describe('hasScopeInRecord', () => {
     test('return false when record exists but does not have the specified scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -146,7 +146,7 @@ describe('hasScopeInRecord', () => {
     test('expect only first tenant is considered', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-456',

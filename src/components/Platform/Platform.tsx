@@ -31,7 +31,7 @@ function Platform(props: PlatformProps) {
     <>
       <Typography className="pageTitle">Platform</Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
-        <Activity recordType="Tenant" rGuid="" />
+        <Activity recordType="System" rGuid="" />
       </TabPanel>
     </>
   );

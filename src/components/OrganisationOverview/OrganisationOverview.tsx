@@ -247,9 +247,15 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
 function OrganisationOverviewWrapper() {
   const { orgAbbrev, tab } = useParams();
   if (!orgAbbrev) return null;
+  let resolvedTab: string = tab ?? ORG_HOME_TAB;
+  const allowedKeys: string[] = Object.keys(ORG_TABS) as Array<string>;
+  if (!allowedKeys.includes(resolvedTab)) {
+    window.history.replaceState(null, '', `/org/${orgAbbrev}`);
+    resolvedTab = ORG_HOME_TAB;
+  }
   return (
     <NavigationProvider>
-      <OrganisationOverview orgAbbrev={orgAbbrev} tab={tab ?? ORG_HOME_TAB} />
+      <OrganisationOverview orgAbbrev={orgAbbrev} tab={resolvedTab} />
     </NavigationProvider>
   );
 }

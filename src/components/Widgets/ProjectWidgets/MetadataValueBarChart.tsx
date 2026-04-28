@@ -16,7 +16,12 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import {
+  filterExcluded,
+  isNullOrEmpty,
+  pruneColumns,
+  topCategories,
+} from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { createVegaScale } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -34,9 +39,9 @@ interface MetadataValueWidgetProps extends ProjectWidgetProps {
   colourMapping?: Record<string, string> | undefined;
   legendColumns?: number | undefined;
   categoryLimit?: number | undefined; // Optional limit for number of categories to show
+  exclude?: { field: string; value: string }[] | undefined; // Optional field/value pairs to exclude
+  vertical?: boolean | undefined; // Whether to display bar vertically or horizontally
 }
-
-// TODO: Add optional flag whether categories outside of 'categoryLimit' should be grouped into "Other" category, and implement if so
 
 export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   const {
@@ -49,6 +54,8 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     colourMapping,
     legendColumns = 4,
     categoryLimit,
+    vertical = false,
+    exclude,
   } = props;
   if (colourScheme && colourMapping) {
     // biome-ignore lint/suspicious/noConsole: historic
@@ -117,34 +124,18 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   };
 
-  // Function to get top categories based on categoryLimit prop
-  const topCategories = (data: any) => {
-    const categoryCounts: Record<string, number> = {};
-    for (const item of data) {
-      // Only ignore empty values if categoryLimit is set
-      if (categoryLimit && isNullOrEmpty(item[field])) continue;
-      const value = item[field];
-      categoryCounts[value] = (categoryCounts[value] || 0) + 1;
-    }
-
-    const sortedCategories = Object.entries(categoryCounts)
-      .sort(([, countA], [, countB]) => countB - countA)
-      .map(([category]) => category);
-
-    if (categoryLimit) {
-      return sortedCategories.slice(0, categoryLimit);
-    } else {
-      // Just in case of no category limit, return all categories sorted by count
-      return sortedCategories;
-    }
-  };
-
   // Move to utility file if used outside this widget
   const createCustomScale = () => {
     let uniqueValues = data!.fieldUniqueValues![field] ?? [];
+    let widgetData = filteredData;
+
+    if (exclude && exclude.length > 0) {
+      const excluded = filterExcluded(filteredData, exclude);
+      widgetData = excluded;
+    }
 
     if (categoryLimit) {
-      const categories = topCategories(filteredData);
+      const categories = topCategories(widgetData, field, categoryLimit);
       uniqueValues = uniqueValues.filter((val) => categories.includes(val));
     }
 
@@ -162,18 +153,22 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   const createSpec = () => ({
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     data: { name: 'inputdata' },
-    width: 'container',
-    height: 30,
+    ...(vertical ? { width: '30' } : { height: 30, width: 'container' }),
     layer: [
       {
-        mark: { type: 'bar', height: 30, tooltip: true, cursor: 'pointer' },
+        mark: {
+          type: 'bar',
+          tooltip: true,
+          cursor: 'pointer',
+          ...(vertical ? { width: 30 } : { height: 30 }),
+        },
         encoding: {
-          y: { value: 'all' },
-          x: {
-            aggregate: 'count',
-            type: 'quantitative',
-            axis: { title: 'Count' },
-          },
+          y: vertical
+            ? { aggregate: 'count', type: 'quantitative', axis: { title: 'Count' } }
+            : { value: 'all' },
+          x: vertical
+            ? { value: 'all' }
+            : { aggregate: 'count', type: 'quantitative', axis: { title: 'Count' } },
           color: {
             field,
             scale: createCustomScale(),
@@ -194,7 +189,10 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
   });
 
   const truncateData = (data: any[]) => {
-    const categories = topCategories(data);
+    if (exclude && exclude.length > 0) {
+      data = filterExcluded(data, exclude);
+    }
+    const categories = topCategories(data, field, categoryLimit);
     // Filter data to only include items in the top categories
     return data.filter((item) => {
       if (categoryLimit && isNullOrEmpty(item[field])) return false;
@@ -228,15 +226,15 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
+      let plotData = [];
 
-      if (categoryLimit) {
-        const truncatedData = truncateData(filteredData);
-        const copy = truncatedData!.map((item: any) => ({ ...item }));
-        (compiledSpec.data![0] as InlineData).values = copy;
-      } else {
-        const copy = filteredData!.map((item: any) => ({ ...item }));
-        (compiledSpec.data![0] as InlineData).values = copy;
+      if (categoryLimit || (exclude && exclude.length > 0)) {
+        plotData = truncateData(filteredData);
       }
+
+      const pruned = pruneColumns(plotData, [field]);
+      const copy = pruned.map((item: any) => ({ ...item }));
+      (compiledSpec.data![0] as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)
@@ -270,16 +268,27 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
         </Alert>
       )}
       {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
-      {!errorMessage && !infoMessage && (
-        <Grid container spacing={2}>
-          <Grid size={11}>
-            <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
+      {!errorMessage &&
+        !infoMessage &&
+        (vertical ? (
+          <Grid container>
+            <Grid sx={{ minHeight: 0 }}>
+              <div id="plot-container" ref={plotDiv} />
+            </Grid>
+            <Grid>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-          <Grid size={1}>
-            <ExportVegaPlot vegaView={vegaView} />
+        ) : (
+          <Grid container>
+            <Grid size={11}>
+              <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
+            </Grid>
+            <Grid size={1}>
+              <ExportVegaPlot vegaView={vegaView} />
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        ))}
       {(!data?.loadingState ||
         !(
           data.loadingState === MetadataLoadingState.DATA_LOADED ||

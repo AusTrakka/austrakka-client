@@ -39,17 +39,20 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const { token, tokenLoading } = useApi();
   const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
-  const [tabLoadStates, setTabLoadStates] = useState(initialTabLoadStates);
+  const [tabLoadStates, setTabLoadStates] = useState<Record<number, boolean>>(initialTabLoadStates);
 
   const tabLoadingSetters = useMemo(
     () =>
       Object.values(PROJ_TABS).reduce(
         (acc, pt) => {
-          acc[pt.index] = (loading: boolean) =>
-            setTabLoadStates((prev) => ({ ...prev, [pt.index]: loading }));
+          acc[pt.index] = (loading: boolean | ((prev: boolean) => boolean)) =>
+            setTabLoadStates((prev) => ({
+              ...prev,
+              [pt.index]: typeof loading === 'function' ? loading(prev[pt.index]) : loading,
+            }));
           return acc;
         },
-        {} as Record<number, (loading: boolean) => void>,
+        {} as Record<number, React.Dispatch<React.SetStateAction<boolean>>>,
       ),
     [],
   );
@@ -61,8 +64,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
     detailsError: false,
     detailsErrorMessage: '',
   });
-
-  // Tab loading states
 
   const dispatch = useAppDispatch();
 
@@ -177,9 +178,15 @@ function ProjectOverview(props: ProjectOverviewProps) {
 function ProjectOverviewWrapper() {
   const { projectAbbrev, tab } = useParams();
   if (!projectAbbrev) return null;
+  let resolvedTab: string = tab ?? PROJ_HOME_TAB;
+  const allowedKeys: string[] = Object.keys(PROJ_TABS) as Array<string>;
+  if (!allowedKeys.includes(resolvedTab)) {
+    window.history.replaceState(null, '', `/projects/${projectAbbrev}`);
+    resolvedTab = PROJ_HOME_TAB;
+  }
   return (
     <NavigationProvider>
-      <ProjectOverview projectAbbrev={projectAbbrev} tab={tab ?? PROJ_HOME_TAB} />
+      <ProjectOverview projectAbbrev={projectAbbrev} tab={resolvedTab} />
     </NavigationProvider>
   );
 }

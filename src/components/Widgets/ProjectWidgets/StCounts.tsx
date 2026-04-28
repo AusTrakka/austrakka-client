@@ -20,13 +20,18 @@ import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
-import { aggregateArrayObjects, type CountRow } from '../../../utilities/dataProcessingUtils';
+import {
+  aggregateArrayObjects,
+  type CountRow,
+  pruneColumns,
+} from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { legendSpec } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 // May want to parametrise field to make widget more flexible
 const stFieldName = 'ST';
+const DATE_FIELD = 'Date_coll';
 
 function STChart(props: any) {
   const { stData, stDataAggregated } = props;
@@ -43,9 +48,9 @@ function STChart(props: any) {
     mark: { type: 'bar', tooltip: true },
     encoding: {
       x: {
-        field: 'Date_coll',
+        field: DATE_FIELD,
         type: 'temporal',
-        title: 'Sample collected date (Date_coll)',
+        title: `Sample collected date (${DATE_FIELD})`,
         bin: { maxbins: 20 },
         axis: { format: ' %d %b %Y' },
       },
@@ -72,7 +77,8 @@ function STChart(props: any) {
         vegaView.finalize();
       }
       const compiledSpec = compile(spec!).spec;
-      const copy = stData.map((item: any) => ({
+      const pruned = pruneColumns(stData!, [DATE_FIELD, stFieldName]);
+      const copy = pruned.map((item: any) => ({
         ...item,
       }));
       (compiledSpec.data![0] as InlineData).values = copy;

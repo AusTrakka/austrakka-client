@@ -24,6 +24,7 @@ export interface UserSliceState {
   errorMessage: string;
   loading: LoadingState;
   scopes: GroupedPrivilegesByRecordTypeWithScopes[];
+  username: string;
 }
 
 interface FetchUserRolesResponse {
@@ -34,6 +35,7 @@ interface FetchUserRolesResponse {
   orgAbbrev: string;
   orgName: string;
   orgGlobalId: string;
+  username: string;
 }
 
 const fetchUserRoles = createAsyncThunk(
@@ -52,8 +54,15 @@ const fetchUserRoles = createAsyncThunk(
       }
 
       // Destructure the response data
-      const { groupRoles, isAusTrakkaAdmin, displayName, orgAbbrev, orgName, orgGlobalId } =
-        groupResponse.data as User;
+      const {
+        groupRoles,
+        isAusTrakkaAdmin,
+        displayName,
+        orgAbbrev,
+        orgName,
+        orgGlobalId,
+        username,
+      } = groupResponse.data as User;
       const { scopes } = scopeResponse.data as UserMe;
 
       // Fulfill with user role data
@@ -65,6 +74,7 @@ const fetchUserRoles = createAsyncThunk(
         orgAbbrev,
         orgName,
         orgGlobalId,
+        username,
       } as FetchUserRolesResponse;
     } catch (_error) {
       return thunkAPI.rejectWithValue('An unexpected error occurred');
@@ -105,6 +115,7 @@ const userSlice = createSlice({
         state.orgName = holder.orgName;
         state.orgGlobalId = holder.orgGlobalId;
         state.scopes = holder.scopes;
+        state.username = holder.username;
       })
       .addCase(fetchUserRoles.rejected, (state, action) => {
         state.loading = LoadingState.ERROR;

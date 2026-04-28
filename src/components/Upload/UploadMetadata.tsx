@@ -95,7 +95,6 @@ function UploadMetadata() {
     append: false,
   } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
-  const [fileValidated, setFileValidated] = useState(false);
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
   const [projectAbbrevs, setProjectAbbrevs] = useState<string[]>([]);
@@ -289,7 +288,7 @@ function UploadMetadata() {
             <br />
             If you would prefer to upload metadata using the command line,&nbsp;
             <Link
-              href={`${import.meta.env.VITE_DOCS_URL}/docs/AusTrakka CLI/CLI-metadata-upload`}
+              href={`${import.meta.env.VITE_DOCS_URL}/docs/CLI/CLI-introduction`}
               target="_blank"
               color="primary.light"
             >
@@ -456,13 +455,7 @@ function UploadMetadata() {
           <Typography variant="h4" color="primary" paddingTop={1}>
             Select metadata file
           </Typography>
-          <FileDragDrop
-            files={files}
-            setFiles={setFiles}
-            validFormats={validFormats}
-            validated={fileValidated}
-            setValidated={setFileValidated}
-          />
+          <FileDragDrop files={files} setFiles={setFiles} validFormats={validFormats} />
           {canUpload &&
             !options.validate &&
             !options.append &&

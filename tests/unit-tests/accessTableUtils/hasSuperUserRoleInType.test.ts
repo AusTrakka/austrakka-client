@@ -7,7 +7,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return true when user has all scope access', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',
@@ -31,7 +31,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return true when user has ScopeDefinitions.Everything scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',
@@ -55,7 +55,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return false when user has neither SuperUser role nor special scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',
@@ -105,7 +105,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return false when roles array is empty', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',
@@ -122,7 +122,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return false when roles is undefined', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',
@@ -141,7 +141,7 @@ describe('hasSuperUserRoleInType', () => {
     test('handle multiple recordRoles with one having SuperUser', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'Tenant1',
@@ -183,7 +183,7 @@ describe('hasSuperUserRoleInType', () => {
     test('handle empty recordRoles array', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [],
         },
       ];
