@@ -50,12 +50,6 @@ describe('insertUnpopulatedOverrideFields', () => {
   ];
 
   describe('when data is empty', () => {
-    test('fields in viewFields sourced from dataset should be inserted with empty string', () => {
-      const data: Sample[] = [];
-      insertUnpopulatedOverrideFields(data, projectFields, ['country']);
-      expect(data).toEqual([]);
-    });
-
     test('no mutation should occur when data has no samples', () => {
       const data: Sample[] = [];
       insertUnpopulatedOverrideFields(data, projectFields, ['country', 'collectionDate']);
