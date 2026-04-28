@@ -73,7 +73,7 @@ const uploadOptions = [
   },
 ];
 
-const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`;
+const validateMessage = `This was a validation only. Please uncheck the "Validate only"; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`;
 const validFormats = {
   '.csv': 'text/csv',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
