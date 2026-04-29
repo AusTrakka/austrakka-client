@@ -4,6 +4,7 @@ import {
   AlertTitle,
   Box,
   Button,
+  CircularProgress,
   FormControl,
   InputLabel,
   Menu,
@@ -393,7 +394,11 @@ function ProjectDashboard(props: ProjectDashboardProps) {
           </Grid>
         )}
         {!(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED) &&
-          !errorMessage && <Grid size={12}>Loading...</Grid>}
+          !errorMessage && (
+            <Grid size={12} display="flex" justifyContent="center" alignItems="center" sx={{ minHeight: 200 }}>
+              <CircularProgress />
+            </Grid>
+          )}
       </Grid>
     </Box>
   );
