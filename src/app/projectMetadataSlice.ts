@@ -180,12 +180,13 @@ const fetchDataView = createAsyncThunk(
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     if (action.type !== 'projectMetadata/fetchProjectMetadata') return false;
-    const previousLoadingState = (previousState as RootState).projectMetadataState.data[
-      (action as any).payload.projectAbbrev
-    ]?.loadingState;
-    const loadingState = (currentState as RootState).projectMetadataState.data[
-      (action as any).payload.projectAbbrev
-    ]?.loadingState;
+    const { projectAbbrev } = (action as any).payload;
+    // biome-ignore format: readability
+    const previousLoadingState =
+      (previousState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+    // biome-ignore format: readability
+    const loadingState =
+      (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
     return (
       previousLoadingState !== MetadataLoadingState.CHECK_FOR_UPDATE &&
       loadingState === MetadataLoadingState.CHECK_FOR_UPDATE
@@ -211,8 +212,10 @@ listenerMiddleware.startListening({
       (action as any)?.payload?.projectAbbrev ?? (action as any)?.meta?.arg?.projectAbbrev;
     if (!projectAbbrev) return false;
     // Check that the reducer logic is telling us to trigger a new load process
+    // biome-ignore format: readability
     const previousLoadingState =
       (previousState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+    // biome-ignore format: readability
     const loadingState =
       (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
     return (
@@ -234,8 +237,10 @@ listenerMiddleware.startListening({
     if (!isAnyOf(fetchProjectInfo.fulfilled, fetchDataView.fulfilled)(action)) return false;
     const { projectAbbrev } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
+    // biome-ignore format: readability
     const previousViewToFetch =
       (previousState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
+    // biome-ignore format: readability
     const viewToFetch =
       (currentState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;

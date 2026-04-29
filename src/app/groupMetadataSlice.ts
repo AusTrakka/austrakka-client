@@ -199,10 +199,10 @@ listenerMiddleware.startListening({
     if (!FETCH_REQUESTED_ACTIONS.includes(action.type)) return false;
     const groupId = (action as any)?.payload?.groupId ?? (action as any)?.meta?.arg?.groupId;
     if (!groupId) return false;
+    // biome-ignore format: readability
     const previousLoadingState =
       (previousState as RootState).groupMetadataState.data[groupId]?.loadingState;
-    const loadingState =
-      (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    const loadingState = (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
     return (
       previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
       loadingState === MetadataLoadingState.FETCH_REQUESTED

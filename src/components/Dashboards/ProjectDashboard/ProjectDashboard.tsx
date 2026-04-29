@@ -395,7 +395,13 @@ function ProjectDashboard(props: ProjectDashboardProps) {
         )}
         {!(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED) &&
           !errorMessage && (
-            <Grid size={12} display="flex" justifyContent="center" alignItems="center" sx={{ minHeight: 200 }}>
+            <Grid
+              size={12}
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              sx={{ minHeight: 200 }}
+            >
               <CircularProgress />
             </Grid>
           )}
