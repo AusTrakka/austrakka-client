@@ -10,7 +10,7 @@ import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { hasAnyData, hasCompleteData } from '../../constants/metadataLoadingState';
 import type { Sample } from '../../types/sample.interface';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
@@ -43,6 +43,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+
   useEffect(() => {
     setErrorOccurred(false);
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
@@ -67,7 +68,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useGlobalErrorListener(handleGlobalError);
 
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (hasCompleteData(metadata?.loadingState)) {
       setFilteredData(metadata?.metadata ?? []);
       setAllFieldsLoaded(true);
     }
@@ -135,17 +136,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (
-      spec &&
-      metadata?.loadingState &&
-      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
-        metadata.loadingState === MetadataLoadingState.CHECK_FOR_UPDATE) &&
-      mutableFilteredData &&
-      plotDiv?.current
-    ) {
-      // TODO it appears this may trigger too often?
+    if (spec && hasAnyData(metadata?.loadingState) && mutableFilteredData && plotDiv?.current) {
+      // TODO it appears this may trigger too often - twice in a row
       createVegaView();
     }
     // old vegaView is just being cleaned up and should NOT be a dependency, left out here
@@ -154,15 +146,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (
-      metadata?.loadingState &&
-      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
-        metadata.loadingState === MetadataLoadingState.CHECK_FOR_UPDATE) &&
-      Object.keys(currentFilters).length === 0
-    ) {
-      setMutableFilteredData(JSON.parse(JSON.stringify(metadata.metadata!)));
+    if (hasAnyData(metadata?.loadingState) && Object.keys(currentFilters).length === 0) {
+      setMutableFilteredData(JSON.parse(JSON.stringify(metadata!.metadata!)));
       setLoading(false);
     }
   }, [metadata?.metadata]);

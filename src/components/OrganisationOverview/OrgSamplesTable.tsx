@@ -41,7 +41,7 @@ import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
@@ -159,7 +159,7 @@ function OrgSamplesTable(props: SamplesProps) {
   };
 
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (hasCompleteData(metadata?.loadingState)) {
       setFilteredSampleList(metadata?.metadata ?? []);
       setFormattedData(metadata?.metadata ?? []);
       setDisplayRows(metadata?.metadata ?? []);
@@ -189,7 +189,7 @@ function OrgSamplesTable(props: SamplesProps) {
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
-    } else if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    } else if (hasCompleteData(metadata?.loadingState)) {
       setShowSelectedRowsOnly(false);
       setDisplayRows(metadata?.metadata ?? []);
     }
@@ -344,7 +344,7 @@ function OrgSamplesTable(props: SamplesProps) {
               metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ? [] : exportData
             }
             headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
-            disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+            disabled={!hasCompleteData(metadata?.loadingState)}
             fileNamePrefix={groupContextName || 'org_samples'}
           />
         </div>

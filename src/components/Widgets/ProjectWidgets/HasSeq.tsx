@@ -14,7 +14,7 @@ import {
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { genericErrorMessage } from '../../../utilities/api';
@@ -178,7 +178,7 @@ function HasSeq(props: HasSeqWidgetProps) {
       categoryField &&
       data?.loadingState &&
       (data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-        data.loadingState === MetadataLoadingState.DATA_LOADED)
+        hasCompleteData(data.loadingState))
     ) {
       const fields = data.fields!.map((field) => field.columnName);
       if (!fields.includes(categoryField!)) {
@@ -240,12 +240,7 @@ function HasSeq(props: HasSeqWidgetProps) {
           </Grid>
         )
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

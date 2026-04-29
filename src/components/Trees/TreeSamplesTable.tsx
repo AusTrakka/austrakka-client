@@ -17,7 +17,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingState from '../../constants/loadingState';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
 import type { ProjectViewField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
@@ -159,7 +159,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
-    } else if (metadataLoadingState === MetadataLoadingState.DATA_LOADED) {
+    } else if (hasCompleteData(metadataLoadingState)) {
       setShowSelectedRowsOnly(false);
       setDisplayRows(tableMetadata);
     }
@@ -236,7 +236,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
             headers={sampleTableColumns
               .filter((column: PrimeReactColumnDefinition) => column.hidden === false)
               .map((column: PrimeReactColumnDefinition) => column.field)}
-            disabled={metadataLoadingState !== MetadataLoadingState.DATA_LOADED}
+            disabled={!hasCompleteData(metadataLoadingState)}
             fileNamePrefix={treeName}
           />
         </div>
@@ -244,7 +244,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
     </div>
   );
 
-  if (metadataLoadingState !== MetadataLoadingState.DATA_LOADED) {
+  if (!hasCompleteData(metadataLoadingState)) {
     return <Skeleton />;
   }
 

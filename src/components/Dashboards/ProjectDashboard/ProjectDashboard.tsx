@@ -34,7 +34,7 @@ import {
   DefaultDashboardTimeFilterField,
 } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ProjectDashboardDetails } from '../../../types/dtos';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
@@ -115,14 +115,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   };
 
   const projectDateFields = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data.fields) return [];
+    if (!hasCompleteData(data?.loadingState) || !data?.fields) return [];
     return data.fields
       .filter((field) => field.primitiveType === 'date')
       .map((field) => field.projectFieldName);
   }, [data]);
 
   const filteredDataMemo = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
+    if (!data || !hasCompleteData(data?.loadingState)) return [];
     if (timeFilter === DashboardTimeFilter.CUSTOM && customDateRange.start && customDateRange.end) {
       return data.metadata!.filter((sample) => {
         const sampleDate = dayjs(sample[dateField]!);
@@ -357,7 +357,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        {dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+        {dashboardName && hasCompleteData(data?.loadingState) && (
           <>
             <Grid container size={12} justifyContent="space-between">
               <Stack
@@ -393,18 +393,17 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             </Alert>
           </Grid>
         )}
-        {!(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED) &&
-          !errorMessage && (
-            <Grid
-              size={12}
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              sx={{ minHeight: 200 }}
-            >
-              <CircularProgress />
-            </Grid>
-          )}
+        {!(dashboardName && hasCompleteData(data?.loadingState)) && !errorMessage && (
+          <Grid
+            size={12}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            sx={{ minHeight: 200 }}
+          >
+            <CircularProgress />
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

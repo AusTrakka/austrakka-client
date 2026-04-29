@@ -45,16 +45,12 @@ export default function Organisations(props: ProjectWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (
-      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
-      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS)
-    ) {
+    if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS) {
       const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
       counts.sort((a, b) => b.count - a.count);
       setAggregatedCounts(counts);
     }
-  }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
+  }, [filteredData, data?.fieldLoadingStates]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(ORG_FIELD_NAME)) {
