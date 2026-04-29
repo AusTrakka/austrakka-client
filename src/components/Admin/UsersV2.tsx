@@ -143,7 +143,7 @@ function UsersV2() {
     </div>
   );
 
-  return !hasPermission(user, 'AusTrakka-Owner', 'users', PermissionLevel.CanShow) ? (
+  return !hasPermission(user, 'Trakka-Owner', 'users', PermissionLevel.CanShow) ? (
     <Alert severity="error">Admin Only Page: Unauthorized</Alert>
   ) : (
     <>
