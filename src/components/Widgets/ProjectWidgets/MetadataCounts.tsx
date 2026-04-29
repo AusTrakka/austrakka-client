@@ -15,7 +15,7 @@ import {
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { pruneColumns } from '../../../utilities/dataProcessingUtils';
@@ -167,12 +167,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
       setErrorMessage(`Error loading ${field} values`);
       return;
     }
-    if (
-      categoryFieldStable &&
-      data?.loadingState &&
-      (data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-        data.loadingState === MetadataLoadingState.DATA_LOADED)
-    ) {
+    if (categoryFieldStable && data?.fields && data?.fields.length > 0) {
       const fields = data.fields!.map((_field) => _field.columnName);
       if (!fields.includes(categoryFieldStable)) {
         setErrorMessage(`Field ${categoryFieldStable} not found in project`);
@@ -236,12 +231,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
           </Grid>
         )
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

@@ -12,7 +12,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
@@ -177,11 +177,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
   });
 
   useEffect(() => {
-    if (
-      data?.loadingState &&
-      (data.loadingState === MetadataLoadingState.FIELDS_LOADED ||
-        data.loadingState === MetadataLoadingState.DATA_LOADED)
-    ) {
+    if (data?.fields && data?.fields.length > 0) {
       const fields = data.fields!.map((fld) => fld.columnName);
       if (!fields.includes(field)) {
         setInfoMessage(
@@ -247,7 +243,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
         </Alert>
       )}
       {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
-      {!errorMessage && !infoMessage && (
+      {!errorMessage && !infoMessage && hasCompleteData(data?.loadingState) && (
         <Grid container spacing={2}>
           <Grid size={11}>
             <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />
@@ -257,12 +253,7 @@ export default function MetadataValuePieChart(props: MetadataValueWidgetProps) {
           </Grid>
         </Grid>
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

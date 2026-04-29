@@ -5,7 +5,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { ThresholdAlertFields } from '../../../constants/thresholdAlertConstants';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { calculateAlertList, type ThresholdAlert } from '../../../utilities/thresholdAlertUtils';
@@ -26,7 +26,7 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (data?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (hasCompleteData(data?.loadingState)) {
       const missingFields = Object.values(ThresholdAlertFields).filter(
         (field) => !data!.fields!.some((fld) => fld.columnName === field),
       );
@@ -60,7 +60,7 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
         Threshold exceedances (6wk/5yr)
       </Typography>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-      {data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+      {hasCompleteData(data?.loadingState) && (
         <Stack spacing={1}>
           {alerts.map((alert) => (
             // biome-ignore lint/correctness/useJsxKeyInIterable: historic
@@ -68,12 +68,7 @@ export default function ThresholdAlerts(props: ProjectWidgetProps) {
           ))}
         </Stack>
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

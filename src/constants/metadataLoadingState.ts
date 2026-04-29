@@ -13,3 +13,19 @@ enum MetadataLoadingState {
   PARTIAL_LOAD_ERROR = 'partial_load_error',
 }
 export default MetadataLoadingState;
+
+export function hasCompleteData(loadingState: MetadataLoadingState | null | undefined): boolean {
+  return (
+    loadingState === MetadataLoadingState.DATA_LOADED ||
+    loadingState === MetadataLoadingState.CHECK_FOR_UPDATE
+  );
+}
+
+export function hasAnyData(loadingState: MetadataLoadingState | null | undefined): boolean {
+  return (
+    loadingState === MetadataLoadingState.DATA_LOADED ||
+    loadingState === MetadataLoadingState.CHECK_FOR_UPDATE ||
+    loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
+    loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+  );
+}

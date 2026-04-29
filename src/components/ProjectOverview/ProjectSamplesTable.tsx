@@ -28,7 +28,7 @@ import { useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { ProjectField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
@@ -120,7 +120,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   };
 
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (hasCompleteData(metadata?.loadingState)) {
       setFilteredData(metadata?.metadata ?? []);
     }
   }, [metadata?.loadingState, metadata?.metadata]);
@@ -179,7 +179,7 @@ function ProjectSamplesTable(props: SamplesProps) {
               : (filteredData ?? [])
           }
           headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
-          disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+          disabled={!hasCompleteData(metadata?.loadingState)}
           fileNamePrefix={projectAbbrev}
         />
       </div>

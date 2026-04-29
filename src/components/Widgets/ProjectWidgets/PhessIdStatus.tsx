@@ -41,17 +41,13 @@ export default function PhessIdStatus(props: ProjectWidgetProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (
-      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
-      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS)
-    ) {
+    if (data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS) {
       // count Present if there is a PHESS_ID value and Missing if null/empty
       // TODO is this going to be recalculated on multiple view loads?
       const counts = countPresentOrMissing(PHESS_ID_FIELD_NAME, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [data?.loadingState, data?.fieldLoadingStates, filteredData]);
+  }, [data?.fieldLoadingStates, filteredData]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(PHESS_ID_FIELD_NAME)) {
