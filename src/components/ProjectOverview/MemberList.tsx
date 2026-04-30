@@ -24,7 +24,7 @@ import sortIcon from '../TableComponents/SortIcon';
 
 interface MemberListProps {
   projectDetails: Project | null;
-  setIsLoading: (isLoading: boolean) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function renderList(cell: any): JSX.Element[] {

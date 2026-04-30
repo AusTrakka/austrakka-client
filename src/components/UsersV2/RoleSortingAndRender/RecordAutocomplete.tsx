@@ -60,7 +60,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
         <TextField
           {...params}
           hiddenLabel
-          placeholder={selectedRecords?.length ? '' : 'Select Group'}
+          placeholder={selectedRecords?.length ? '' : 'Select Record'}
           variant="filled"
           size="small"
           InputProps={{
