@@ -4,37 +4,20 @@ import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
+import { plotTypes } from '../../config/plotTypes';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Plot } from '../../types/dtos';
 import type PlotTypeProps from '../../types/plottypeprops.interface';
 import { getPlotDetails } from '../../utilities/resourceUtils';
-import BarChart from './PlotTypes/BarChart';
-import ClusterTimeline from './PlotTypes/ClusterTimeline';
-import Custom from './PlotTypes/Custom';
-import EpiCurve from './PlotTypes/EpiCurve';
-import HeatMap from './PlotTypes/HeatMap';
-import Histogram from './PlotTypes/Histogram';
-
-const plotTypes: { [index: string]: React.FunctionComponent<PlotTypeProps> } = {
-  ClusterTimeline: ClusterTimeline,
-  EpiCurve: EpiCurve,
-  BarChart: BarChart,
-  Histogram: Histogram,
-  HeatMap: HeatMap,
-  Custom: Custom,
-};
 
 function PlotDetail() {
-  // Note that if the project abbrev is wrong in the URL, there will be no effect
-  // We use the plot abbrev to get the correct project
-  const { plotAbbrev } = useParams();
+  const { projectAbbrev, plotAbbrev } = useParams();
   const [plot, setPlot] = useState<Plot | null>();
+  const [plotType, setPlotType] = useState<string | null>();
   const [isPlotLoading, setIsPlotLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const dataErrorMsg = useAppSelector((state) =>
-    selectProjectMetadataError(state, plot?.projectAbbreviation),
-  );
+  const dataErrorMsg = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
 
@@ -49,14 +32,27 @@ function PlotDetail() {
     const getPlot = async () => {
       const plotResponse = await getPlotDetails(plotAbbrev!, token);
       if (plotResponse.status === ResponseType.Success) {
+        const plotTypeFromResponse = plotResponse.data!.plotType;
+        if (typeof plotTypes[plotTypeFromResponse] === 'undefined') {
+          setErrorMsg(`Plot ${plotAbbrev} has invalid type ${plotTypeFromResponse}`);
+          return;
+        }
         setPlot(plotResponse.data!);
+        setPlotType(plotTypeFromResponse);
       } else {
-        setErrorMsg(`Plot ${plotAbbrev} could not be loaded`);
+        setErrorMsg(`Plot ${plotAbbrev} was not found`);
       }
-      setIsPlotLoading(false);
     };
-    if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      getPlot();
+
+    // If plotAbbrev exactly matches a known plot type, treat as generic plot, else get from API
+    if (typeof plotTypes[plotAbbrev!] !== 'undefined') {
+      setPlotType(plotAbbrev!);
+      setIsPlotLoading(false);
+    } else {
+      if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+        getPlot();
+        setIsPlotLoading(false);
+      }
     }
   }, [plotAbbrev, token, tokenLoading]);
 
@@ -66,34 +62,29 @@ function PlotDetail() {
     }
   }, [plot, dispatch, token, tokenLoading]);
 
-  useEffect(() => {
-    if (plot) {
-      if (typeof plotTypes[plot!.plotType] === 'undefined') {
-        setErrorMsg(`Plot type ${plot!.plotType} cannot be rendered`);
-      }
-    }
-  }, [plot]);
-
   const renderPlot = () => {
-    // TODO this will not display loading if the e.g. ClusterTimeline component is loading data.
-    //      Naively, we can't pass the loading state into a component without knowing which
-    //      plot type component to use. Will probably require a separate loading state
-    if (isPlotLoading) {
-      // TODO a better loading indicator than simple text
-      return <Typography>Loading plot</Typography>;
-    }
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
     }
-    if (typeof plotTypes[plot!.plotType] === 'undefined') {
+    if (isPlotLoading) {
+      return <Typography>Loading...</Typography>;
+    }
+    if (!plotType || typeof plotTypes[plotType] === 'undefined') {
       return null;
     }
-    return React.createElement(plotTypes[plot!.plotType], { plot, setPlotErrorMsg: setErrorMsg });
+    var props: PlotTypeProps = {
+      projectAbbrev,
+      customSpec: plot?.spec,
+      setPlotErrorMsg: setErrorMsg,
+    };
+    return React.createElement(plotTypes[plotType].component, props);
   };
 
   return (
     <>
-      <Typography className="pageTitle">{plot ? plot.name : ''}</Typography>
+      <Typography className="pageTitle">
+        {plotType ? (plot?.name ?? plotTypes[plotType].name) : ''}
+      </Typography>
       {renderPlot()}
     </>
   );

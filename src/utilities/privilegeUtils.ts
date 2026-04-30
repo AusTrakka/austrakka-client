@@ -25,7 +25,7 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
 export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) =>
   scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === 'System' &&
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
@@ -56,7 +56,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
 
   return scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === 'System' &&
       scope.recordRoles.some(
         (record) =>
           record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||

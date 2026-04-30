@@ -2,14 +2,14 @@ import { Box, LinearProgress } from '@mui/material';
 import React, { memo, useEffect, useState } from 'react';
 
 type WithSetIsLoading = {
-  setIsLoading: (loading: boolean) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 interface TabPanelProps {
   index: number;
   value: number;
   loadingState?: boolean;
-  setIsLoading?: (loading: boolean) => void;
+  setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }
 
