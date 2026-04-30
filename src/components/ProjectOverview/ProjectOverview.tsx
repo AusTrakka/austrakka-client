@@ -14,6 +14,7 @@ import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import Datasets from '../ProjectDatasets/Datasets';
+import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
 import PlotList from './PlotList';
 import ProFormas from './ProFormas';
@@ -170,6 +171,9 @@ function ProjectOverview(props: ProjectOverviewProps) {
       </TabPanel>
       <TabPanel value={tabValue} index={PROJ_TABS.activity.index}>
         <Activity recordType="Project" rGuid={projectDetails?.globalId ?? ''} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={PROJ_TABS.documents.index}>
+        <ProjectDocuments projectDetails={projectDetails} />
       </TabPanel>
     </>
   );

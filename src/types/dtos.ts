@@ -480,3 +480,12 @@ export interface DerivedLog {
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
 }
+
+export interface ProjectDocument {
+  id: number;
+  fileName: string;
+  description: string;
+  fileSize: number;
+  uploadedDate: Date;
+  createdBy: string;
+}

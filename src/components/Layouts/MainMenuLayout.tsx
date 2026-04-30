@@ -95,6 +95,7 @@ function MainMenuLayout() {
     fields: 'Fields',
     datasets: 'Datasets',
     share: 'Share',
+    documents: 'Documents',
     plots: 'Plots',
     map: 'Map',
   };
@@ -118,6 +119,7 @@ function MainMenuLayout() {
     'proformas',
     'datasets',
     'activity',
+    'documents',
   ];
 
   const location = useLocation();

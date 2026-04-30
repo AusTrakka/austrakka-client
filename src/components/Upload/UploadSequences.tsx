@@ -538,7 +538,7 @@ function UploadSequences() {
         {/* File upload and table */}
         <Grid container alignItems="center" justifyContent="center" paddingTop={1}>
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
-            <Typography variant="h4" color="primary">
+            <Typography variant="h4" color="primary" paddingBottom={2}>
               Select sequence files
             </Typography>
             <FileDragDrop
