@@ -380,16 +380,34 @@ export const patchFieldV2 = (metaDataColumnName: string, token: string, field: a
 export const getActivities = (
   recordType: string,
   token: string,
-  rguid?: string,
+  recordId?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   let resourcePath = '';
   if (recordType === RecordTypes.SYSTEM) {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.ORGANISATION) {
-    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.PROJECT) {
-    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+    resourcePath = `/api/Projects/${recordId}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
+};
+
+// Returns a timestamp
+export const getLatestActivityTime = (
+  recordType: string,
+  token: string,
+  recordId?: string,
+  searchParams?: URLSearchParams,
+): Promise<ResponseObject<string>> => {
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.ORGANISATION) {
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.PROJECT) {
+    resourcePath = `/api/Projects/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   }
   return callGET(resourcePath, token);
 };

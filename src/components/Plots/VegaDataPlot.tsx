@@ -74,9 +74,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   }, [metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
+  // biome-ignore lint/correctness/useExhaustiveDependencies: avoid circular refs
   useEffect(() => {
-    setErrorOccurred(false);
     // Modifies compiledSpec in place
     const fixRowWidths = (compiledSpec: Spec) => {
       if (!compiledSpec.signals) {
@@ -117,7 +116,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const dataIndex: number = compiledSpec!.data!.findIndex((dat) => dat.name === 'inputdata');
       // TODO show a warning on the UI as well
       if (dataIndex === -1) {
-        // biome-ignore lint/suspicious/noConsole: historic
+        // biome-ignore lint/suspicious/noConsole: troubleshooting
         console.error('Bad plot spec: inputdata slot not found in spec');
         return;
       }
@@ -132,6 +131,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
       setLoading(false);
+      setErrorOccurred(false);
     };
 
     // For now we recreate view if data changes, not just if spec changes
@@ -140,16 +140,16 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       metadata?.loadingState &&
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
+        metadata.loadingState === MetadataLoadingState.CHECK_FOR_UPDATE) &&
       mutableFilteredData &&
       plotDiv?.current
     ) {
       // TODO it appears this may trigger too often?
       createVegaView();
     }
-    // Review: old vegaView is just being cleaned up and should NOT be a dependency?
-    // loadingState is not a dependency as we only care about changes that co-occur with
-    // filteredData
+    // old vegaView is just being cleaned up and should NOT be a dependency, left out here
+    // loadingState is not a dependency as we only care about changes that co-occur with filteredData
   }, [spec, mutableFilteredData, plotDiv]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
@@ -158,7 +158,8 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       metadata?.loadingState &&
       (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
         metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
+        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ||
+        metadata.loadingState === MetadataLoadingState.CHECK_FOR_UPDATE) &&
       Object.keys(currentFilters).length === 0
     ) {
       setMutableFilteredData(JSON.parse(JSON.stringify(metadata.metadata!)));

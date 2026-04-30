@@ -8,6 +8,7 @@ enum MetadataLoadingState {
   AWAITING_DATA = 'awaiting_data',
   PARTIAL_DATA_LOADED = 'partial_data_loaded',
   DATA_LOADED = 'data_loaded',
+  CHECK_FOR_UPDATE = 'check_for_update',
   ERROR = 'error', // represents any error state with NO functional data
   PARTIAL_LOAD_ERROR = 'partial_load_error',
 }

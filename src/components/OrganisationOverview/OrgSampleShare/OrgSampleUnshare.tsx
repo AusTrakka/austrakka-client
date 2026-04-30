@@ -164,7 +164,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
         await new Promise<void>((resolve) => {
           setTimeout(resolve, 500);
         });
-        dispatch(reloadGroupMetadata({ groupId: groupContext!, token }));
+        dispatch(reloadGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
       } else {
         setStatus(LoadingState.ERROR);
         setStatusMessage(unshareResponse.message || 'Error unsharing samples.');
