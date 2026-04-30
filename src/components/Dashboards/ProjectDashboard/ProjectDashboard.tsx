@@ -61,9 +61,9 @@ function DashboardStatusAlert(
   if (!dashboardName) {
     return (
       <Grid size={12}>
-        <Alert severity="warning">
-          <AlertTitle>No Dashboard Selected</AlertTitle>
-          Please select a dashboard to view data.
+        <Alert severity="error">
+          <AlertTitle>No Dashboard</AlertTitle>
+          There is an error in the project dashboard configuration.
         </Alert>
       </Grid>
     );
