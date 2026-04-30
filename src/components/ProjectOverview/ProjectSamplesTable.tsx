@@ -94,7 +94,9 @@ function ProjectSamplesTable(props: SamplesProps) {
     if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
     if (
-      Object.values(metadata.fieldLoadingStates).every((field) => field === LoadingState.SUCCESS)
+      Object.values(metadata.fieldLoadingStates).every(
+        (field) => field === LoadingState.SUCCESS || field === LoadingState.IDLE,
+      )
     ) {
       setAllFieldsLoaded(true);
     }
