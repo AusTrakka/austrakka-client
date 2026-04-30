@@ -1,4 +1,12 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  FormControlLabel,
+  Switch,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import type { DataTableFilterMeta } from 'primereact/datatable';
@@ -36,7 +44,7 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
 
 const CHART_COLORS = {
   AVAILABLE: Theme.SecondaryMain,
-  MISSING: Theme.PrimaryGrey300,
+  MISSING: Theme.SecondaryYellow,
 } as const;
 
 function MetadataCounts(props: MetadataCountWidgetProps) {
@@ -55,6 +63,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const tooltipTitle = `Samples with populated ${field} values`;
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
+  const [showMissingOnly, setShowMissingOnly] = useState(false);
 
   const dateStatusTransform = React.useMemo(
     () => ({
@@ -193,9 +202,14 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
       const compiledSpec = compile(spec as TopLevelSpec).spec;
 
       const pruned = pruneColumns(filteredData!, [field, categoryFieldStable]);
-      const copy = pruned.map((item: any) => ({
+      let copy = pruned.map((item: any) => ({
         ...item,
       }));
+
+      // If showMissingOnly is true, filter the data to only include items where the field is missing
+      if (showMissingOnly) {
+        copy = copy.filter((item: any) => !item[field]);
+      }
 
       (compiledSpec.data![0] as InlineData).values = copy;
 
@@ -210,15 +224,33 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     if (filteredData) {
       createVegaViews();
     }
-  }, [filteredData, plotDiv, projectAbbrev, timeFilterObject]);
+  }, [filteredData, plotDiv, projectAbbrev, timeFilterObject, showMissingOnly]);
 
   return (
     <Box>
-      <Tooltip title={tooltipTitle} arrow placement="top">
-        <Typography variant="h5" paddingBottom={3} color="primary">
-          {title ?? `${field} counts`}
-        </Typography>
-      </Tooltip>
+      <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+        <Tooltip title={tooltipTitle} arrow placement="top">
+          <Typography variant="h5" paddingBottom={3} color="primary">
+            {title ?? `${field} counts`}
+          </Typography>
+        </Tooltip>
+        {!errorMessage &&
+          data?.fieldLoadingStates[categoryFieldStable] === LoadingState.SUCCESS && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showMissingOnly}
+                  onChange={(e) => setShowMissingOnly(e.target.checked)}
+                  size="small"
+                />
+              }
+              slotProps={{
+                typography: { fontSize: '0.75rem', color: 'primary' },
+              }}
+              label="Show missing only"
+            />
+          )}
+      </Box>
       {errorMessage ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
