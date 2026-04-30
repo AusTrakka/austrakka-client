@@ -12,7 +12,7 @@ import { ResponseType } from '../../constants/responseType';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
 import type { Group, GroupRole, Member, Organisation } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
+import { getGroupList, getOrganisation, getOrgMembers } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
@@ -58,7 +58,6 @@ interface OrganisationOverviewProps {
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const [organisation, setOrganisation] = useState<Organisation>();
-  const [orgEveryone, setOrgEveryone] = useState<Group>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
@@ -117,20 +116,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       const { groupRoles, admin } = user;
       if (!admin) {
         const orgViewerGroups = getCorrectGroups(groupRoles, orgAbbrev);
-        setOrgEveryone(
-          orgViewerGroups.find(
-            (groupRole: GroupRole) => groupRole.group.name === `${orgAbbrev}-Everyone`,
-          )?.group,
-        );
         setUserGroups(orgViewerGroups.map((groupRole: GroupRole) => groupRole.group));
       } else {
         const groupsResponseObject: ResponseObject = await getGroupList(token);
         if (groupsResponseObject.status === ResponseType.Success) {
           const groupsData = groupsResponseObject.data as Group[];
           const orgAdminGroups = getCorrectGroupsAdmin(groupsData, orgAbbrev);
-          setOrgEveryone(
-            orgAdminGroups.find((group: Group) => group.name === `${orgAbbrev}-Everyone`),
-          );
           setUserGroups(orgAdminGroups);
         }
       }
@@ -159,9 +150,9 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   // THIS SHOULD BE LOADED IN THE TAB NOT IN THE OVERVIEW.
   useEffect(() => {
     async function getOrgMembersList() {
-      if (orgEveryone) {
-        const memberListResponse: ResponseObject = await getGroupMembers(
-          orgEveryone.groupId,
+      if (organisation) {
+        const memberListResponse: ResponseObject = await getOrgMembers(
+          organisation.abbreviation,
           token,
         );
         if (memberListResponse.status === ResponseType.Success) {
@@ -183,7 +174,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
     ) {
       getOrgMembersList();
     }
-  }, [token, tokenLoading, groupsStatus, orgEveryone]);
+  }, [token, tokenLoading, groupsStatus, organisation]);
 
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"

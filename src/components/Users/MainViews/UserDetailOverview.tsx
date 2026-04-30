@@ -12,16 +12,11 @@ import { ResponseType } from '../../../constants/responseType';
 import type {
   GroupedPrivilegesByRecordType,
   RecordRole,
+  User,
   UserPatchV2,
-  UserV2,
 } from '../../../types/dtos';
 import type { ResponseObject } from '../../../types/responseObject.interface';
-import {
-  disableUserV2,
-  enableUserV2,
-  getUserV2,
-  patchUserV2,
-} from '../../../utilities/resourceUtils';
+import { disableUser, enableUser, getUser, patchUser } from '../../../utilities/resourceUtils';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../RowRender/RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
@@ -37,19 +32,19 @@ import {
   updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
 import { bytesToMB } from '../../../utilities/renderUtils';
-import { processPrivilegeChanges } from '../../Users/privilegeBulkApiCall';
+import { processPrivilegeChanges } from '../privilegeBulkApiCall';
 import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
-function UserV2DetailOverview() {
+function UserDetailOverview() {
   const { username } = useParams();
   const { token, tokenLoading } = useApi();
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingPrivileges, setEditingPrivileges] = useState(false);
-  const [user, setUser] = useState<UserV2 | null>(null);
-  const [editedValues, setEditedValues] = useState<UserV2 | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [editedValues, setEditedValues] = useState<User | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
   const [editedPrivileges, setEditedPrivileges] = useState<GroupedPrivilegesByRecordType[] | null>(
     null,
@@ -163,10 +158,10 @@ function UserV2DetailOverview() {
 
   useEffect(() => {
     const updateUser = async () => {
-      const userResponse: ResponseObject = await getUserV2(username!, token);
+      const userResponse: ResponseObject = await getUser(username!, token);
 
       if (userResponse.status === ResponseType.Success) {
-        const userDto = userResponse.data as UserV2;
+        const userDto = userResponse.data as User;
         setUser(userDto);
         setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
         setEditedValues({ ...userDto });
@@ -185,14 +180,14 @@ function UserV2DetailOverview() {
     }
   }, [loading, token, tokenLoading, username]);
 
-  async function fetchUserDto(): Promise<UserV2> {
-    const userFetchResponse: ResponseObject = await getUserV2(username!, token);
+  async function fetchUserDto(): Promise<User> {
+    const userFetchResponse: ResponseObject = await getUser(username!, token);
 
     if (userFetchResponse.status !== ResponseType.Success) {
       throw new Error('User could not be accessed');
     }
 
-    return userFetchResponse.data as UserV2;
+    return userFetchResponse.data as User;
   }
 
   const processPendingChanges = async () => {
@@ -225,7 +220,7 @@ function UserV2DetailOverview() {
   };
 
   const editUserDetails = async () => {
-    const { orgGlobalId, isActive, ...otherValues } = editedValues as UserV2;
+    const { orgGlobalId, isActive, ...otherValues } = editedValues as User;
 
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat: UserPatchV2 = {
@@ -241,7 +236,7 @@ function UserV2DetailOverview() {
     try {
       const clientSessionId: string = crypto.randomUUID();
       // basic patch
-      const userResponse: ResponseObject = await patchUserV2(
+      const userResponse: ResponseObject = await patchUser(
         username!,
         editedValuesDtoFormat,
         token,
@@ -252,9 +247,9 @@ function UserV2DetailOverview() {
       if (editedActiveState) {
         let userActivateResponse: ResponseObject;
         if (isActive) {
-          userActivateResponse = await enableUserV2(username!, token, clientSessionId);
+          userActivateResponse = await enableUser(username!, token, clientSessionId);
         } else {
-          userActivateResponse = await disableUserV2(username!, token, clientSessionId);
+          userActivateResponse = await disableUser(username!, token, clientSessionId);
         }
         if (userActivateResponse.status !== ResponseType.Success) {
           throw new Error('User could not be activated/deactivated');
@@ -469,4 +464,4 @@ function UserV2DetailOverview() {
   ) : null;
 }
 
-export default UserV2DetailOverview;
+export default UserDetailOverview;

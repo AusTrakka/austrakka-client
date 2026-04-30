@@ -1,18 +1,22 @@
+import { CancelOutlined, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import {
-  Autocomplete,
+  IconButton,
   InputAdornment,
   Switch,
   TableCell,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import type React from 'react';
-import type { Dispatch, SetStateAction } from 'react';
+import { type Dispatch, type SetStateAction, useState } from 'react';
 import type { User } from '../../../types/dtos';
-import { isoDateLocalDate, isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { isoDateLocalDate } from '../../../utilities/dateUtils';
+import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
+import './RowAndCell.css';
+import { Theme } from '../../../assets/themes/theme';
 import { bytesToMB } from '../../../utilities/renderUtils';
-import { FieldLabelWithTooltip } from '../../UsersV2/RowRender/FieldLabelWithToolTip';
 
 interface EditableRowProps {
   field: keyof User;
@@ -20,29 +24,28 @@ interface EditableRowProps {
   editedValues: User | null;
   setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
-  allOrgs: any[];
-  setOrgChanged: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function EditableRow(props: EditableRowProps) {
-  const {
-    field,
-    detailValue,
-    editedValues,
-    setEditedValues,
-    readableNames,
-    allOrgs,
-    setOrgChanged,
-  } = props;
+  const { field, detailValue, editedValues, setEditedValues, readableNames } = props;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+  };
 
   const nonEditableFields = [
     'created',
     'objectId',
     'username',
-    'lastLogIn',
-    'lastActive',
+    'globalId',
+    'orgName',
     'monthlyBytesUsed',
   ];
+
+  const immutableGuids = ['objectId', 'globalId'];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
@@ -51,17 +54,6 @@ function EditableRow(props: EditableRowProps) {
       return {
         ...prevValues,
         [field]: value,
-      };
-    });
-  };
-
-  const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
-    setEditedValues((prevValues) => {
-      if (prevValues === null) return null;
-      return {
-        ...prevValues,
-        [field]: checked,
       };
     });
   };
@@ -76,89 +68,62 @@ function EditableRow(props: EditableRowProps) {
     });
   };
 
+  const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    setEditedValues((prevValues) => {
+      if (prevValues === null) return null;
+      return {
+        ...prevValues,
+        [field]: checked,
+      };
+    });
+  };
   switch (typeof detailValue) {
     case 'string':
       if (nonEditableFields.includes(field)) {
-        let displayValue;
-        if (field === 'created') {
-          displayValue = isoDateLocalDate(detailValue);
-        } else if (field === 'lastLogIn' || field === 'lastActive') {
-          displayValue = isoDateOrNotRecorded(detailValue); // Replace with your method
-        } else {
-          displayValue = detailValue;
-        }
-
         return (
           <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>{displayValue}</TableCell>
-          </TableRow>
-        );
-      }
-
-      if (field === 'orgName') {
-        return (
-          <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              <Autocomplete
-                options={allOrgs.map((org) => org.name)}
-                disableClearable
-                getOptionLabel={(option) => option.name ?? option}
-                value={editedValues?.orgName || null}
-                onChange={(_event, newValue) => {
-                  setOrgChanged(true);
-                  setEditedValues((prevValues) => {
-                    if (prevValues === null) return null;
-                    return {
-                      ...prevValues,
-                      [field]: newValue,
-                      orgAbbrev:
-                        allOrgs.find((org) => org.name === newValue)?.abbreviation ||
-                        prevValues.orgAbbrev,
-                    };
-                  });
-                }}
-                renderOption={(_props, option) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
-                    {option}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    fullWidth
-                    hiddenLabel
-                    variant="filled"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
+            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="value-cell-editing">
+              {(() => {
+                switch (true) {
+                  case field === 'created':
+                    return isoDateLocalDate(detailValue);
+                  case immutableGuids.includes(field):
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ marginRight: '8px' }}>{detailValue}</span>
+                        <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
+                          <IconButton size="small" onClick={() => handleCopy(detailValue)}>
+                            <ContentCopy style={{ fontSize: '1rem' }} />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
+                    );
+                  default:
+                    return detailValue;
+                }
+              })()}
             </TableCell>
           </TableRow>
         );
       }
+
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>
+          <TableCell className="key-cell-editing">
+            <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+          </TableCell>
+          <TableCell className="value-cell-editing">
             <TextField
+              style={{ padding: '0px' }}
               value={editedValues?.[field] || ''}
               onChange={handleChange}
               variant="filled"
               fullWidth
               size="small"
               hiddenLabel
-              inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
+              inputProps={{ style: { fontSize: '.9em' } }}
             />
           </TableCell>
         </TableRow>
@@ -166,31 +131,60 @@ function EditableRow(props: EditableRowProps) {
     case 'boolean':
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>
-            <Switch
-              size="small"
-              checked={(editedValues?.[field] as boolean) || false}
-              onChange={handleChangeBoolean}
-            />
+          <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+          <TableCell className="value-cell-editing">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Switch
+                checked={(editedValues?.[field] as boolean) || false}
+                size="small"
+                onChange={handleChangeBoolean}
+              />
+              <Tooltip
+                title={(editedValues?.[field] as boolean) ? 'Active' : 'Disabled'}
+                arrow
+                placement="top"
+              >
+                {(editedValues?.[field] as boolean) || false ? (
+                  <CheckCircleOutlined
+                    fontSize="small"
+                    style={{ color: Theme.SecondaryLightGreen }}
+                  />
+                ) : (
+                  <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />
+                )}
+              </Tooltip>
+            </div>
           </TableCell>
         </TableRow>
       );
-    case 'number':
-      if (nonEditableFields.includes(field)) {
+    case 'object':
+      if (detailValue === null) {
         return (
           <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>{`${bytesToMB(detailValue as number)} MB`}</TableCell>
+            <TableCell className="key-cell-editing">
+              <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+            </TableCell>
+            <TableCell className="value-cell-editing">
+              <TextField
+                value={(editedValues?.[field] as string) || ''}
+                onChange={handleChange}
+                variant="filled"
+                fullWidth
+                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
+                size="small"
+              />
+            </TableCell>
           </TableRow>
         );
       }
+      break;
+    case 'number':
       return (
         <TableRow key={field}>
-          <TableCell>
+          <TableCell className="key-cell-editing">
             <FieldLabelWithTooltip field={field} readableNames={readableNames} />
           </TableCell>
-          <TableCell>
+          <TableCell className="value-cell-editing">
             <TextField
               value={bytesToMB(editedValues?.[field] as number)}
               onChange={handleMBChange}
@@ -209,7 +203,7 @@ function EditableRow(props: EditableRowProps) {
               slotProps={{
                 input: {
                   style: {
-                    fontSize: '.9rem',
+                    fontSize: '.9em',
                     whiteSpace: 'nowrap',
                     flexWrap: 'nowrap',
                     overflow: 'hidden',
@@ -217,7 +211,7 @@ function EditableRow(props: EditableRowProps) {
                   },
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Typography fontSize="0.9rem">MB per month</Typography>
+                      <Typography fontSize="0.9em">MB per month</Typography>
                     </InputAdornment>
                   ),
                 },
@@ -226,30 +220,13 @@ function EditableRow(props: EditableRowProps) {
           </TableCell>
         </TableRow>
       );
-    case 'object':
-      if (detailValue === null) {
-        return (
-          <TableRow key={field}>
-            <TableCell width="200em">{readableNames[field] || field}</TableCell>
-            <TableCell>
-              <TextField
-                value={(editedValues?.[field] as string) || ''}
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
-                size="small"
-              />
-            </TableCell>
-          </TableRow>
-        );
-      }
-      break;
     default:
       return (
         <TableRow key={field}>
-          <TableCell width="200em">{readableNames[field] || field}</TableCell>
-          <TableCell>{detailValue}</TableCell>
+          <TableCell className="key-cell-editing" style={{ borderBottom: 'none' }}>
+            <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+          </TableCell>
+          <TableCell className="value-cell-editing">{detailValue}</TableCell>
         </TableRow>
       );
   }

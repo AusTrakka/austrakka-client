@@ -52,7 +52,6 @@ interface SideBarItemProps {
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
-  const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
   const [cli, setCli] = useState(false);
@@ -90,7 +89,6 @@ function MainMenuLayout() {
     proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
-    usersV2: 'Users (V2)',
     platform: 'Platform',
     fields: 'Fields',
     datasets: 'Datasets',
@@ -174,12 +172,6 @@ function MainMenuLayout() {
       icon: <People />,
       permissionDomain: 'users',
     },
-    {
-      title: 'Users (V2)',
-      link: '/usersV2',
-      icon: <People color="warning" />,
-      permissionDomain: 'usersV2',
-    },
   ];
 
   const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
@@ -191,10 +183,8 @@ function MainMenuLayout() {
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
-      updateWarningBanner('warningBannerPadded');
     } else {
       updatePageStyling('page');
-      updateWarningBanner('warningBanner');
     }
   };
 
@@ -343,21 +333,6 @@ function MainMenuLayout() {
           </List>
         </Drawer>
       </Box>
-      {pathnames.includes('usersV2') ? (
-        <div className={warningBanner}>
-          <Typography
-            variant="body2"
-            style={{
-              fontWeight: 'bold',
-              textAlign: 'center',
-              padding: '10px',
-            }}
-          >
-            This is the new user interface with an in-progress permissions system. Not all new roles
-            have been implemented.
-          </Typography>
-        </div>
-      ) : null}
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">

@@ -13,7 +13,6 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en-gb';
 import muiTheme from './assets/themes/theme';
 import Users from './components/Admin/Users';
-import UsersV2 from './components/Admin/UsersV2';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
 import Fields from './components/Fields/Fields';
 import MainMenuLayout from './components/Layouts/MainMenuLayout';
@@ -31,8 +30,7 @@ import TreeDetail from './components/Trees/TreeDetail';
 import Upload from './components/Upload/Upload';
 import UploadMetadata from './components/Upload/UploadMetadata';
 import UploadSequences from './components/Upload/UploadSequences';
-import UserDetail from './components/Users/UserDetail';
-import UserV2DetailOverview from './components/UsersV2/MainViews/UserV2DetailOverview';
+import UserDetailOverview from './components/Users/MainViews/UserDetailOverview';
 import UserProvider from './providers/UserProvider';
 import { msalInstance } from './utilities/authUtils';
 import CustomNavigationClient from './utilities/NavigationClient';
@@ -56,7 +54,6 @@ function App() {
                   <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
-                  <Route path="usersV2" element={<UsersV2 />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
@@ -81,8 +78,7 @@ function App() {
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />
-                  <Route path="users/:username" element={<UserDetail />} />
-                  <Route path="usersV2/:username" element={<UserV2DetailOverview />} />
+                  <Route path="users/:username" element={<UserDetailOverview />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

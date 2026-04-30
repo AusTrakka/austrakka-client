@@ -1,255 +1,228 @@
+import { AddCircle, KeyboardArrowRight } from '@mui/icons-material';
+import { Alert, IconButton, Stack, TableCell, TableRow, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useApi } from '../../../app/ApiContext';
+import LoadingState from '../../../constants/loadingState';
+import { ResponseType } from '../../../constants/responseType';
+import type { ResponseObject } from '../../../types/responseObject.interface';
 import {
-  AddCircle,
-  CheckBox,
-  CheckBoxOutlineBlank,
-  KeyboardArrowDown,
-  KeyboardArrowRight,
-} from '@mui/icons-material';
-import {
-  Autocomplete,
-  Checkbox,
-  IconButton,
-  Stack,
-  TableCell,
-  TableRow,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
-import { orgRoles, projectRoles, type RoleName } from '../../../permissions/roles';
-import type { Group, GroupRole, Role, User } from '../../../types/dtos';
-import { sortGroups } from '../groupSorting';
+  getOrganisations,
+  getProjectList,
+  getUserProformas,
+} from '../../../utilities/resourceUtils';
+import './autocompleteStyleOverride.css';
+import { Theme } from '../../../assets/themes/theme';
+import RecordTypes from '../../../constants/record-type.enum';
+import type { RolesV2 } from '../../../types/dtos';
+import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
+import { RecordAutocomplete } from './RecordAutocomplete';
+import { RoleAutocomplete } from './RoleAutocomplete';
 
 interface GroupHeaderRowProps {
-  groupType: string;
-  groupMapSize: number;
-  user: User;
-  allGroups: Group[];
-  allRoles: Role[];
-  editing: boolean;
-  setOpenDupSnackbar: Dispatch<SetStateAction<boolean>>;
+  recordType: string;
   openGroupRoles: string[];
   handleGroupRoleToggle: (groupName: string) => void;
-  existingGroupRoles: GroupRole[];
-  updateUserGroupRoles: (groupRoles: GroupRole[]) => void;
+  editing: boolean;
+  rolesErrorMessage: string | null;
+  roles: RolesV2[];
+  empty: boolean;
+  onSelectionChange: (recordType: string, assignments: RoleAssignments[]) => void;
 }
 
 function GroupHeaderRow(props: GroupHeaderRowProps) {
   const {
-    groupType,
-    groupMapSize,
-    user,
-    allGroups,
-    allRoles,
-    editing,
+    recordType,
+    empty,
     openGroupRoles,
     handleGroupRoleToggle,
-    existingGroupRoles,
-    setOpenDupSnackbar,
-    updateUserGroupRoles,
+    editing,
+    roles,
+    rolesErrorMessage,
+    onSelectionChange,
   } = props;
 
-  const [selectedGroups, setSelectedGroups] = useState<Group[] | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
+  const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
+  const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
+  const [recordFetchError, setRecordFetchError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const { token, tokenLoading } = useApi();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: state setters are stable
+  const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
+  const tenantName = 'Default Tenant';
+
   useEffect(() => {
-    setSelectedGroups(null);
-    setSelectedRoles(null);
-  }, [editing]);
+    async function fetchRecords() {
+      try {
+        let response: ResponseObject | null = null;
+        switch (recordType) {
+          case RecordTypes.ORGANISATION:
+            response = await getOrganisations(false, token);
+            break;
+          case RecordTypes.PROJECT:
+            response = await getProjectList(token);
+            break;
+          case RecordTypes.PROFORMA:
+            response = await getUserProformas(token);
+            break;
+          default:
+            // TODO: Will need to add more calls once endpoints have been added
+            // I think project is technically there but I dont think roles can be added for it.
+            // for the cli
+            return;
+        }
 
-  const getRoleOptions = () => {
-    switch (groupType) {
-      case 'Home Organisation':
-        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
-      case 'Other Organisations':
-        return allRoles.filter((role) => orgRoles.includes(role.name as RoleName));
-      case 'Projects and Other Groups':
-        return allRoles.filter((role) => projectRoles.includes(role.name as RoleName));
-      default:
-        return [];
-    }
-  };
+        if (response.status !== ResponseType.Success) {
+          setRecordFetchError(response.message);
+          return;
+        }
 
-  const allRolesForGroup = getRoleOptions();
+        const rolesV2: any[] = response.data;
 
-  const getGroupOptions = () => {
-    const [personalOrgGroups, foriegnOrgGroups, restoftheGroups] = sortGroups(allGroups, user);
-
-    switch (groupType) {
-      case 'Home Organisation':
-        return personalOrgGroups;
-      case 'Other Organisations':
-        return foriegnOrgGroups;
-      case 'Projects and Other Groups':
-        return restoftheGroups;
-      default:
-        return [];
-    }
-  };
-
-  const groupOptions = editing ? getGroupOptions() : [];
-
-  const addGroupRoles = () => {
-    const newGroupRoles: GroupRole[] = (selectedGroups as Group[]).flatMap((group) =>
-      (selectedRoles as Role[]).map((role) => ({
-        group,
-        role: {
-          id: role.roleId,
-          name: role.name,
-        },
-      })),
-    );
-
-    const duplicateFound = newGroupRoles.some((newGroupRole) =>
-      existingGroupRoles.some(
-        (groupRole) =>
-          groupRole.group.groupId === newGroupRole.group.groupId &&
-          groupRole.role.id === newGroupRole.role.id,
-      ),
-    );
-
-    if (duplicateFound) {
-      setOpenDupSnackbar(true);
-      return;
+        setRecords(
+          rolesV2
+            .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+            .map((item: any) => ({
+              id: item.globalId || item.proformaVersionGlobalId,
+              abbrev: item.abbreviation,
+              name: item.name,
+            })),
+        );
+      } catch (_error) {
+        setRecordFetchError('An error occurred while fetching records.');
+      }
     }
 
-    const updatedGroupRoles = [...existingGroupRoles, ...newGroupRoles];
-    updateUserGroupRoles(updatedGroupRoles);
-    setSelectedGroups(null);
-    setSelectedRoles(null);
-  };
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
+      if (recordType !== 'Tenant') {
+        fetchRecords();
+      } else {
+        const tenantDefaultRecord = {
+          id: '', // No required for tenant
+          abbrev: tenantName,
+          name: tenantName,
+        };
+        setSelectedRecords([tenantDefaultRecord]);
+        setRecords([tenantDefaultRecord]);
+      }
+    }
+  }, [recordType, token, tokenLoading]);
 
-  const handleAddGroupRole = () => {
-    if (selectedGroups && selectedRoles) {
-      addGroupRoles();
+  useEffect(() => {
+    if (rolesErrorMessage || recordFetchError) {
+      setFetchError(rolesErrorMessage || recordFetchError);
+    }
+  }, [rolesErrorMessage, recordFetchError]);
+
+  useEffect(() => {
+    if (!editing) {
+      if (recordType !== 'Tenant') {
+        setSelectedRoles(null);
+        setSelectedRecords(null);
+      } else {
+        setSelectedRoles(null);
+      }
+    }
+  }, [editing, recordType]);
+
+  const handleAddPrivilege = () => {
+    if (selectedRecords && selectedRoles) {
+      const assignedRoles: RoleAssignments[] = [];
+
+      for (const record of selectedRecords) {
+        const existingAssignment = assignedRoles.find(
+          (assignment) => assignment.record.id === record.id,
+        );
+
+        if (existingAssignment) {
+          existingAssignment.roles.push(
+            ...selectedRoles.filter(
+              (role) => !existingAssignment.roles.some((r) => r.globalId === role.globalId),
+            ),
+          );
+        } else {
+          assignedRoles.push({
+            record,
+            roles: [...selectedRoles],
+          });
+        }
+      }
+      onSelectionChange(recordType, assignedRoles);
+      setSelectedRoles(null);
+      if (recordType !== 'Tenant') {
+        setSelectedRecords(null);
+      }
     }
   };
-
-  const isAddButtonEnabled = selectedGroups !== null && selectedRoles !== null;
 
   return (
-    <TableRow key={groupType}>
+    <TableRow
+      key={recordType}
+      style={{
+        backgroundColor: Theme.PrimaryGrey,
+        borderRadius: '6px',
+        border: 'none',
+      }}
+    >
       <TableCell width="250em">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
+            disabled={empty}
             aria-label="expand row"
             size="small"
-            onClick={() => handleGroupRoleToggle(groupType)}
-            disabled={!editing && groupMapSize === 0}
+            disableRipple
+            onClick={() => handleGroupRoleToggle(recordType)}
           >
-            {openGroupRoles.includes(groupType) ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+            <KeyboardArrowRight
+              sx={{
+                transform: openGroupRoles.includes(recordType) ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.125s ease-in-out',
+              }}
+            />
           </IconButton>
-          {groupMapSize === 0 ? (
-            <Typography variant="body2" sx={{ color: 'grey' }}>
-              {groupType}
-            </Typography>
-          ) : (
-            <Typography variant="body2">{groupType}</Typography>
-          )}
+          <Typography variant="body2">{recordType}</Typography>
         </div>
       </TableCell>
       <TableCell>
-        <Stack direction="row" spacing={1}>
-          {editing ? (
-            <>
-              <Autocomplete
-                options={groupOptions}
-                multiple
-                limitTags={1}
-                style={{ width: '19em' }}
-                value={selectedGroups || []}
-                disableCloseOnSelect
-                getOptionLabel={(option) => option.name}
-                onChange={(_e, v) => setSelectedGroups(v)}
-                renderOption={(_props, option, { selected }) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
-                    <Checkbox
-                      style={{ marginRight: '8px' }}
-                      checked={selected}
-                      icon={<CheckBoxOutlineBlank />}
-                      checkedIcon={<CheckBox />}
-                    />
-                    {option.name}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    hiddenLabel
-                    placeholder="Select Group"
-                    variant="filled"
+        {fetchError && editing ? (
+          <Alert severity="error" variant="standard">
+            {rolesErrorMessage}
+          </Alert>
+        ) : (
+          <Stack direction="row" spacing={1}>
+            {editing && records ? (
+              <>
+                <RecordAutocomplete
+                  records={records}
+                  selectedRecords={selectedRecords}
+                  setSelectedRecords={setSelectedRecords}
+                  recordType={recordType}
+                />
+                <RoleAutocomplete
+                  roles={roles}
+                  selectedRoles={selectedRoles}
+                  setSelectedRoles={setSelectedRoles}
+                />
+                <div style={{ display: 'flex' }}>
+                  <IconButton
+                    aria-label="add"
                     size="small"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
+                    color={isAddButtonEnabled ? 'success' : 'default'}
+                    onClick={() => {
+                      handleAddPrivilege();
+                      if (!openGroupRoles.includes(recordType)) {
+                        handleGroupRoleToggle(recordType);
+                      }
                     }}
-                  />
-                )}
-              />
-              <Autocomplete
-                options={allRolesForGroup}
-                multiple
-                limitTags={1}
-                style={{ width: '19em' }}
-                value={selectedRoles || []}
-                disableCloseOnSelect
-                getOptionLabel={(option) => option.name}
-                onChange={(_e, v) => setSelectedRoles(v)}
-                renderOption={(_props, option, { selected }) => (
-                  <li {..._props} style={{ fontSize: '0.9em' }}>
-                    <Checkbox
-                      style={{ marginRight: '8px' }}
-                      checked={selected}
-                      icon={<CheckBoxOutlineBlank />}
-                      checkedIcon={<CheckBox />}
-                    />
-                    {option.name}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    hiddenLabel
-                    variant="filled"
-                    placeholder="Select Role"
-                    InputProps={{
-                      ...params.InputProps,
-                      inputProps: {
-                        ...params.inputProps,
-                        style: {
-                          fontSize: '0.9em',
-                        },
-                      },
-                    }}
-                  />
-                )}
-              />
-              <div style={{ display: 'flex' }}>
-                <IconButton
-                  aria-label="add"
-                  size="small"
-                  color={isAddButtonEnabled ? 'success' : 'default'}
-                  onClick={() => {
-                    handleAddGroupRole();
-                    if (!openGroupRoles.includes(groupType)) {
-                      handleGroupRoleToggle(groupType);
-                    }
-                  }}
-                  disabled={!isAddButtonEnabled}
-                >
-                  <AddCircle />
-                </IconButton>
-              </div>
-            </>
-          ) : null}
-        </Stack>
+                    disabled={!isAddButtonEnabled}
+                  >
+                    <AddCircle />
+                  </IconButton>
+                </div>
+              </>
+            ) : null}
+          </Stack>
+        )}
       </TableCell>
     </TableRow>
   );
