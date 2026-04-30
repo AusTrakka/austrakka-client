@@ -30,7 +30,7 @@ const HAS_SEQ = 'Has_sequences';
 
 const CHART_COLORS = {
   AVAILABLE: Theme.SecondaryMain,
-  MISSING: Theme.PrimaryGrey300,
+  MISSING: Theme.SecondaryYellow,
 } as const;
 
 interface HasSeqWidgetProps extends ProjectWidgetProps {
