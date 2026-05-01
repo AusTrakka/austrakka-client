@@ -32,7 +32,7 @@ import {
 
 // Project endpoints
 export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
-  callGET('/api/Projects?&includeall=false', token);
+  callGET('/api/Projects', token);
 export const getProjectDetails = (
   abbrev: string,
   token: string,
