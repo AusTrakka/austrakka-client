@@ -4,8 +4,12 @@ import type { ResponseObject } from '../../types/responseObject.interface';
 import type { PendingChange } from '../../types/userDetailEdit.interface';
 import {
   deleteOrgPrivilege,
+  deleteProformaPrivilege,
+  deleteProjectPrivilege,
   deleteTenantPrivilege,
   postOrgPrivilege,
+  postProformaPrivilege,
+  postProjectPrivilege,
   postTenantPrivilege,
 } from '../../utilities/resourceUtils';
 
@@ -20,6 +24,8 @@ const postApiMap: Record<
 > = {
   Organisation: postOrgPrivilege,
   System: postTenantPrivilege,
+  Project: postProjectPrivilege,
+  Proforma: postProformaPrivilege,
 };
 
 const deleteApiMap: Record<
@@ -34,6 +40,8 @@ const deleteApiMap: Record<
 > = {
   Organisation: deleteOrgPrivilege,
   System: deleteTenantPrivilege,
+  Project: deleteProjectPrivilege,
+  Proforma: deleteProformaPrivilege,
 };
 
 export async function processPrivilegeChanges(

@@ -121,6 +121,19 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
       const [message] = sampleResp.messages;
       message.ResponseType = ResponseType.Warning;
       messages.push(message);
+    } else if (sampleResp.status === ResponseType.Error) {
+      setSeqSubmission({
+        ...seqSubmission,
+        messages: [
+          ...seqSubmission.messages,
+          {
+            ResponseMessage: sampleResp.message,
+            ResponseType: ResponseType.Error,
+          } as ResponseMessage,
+        ],
+      });
+      updateState(SeqUploadRowState.Errored);
+      return;
     } else {
       messages.push(...sampleResp.messages);
     }

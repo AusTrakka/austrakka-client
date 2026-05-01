@@ -1,4 +1,4 @@
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ColorScheme } from 'vega';
@@ -55,10 +55,10 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function HeatMap(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
-    selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -77,17 +77,20 @@ function HeatMap(props: PlotTypeProps) {
     defaultContinuousColorScheme,
     navigate,
   );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
+    'fontSize',
+    11,
+    navigate,
+  );
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -145,6 +148,23 @@ function HeatMap(props: PlotTypeProps) {
     }
   }, [yAxisField]);
 
+  useEffect(() => {
+    const setFontSizeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.config = {
+        ...oldSpec.config,
+        axis: { ...oldSpec.config?.axis, labelFontSize: fontSize, titleFontSize: fontSize },
+        legend: { ...oldSpec.config?.legend, labelFontSize: fontSize, titleFontSize: fontSize },
+        header: { ...oldSpec.config?.header, labelFontSize: fontSize, titleFontSize: fontSize },
+      };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setFontSizeInSpec);
+  }, [fontSize]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -179,6 +199,18 @@ function HeatMap(props: PlotTypeProps) {
           ))}
         </Select>
       </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="font-size-select"
+          label="Font Size"
+          size="small"
+          inputProps={{ min: 6, max: 24, step: 1 }}
+          value={fontSize}
+          onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 11)}
+        />
+      </FormControl>
       <ColorSchemeSelector
         selectedScheme={colourScheme}
         onColourChange={(newColor) => setColourScheme(newColor)}
@@ -191,7 +223,7 @@ function HeatMap(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

@@ -31,7 +31,7 @@ interface RenderGroupedRolesAndGroupsProps {
 
 const REQUIRED_RECORD_TYPES = [
   RecordTypes.SYSTEM,
-  RecordTypes.ORG,
+  RecordTypes.ORGANISATION,
   RecordTypes.PROJECT,
   RecordTypes.PROFORMA,
 ];
@@ -122,9 +122,12 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
 
   const getRolesForRecordType = (recordType: string) => {
     if (!rolesForV2) return [];
-    return rolesForV2.filter((role) =>
-      role.resourceTypes.some((rt) => rt === recordType || rt === 'All'),
-    );
+    if (recordType === 'System') {
+      return rolesForV2.filter((role) =>
+        role.resourceTypes.some((rt) => rt === 'System' || rt === 'All'),
+      );
+    }
+    return rolesForV2.filter((role) => role.resourceTypes.some((rt) => rt === recordType));
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {

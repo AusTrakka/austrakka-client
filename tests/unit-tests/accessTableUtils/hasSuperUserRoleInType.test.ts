@@ -122,7 +122,7 @@ describe('hasSuperUserRoleInType', () => {
     test('return false when roles is undefined', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Systemk',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'SomeTenant',

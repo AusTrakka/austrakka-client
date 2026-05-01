@@ -53,7 +53,6 @@ interface ImportMetaEnv {
   readonly VITE_BRANDING_ID: string;
   // Docs
   readonly VITE_DOCS_URL: string;
-  readonly VITE_DOCS_ENABLED: string;
 }
 
 interface ImportMeta {

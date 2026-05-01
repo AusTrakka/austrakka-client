@@ -15,7 +15,7 @@ interface ResourcePrivileges {
 
 const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
   users: {
-    [PermissionLevel.CanShow]: [RoleName.AusTrakkaAdmin],
+    [PermissionLevel.CanShow]: [RoleName.TrakkaAdmin],
   },
   'project/tabs/datasettab': {
     [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
@@ -27,7 +27,7 @@ const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
   },
   'organisation/sample/share': {
     // if a button is hidden then when it is shown we expect it to be clickable
-    [PermissionLevel.CanShow]: [RoleName.Uploader, RoleName.AusTrakkaAdmin],
+    [PermissionLevel.CanShow]: [RoleName.Uploader, RoleName.TrakkaAdmin],
   },
 };
 

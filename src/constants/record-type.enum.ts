@@ -1,6 +1,6 @@
 enum RecordTypes {
   SYSTEM = 'System',
-  ORG = 'Organisation',
+  ORGANISATION = 'Organisation',
   PROJECT = 'Project',
   PROFORMA = 'Proforma',
 }

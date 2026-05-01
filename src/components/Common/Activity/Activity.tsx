@@ -3,7 +3,11 @@ import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { Column } from 'primereact/column';
 import type { TreeNode } from 'primereact/treenode';
-import { TreeTable, type TreeTableExpandedKeysType } from 'primereact/treetable';
+import {
+  TreeTable,
+  type TreeTableExpandedKeysType,
+  type TreeTableToggleEvent,
+} from 'primereact/treetable';
 import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import {
@@ -38,6 +42,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Event initiated by': '',
   Resource: '',
   'Resource Type': '',
+  Context: [],
   Details: null,
 };
 
@@ -62,10 +67,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     submitterDisplayName: null,
   });
 
-  const routeSegment = recordType === RecordTypes.SYSTEM ? recordType : `${recordType}V2`;
-
   const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
-    routeSegment,
+    recordType,
     filters,
     rGuid,
   );
@@ -96,6 +99,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       'Event initiated by': node.data.submitterDisplayName,
       Resource: node.data.resourceUniqueString,
       'Resource Type': node.data.resourceType,
+      Context: node.data.visChain,
       Details: node.data.data || null,
     };
     setDetailInfo(info);
@@ -149,6 +153,30 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
       setExpandedKeys(newExpandedKeys);
     }
+  };
+
+  const handleToggleClick = (e: TreeTableToggleEvent) => {
+    const expandedEvent = e.value;
+    // Find which node was toggled
+    const newlyOpenedNodeKey = Object.keys(expandedEvent).find(
+      (key) => expandedEvent[key] && !expandedKeys[key],
+    );
+
+    // If not newly opened, it means this node was already open and needs to be closed
+    if (!newlyOpenedNodeKey) {
+      setExpandedKeys(expandedEvent);
+      return;
+    }
+
+    // Otherwise, check if max children limit is exceeded and collapse other nodes if needed
+    const toggledNode = nodes.find((n) => n.key === newlyOpenedNodeKey);
+    const toggledNodeChildrenCount = toggledNode?.children?.length || 0;
+    const newExpandedKeys = collapseParents(newlyOpenedNodeKey, toggledNodeChildrenCount);
+
+    if (newExpandedKeys[newlyOpenedNodeKey!]) delete newExpandedKeys[newlyOpenedNodeKey!];
+    else newExpandedKeys[newlyOpenedNodeKey!] = true;
+
+    setExpandedKeys(newExpandedKeys);
   };
 
   const aggregatedCellTemplate = useCallback(
@@ -266,6 +294,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
+        recordType={recordType}
       />
       <ActivityFilters
         isOpen={filtersOpen}
@@ -291,7 +320,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               rowClassName={rowClassName}
               value={nodes || []}
               expandedKeys={expandedKeys}
-              onToggle={(e) => setExpandedKeys(e.value)}
+              onToggle={(e) => handleToggleClick(e)}
               onRowClick={handleTreeRowClick}
               showGridlines
               removableSort

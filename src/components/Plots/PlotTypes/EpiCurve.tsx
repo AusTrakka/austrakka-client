@@ -60,15 +60,15 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function EpiCurve(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
-    selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   // This plot also accesses the data itself, to determine an initial date binning
   const data: ProjectMetadataState | null = useAppSelector((state) =>
-    selectProjectMetadata(state, plot?.projectAbbreviation),
+    selectProjectMetadata(state, projectAbbrev),
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
@@ -122,17 +122,20 @@ function EpiCurve(props: PlotTypeProps) {
     'zero',
     navigate,
   );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
+    'fontSize',
+    11,
+    navigate,
+  );
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -265,6 +268,23 @@ function EpiCurve(props: PlotTypeProps) {
     setSpec(setStackTypeInSpec);
   }, [stackType]);
 
+  useEffect(() => {
+    const setFontSizeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.config = {
+        ...oldSpec.config,
+        axis: { ...oldSpec.config?.axis, labelFontSize: fontSize, titleFontSize: fontSize },
+        legend: { ...oldSpec.config?.legend, labelFontSize: fontSize, titleFontSize: fontSize },
+        header: { ...oldSpec.config?.header, labelFontSize: fontSize, titleFontSize: fontSize },
+      };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setFontSizeInSpec);
+  }, [fontSize]);
+
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
@@ -335,6 +355,18 @@ function EpiCurve(props: PlotTypeProps) {
           inputProps={{ min: -90, max: 90, step: 45 }}
           value={axisLabelAngle}
           onChange={(e) => setAxisLabelAngle(parseInt(e.target.value, 10) || 0)}
+        />
+      </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="font-size-select"
+          label="Font Size"
+          size="small"
+          inputProps={{ min: 6, max: 24, step: 1 }}
+          value={fontSize}
+          onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 11)}
         />
       </FormControl>
       <FormControl size="small" sx={{ marginX: 1, marginTop: 1 }}>
@@ -424,7 +456,7 @@ function EpiCurve(props: PlotTypeProps) {
   return (
     <>
       {renderControls()}
-      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

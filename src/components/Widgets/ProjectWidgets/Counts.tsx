@@ -17,7 +17,11 @@ import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
-import { aggregateArrayObjects, type CountRow } from '../../../utilities/dataProcessingUtils';
+import {
+  aggregateArrayObjects,
+  type CountRow,
+  filterExcluded,
+} from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // Counts table for specified field
@@ -31,10 +35,13 @@ interface CountsWidgetProps extends ProjectWidgetProps {
   field: string;
   title: string;
   fieldTitle?: string;
+  exclude?: { field: string; value: string }[] | undefined; // Optional field/value pairs to exclude
+  categoryLimit?: number; // Optional limit for number of categories/rows to show
 }
 
 export default function Counts(props: CountsWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, field, title } = props;
+  const { projectAbbrev, filteredData, timeFilterObject, field, title, exclude, categoryLimit } =
+    props;
   let { fieldTitle } = props;
   if (!fieldTitle) {
     fieldTitle = field;
@@ -65,10 +72,17 @@ export default function Counts(props: CountsWidgetProps) {
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         data.fieldLoadingStates[field] === LoadingState.SUCCESS)
     ) {
-      const counts = aggregateArrayObjects(field, filteredData!, NULL_VALUE) as CountRow[];
+      // If exclude parameter provided, filter data before aggregating
+      const filteredDataToAggregate = filterExcluded(filteredData, exclude);
+      // Aggregate filtered data
+      let counts = aggregateArrayObjects(field, filteredDataToAggregate, NULL_VALUE) as CountRow[];
+      // If categoryLimit is set, keep only the top X by count
+      if (categoryLimit && counts.length > categoryLimit) {
+        counts = counts.sort((a, b) => b.count - a.count).slice(0, categoryLimit);
+      }
       setAggregatedCounts(counts);
     }
-  }, [field, filteredData, data?.loadingState, data?.fieldLoadingStates]);
+  }, [field, filteredData, exclude, data?.loadingState, data?.fieldLoadingStates, categoryLimit]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(field)) {

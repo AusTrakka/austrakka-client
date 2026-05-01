@@ -5,7 +5,11 @@ import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
-import { getOrganisations } from '../../../utilities/resourceUtils';
+import {
+  getOrganisations,
+  getProjectList,
+  getUserProformas,
+} from '../../../utilities/resourceUtils';
 import './autocompleteStyleOverride.css';
 import { Theme } from '../../../assets/themes/theme';
 import RecordTypes from '../../../constants/record-type.enum';
@@ -52,8 +56,14 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
       try {
         let response: ResponseObject | null = null;
         switch (recordType) {
-          case 'Organisation':
+          case RecordTypes.ORGANISATION:
             response = await getOrganisations(false, token);
+            break;
+          case RecordTypes.PROJECT:
+            response = await getProjectList(token);
+            break;
+          case RecordTypes.PROFORMA:
+            response = await getUserProformas(token);
             break;
           default:
             // TODO: Will need to add more calls once endpoints have been added
@@ -73,7 +83,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
           rolesV2
             .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
             .map((item: any) => ({
-              id: item.globalId,
+              id: item.globalId || item.proformaVersionGlobalId,
               abbrev: item.abbreviation,
               name: item.name,
             })),

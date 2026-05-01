@@ -1,4 +1,8 @@
-import { InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
+import {
+  BrowserAuthError,
+  InteractionRequiredAuthError,
+  InteractionStatus,
+} from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import LoadingState from '../constants/loadingState';
@@ -32,7 +36,10 @@ export default function ApiProvider({ children }: any) {
           setAuthTokenLoading(LoadingState.SUCCESS);
         })
         .catch((error) => {
-          if (error instanceof InteractionRequiredAuthError) {
+          if (error instanceof InteractionRequiredAuthError || error instanceof BrowserAuthError) {
+            instance.acquireTokenRedirect(accessTokenRequest);
+          }
+          if (error.errorCode === 'invalid_grant') {
             instance.acquireTokenRedirect(accessTokenRequest);
           }
           // biome-ignore lint/suspicious/noConsole: historic

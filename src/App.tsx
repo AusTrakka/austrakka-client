@@ -57,6 +57,8 @@ function App() {
                   <Route path="upload/metadata" element={<UploadMetadata />} />
                   <Route path="upload/sequences" element={<UploadSequences />} />
                   <Route path="projects" element={<ProjectsList />} />
+                  {/* TODO may be able to remove and unify map and plot handling - desirable though? */}
+                  <Route path="projects/:projectAbbrev/plots/Map" element={<MapPage />} />
                   <Route
                     path="projects/:projectAbbrev/plots/:plotAbbrev"
                     element={<PlotDetail />}
@@ -73,7 +75,6 @@ function App() {
                     path="projects/:projectAbbrev/:tab?"
                     element={<ProjectOverviewWrapper />}
                   />
-                  <Route path="projects/:projectAbbrev/map" element={<MapPage />} />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
                   <Route path="fields" element={<Fields />} />

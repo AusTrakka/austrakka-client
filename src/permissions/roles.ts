@@ -1,5 +1,5 @@
 export enum RoleName {
-  AusTrakkaAdmin = 'AusTrakkaAdmin',
+  TrakkaAdmin = 'TrakkaAdmin',
   ProFormaEditor = 'ProFormaEditor',
   Viewer = 'Viewer',
   SeqViewer = 'SeqViewer',

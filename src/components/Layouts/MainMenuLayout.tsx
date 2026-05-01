@@ -1,4 +1,3 @@
-import { useAccount, useMsal } from '@azure/msal-react';
 import {
   AccountCircle,
   AccountTree,
@@ -10,6 +9,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
+  Terminal,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -33,11 +33,13 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
-import useUsername from '../../hooks/useUsername';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
+import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
+import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
+import { PROJ_TABS } from '../ProjectOverview/projTabConstants';
 import styles from './MainMenuLayout.module.css';
 
 interface SideBarItemProps {
@@ -52,14 +54,20 @@ function MainMenuLayout() {
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
+  const [cli, setCli] = useState(false);
   const settings = [
     {
       title: 'Documentation',
       icon: <Description fontSize="small" />,
-      disabled: import.meta.env.VITE_DOCS_ENABLED === 'false',
       onClick: () => {
-        window.open(`${import.meta.env.VITE_DOCS_URL}?auto_login=true`, '_blank')?.focus();
+        window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
+    },
+    {
+      title: 'CLI',
+      icon: <Terminal fontSize="small" />,
+      disabled: false,
+      onClick: () => setCli((prev) => !prev),
     },
     {
       title: 'Support',
@@ -70,7 +78,6 @@ function MainMenuLayout() {
   ];
   const breadcrumbNameMap: { [key: string]: any } = {
     projects: 'Projects',
-    plots: 'Plots',
     trees: 'Trees',
     records: 'Records',
     versions: 'Versions',
@@ -79,7 +86,6 @@ function MainMenuLayout() {
     sequences: 'Sequences',
     metadata: 'Metadata',
     dashboard: 'Dashboard',
-    samples: 'Samples',
     proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
@@ -87,6 +93,8 @@ function MainMenuLayout() {
     fields: 'Fields',
     datasets: 'Datasets',
     share: 'Share',
+    plots: 'Plots',
+    map: 'Map',
   };
 
   const breadcrumbNoLink: string[] = ['versions', 'records', 'org'];
@@ -107,28 +115,24 @@ function MainMenuLayout() {
     'members',
     'proformas',
     'datasets',
+    'activity',
   ];
+
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // when on a users detail page, do not show objectID that appears in URL
-  if (pathnames.length > 1 && pathnames[0] === 'users') {
-    pathnames[1] = '';
-  }
+  const lastPath = pathnames.at(-1) ?? '';
+  const validTabKeys = new Set([...Object.keys(PROJ_TABS), ...Object.keys(ORG_TABS)]);
 
-  if (
-    pathnames.length > 0 &&
-    pathnames.length <= 3 &&
-    noBreadCrumbIfLast.some((item) => pathnames[pathnames.length - 1].endsWith(item)) &&
-    (pathnames[0] === 'projects' || pathnames[0] === 'org')
-  ) {
+  const isShortPath = pathnames.length > 0 && pathnames.length <= 3;
+  const isNoBreadcrumbItem = noBreadCrumbIfLast.some((item) => lastPath.endsWith(item));
+  const isProjectOrOrg = pathnames[0] === 'projects' || pathnames[0] === 'org';
+  const isUnknownTab = isProjectOrOrg && !validTabKeys.has(lastPath);
+
+  if (isShortPath && (isNoBreadcrumbItem || isUnknownTab) && isProjectOrOrg) {
     pathnames.pop();
   }
 
-  const { accounts } = useMsal();
-
-  const account = useAccount(accounts[0] || {});
-  const username = useUsername(account);
   const user: UserSliceState = useAppSelector(selectUserState);
   const pages: SideBarItemProps[] = [
     {
@@ -278,9 +282,9 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Link to={`/users/${account?.localAccountId}`} style={{ textDecoration: 'none' }}>
+          <Link to={`/users/${user.username}`} style={{ textDecoration: 'none' }}>
             <Tooltip
-              title={drawer ? username : `${user.displayName} - ${username}`}
+              title={drawer ? user.username : `${user.displayName} - ${user.username}`}
               arrow
               placement="right"
             >
@@ -366,6 +370,7 @@ function MainMenuLayout() {
         <Outlet />
       </div>
       <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
+      <Cli cli={cli} handleHelpClose={() => setCli(!cli)} />
     </>
   );
 }

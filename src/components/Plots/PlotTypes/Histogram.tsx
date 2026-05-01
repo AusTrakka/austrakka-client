@@ -38,11 +38,11 @@ const defaultSpec: TopLevelSpec = {
 };
 
 function Histogram(props: PlotTypeProps) {
-  const { plot, setPlotErrorMsg } = props;
+  const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
-    selectProjectMetadataFields(state, plot?.projectAbbreviation),
+    selectProjectMetadataFields(state, projectAbbrev),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
   const [numericFields, setNumericFields] = useState<string[]>([]);
@@ -71,17 +71,20 @@ function Histogram(props: PlotTypeProps) {
     1,
     navigate,
   );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
+    'fontSize',
+    11,
+    navigate,
+  );
 
   // Set spec on load
   useEffect(() => {
-    if (plot) {
-      if (plot.spec && plot.spec.length > 0) {
-        setSpec(JSON.parse(plot.spec) as TopLevelSpec);
-      } else {
-        setSpec(defaultSpec);
-      }
+    if (customSpec && customSpec.length > 0) {
+      setSpec(JSON.parse(customSpec) as TopLevelSpec);
+    } else {
+      setSpec(defaultSpec);
     }
-  }, [plot]);
+  }, [customSpec]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -102,6 +105,7 @@ function Histogram(props: PlotTypeProps) {
       // Mandatory fields: one numeric field
       if (localNumericFields.length === 0) {
         setPlotErrorMsg('No numeric fields found in project, cannot render plot');
+        return;
       }
       // If the URL does not specify a mandatory field, try to set the preferred field
       if (xAxisField === '') {
@@ -150,6 +154,23 @@ function Histogram(props: PlotTypeProps) {
 
     setSpec(addBinningToSpec);
   }, [binMode, stepSize]);
+
+  useEffect(() => {
+    const setFontSizeInSpec = (oldSpec: TopLevelSpec | null): TopLevelSpec | null => {
+      if (oldSpec === null) return null;
+      const newSpec: any = { ...oldSpec };
+      newSpec.config = {
+        ...oldSpec.config,
+        axis: { ...oldSpec.config?.axis, labelFontSize: fontSize, titleFontSize: fontSize },
+        legend: { ...oldSpec.config?.legend, labelFontSize: fontSize, titleFontSize: fontSize },
+        header: { ...oldSpec.config?.header, labelFontSize: fontSize, titleFontSize: fontSize },
+      };
+
+      return newSpec as TopLevelSpec;
+    };
+
+    setSpec(setFontSizeInSpec);
+  }, [fontSize]);
 
   const renderControls = () => (
     <Box sx={{ float: 'right', marginX: 10 }}>
@@ -220,13 +241,25 @@ function Histogram(props: PlotTypeProps) {
           onChange={(e) => setStepSize(parseFloat(e.target.value))}
         />
       </FormControl>
+      <FormControl size="small" sx={{ marginX: 1, marginTop: 1, width: 80 }}>
+        <TextField
+          sx={{ padding: 0 }}
+          type="number"
+          id="font-size-select"
+          label="Font Size"
+          size="small"
+          inputProps={{ min: 6, max: 24, step: 1 }}
+          value={fontSize}
+          onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 11)}
+        />
+      </FormControl>
     </Box>
   );
 
   return (
     <>
       {renderControls()}
-      <VegaDataPlot spec={spec} projectAbbrev={plot?.projectAbbreviation} />
+      <VegaDataPlot spec={spec} projectAbbrev={projectAbbrev} />
     </>
   );
 }

@@ -1,3 +1,5 @@
+import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
+
 export function isNullOrEmpty(value: any) {
   // null, undefined, empty; but not false or 0
   return value == null || value === '';
@@ -98,4 +100,88 @@ export function compareProperties(
     if (transformedA > transformedB) return sign;
   }
   return 0;
+}
+
+// Function to get top X categories based on categoryLimit prop
+export function topCategories(data: any, field: string, categoryLimit?: number) {
+  const categoryCounts: Record<string, number> = {};
+  for (const item of data) {
+    // Only ignore empty values if categoryLimit is set
+    if (categoryLimit && isNullOrEmpty(item[field])) continue;
+    const value = item[field];
+    categoryCounts[value] = (categoryCounts[value] || 0) + 1;
+  }
+
+  const sortedCategories = Object.entries(categoryCounts)
+    .sort(([, countA], [, countB]) => countB - countA)
+    .map(([category]) => category);
+
+  if (categoryLimit) {
+    return sortedCategories.slice(0, categoryLimit);
+  } else {
+    // Just in case of no category limit, return all categories sorted by count
+    return sortedCategories;
+  }
+}
+
+// Filter data based on array of field/value pairs to exclude
+export function filterExcluded(data: any[], exclude?: { field: string; value: string }[]) {
+  if (!exclude || exclude.length === 0) return data;
+  return data.filter((item) => {
+    for (const { field, value } of exclude) {
+      if (value === CustomFilterOperators.NULL_OR_EMPTY) {
+        if (isNullOrEmpty(item[field])) {
+          return false; // Exclude if null or empty
+        }
+      } else if (value === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+        if (!isNullOrEmpty(item[field])) {
+          return false; // Exclude if not null or empty
+        }
+      } else {
+        if (item[field] === value) {
+          return false; // Exclude if value matches
+        }
+      }
+    }
+    return true; // Keep
+  });
+}
+
+// Filter data based on array of field/value pairs to include
+// This is currently inclusive AND as this is how filters are applied in sample table
+// Can extend to OR or other logic if needed in the future (and if sample table supports this it)
+export function filterIncluded(data: any[], include?: { field: string; value: string }[]) {
+  if (!include || include.length === 0) return data;
+  return data.filter((item) => {
+    for (const { field, value } of include) {
+      if (value === CustomFilterOperators.NULL_OR_EMPTY) {
+        if (!isNullOrEmpty(item[field])) {
+          return false; // Exclude if not null or empty
+        }
+      } else if (value === CustomFilterOperators.NOT_NULL_OR_EMPTY) {
+        if (isNullOrEmpty(item[field])) {
+          return false; // Exclude if null or empty
+        }
+      } else {
+        if (item[field] !== value) {
+          return false; // If any field does not match, exclude
+        }
+      }
+    }
+    return true; // All fields matched, include
+  });
+}
+
+// Function to strip out all columns except some, based on array of column names to keep
+export function pruneColumns(data: any[], columnsToKeep: string[]) {
+  if (!columnsToKeep || columnsToKeep.length === 0) return data;
+  return data.map((item) => {
+    const newItem = { ...item };
+    for (const key of Object.keys(newItem)) {
+      if (!columnsToKeep.includes(key)) {
+        delete newItem[key];
+      }
+    }
+    return newItem;
+  });
 }

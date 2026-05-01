@@ -18,6 +18,7 @@ import MetadataLoadingState from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { genericErrorMessage } from '../../../utilities/api';
+import { pruneColumns } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
@@ -198,9 +199,11 @@ function HasSeq(props: HasSeqWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
-      (compiledSpec.data![0] as InlineData).values = filteredData!.map((item: any) => ({
+      const pruned = pruneColumns(filteredData!, [categoryField!, HAS_SEQ]);
+      const copy = pruned.map((item: any) => ({
         ...item,
       }));
+      (compiledSpec.data![0] as InlineData).values = copy;
 
       const view = await new VegaView(parse(compiledSpec))
         .initialize(plotDiv.current!)

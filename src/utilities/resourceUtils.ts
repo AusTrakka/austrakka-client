@@ -251,6 +251,46 @@ export const postFeedback = (
   callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
+export const postProjectPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+  clientSessionId?: string,
+) => callPost(`/api/Projects/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+
+export const deleteProjectPrivilege = (
+  recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string,
+  clientSessionId?: string,
+) =>
+  callDELETE(
+    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    token,
+    clientSessionId,
+  );
+
+export const postProformaPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+  clientSessionId?: string,
+) => callPost(`/api/ProFormaV2/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+
+export const deleteProformaPrivilege = (
+  recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string,
+  clientSessionId?: string,
+) =>
+  callDELETE(
+    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    token,
+    clientSessionId,
+  );
+
 export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
@@ -340,8 +380,13 @@ export const getActivities = (
   rguid?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
-  // If recordType is Tenant, rguid will be ignored - can be e.g. empty string
-  const resourcePath =
-    recordType === RecordTypes.SYSTEM ? `${recordType}` : `${recordType}/${rguid}`;
-  return callGET(`/api/${resourcePath}/ActivityLog?${searchParams}`, token);
+  let resourcePath = '';
+  if (recordType === RecordTypes.SYSTEM) {
+    resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
+  } else if (recordType === RecordTypes.ORGANISATION) {
+    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+  } else if (recordType === RecordTypes.PROJECT) {
+    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
 };
