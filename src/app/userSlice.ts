@@ -44,8 +44,16 @@ const fetchUserRoles = createAsyncThunk(
       }
 
       // Destructure the response data
-      const { scopes, groupRoles, isAusTrakkaAdmin, displayName, orgAbbrev, orgName, orgGlobalId } =
-        groupResponse.data as UserMe;
+      const {
+        scopes,
+        username,
+        groupRoles,
+        isAusTrakkaAdmin,
+        displayName,
+        orgAbbrev,
+        orgName,
+        orgGlobalId,
+      } = groupResponse.data as UserMe;
 
       // Fulfill with user role data
       return {

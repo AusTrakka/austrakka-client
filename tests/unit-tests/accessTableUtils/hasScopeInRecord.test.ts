@@ -112,7 +112,7 @@ describe('hasScopeInRecord', () => {
         groups,
         'read:users',
         'non-existent-organisation',
-        RecordTypes.ORG,
+        RecordTypes.ORGANISATION,
       );
       expect(result).toBe(false);
     });
@@ -120,7 +120,12 @@ describe('hasScopeInRecord', () => {
     test('return false when groups array is empty', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', RecordTypes.ORG);
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
 
@@ -138,7 +143,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', RecordTypes.ORG);
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });
@@ -216,7 +226,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', RecordTypes.ORG);
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(true);
     });
 
@@ -241,7 +256,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', RecordTypes.ORG);
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });
