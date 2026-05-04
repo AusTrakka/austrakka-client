@@ -33,7 +33,7 @@ import {
   DefaultDashboardTimeFilterField,
 } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ProjectDashboardDetails } from '../../../types/dtos';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
@@ -80,7 +80,7 @@ function DashboardStatusAlert(
     );
   }
 
-  if (loadingState !== MetadataLoadingState.DATA_LOADED) {
+  if (!hasCompleteData(loadingState)) {
     return (
       <Grid size={12}>
         <Alert severity="info">
@@ -167,13 +167,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   };
 
   const projectDateFields = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data.fields) return [];
+    if (!hasCompleteData(data?.loadingState) || !data?.fields) return [];
     return data.fields
       .filter((field) => field.primitiveType === 'date')
       .map((field) => field.projectFieldName);
   }, [data]);
+
   const filteredDataMemo = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
+    if (!data || !hasCompleteData(data?.loadingState)) return [];
     if (timeFilter === DashboardTimeFilter.CUSTOM && customDateRange.start && customDateRange.end) {
       return data.metadata!.filter((sample) => {
         const sampleDate = dayjs(sample[dateField]!);
@@ -407,7 +408,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        {dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+        {dashboardName && hasCompleteData(data?.loadingState) && (
           <>
             <Grid container size={12} justifyContent="space-between">
               <Stack

@@ -67,11 +67,7 @@ export default function Counts(props: CountsWidgetProps) {
   ];
 
   useEffect(() => {
-    if (
-      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
-      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[field] === LoadingState.SUCCESS)
-    ) {
+    if (data?.fieldLoadingStates[field] === LoadingState.SUCCESS) {
       // If exclude parameter provided, filter data before aggregating
       const filteredDataToAggregate = filterExcluded(filteredData, exclude);
       // Aggregate filtered data
@@ -82,7 +78,7 @@ export default function Counts(props: CountsWidgetProps) {
       }
       setAggregatedCounts(counts);
     }
-  }, [field, filteredData, exclude, data?.loadingState, data?.fieldLoadingStates, categoryLimit]);
+  }, [field, filteredData, exclude, data?.fieldLoadingStates, categoryLimit]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(field)) {

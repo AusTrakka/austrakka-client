@@ -7,6 +7,7 @@ import MetadataLoadingState from '../constants/metadataLoadingState';
 import type { ProjectField, ProjectView, ProjectViewField } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
 import {
+  getLatestActivityTime,
   getProjectDetails,
   getProjectFields,
   getProjectViewData,
@@ -27,6 +28,7 @@ import type { RootState } from './store';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null;
+  dataLoadTime: string | null;
   mergeAlgorithm: string | null;
   supportedMaps: MapSupportInfo[];
   loadingState: MetadataLoadingState;
@@ -44,6 +46,7 @@ export interface ProjectMetadataState {
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
+  dataLoadTime: null,
   mergeAlgorithm: null,
   supportedMaps: [],
   loadingState: MetadataLoadingState.IDLE,
@@ -94,6 +97,30 @@ interface FetchDataViewParams {
 interface FetchDataViewResponse {
   data: Sample[];
 }
+
+interface FetchLatestActivityTimeParams {
+  projectAbbrev: string;
+}
+
+interface FetchLatestActivityTimeResponse {
+  timestamp: string;
+}
+
+const getProjectLatestActivityTime = createAsyncThunk(
+  'projectMetadata/getProjectLatestActivityTime',
+  async (
+    params: FetchLatestActivityTimeParams,
+    { rejectWithValue, fulfillWithValue, getState },
+  ): Promise<FetchLatestActivityTimeResponse | unknown> => {
+    const { projectAbbrev } = params;
+    const { token } = (getState() as RootState).projectMetadataState;
+    const response = await getLatestActivityTime('Project', token!, projectAbbrev);
+    if (response.status !== 'Success') {
+      return rejectWithValue(response.error);
+    }
+    return fulfillWithValue<FetchLatestActivityTimeResponse>({ timestamp: response.data! });
+  },
+);
 
 // Fetch project fields and views
 const fetchProjectInfo = createAsyncThunk(
@@ -151,42 +178,73 @@ const fetchDataView = createAsyncThunk(
 // These listeners launch thunks in response to state changes or actions
 // The state update triggered by the listener will be the thunk's pending action
 
-// Launch fetchProjectFields in response to metadata fetch request
+// Launch getProjectLatestActivityTime in response to CHECK_FOR_UPDATE state
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read projectAbbrev
     if (action.type !== 'projectMetadata/fetchProjectMetadata') return false;
+    const { projectAbbrev } = (action as any).payload;
+    // biome-ignore format: readability
+    const previousLoadingState =
+      (previousState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+    // biome-ignore format: readability
+    const loadingState =
+      (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+    return (
+      previousLoadingState !== MetadataLoadingState.CHECK_FOR_UPDATE &&
+      loadingState === MetadataLoadingState.CHECK_FOR_UPDATE
+    );
+  },
+  effect: (action, listenerApi) => {
+    listenerApi.dispatch(
+      getProjectLatestActivityTime({ projectAbbrev: (action as any).payload.projectAbbrev }),
+    );
+  },
+});
+
+// Launch fetchProjectFields when FETCH_REQUESTED is set (fetch requested or stale data check)
+const FETCH_REQUESTED_ACTIONS = [
+  'projectMetadata/fetchProjectMetadata',
+  getProjectLatestActivityTime.fulfilled.type,
+];
+listenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    // Return early if wrong action; don't spend time reading state
+    if (!FETCH_REQUESTED_ACTIONS.includes(action.type)) return false;
+    const projectAbbrev =
+      (action as any)?.payload?.projectAbbrev ?? (action as any)?.meta?.arg?.projectAbbrev;
+    if (!projectAbbrev) return false;
     // Check that the reducer logic is telling us to trigger a new load process
-    const previousLoadingState = (previousState as RootState).projectMetadataState.data[
-      (action as any).payload.projectAbbrev
-    ]?.loadingState;
-    const loadingState = (currentState as RootState).projectMetadataState.data[
-      (action as any).payload.projectAbbrev
-    ]?.loadingState;
+    // biome-ignore format: readability
+    const previousLoadingState =
+      (previousState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+    // biome-ignore format: readability
+    const loadingState =
+      (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
     return (
       previousLoadingState !== MetadataLoadingState.FETCH_REQUESTED &&
       loadingState === MetadataLoadingState.FETCH_REQUESTED
     );
   },
   effect: (action, listenerApi) => {
-    listenerApi.dispatch(
-      fetchProjectInfo({ projectAbbrev: (action as any).payload.projectAbbrev }),
-    );
+    const projectAbbrev =
+      (action as any)?.payload?.projectAbbrev ?? (action as any)?.meta?.arg?.projectAbbrev;
+    listenerApi.dispatch(fetchProjectInfo({ projectAbbrev }));
   },
 });
 
-// Launch needed data view fetch after viewToFetch changes
+// Launch needed data view fetch after project info retrieved or viewToFetch changes
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Return early if wrong action; don't try to read projectAbbrev
     if (!isAnyOf(fetchProjectInfo.fulfilled, fetchDataView.fulfilled)(action)) return false;
     const { projectAbbrev } = (action as any).meta.arg;
     // Check that viewToFetch has incremented
-    const previousViewToFetch = (previousState as RootState).projectMetadataState.data[
-      projectAbbrev
-    ]?.viewToFetch;
-    const viewToFetch = (currentState as RootState).projectMetadataState.data[projectAbbrev]
-      ?.viewToFetch;
+    // biome-ignore format: readability
+    const previousViewToFetch =
+      (previousState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
+    // biome-ignore format: readability
+    const viewToFetch =
+      (currentState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
     return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
   },
   effect: (action, listenerApi) => {
@@ -211,24 +269,49 @@ export const projectMetadataSlice = createSlice({
         // Set initial state for this group
         state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
       }
-      // Only initialise fetch if in allowed state; do not reload loading data
+      // If data is not loaded, initialise fetch
+      // If data is loaded, dispatch call to check timestamp for data updates
+      // If we are in any other state (i.e. partway through load), do nothing, allow the load process to complete
       if (
         state.data[projectAbbrev].loadingState === MetadataLoadingState.IDLE ||
         state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR ||
         state.data[projectAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
       ) {
-        // If we were in an error state and are refreshing, clear data
+        // If we are refreshing from error state, clear data in the meantime
         if (state.data[projectAbbrev].loadingState !== MetadataLoadingState.IDLE) {
           state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
         }
         state.data[projectAbbrev].loadingState = MetadataLoadingState.FETCH_REQUESTED;
         state.token = token;
+      } else if (state.data[projectAbbrev].loadingState === MetadataLoadingState.DATA_LOADED) {
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.CHECK_FOR_UPDATE;
+        state.token = token;
       }
     },
   },
   extraReducers: (builder) => {
+    builder.addCase(getProjectLatestActivityTime.fulfilled, (state, action) => {
+      const { projectAbbrev } = action.meta.arg;
+      const { timestamp } = action.payload as FetchLatestActivityTimeResponse;
+      const currentTimestamp = state.data[projectAbbrev]?.dataLoadTime;
+      // If there is no stored timestamp, or the retrieved timestamp is newer, trigger a full reload
+      if (!currentTimestamp || new Date(timestamp) > new Date(currentTimestamp)) {
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.FETCH_REQUESTED;
+      } else {
+        // Data is up to date; return to loaded state
+        state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
+      }
+    });
+    builder.addCase(getProjectLatestActivityTime.rejected, (state, action) => {
+      const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
+      //biome-ignore lint/suspicious/noConsole: interim error logging
+      console.error(`Failed to check for data updates in ${projectAbbrev}: ${action.payload}`);
+    });
+
     builder.addCase(fetchProjectInfo.pending, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev] = projectMetadataInitialStateCreator(projectAbbrev);
       state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
 
@@ -284,6 +367,7 @@ export const projectMetadataSlice = createSlice({
         state.data[projectAbbrev].views![index] = view;
         state.data[projectAbbrev].viewLoadingStates![index] = LoadingState.IDLE;
       });
+      state.data[projectAbbrev].viewToFetch = 0;
       // Set column loading states to IDLE for all fields, and initialise unique values
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
@@ -319,6 +403,7 @@ export const projectMetadataSlice = createSlice({
       const { projectAbbrev, viewIndex } = action.meta.arg;
       const { data } = action.payload as FetchDataViewResponse;
       const { viewFields } = state.data[projectAbbrev].views[viewIndex];
+
       // For Has_sequences only
       if (viewFields.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
@@ -333,6 +418,7 @@ export const projectMetadataSlice = createSlice({
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
       // Each returned view is a superset of the previous; we always replace the data
       state.data[projectAbbrev].metadata = data;
+
       // Default sort data by Seq_ID, which should be consistent across views.
       // Could be done server-side, in which case this sort operation is redundant but cheap
       if (
@@ -371,6 +457,7 @@ export const projectMetadataSlice = createSlice({
       // If this is the full dataset, we are done, otherwise we are in a partial load state
       if (viewIndex === Object.keys(state.data[projectAbbrev].views).length - 1) {
         // NB here expect also that fields.length === state.data[projectAbbrev].fields?.length
+        state.data[projectAbbrev].dataLoadTime = new Date().toISOString();
         state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
       } else {
         state.data[projectAbbrev].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
