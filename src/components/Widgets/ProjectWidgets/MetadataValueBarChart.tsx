@@ -222,7 +222,7 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
 
       const spec = createSpec();
       const compiledSpec = compile(spec as TopLevelSpec).spec;
-      let plotData = [];
+      let plotData = filteredData;
 
       if (categoryLimit || (exclude && exclude.length > 0)) {
         plotData = truncateData(filteredData);
