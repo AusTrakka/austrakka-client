@@ -11,7 +11,7 @@ import {
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { NULL_COLOUR } from '../../../utilities/colourUtils';
@@ -145,7 +145,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       setOpacitySpec(opacitySpec);
     };
 
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data?.fields) {
+    if (!hasCompleteData(data?.loadingState) || !data?.fields) {
       return;
     }
 
@@ -231,7 +231,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
       <Typography variant="h5" paddingBottom={5} color="primary">
         {`Samples (${timeFilterDescription})`}
       </Typography>
-      {data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
+      {hasCompleteData(data?.loadingState) && !errorMessage && (
         <Grid container direction="row" spacing={0}>
           <Grid item xs={11}>
             <div id="#plot-container" ref={plotDiv} />
@@ -247,12 +247,7 @@ function EpiCurveChart(props: EpiCurveChartProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

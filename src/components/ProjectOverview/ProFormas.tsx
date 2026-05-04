@@ -14,7 +14,7 @@ import { handleProformaDownload } from '../ProForma/proformaUtils';
 // Local Proforma Props
 interface ProFormasListProps {
   projectDetails: Project | null;
-  setIsLoading: (isLoading: boolean) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function ProFormaList(props: ProFormasListProps) {

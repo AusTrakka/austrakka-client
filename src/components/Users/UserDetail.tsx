@@ -152,7 +152,7 @@ function UserDetail() {
       const userResponse: ResponseObject = await getRoles(token);
       if (userResponse.status === ResponseType.Success) {
         let rolesData = userResponse.data as Role[];
-        rolesData = rolesData.filter((role) => role.name !== 'AusTrakkaAdmin');
+        rolesData = rolesData.filter((role) => role.name !== 'TrakkaAdmin');
         setAllRoles(rolesData);
       } else {
         setDataError(true);
