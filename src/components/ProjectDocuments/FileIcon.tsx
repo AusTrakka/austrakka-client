@@ -4,6 +4,7 @@ import excelIcon from '../../assets/icons/filetypes/excel.svg';
 import fileIcon from '../../assets/icons/filetypes/file.svg';
 import htmlIcon from '../../assets/icons/filetypes/html.svg';
 import pdfIcon from '../../assets/icons/filetypes/pdf.svg';
+import txtIcon from '../../assets/icons/filetypes/txt.svg';
 
 export const fileIcons = {
   pdf: pdfIcon,
@@ -13,6 +14,7 @@ export const fileIcons = {
   xls: excelIcon,
   xlsx: excelIcon,
   html: htmlIcon,
+  txt: txtIcon,
   default: fileIcon,
 } as const;
 
