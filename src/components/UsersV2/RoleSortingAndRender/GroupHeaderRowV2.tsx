@@ -5,9 +5,14 @@ import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
-import { getOrganisations } from '../../../utilities/resourceUtils';
+import {
+  getOrganisations,
+  getProjectList,
+  getUserProformas,
+} from '../../../utilities/resourceUtils';
 import './autocompleteStyleOverride.css';
 import { Theme } from '../../../assets/themes/theme';
+import RecordTypes from '../../../constants/record-type.enum';
 import type { RolesV2 } from '../../../types/dtos';
 import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
@@ -44,15 +49,21 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
   const { token, tokenLoading } = useApi();
 
   const isAddButtonEnabled = selectedRecords !== null && selectedRoles !== null;
-  const tenantName = 'Default Tenant';
+  const tenantName = 'System';
 
   useEffect(() => {
     async function fetchRecords() {
       try {
         let response: ResponseObject | null = null;
         switch (recordType) {
-          case 'Organisation':
+          case RecordTypes.ORGANISATION:
             response = await getOrganisations(false, token);
+            break;
+          case RecordTypes.PROJECT:
+            response = await getProjectList(token);
+            break;
+          case RecordTypes.PROFORMA:
+            response = await getUserProformas(token);
             break;
           default:
             // TODO: Will need to add more calls once endpoints have been added
@@ -72,7 +83,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
           rolesV2
             .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
             .map((item: any) => ({
-              id: item.globalId,
+              id: item.globalId || item.proformaVersionGlobalId,
               abbrev: item.abbreviation,
               name: item.name,
             })),
@@ -83,7 +94,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         fetchRecords();
       } else {
         const tenantDefaultRecord = {
@@ -105,7 +116,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
 
   useEffect(() => {
     if (!editing) {
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         setSelectedRoles(null);
         setSelectedRecords(null);
       } else {
@@ -138,7 +149,7 @@ function GroupHeaderRowV2(props: GroupHeaderRowProps) {
       }
       onSelectionChange(recordType, assignedRoles);
       setSelectedRoles(null);
-      if (recordType !== 'Tenant') {
+      if (recordType !== 'System') {
         setSelectedRecords(null);
       }
     }

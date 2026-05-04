@@ -7,7 +7,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { maxObj } from '../../../utilities/dataProcessingUtils';
 import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
@@ -126,7 +126,7 @@ function SampleSummary(props: ProjectWidgetProps) {
   return (
     <Box maxWidth={900} mr="auto">
       <Grid container spacing={2} direction="row" justifyContent="space-between">
-        {data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+        {hasCompleteData(data?.loadingState) && (
           <>
             <Grid item>
               <Typography variant="h5" paddingBottom={1} color="primary">
@@ -189,12 +189,7 @@ function SampleSummary(props: ProjectWidgetProps) {
             </Alert>
           </Grid>
         )}
-        {(!data?.loadingState ||
-          !(
-            data.loadingState === MetadataLoadingState.DATA_LOADED ||
-            data.loadingState === MetadataLoadingState.ERROR ||
-            data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-          )) && (
+        {!hasCompleteData(data?.loadingState) && (
           <Grid container item>
             Loading...
           </Grid>

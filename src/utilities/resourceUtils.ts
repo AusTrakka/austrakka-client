@@ -1,3 +1,4 @@
+import RecordTypes from '../constants/record-type.enum';
 import type {
   CreateMsg,
   DerivedLog,
@@ -31,7 +32,7 @@ import {
 
 // Project endpoints
 export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
-  callGET('/api/Projects?&includeall=false', token);
+  callGET('/api/Projects', token);
 export const getProjectDetails = (
   abbrev: string,
   token: string,
@@ -246,6 +247,46 @@ export const postFeedback = (
   callPost<CreateMsg>('/api/Message/Feedback', token, feedbackPostDto);
 
 // PermissionV2 endpoints
+export const postProjectPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+  clientSessionId?: string,
+) => callPost(`/api/Projects/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+
+export const deleteProjectPrivilege = (
+  recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string,
+  clientSessionId?: string,
+) =>
+  callDELETE(
+    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    token,
+    clientSessionId,
+  );
+
+export const postProformaPrivilege = (
+  recordGlobalId: string,
+  privilegeBody: UserRoleRecordPrivilegePost,
+  token: string,
+  clientSessionId?: string,
+) => callPost(`/api/ProFormaV2/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+
+export const deleteProformaPrivilege = (
+  recordGlobalId: string,
+  assigneeGlobalId: string,
+  roleGlobalId: string,
+  token: string,
+  clientSessionId?: string,
+) =>
+  callDELETE(
+    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    token,
+    clientSessionId,
+  );
+
 export const postTenantPrivilege = (
   _: string,
   privilegeBody: UserRoleRecordPrivilegePost,
@@ -339,16 +380,34 @@ export const patchFieldV2 = (metaDataColumnName: string, token: string, field: a
 export const getActivities = (
   recordType: string,
   token: string,
-  rguid?: string,
+  recordId?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   let resourcePath = '';
-  if (recordType === 'Tenant') {
+  if (recordType === RecordTypes.SYSTEM) {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
-  } else if (recordType === 'Organisation') {
-    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
-  } else if (recordType === 'Project') {
-    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+  } else if (recordType === RecordTypes.ORGANISATION) {
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog?${searchParams}`;
+  } else if (recordType === RecordTypes.PROJECT) {
+    resourcePath = `/api/Projects/${recordId}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
+};
+
+// Returns a timestamp
+export const getLatestActivityTime = (
+  recordType: string,
+  token: string,
+  recordId?: string,
+  searchParams?: URLSearchParams,
+): Promise<ResponseObject<string>> => {
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.ORGANISATION) {
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.PROJECT) {
+    resourcePath = `/api/Projects/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   }
   return callGET(resourcePath, token);
 };

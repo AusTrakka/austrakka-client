@@ -17,7 +17,7 @@ import {
   selectProjectMetadataError,
 } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
@@ -75,13 +75,13 @@ function MapDetail(props: MapDetailProps) {
   // This use effect will set the state of the region toggle and also if it's disabled
   // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
   useEffect(() => {
-    if (data && data.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (data && hasCompleteData(data?.loadingState)) {
       setFilteredData(data.metadata ?? []);
     }
   }, [data, selectedMap]);
 
   useEffect(() => {
-    if (data && data.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (data && hasCompleteData(data?.loadingState)) {
       setLoading(false);
     }
   }, [data]);
@@ -89,14 +89,14 @@ function MapDetail(props: MapDetailProps) {
   // If there are no maps to use, then we will show an error alert...
   // If there is only one, auto select it
   useEffect(() => {
-    if (data && data.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (data && hasCompleteData(data?.loadingState)) {
       if (data.supportedMaps.length === 0) setNoSupportedMapsError(true);
       else if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
     }
   }, [data, setSelectedMap]);
 
   useEffect(() => {
-    if (data && data.loadingState === MetadataLoadingState.DATA_LOADED && data.fields) {
+    if (data && hasCompleteData(data.loadingState) && data.fields) {
       const geoFieldNames =
         data.fields.filter((field) => field.geoField).map((field) => field.columnName) ?? [];
       const [firstGeoField] = geoFieldNames;
@@ -110,7 +110,7 @@ function MapDetail(props: MapDetailProps) {
   }, [data, setSelectedField]);
 
   useEffect(() => {
-    if (data?.fields && data.loadingState === MetadataLoadingState.DATA_LOADED && selectedField) {
+    if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
       const selectedFieldObj =
         data.fields.find((field) => field.columnName === selectedField) ?? null;
       if (!selectedFieldObj) setNoSupportedMapsError(true);

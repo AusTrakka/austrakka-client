@@ -33,7 +33,7 @@ import {
   DefaultDashboardTimeFilterField,
 } from '../../../constants/dashboardTimeFilter';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ProjectDashboardDetails } from '../../../types/dtos';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
@@ -42,10 +42,63 @@ import { getProjectDashboard } from '../../../utilities/resourceUtils';
 // NB this is a tab; project metadata is requested in ProjectOverview page;
 // if we want to use this as a standalone page must dispatch request
 
+function DashboardStatusAlert(
+  errorMessage: string | null,
+  dashboardName: string | null,
+  loadingState: MetadataLoadingState | undefined,
+): React.ReactElement | null {
+  if (errorMessage) {
+    return (
+      <Grid size={12}>
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {`An error occurred while loading your dashboard - ${errorMessage}`}
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (!dashboardName) {
+    return (
+      <Grid size={12}>
+        <Alert severity="error">
+          <AlertTitle>No Dashboard</AlertTitle>
+          There is an error in the project dashboard configuration.
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (loadingState === MetadataLoadingState.FIELDS_LOADED) {
+    return (
+      <Grid size={12}>
+        <Alert severity="warning">
+          <AlertTitle>No Data Available</AlertTitle>
+          Dashboard fields loaded but no data was returned.
+        </Alert>
+      </Grid>
+    );
+  }
+
+  if (!hasCompleteData(loadingState)) {
+    return (
+      <Grid size={12}>
+        <Alert severity="info">
+          <AlertTitle>Loading</AlertTitle>
+          Loading dashboard data...
+        </Alert>
+      </Grid>
+    );
+  }
+
+  return null;
+}
+
 interface ProjectDashboardProps {
   projectDesc: string;
   projectAbbrev: string | null;
 }
+
 function ProjectDashboard(props: ProjectDashboardProps) {
   const { projectDesc, projectAbbrev } = props;
   const { token, tokenLoading } = useApi();
@@ -114,14 +167,14 @@ function ProjectDashboard(props: ProjectDashboardProps) {
   };
 
   const projectDateFields = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED || !data.fields) return [];
+    if (!hasCompleteData(data?.loadingState) || !data?.fields) return [];
     return data.fields
       .filter((field) => field.primitiveType === 'date')
       .map((field) => field.projectFieldName);
   }, [data]);
 
   const filteredDataMemo = React.useMemo(() => {
-    if (data?.loadingState !== MetadataLoadingState.DATA_LOADED) return [];
+    if (!data || !hasCompleteData(data?.loadingState)) return [];
     if (timeFilter === DashboardTimeFilter.CUSTOM && customDateRange.start && customDateRange.end) {
       return data.metadata!.filter((sample) => {
         const sampleDate = dayjs(sample[dateField]!);
@@ -352,11 +405,10 @@ function ProjectDashboard(props: ProjectDashboardProps) {
       </>
     );
   };
-
   return (
     <Box>
       <Grid container direction="row" spacing={2}>
-        {dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED && (
+        {dashboardName && hasCompleteData(data?.loadingState) && (
           <>
             <Grid container size={12} justifyContent="space-between">
               <Stack
@@ -384,16 +436,7 @@ function ProjectDashboard(props: ProjectDashboardProps) {
             </Grid>
           </>
         )}
-        {errorMessage && (
-          <Grid size={12}>
-            <Alert severity="error">
-              <AlertTitle>Error</AlertTitle>
-              {`An error occurred while loading your dashboard - ${errorMessage}`}
-            </Alert>
-          </Grid>
-        )}
-        {!(dashboardName && data?.loadingState === MetadataLoadingState.DATA_LOADED) &&
-          !errorMessage && <Grid size={12}>Loading...</Grid>}
+        {DashboardStatusAlert(errorMessage, dashboardName, data?.loadingState)}
       </Grid>
     </Box>
   );

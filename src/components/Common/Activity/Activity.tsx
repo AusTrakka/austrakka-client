@@ -402,7 +402,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         You do not have permission to view activity logs.
       </Alert>
     );
-  } else if (!rGuid && recordType !== 'Tenant') {
+  } else if (!rGuid && recordType !== 'System') {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Error</AlertTitle>
