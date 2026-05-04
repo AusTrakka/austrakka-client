@@ -36,7 +36,6 @@ const VALID_FILE_UPLOAD_TYPES = {
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   '.pdf': 'application/pdf',
   '.txt': 'text/plain',
-  '.json': 'application/json',
   '.html': 'text/html',
 };
 
