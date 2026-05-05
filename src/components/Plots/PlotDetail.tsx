@@ -57,10 +57,10 @@ function PlotDetail() {
   }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
-    if (plot && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      dispatch(fetchProjectMetadata({ projectAbbrev: plot.projectAbbreviation, token }));
+    if (projectAbbrev && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+      dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
-  }, [plot, dispatch, token, tokenLoading]);
+  }, [projectAbbrev, dispatch, token, tokenLoading]);
 
   const renderPlot = () => {
     if (errorMsg && errorMsg.length > 0) {
