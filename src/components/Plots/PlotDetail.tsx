@@ -57,7 +57,11 @@ function PlotDetail() {
   }, [plotAbbrev, token, tokenLoading]);
 
   useEffect(() => {
-    if (projectAbbrev && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
+    if (
+      projectAbbrev &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       dispatch(fetchProjectMetadata({ projectAbbrev, token }));
     }
   }, [projectAbbrev, dispatch, token, tokenLoading]);
