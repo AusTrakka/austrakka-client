@@ -58,12 +58,12 @@ function DashboardStatusAlert(
     );
   }
 
-  if (hasCompleteData(loadingState) && !dashboardName) {
+  if (!dashboardName) {
     return (
       <Grid size={12}>
-        <Alert severity="error">
-          <AlertTitle>No Dashboard</AlertTitle>
-          There is an error in the project dashboard configuration.
+        <Alert severity="info">
+          <AlertTitle>Loading</AlertTitle>
+          Loading dashboard configuration...
         </Alert>
       </Grid>
     );
