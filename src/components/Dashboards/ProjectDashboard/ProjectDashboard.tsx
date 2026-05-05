@@ -61,9 +61,9 @@ function DashboardStatusAlert(
   if (!dashboardName) {
     return (
       <Grid size={12}>
-        <Alert severity="error">
-          <AlertTitle>No Dashboard</AlertTitle>
-          There is an error in the project dashboard configuration.
+        <Alert severity="info">
+          <AlertTitle>Loading</AlertTitle>
+          Loading dashboard configuration...
         </Alert>
       </Grid>
     );
@@ -72,9 +72,9 @@ function DashboardStatusAlert(
   if (loadingState === MetadataLoadingState.FIELDS_LOADED) {
     return (
       <Grid size={12}>
-        <Alert severity="warning">
-          <AlertTitle>No Data Available</AlertTitle>
-          Dashboard fields loaded but no data was returned.
+        <Alert severity="info">
+          <AlertTitle>Loading</AlertTitle>
+          Dashboard found, retrieving project data...
         </Alert>
       </Grid>
     );
@@ -85,7 +85,7 @@ function DashboardStatusAlert(
       <Grid size={12}>
         <Alert severity="info">
           <AlertTitle>Loading</AlertTitle>
-          Loading dashboard data...
+          Loading data...
         </Alert>
       </Grid>
     );
