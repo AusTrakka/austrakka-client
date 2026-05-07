@@ -11,6 +11,7 @@ import {
   Grid2 as Grid,
   InputAdornment,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
@@ -26,7 +27,8 @@ import {
   sanitizeFilename,
 } from '../../utilities/uploadUtils';
 import FileDragDrop from '../Upload/FileDragDrop';
-import DocumentResponseDialog from './DocumentResponseDialog';
+import DocumentResponseToast from './DocumentResponseToast';
+import { MAX_FILE_DESCRIPTION_LENGTH, MAX_FILENAME_LENGTH } from './ProjectDocuments';
 
 const VALID_FILE_UPLOAD_TYPES = {
   '.csv': 'text/csv',
@@ -57,31 +59,39 @@ function UploadDocument(props: UploadDocumentProps) {
   const [fileNameInputError, setFileNameInputError] = useState(false);
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
 
-  const { token } = useApi();
+  const { token, tokenLoading } = useApi();
 
   const handleUpload = async () => {
-    try {
-      setStatus(LoadingState.LOADING);
-      // Sanitize filename base input and file description
-      const sanitizedFilenameBase = sanitizeFilename(filenameBase);
-      const sanitizedFileDescription = sanitizeFileDescription(fileDescription);
+    if (
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE &&
+      file.length > 0
+    ) {
+      try {
+        setStatus(LoadingState.LOADING);
+        // Sanitize filename base input and file description
+        const sanitizedFilenameBase = sanitizeFilename(filenameBase);
+        const sanitizedFileDescription = sanitizeFileDescription(fileDescription);
 
-      const formData = new FormData();
-      formData.append('file', file[0].file!);
-      const response = await uploadDocument(
-        abbreviation,
-        sanitizedFilenameBase + extension,
-        sanitizedFileDescription,
-        formData,
-        token,
-      );
-      if (response.status === ResponseType.Success) {
-        await refresh();
-        setStatus(LoadingState.SUCCESS);
-      } else {
+        const formData = new FormData();
+        formData.append('file', file[0].file!);
+        const response = await uploadDocument(
+          abbreviation,
+          sanitizedFilenameBase + extension,
+          sanitizedFileDescription,
+          formData,
+          token,
+        );
+        if (response.status === ResponseType.Success) {
+          await refresh();
+          setStatus(LoadingState.SUCCESS);
+        } else {
+          setStatus(LoadingState.ERROR);
+        }
+      } catch {
         setStatus(LoadingState.ERROR);
       }
-    } catch {
+    } else {
       setStatus(LoadingState.ERROR);
     }
   };
@@ -125,14 +135,16 @@ function UploadDocument(props: UploadDocumentProps) {
   }, [file]);
 
   const getFilenameHelperText = () => {
-    const charCountText = `${filenameBase.length}/100`;
+    const charCountText = `${filenameBase.length + (extension ? extension.length : 0)}/${MAX_FILENAME_LENGTH}`;
     return (
       <Box
         component="span"
         sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}
       >
         <span>{fileNameInputError ? 'Invalid characters included' : ''}</span>
-        <span>{charCountText}</span>
+        <Tooltip title="Includes file extension" placement="top" arrow>
+          <span>{charCountText}</span>
+        </Tooltip>
       </Box>
     );
   };
@@ -147,13 +159,13 @@ function UploadDocument(props: UploadDocumentProps) {
               Upload new document
             </Typography>
             <Typography variant="body2">
-              Select a new <b>approved</b> project document to upload, and ensure an appropriate
-              filename and description are provided.
+              Select a new <b>approved</b> project document to upload. Please ensure that the file
+              content is appropriate, and that a clear filename and description are provided.
             </Typography>
           </DialogTitle>
           <DialogContent>
             <Grid container spacing={4}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   value={filenameBase}
                   label="Filename"
@@ -168,7 +180,9 @@ function UploadDocument(props: UploadDocumentProps) {
                   required
                   fullWidth
                   slotProps={{
-                    htmlInput: { maxLength: 100 },
+                    htmlInput: {
+                      maxLength: MAX_FILENAME_LENGTH - (extension ? extension.length : 0),
+                    },
                     formHelperText: { sx: { textAlign: 'right' } },
                     input: {
                       endAdornment: extension ? (
@@ -199,24 +213,25 @@ function UploadDocument(props: UploadDocumentProps) {
                   type="text"
                   variant="filled"
                   value={fileDescription}
-                  helperText={`${fileDescription.length}/500`}
+                  helperText={`${fileDescription.length}/${MAX_FILE_DESCRIPTION_LENGTH}`}
                   onChange={(e) => setFileDescription(e.target.value)}
                   required
                   fullWidth
                   multiline
                   maxRows={4}
                   slotProps={{
-                    htmlInput: { maxLength: 500 },
+                    htmlInput: { maxLength: MAX_FILE_DESCRIPTION_LENGTH },
                     formHelperText: { sx: { textAlign: 'right' } },
                   }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <FileDragDrop
                   files={file}
                   setFiles={setFile}
                   validFormats={VALID_FILE_UPLOAD_TYPES}
                   multiple={false}
+                  maxFileSize={209715200} // 200MB in bytes
                 />
               </Grid>
             </Grid>
@@ -249,9 +264,9 @@ function UploadDocument(props: UploadDocumentProps) {
           </DialogActions>
         </Dialog>
       ) : null}
-      {/* Error or success dialog */}
+      {/* Error or success toast */}
       {status === LoadingState.SUCCESS || status === LoadingState.ERROR ? (
-        <DocumentResponseDialog
+        <DocumentResponseToast
           open={true}
           onClose={() => onClose()}
           status={status === LoadingState.SUCCESS ? 'success' : 'error'}

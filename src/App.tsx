@@ -88,7 +88,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
                 {/* Document preview to sit outside main layout */}
                 <Route
-                  path="/projects/:abbreviation/documents/:documentId/preview"
+                  path="/projects/:abbreviation/documents/:documentStringId/preview"
                   element={<DocumentPreview />}
                 />
               </Routes>

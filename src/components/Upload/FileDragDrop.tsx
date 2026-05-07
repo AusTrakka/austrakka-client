@@ -28,11 +28,21 @@ interface FileDragDropProps {
   customValidators?: CustomUploadValidator[] | undefined;
   fileTransform?: (f: File[]) => Promise<File[]>;
   disabled?: boolean;
+  maxFileSize?: number | undefined; // in bytes
 }
 
 const FileDragDrop = forwardRef<any, FileDragDropProps>(
   (
-    { files, setFiles, validFormats, multiple = false, customValidators, fileTransform, disabled },
+    {
+      files,
+      setFiles,
+      validFormats,
+      multiple = false,
+      customValidators,
+      fileTransform,
+      disabled,
+      maxFileSize,
+    },
     ref,
   ) => {
     const { enqueueSnackbar } = useSnackbar();
@@ -109,6 +119,14 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
           }) as CustomUploadValidatorReturn,
       } as CustomUploadValidator;
 
+      const validateFileSizeLimit = {
+        func: (_files: File[]) =>
+          ({
+            success: _files.every((f) => f.size <= maxFileSize!),
+            message: `All files must be smaller than ${(maxFileSize! / (1024 * 1024)).toFixed(2)}MB`,
+          }) as CustomUploadValidatorReturn,
+      } as CustomUploadValidator;
+
       const getBuiltInValidators = (): CustomUploadValidator[] => {
         const validators: CustomUploadValidator[] = [];
         if (!multiple) {
@@ -116,6 +134,9 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
         }
         if (Object.entries(validFormats).length > 0) {
           validators.push(validateFilesAreOfType);
+        }
+        if (maxFileSize) {
+          validators.push(validateFileSizeLimit);
         }
         return validators;
       };
@@ -155,6 +176,7 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
       originalFiles,
       multiple,
       validFormats,
+      maxFileSize,
       customValidators,
       fileTransform,
       enqueueSnackbar,
@@ -217,6 +239,11 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
                 {Object.entries(validFormats).length > 0 && (
                   <Typography variant="subtitle2" color={textColour}>
                     Valid file types are: {Object.keys(validFormats).join(', ')}
+                  </Typography>
+                )}
+                {maxFileSize && (
+                  <Typography variant="subtitle2" color={textColour}>
+                    Maximum file size: {(maxFileSize / (1024 * 1024)).toFixed(0)}MB
                   </Typography>
                 )}
               </>

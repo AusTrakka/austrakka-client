@@ -15,7 +15,7 @@ import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { ProjectDocument } from '../../types/dtos';
 import { disableDocument } from '../../utilities/resourceUtils';
-import DocumentResponseDialog from './DocumentResponseDialog';
+import DocumentResponseToast from './DocumentResponseToast';
 import { FileIcon } from './FileIcon';
 
 interface DeleteDocumentProps {
@@ -29,18 +29,27 @@ interface DeleteDocumentProps {
 function DeleteDocument(props: DeleteDocumentProps) {
   const { open, onClose, activeDocument, refreshDocuments, projectAbbrev } = props;
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const { token } = useApi();
+  const { token, tokenLoading } = useApi();
 
   const handleDelete = async (projectDoc: ProjectDocument) => {
     setStatus(LoadingState.LOADING);
-    if (!projectDoc) return;
-    try {
-      const response = await disableDocument(projectAbbrev!, projectDoc.id, token);
-      if (response.status === ResponseType.Success) {
-        await refreshDocuments();
+    if (
+      projectDoc &&
+      projectAbbrev &&
+      token &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      try {
+        const response = await disableDocument(projectAbbrev!, projectDoc.uniqueStringId, token);
+        if (response.status === ResponseType.Success) {
+          await refreshDocuments();
+        }
+        setStatus(LoadingState.SUCCESS);
+      } catch {
+        setStatus(LoadingState.ERROR);
       }
-      setStatus(LoadingState.SUCCESS);
-    } catch {
+    } else {
       setStatus(LoadingState.ERROR);
     }
   };
@@ -48,7 +57,7 @@ function DeleteDocument(props: DeleteDocumentProps) {
   return (
     <>
       {status === LoadingState.IDLE || status === LoadingState.LOADING ? (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open}>
           <DialogTitle>
             <DeleteOutline fontSize="large" color="primary" />
             <Typography color="primary" sx={{ marginBottom: 1, fontWeight: 'bold' }}>
@@ -98,9 +107,9 @@ function DeleteDocument(props: DeleteDocumentProps) {
           </DialogActions>
         </Dialog>
       ) : null}
-      {/* Error or success dialog */}
+      {/* Error or success toast */}
       {status === LoadingState.SUCCESS || status === LoadingState.ERROR ? (
-        <DocumentResponseDialog
+        <DocumentResponseToast
           open={true}
           onClose={() => onClose()}
           status={status === LoadingState.SUCCESS ? 'success' : 'error'}

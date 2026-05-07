@@ -21,7 +21,7 @@ import { FileIcon } from './FileIcon';
 const PREVIEWABLE_EXTENSIONS = ['pdf', 'txt', 'html'];
 
 function DocumentPreview() {
-  const { abbreviation, documentId } = useParams();
+  const { abbreviation, documentStringId } = useParams();
   const [previewBlob, setPreviewBlob] = useState<string | null>(null);
   const [projectDocument, setProjectDocument] = useState<ProjectDocument | null>(null);
   const [getDetailsStatus, setGetDetailsStatus] = useState<LoadingState>(LoadingState.IDLE);
@@ -65,11 +65,7 @@ function DocumentPreview() {
       setGetDetailsStatus(LoadingState.LOADING);
 
       try {
-        const response: ResponseObject = await getDocument(
-          abbreviation!,
-          Number(documentId),
-          token,
-        );
+        const response: ResponseObject = await getDocument(abbreviation!, documentStringId!, token);
         if (response.status === ResponseType.Success) {
           setProjectDocument(response.data as ProjectDocument);
           setGetDetailsStatus(LoadingState.SUCCESS);
@@ -86,7 +82,7 @@ function DocumentPreview() {
     const handlePreview = async () => {
       setPreviewStatus(LoadingState.LOADING);
       try {
-        const { blob } = await previewDocument(abbreviation!, Number(documentId), token);
+        const { blob } = await previewDocument(abbreviation!, documentStringId!, token);
         url = URL.createObjectURL(blob);
         const noToolBarUrl = `${url}#toolbar=0`;
         setPreviewBlob(noToolBarUrl);
@@ -103,7 +99,7 @@ function DocumentPreview() {
     return () => {
       if (url) URL.revokeObjectURL(url);
     };
-  }, [abbreviation, documentId, token]);
+  }, [abbreviation, documentStringId, token]);
 
   const handleDownload = async () => {
     setDownloadingStatus(LoadingState.LOADING);
@@ -111,7 +107,7 @@ function DocumentPreview() {
       // If preview failed we should still allow downloading of file directly
       const { blob, suggestedFilename } = await downloadDocument(
         abbreviation!,
-        Number(documentId),
+        documentStringId!,
         token,
       );
 
@@ -200,9 +196,12 @@ function DocumentPreview() {
                 {projectDocument?.fileName || 'document'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
+                Document ID · {projectDocument?.uniqueStringId || 'N/A'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
                 Created by {projectDocument?.createdBy || 'Unknown'} ·{' '}
                 {projectDocument
-                  ? isoDateLocalDate(projectDocument?.uploadedDate.toString())
+                  ? isoDateLocalDate(projectDocument?.created.toString())
                   : 'Unknown'}
               </Typography>
             </Box>

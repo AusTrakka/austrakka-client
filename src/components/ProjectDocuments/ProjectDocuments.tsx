@@ -1,5 +1,6 @@
 import {
   CheckCircleOutlined,
+  ContentCopy,
   DeleteOutline,
   Edit,
   FileDownloadOutlined,
@@ -19,6 +20,7 @@ import {
   MenuItem,
   MenuList,
   Paper,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
@@ -50,9 +52,13 @@ import type { PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import DeleteDocument from './DeleteDocument';
+import DocumentResponseToast from './DocumentResponseToast';
 import EditDocumentDetails from './EditDocumentDetails';
 import { FileIcon } from './FileIcon';
 import UploadDocument from './UploadDocument';
+
+export const MAX_FILENAME_LENGTH = 100;
+export const MAX_FILE_DESCRIPTION_LENGTH = 500;
 
 interface ProjectDocumentsProps {
   projectDetails: Project | null;
@@ -60,12 +66,12 @@ interface ProjectDocumentsProps {
 
 function ProjectDocuments(props: ProjectDocumentsProps) {
   const { projectDetails } = props;
-  const { token } = useApi();
+  const { token, tokenLoading } = useApi();
 
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [documents, setDocuments] = useState<ProjectDocument[]>([]);
-  const [, setPreviewFile] = useState<LoadingState>(LoadingState.IDLE);
-  const [downloadingFiles, setDownloadingFiles] = useState<Map<number, LoadingState>>(new Map());
+  const [previewFile, setPreviewFile] = useState<LoadingState>(LoadingState.IDLE);
+  const [downloadingFiles, setDownloadingFiles] = useState<Map<string, LoadingState>>(new Map());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeRow, setActiveRow] = useState<ProjectDocument | null>(null);
   const rowMenuOpen = Boolean(anchorEl);
@@ -77,6 +83,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const user: UserSliceState = useAppSelector(selectUserState);
   const [canEditDelete, setCanEditDelete] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<LoadingState>(LoadingState.IDLE);
 
   useEffect(() => {
     if (user && projectDetails) {
@@ -90,8 +97,8 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     }
   }, [user, projectDetails]);
 
-  const getDownloadState = (id: number) => downloadingFiles.get(id) ?? LoadingState.IDLE;
-  const setDownloadState = (id: number, state: LoadingState) => {
+  const getDownloadState = (id: string) => downloadingFiles.get(id) ?? LoadingState.IDLE;
+  const setDownloadState = (id: string, state: LoadingState) => {
     setDownloadingFiles((prev) => new Map(prev).set(id, state));
   };
 
@@ -106,25 +113,30 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     {
       field: 'fileName',
       header: 'File name',
+      hidden: false,
     },
     {
-      field: 'id',
-      header: 'ID',
+      field: 'uniqueStringId',
+      header: 'Id',
+      hidden: true,
     },
     {
       field: 'description',
       header: 'Description',
+      hidden: false,
     },
     {
       field: 'fileSize',
       header: 'File Size',
       body: (rowData: ProjectDocument) => formatFileSize(rowData.fileSize, true),
+      hidden: false,
     },
-    { field: 'createdBy', header: 'Created By' },
+    { field: 'createdBy', header: 'Created By', hidden: false },
     {
-      field: 'uploadedDate',
+      field: 'created',
       header: 'Uploaded Date',
-      body: (rowData: ProjectDocument) => isoDateLocalDate(rowData.uploadedDate.toString()),
+      body: (rowData: ProjectDocument) => isoDateLocalDate(rowData.created.toString()),
+      hidden: false,
     },
   ];
 
@@ -152,42 +164,61 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
   }, [projectDetails, token]);
 
   useEffect(() => {
-    if (projectDetails) {
+    if (
+      projectDetails &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
       fetchDocuments();
     }
-  }, [fetchDocuments, projectDetails]);
+  }, [fetchDocuments, projectDetails, tokenLoading]);
 
   const refreshDocuments = async () => {
     setAnchorEl(null);
     setActiveRow(null);
-    await fetchDocuments();
+    if (
+      projectDetails &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      fetchDocuments();
+    }
   };
 
   const handleDownload = async (projectDoc: ProjectDocument) => {
-    const documentId = projectDoc.id;
-    setDownloadState(documentId, LoadingState.LOADING);
-    try {
-      const { blob, suggestedFilename } = await downloadDocument(
-        projectDetails!.abbreviation,
-        documentId,
-        token,
-      );
+    const documentStringId = projectDoc.uniqueStringId;
+    setDownloadState(documentStringId, LoadingState.LOADING);
+    if (
+      documentStringId &&
+      token &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      try {
+        const { blob, suggestedFilename } = await downloadDocument(
+          projectDetails!.abbreviation,
+          documentStringId,
+          token,
+        );
 
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = suggestedFilename;
-      link.click();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = suggestedFilename;
+        link.click();
 
-      URL.revokeObjectURL(blobUrl);
-      link.remove();
-      setDownloadState(documentId, LoadingState.SUCCESS);
-      // Reset the download state after 3 seconds
-      setTimeout(() => {
-        setDownloadState(documentId, LoadingState.IDLE);
-      }, 3000);
-    } catch {
-      setDownloadState(documentId, LoadingState.ERROR);
+        URL.revokeObjectURL(blobUrl);
+        link.remove();
+        setDownloadState(documentStringId, LoadingState.SUCCESS);
+        // Reset the download state after 3 seconds
+        setTimeout(() => {
+          setDownloadState(documentStringId, LoadingState.IDLE);
+        }, 3000);
+      } catch {
+        setDownloadState(documentStringId, LoadingState.ERROR);
+      }
+    } else {
+      setDownloadState(documentStringId, LoadingState.ERROR);
     }
   };
 
@@ -195,7 +226,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     if (!projectDoc) return;
     try {
       window.open(
-        `/projects/${projectDetails!.abbreviation}/documents/${projectDoc.id}/preview`,
+        `/projects/${projectDetails!.abbreviation}/documents/${projectDoc.uniqueStringId}/preview`,
         '_blank',
       );
       setPreviewFile(LoadingState.SUCCESS);
@@ -204,8 +235,16 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     }
   };
 
+  const handleCopyDocumentId = async (documentId: string) => {
+    await navigator.clipboard.writeText(documentId);
+    setCopyStatus(LoadingState.SUCCESS);
+    setTimeout(() => {
+      setCopyStatus(LoadingState.IDLE);
+    }, 1500);
+  };
+
   const rowActions = (rowData: ProjectDocument) => (
-    <Grid sx={{ textAlign: 'right' }}>
+    <Grid sx={{ textAlign: 'left' }}>
       <IconButton
         onClick={(e) => {
           handleMenuClick(e, rowData);
@@ -253,8 +292,8 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     </div>
   );
 
-  const getDownloadListRow = (documentId: number) => {
-    const downloadState = getDownloadState(documentId);
+  const getDownloadListRow = (documentStringId: string) => {
+    const downloadState = getDownloadState(documentStringId);
 
     if (downloadState === LoadingState.LOADING) {
       return (
@@ -363,6 +402,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
               header={col.header}
               body={col.body}
               sortable
+              hidden={col.hidden}
               className="flexible-column"
               bodyClassName="value-cells"
               headerClassName="custom-title"
@@ -382,16 +422,18 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
             elevation: 2,
           },
         }}
+        sx={{ zIndex: 999 }} // Ensure the menu appears above other elements
       >
         {activeRow && (
           <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
             <MenuItem
               onClick={() => handleDownload(activeRow as ProjectDocument)}
               disabled={
-                getDownloadState((activeRow as ProjectDocument).id) === LoadingState.LOADING
+                getDownloadState((activeRow as ProjectDocument).uniqueStringId) ===
+                LoadingState.LOADING
               }
             >
-              {getDownloadListRow((activeRow as ProjectDocument).id)}
+              {getDownloadListRow((activeRow as ProjectDocument).uniqueStringId)}
             </MenuItem>
             <MenuItem onClick={() => handlePreviewNewTab(activeRow as ProjectDocument)}>
               <ListItemIcon>
@@ -399,6 +441,39 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
               </ListItemIcon>
               <ListItemText sx={{ color: Theme.PrimaryMain }}>Preview in new tab</ListItemText>
             </MenuItem>
+            <Tooltip
+              title={`ID: ${(activeRow as ProjectDocument).uniqueStringId}`}
+              placement="right"
+              arrow
+            >
+              <MenuItem
+                onClick={() => {
+                  handleCopyDocumentId((activeRow as ProjectDocument).uniqueStringId);
+                }}
+              >
+                <ListItemIcon>
+                  <ContentCopy
+                    fontSize="small"
+                    sx={{
+                      color:
+                        copyStatus === LoadingState.SUCCESS
+                          ? Theme.SecondaryLightGreen
+                          : Theme.PrimaryMain,
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  sx={{
+                    color:
+                      copyStatus === LoadingState.SUCCESS
+                        ? Theme.SecondaryLightGreen
+                        : Theme.PrimaryMain,
+                  }}
+                >
+                  Copy document ID
+                </ListItemText>
+              </MenuItem>
+            </Tooltip>
             {canEditDelete && (
               <>
                 <MenuItem onClick={() => setEditDetailsOpen(true)}>
@@ -421,6 +496,14 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           </MenuList>
         )}
       </Menu>
+      {previewFile === LoadingState.ERROR ? (
+        <DocumentResponseToast
+          open={true}
+          onClose={() => setPreviewFile(LoadingState.IDLE)}
+          status={'error'}
+          message={'An error occurred while opening the file preview'}
+        />
+      ) : null}
     </>
   );
 }

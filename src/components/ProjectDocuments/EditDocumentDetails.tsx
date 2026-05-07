@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -24,7 +25,8 @@ import {
   sanitizeFileDescription,
   sanitizeFilename,
 } from '../../utilities/uploadUtils';
-import DocumentResponseDialog from './DocumentResponseDialog';
+import DocumentResponseToast from './DocumentResponseToast';
+import { MAX_FILE_DESCRIPTION_LENGTH, MAX_FILENAME_LENGTH } from './ProjectDocuments';
 
 interface EditDocumentDetailsProps {
   open: boolean;
@@ -36,7 +38,7 @@ interface EditDocumentDetailsProps {
 
 function EditDocumentDetails(props: EditDocumentDetailsProps) {
   const { open, onClose, activeDocument, abbreviation, refresh } = props;
-  const { token } = useApi();
+  const { token, tokenLoading } = useApi();
   const safeFileName = activeDocument?.fileName || '';
   const safeDescription = activeDocument?.description || '';
   const [filenameBase, setFilenameBase] = useState('');
@@ -64,50 +66,61 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
   }, [filenameBase]);
 
   const handleEdit = async () => {
-    if (!activeDocument) return;
-    try {
-      // Sanitize filename base input and file description
-      const sanitizedFilenameBase = sanitizeFilename(filenameBase);
-      const sanitizedFileDescription = sanitizeFileDescription(fileDescription);
+    if (
+      activeDocument &&
+      abbreviation &&
+      token &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      try {
+        // Sanitize filename base input and file description
+        const sanitizedFilenameBase = sanitizeFilename(filenameBase);
+        const sanitizedFileDescription = sanitizeFileDescription(fileDescription);
 
-      // Only call endpoint if filename or description has changed
-      if (
-        sanitizedFilenameBase === sanitizeFilename(activeDocument.fileName) &&
-        sanitizedFileDescription === sanitizeFileDescription(activeDocument.description)
-      ) {
-        onClose();
-        return;
-      }
+        // Only call endpoint if filename or description has changed
+        if (
+          sanitizedFilenameBase + (extension || '') === sanitizeFilename(activeDocument.fileName) &&
+          sanitizedFileDescription === sanitizeFileDescription(activeDocument.description)
+        ) {
+          onClose();
+          return;
+        }
 
-      setStatus(LoadingState.LOADING);
-      // Only send the filename base (no extension)
-      const response = await updateDocument(
-        abbreviation,
-        activeDocument.id,
-        token,
-        sanitizedFilenameBase,
-        sanitizedFileDescription,
-      );
-      if (response.status === ResponseType.Success) {
-        await refresh();
-        setStatus(LoadingState.SUCCESS);
-      } else {
+        setStatus(LoadingState.LOADING);
+        // Only send the filename base (no extension)
+        const response = await updateDocument(
+          abbreviation,
+          activeDocument.uniqueStringId,
+          token,
+          sanitizedFilenameBase + (extension || ''),
+          sanitizedFileDescription,
+        );
+        if (response.status === ResponseType.Success) {
+          await refresh();
+          setStatus(LoadingState.SUCCESS);
+        } else {
+          setStatus(LoadingState.ERROR);
+        }
+      } catch {
         setStatus(LoadingState.ERROR);
       }
-    } catch {
+    } else {
       setStatus(LoadingState.ERROR);
     }
   };
 
   const getFilenameHelperText = () => {
-    const charCountText = `${filenameBase.length}/100`;
+    const charCountText = `${filenameBase.length + (extension ? extension.length : 0)}/${MAX_FILENAME_LENGTH}`;
     return (
       <Box
         component="span"
         sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}
       >
         <span>{fileNameInputError ? 'Invalid characters included' : ''}</span>
-        <span>{charCountText}</span>
+        <Tooltip title="Includes file extension" placement="top" arrow>
+          <span>{charCountText}</span>
+        </Tooltip>{' '}
       </Box>
     );
   };
@@ -115,7 +128,7 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
   return (
     <>
       {status === LoadingState.IDLE || status === LoadingState.LOADING ? (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+        <Dialog open={open} fullWidth maxWidth="xs">
           <DialogTitle>
             <Edit fontSize="large" color="primary" />
             <Typography color="primary" variant="h4" sx={{ marginBottom: 1 }}>
@@ -142,7 +155,9 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
                 required
                 fullWidth
                 slotProps={{
-                  htmlInput: { maxLength: 100 },
+                  htmlInput: {
+                    maxLength: MAX_FILENAME_LENGTH - (extension ? extension.length : 0),
+                  },
                   formHelperText: { sx: { textAlign: 'right' } },
                   input: {
                     endAdornment: extension ? (
@@ -175,9 +190,9 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
                 multiline
                 maxRows={4}
                 sx={{ marginBottom: 1 }}
-                helperText={`${fileDescription.length}/500`}
+                helperText={`${fileDescription.length}/${MAX_FILE_DESCRIPTION_LENGTH}`}
                 slotProps={{
-                  htmlInput: { maxLength: 500 },
+                  htmlInput: { maxLength: MAX_FILE_DESCRIPTION_LENGTH },
                   formHelperText: { sx: { textAlign: 'right' } },
                 }}
               />
@@ -196,7 +211,8 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
                 filenameBase.trim() === '' ||
                 fileNameInputError ||
                 status === LoadingState.LOADING ||
-                (filenameBase === safeFileName && fileDescription === safeDescription)
+                (filenameBase + (extension || '') === safeFileName &&
+                  fileDescription === safeDescription)
               }
               startIcon={
                 status === LoadingState.LOADING ? <CircularProgress size={20} /> : <Save />
@@ -209,7 +225,7 @@ function EditDocumentDetails(props: EditDocumentDetailsProps) {
       ) : null}
       {/* Error or success dialog */}
       {status === LoadingState.SUCCESS || status === LoadingState.ERROR ? (
-        <DocumentResponseDialog
+        <DocumentResponseToast
           open={true}
           onClose={() => onClose()}
           status={status === LoadingState.SUCCESS ? 'success' : 'error'}
