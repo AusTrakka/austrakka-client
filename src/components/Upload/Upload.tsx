@@ -26,7 +26,7 @@ function Upload() {
 
   return (
     <Box>
-      <Typography variant="h2" color="primary" paddingBottom={2}>
+      <Typography variant="h3" color="primary" paddingBottom={2}>
         Upload
       </Typography>
       <Grid container direction="row" justifyContent="flex-start" spacing={2} alignItems="stretch">

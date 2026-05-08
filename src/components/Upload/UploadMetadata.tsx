@@ -265,7 +265,7 @@ function UploadMetadata() {
 
   return (
     <>
-      <Typography variant="h2" paddingBottom={1} color="primary">
+      <Typography variant="h3" paddingBottom={1} color="primary">
         Upload Metadata
       </Typography>
       {/* Top section */}

@@ -82,6 +82,7 @@ function ActivityContentBox({ entry, logContext }: ContentBoxProps): JSX.Element
         data={entry.Details}
         label="Additional Details"
         hiddenKeys={HIDDEN_DETAIL_KEYS}
+        expandAllDefault={true}
       />
     </>
   );

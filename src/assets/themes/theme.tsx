@@ -80,7 +80,8 @@ const muiTheme: ThemeOptions = createTheme({
       fontWeight: 'bold',
     },
     h3: {
-      fontSize: '1.5rem',
+      fontSize: '1.6rem',
+      fontWeight: 'bold',
     },
     h4: {
       fontSize: '1.2rem',

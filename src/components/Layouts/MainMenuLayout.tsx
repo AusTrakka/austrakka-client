@@ -5,6 +5,7 @@ import {
   Description,
   Domain,
   Help,
+  Home as HomeIcon,
   Inventory,
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
@@ -24,6 +25,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Link as MuiLink,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -362,7 +364,19 @@ function MainMenuLayout() {
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link to="/">Home</Link>
+              <MuiLink
+                component={Link}
+                to="/"
+                color="inherit"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  lineHeight: 1,
+                  height: '24px',
+                }}
+              >
+                <HomeIcon sx={{ fontSize: '1rem', lineHeight: 1 }} />
+              </MuiLink>
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
                 const nolink = breadcrumbNoLink.includes(value);
