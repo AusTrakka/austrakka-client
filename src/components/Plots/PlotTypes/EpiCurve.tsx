@@ -8,7 +8,7 @@ import {
   selectProjectMetadataFields,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import { defaultDiscreteColorScheme } from '../../../constants/schemes';
 import type { ProjectViewField } from '../../../types/dtos';
 import type PlotTypeProps from '../../../types/plottypeprops.interface';
@@ -168,7 +168,7 @@ function EpiCurve(props: PlotTypeProps) {
     if (
       dateBinUnit === '' &&
       dateField !== '' &&
-      data?.loadingState === MetadataLoadingState.DATA_LOADED &&
+      hasCompleteData(data?.loadingState) &&
       data!.fields!.some((field) => field.columnName === dateField)
     ) {
       // dateBinUnit is not set; try to pick a good value

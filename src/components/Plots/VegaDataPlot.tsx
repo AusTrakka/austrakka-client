@@ -10,7 +10,7 @@ import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import { hasAnyData, hasCompleteData } from '../../constants/metadataLoadingState';
 import type { Sample } from '../../types/sample.interface';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
@@ -43,6 +43,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+
   useEffect(() => {
     setErrorOccurred(false);
     setMutableFilteredData(JSON.parse(JSON.stringify(filteredData)));
@@ -67,16 +68,15 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   useGlobalErrorListener(handleGlobalError);
 
   useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
+    if (hasCompleteData(metadata?.loadingState)) {
       setFilteredData(metadata?.metadata ?? []);
       setAllFieldsLoaded(true);
     }
   }, [metadata?.loadingState, metadata?.metadata]);
 
   // Render plot by creating vega view
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
+  // biome-ignore lint/correctness/useExhaustiveDependencies: avoid circular refs
   useEffect(() => {
-    setErrorOccurred(false);
     // Modifies compiledSpec in place
     const fixRowWidths = (compiledSpec: Spec) => {
       if (!compiledSpec.signals) {
@@ -117,7 +117,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const dataIndex: number = compiledSpec!.data!.findIndex((dat) => dat.name === 'inputdata');
       // TODO show a warning on the UI as well
       if (dataIndex === -1) {
-        // biome-ignore lint/suspicious/noConsole: historic
+        // biome-ignore lint/suspicious/noConsole: troubleshooting
         console.error('Bad plot spec: inputdata slot not found in spec');
         return;
       }
@@ -132,36 +132,22 @@ function VegaDataPlot(props: VegaDataPlotProps) {
       const view = await new VegaView(parse(compiledSpec)).initialize(plotDiv.current!).runAsync();
       setVegaView(view);
       setLoading(false);
+      setErrorOccurred(false);
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (
-      spec &&
-      metadata?.loadingState &&
-      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-      mutableFilteredData &&
-      plotDiv?.current
-    ) {
-      // TODO it appears this may trigger too often?
+    if (spec && hasAnyData(metadata?.loadingState) && mutableFilteredData && plotDiv?.current) {
+      // TODO it appears this may trigger too often - twice in a row
       createVegaView();
     }
-    // Review: old vegaView is just being cleaned up and should NOT be a dependency?
-    // loadingState is not a dependency as we only care about changes that co-occur with
-    // filteredData
+    // old vegaView is just being cleaned up and should NOT be a dependency, left out here
+    // loadingState is not a dependency as we only care about changes that co-occur with filteredData
   }, [spec, mutableFilteredData, plotDiv]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (
-      metadata?.loadingState &&
-      (metadata.loadingState === MetadataLoadingState.DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED ||
-        metadata.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR) &&
-      Object.keys(currentFilters).length === 0
-    ) {
-      setMutableFilteredData(JSON.parse(JSON.stringify(metadata.metadata!)));
+    if (hasAnyData(metadata?.loadingState) && Object.keys(currentFilters).length === 0) {
+      setMutableFilteredData(JSON.parse(JSON.stringify(metadata!.metadata!)));
       setLoading(false);
     }
   }, [metadata?.metadata]);

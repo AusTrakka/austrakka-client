@@ -23,7 +23,6 @@ import {
   callPOSTForm,
   callPost,
   callPostMultipart,
-  callPUT,
   callSimpleGET,
   downloadFile,
 } from './api';
@@ -32,8 +31,7 @@ import {
 
 // Project endpoints
 export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
-  callGET('/api/Projects?&includeall=false', token);
-
+  callGET('/api/Projects', token);
 export const getProjectDetails = (
   abbrev: string,
   token: string,
@@ -89,12 +87,6 @@ export const getDisplayFields = (groupId: number, token: string) =>
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> =>
   callGET(`/api/Group/${groupName}`, token);
-export const replaceAssignments = (
-  userId: string,
-  token: string,
-  assignments: any,
-  clientSessionId?: string,
-) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments, clientSessionId);
 
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
@@ -197,10 +189,6 @@ export const getUser = (identifier: string, token: string) =>
   callGET(`/api/Users/${identifier}`, token);
 export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
-export const patchUserContactEmail = (identifier: string, token: string, email: any) =>
-  callPATCH(`/api/Users/${identifier}/contactEmail`, token, email);
-export const putUser = (identifier: string, token: string, user: any, clientSessionId?: string) =>
-  callPUT(`/api/Users/${identifier}`, token, user, clientSessionId);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/RolesV2', token);
@@ -377,16 +365,34 @@ export const patchFieldV2 = (metaDataColumnName: string, token: string, field: a
 export const getActivities = (
   recordType: string,
   token: string,
-  rguid?: string,
+  recordId?: string,
   searchParams?: URLSearchParams,
 ): Promise<ResponseObject<DerivedLog[]>> => {
   let resourcePath = '';
   if (recordType === RecordTypes.SYSTEM) {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.ORGANISATION) {
-    resourcePath = `/api/OrganisationV2/${rguid}/ActivityLog?${searchParams}`;
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.PROJECT) {
-    resourcePath = `/api/Projects/${rguid}/ActivityLog?${searchParams}`;
+    resourcePath = `/api/Projects/${recordId}/ActivityLog?${searchParams}`;
+  }
+  return callGET(resourcePath, token);
+};
+
+// Returns a timestamp
+export const getLatestActivityTime = (
+  recordType: string,
+  token: string,
+  recordId?: string,
+  searchParams?: URLSearchParams,
+): Promise<ResponseObject<string>> => {
+  let resourcePath = '';
+  if (recordType === 'Tenant') {
+    resourcePath = `/api/Tenant/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.ORGANISATION) {
+    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog/LatestTime?${searchParams}`;
+  } else if (recordType === RecordTypes.PROJECT) {
+    resourcePath = `/api/Projects/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   }
   return callGET(resourcePath, token);
 };
