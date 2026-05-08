@@ -23,7 +23,6 @@ import {
   callPOSTForm,
   callPost,
   callPostMultipart,
-  callPUT,
   callSimpleGET,
   downloadFile,
 } from './api';
@@ -87,12 +86,6 @@ export const getDisplayFields = (groupId: number, token: string) =>
 export const getGroupList = (token: string) => callGET('/api/Group', token);
 export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> =>
   callGET(`/api/Group/${groupName}`, token);
-export const replaceAssignments = (
-  userId: string,
-  token: string,
-  assignments: any,
-  clientSessionId?: string,
-) => callPUT(`/api/Group/replace-assignments/${userId}`, token, assignments, clientSessionId);
 
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
@@ -195,10 +188,6 @@ export const getUser = (identifier: string, token: string) =>
   callGET(`/api/Users/${identifier}`, token);
 export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
-export const patchUserContactEmail = (identifier: string, token: string, email: any) =>
-  callPATCH(`/api/Users/${identifier}/contactEmail`, token, email);
-export const putUser = (identifier: string, token: string, user: any, clientSessionId?: string) =>
-  callPUT(`/api/Users/${identifier}`, token, user, clientSessionId);
 
 // Role endpoints
 export const getRoles = (token: string) => callGET('/api/RolesV2', token);

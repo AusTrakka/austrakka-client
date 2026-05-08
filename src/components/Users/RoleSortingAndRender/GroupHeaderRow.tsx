@@ -66,9 +66,6 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
             response = await getUserProformas(token);
             break;
           default:
-            // TODO: Will need to add more calls once endpoints have been added
-            // I think project is technically there but I dont think roles can be added for it.
-            // for the cli
             return;
         }
 
