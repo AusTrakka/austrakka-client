@@ -1,15 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import LoadingState from '../constants/loadingState';
 import { ResponseType } from '../constants/responseType';
-import type {
-  GroupedPrivilegesByRecordTypeWithScopes,
-  GroupRole,
-  User,
-  UserMe,
-} from '../types/dtos';
+import type { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, UserMe } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
-import { getMe, getMeV2 } from '../utilities/resourceUtils';
+import { getMe } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 
 export interface UserSliceState {
@@ -48,22 +43,17 @@ const fetchUserRoles = createAsyncThunk(
         return thunkAPI.rejectWithValue(groupResponse.message);
       }
 
-      const scopeResponse: ResponseObject = await getMeV2(token);
-      if (scopeResponse.status !== ResponseType.Success) {
-        return thunkAPI.rejectWithValue(scopeResponse.message);
-      }
-
       // Destructure the response data
       const {
+        scopes,
+        username,
         groupRoles,
         isAusTrakkaAdmin,
         displayName,
         orgAbbrev,
         orgName,
         orgGlobalId,
-        username,
-      } = groupResponse.data as User;
-      const { scopes } = scopeResponse.data as UserMe;
+      } = groupResponse.data as UserMe;
 
       // Fulfill with user role data
       return {
