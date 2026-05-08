@@ -128,6 +128,12 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         role.resourceTypes.some((rt) => rt === 'System' || rt === 'All'),
       );
     }
+    //INFO: THIS CONDITIONAL IS TEMPORARY
+    if (recordType === 'Organisation') {
+      return rolesForV2
+        .filter((role) => role.name !== 'ContributorUploader' && role.name !== 'GuestViewer')
+        .filter((role) => role.resourceTypes.some((rt) => rt === recordType));
+    }
     return rolesForV2.filter((role) => role.resourceTypes.some((rt) => rt === recordType));
   };
 
