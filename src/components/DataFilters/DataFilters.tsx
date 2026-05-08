@@ -1,4 +1,11 @@
-import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
+import {
+  Add,
+  AddBox,
+  CloseRounded,
+  Delete,
+  Edit,
+  IndeterminateCheckBox,
+} from '@mui/icons-material';
 import {
   Alert,
   Autocomplete,
@@ -16,14 +23,17 @@ import {
   Snackbar,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import type { DateValidationError } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import type React from 'react';
 import { type SetStateAction, useEffect, useState } from 'react';
+import { Theme } from '../../assets/themes/theme';
 import FieldTypes from '../../constants/fieldTypes';
 import type { Field } from '../../types/dtos';
 import {
@@ -133,6 +143,11 @@ function DataFilters(props: DataFiltersProps) {
   const [nullOrEmptyFlag, setNullOrEmptyFlag] = useState(false);
   const [dateError, setDateError] = useState<DateValidationError>(null);
   const [fields, setFields] = useState<Field[]>([]);
+
+  const [editingFilter, setEditingFilter] = useState<{
+    field: string;
+    constraint: { value: any; matchMode: FilterMatchMode };
+  } | null>(null);
 
   useEffect(() => {
     setRowCount(filteredDataLength);
@@ -393,39 +408,66 @@ function DataFilters(props: DataFiltersProps) {
         setFilterError(true);
         setFilterErrorMessage('This filter has already been applied.');
         setFilterFormValues(defaultFormState);
+        setEditingFilter(null);
       } else {
         const filterMatchMode = Object.values(CustomFilterOperators).includes(
           filterFormValues.condition as CustomFilterOperators,
         )
           ? FilterMatchMode.CUSTOM
           : (filterFormValues.condition as FilterMatchMode);
+
+        const newConstraintValue =
+          filterFormValues.fieldType === FieldTypes.DATE
+            ? handleDateDependingOnCondition(filterMatchMode, filterFormValues.value)
+            : filterFormValues.value;
+
+        const updatedFilters = { ...primeReactFilters };
+
+        if (editingFilter) {
+          const existingEditFilter = updatedFilters[
+            editingFilter.field
+          ] as DataTableOperatorFilterMetaData;
+          if (existingEditFilter && isOperatorFilterMetaData(existingEditFilter)) {
+            existingEditFilter.constraints = existingEditFilter.constraints.filter(
+              (constraint: any) =>
+                !(
+                  constraint.value === editingFilter.constraint.value &&
+                  constraint.matchMode === editingFilter.constraint.matchMode
+                ),
+            );
+            if (existingEditFilter.constraints.length === 0) {
+              delete updatedFilters[editingFilter.field];
+            }
+          }
+          setEditingFilter(null);
+        }
+
         const filter: DataTableFilterMeta = {
           [filterFormValues.field]: {
             operator: FilterOperator.AND,
             constraints: [
               {
-                value:
-                  filterFormValues.fieldType === FieldTypes.DATE
-                    ? handleDateDependingOnCondition(filterMatchMode, filterFormValues.value)
-                    : filterFormValues.value,
+                value: newConstraintValue,
                 matchMode: filterMatchMode,
               },
             ],
           } as DataTableOperatorFilterMetaData,
         };
-        const existingFilter = primeReactFilters[
+
+        const existingFilter = updatedFilters[
           filterFormValues.field
         ] as DataTableOperatorFilterMetaData;
 
         const filterOperatorObject = filter[
           filterFormValues.field
         ] as DataTableOperatorFilterMetaData;
+
         // Check if the current filters are equal to the default filters
-        if (isDataTableFiltersEqual(primeReactFilters, defaultState)) {
+        if (isDataTableFiltersEqual(updatedFilters, defaultState)) {
           setPrimeReactFilters(filter);
         } else if (existingFilter) {
           const holder = {
-            ...primeReactFilters,
+            ...updatedFilters,
             [filterFormValues.field]: {
               operator: filterOperatorObject.operator, // Preserve existing operator
               constraints: [
@@ -437,7 +479,7 @@ function DataFilters(props: DataFiltersProps) {
           setPrimeReactFilters(holder);
         } else {
           setPrimeReactFilters({
-            ...primeReactFilters,
+            ...updatedFilters,
             ...filter, // Add the new filter
           });
         }
@@ -487,6 +529,55 @@ function DataFilters(props: DataFiltersProps) {
       }
     });
     setPrimeReactFilters(updatedFilters);
+  };
+
+  const handleFilterEdit = (
+    _fieldName: string,
+    _constraint: { value: any; matchMode: FilterMatchMode },
+  ) => {
+    setEditingFilter({ field: _fieldName, constraint: _constraint });
+
+    // Find the field type to set conditions and format dates
+    const fieldType = fields.find((f) => f.columnName === _fieldName)?.primitiveType;
+    if (fieldType) {
+      setSelectedFieldType(fieldType as FieldTypes);
+      if (fieldType === FieldTypes.DATE) {
+        setConditions(dateConditions);
+      } else if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
+        setConditions(numberConditions);
+      } else if (fieldType === FieldTypes.BOOLEAN) {
+        setConditions(booleanConditions);
+      } else {
+        const uniqueValuesForField = fieldUniqueValues?.[_fieldName];
+        if (uniqueValuesForField && uniqueValuesForField.length > 0) {
+          setConditions([...stringConditions, ...stringInConditions]);
+        } else {
+          setConditions(stringConditions);
+        }
+      }
+    }
+
+    // Convert Date to dayjs if it's a date field
+    let formValue = _constraint.value;
+    if (fieldType === FieldTypes.DATE && _constraint.value instanceof Date) {
+      formValue = dayjs(_constraint.value);
+    }
+
+    setFilterFormValues({
+      field: _fieldName,
+      condition: _constraint.matchMode,
+      value: formValue,
+      fieldType,
+      operator: 'and',
+    } as InternalFormProperties);
+  };
+
+  const isChipBeingEdited = (chipField: string, chipConstraint: any) => {
+    return (
+      editingFilter?.field === chipField &&
+      editingFilter?.constraint.matchMode === chipConstraint.matchMode &&
+      editingFilter?.constraint.value === chipConstraint.value
+    );
   };
 
   const renderValueElement = () => {
@@ -718,12 +809,62 @@ function DataFilters(props: DataFiltersProps) {
                                     <b>{conditionName}</b> {displayValue}
                                   </>
                                 }
-                                onDelete={() =>
-                                  handleFilterDelete(field, {
-                                    value: constraint.value,
-                                    matchMode: constraint.matchMode as FilterMatchMode,
-                                  })
+                                deleteIcon={
+                                  <Box sx={{ display: 'flex', gap: 0.25 }}>
+                                    <Tooltip title="Edit filter" arrow>
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleFilterEdit(field, {
+                                            value: constraint.value,
+                                            matchMode: constraint.matchMode as FilterMatchMode,
+                                          });
+                                        }}
+                                        sx={{
+                                          padding: '2px',
+                                          backgroundColor: Theme.PrimaryGrey500,
+                                          borderRadius: '50%',
+                                          '&:hover': {
+                                            backgroundColor: Theme.PrimaryGrey600,
+                                          },
+                                        }}
+                                      >
+                                        <Edit
+                                          fontSize="small"
+                                          sx={{ fontSize: '14px', color: 'white' }}
+                                        />
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Delete filter" arrow>
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleFilterDelete(field, {
+                                            value: constraint.value,
+                                            matchMode: constraint.matchMode as FilterMatchMode,
+                                          });
+                                        }}
+                                        sx={{
+                                          padding: '2px',
+                                          backgroundColor: Theme.PrimaryGrey500,
+                                          borderRadius: '50%',
+                                          '&:hover': {
+                                            backgroundColor: Theme.PrimaryGrey600,
+                                          },
+                                        }}
+                                      >
+                                        <CloseRounded
+                                          fontSize="small"
+                                          sx={{ fontSize: '14px', color: 'white' }}
+                                        />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Box>
                                 }
+                                onDelete={() => {}}
+                                disabled={isChipBeingEdited(field, constraint)}
                                 sx={{ margin: 0.5 }}
                               />
                             );
