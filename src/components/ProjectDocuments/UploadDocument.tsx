@@ -152,7 +152,7 @@ function UploadDocument(props: UploadDocumentProps) {
   return (
     <>
       {status === LoadingState.IDLE || status === LoadingState.LOADING ? (
-        <Dialog open={open} onClose={onClose} sx={{ minWidth: 350 }}>
+        <Dialog open={open} sx={{ minWidth: 350 }}>
           <DialogTitle>
             <AddBox fontSize="large" color="primary" />
             <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
