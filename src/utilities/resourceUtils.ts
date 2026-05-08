@@ -36,6 +36,7 @@ export const getProjectDetails = (
   abbrev: string,
   token: string,
 ): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
+
 export const getProjectMembers = (identifier: string, token: string) =>
   callGET(`/api/Projects/${identifier}/Members`, token);
 

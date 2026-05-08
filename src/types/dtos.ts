@@ -107,6 +107,7 @@ export interface PlotListing {
 export interface Member {
   username: string;
   roles: string[];
+  position: string;
   organization: {
     id: number;
     abbreviation: string;
@@ -144,11 +145,18 @@ export interface UserMe {
   username: string;
   displayName: string;
   contactEmail: string;
+  position: string;
+  orgGlobalId: string;
+  orgId: number;
   orgAbbrev: string;
   orgName: string;
   analysisServerUsername: string;
+  lastDownloadDate: Date;
+  monthlyBytesUsed: number;
+  monthlyBytesQuota: number;
   scopes: GroupedPrivilegesByRecordTypeWithScopes[];
   groupRoles: GroupRole[];
+  isAusTrakkaAdmin: boolean;
 }
 
 export interface GroupedPrivilegesByRecordTypeWithScopes {

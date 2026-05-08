@@ -81,7 +81,6 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     const existingTypes = new Set<string>();
     const processedPrivileges = userGroupedPrivileges
       .filter((group) => {
-        if (group.recordType === 'User') return false;
         existingTypes.add(group.recordType);
         return true;
       })
