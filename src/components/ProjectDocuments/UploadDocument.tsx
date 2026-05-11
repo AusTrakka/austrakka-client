@@ -39,6 +39,10 @@ const VALID_FILE_UPLOAD_TYPES = {
   '.pdf': 'application/pdf',
   '.txt': 'text/plain',
   '.html': 'text/html',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
 };
 
 interface UploadDocumentProps {

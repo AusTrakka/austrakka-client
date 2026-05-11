@@ -106,7 +106,11 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
           ({
             success:
               Object.entries(validFormats).length === 0 ||
-              _files.every((f) => Object.keys(validFormats).some((ex) => f.name.endsWith(ex))),
+              _files.every((f) =>
+                Object.keys(validFormats).some((ex) =>
+                  f.name.toLowerCase().endsWith(ex.toLowerCase()),
+                ),
+              ),
             message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
           }) as CustomUploadValidatorReturn,
       } as CustomUploadValidator;

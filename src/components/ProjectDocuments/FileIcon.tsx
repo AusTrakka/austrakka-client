@@ -3,6 +3,7 @@ import wordIcon from '../../assets/icons/filetypes/doc.svg';
 import excelIcon from '../../assets/icons/filetypes/excel.svg';
 import fileIcon from '../../assets/icons/filetypes/file.svg';
 import htmlIcon from '../../assets/icons/filetypes/html.svg';
+import imageIcon from '../../assets/icons/filetypes/img.svg';
 import pdfIcon from '../../assets/icons/filetypes/pdf.svg';
 import txtIcon from '../../assets/icons/filetypes/txt.svg';
 
@@ -15,6 +16,10 @@ export const fileIcons = {
   xlsx: excelIcon,
   html: htmlIcon,
   txt: txtIcon,
+  png: imageIcon,
+  jpg: imageIcon,
+  jpeg: imageIcon,
+  svg: imageIcon,
   default: fileIcon,
 } as const;
 

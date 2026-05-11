@@ -18,7 +18,13 @@ import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { downloadDocument, getDocument, previewDocument } from '../../utilities/resourceUtils';
 import { FileIcon } from './FileIcon';
 
-const PREVIEWABLE_EXTENSIONS = ['pdf', 'txt', 'html'];
+const PREVIEWABLE_EXTENSIONS = ['pdf', 'txt', 'html', 'jpg', 'jpeg', 'png', 'svg'];
+
+function isImageFile(fileName: string): boolean {
+  const imageExtensions = ['png', 'jpg', 'jpeg', 'svg'];
+  const lowerCaseFileName = fileName.toLowerCase();
+  return imageExtensions.some((ext) => lowerCaseFileName.endsWith(`.${ext}`));
+}
 
 function DocumentPreview() {
   const { abbreviation, documentStringId } = useParams();
@@ -212,13 +218,31 @@ function DocumentPreview() {
 
       {previewStatus === LoadingState.SUCCESS &&
         previewBlob &&
-        canPreviewFileByExtension(projectDocument!) && (
-          <iframe
-            title="Document preview"
-            src={previewBlob}
-            style={{ height: '100%', border: 'none' }}
-          />
-        )}
+        canPreviewFileByExtension(projectDocument!) &&
+        (() => {
+          if (isImageFile(projectDocument!.fileName)) {
+            return (
+              <Box sx={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center' }}>
+                <img
+                  src={previewBlob}
+                  alt="document preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </Box>
+            );
+          }
+          return (
+            <iframe
+              title="document preview"
+              src={previewBlob}
+              style={{ flex: 1, border: 'none' }}
+            />
+          );
+        })()}
       {previewStatus === LoadingState.LOADING && (
         <Box
           sx={{
