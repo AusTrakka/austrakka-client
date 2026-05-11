@@ -538,7 +538,8 @@ function DataFilters(props: DataFiltersProps) {
     setEditingFilter({ field: _fieldName, constraint: _constraint });
 
     // Find the field type to set conditions and format dates
-    const fieldType = fields.find((f) => f.columnName === _fieldName)?.primitiveType;
+    const fieldType =
+      fields.find((f) => f.columnName === _fieldName)?.primitiveType ?? FieldTypes.STRING;
     if (fieldType) {
       setSelectedFieldType(fieldType as FieldTypes);
       if (fieldType === FieldTypes.DATE) {
@@ -800,73 +801,37 @@ function DataFilters(props: DataFiltersProps) {
                             );
 
                             return (
-                              <Chip
+                              <Tooltip
                                 key={`${field}-${constraint.matchMode}-${constraint.value}`}
-                                label={
-                                  <>
-                                    {allFields.find((f) => f.columnName === field)?.headerName ??
-                                      field}{' '}
-                                    <b>{conditionName}</b> {displayValue}
-                                  </>
-                                }
-                                deleteIcon={
-                                  <Box sx={{ display: 'flex', gap: 0.25 }}>
-                                    <Tooltip title="Edit filter" arrow>
-                                      <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleFilterEdit(field, {
-                                            value: constraint.value,
-                                            matchMode: constraint.matchMode as FilterMatchMode,
-                                          });
-                                        }}
-                                        sx={{
-                                          padding: '2px',
-                                          backgroundColor: Theme.PrimaryGrey500,
-                                          borderRadius: '50%',
-                                          '&:hover': {
-                                            backgroundColor: Theme.PrimaryGrey600,
-                                          },
-                                        }}
-                                      >
-                                        <Edit
-                                          fontSize="small"
-                                          sx={{ fontSize: '14px', color: 'white' }}
-                                        />
-                                      </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Delete filter" arrow>
-                                      <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleFilterDelete(field, {
-                                            value: constraint.value,
-                                            matchMode: constraint.matchMode as FilterMatchMode,
-                                          });
-                                        }}
-                                        sx={{
-                                          padding: '2px',
-                                          backgroundColor: Theme.PrimaryGrey500,
-                                          borderRadius: '50%',
-                                          '&:hover': {
-                                            backgroundColor: Theme.PrimaryGrey600,
-                                          },
-                                        }}
-                                      >
-                                        <CloseRounded
-                                          fontSize="small"
-                                          sx={{ fontSize: '14px', color: 'white' }}
-                                        />
-                                      </IconButton>
-                                    </Tooltip>
-                                  </Box>
-                                }
-                                onDelete={() => {}}
-                                disabled={isChipBeingEdited(field, constraint)}
-                                sx={{ margin: 0.5 }}
-                              />
+                                title="Click to edit"
+                                arrow
+                              >
+                                <Chip
+                                  key={`${field}-${constraint.matchMode}-${constraint.value}`}
+                                  label={
+                                    <>
+                                      {allFields.find((f) => f.columnName === field)?.headerName ??
+                                        field}{' '}
+                                      <b>{conditionName}</b> {displayValue}
+                                    </>
+                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFilterEdit(field, {
+                                      value: constraint.value,
+                                      matchMode: constraint.matchMode as FilterMatchMode,
+                                    });
+                                  }}
+                                  onDelete={() =>
+                                    handleFilterDelete(field, {
+                                      value: constraint.value,
+                                      matchMode: constraint.matchMode as FilterMatchMode,
+                                    })
+                                  }
+                                  disabled={isChipBeingEdited(field, constraint)}
+                                  sx={{ margin: 0.5 }}
+                                />
+                              </Tooltip>
                             );
                           });
                         })}
