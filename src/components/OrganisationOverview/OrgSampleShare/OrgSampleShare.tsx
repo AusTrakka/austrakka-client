@@ -19,22 +19,16 @@ import {
 } from '@mui/material';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
-import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
+import { reloadOrgMetadata } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
-import {
-  getDisplayFields,
-  getGroup,
-  getProjectFields,
-  shareSamples,
-} from '../../../utilities/resourceUtils';
-import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
+import { getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
+import { getSharableProjects } from '../../../utilities/uploadUtils';
 
-type DestinationType = 'project' | 'orgGroup';
 type ShareStatusProps = {
   icon: ReactNode;
   iconColor: 'error' | 'success';
@@ -43,29 +37,22 @@ type ShareStatusProps = {
   onClose: () => void;
 };
 
-const destinationTypes = [
-  { label: 'Project', value: 'project' },
-  { label: 'Organisation group', value: 'orgGroup' },
-];
-
 interface OrgSampleShareProps {
   open: boolean;
   onClose: () => void;
   selectedSamples: Sample[];
   selectedIds: string[];
   orgAbbrev: string;
-  groupContext: number;
 }
 
 function OrgSampleShare(props: OrgSampleShareProps) {
-  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, groupContext } = props;
+  const { open, onClose, selectedSamples, selectedIds, orgAbbrev } = props;
   const { token, tokenLoading } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
-  const [destType, setDestType] = useState<DestinationType>('project');
   const [destination, setDestination] = useState<string>('');
   const [options, setOptions] = useState<string[]>([]);
   const [selectableProjects, setSelectableProjects] = useState<string[]>([]);
-  const [selectableOrgGroups, setSelectableOrgGroups] = useState<string[]>([]);
+  const [_selectableOrgGroups, _setSelectableOrgGroups] = useState<string[]>([]);
   const [canViewDestinationFields, setCanViewDestinationFields] = useState<boolean>(true);
   const [previewFields, setPreviewFields] = useState<any[]>([]);
   const [previewLoading, setPreviewLoading] = useState<boolean>(false);
@@ -77,23 +64,20 @@ function OrgSampleShare(props: OrgSampleShareProps) {
 
   // Update options when destination type changes
   useEffect(() => {
-    const opts = destType === 'project' ? selectableProjects : selectableOrgGroups;
-    setOptions(opts);
+    setOptions(selectableProjects);
     setDestination('');
     setPreviewFields([]);
     setCanViewDestinationFields(false);
-  }, [destType, selectableProjects, selectableOrgGroups]);
+  }, [selectableProjects]);
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
     if (user?.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
-      const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
       setSelectableProjects(projectsThatCanBeSelected);
-      setSelectableOrgGroups(orgGroupsThatCanBeSelected);
     }
-  }, [user, orgAbbrev]);
+  }, [user]);
 
   const handleDestinationChange = async (selectedDestination: string) => {
     if (selectedDestination) {
@@ -109,36 +93,16 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         tokenLoading !== LoadingState.LOADING &&
         tokenLoading !== LoadingState.IDLE
       ) {
-        if (destType === 'project') {
-          // If destination is a project, get project fields
-          const destAbbrev = selectedDestination.replace(/-Group$/, '');
-          const fieldsResp = await getProjectFields(destAbbrev, token);
-          if (fieldsResp.status === ResponseType.Success) {
-            setPreviewFields(fieldsResp.data);
-            setPreviewError(false);
-            setPreviewLoading(false);
-          } else {
-            setPreviewError(true);
-            setPreviewLoading(false);
-          }
-        } else if (destType === 'orgGroup') {
-          // If destination is an org group, get fields by group context
-          const groupResp = await getGroup(selectedDestination, token);
-          if (groupResp.status === ResponseType.Success && groupResp.data) {
-            const groupId: number = groupResp.data?.groupId;
-            const fieldsResp = await getDisplayFields(groupId, token);
-            if (fieldsResp.status === ResponseType.Success) {
-              setPreviewFields(fieldsResp.data);
-              setPreviewError(false);
-              setPreviewLoading(false);
-            } else {
-              setPreviewError(true);
-              setPreviewLoading(false);
-            }
-          } else {
-            setPreviewError(true);
-            setPreviewLoading(false);
-          }
+        // If destination is a project, get project fields
+        const destAbbrev = selectedDestination.replace(/-Group$/, '');
+        const fieldsResp = await getProjectFields(destAbbrev, token);
+        if (fieldsResp.status === ResponseType.Success) {
+          setPreviewFields(fieldsResp.data);
+          setPreviewError(false);
+          setPreviewLoading(false);
+        } else {
+          setPreviewError(true);
+          setPreviewLoading(false);
         }
       } else {
         setPreviewError(true);
@@ -160,7 +124,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         await new Promise<void>((resolve) => {
           setTimeout(resolve, 500);
         });
-        dispatch(reloadGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
+        dispatch(reloadOrgMetadata({ token, orgAbbrev }));
       } else {
         setStatus(LoadingState.ERROR);
         setStatusMessage(shareResponse.message || 'Error sharing samples.');
@@ -225,8 +189,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                 Share Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only share samples to projects or organisation groups in which
-                you have Uploader permissions in.
+                Please note you can only share samples to projects groups in which you have Uploader
+                permissions in.
               </Typography>
               <Alert severity="info">
                 Sharing these sample records will register the sample as being a
@@ -253,35 +217,12 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                     sx={{ minWidth: 220, maxWidth: 400, minHeight: 20, marginBottom: 2 }}
                     error={false}
                   >
-                    <InputLabel>Select destination type</InputLabel>
-                    <Select
-                      value={destType}
-                      onChange={(e) => setDestType(e.target.value as DestinationType)}
-                      label="Select destination type"
-                      disabled={status === LoadingState.LOADING}
-                    >
-                      {destinationTypes.map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <br />
-                  <FormControl
-                    variant="standard"
-                    sx={{ minWidth: 220, maxWidth: 400, minHeight: 20, marginBottom: 2 }}
-                    error={false}
-                  >
-                    <InputLabel shrink>
-                      Select{' '}
-                      {destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase()}*
-                    </InputLabel>
+                    <InputLabel shrink>Select project</InputLabel>
                     <Select
                       value={destination}
                       // onChange={(e) => setDestination(e.target.value)}
                       onChange={(e) => handleDestinationChange(e.target.value)}
-                      label={`Select ${destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase() ?? ''}*`}
+                      label={`Select project*`}
                       notched
                       disabled={status === LoadingState.LOADING}
                     >
@@ -289,7 +230,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                         options.map((opt) => (
                           // For projects, append "-Group" to match group naming convention
                           // Prevents added complexity when checking perms for data preview/sharing
-                          <MenuItem key={opt} value={destType === 'project' ? `${opt}-Group` : opt}>
+                          <MenuItem key={opt} value={`${opt}-Group`}>
                             {opt}
                           </MenuItem>
                         ))
@@ -306,9 +247,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                         Shared data preview
                       </Typography>
                       <Typography variant="subtitle2">
-                        These are the fields that may be shared with the selected
-                        {` ${destinationTypes.find((dt) => dt.value === destType)?.label.toLowerCase() ?? ''} `}
-                        if they are populated in the sample records.
+                        These are the fields that may be shared with the selected project if they
+                        are populated in the sample records.
                       </Typography>
                       {previewLoading ? (
                         <Box sx={{ marginTop: 1 }}>
@@ -341,9 +281,9 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                           {previewFields.map((field) => (
                             <Chip
                               variant="outlined"
-                              key={destType === 'project' ? field.fieldName : field.columnName}
+                              key={field.fieldName}
                               sx={{ margin: 0.3 }}
-                              label={destType === 'project' ? field.fieldName : field.columnName}
+                              label={field.fieldName}
                             />
                           ))}
                         </Box>

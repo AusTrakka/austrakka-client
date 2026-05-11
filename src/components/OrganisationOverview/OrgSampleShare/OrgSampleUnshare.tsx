@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
-import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
+import { reloadOrgMetadata } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -31,13 +31,7 @@ import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
 import { unshareSamples } from '../../../utilities/resourceUtils';
-import { getSharableProjects, getShareableOrgGroups } from '../../../utilities/uploadUtils';
-
-type SourceType = 'project' | 'orgGroup';
-const sourceTypes = [
-  { label: 'Project', value: 'project' },
-  { label: 'Organisation group', value: 'orgGroup' },
-];
+import { getSharableProjects } from '../../../utilities/uploadUtils';
 
 type ShareStatusProps = {
   icon: ReactNode;
@@ -53,20 +47,18 @@ interface OrgSampleUnshareProps {
   selectedSamples: Sample[];
   selectedIds: string[];
   orgAbbrev: string;
-  groupContext: number;
 }
 
 function OrgSampleUnshare(props: OrgSampleUnshareProps) {
-  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, groupContext } = props;
+  const { open, onClose, selectedSamples, selectedIds, orgAbbrev } = props;
   const { token } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
   const [source, setSource] = useState<string>('');
-  const [sourceType, setSourceType] = useState<SourceType>('project');
   const [canValidate, setCanValidate] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
   const [options, setOptions] = useState<string[]>([]);
   const [selectableProjects, setSelectableProjects] = useState<string[]>([]);
-  const [selectableOrgGroups, setSelectableOrgGroups] = useState<string[]>([]);
+  const [_selectableOrgGroups, _setSelectableOrgGroups] = useState<string[]>([]);
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -74,16 +66,14 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
 
   // Update options when source type changes
   useEffect(() => {
-    const opts = sourceType === 'project' ? selectableProjects : selectableOrgGroups;
-    setOptions(opts);
+    setOptions(selectableProjects);
     setSource('');
-  }, [sourceType, selectableProjects, selectableOrgGroups]);
+  }, [selectableProjects]);
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
     if (user?.groupRoles) {
       const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
-      const orgGroupsThatCanBeSelected = getShareableOrgGroups(orgAbbrev, user.groupRoles);
 
       // Check if selected samples have Shared_groups configured
       const allHaveSharedGroups = selectedSamples.every(
@@ -97,7 +87,6 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
           'Cannot validate selection as shared groups are not configured in this view.',
         );
         setSelectableProjects(projectsThatCanBeSelected);
-        setSelectableOrgGroups(orgGroupsThatCanBeSelected);
         return;
       }
       setCanValidate(true);
@@ -118,12 +107,9 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       const intersectProjects = projectsThatCanBeSelected.filter((opt) =>
         cleanUnique.includes(opt),
       );
-      const intersectOrgGroups = orgGroupsThatCanBeSelected.filter((opt) => unique.includes(opt));
-
       setSelectableProjects(intersectProjects);
-      setSelectableOrgGroups(intersectOrgGroups);
     }
-  }, [user, orgAbbrev, selectedSamples]);
+  }, [user, selectedSamples]);
 
   useEffect(() => {
     // Check how many of selected samples exist in selected source
@@ -164,7 +150,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
         await new Promise<void>((resolve) => {
           setTimeout(resolve, 500);
         });
-        dispatch(reloadGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
+        dispatch(reloadOrgMetadata({ token, orgAbbrev }));
       } else {
         setStatus(LoadingState.ERROR);
         setStatusMessage(unshareResponse.message || 'Error unsharing samples.');
@@ -241,8 +227,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                 Unshare Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only unshare samples from projects or organisation groups in
-                which you have Uploader permissions in.
+                Please note you can only unshare samples from projects in which you have Uploader
+                permissions in.
               </Typography>
             </DialogTitle>
             <DialogContent>
@@ -260,34 +246,11 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                     sx={{ minWidth: 220, maxWidth: 400, minHeight: 20, marginBottom: 2 }}
                     error={false}
                   >
-                    <InputLabel>Select source type</InputLabel>
-                    <Select
-                      value={sourceType}
-                      onChange={(e) => setSourceType(e.target.value as SourceType)}
-                      label="Select source type"
-                      disabled={status === LoadingState.LOADING}
-                    >
-                      {sourceTypes.map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <br />
-                  <FormControl
-                    variant="standard"
-                    sx={{ minWidth: 220, maxWidth: 400, minHeight: 20, marginBottom: 2 }}
-                    error={false}
-                  >
-                    <InputLabel shrink>
-                      Select{' '}
-                      {sourceTypes.find((st) => st.value === sourceType)?.label.toLowerCase()}*
-                    </InputLabel>
+                    <InputLabel shrink>Select project</InputLabel>
                     <Select
                       value={source}
                       onChange={(e) => handleSourceChange(e.target.value)}
-                      label={`Select ${sourceTypes.find((st) => st.value === sourceType)?.label.toLowerCase() ?? ''}*`}
+                      label={`Select project*`}
                       notched
                       disabled={status === LoadingState.LOADING}
                     >
@@ -295,10 +258,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                         options.map((opt) => (
                           // For projects, append "-Group" to match group naming convention
                           // Prevents added complexity when checking perms for validation/unsharing
-                          <MenuItem
-                            key={opt}
-                            value={sourceType === 'project' ? `${opt}-Group` : opt}
-                          >
+                          <MenuItem key={opt} value={`${opt}-Group`}>
                             {opt}
                           </MenuItem>
                         ))

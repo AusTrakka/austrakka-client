@@ -30,13 +30,13 @@ import {
 } from 'primereact/datatable';
 import { memo, useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
+import { useStableNavigate } from '../../app/NavigationContext';
 import {
-  fetchGroupMetadata,
-  type GroupMetadataState,
+  fetchOrgMetadata,
+  type OrgMetadataState,
   selectAwaitingGroupMetadata,
   selectGroupMetadata,
-} from '../../app/groupMetadataSlice';
-import { useStableNavigate } from '../../app/NavigationContext';
+} from '../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
@@ -62,14 +62,12 @@ import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 // -
 
 interface SamplesProps {
-  groupContext: number;
-  groupContextName: string | undefined;
   canShare: boolean;
   orgAbbrev: string;
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { groupContext, groupContextName, canShare, orgAbbrev } = props;
+  const { canShare, orgAbbrev } = props;
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -93,7 +91,6 @@ function OrgSamplesTable(props: SamplesProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   // Sharing samples
-  const [showShare, setShowShare] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openShareDialog, setOpenShareDialog] = useState<boolean>(false);
   const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
@@ -103,23 +100,23 @@ function OrgSamplesTable(props: SamplesProps) {
   const dispatch = useAppDispatch();
 
   const { token, tokenLoading } = useApi();
-  const metadata: GroupMetadataState | null = useAppSelector((state) =>
-    selectGroupMetadata(state, groupContext),
+  const metadata: OrgMetadataState | null = useAppSelector((state) =>
+    selectGroupMetadata(state, orgAbbrev),
   );
   const isSamplesLoading: boolean = useAppSelector((state) =>
-    selectAwaitingGroupMetadata(state, groupContext),
+    selectAwaitingGroupMetadata(state, orgAbbrev),
   );
 
   useEffect(() => {
     if (
-      groupContext !== undefined &&
+      orgAbbrev !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE
     ) {
       setAllFieldsLoaded(false);
-      dispatch(fetchGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
+      dispatch(fetchOrgMetadata({ token, orgAbbrev }));
     }
-  }, [groupContext, orgAbbrev, token, tokenLoading, dispatch]);
+  }, [orgAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
     if (
@@ -169,14 +166,6 @@ function OrgSamplesTable(props: SamplesProps) {
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
-
-  useEffect(() => {
-    if (groupContextName?.endsWith('-Owner')) {
-      setShowShare(true);
-    } else {
-      setShowShare(false);
-    }
-  }, [groupContextName]);
 
   useEffect(() => {
     if (selectedIds.length === 0 || canShare === false) {
@@ -265,66 +254,64 @@ function OrgSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          {showShare && (
-            <>
-              <Tooltip title="Share or unshare samples" placement="top" arrow>
-                <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                  <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                    <IosShare sx={{ fontSize: 24 }} />
-                    <Settings
-                      sx={{
-                        position: 'absolute',
-                        bottom: -5,
-                        right: -5,
-                        fontSize: 16,
-                        backgroundColor: 'white',
-                        borderRadius: '50%',
-                      }}
-                    />
-                  </Box>
-                </IconButton>
-              </Tooltip>
+          <>
+            <Tooltip title="Share or unshare samples" placement="top" arrow>
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                  <IosShare sx={{ fontSize: 24 }} />
+                  <Settings
+                    sx={{
+                      position: 'absolute',
+                      bottom: -5,
+                      right: -5,
+                      fontSize: 16,
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                    }}
+                  />
+                </Box>
+              </IconButton>
+            </Tooltip>
 
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-                <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleShareClick();
-                    }}
-                  >
-                    <ListItemIcon>
-                      <IosShare fontSize="small" />
-                    </ListItemIcon>
-                    Share samples
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleUnshareClick();
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                        <IosShare sx={{ fontSize: 24 }} />
-                        <RemoveCircleOutline
-                          sx={{
-                            position: 'absolute',
-                            bottom: -5,
-                            right: -5,
-                            transform: 'scale(0.7)',
-                            backgroundColor: 'white',
-                            borderRadius: '50%',
-                          }}
-                        />
-                      </Box>
-                    </ListItemIcon>
-                    Unshare samples
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </>
-          )}
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+              <MenuList dense sx={{ paddingTop: 0, paddingBottom: 0 }}>
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleShareClick();
+                  }}
+                >
+                  <ListItemIcon>
+                    <IosShare fontSize="small" />
+                  </ListItemIcon>
+                  Share samples
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleUnshareClick();
+                  }}
+                >
+                  <ListItemIcon>
+                    <Box sx={{ position: 'relative', width: 24, height: 24 }}>
+                      <IosShare sx={{ fontSize: 24 }} />
+                      <RemoveCircleOutline
+                        sx={{
+                          position: 'absolute',
+                          bottom: -5,
+                          right: -5,
+                          transform: 'scale(0.7)',
+                          backgroundColor: 'white',
+                          borderRadius: '50%',
+                        }}
+                      />
+                    </Box>
+                  </ListItemIcon>
+                  Unshare samples
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </>
           <ColumnVisibilityMenu
             columns={sampleTableColumns}
             onColumnVisibilityChange={(selectedCols) => {
@@ -345,7 +332,7 @@ function OrgSamplesTable(props: SamplesProps) {
             }
             headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
             disabled={!hasCompleteData(metadata?.loadingState)}
-            fileNamePrefix={groupContextName || 'org_samples'}
+            fileNamePrefix={orgAbbrev}
           />
         </div>
       </div>
@@ -403,7 +390,6 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
-          groupContext={groupContext}
         />
       )}
       {openUnshareDialog && (
@@ -413,7 +399,6 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
-          groupContext={groupContext}
         />
       )}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
