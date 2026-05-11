@@ -2,7 +2,7 @@ import { Box, Paper, Stack, Table, TableBody, TableContainer, Typography } from 
 import type { Dispatch, SetStateAction } from 'react';
 import type { GroupedPrivilegesByRecordType, RecordRole } from '../../../types/dtos';
 import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
-import EditButtonsV2 from '../EditButtonsV2';
+import EditButtons from '../EditButtons';
 import RenderGroupedPrivileges from '../RoleSortingAndRender/RenderGroupedPrivileges';
 
 interface UserPrivilegesProps {
@@ -51,7 +51,7 @@ export default function UserPrivileges({
         <Typography variant="h4" color="primary">
           Privileges
         </Typography>
-        <EditButtonsV2
+        <EditButtons
           editing={editingPrivileges}
           setEditing={setEditingPrivileges}
           onSave={onPrivSave}

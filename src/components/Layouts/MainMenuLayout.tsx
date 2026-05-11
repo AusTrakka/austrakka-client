@@ -9,6 +9,7 @@ import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   People,
+  Terminal,
   Upload,
   ViewColumn,
 } from '@mui/icons-material';
@@ -34,6 +35,7 @@ import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
 import { RoleV2SeededName } from '../../permissions/roles';
+import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
 import { ORG_TABS } from '../OrganisationOverview/orgTabConstants';
@@ -50,9 +52,9 @@ interface SideBarItemProps {
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
-  const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
+  const [cli, setCli] = useState(false);
   const settings = [
     {
       title: 'Documentation',
@@ -60,6 +62,12 @@ function MainMenuLayout() {
       onClick: () => {
         window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
+    },
+    {
+      title: 'CLI',
+      icon: <Terminal fontSize="small" />,
+      disabled: false,
+      onClick: () => setCli((prev) => !prev),
     },
     {
       title: 'Support',
@@ -81,7 +89,6 @@ function MainMenuLayout() {
     proformas: 'Proformas',
     members: 'Members',
     users: 'Users',
-    usersV2: 'Users (V2)',
     platform: 'Platform',
     fields: 'Fields',
     datasets: 'Datasets',
@@ -165,12 +172,6 @@ function MainMenuLayout() {
       icon: <People />,
       permissionDomain: 'users',
     },
-    {
-      title: 'Users (V2)',
-      link: '/usersV2',
-      icon: <People color="warning" />,
-      permissionDomain: 'usersV2',
-    },
   ];
 
   const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
@@ -182,10 +183,8 @@ function MainMenuLayout() {
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
-      updateWarningBanner('warningBannerPadded');
     } else {
       updatePageStyling('page');
-      updateWarningBanner('warningBanner');
     }
   };
 
@@ -334,21 +333,6 @@ function MainMenuLayout() {
           </List>
         </Drawer>
       </Box>
-      {pathnames.includes('usersV2') ? (
-        <div className={warningBanner}>
-          <Typography
-            variant="body2"
-            style={{
-              fontWeight: 'bold',
-              textAlign: 'center',
-              padding: '10px',
-            }}
-          >
-            This is the new user interface with an in-progress permissions system. Not all new roles
-            have been implemented.
-          </Typography>
-        </div>
-      ) : null}
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">
@@ -386,6 +370,7 @@ function MainMenuLayout() {
         <Outlet />
       </div>
       <Feedback help={help} handleHelpClose={() => setHelp(!help)} location={location} />
+      <Cli cli={cli} handleHelpClose={() => setCli(!cli)} />
     </>
   );
 }

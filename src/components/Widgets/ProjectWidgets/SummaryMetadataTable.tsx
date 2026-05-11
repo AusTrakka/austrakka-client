@@ -15,7 +15,7 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import { filterIncluded } from '../../../utilities/dataProcessingUtils';
@@ -68,7 +68,7 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
 
   useEffect(() => {
     if (
-      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
+      hasCompleteData(data?.loadingState) ||
       (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
         fields.every((field) => data.fieldLoadingStates[field] === LoadingState.SUCCESS))
     ) {

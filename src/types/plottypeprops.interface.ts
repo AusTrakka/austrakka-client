@@ -1,7 +1,7 @@
-import type { Plot } from './dtos';
+import type React from 'react';
 
 export default interface PlotTypeProps {
-  plot: Plot | undefined | null;
-  // biome-ignore lint/complexity/noBannedTypes: legacy
-  setPlotErrorMsg: Function;
+  projectAbbrev: string | undefined;
+  customSpec: string | undefined | null;
+  setPlotErrorMsg: React.Dispatch<React.SetStateAction<string | null>>;
 }

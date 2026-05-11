@@ -1,6 +1,7 @@
 import React, { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
 import LoadingState from '../../../constants/loadingState';
+import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
 import type {
   GroupedPrivilegesByRecordType,
@@ -11,7 +12,7 @@ import type {
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { getRoles } from '../../../utilities/resourceUtils';
-import GroupHeaderRowV2 from './GroupHeaderRowV2';
+import GroupHeaderRow from './GroupHeaderRow';
 import UserRecordRolesRow from './UserRecordRolesRow';
 
 interface RenderGroupedRolesAndGroupsProps {
@@ -28,7 +29,12 @@ interface RenderGroupedRolesAndGroupsProps {
   ) => void;
 }
 
-const REQUIRED_RECORD_TYPES = ['Tenant', 'Organisation', 'Project', 'ProForma'];
+const REQUIRED_RECORD_TYPES = [
+  RecordTypes.SYSTEM,
+  RecordTypes.ORGANISATION,
+  RecordTypes.PROJECT,
+  RecordTypes.PROFORMA,
+];
 
 function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
   const {
@@ -75,7 +81,6 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     const existingTypes = new Set<string>();
     const processedPrivileges = userGroupedPrivileges
       .filter((group) => {
-        if (group.recordType === 'User') return false;
         existingTypes.add(group.recordType);
         return true;
       })
@@ -100,7 +105,8 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     // Sort final list according to REQUIRED_RECORD_TYPES order
     processedPrivileges.sort(
       (a, b) =>
-        REQUIRED_RECORD_TYPES.indexOf(a.recordType) - REQUIRED_RECORD_TYPES.indexOf(b.recordType),
+        REQUIRED_RECORD_TYPES.indexOf(a.recordType as RecordTypes) -
+        REQUIRED_RECORD_TYPES.indexOf(b.recordType as RecordTypes),
     );
 
     setUgpFilledAndSorted(processedPrivileges);
@@ -116,16 +122,25 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
 
   const getRolesForRecordType = (recordType: string) => {
     if (!rolesForV2) return [];
-    return rolesForV2.filter((role) =>
-      role.resourceTypes.some((rt) => rt === recordType || rt === 'All'),
-    );
+    if (recordType === 'System') {
+      return rolesForV2.filter((role) =>
+        role.resourceTypes.some((rt) => rt === 'System' || rt === 'All'),
+      );
+    }
+    //INFO: THIS CONDITIONAL IS TEMPORARY
+    if (recordType === 'Organisation') {
+      return rolesForV2
+        .filter((role) => role.name !== 'ContributorUploader' && role.name !== 'GuestViewer')
+        .filter((role) => role.resourceTypes.some((rt) => rt === recordType));
+    }
+    return rolesForV2.filter((role) => role.resourceTypes.some((rt) => rt === recordType));
   };
 
   const renderGroupRoles = (recordRoles: PrivilegeWithRoles[], recordType: string) => {
     const allowedRoles = getRolesForRecordType(recordType);
     return (
       <>
-        <GroupHeaderRowV2
+        <GroupHeaderRow
           key={recordType}
           empty={recordRoles.length === 0}
           recordType={recordType}
