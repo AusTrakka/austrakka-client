@@ -1,11 +1,4 @@
-import {
-  Add,
-  AddBox,
-  CloseRounded,
-  Delete,
-  Edit,
-  IndeterminateCheckBox,
-} from '@mui/icons-material';
+import { Add, AddBox, CloseRounded, Delete, IndeterminateCheckBox } from '@mui/icons-material';
 import {
   Alert,
   Autocomplete,
@@ -33,7 +26,6 @@ import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import type React from 'react';
 import { type SetStateAction, useEffect, useState } from 'react';
-import { Theme } from '../../assets/themes/theme';
 import FieldTypes from '../../constants/fieldTypes';
 import type { Field } from '../../types/dtos';
 import {
