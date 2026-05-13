@@ -379,13 +379,12 @@ function DataFilters(props: DataFiltersProps) {
       let doesExist = false;
       Object.entries(primeReactFilters).forEach(([fieldName, filter]) => {
         if (isOperatorFilterMetaData(filter)) {
-          if (
-            filter.constraints[0].value === filterFormValues.value &&
-            filter.constraints[0].matchMode === filterFormValues.condition &&
-            fieldName === filterFormValues.field
-          ) {
-            doesExist = true;
-          }
+          doesExist = filter.constraints.some(
+            (constraint) =>
+              constraint.value === filterFormValues.value &&
+              constraint.matchMode === filterFormValues.condition &&
+              fieldName === filterFormValues.field,
+          );
         } else if (
           filter.value === filterFormValues.value &&
           filter.matchMode === filterFormValues.condition &&
@@ -678,6 +677,7 @@ function DataFilters(props: DataFiltersProps) {
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               onClose={closeSnackbar}
               action={action}
+              sx={{ zIndex: (theme) => theme.zIndex.snackbar + 1 }} // Ensure it appears above the info snackbar
             >
               <Alert onClose={closeSnackbar} severity="error" elevation={6}>
                 {filterErrorMessage}
@@ -691,6 +691,7 @@ function DataFilters(props: DataFiltersProps) {
                   message={filterErrorMessage}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   action={action}
+                  sx={{ zIndex: (theme) => theme.zIndex.snackbar }}
                 >
                   <Alert severity="info" elevation={6}>
                     All filter conditions must match a record for it to appear in the results.
