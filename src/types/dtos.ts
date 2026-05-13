@@ -63,7 +63,7 @@ export interface Tree {
   name: string;
   description: string;
   latestTreeLastUpdated: Date;
-  project: string
+  project: string;
   projectName: string;
   isActive: boolean;
   created: Date;
