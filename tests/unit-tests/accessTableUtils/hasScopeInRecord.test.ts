@@ -1,3 +1,4 @@
+import RecordTypes from '../../../src/constants/record-type.enum';
 import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasScopeInRecord } from '../../../src/utilities/accessTableUtils';
 
@@ -6,7 +7,7 @@ describe('hasScopeInRecord', () => {
     test('return true when record has the specified scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -31,7 +32,7 @@ describe('hasScopeInRecord', () => {
     test('return true when record has multiple roles and one contains the scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -62,7 +63,7 @@ describe('hasScopeInRecord', () => {
     test('return false when record exists but does not have the specified scope', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-123',
@@ -111,7 +112,7 @@ describe('hasScopeInRecord', () => {
         groups,
         'read:users',
         'non-existent-organisation',
-        'Organisation',
+        RecordTypes.ORGANISATION,
       );
       expect(result).toBe(false);
     });
@@ -119,7 +120,12 @@ describe('hasScopeInRecord', () => {
     test('return false when groups array is empty', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
 
@@ -137,7 +143,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });
@@ -146,7 +157,7 @@ describe('hasScopeInRecord', () => {
     test('expect only first tenant is considered', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
-          recordType: 'Tenant',
+          recordType: 'System',
           recordRoles: [
             {
               recordName: 'tenant-456',
@@ -215,7 +226,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(true);
     });
 
@@ -240,7 +256,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });

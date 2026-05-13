@@ -2,6 +2,7 @@ import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { NavigationProvider } from '../../app/NavigationContext';
+import RecordTypes from '../../constants/record-type.enum';
 import Activity from '../Common/Activity/Activity';
 import TabPanel from '../Common/TabPanel';
 import { PLATFORM_HOME_TAB, PLATFORM_TABS } from './platformTabConstants';
@@ -31,7 +32,7 @@ function Platform(props: PlatformProps) {
     <>
       <Typography className="pageTitle">Platform</Typography>
       <TabPanel index={PLATFORM_TABS.activity.index} value={tabValue}>
-        <Activity recordType="Tenant" rGuid="" />
+        <Activity recordType={RecordTypes.SYSTEM} rGuid="" />
       </TabPanel>
     </>
   );

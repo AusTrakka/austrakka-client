@@ -18,7 +18,7 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import {
   aggregateArrayObjects,
@@ -113,17 +113,13 @@ export default function StCounts(props: ProjectWidgetProps) {
   const navigation = useNavigate();
 
   useEffect(() => {
-    if (
-      data?.loadingState === MetadataLoadingState.DATA_LOADED ||
-      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        data.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS)
-    ) {
+    if (data?.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS) {
       const counts = aggregateArrayObjects(stFieldName, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [filteredData, data?.loadingState, data?.fieldLoadingStates]);
+  }, [filteredData, data?.fieldLoadingStates]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
+  // biome-ignore lint/correctness/useExhaustiveDependencies: redundant dependencies
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(stFieldName)) {
       setErrorMessage(`Field ${stFieldName} not found in project`);
@@ -132,7 +128,7 @@ export default function StCounts(props: ProjectWidgetProps) {
     } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
       setErrorMessage(`Error loading ${stFieldName} values`);
     }
-  }, [data?.fields, data?.loadingState]);
+  }, [data?.fields, data?.loadingState, data?.fieldLoadingStates]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;
@@ -174,7 +170,7 @@ export default function StCounts(props: ProjectWidgetProps) {
       <Typography variant="h5" paddingBottom={1} color="primary">
         {stFieldName} Counts
       </Typography>
-      {data?.loadingState === MetadataLoadingState.DATA_LOADED && !errorMessage && (
+      {hasCompleteData(data?.loadingState) && !errorMessage && (
         <Grid container direction="row" alignItems="flex-start" spacing={2}>
           <Grid size={{ lg: 3, md: 4, xs: 12 }}>
             <DataTable
@@ -201,12 +197,7 @@ export default function StCounts(props: ProjectWidgetProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.loadingState ||
-        !(
-          data.loadingState === MetadataLoadingState.DATA_LOADED ||
-          data.loadingState === MetadataLoadingState.ERROR ||
-          data.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-        )) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

@@ -1,3 +1,4 @@
+import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
 import type {
   GroupedPrivilegesByRecordType,
@@ -25,7 +26,7 @@ export const groupPendingChangesByType = (changes: PendingChange[]) =>
 export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithScopes[]) =>
   scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
@@ -56,7 +57,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
 
   return scopes.some(
     (scope) =>
-      scope.recordType === 'Tenant' &&
+      scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some(
         (record) =>
           record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||

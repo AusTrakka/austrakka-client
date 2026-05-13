@@ -58,6 +58,26 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
   data.forEach(replaceNullsInObject);
 }
 
+export function insertUnpopulatedOverrideFields(
+  data: Sample[],
+  projectFields: ProjectField[],
+  viewFields: string[],
+): void {
+  const currentFields = projectFields.filter(
+    (field) => viewFields.includes(field.fieldName) && field.fieldSource === FieldSource.DATASET,
+  );
+
+  const missingFields = currentFields.filter(
+    (field) => !data.some((sample) => field.fieldName in sample),
+  );
+
+  missingFields.forEach((field) => {
+    data.forEach((sample) => {
+      sample[field.fieldName] = '';
+    });
+  });
+}
+
 export function getEmptyStringColumns(data: Sample[], fields: string[]): string[] {
   if (data.length === 0) return [];
 
