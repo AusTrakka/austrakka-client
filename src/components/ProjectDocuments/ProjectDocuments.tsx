@@ -374,8 +374,8 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           scrollHeight="calc(100vh - 400px)"
           paginator
           paginatorRight
-          rows={25}
-          rowsPerPageOptions={[25, 50, 100, 500]}
+          rows={500}
+          rowsPerPageOptions={[500]}
           paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
           currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
         >
