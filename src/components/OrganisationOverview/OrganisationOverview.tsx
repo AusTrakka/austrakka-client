@@ -181,7 +181,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
     <>
       <Box>
         <Stack direction="row" justifyContent="space-between">
-          <Typography variant="h2" color="primary">
+          <Typography variant="h3" color="primary">
             {`${organisation.name} (${organisation?.abbreviation})`}
           </Typography>
         </Stack>
