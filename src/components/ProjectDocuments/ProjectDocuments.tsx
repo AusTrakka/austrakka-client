@@ -82,18 +82,18 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
   });
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const user: UserSliceState = useAppSelector(selectUserState);
-  const [canEditDelete, setCanEditDelete] = useState(false);
+  const [canUploadEditDelete, setCanUploadEditDelete] = useState(false);
   const [copyStatus, setCopyStatus] = useState<LoadingState>(LoadingState.IDLE);
 
   useEffect(() => {
     if (user && projectDetails) {
-      const hasEditDeletePermission: boolean = hasPermissionV2ByRole(
+      const hasUploadEditDeletePermission: boolean = hasPermissionV2ByRole(
         user,
         RoleV2SeededName.ProjectAnalyst,
         projectDetails?.abbreviation,
         RecordTypes.PROJECT,
       );
-      setCanEditDelete(hasEditDeletePermission);
+      setCanUploadEditDelete(hasUploadEditDeletePermission);
     }
   }, [user, projectDetails]);
 
@@ -274,7 +274,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           onChange={onGlobalFilterChange}
         />
         <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          {canEditDelete && (
+          {canUploadEditDelete && (
             <Button
               onClick={() => {
                 setUploadOpen(true);
@@ -327,7 +327,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
 
   return (
     <>
-      {editDetailsOpen && canEditDelete && (
+      {editDetailsOpen && canUploadEditDelete && (
         <EditDocumentDetails
           open={editDetailsOpen}
           onClose={() => setEditDetailsOpen(false)}
@@ -336,7 +336,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           refresh={refreshDocuments}
         />
       )}
-      {uploadOpen && canEditDelete && (
+      {uploadOpen && canUploadEditDelete && (
         <UploadDocument
           open={uploadOpen}
           onClose={() => setUploadOpen(false)}
@@ -344,7 +344,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
           refresh={refreshDocuments}
         />
       )}
-      {deleteAlertOpen && canEditDelete && (
+      {deleteAlertOpen && canUploadEditDelete && (
         <DeleteDocument
           open={deleteAlertOpen}
           onClose={() => setDeleteAlertOpen(false)}
@@ -474,7 +474,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
                 </ListItemText>
               </MenuItem>
             </Tooltip>
-            {canEditDelete && (
+            {canUploadEditDelete && (
               <>
                 <MenuItem onClick={() => setEditDetailsOpen(true)}>
                   <ListItemIcon>
