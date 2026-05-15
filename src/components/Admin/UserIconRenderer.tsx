@@ -32,12 +32,12 @@ function renderIcon(rowData: any, size: any = 'small') {
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {isAusTrakkaAdmin && (
-        <Tooltip title="AusTrakka-Admin" placement="top" arrow>
+        <Tooltip title="Admin" placement="top" arrow>
           <AdminPanelSettings color="secondary" fontSize={size} style={{ margin: '0.5rem' }} />
         </Tooltip>
       )}
       {isAusTrakkaProcess && (
-        <Tooltip title="AusTrakkaProcess" placement="top" arrow>
+        <Tooltip title="Process" placement="top" arrow>
           <PrecisionManufacturing color="info" fontSize={size} style={{ margin: '0.5rem' }} />
         </Tooltip>
       )}
