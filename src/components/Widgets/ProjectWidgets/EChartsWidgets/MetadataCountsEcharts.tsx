@@ -152,7 +152,7 @@ function MetadataCounts({
         orient: 'horizontal',
         left: 90, // matches grid.left so it lines up under the y-axis labels
         bottom: 0,
-        icon: 'rect',
+        icon: 'square',
         itemWidth: 10,
         itemHeight: 10,
         data: ['Available', 'Missing'],

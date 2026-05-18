@@ -153,7 +153,7 @@ function HasSeq({
         orient: 'horizontal',
         left: 90,
         bottom: 0,
-        icon: 'rect',
+        icon: 'square',
         itemWidth: 10,
         itemHeight: 10,
         data: ['Available', 'Missing'],

@@ -182,6 +182,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
             orient: 'horizontal',
             bottom: 0,
             width: '80%',
+            icon: 'square',
             itemWidth: 10,
             itemHeight: 10,
             textStyle: { fontSize: 11 },

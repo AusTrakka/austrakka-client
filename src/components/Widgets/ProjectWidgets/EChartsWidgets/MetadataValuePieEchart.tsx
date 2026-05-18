@@ -122,7 +122,7 @@ function MetadataValuePieChart({
           orient: 'horizontal',
           bottom: 0,
           type: 'scroll',
-          icon: 'circle',
+          icon: 'square',
           itemWidth: 10,
           itemHeight: 10,
           formatter: (name: string) => name || 'unknown',
