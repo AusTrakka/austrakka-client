@@ -223,7 +223,6 @@ export const setTimeAggregationInSpecToValue = (
 
   return newSpec as TopLevelSpec;
 };
-
 // Set the time bin unit based on the range of dates
 // Depends on browser width but:
 // Need 15 or 20 columns to look ok; 60 looks good; 80 is ok; 120 is dense but still ok
@@ -231,6 +230,7 @@ export const setTimeAggregationInSpecToValue = (
 export const selectGoodTimeBinUnit = (dates: any[]): { unit: string; step: number } => {
   const nonNullDates = dates.filter((date) => date !== null);
   if (nonNullDates.length === 0) return { unit: 'yearmonthdate', step: 1 };
+
   const maxDate = new Date(maxObj(nonNullDates));
   const minDate = new Date(minObj(nonNullDates));
   const diff = maxDate.getTime() - minDate.getTime();
@@ -239,6 +239,21 @@ export const selectGoodTimeBinUnit = (dates: any[]): { unit: string; step: numbe
   if (daysInRange < 20 * 30) return { unit: 'yearweek', step: 1 }; // 600 which is max 86 weeks, min 20 months
   if (daysInRange < 30 * 91) return { unit: 'yearmonth', step: 1 }; // 2730 - max 90 months, min 30 quarters / 7.5 years
   if (daysInRange < 20 * 365) return { unit: 'yearmonth', step: 3 }; // 7300 which is max 80 quarters, min 20 years
+  return { unit: 'year', step: 1 };
+};
+
+export const selectGoodTimeBinUnitEchart = (dates: any[]): { unit: string; step: number } => {
+  const nonNullDates = dates.filter((date) => date !== null);
+  if (nonNullDates.length === 0) return { unit: 'month', step: 1 };
+
+  const maxDate = new Date(maxObj(nonNullDates));
+  const minDate = new Date(minObj(nonNullDates));
+  const daysInRange = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 3600 * 24));
+
+  if (daysInRange < 140) return { unit: 'day', step: 1 }; // < 20 weeks → daily
+  if (daysInRange < 600) return { unit: 'week', step: 1 }; // < ~20 months → weekly
+  if (daysInRange < 2730) return { unit: 'month', step: 1 }; // < ~7.5 years → monthly
+  if (daysInRange < 7300) return { unit: 'month', step: 3 }; // < 20 years → quarterly
   return { unit: 'year', step: 1 };
 };
 
