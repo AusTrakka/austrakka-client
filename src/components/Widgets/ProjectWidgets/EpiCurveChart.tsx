@@ -33,7 +33,7 @@ const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 
-interface EpiCurveChartProps extends ProjectWidgetProps {
+export interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
   dateFilterField: string;
   colourMapping?: Record<string, string> | undefined;
