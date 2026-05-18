@@ -42,6 +42,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Event initiated by': '',
   Resource: '',
   'Resource Type': '',
+  'Error Message': '',
   Context: [],
   Details: null,
 };
@@ -100,6 +101,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       Resource: node.data.resourceUniqueString,
       'Resource Type': node.data.resourceType,
       Context: node.data.visChain,
+      'Error Message': node.data.errorMessage,
       Details: node.data.data || null,
     };
     setDetailInfo(info);
@@ -359,33 +361,33 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               />
               {columns
                 ? columns
-                    .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
-                    .map((col: any) => (
-                      <Column
-                        key={col.field}
-                        field={col.field}
-                        header={col.header}
-                        hidden={false}
-                        body={(node: TreeNode) => {
-                          if (col.field === 'resourceUniqueString') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceCount',
-                              previewKey: 'resourcePreview',
-                              valueKey: 'resourceUniqueString',
-                            });
-                          }
-                          if (col.field === 'resourceType') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceTypeCount',
-                              previewKey: 'resourceTypePreview',
-                              valueKey: 'resourceType',
-                            });
-                          }
-                          return unaggregatedCellTemplate(node, col);
-                        }}
-                        sortable
-                      />
-                    ))
+                  .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                  .map((col: any) => (
+                    <Column
+                      key={col.field}
+                      field={col.field}
+                      header={col.header}
+                      hidden={false}
+                      body={(node: TreeNode) => {
+                        if (col.field === 'resourceUniqueString') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceCount',
+                            previewKey: 'resourcePreview',
+                            valueKey: 'resourceUniqueString',
+                          });
+                        }
+                        if (col.field === 'resourceType') {
+                          return aggregatedCellTemplate(node, {
+                            countKey: 'resourceTypeCount',
+                            previewKey: 'resourceTypePreview',
+                            valueKey: 'resourceType',
+                          });
+                        }
+                        return unaggregatedCellTemplate(node, col);
+                      }}
+                      sortable
+                    />
+                  ))
                 : null}
             </TreeTable>
           )}
