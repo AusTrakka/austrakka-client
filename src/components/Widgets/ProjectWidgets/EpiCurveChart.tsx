@@ -37,6 +37,7 @@ export interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
   dateFilterField: string;
   colourMapping?: Record<string, string> | undefined;
+  tall?: boolean;
 }
 
 /** Widget displaying a basic Epi Curve
