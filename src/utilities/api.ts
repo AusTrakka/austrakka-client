@@ -17,6 +17,7 @@ const noToken = {
 };
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
+const USER_AGENT = 'trakka-web'; //User-Agent
 
 export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs: string[]): any {
   return {
@@ -31,6 +32,7 @@ function getHeaders(token: string): any {
     Accept: 'application/json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -40,6 +42,7 @@ function getHeadersPut(token: string): any {
     'Content-Type': 'application/json-patch+json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -49,6 +52,7 @@ function getHeadersPatch(token: string): any {
     'Content-Type': 'application/json-patch+json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -58,6 +62,7 @@ function getHeadersPost(token: string): any {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -66,6 +71,7 @@ function getHeadersMultipartPost(token: string): any {
     Accept: 'application/json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
