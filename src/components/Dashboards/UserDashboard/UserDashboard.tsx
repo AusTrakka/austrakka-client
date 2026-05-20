@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography } from '@mui/material';
+import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Theme } from '../../../assets/themes/theme';
 import { cardStyle } from '../../../styles/dashboardStyles';
@@ -9,11 +9,6 @@ function UserDashboard() {
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid container size={12} justifyContent="space-between">
-          <Typography variant="h2" color="primary">
-            Dashboard
-          </Typography>
-        </Grid>
         <Grid
           container
           size={12}

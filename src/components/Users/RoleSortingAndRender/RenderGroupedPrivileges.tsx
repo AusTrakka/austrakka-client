@@ -12,7 +12,7 @@ import type {
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { getRoles } from '../../../utilities/resourceUtils';
-import GroupHeaderRowV2 from './GroupHeaderRowV2';
+import GroupHeaderRow from './GroupHeaderRow';
 import UserRecordRolesRow from './UserRecordRolesRow';
 
 interface RenderGroupedRolesAndGroupsProps {
@@ -81,7 +81,6 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     const existingTypes = new Set<string>();
     const processedPrivileges = userGroupedPrivileges
       .filter((group) => {
-        if (group.recordType === 'User') return false;
         existingTypes.add(group.recordType);
         return true;
       })
@@ -128,6 +127,12 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         role.resourceTypes.some((rt) => rt === 'System' || rt === 'All'),
       );
     }
+    //INFO: THIS CONDITIONAL IS TEMPORARY
+    if (recordType === 'Organisation') {
+      return rolesForV2
+        .filter((role) => role.name !== 'ContributorUploader' && role.name !== 'GuestViewer')
+        .filter((role) => role.resourceTypes.some((rt) => rt === recordType));
+    }
     return rolesForV2.filter((role) => role.resourceTypes.some((rt) => rt === recordType));
   };
 
@@ -135,7 +140,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     const allowedRoles = getRolesForRecordType(recordType);
     return (
       <>
-        <GroupHeaderRowV2
+        <GroupHeaderRow
           key={recordType}
           empty={recordRoles.length === 0}
           recordType={recordType}

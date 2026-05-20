@@ -15,7 +15,7 @@ import {
   SeqUploadRowState,
   type SkipForce,
 } from '../../types/sequploadtypes';
-import { generateHash } from '../../utilities/file';
+import { generateHash } from '../../utilities/fileUtils';
 import { createSample, shareSamples, uploadSequence } from '../../utilities/resourceUtils';
 import { ValidationPopupButton } from '../Validation/Validation';
 

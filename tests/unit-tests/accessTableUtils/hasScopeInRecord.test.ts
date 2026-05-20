@@ -1,3 +1,4 @@
+import RecordTypes from '../../../src/constants/record-type.enum';
 import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasScopeInRecord } from '../../../src/utilities/accessTableUtils';
 
@@ -111,7 +112,7 @@ describe('hasScopeInRecord', () => {
         groups,
         'read:users',
         'non-existent-organisation',
-        'Organisation',
+        RecordTypes.ORGANISATION,
       );
       expect(result).toBe(false);
     });
@@ -119,7 +120,12 @@ describe('hasScopeInRecord', () => {
     test('return false when groups array is empty', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
 
@@ -137,7 +143,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });
@@ -215,7 +226,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(true);
     });
 
@@ -240,7 +256,12 @@ describe('hasScopeInRecord', () => {
         },
       ];
 
-      const result = hasScopeInRecord(groups, 'read:users', 'organisation-123', 'Organisation');
+      const result = hasScopeInRecord(
+        groups,
+        'read:users',
+        'organisation-123',
+        RecordTypes.ORGANISATION,
+      );
       expect(result).toBe(false);
     });
   });

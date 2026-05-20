@@ -23,6 +23,7 @@ import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import '../../../styles/TreeTable.css';
 import React, { useCallback, useEffect, useState } from 'react';
+import RecordTypes from '../../../constants/record-type.enum';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -402,7 +403,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         You do not have permission to view activity logs.
       </Alert>
     );
-  } else if (!rGuid && recordType !== 'System') {
+  } else if (!rGuid && recordType !== RecordTypes.SYSTEM) {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Error</AlertTitle>

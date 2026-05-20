@@ -10,14 +10,14 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
-import type { Group, GroupRole, Member, Organisation } from '../../types/dtos';
+import type { Group, GroupRole, Organisation } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupList, getGroupMembers, getOrganisation } from '../../utilities/resourceUtils';
+import { getGroupList, getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import OrganisationSamples from './OrganisationSamples';
-import OrgSimpleMemberList from './OrgSimpleMemberList';
+import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
 
 const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
@@ -57,19 +57,14 @@ interface OrganisationOverviewProps {
 
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
+  const { token, tokenLoading } = useApi();
   const [organisation, setOrganisation] = useState<Organisation>();
-  const [orgEveryone, setOrgEveryone] = useState<Group>();
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
   const [groupStatusMessage, setGroupStatusMessage] = useState('');
   const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
-  const { token, tokenLoading } = useApi();
   const [tabValue, setTabValue] = useState<number | null>(null);
-  const [projectMembers, setProjectMembers] = useState<Member[]>([]);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [memberListError, setMemberListError] = useState(false);
-  const [memberListErrorMessage, setMemberListErrorMessage] = useState('');
   // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
 
@@ -89,9 +84,10 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
 
   useEffect(() => {
     function getMyOrgDetails() {
-      // TODO this exists as a workaround for the fact that the getOrganisation() API call
+      //!TODO: this exists as a workaround for the fact that the getOrganisation() API call
       //  currently only works for admins. Non-admins must therefore use this function to
       //  get their own org details. This means some details like Country, State are not set.
+
       setOrganisation({
         abbreviation: orgAbbrev,
         name: user.orgName,
@@ -117,20 +113,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       const { groupRoles, admin } = user;
       if (!admin) {
         const orgViewerGroups = getCorrectGroups(groupRoles, orgAbbrev);
-        setOrgEveryone(
-          orgViewerGroups.find(
-            (groupRole: GroupRole) => groupRole.group.name === `${orgAbbrev}-Everyone`,
-          )?.group,
-        );
         setUserGroups(orgViewerGroups.map((groupRole: GroupRole) => groupRole.group));
       } else {
         const groupsResponseObject: ResponseObject = await getGroupList(token);
         if (groupsResponseObject.status === ResponseType.Success) {
           const groupsData = groupsResponseObject.data as Group[];
           const orgAdminGroups = getCorrectGroupsAdmin(groupsData, orgAbbrev);
-          setOrgEveryone(
-            orgAdminGroups.find((group: Group) => group.name === `${orgAbbrev}-Everyone`),
-          );
           setUserGroups(orgAdminGroups);
         }
       }
@@ -155,35 +143,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       setGroupStatusMessage(user.errorMessage);
     }
   }, [orgAbbrev, token, tokenLoading, user]);
-
-  // THIS SHOULD BE LOADED IN THE TAB NOT IN THE OVERVIEW.
-  useEffect(() => {
-    async function getOrgMembersList() {
-      if (orgEveryone) {
-        const memberListResponse: ResponseObject = await getGroupMembers(
-          orgEveryone.groupId,
-          token,
-        );
-        if (memberListResponse.status === ResponseType.Success) {
-          setProjectMembers(memberListResponse.data as Member[]);
-          setMemberListError(false);
-          setIsMembersLoading(false);
-        } else {
-          setIsMembersLoading(false);
-          setProjectMembers([]);
-          setMemberListError(true);
-          setMemberListErrorMessage(memberListResponse.message);
-        }
-      }
-    }
-
-    if (
-      groupsStatus === LoadingState.SUCCESS ||
-      (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING)
-    ) {
-      getOrgMembersList();
-    }
-  }, [token, tokenLoading, groupsStatus, orgEveryone]);
 
   useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
@@ -222,7 +181,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
     <>
       <Box>
         <Stack direction="row" justifyContent="space-between">
-          <Typography variant="h2" color="primary">
+          <Typography variant="h3" color="primary">
             {`${organisation.name} (${organisation?.abbreviation})`}
           </Typography>
         </Stack>
@@ -239,12 +198,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <OrgSimpleMemberList
-          isMembersLoading={isMembersLoading}
-          memberList={projectMembers}
-          memberListError={memberListError}
-          memberListErrorMessage={memberListErrorMessage}
-        />
+        <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <Activity recordType="Organisation" rGuid={organisation.globalId} />
