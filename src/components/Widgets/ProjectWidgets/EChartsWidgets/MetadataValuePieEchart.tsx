@@ -19,6 +19,7 @@ import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
+import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 
 interface MetadataValueWidgetProps extends ProjectWidgetProps {
@@ -119,7 +120,11 @@ function MetadataValuePieChart({
       {
         toolbox: {
           feature: {
-            saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+            saveAsImage: {
+              title: 'Export to PNG',
+              pixelRatio: 2,
+              name: getWidgetExportName('piechart'),
+            },
           },
           emphasis: {
             iconStyle: {

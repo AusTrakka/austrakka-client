@@ -12,6 +12,7 @@ import MetadataLoadingState, { hasCompleteData } from '../../../../constants/met
 import type { Sample } from '../../../../types/sample.interface';
 import { NULL_COLOUR, resolveColourMap } from '../../../../utilities/colourUtils';
 import { formatDate } from '../../../../utilities/dateUtils';
+import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { selectGoodTimeBinUnitEchart } from '../../../../utilities/plotUtils';
 import type { EpiCurveChartProps } from '../EpiCurveChart';
 
@@ -191,7 +192,11 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         : { show: false },
       toolbox: {
         feature: {
-          saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+          saveAsImage: {
+            title: 'Export to PNG',
+            pixelRatio: 2,
+            name: getWidgetExportName('epicurve'),
+          },
         },
         emphasis: {
           iconStyle: {

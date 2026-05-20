@@ -18,6 +18,7 @@ import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
+import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 
 const HAS_SEQ = 'Has_sequences';
@@ -145,7 +146,11 @@ function HasSeq({
     const option: EChartsOption = {
       toolbox: {
         feature: {
-          saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+          saveAsImage: {
+            title: 'Export to PNG',
+            pixelRatio: 2,
+            name: getWidgetExportName('horizontal_bar_chart_has_seq'),
+          },
         },
         emphasis: {
           iconStyle: {
