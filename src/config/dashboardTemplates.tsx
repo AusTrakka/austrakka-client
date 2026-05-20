@@ -1,5 +1,6 @@
 import type React from 'react';
 import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
+import ApgEchartsDashboard from '../components/Dashboards/Templates/ApgEchartsDashboard';
 import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
 import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
 import LabDataDashboard from '../components/Dashboards/Templates/LabDataDashboard';
@@ -11,6 +12,7 @@ import SpeciesLabDataDashboard from '../components/Dashboards/Templates/SpeciesL
 import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlertsDashboard';
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
+import WithQCEcharts from '../components/Dashboards/Templates/WithQCEcharts';
 import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplate.props.interface';
 
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
@@ -21,7 +23,9 @@ const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>
   vicdh: VicDHDashboard,
   'vicdh-alerts': VicDHAlertsDashboard,
   apg: ApgDashboard,
+  'apg-echarts': ApgEchartsDashboard,
   withqc: WithQC,
+  'withqc-echarts': WithQCEcharts,
   'se-demo': SEDemoDashboard,
   ofn: OFNDashboard,
   'lab-data': LabDataDashboard,

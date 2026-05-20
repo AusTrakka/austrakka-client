@@ -10,13 +10,22 @@ type JsonTreeViewProps = {
   level?: number; // Indentation level for nested nodes
   hiddenKeys?: string[]; // Custom hidden keys at all tree levels
   removeNulls?: boolean; // Whether to remove null/undefined values from the tree
+  expandAllDefault?: boolean; // Whether to expand all nodes by default
 };
 
 // TODO: Update removeNulls to support arrays as empty rather than removing items
 
 function JsonTreeView(props: JsonTreeViewProps) {
-  const { data, treeKey, label, level = 0, hiddenKeys = [], removeNulls = true } = props;
-  const [open, setOpen] = useState(false);
+  const {
+    data,
+    treeKey,
+    label,
+    level = 0,
+    hiddenKeys = [],
+    removeNulls = true,
+    expandAllDefault = false,
+  } = props;
+  const [open, setOpen] = useState(expandAllDefault);
 
   const shouldHideNullValue = (value: any) => {
     if (!removeNulls) return false;
@@ -130,6 +139,7 @@ function JsonTreeView(props: JsonTreeViewProps) {
                   level={level + 1}
                   hiddenKeys={hiddenKeys}
                   removeNulls={removeNulls}
+                  expandAllDefault={expandAllDefault}
                 />
               </React.Fragment>
             );

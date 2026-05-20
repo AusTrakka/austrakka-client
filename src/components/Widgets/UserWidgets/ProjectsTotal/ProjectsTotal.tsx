@@ -98,7 +98,6 @@ export default function ProjectsTotal() {
             size="small"
             onRowClick={rowClickHandler}
             scrollable
-            scrollHeight="calc(100vh - 600px)"
             removableSort
             sortIcon={sortIcon}
             selectionMode="single"

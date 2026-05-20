@@ -78,7 +78,7 @@ describe('hasSuperUserRoleInType', () => {
   });
 
   describe('when given variations of invalid input or values within the input', () => {
-    test('return false when Tenant recordType is not found', () => {
+    test('return false when System recordType is not found', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
           recordType: 'NotTenant',

@@ -107,6 +107,7 @@ export interface PlotListing {
 export interface Member {
   username: string;
   roles: string[];
+  position: string;
   organization: {
     id: number;
     abbreviation: string;
@@ -120,7 +121,6 @@ export interface User {
   username: string;
   globalId: string;
   isActive: boolean;
-  orgId: number;
   orgAbbrev: string;
   orgName: string;
   orgGlobalId: string;
@@ -140,40 +140,23 @@ export interface User {
   noDownloadQuota: boolean;
 }
 
-export interface UserV2 {
-  objectId: string;
-  username: string;
-  globalId: string;
-  isActive: boolean;
-  orgGlobalId: string;
-  orgAbbrev: string;
-  orgName: string;
-  isAusTrakkaAdmin: boolean;
-  displayName: string;
-  position: string;
-  analysisServerUsername: string;
-  lastLogIn: Date;
-  lastActive: Date;
-  contactEmail: string;
-  IsAusTrakkaProcess: boolean;
-  privileges: GroupedPrivilegesByRecordType[];
-  monthlyBytesUsed: number;
-  monthlyBytesQuota: number;
-  noDownloadQuota: boolean;
-  lastDownloadDate: Date;
-  created: Date;
-}
-
 export interface UserMe {
   objectId: string;
   username: string;
   displayName: string;
   contactEmail: string;
+  position: string;
+  orgGlobalId: string;
   orgId: number;
   orgAbbrev: string;
   orgName: string;
   analysisServerUsername: string;
+  lastDownloadDate: Date;
+  monthlyBytesUsed: number;
+  monthlyBytesQuota: number;
   scopes: GroupedPrivilegesByRecordTypeWithScopes[];
+  groupRoles: GroupRole[];
+  isAusTrakkaAdmin: boolean;
 }
 
 export interface GroupedPrivilegesByRecordTypeWithScopes {
@@ -214,22 +197,6 @@ export interface UserList {
   name: string;
   id: string;
   globalId: string;
-  organisation: string;
-  contactEmail: string;
-  isActive: boolean;
-  created: string;
-  createdBy: string;
-  lastLogIn: Date;
-  lastActive: Date;
-  isAusTrakkaAdmin: boolean;
-  isAusTrakkaProcess: boolean;
-  analysisServerUsername: string;
-}
-
-export interface UserListV2 {
-  name: string;
-  position: string;
-  id: string;
   organisation: string;
   contactEmail: string;
   isActive: boolean;
@@ -440,14 +407,6 @@ export interface ProjectDashboardDetails {
   name: string;
 }
 
-export interface UserPatch {
-  displayName: string;
-  contactEmail: string;
-  orgAbbrev: string;
-  isActive: boolean;
-  analysisServerUsername: string;
-}
-
 export interface UserPatchV2 {
   displayName: string;
   contactEmail: string;
@@ -479,4 +438,17 @@ export interface DerivedLog {
   eventStatus: string;
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
+}
+
+export interface ProjectDocument {
+  globalId: string;
+  uniqueStringId: string;
+  fileName: string;
+  description: string;
+  isActive: boolean;
+  fileSize: number;
+  createdBy: string;
+  created: Date;
+  lastUpdated: Date;
+  lastUpdatedBy: string;
 }

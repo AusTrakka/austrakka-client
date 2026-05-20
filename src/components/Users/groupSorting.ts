@@ -1,5 +1,7 @@
 import type { Group, GroupRole, User } from '../../types/dtos';
 
+// TODO: come back to this, as this may be unnecessary in the future and deleted
+
 export const sortGroups = (groups: Group[], _user: User) => {
   const personalOrgGroups = groups.filter(
     (_group) =>
@@ -27,26 +29,22 @@ export const sortGroups = (groups: Group[], _user: User) => {
 };
 
 export const sortGroupRoles = (userGroupRoles: GroupRole[], user: User) => {
-  const personalOrgs = userGroupRoles
-    .filter((group) => group.group.organisation?.abbreviation === user.orgAbbrev)
-    .sort((a, b) => a.group.name.localeCompare(b.group.name));
+  const personalOrgs = userGroupRoles.filter(
+    (group) => group.group.organisation?.abbreviation === user.orgAbbrev,
+  );
 
-  const foreignOrgs = userGroupRoles
-    .filter(
-      (group) =>
-        group.group.organisation?.abbreviation !== user.orgAbbrev &&
-        group.group.organisation?.abbreviation !== undefined,
-    )
-    .sort((a, b) => a.group.name.localeCompare(b.group.name));
+  const foriegnOrgs = userGroupRoles.filter(
+    (group) =>
+      group.group.organisation?.abbreviation !== user.orgAbbrev &&
+      group.group.organisation?.abbreviation !== undefined,
+  );
 
-  const otherGroups = userGroupRoles
-    .filter(
-      (group) =>
-        !personalOrgs.includes(group) &&
-        !foreignOrgs.includes(group) &&
-        (group.group.organisation?.abbreviation === undefined || group.group.organisation === null),
-    )
-    .sort((a, b) => a.group.name.localeCompare(b.group.name));
+  const otherGroups = userGroupRoles.filter(
+    (group) =>
+      !personalOrgs.includes(group) &&
+      !foriegnOrgs.includes(group) &&
+      (group.group.organisation?.abbreviation === undefined || group.group.organisation === null),
+  );
 
-  return [personalOrgs, foreignOrgs, otherGroups];
+  return [personalOrgs, foriegnOrgs, otherGroups];
 };
