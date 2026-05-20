@@ -13,6 +13,7 @@ import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../../app/store';
+import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
@@ -116,7 +117,16 @@ function MetadataValuePieChart({
     chart.on('click', handleClick);
     chart.setOption(
       {
-        toolbox: { feature: { saveAsImage: { title: 'Export', pixelRatio: 2 } } },
+        toolbox: {
+          feature: {
+            saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+          },
+          emphasis: {
+            iconStyle: {
+              borderColor: Theme.SecondaryMain,
+            },
+          },
+        },
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
         legend: {
           orient: 'horizontal',

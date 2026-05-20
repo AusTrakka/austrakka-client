@@ -145,7 +145,12 @@ function HasSeq({
     const option: EChartsOption = {
       toolbox: {
         feature: {
-          saveAsImage: { title: 'Export', pixelRatio: 2 },
+          saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+        },
+        emphasis: {
+          iconStyle: {
+            borderColor: Theme.SecondaryMain, // colour on hover (borderColor is weird name for it)
+          },
         },
       },
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },

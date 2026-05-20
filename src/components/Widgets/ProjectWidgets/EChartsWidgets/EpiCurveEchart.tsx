@@ -189,6 +189,16 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
             itemGap: 6,
           }
         : { show: false },
+      toolbox: {
+        feature: {
+          saveAsImage: { title: 'Export to PNG', pixelRatio: 2 },
+        },
+        emphasis: {
+          iconStyle: {
+            borderColor: Theme.SecondaryMain,
+          },
+        },
+      },
       tooltip: {
         trigger: 'item',
         appendTo: () => document.body,
