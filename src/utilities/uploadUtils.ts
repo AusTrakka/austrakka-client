@@ -236,3 +236,17 @@ export async function splitFastaByContig(files: File[]): Promise<File[]> {
   }
   return contigFiles;
 }
+
+export const checkFilename = (input: string): boolean => {
+  const invalidChars = /[/\\&|;:><"'?!*]/;
+  return !invalidChars.test(input);
+};
+
+export const sanitizeFilename = (input: string): string => {
+  return input.trimEnd();
+};
+
+export const sanitizeFileDescription = (input: string): string => {
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: conflicting rules
+  return input.replace(/[\u0000-\u001F]/g, '');
+};

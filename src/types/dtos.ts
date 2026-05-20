@@ -439,3 +439,16 @@ export interface DerivedLog {
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
 }
+
+export interface ProjectDocument {
+  globalId: string;
+  uniqueStringId: string;
+  fileName: string;
+  description: string;
+  isActive: boolean;
+  fileSize: number;
+  createdBy: string;
+  created: Date;
+  lastUpdated: Date;
+  lastUpdatedBy: string;
+}
