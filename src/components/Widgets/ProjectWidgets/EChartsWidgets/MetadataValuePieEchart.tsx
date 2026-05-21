@@ -193,7 +193,7 @@ function MetadataValuePieChart({
 
       {!hasCompleteData(data?.loadingState) && !errorMessage && <div>Loading...</div>}
 
-      {canRender && <div ref={chartRef} style={{ width: '100%', height: '320px' }} />}
+      {canRender && <div ref={chartRef} style={{ width: '100%', height: '280px' }} />}
     </Box>
   );
 }
