@@ -22,6 +22,9 @@ import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 
 const HAS_SEQ = 'Has_sequences';
+const ROW_HEIGHT = 45;
+const MIN_HEIGHT = 240;
+const MAX_HEIGHT = 1200;
 
 const CHART_COLORS = {
   AVAILABLE: Theme.SecondaryMain,
@@ -99,6 +102,8 @@ function HasSeq({
       missingCounts: allLabels.map((l) => missingMap.get(l) ?? 0),
     };
   }, [filteredData, categoryFieldStable]);
+
+  const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
@@ -236,7 +241,7 @@ function HasSeq({
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: '240px' }} />
+        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
       {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
