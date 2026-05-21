@@ -255,6 +255,8 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         name: isGrouped ? fv || '(unknown)' : undefined,
         type: 'bar' as const,
         stack: 'total',
+        barGap: '0%',
+        barCategoryGap: '1px',
         data: countsByField[fv].map((count, i) => [new Date(bucketKeys[i]).getTime(), count]),
         itemStyle: isGrouped
           ? { color: colorMap?.[fv] ?? NULL_COLOUR }
@@ -307,7 +309,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         ref={plotDiv}
         style={{
           width: '100%',
-          height: tall ? '514px' : '320px',
+          height: tall ? '474px' : '320px',
           display: hasCompleteData(data?.loadingState) && !errorMessage ? 'block' : 'none',
         }}
       />

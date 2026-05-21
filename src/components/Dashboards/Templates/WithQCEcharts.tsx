@@ -29,7 +29,7 @@ function WithQC(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
           <Grid size={12}>
-            <Card sx={{ ...cardStyle, height: '100%' }}>
+            <Card sx={{ ...cardStyle }}>
               <CardContent>
                 <EpiCurveEchart
                   projectAbbrev={projectAbbrev}
@@ -62,12 +62,13 @@ function WithQC(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
           <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            <Card sx={tallCardStyle}>
+            <Card sx={{ ...tallCardStyle, maxHeight: 350 }}>
               <CardContent>
                 <Organisations
                   projectAbbrev={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
+                  clamped={true}
                 />
               </CardContent>
             </Card>

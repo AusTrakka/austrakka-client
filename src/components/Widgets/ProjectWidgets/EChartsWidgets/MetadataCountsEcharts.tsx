@@ -39,6 +39,10 @@ function stripOwnerSuffix(value: string): string {
   return value.split('-Owner')[0];
 }
 
+const ROW_HEIGHT = 45;
+const MIN_HEIGHT = 240;
+const MAX_HEIGHT = 1200;
+
 function MetadataCounts({
   projectAbbrev,
   filteredData,
@@ -100,6 +104,8 @@ function MetadataCounts({
       missingCounts: allLabels.map((l) => missingMap.get(l) ?? 0),
     };
   }, [filteredData, field, categoryFieldStable]);
+
+  const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
@@ -248,7 +254,7 @@ function MetadataCounts({
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: '240px' }} />
+        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
       {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
