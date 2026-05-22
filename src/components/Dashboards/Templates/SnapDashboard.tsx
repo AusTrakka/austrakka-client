@@ -2,7 +2,6 @@ import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import Counts from '../../Widgets/ProjectWidgets/Counts';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
