@@ -1,7 +1,7 @@
 export enum RoleName {
   TrakkaAdmin = 'TrakkaAdmin',
   ProFormaEditor = 'ProFormaEditor',
-  Viewer = 'Viewer',
+  GroupViewer = 'GroupViewer',
   SeqViewer = 'SeqViewer',
   Uploader = 'Uploader',
   ProjectAnalyst = 'ProjectAnalyst',
@@ -14,16 +14,16 @@ export enum RoleV2SeededName {
   Admin = 'Admin',
   ProjectAnalyst = 'ProjectAnalyst',
   ProjectViewer = 'ProjectViewer',
-  OrgViewer = 'OrgViewer',
+  Viewer = 'Viewer',
   GuestViewer = 'GuestViewer',
   ProjectContributor = 'ProjectContributor',
-  GuestUploader = 'GuestUploader',
+  Contributor = 'Contributor',
 }
 
-export const orgRoles = [RoleName.Viewer, RoleName.SeqViewer, RoleName.Uploader];
+export const orgRoles = [RoleName.GroupViewer, RoleName.SeqViewer, RoleName.Uploader];
 
 export const projectRoles = [
-  RoleName.Viewer,
+  RoleName.GroupViewer,
   RoleName.SeqViewer,
   RoleName.Uploader,
   RoleName.ProjectAnalyst,
