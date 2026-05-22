@@ -41,7 +41,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={12}>
+          <Grid size={{ lg: 7, md: 7, sm: 12 }}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataCounts
@@ -51,6 +51,20 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   field="Date_coll"
                   title="Metadata counts"
                   categoryField="Country"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid container size={{ lg: 5, md: 5, sm: 12 }}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <MetadataValuePieChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  field="SNAP_trial_group"
+                  title="SNAP trial group counts"
+                  colourScheme="set1"
                 />
               </CardContent>
             </Card>
@@ -106,20 +120,6 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   timeFilterObject={timeFilterObject}
                   field="blaI_status"
                   title="blaI status"
-                  colourScheme="set1"
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid container size={{ lg: 6, md: 6, sm: 12 }}>
-            <Card sx={tallCardStyle}>
-              <CardContent>
-                <MetadataValuePieChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="SNAP_trial_group"
-                  title="SNAP trial group counts"
                   colourScheme="set1"
                 />
               </CardContent>
