@@ -2,7 +2,6 @@ import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
-import Counts from '../../Widgets/ProjectWidgets/Counts';
 import EpiCurveChart from '../../Widgets/ProjectWidgets/EpiCurveChart';
 import MetadataCounts from '../../Widgets/ProjectWidgets/MetadataCounts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
@@ -14,12 +13,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
-        <Grid
-          container
-          sx={{ alignItems: 'flex-start' }}
-          spacing={2}
-          size={{ xl: 9, lg: 8, md: 12 }}
-        >
+        <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={{ md: 12 }}>
           {' '}
           {/* big left column */}
           <Grid size={12}>
@@ -46,7 +40,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ lg: 12, md: 12 }}>
+          <Grid size={{ lg: 7, md: 7, sm: 12 }}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataCounts
@@ -56,6 +50,20 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
                   field="Date_coll"
                   title="Metadata counts"
                   categoryField="Country"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid container size={{ lg: 5, md: 5, sm: 12 }}>
+            <Card sx={tallCardStyle}>
+              <CardContent>
+                <MetadataValuePieChart
+                  projectAbbrev={projectAbbrev}
+                  filteredData={filteredData}
+                  timeFilterObject={timeFilterObject}
+                  field="SNAP_trial_group"
+                  title="SNAP trial group counts"
+                  colourScheme="set1"
                 />
               </CardContent>
             </Card>
@@ -118,57 +126,6 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
           </Grid>
         </Grid>{' '}
         {/* big left column */}
-        <Grid container spacing={2} size={{ xl: 3, lg: 4, md: 12 }}>
-          {' '}
-          {/* narrow right column */}
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            {' '}
-            {/* NB at lg, 100% of narrower column */}
-            <Card sx={tallCardStyle}>
-              <CardContent>
-                <MetadataValuePieChart
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="SNAP_trial_group"
-                  title="SNAP trial group counts"
-                  colourScheme="set1"
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            <Card
-              sx={{
-                ...tallCardStyle,
-                // Below needed to add scroll to the counts table
-                height: '100%',
-                maxHeight: 900,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <CardContent
-                // Below needed to add scroll to the counts table
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
-                }}
-              >
-                <Counts
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="Referring_site"
-                  title="Referring site counts"
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>{' '}
-        {/* narrow right column */}
       </Grid>
     </Box>
   );
