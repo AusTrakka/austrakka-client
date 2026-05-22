@@ -137,36 +137,6 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            <Card
-              sx={{
-                ...tallCardStyle,
-                // Below needed to add scroll to the counts table
-                height: '100%',
-                maxHeight: 900,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <CardContent
-                // Below needed to add scroll to the counts table
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
-                }}
-              >
-                <Counts
-                  projectAbbrev={projectAbbrev}
-                  filteredData={filteredData}
-                  timeFilterObject={timeFilterObject}
-                  field="Referring_site"
-                  title="Referring site counts"
-                />
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>{' '}
         {/* narrow right column */}
       </Grid>
