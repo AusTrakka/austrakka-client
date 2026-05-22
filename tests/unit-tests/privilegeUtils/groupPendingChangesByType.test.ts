@@ -28,7 +28,7 @@ describe('groupPendingChangesByType', () => {
         payload: {
           recordName: 'Role1',
           recordGlobalId: '3',
-          roleName: 'Viewer',
+          roleName: 'GroupViewer',
         },
       },
       {
@@ -86,7 +86,7 @@ describe('groupPendingChangesByType', () => {
             payload: {
               recordName: 'Role1',
               recordGlobalId: '3',
-              roleName: 'Viewer',
+              roleName: 'GroupViewer',
             },
           },
         ],

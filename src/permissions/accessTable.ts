@@ -18,11 +18,11 @@ const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
     [PermissionLevel.CanShow]: [RoleName.TrakkaAdmin],
   },
   'project/tabs/datasettab': {
-    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
-    [PermissionLevel.CanClick]: [RoleName.Viewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanShow]: [RoleName.GroupViewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanClick]: [RoleName.GroupViewer, RoleName.ProjectAnalyst],
   },
   'project/tabs/datasettab/datasettable': {
-    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanShow]: [RoleName.GroupViewer, RoleName.ProjectAnalyst],
     [PermissionLevel.CanClick]: [RoleName.ProjectAnalyst],
   },
   'organisation/sample/share': {

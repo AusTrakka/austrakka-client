@@ -19,7 +19,9 @@ describe('filterAssignedRoles', () => {
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
-      roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
+      roles: [
+        { name: 'GroupViewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
+      ],
     },
   ];
 
@@ -43,7 +45,7 @@ describe('filterAssignedRoles', () => {
       payload: {
         recordName: 'User2',
         recordGlobalId: '2',
-        roleName: 'Viewer',
+        roleName: 'GroupViewer',
         roleGlobalId: 'role3',
       },
     },
@@ -120,7 +122,9 @@ describe('filterAssignedRoles', () => {
       },
       {
         record: { id: '2', name: 'User2', abbrev: 'U2' },
-        roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
+        roles: [
+          { name: 'GroupViewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
+        ],
       },
     ]);
   });
