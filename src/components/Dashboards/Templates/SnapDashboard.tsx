@@ -14,12 +14,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
-        <Grid
-          container
-          sx={{ alignItems: 'flex-start' }}
-          spacing={2}
-          size={{ xl: 9, lg: 8, md: 12 }}
-        >
+        <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={{ md: 12 }}>
           {' '}
           {/* big left column */}
           <Grid size={12}>
@@ -46,7 +41,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ lg: 12, md: 12 }}>
+          <Grid size={12}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataCounts
@@ -116,14 +111,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>{' '}
-        {/* big left column */}
-        <Grid container spacing={2} size={{ xl: 3, lg: 4, md: 12 }}>
-          {' '}
-          {/* narrow right column */}
-          <Grid size={{ lg: 12, md: 6, sm: 12 }}>
-            {' '}
-            {/* NB at lg, 100% of narrower column */}
+          <Grid container size={{ lg: 6, md: 6, sm: 12 }}>
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieChart
@@ -138,7 +126,7 @@ function SnapDashboard(props: ProjectDashboardTemplateProps) {
             </Card>
           </Grid>
         </Grid>{' '}
-        {/* narrow right column */}
+        {/* big left column */}
       </Grid>
     </Box>
   );
