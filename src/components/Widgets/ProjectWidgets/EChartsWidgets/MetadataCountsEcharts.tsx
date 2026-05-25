@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
