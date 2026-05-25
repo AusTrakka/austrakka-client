@@ -21,7 +21,6 @@ import { isoDateLocalDate } from '../../utilities/dateUtils';
 export enum CardType {
   CurrentWithFile = 0,
   Historical = 1,
-  CurrentWithoutFile = 2,
 }
 
 interface CardStyleConfig {
@@ -49,25 +48,6 @@ function getCardStyleConfig(cardType: CardType): CardStyleConfig {
         showDownloadIcon: false,
         showLatestLabel: false,
         iconToShow: <Icon />,
-      };
-    case CardType.CurrentWithoutFile:
-      return {
-        cardBackground: Theme.PrimaryGrey,
-        textColor: Theme.PrimaryGrey600, // Slightly muted for subtlety
-        showDownloadIcon: false,
-        showLatestLabel: false,
-        iconToShow: (
-          <Tooltip title="No Attached File - Validation Specification" arrow>
-            <InfoOutlined
-              sx={{
-                color: Theme.SecondaryBlue,
-                cursor: 'help',
-                pointerEvents: 'auto',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </Tooltip>
-        ),
       };
     default:
       return {
@@ -183,8 +163,8 @@ function GenerateCards(
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        border:
-          cardType === CardType.CurrentWithoutFile ? `1px dashed ${Theme.SecondaryTeal}` : 'none',
+        // border:
+        //   cardType === CardType.CurrentWithoutFile ? `1px dashed ${Theme.SecondaryTeal}` : 'none',
       }}
     >
       <CardActionArea
@@ -244,7 +224,7 @@ function GenerateCards(
             }}
           >
             <Typography
-              title={version.assetId ? version.originalFileName : 'No File'}
+              title={version.assetId ? version.originalFileName : 'Generate template'}
               noWrap
               gutterBottom
               variant="h5"
@@ -252,7 +232,7 @@ function GenerateCards(
               style={{ color: styleConfig.textColor, alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {version.assetId ? version.originalFileName : 'No File'}
+              {version.assetId ? version.originalFileName : 'Generate template'}
             </Typography>
             <Typography
               variant="caption"
