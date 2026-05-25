@@ -42,7 +42,7 @@ import LoadingState from '../../constants/loadingState';
 import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
-import { RoleV2SeededName } from '../../permissions/roles';
+import { Roles } from '../../permissions/roles';
 import type { Project, ProjectDocument } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -89,7 +89,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     if (user && projectDetails) {
       const hasUploadEditDeletePermission: boolean = hasPermissionV2ByRole(
         user,
-        RoleV2SeededName.ProjectAnalyst,
+        Roles.ProjectAnalyst,
         projectDetails?.abbreviation,
         RecordTypes.PROJECT,
       );
