@@ -26,7 +26,7 @@ const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole
       (groupRole: GroupRole) =>
         (groupRole.group.name === `${orgAbbrev}-Owner` ||
           groupRole.group.name === `${orgAbbrev}-Everyone`) &&
-        groupRole.role.name === 'Viewer',
+        groupRole.role.name === 'GroupViewer',
     )
     .sort((a: any, b: any) => {
       // Owner group first

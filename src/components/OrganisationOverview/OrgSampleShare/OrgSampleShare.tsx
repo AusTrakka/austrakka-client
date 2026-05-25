@@ -100,7 +100,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
       setDestination(selectedDestination);
 
       const canViewPreview = Object.entries(user.groupRolesByGroup).some(
-        ([groupName, roles]) => groupName === selectedDestination && roles.includes('Viewer'),
+        ([groupName, roles]) => groupName === selectedDestination && roles.includes('GroupViewer'),
       );
 
       setCanViewDestinationFields(canViewPreview);

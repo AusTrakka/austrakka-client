@@ -39,7 +39,7 @@ describe('hasScopeInRecord', () => {
               recordGlobalId: 'record-id-1',
               roles: [
                 {
-                  roleName: 'Viewer',
+                  roleName: 'GroupViewer',
                   privilegeLevel: '',
                   privilegeGlobalId: 'global-id-1',
                   scopes: ['read:basic'],
