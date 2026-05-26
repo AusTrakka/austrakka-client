@@ -601,52 +601,76 @@ function TreeDetail() {
   return (
     <Box>
       {renderWarning()}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography className="pageTitle">
-          {tree
-            ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
-            : ''}
-          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
-        </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title={controlsOpen ? 'Hide controls' : 'Show controls'} arrow>
-            <IconButton
-              onClick={() => setControlsOpen(!controlsOpen)}
-              color={controlsOpen ? 'primary' : 'default'}
-            >
-              <Tune />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title={tableOpen ? 'Hide metadata table' : 'Show metadata table'} arrow>
-            <IconButton
-              onClick={() => setTableOpen(!tableOpen)}
-              color={tableOpen ? 'primary' : 'default'}
-            >
-              <TableChart />
-            </IconButton>
-          </Tooltip>
-
-          {tree && (
-            <ExportButton treeName={tree.treeName} phylocanvasRef={treeRef} legendRef={legRef} />
-          )}
-        </Box>
-      </Box>
       <Box
         sx={{
           position: 'relative',
-          height: 'calc(100vh - 120px)',
+          height: 'calc(100vh - 80px)',
           display: 'flex',
         }}
       >
-        <Box sx={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <Box
+          sx={{
+            flex: 1,
+            position: 'relative',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexShrink: 0,
+            }}
+          >
+            <Typography className="pageTitle">
+              {tree
+                ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
+                : ''}
+              {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Tooltip title={controlsOpen ? 'Hide controls' : 'Show controls'} arrow>
+                <IconButton
+                  onClick={() => setControlsOpen(!controlsOpen)}
+                  color={controlsOpen ? 'primary' : 'default'}
+                >
+                  <Tune />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title={tableOpen ? 'Hide metadata table' : 'Show metadata table'} arrow>
+                <IconButton
+                  onClick={() => setTableOpen(!tableOpen)}
+                  color={tableOpen ? 'primary' : 'default'}
+                >
+                  <TableChart />
+                </IconButton>
+              </Tooltip>
+
+              {tree && (
+                <ExportButton
+                  treeName={tree.treeName}
+                  phylocanvasRef={treeRef}
+                  legendRef={legRef}
+                />
+              )}
+            </Box>
+          </Box>
           <Box
             ref={treeContainerRef}
             sx={{
-              position: 'absolute',
-              inset: 0,
+              flex: 1,
+              position: 'relative',
+              minHeight: 0,
               overflow: 'hidden',
+              padding: 1,
+              border: 1,
+              borderColor: Theme.PrimaryGrey200,
+              borderRadius: 1,
             }}
           >
             {renderTree()}
@@ -669,9 +693,6 @@ function TreeDetail() {
               flexDirection: 'column',
             }}
           >
-            <Box sx={{ flexShrink: 0, p: 1 }}>
-              <Typography variant="h5">Controls</Typography>
-            </Box>
             <Box
               sx={{
                 flex: 1,
