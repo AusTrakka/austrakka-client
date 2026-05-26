@@ -63,9 +63,7 @@ export interface Tree {
   name: string;
   description: string;
   latestTreeLastUpdated: Date;
-  project: {
-    abbreviation: string;
-  };
+  projectAbbrev: string;
   projectName: string;
   isActive: boolean;
   created: Date;
@@ -439,4 +437,17 @@ export interface DerivedLog {
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
   errorMessage: string;
+}
+
+export interface ProjectDocument {
+  globalId: string;
+  uniqueStringId: string;
+  fileName: string;
+  description: string;
+  isActive: boolean;
+  fileSize: number;
+  createdBy: string;
+  created: Date;
+  lastUpdated: Date;
+  lastUpdatedBy: string;
 }

@@ -36,7 +36,7 @@ describe('groupFailedChangesByType', () => {
           payload: {
             recordName: 'Role1',
             recordGlobalId: '3',
-            roleName: 'Viewer',
+            roleName: 'GroupViewer',
           },
         },
       ],
@@ -109,7 +109,7 @@ describe('groupFailedChangesByType', () => {
               payload: {
                 recordName: 'Role1',
                 recordGlobalId: '3',
-                roleName: 'Viewer',
+                roleName: 'GroupViewer',
               },
             },
           ],

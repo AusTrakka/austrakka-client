@@ -36,7 +36,7 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
-import { RoleV2SeededName } from '../../permissions/roles';
+import { Roles } from '../../permissions/roles';
 import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
@@ -95,6 +95,7 @@ function MainMenuLayout() {
     fields: 'Fields',
     datasets: 'Datasets',
     share: 'Share',
+    documents: 'Documents',
     plots: 'Plots',
     map: 'Map',
   };
@@ -118,6 +119,7 @@ function MainMenuLayout() {
     'proformas',
     'datasets',
     'activity',
+    'documents',
   ];
 
   const location = useLocation();
@@ -176,7 +178,7 @@ function MainMenuLayout() {
     },
   ];
 
-  const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
+  const hasAdminRights: boolean = hasPermissionV2ByRole(user, Roles.Admin);
 
   const visiblePages = pages.filter((page) => !page.permissionDomain || hasAdminRights);
 

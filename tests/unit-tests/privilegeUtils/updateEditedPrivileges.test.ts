@@ -22,7 +22,7 @@ describe('updateEditedPrivileges', () => {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
         {
-          name: 'Viewer',
+          name: 'GroupViewer',
           globalId: 'role3',
           resourceTypes: [],
           privilegeLevel: 'Admin',
@@ -67,7 +67,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },
@@ -92,7 +94,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },
@@ -117,7 +121,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },

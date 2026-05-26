@@ -35,8 +35,13 @@ const columns = [
   },
 ];
 
-export default function Organisations(props: ProjectWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+interface OrganisationWidgetProps extends ProjectWidgetProps {
+  clamped?: boolean;
+}
+
+export default function Organisations(props: OrganisationWidgetProps) {
+  const { projectAbbrev, filteredData, timeFilterObject, clamped } = props;
+  const resolvedClamped = clamped ?? false;
   const { navigate } = useStableNavigate();
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
@@ -96,6 +101,8 @@ export default function Organisations(props: ProjectWidgetProps) {
         <DataTable
           value={aggregatedCounts}
           size="small"
+          scrollable={resolvedClamped}
+          scrollHeight={resolvedClamped ? '250px' : undefined}
           onRowClick={rowClickHandler}
           selectionMode="single"
         >
