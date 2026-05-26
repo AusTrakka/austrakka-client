@@ -120,7 +120,7 @@ function TreeDetail() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
-  const [controlsOpen, setControlsOpen] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(true);
   const [tableOpen, setTableOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement | null>(null);
   const treeContainerRef = useRef<HTMLDivElement | null>(null);
@@ -128,7 +128,7 @@ function TreeDetail() {
     width: DEFAULT_INIT_TREE_WIDTH,
     height: DEFAULT_INIT_TREE_HEIGHT,
   }; // Initial size that is updated on container resize
-  const [expanded, setExpanded] = useState<string | false>(false);
+  const [expanded, setExpanded] = useState<string | false>('treeNav');
 
   // Request redux data if not loaded
   useEffect(() => {
