@@ -124,10 +124,11 @@ function TreeDetail() {
   const [tableOpen, setTableOpen] = useState(false);
   const tableRef = useRef<HTMLDivElement | null>(null);
   const treeContainerRef = useRef<HTMLDivElement | null>(null);
-  const [treeSize, setTreeSize] = useState({
+  const treeSize = {
     width: DEFAULT_INIT_TREE_WIDTH,
     height: DEFAULT_INIT_TREE_HEIGHT,
-  }); // Initial size that is updated on container resize
+  }; // Initial size that is updated on container resize
+  const [expanded, setExpanded] = useState<string | false>(false);
 
   // Request redux data if not loaded
   useEffect(() => {
@@ -299,6 +300,11 @@ function TreeDetail() {
     state.nodeColumn,
   ]);
 
+  const handleAccordionChange =
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
   useEffect(() => {
     // Get tree details, including tree type
     const getTree = async () => {
@@ -343,7 +349,7 @@ function TreeDetail() {
         <Tree
           ref={treeRef}
           source={tree.newickTree}
-          resizeWidthTo=".treeContainer" // auto-resize width to container
+          resizeRef={treeContainerRef} // observe container for resizing
           size={treeSize}
           showLabels
           interactive
@@ -428,7 +434,7 @@ function TreeDetail() {
           <Grid item sx={{ marginBottom: 1 }}>
             <Search options={ids} selectedIds={selectedIds} onChange={handleSearch} />
           </Grid>
-          <Accordion>
+          <Accordion expanded={expanded === 'treeNav'} onChange={handleAccordionChange('treeNav')}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Tree & Navigation</Typography>
             </AccordionSummary>
@@ -445,7 +451,10 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <Accordion>
+          <Accordion
+            expanded={expanded === 'nodesLabels'}
+            onChange={handleAccordionChange('nodesLabels')}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Nodes & Labels</Typography>
             </AccordionSummary>
@@ -458,7 +467,10 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <Accordion>
+          <Accordion
+            expanded={expanded === 'metadataBlocks'}
+            onChange={handleAccordionChange('metadataBlocks')}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Metadata blocks</Typography>
             </AccordionSummary>
@@ -587,97 +599,98 @@ function TreeDetail() {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        overflow: 'auto',
-        flex: 1,
-      }}
-    >
+    <Box>
       {renderWarning()}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography className="pageTitle">
+          {tree
+            ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
+            : ''}
+          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+        </Typography>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title={controlsOpen ? 'Hide controls' : 'Show controls'} arrow>
+            <IconButton
+              onClick={() => setControlsOpen(!controlsOpen)}
+              color={controlsOpen ? 'primary' : 'default'}
+            >
+              <Tune />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={tableOpen ? 'Hide metadata table' : 'Show metadata table'} arrow>
+            <IconButton
+              onClick={() => setTableOpen(!tableOpen)}
+              color={tableOpen ? 'primary' : 'default'}
+            >
+              <TableChart />
+            </IconButton>
+          </Tooltip>
+
+          {tree && (
+            <ExportButton treeName={tree.treeName} phylocanvasRef={treeRef} legendRef={legRef} />
+          )}
+        </Box>
+      </Box>
       <Box
         sx={{
+          position: 'relative',
+          height: 'calc(100vh - 120px)',
           display: 'flex',
-          gap: 2,
-          flex: 1,
         }}
       >
-        <Box
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            p: 0,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-            <Typography className="pageTitle">
-              {tree
-                ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
-                : ''}
-              {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Tooltip title={controlsOpen ? 'Hide Controls' : 'Show Controls'} arrow>
-                <IconButton
-                  size="small"
-                  color={controlsOpen ? 'primary' : 'default'}
-                  onClick={() => setControlsOpen(!controlsOpen)}
-                >
-                  <Tune />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={tableOpen ? 'Hide Metadata Table' : 'Show Metadata Table'} arrow>
-                <IconButton
-                  size="small"
-                  color={tableOpen ? 'primary' : 'default'}
-                  onClick={() => setTableOpen(!tableOpen)}
-                >
-                  <TableChart />
-                </IconButton>
-              </Tooltip>
-              {tree && (
-                <ExportButton
-                  treeName={tree.treeName}
-                  phylocanvasRef={treeRef}
-                  legendRef={legRef}
-                />
-              )}
-            </Box>
-          </Box>
+        <Box sx={{ flex: 1, position: 'relative', minWidth: 0 }}>
           <Box
             ref={treeContainerRef}
-            className="treeContainer"
             sx={{
-              flex: 1,
-              overflow: 'auto',
-              minHeight: 0,
-              padding: 0.5,
+              position: 'absolute',
+              inset: 0,
+              overflow: 'hidden',
             }}
           >
             {renderTree()}
-            {renderLegend()}
-            {tableOpen && <Box ref={tableRef}>{renderTable()}</Box>}
           </Box>
         </Box>
         <Box
           sx={{
             width: controlsOpen ? 300 : 0,
+            flexShrink: 0,
             transition: 'width 0.3s ease',
             overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
+            paddingLeft: controlsOpen ? 0.5 : 0,
           }}
         >
-          <Typography variant="h5" sx={{ marginTop: 1, marginBottom: 1 }}>
-            Controls
-          </Typography>
-          {renderControls()}
+          <Box
+            sx={{
+              width: 300,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box sx={{ flexShrink: 0, p: 1 }}>
+              <Typography variant="h5">Controls</Typography>
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                overflowY: 'auto',
+                minHeight: 0,
+                px: 1,
+              }}
+            >
+              {renderControls()}
+            </Box>
+          </Box>
         </Box>
       </Box>
+      {tableOpen && (
+        <Box>
+          {renderLegend()}
+          <Box ref={tableRef}>{renderTable()}</Box>
+        </Box>
+      )}
     </Box>
   );
 }
