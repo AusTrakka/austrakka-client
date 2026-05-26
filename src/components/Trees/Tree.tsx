@@ -2,12 +2,15 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { PhylocanvasNode, PhylocanvasProps } from '../../types/phylocanvas.interface';
 import { Phylocanvas } from './PhylocanvasGL';
 
+export const DEFAULT_INIT_TREE_HEIGHT = 600;
+export const DEFAULT_INIT_TREE_WIDTH = 600;
+
 export interface TreeProps extends PhylocanvasProps {
   resizeWidthTo: string | null;
   onSelectedIdsChange: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export type TreeExportFuctions = {
+export type TreeExportFunctions = {
   exportNewick(): string;
   exportSVG(): Blob;
   exportPNG(): Blob;

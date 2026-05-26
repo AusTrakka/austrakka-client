@@ -28,6 +28,9 @@ span {
   padding: 0px 15px 0px 35px;
   /* width: 100vw; */
   min-height: 100vh;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .pagePadded {
@@ -36,6 +39,9 @@ span {
   padding: 0px 20px 0px 35px;
   margin-left: 175px;
   min-height: 100vh;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   /* width: calc(100vw - 240px);  */
 }
 

@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
+import { TableChart, Tune } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -8,12 +9,14 @@ import {
   AlertTitle,
   Box,
   Grid,
+  IconButton,
   type SelectChangeEvent,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import type React from 'react';
-import { createRef, type SyntheticEvent, useEffect, useState } from 'react';
+import { createRef, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
@@ -46,8 +49,8 @@ import {
 } from '../../utilities/stateUtils';
 import mapMetadataToPhylocanvas from '../../utilities/treeUtils';
 import { TreeTypes } from './PhylocanvasGL';
-import type { TreeExportFuctions } from './Tree';
-import Tree from './Tree';
+import type { TreeExportFunctions } from './Tree';
+import Tree, { DEFAULT_INIT_TREE_HEIGHT, DEFAULT_INIT_TREE_WIDTH } from './Tree';
 import ExportButton from './TreeControls/Export';
 import MetadataControls from './TreeControls/Metadata';
 import NodeAndLabelControls from './TreeControls/NodeAndLabel';
@@ -92,7 +95,7 @@ function TreeDetail() {
   const { projectAbbrev, treeId, treeVersionId } = useParams();
   const navigate = useNavigate();
   const [tree, setTree] = useState<TreeVersion | null>();
-  const treeRef = createRef<TreeExportFuctions>();
+  const treeRef = createRef<TreeExportFunctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
   const [tableMetadata, setTableMetadata] = useState<Sample[]>([]);
@@ -117,6 +120,14 @@ function TreeDetail() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { token, tokenLoading } = useApi();
   const dispatch = useAppDispatch();
+  const [controlsOpen, setControlsOpen] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
+  const tableRef = useRef<HTMLDivElement | null>(null);
+  const treeContainerRef = useRef<HTMLDivElement | null>(null);
+  const [treeSize, setTreeSize] = useState({
+    width: DEFAULT_INIT_TREE_WIDTH,
+    height: DEFAULT_INIT_TREE_HEIGHT,
+  }); // Initial size that is updated on container resize
 
   // Request redux data if not loaded
   useEffect(() => {
@@ -333,7 +344,7 @@ function TreeDetail() {
           ref={treeRef}
           source={tree.newickTree}
           resizeWidthTo=".treeContainer" // auto-resize width to container
-          size={{ width: 600, height: 600 }}
+          size={treeSize}
           showLabels
           interactive
           metadata={phylocanvasMetadata}
@@ -384,6 +395,20 @@ function TreeDetail() {
     });
   };
 
+  // Scroll to metadata table when it is opened
+  useEffect(() => {
+    if (!tableOpen) return;
+
+    const timeout = setTimeout(() => {
+      tableRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [tableOpen]);
+
   const renderControls = () => {
     const availableFields = projectMetadata?.fields || [];
     const allColumns = availableFields.map((field) => field.columnName);
@@ -399,7 +424,7 @@ function TreeDetail() {
 
     if (tree) {
       return (
-        <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px' }}>
+        <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px', margin: 0.5 }}>
           <Grid item sx={{ marginBottom: 1 }}>
             <Search options={ids} selectedIds={selectedIds} onChange={handleSearch} />
           </Grid>
@@ -445,7 +470,6 @@ function TreeDetail() {
               />
             </AccordionDetails>
           </Accordion>
-          <ExportButton treeName={tree.treeName} phylocanvasRef={treeRef} legendRef={legRef} />
         </Grid>
       );
     }
@@ -555,7 +579,7 @@ function TreeDetail() {
       return (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          An error occured loading metadata; metadata may be missing or incomplete.
+          An error occurred loading metadata; metadata may be missing or incomplete.
         </Alert>
       );
     }
@@ -563,21 +587,98 @@ function TreeDetail() {
   };
 
   return (
-    <Grid container wrap="nowrap" spacing={2}>
-      {renderControls()}
-      <Grid item xs={9} className="treeContainer">
-        <Typography className="pageTitle">
-          {tree
-            ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
-            : ''}
-          {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
-        </Typography>
-        {renderWarning()}
-        {renderTree()}
-        {renderLegend()}
-        {renderTable()}
-      </Grid>
-    </Grid>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        overflow: 'auto',
+        flex: 1,
+      }}
+    >
+      {renderWarning()}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          flex: 1,
+        }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            p: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+            <Typography className="pageTitle">
+              {tree
+                ? `${tree.treeName} - ${isoDateLocalDate(tree.versionName.replaceAll('-', '/'))}`
+                : ''}
+              {tree && rootId !== '0' ? ` - Subtree ${rootId}` : ''}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Tooltip title={controlsOpen ? 'Hide Controls' : 'Show Controls'} arrow>
+                <IconButton
+                  size="small"
+                  color={controlsOpen ? 'primary' : 'default'}
+                  onClick={() => setControlsOpen(!controlsOpen)}
+                >
+                  <Tune />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={tableOpen ? 'Hide Metadata Table' : 'Show Metadata Table'} arrow>
+                <IconButton
+                  size="small"
+                  color={tableOpen ? 'primary' : 'default'}
+                  onClick={() => setTableOpen(!tableOpen)}
+                >
+                  <TableChart />
+                </IconButton>
+              </Tooltip>
+              {tree && (
+                <ExportButton
+                  treeName={tree.treeName}
+                  phylocanvasRef={treeRef}
+                  legendRef={legRef}
+                />
+              )}
+            </Box>
+          </Box>
+          <Box
+            ref={treeContainerRef}
+            className="treeContainer"
+            sx={{
+              flex: 1,
+              overflow: 'auto',
+              minHeight: 0,
+              padding: 0.5,
+            }}
+          >
+            {renderTree()}
+            {renderLegend()}
+            {tableOpen && <Box ref={tableRef}>{renderTable()}</Box>}
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            width: controlsOpen ? 300 : 0,
+            transition: 'width 0.3s ease',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Typography variant="h5" sx={{ marginTop: 1, marginBottom: 1 }}>
+            Controls
+          </Typography>
+          {renderControls()}
+        </Box>
+      </Box>
+    </Box>
   );
 }
 export default TreeDetail;
