@@ -18,6 +18,8 @@ import './RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
 import { formatBytes } from '../../../utilities/renderUtils';
 
+const BYTES_EDIT_UNIT = 'MB'; // Important this stays consistent with handleMBChange
+
 interface EditableRowProps {
   field: keyof User;
   detailValue: any;
@@ -186,7 +188,7 @@ function EditableRow(props: EditableRowProps) {
           </TableCell>
           <TableCell className="value-cell-editing">
             <TextField
-              value={formatBytes(editedValues?.[field] as number, true, 'MB')}
+              value={formatBytes(editedValues?.[field] as number, true, BYTES_EDIT_UNIT)}
               onChange={handleMBChange}
               variant="filled"
               fullWidth
@@ -211,7 +213,7 @@ function EditableRow(props: EditableRowProps) {
                   },
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Typography fontSize="0.9em">MB per month</Typography>
+                      <Typography fontSize="0.9em">{BYTES_EDIT_UNIT} per month</Typography>
                     </InputAdornment>
                   ),
                 },
