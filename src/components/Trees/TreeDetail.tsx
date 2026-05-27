@@ -709,9 +709,9 @@ function TreeDetail() {
           </Box>
         </Box>
       </Box>
+      <Box sx={{ paddingTop: 1 }}>{renderLegend()}</Box>
       {tableOpen && (
         <Box>
-          {renderLegend()}
           <Box ref={tableRef}>{renderTable()}</Box>
         </Box>
       )}
