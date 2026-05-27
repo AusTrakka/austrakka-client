@@ -77,6 +77,9 @@ const defaultState: TreeState = {
   labelBlocks: [SAMPLE_ID_FIELD],
   keyValueLabelBlocks: false,
   showShapes: true,
+  showShapeBorders: false,
+  shapeBorderWidth: 1,
+  shapeBorderAlpha: 1,
 };
 
 interface Style {
