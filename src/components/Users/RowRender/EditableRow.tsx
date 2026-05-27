@@ -16,7 +16,7 @@ import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import './RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
-import { bytesToMB } from '../../../utilities/renderUtils';
+import { formatBytes } from '../../../utilities/renderUtils';
 
 interface EditableRowProps {
   field: keyof User;
@@ -186,7 +186,7 @@ function EditableRow(props: EditableRowProps) {
           </TableCell>
           <TableCell className="value-cell-editing">
             <TextField
-              value={bytesToMB(editedValues?.[field] as number)}
+              value={formatBytes(editedValues?.[field] as number, true, 'MB')}
               onChange={handleMBChange}
               variant="filled"
               fullWidth
