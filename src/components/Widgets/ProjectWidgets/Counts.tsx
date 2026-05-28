@@ -13,8 +13,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
 import {
@@ -67,26 +66,21 @@ export default function Counts(props: CountsWidgetProps) {
   ];
 
   useEffect(() => {
-    if (data?.fieldLoadingStates[field] === LoadingState.SUCCESS) {
-      // If exclude parameter provided, filter data before aggregating
+    if (hasCompleteData(data?.loadingState)) {
       const filteredDataToAggregate = filterExcluded(filteredData, exclude);
-      // Aggregate filtered data
       let counts = aggregateArrayObjects(field, filteredDataToAggregate, NULL_VALUE) as CountRow[];
-      // If categoryLimit is set, keep only the top X by count
       if (categoryLimit && counts.length > categoryLimit) {
         counts = counts.sort((a, b) => b.count - a.count).slice(0, categoryLimit);
       }
       setAggregatedCounts(counts);
     }
-  }, [field, filteredData, exclude, data?.fieldLoadingStates, categoryLimit]);
+  }, [field, filteredData, exclude, data?.loadingState, categoryLimit]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(field)) {
       setErrorMessage(`Field ${field} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${field} values`);
     }
   }, [data, field]);
 
@@ -138,7 +132,7 @@ export default function Counts(props: CountsWidgetProps) {
       <Typography variant="h5" paddingBottom={3} color="primary">
         {title}
       </Typography>
-      {data?.fieldLoadingStates[field] === LoadingState.SUCCESS && (
+      {hasCompleteData(data?.loadingState) && (
         <Box flex={1} minHeight={0}>
           <DataTable
             value={aggregatedCounts}
@@ -160,9 +154,7 @@ export default function Counts(props: CountsWidgetProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.fieldLoadingStates ||
-        data?.fieldLoadingStates[field] === LoadingState.LOADING ||
-        data?.fieldLoadingStates[field] === LoadingState.IDLE) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }
