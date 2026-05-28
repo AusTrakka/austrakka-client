@@ -358,7 +358,6 @@ function TreeDetail() {
           uniqueValues={projectMetadata?.fieldUniqueValues ?? null}
           tableMetadata={tableMetadata}
           metadataLoadingState={projectMetadata?.loadingState || MetadataLoadingState.IDLE}
-          fieldLoadingState={projectMetadata?.fieldLoadingStates || {}}
           emptyColumns={projectMetadata?.emptyColumns || []}
           treeName={tree.treeName}
         />
@@ -548,10 +547,7 @@ function TreeDetail() {
   };
 
   const renderWarning = () => {
-    if (
-      projectMetadata?.loadingState === MetadataLoadingState.ERROR ||
-      projectMetadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-    ) {
+    if (projectMetadata?.loadingState === MetadataLoadingState.ERROR) {
       return (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
