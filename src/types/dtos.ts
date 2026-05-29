@@ -436,6 +436,7 @@ export interface DerivedLog {
   eventStatus: string;
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
+  errorMessage: string;
 }
 
 export interface ProjectDocument {
