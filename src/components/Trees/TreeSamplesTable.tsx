@@ -263,7 +263,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
         dataLoaded={allFieldsLoaded}
         setLoadingState={setLoading}
       />
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper elevation={2} sx={{ marginBottom: 4 }}>
         <div>
           <DataTable
             value={displayRows}
