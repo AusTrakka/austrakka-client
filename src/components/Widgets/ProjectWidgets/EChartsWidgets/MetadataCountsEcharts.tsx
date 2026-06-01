@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -20,6 +20,7 @@ import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
 interface MetadataCountWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
@@ -242,12 +243,21 @@ function MetadataCounts({
 
   return (
     <Box>
-      <Tooltip title={`Samples with populated ${field} values`} arrow placement="top">
-        <Typography variant="h5" paddingBottom={3} color="primary">
-          {title ?? `${field} counts`}
-        </Typography>
-      </Tooltip>
-
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
+        {title ?? `${field} counts`}
+        <ChartInfoTooltip
+          text={`Samples with populated ${field} values \n Click legend items to show/hide · Hover for details`}
+        />
+      </Typography>
       {errorMessage ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
