@@ -20,6 +20,7 @@ import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
 const HAS_SEQ = 'Has_sequences';
 const ROW_HEIGHT = 45;
@@ -231,8 +232,18 @@ function HasSeq({
 
   return (
     <Box>
-      <Typography variant="h5" paddingBottom={3} color="primary">
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         Sequence counts
+        <ChartInfoTooltip />
       </Typography>
 
       {errorMessage ? (

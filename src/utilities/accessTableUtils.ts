@@ -1,6 +1,6 @@
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
-import type { RoleV2SeededName } from '../permissions/roles';
+import type { Roles } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordTypeWithScopes,
   PrivilegeWithRolesWithScopes,
@@ -53,7 +53,7 @@ export function hasScopeInRecord(
 
 export function hasRoleInRecord(
   privileges: GroupedPrivilegesByRecordTypeWithScopes[],
-  role: RoleV2SeededName,
+  role: Roles,
   recordName: string = '',
   recordType = RecordTypes.SYSTEM,
 ): boolean {
