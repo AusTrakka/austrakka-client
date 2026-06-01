@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -21,18 +21,19 @@ import { resolveColourMap } from '../../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
-interface MetadataValueWidgetProps extends ProjectWidgetProps {
+interface MetadataValueEchartWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
   filteredData: Sample[];
   timeFilterObject?: DataTableFilterMeta;
   field: string;
   title?: string | undefined;
-  colorScheme?: string[] | undefined;
+  colorScheme?: string | undefined;
   colorMapping?: Record<string, string> | undefined;
 }
 
-function MetadataValuePieChart({
+function MetadataValuePieEchart({
   projectAbbrev,
   filteredData,
   timeFilterObject,
@@ -40,7 +41,7 @@ function MetadataValuePieChart({
   title,
   colorScheme,
   colorMapping,
-}: MetadataValueWidgetProps) {
+}: MetadataValueEchartWidgetProps) {
   const { navigate } = useStableNavigate();
   const data = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev), shallowEqual);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -76,10 +77,12 @@ function MetadataValuePieChart({
   const colorMap = useMemo(() => {
     if (errorMessage) return {};
     const values = pieData.map((item) => item.name);
-    if (colorScheme) {
-      return Object.fromEntries(values.map((v, i) => [v, colorScheme[i % colorScheme.length]]));
+
+    if (colorMapping) {
+      return resolveColourMap(values, 'tableau10', colorMapping);
     }
-    return resolveColourMap(values, 'tableau10', colorMapping);
+
+    return resolveColourMap(values, colorScheme ?? 'tableau10');
   }, [pieData, colorScheme, colorMapping, errorMessage]);
 
   const handleClick = useCallback(
@@ -135,18 +138,18 @@ function MetadataValuePieChart({
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
         legend: {
           orient: 'horizontal',
+          width: '100%',
           bottom: 0,
-          type: 'scroll',
           icon: 'square',
           itemWidth: 10,
           itemHeight: 10,
-          formatter: (name: string) => name || 'unknown',
+          textStyle: { fontSize: 10 },
         },
         series: [
           {
             type: 'pie',
             radius: ['30%', '65%'],
-            center: ['50%', '42%'],
+            center: ['50%', '40%'],
             cursor: 'pointer',
             label: { show: true, formatter: '{d}%', fontSize: 11, color: '#000' },
             labelLine: { show: true },
@@ -154,7 +157,7 @@ function MetadataValuePieChart({
               itemStyle: { shadowBlur: 8, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' },
             },
             data: pieData.map((item) => ({
-              name: item.name,
+              name: item.name || 'unknown',
               value: item.value,
               itemStyle: { color: colorMap[item.name] },
             })),
@@ -176,11 +179,21 @@ function MetadataValuePieChart({
 
   return (
     <Box>
-      <Tooltip title={`${field} values`} arrow placement="top">
-        <Typography variant="h5" paddingBottom={3} color="primary">
-          {title ?? `${field} counts`}
-        </Typography>
-      </Tooltip>
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
+        {title ?? `${field} counts`}
+        <ChartInfoTooltip
+          text={`${field} values \n Click legend items to show/hide · Hover for details`}
+        />
+      </Typography>
 
       {errorMessage && (
         <Alert severity="error">
@@ -193,9 +206,9 @@ function MetadataValuePieChart({
 
       {!hasCompleteData(data?.loadingState) && !errorMessage && <div>Loading...</div>}
 
-      {canRender && <div ref={chartRef} style={{ width: '100%', height: '320px' }} />}
+      {canRender && <div ref={chartRef} style={{ width: '100%', minHeight: '280px' }} />}
     </Box>
   );
 }
 
-export default memo(MetadataValuePieChart);
+export default memo(MetadataValuePieEchart);

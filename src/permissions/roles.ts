@@ -1,30 +1,20 @@
-export enum RoleName {
+export enum RolesV1 {
   TrakkaAdmin = 'TrakkaAdmin',
-  ProFormaEditor = 'ProFormaEditor',
-  Viewer = 'Viewer',
-  SeqViewer = 'SeqViewer',
+  GroupViewer = 'GroupViewer',
   Uploader = 'Uploader',
-  ProjectAnalyst = 'ProjectAnalyst',
+  SeqViewer = 'SeqViewer',
+  ProFormaEditor = 'ProFormaEditor',
+  ProjectAnalyst = 'ProjectAnalyst', // This is also in V2
 }
 
-// WARN: might be missing some here
-export enum RoleV2SeededName {
-  SuperUser = 'SuperUser',
-  User = 'User',
+export enum Roles {
   Admin = 'Admin',
-  ProjectAnalyst = 'ProjectAnalyst',
   ProjectViewer = 'ProjectViewer',
-  OrgViewer = 'OrgViewer',
-  GuestViewer = 'GuestViewer',
   ProjectContributor = 'ProjectContributor',
+  ProjectAnalyst = 'ProjectAnalyst',
+  Viewer = 'Viewer',
+  Uploader = 'Uploader',
   GuestUploader = 'GuestUploader',
+  ContributorUploader = 'ContributorUploader',
+  Downloader = 'Downloader',
 }
-
-export const orgRoles = [RoleName.Viewer, RoleName.SeqViewer, RoleName.Uploader];
-
-export const projectRoles = [
-  RoleName.Viewer,
-  RoleName.SeqViewer,
-  RoleName.Uploader,
-  RoleName.ProjectAnalyst,
-];

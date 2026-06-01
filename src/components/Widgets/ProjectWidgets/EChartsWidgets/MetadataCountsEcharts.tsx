@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -20,6 +20,7 @@ import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
 interface MetadataCountWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
@@ -38,6 +39,10 @@ const CHART_COLORS = {
 function stripOwnerSuffix(value: string): string {
   return value.split('-Owner')[0];
 }
+
+const ROW_HEIGHT = 45;
+const MIN_HEIGHT = 240;
+const MAX_HEIGHT = 1200;
 
 function MetadataCounts({
   projectAbbrev,
@@ -100,6 +105,8 @@ function MetadataCounts({
       missingCounts: allLabels.map((l) => missingMap.get(l) ?? 0),
     };
   }, [filteredData, field, categoryFieldStable]);
+
+  const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
@@ -236,19 +243,28 @@ function MetadataCounts({
 
   return (
     <Box>
-      <Tooltip title={`Samples with populated ${field} values`} arrow placement="top">
-        <Typography variant="h5" paddingBottom={3} color="primary">
-          {title ?? `${field} counts`}
-        </Typography>
-      </Tooltip>
-
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
+        {title ?? `${field} counts`}
+        <ChartInfoTooltip
+          text={`Samples with populated ${field} values \n Click legend items to show/hide · Hover for details`}
+        />
+      </Typography>
       {errorMessage ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: '240px' }} />
+        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
       {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}

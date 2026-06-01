@@ -20,8 +20,12 @@ import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
 const HAS_SEQ = 'Has_sequences';
+const ROW_HEIGHT = 45;
+const MIN_HEIGHT = 240;
+const MAX_HEIGHT = 1200;
 
 const CHART_COLORS = {
   AVAILABLE: Theme.SecondaryMain,
@@ -99,6 +103,8 @@ function HasSeq({
       missingCounts: allLabels.map((l) => missingMap.get(l) ?? 0),
     };
   }, [filteredData, categoryFieldStable]);
+
+  const chartHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, categories.length * ROW_HEIGHT));
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
@@ -226,8 +232,18 @@ function HasSeq({
 
   return (
     <Box>
-      <Typography variant="h5" paddingBottom={3} color="primary">
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         Sequence counts
+        <ChartInfoTooltip />
       </Typography>
 
       {errorMessage ? (
@@ -236,7 +252,7 @@ function HasSeq({
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: '240px' }} />
+        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
       {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}

@@ -42,11 +42,11 @@ import LoadingState from '../../constants/loadingState';
 import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
-import { RoleV2SeededName } from '../../permissions/roles';
+import { Roles } from '../../permissions/roles';
 import type { Project, ProjectDocument } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { formatFileSize } from '../../utilities/renderUtils';
+import { formatBytes } from '../../utilities/renderUtils';
 import { downloadDocument, getDocuments } from '../../utilities/resourceUtils';
 import type { PrimeReactColumnDefinition } from '../../utilities/tableUtils';
 import SearchInput from '../TableComponents/SearchInput';
@@ -89,7 +89,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     if (user && projectDetails) {
       const hasUploadEditDeletePermission: boolean = hasPermissionV2ByRole(
         user,
-        RoleV2SeededName.ProjectAnalyst,
+        Roles.ProjectAnalyst,
         projectDetails?.abbreviation,
         RecordTypes.PROJECT,
       );
@@ -128,7 +128,7 @@ function ProjectDocuments(props: ProjectDocumentsProps) {
     {
       field: 'fileSize',
       header: 'File Size',
-      body: (rowData: ProjectDocument) => formatFileSize(rowData.fileSize, true),
+      body: (rowData: ProjectDocument) => formatBytes(rowData.fileSize, true),
       hidden: false,
     },
     { field: 'createdBy', header: 'Created By', hidden: false },

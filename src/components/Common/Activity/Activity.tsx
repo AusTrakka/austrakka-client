@@ -42,6 +42,7 @@ const emptyDetailInfo: ActivityDetailInfo = {
   'Event initiated by': '',
   Resource: '',
   'Resource Type': '',
+  'Error Message': '',
   Context: [],
   Details: null,
 };
@@ -100,6 +101,7 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
       Resource: node.data.resourceUniqueString,
       'Resource Type': node.data.resourceType,
       Context: node.data.visChain,
+      'Error Message': node.data.errorMessage,
       Details: node.data.data || null,
     };
     setDetailInfo(info);

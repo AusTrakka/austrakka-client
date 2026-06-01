@@ -10,6 +10,7 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
+import { RolesV1 } from '../../permissions/roles';
 import type { Group, GroupRole, Organisation } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { getGroupList, getOrganisation } from '../../utilities/resourceUtils';
@@ -26,7 +27,7 @@ const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole
       (groupRole: GroupRole) =>
         (groupRole.group.name === `${orgAbbrev}-Owner` ||
           groupRole.group.name === `${orgAbbrev}-Everyone`) &&
-        groupRole.role.name === 'Viewer',
+        groupRole.role.name === RolesV1.GroupViewer,
     )
     .sort((a: any, b: any) => {
       // Owner group first

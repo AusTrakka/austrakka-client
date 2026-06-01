@@ -15,6 +15,7 @@ import { formatDate } from '../../../../utilities/dateUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { selectGoodTimeBinUnitEchart } from '../../../../utilities/plotUtils';
 import type { EpiCurveChartProps } from '../EpiCurveChart';
+import ChartInfoTooltip from './InfoToolTip';
 
 const TIME_AXIS_FIELD = 'Date_coll';
 
@@ -255,6 +256,8 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         name: isGrouped ? fv || '(unknown)' : undefined,
         type: 'bar' as const,
         stack: 'total',
+        barGap: '0%',
+        barCategoryGap: '1px',
         data: countsByField[fv].map((count, i) => [new Date(bucketKeys[i]).getTime(), count]),
         itemStyle: isGrouped
           ? { color: colorMap?.[fv] ?? NULL_COLOUR }
@@ -290,8 +293,18 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
 
   return (
     <Box>
-      <Typography variant="h5" paddingBottom={2} color="primary">
+      <Typography
+        variant="h5"
+        paddingBottom={2}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         {`Samples (${timeFilterDescription})`}
+        <ChartInfoTooltip />
       </Typography>
 
       {errorMessage && (
@@ -307,7 +320,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         ref={plotDiv}
         style={{
           width: '100%',
-          height: tall ? '514px' : '320px',
+          height: tall ? '474px' : '320px',
           display: hasCompleteData(data?.loadingState) && !errorMessage ? 'block' : 'none',
         }}
       />
