@@ -12,5 +12,6 @@ export interface ActivityDetailInfo {
   Resource: string;
   'Resource Type': string;
   Context?: VisChainEntry[];
+  'Error Message': string;
   Details: any;
 }
