@@ -12,15 +12,18 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
-import { useAppSelector } from '../../../../app/store';
+import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type ProjectWidgetProps from '../../../../types/projectwidget.props';
+import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
+
+const STABLE_CAT_FIELD = 'Owner_group';
+const STABLE_CAT_FIELD_LABEL = 'Organisation';
 
 const HAS_SEQ = 'Has_sequences';
 const ROW_HEIGHT = 45;
@@ -32,10 +35,7 @@ const CHART_COLORS = {
   MISSING: Theme.SecondaryYellow,
 } as const;
 
-interface HasSeqWidgetProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData?: Sample[];
-  timeFilterObject?: DataTableFilterMeta;
+interface HasSeqWidgetProps extends GenericWidgetProps {
   categoryField?: string;
 }
 
@@ -44,16 +44,25 @@ function stripOwnerSuffix(value: string): string {
 }
 
 function HasSeq({
-  projectAbbrev,
+  widgetType,
+  identifier,
   filteredData,
   timeFilterObject,
   categoryField,
 }: HasSeqWidgetProps) {
-  const categoryFieldStable = categoryField ?? 'Owner_group';
-  const axisTitleStable = categoryField ?? 'Organisation';
+  const categoryFieldStable = categoryField ?? STABLE_CAT_FIELD;
+  const axisTitleStable = categoryField ?? STABLE_CAT_FIELD_LABEL;
 
   const { navigate } = useStableNavigate();
-  const data = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev), shallowEqual);
+  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
+  const metadataSelector = useMemo(
+    () => (state: RootState) => {
+      return selectProjectMetadata(state, identifier);
+    },
+    [identifier],
+  );
+
+  const data = useAppSelector(metadataSelector, shallowEqual);
 
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -67,11 +76,11 @@ function HasSeq({
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
-        return `Field ${categoryFieldStable} not found in project`;
-      if (!fieldNames.includes(HAS_SEQ)) return `Field ${HAS_SEQ} not found in project`;
+        return `Field ${categoryFieldStable} not found in ${widgetType}`;
+      if (!fieldNames.includes(HAS_SEQ)) return `Field ${HAS_SEQ} not found in ${widgetType}`;
     }
     return null;
-  }, [data, categoryFieldStable]);
+  }, [data, categoryFieldStable, widgetType]);
 
   const { categories, availableCounts, missingCounts } = useMemo(() => {
     const availableMap = new Map<string, number>();

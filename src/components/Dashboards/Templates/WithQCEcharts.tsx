@@ -94,7 +94,8 @@ function WithQC(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <HasSeqEchart
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
               />
