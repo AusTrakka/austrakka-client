@@ -3,6 +3,7 @@ import ApgDashboard from '../components/Dashboards/Templates/ApgDashboard';
 import ApgEchartsDashboard from '../components/Dashboards/Templates/ApgEchartsDashboard';
 import DefaultDashboard from '../components/Dashboards/Templates/DefaultDashboard';
 import DemoDashboard from '../components/Dashboards/Templates/DemoDashboard';
+import DemoEchartsDashboard from '../components/Dashboards/Templates/DemoEchartsDashboard';
 import LabDataDashboard from '../components/Dashboards/Templates/LabDataDashboard';
 import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
@@ -18,6 +19,7 @@ import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplat
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'public-health-default': PublicHealthDefaultDashboard,
   demo: DemoDashboard,
+  'demo-echarts': DemoEchartsDashboard,
   default: DefaultDashboard,
   snap: SnapDashboard,
   vicdh: VicDHDashboard,

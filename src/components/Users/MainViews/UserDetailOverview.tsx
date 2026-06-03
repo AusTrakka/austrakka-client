@@ -31,7 +31,7 @@ import {
   updatePendingChanges,
   updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
-import { bytesToMB } from '../../../utilities/renderUtils';
+import { formatBytes } from '../../../utilities/renderUtils';
 import { processPrivilegeChanges } from '../privilegeBulkApiCall';
 import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
@@ -336,7 +336,7 @@ function UserDetailOverview() {
                       Monthly Quota:
                     </Typography>
                     <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      {bytesToMB(user.monthlyBytesQuota)} MB
+                      {formatBytes(user.monthlyBytesQuota, true)}
                     </Typography>
                   </Stack>
                   <Stack direction="row" justifyContent="space-between">
@@ -344,7 +344,7 @@ function UserDetailOverview() {
                       Quota Used:
                     </Typography>
                     <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                      {bytesToMB(user.monthlyBytesUsed)} MB
+                      {formatBytes(user.monthlyBytesUsed, true)}
                     </Typography>
                   </Stack>
                 </Stack>
