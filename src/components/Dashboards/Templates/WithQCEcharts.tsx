@@ -33,7 +33,8 @@ function WithQC(props: ProjectDashboardTemplateProps) {
             <Card sx={{ ...cardStyle }}>
               <CardContent>
                 <EpiCurveEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   dateFilterField={dateFilterField}

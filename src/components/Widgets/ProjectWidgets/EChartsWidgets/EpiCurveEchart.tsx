@@ -6,15 +6,15 @@ import {
   type ProjectMetadataState,
   selectProjectMetadata,
 } from '../../../../app/projectMetadataSlice';
-import { useAppSelector } from '../../../../app/store';
+import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
+import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { NULL_COLOUR, resolveColourMap } from '../../../../utilities/colourUtils';
 import { formatDate } from '../../../../utilities/dateUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { selectGoodTimeBinUnitEchart } from '../../../../utilities/plotUtils';
-import type { EpiCurveChartProps } from '../EpiCurveChart';
 import ChartInfoTooltip from './InfoToolTip';
 
 const TIME_AXIS_FIELD = 'Date_coll';
@@ -72,24 +72,38 @@ function formatBucketLabel(d: Date, timeBinSpec: { unit: string; step: number })
   }
 }
 
+interface EpiCurveChartProps extends GenericWidgetProps {
+  preferredColourField?: string;
+  dateFilterField: string;
+  colourMapping?: Record<string, string> | undefined;
+  tall?: boolean;
+}
+
 function EpiCurveEchart(props: EpiCurveChartProps) {
-  const { projectAbbrev, filteredData, timeFilterObject, dateFilterField, tall } = props;
-  const data: ProjectMetadataState | null = useAppSelector((state) =>
-    selectProjectMetadata(state, projectAbbrev),
+  const { widgetType, identifier, filteredData, timeFilterObject, dateFilterField, tall } = props;
+  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
+
+  const metadataSelector = useMemo(
+    () => (state: RootState) => {
+      return selectProjectMetadata(state, identifier);
+    },
+    [identifier],
   );
+
+  const data: ProjectMetadataState | null = useAppSelector(metadataSelector);
 
   const plotDiv = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
   const errorMessage = useMemo(() => {
     if (data?.fields && !data.fields.some((f) => f.columnName === TIME_AXIS_FIELD)) {
-      return `Field ${TIME_AXIS_FIELD} not found in project`;
+      return `Field ${TIME_AXIS_FIELD} not found in ${widgetType}`;
     }
     if (data?.loadingState === MetadataLoadingState.ERROR) {
       return data.errorMessage ?? 'Unknown error';
     }
     return null;
-  }, [data?.fields, data?.loadingState, data?.errorMessage]);
+  }, [data?.fields, data?.loadingState, data?.errorMessage, widgetType]);
 
   const timeFilterDescription = useMemo(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
