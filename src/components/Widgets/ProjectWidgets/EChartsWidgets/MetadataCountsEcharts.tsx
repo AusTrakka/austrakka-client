@@ -12,20 +12,17 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
-import { useAppSelector } from '../../../../app/store';
+import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type ProjectWidgetProps from '../../../../types/projectwidget.props';
+import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
-interface MetadataCountWidgetProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData: Sample[];
-  timeFilterObject: DataTableFilterMeta;
+interface MetadataCountWidgetProps extends GenericWidgetProps {
   field: string;
   categoryField?: string;
   title?: string;
@@ -45,7 +42,8 @@ const MIN_HEIGHT = 240;
 const MAX_HEIGHT = 1200;
 
 function MetadataCounts({
-  projectAbbrev,
+  widgetType,
+  identifier,
   filteredData,
   timeFilterObject,
   field,
@@ -56,7 +54,15 @@ function MetadataCounts({
   const categoryFieldStable = categoryField ?? 'Owner_group';
   const axisTitleStable = categoryField ?? 'Organisation';
 
-  const data = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev), shallowEqual);
+  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
+  const metadataSelector = useMemo(
+    () => (state: RootState) => {
+      return selectProjectMetadata(state, identifier);
+    },
+    [identifier],
+  );
+
+  const data = useAppSelector(metadataSelector, shallowEqual);
 
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -70,11 +76,11 @@ function MetadataCounts({
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
-        return `Field ${categoryFieldStable} not found in project`;
-      if (!fieldNames.includes(field)) return `Field ${field} not found in project`;
+        return `Field ${categoryFieldStable} not found in ${widgetType}`;
+      if (!fieldNames.includes(field)) return `Field ${field} not found in ${widgetType}`;
     }
     return null;
-  }, [data, field, categoryFieldStable]);
+  }, [data, field, categoryFieldStable, widgetType]);
 
   const { categories, availableCounts, missingCounts } = useMemo(() => {
     const availableMap = new Map<string, number>();

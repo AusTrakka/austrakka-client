@@ -82,7 +82,8 @@ function WithQC(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <MetadataCountsEcharts
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Date_coll"

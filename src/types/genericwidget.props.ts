@@ -9,6 +9,6 @@ export enum WidgetType {
 export default interface GenericWidgetProps {
   widgetType: WidgetType;
   identifier: string;
-  filteredData?: Sample[];
+  filteredData: Sample[];
   timeFilterObject?: DataTableFilterMeta;
 }
