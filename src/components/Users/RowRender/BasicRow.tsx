@@ -5,7 +5,7 @@ import type { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import './RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
-import { bytesToMB } from '../../../utilities/renderUtils';
+import { formatBytes } from '../../../utilities/renderUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 
 interface BasicRowProps {
@@ -65,7 +65,7 @@ function BasicRow(props: BasicRowProps) {
                 </div>
               );
             case typeof value === 'number':
-              return `${bytesToMB(value)} MB per month`;
+              return `${formatBytes(value, true)} per month`;
             default:
               return value;
           }

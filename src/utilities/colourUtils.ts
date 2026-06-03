@@ -92,7 +92,7 @@ export function resolveColourMap(
 
   const scale = discreteColorSchemes[schemeName];
   scale.domain(fieldValues);
-  return Object.fromEntries(fieldValues.map((v) => [v, scale(v)]));
+  return Object.fromEntries(fieldValues.map((v) => [v, isNullOrEmpty(v) ? NULL_COLOUR : scale(v)]));
 }
 
 export function getColorArrayFromScheme(schemeName: string, count: number): string[] {
