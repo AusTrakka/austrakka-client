@@ -12,10 +12,10 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
-import { useAppSelector } from '../../../../app/store';
+import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type ProjectWidgetProps from '../../../../types/projectwidget.props';
+import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
@@ -23,27 +23,36 @@ import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
-interface MetadataValueEchartWidgetProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData: Sample[];
-  timeFilterObject?: DataTableFilterMeta;
+interface MetadataValueEchartWidgetProps extends GenericWidgetProps {
   field: string;
   title?: string | undefined;
   colorScheme?: string | undefined;
   colorMapping?: Record<string, string> | undefined;
 }
 
-function MetadataValuePieEchart({
-  projectAbbrev,
-  filteredData,
-  timeFilterObject,
-  field,
-  title,
-  colorScheme,
-  colorMapping,
-}: MetadataValueEchartWidgetProps) {
+function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
+  const {
+    widgetType,
+    identifier,
+    filteredData = [],
+    timeFilterObject,
+    field,
+    title,
+    colorScheme,
+    colorMapping,
+  } = props;
+
   const { navigate } = useStableNavigate();
-  const data = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev), shallowEqual);
+
+  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
+  const metadataSelector = useMemo(
+    () => (state: RootState) => {
+      return selectProjectMetadata(state, identifier);
+    },
+    [identifier],
+  );
+
+  const data = useAppSelector(metadataSelector, shallowEqual);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const errorMessage = useMemo(() => {
@@ -57,10 +66,10 @@ function MetadataValuePieEchart({
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(field))
-        return `Field ${field} not found in project. Add this field to the project to see data.`;
+        return `Field ${field} not found in ${widgetType}. Add this field to the ${widgetType} to see data.`;
     }
     return null;
-  }, [data, field]);
+  }, [data, field, widgetType]);
 
   const pieData = useMemo(() => {
     const countMap = new Map<string, number>();

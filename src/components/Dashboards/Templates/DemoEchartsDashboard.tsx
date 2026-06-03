@@ -1,6 +1,7 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
+import { WidgetType } from '../../../types/genericwidget.props';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
 import HasSeqEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
@@ -87,7 +88,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   field="State"
@@ -103,7 +105,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   field="Serotype"
