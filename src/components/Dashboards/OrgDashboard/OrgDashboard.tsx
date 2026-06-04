@@ -1,4 +1,3 @@
-import { Box, Card, CardContent, Chip } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
@@ -11,12 +10,10 @@ import {
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-import { cardStyle } from '../../../styles/dashboardStyles';
-import HasSeqEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
-import ProjectsTotal from '../../Widgets/UserWidgets/ProjectsTotal/ProjectsTotal';
-import UserOverview from '../../Widgets/UserWidgets/UserOverview/UserOverview';
 
-const TESTING_GROUP_CX = 10;
+// TODO: Dispatch request for org metadata, unless OrganisationOverview component is already doing this
+
+const TESTING_GROUP_CTX = 10;
 
 interface OrgDashboardProps {
   orgAbbrev: string;
@@ -24,7 +21,7 @@ interface OrgDashboardProps {
 
 function OrgDashboard(props: OrgDashboardProps) {
   const { orgAbbrev } = props;
-  const groupContext = TESTING_GROUP_CX;
+  const groupContext = TESTING_GROUP_CTX;
   const { token, tokenLoading } = useApi();
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const dispatch = useAppDispatch();
@@ -49,7 +46,6 @@ function OrgDashboard(props: OrgDashboardProps) {
 
   return (
     <Grid container spacing={2}>
-      <Chip label="success" color="success" variant="outlined" />
       <Grid
         container
         size={12}
@@ -62,13 +58,13 @@ function OrgDashboard(props: OrgDashboardProps) {
           minHeight: '100%',
         }}
       >
-        {isSamplesLoading ? (
+        {isSamplesLoading || !allFieldsLoaded ? (
           <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center">
             Loading...
           </Grid>
-        ) : null}
-        {/* Preliminary template for gathering feedback */}
-        {!isSamplesLoading ? <Grid></Grid> : null}
+        ) : (
+          <Grid>{metadata ? 'Metadata loaded' : 'No metadata available'}</Grid>
+        )}
       </Grid>
     </Grid>
   );

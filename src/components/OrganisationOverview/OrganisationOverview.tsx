@@ -17,6 +17,7 @@ import { getGroupList, getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
+import OrgDashboard from '../Dashboards/OrgDashboard/OrgDashboard';
 import OrganisationSamples from './OrganisationSamples';
 import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
@@ -203,6 +204,9 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <Activity recordType="Organisation" rGuid={organisation.globalId} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={3}>
+        <OrgDashboard orgAbbrev={orgAbbrev} />
       </TabPanel>
     </>
   );
