@@ -9,8 +9,8 @@ import {
 import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
+import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
 import { NULL_COLOUR, resolveColourMap } from '../../../../utilities/colourUtils';
 import { formatDate } from '../../../../utilities/dateUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
@@ -72,7 +72,7 @@ function formatBucketLabel(d: Date, timeBinSpec: { unit: string; step: number })
   }
 }
 
-interface EpiCurveChartProps extends GenericWidgetProps {
+interface EpiCurveChartProps extends GenericMetadataWidgetProps {
   preferredColourField?: string;
   dateFilterField: string;
   colourMapping?: Record<string, string> | undefined;

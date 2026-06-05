@@ -1,8 +1,8 @@
 import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
-import { WidgetType } from '../../../types/genericwidget.props';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import { WidgetType } from '../../../types/widget.props';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
 import HasSeqEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
 import MetadataCountsEcharts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';

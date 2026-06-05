@@ -16,13 +16,13 @@ import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
+import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
-interface MetadataCountWidgetProps extends GenericWidgetProps {
+interface MetadataCountWidgetProps extends GenericMetadataWidgetProps {
   field: string;
   categoryField?: string;
   title?: string;

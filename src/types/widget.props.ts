@@ -6,7 +6,7 @@ export enum WidgetType {
   Organisation = 'organisation',
 }
 
-export default interface GenericWidgetProps {
+export interface GenericMetadataWidgetProps {
   widgetType: WidgetType;
   identifier: string;
   filteredData: Sample[];

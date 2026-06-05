@@ -15,15 +15,15 @@ import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type GenericWidgetProps from '../../../../types/genericwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
+import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
-interface MetadataValueEchartWidgetProps extends GenericWidgetProps {
+interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
   title?: string | undefined;
   colorScheme?: string | undefined;
