@@ -343,7 +343,9 @@ export const groupMetadataSlice = createSlice({
 
     builder.addCase(fetchGroupFields.pending, (state, action) => {
       const { groupId } = action.meta.arg;
+      const orgAbbrev = state.data[groupId]?.orgAbbrev;
       state.data[groupId] = groupMetadataInitialStateCreator(groupId);
+      state.data[groupId].orgAbbrev = orgAbbrev; // restore after reset
       state.data[groupId].loadingState = MetadataLoadingState.AWAITING_FIELDS;
     });
 
