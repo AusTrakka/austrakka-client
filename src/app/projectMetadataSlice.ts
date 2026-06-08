@@ -118,20 +118,10 @@ const getProjectLatestActivityTime = createAsyncThunk(
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
 
-    //biome-ignore lint/suspicious/noConsole: navigation staleness debug
-    console.log(
-      `[getProjectLatestActivityTime] Navigation staleness check triggered for ${projectAbbrev}`,
-    );
-
     const response = await getLatestActivityTime('Project', token!, projectAbbrev);
     if (response.status !== 'Success') {
       return rejectWithValue(response.error);
     }
-
-    //biome-ignore lint/suspicious/noConsole: navigation staleness debug
-    console.log(
-      `[getProjectLatestActivityTime] ${projectAbbrev} — server timestamp: ${response.data}`,
-    );
 
     return fulfillWithValue<FetchLatestActivityTimeResponse>({ timestamp: response.data! });
   },
@@ -147,45 +137,24 @@ const fetchProjectInfo = createAsyncThunk(
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
 
-    //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-    console.log(`[fetchProjectInfo] Starting for ${projectAbbrev}`);
-
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
-    //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-    console.log(`[fetchProjectInfo] fieldsResponse status: ${fieldsResponse.status}`);
     if (fieldsResponse.status !== 'Success') {
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.error(`[fetchProjectInfo] Fields failed:`, fieldsResponse.error);
       return rejectWithValue(fieldsResponse.error);
     }
 
     const viewsResponse = await getProjectView(projectAbbrev, token!);
-    //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-    console.log(`[fetchProjectInfo] viewsResponse status: ${viewsResponse.status}`);
     if (viewsResponse.status !== 'Success') {
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.error(`[fetchProjectInfo] Views failed:`, viewsResponse.error);
       return rejectWithValue(viewsResponse.error);
     }
     if (!viewsResponse.data) {
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.error(`[fetchProjectInfo] No views data for ${projectAbbrev}`);
       return rejectWithValue(`No project views found for ${projectAbbrev}`);
     }
 
     const projectSettingsResponse = await getProjectDetails(projectAbbrev, token!);
-    //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-    console.log(
-      `[fetchProjectInfo] projectSettingsResponse status: ${projectSettingsResponse.status}`,
-    );
     if (projectSettingsResponse.status !== 'Success') {
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.error(`[fetchProjectInfo] Project settings failed:`, projectSettingsResponse.error);
       return rejectWithValue(projectSettingsResponse.error);
     }
 
-    //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-    console.log(`[fetchProjectInfo] All requests succeeded for ${projectAbbrev}, fulfilling`);
     return fulfillWithValue<FetchProjectInfoResponse>({
       mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
@@ -230,25 +199,12 @@ const pollProjectStaleness = createAsyncThunk(
     const { token } = state.projectMetadataState;
     const currentTimestamp = state.projectMetadataState.data[projectAbbrev]?.dataLoadTime;
 
-    //biome-ignore lint/suspicious/noConsole: staleness polling debug
-    console.log(
-      `[pollProjectStaleness] Checking staleness for ${projectAbbrev}. Local timestamp: ${currentTimestamp}`,
-    );
-
     const response = await getLatestActivityTime('Project', token!, projectAbbrev);
     if (response.status !== 'Success') {
-      //biome-ignore lint/suspicious/noConsole: staleness polling debug
-      console.log(`[pollProjectStaleness] Request failed for ${projectAbbrev}:`, response.error);
       return rejectWithValue(response.error);
     }
 
     const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
-
-    //biome-ignore lint/suspicious/noConsole: staleness polling debug
-    console.log(
-      `[pollProjectStaleness] ${projectAbbrev} — server: ${response.data}, local: ${currentTimestamp}, isStale: ${isStale}`,
-    );
-
     return { projectAbbrev, isStale };
   },
 );
@@ -422,17 +378,7 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(`[fetchProjectInfo.fulfilled] Reducer entered for ${projectAbbrev}`);
-
       const { mergeAlgorithm, fields, view } = action.payload as FetchProjectInfoResponse;
-
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(
-        `[fetchProjectInfo.fulfilled] mergeAlgorithm: ${mergeAlgorithm}, fields count: ${fields?.length}, view:`,
-        view,
-      );
 
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
 
@@ -452,9 +398,6 @@ export const projectMetadataSlice = createSlice({
         );
       });
 
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(`[fetchProjectInfo.fulfilled] viewFieldMap calculated:`, viewFieldMap);
-
       state.data[projectAbbrev].fields = [];
       fields.forEach((projField: ProjectField) => {
         viewFieldMap[projField.fieldName].forEach((columnName: string) => {
@@ -466,17 +409,7 @@ export const projectMetadataSlice = createSlice({
         });
       });
 
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(
-        `[fetchProjectInfo.fulfilled] fields set, count: ${state.data[projectAbbrev].fields?.length}`,
-      );
-      //biome-ignore lint/suspicious/noConsole: view debug
-      console.log(`[fetchProjectInfo.fulfilled] view object:`, JSON.parse(JSON.stringify(view)));
       view.viewFields = view.fields.flatMap((field) => viewFieldMap[field]);
-
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(`[fetchProjectInfo.fulfilled] view.viewFields:`, view.viewFields);
-
       state.data[projectAbbrev].view = view;
       state.data[projectAbbrev].viewLoadingState = LoadingState.IDLE;
       state.data[projectAbbrev].fieldUniqueValues = {};
@@ -484,13 +417,7 @@ export const projectMetadataSlice = createSlice({
         state.data[projectAbbrev].fieldUniqueValues![field.columnName!] = null;
       });
 
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(`[fetchProjectInfo.fulfilled] About to set FIELDS_LOADED`);
-
       state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
-
-      //biome-ignore lint/suspicious/noConsole: fetchProjectInfo debug
-      console.log(`[fetchProjectInfo.fulfilled] Done`);
     });
 
     builder.addCase(fetchProjectInfo.rejected, (state, action) => {
@@ -562,10 +489,6 @@ export const projectMetadataSlice = createSlice({
     builder.addCase(pollProjectStaleness.fulfilled, (state, action) => {
       const { projectAbbrev, isStale } = action.payload as PollProjectStalenessResponse;
       if (isStale) {
-        //biome-ignore lint/suspicious/noConsole: staleness polling debug
-        console.log(
-          `[pollProjectStaleness] Stale data detected for ${projectAbbrev} — setting staleDataAvailable`,
-        );
         state.data[projectAbbrev].isDataStale = true;
       }
     });

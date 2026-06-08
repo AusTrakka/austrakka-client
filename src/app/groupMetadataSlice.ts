@@ -103,28 +103,16 @@ const pollGroupStaleness = createAsyncThunk(
     const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
     const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
 
-    //biome-ignore lint/suspicious/noConsole: staleness polling debug
-    console.log(
-      `[pollGroupStaleness] Checking staleness for group ${groupId} (${orgAbbrev}). Local timestamp: ${currentTimestamp}`,
-    );
-
     if (!orgAbbrev) {
       return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
     }
 
     const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
     if (response.status !== 'Success') {
-      //biome-ignore lint/suspicious/noConsole: staleness polling debug
-      console.log(`[pollGroupStaleness] Request failed for group ${groupId}:`, response.error);
       return rejectWithValue(response.error);
     }
 
     const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
-
-    //biome-ignore lint/suspicious/noConsole: staleness polling debug
-    console.log(
-      `[pollGroupStaleness] group ${groupId} — server: ${response.data}, local: ${currentTimestamp}, isStale: ${isStale}`,
-    );
 
     return { groupId, isStale };
   },
@@ -441,10 +429,6 @@ export const groupMetadataSlice = createSlice({
     builder.addCase(pollGroupStaleness.fulfilled, (state, action) => {
       const { groupId, isStale } = action.payload as PollGroupStalenessResponse;
       if (isStale) {
-        //biome-ignore lint/suspicious/noConsole: staleness polling debug
-        console.log(
-          `[pollGroupStaleness] Stale data detected for group ${groupId} — setting staleDataAvailable`,
-        );
         state.data[groupId].isDataStale = true;
       }
     });

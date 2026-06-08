@@ -112,12 +112,10 @@ function OrgSamplesTable(props: SamplesProps) {
     selectAwaitingGroupMetadata(state, groupContext),
   );
 
-  console.log(groupContext);
   const isDataStale = useAppSelector((state) => selectGroupStaleDataAvailable(state, groupContext));
 
   const handleRefresh = () => {
     if (!token) return;
-    console.log(groupContext);
     dispatch(fetchGroupMetadata({ groupId: groupContext, token, orgAbbrev }));
   };
 
