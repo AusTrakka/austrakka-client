@@ -27,6 +27,7 @@ export interface GroupMetadataState {
   metadata: Sample[] | null;
   emptyColumns: string[];
   errorMessage: string | null;
+  isDataStale: boolean;
 }
 
 const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState => ({
@@ -39,6 +40,7 @@ const groupMetadataInitialStateCreator = (groupId: number): GroupMetadataState =
   metadata: null,
   emptyColumns: [],
   errorMessage: null,
+  isDataStale: false,
 });
 
 interface GroupMetadataSliceState {
@@ -83,6 +85,50 @@ interface FetchLatestActivityTimeParams {
 interface FetchLatestActivityTimeResponse {
   timestamp: string;
 }
+
+interface PollGroupStalenessResponse {
+  groupId: number;
+  isStale: boolean;
+}
+
+const pollGroupStaleness = createAsyncThunk(
+  'groupMetadata/pollGroupStaleness',
+  async (
+    params: { groupId: number },
+    { rejectWithValue, getState },
+  ): Promise<PollGroupStalenessResponse | unknown> => {
+    const { groupId } = params;
+    const state = getState() as RootState;
+    const { token } = state.groupMetadataState;
+    const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
+    const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
+
+    //biome-ignore lint/suspicious/noConsole: staleness polling debug
+    console.log(
+      `[pollGroupStaleness] Checking staleness for group ${groupId} (${orgAbbrev}). Local timestamp: ${currentTimestamp}`,
+    );
+
+    if (!orgAbbrev) {
+      return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
+    }
+
+    const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
+    if (response.status !== 'Success') {
+      //biome-ignore lint/suspicious/noConsole: staleness polling debug
+      console.log(`[pollGroupStaleness] Request failed for group ${groupId}:`, response.error);
+      return rejectWithValue(response.error);
+    }
+
+    const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
+
+    //biome-ignore lint/suspicious/noConsole: staleness polling debug
+    console.log(
+      `[pollGroupStaleness] group ${groupId} — server: ${response.data}, local: ${currentTimestamp}, isStale: ${isStale}`,
+    );
+
+    return { groupId, isStale };
+  },
+);
 
 const getGroupLatestActivityTime = createAsyncThunk(
   'groupMetadata/getGroupLatestActivityTime',
@@ -166,6 +212,43 @@ listenerMiddleware.startListening({
   },
 });
 
+const GROUP_POLL_INTERVAL_MS = 30 * 1000;
+
+listenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
+    if (!groupId) return false;
+
+    const prev = (previousState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    const curr = (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
+
+    return prev !== MetadataLoadingState.DATA_LOADED && curr === MetadataLoadingState.DATA_LOADED;
+  },
+  effect: async (action, listenerApi) => {
+    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
+
+    while (true) {
+      const cancelled = await Promise.race([
+        listenerApi.delay(GROUP_POLL_INTERVAL_MS).then(() => false),
+        listenerApi
+          .take(
+            (_a, currentState) =>
+              (currentState as RootState).groupMetadataState.data[groupId]?.loadingState !==
+              MetadataLoadingState.DATA_LOADED,
+          )
+          .then(() => true),
+      ]);
+
+      if (cancelled) break;
+
+      const loadingState = (listenerApi.getState() as RootState).groupMetadataState.data[groupId]
+        ?.loadingState;
+      if (loadingState !== MetadataLoadingState.DATA_LOADED) break;
+
+      listenerApi.dispatch(pollGroupStaleness({ groupId }));
+    }
+  },
+});
 // Launch fetchGroupFields when FETCH_REQUESTED is set (initial load, explicit reload request, or stale data check)
 const FETCH_REQUESTED_ACTIONS = [
   'groupMetadata/fetchGroupMetadata',
@@ -352,6 +435,23 @@ export const groupMetadataSlice = createSlice({
       state.data[groupId].loadingState = MetadataLoadingState.ERROR;
       state.data[groupId].errorMessage = `Unable to load metadata: ${action.payload}`;
     });
+
+    builder.addCase(pollGroupStaleness.fulfilled, (state, action) => {
+      const { groupId, isStale } = action.payload as PollGroupStalenessResponse;
+      if (isStale) {
+        //biome-ignore lint/suspicious/noConsole: staleness polling debug
+        console.log(
+          `[pollGroupStaleness] Stale data detected for group ${groupId} — setting staleDataAvailable`,
+        );
+        state.data[groupId].isDataStale = true;
+      }
+    });
+    builder.addCase(pollGroupStaleness.rejected, (_, action) => {
+      //biome-ignore lint/suspicious/noConsole: interim error logging
+      console.error(
+        `Staleness poll failed for group ${action.meta.arg.groupId}: ${action.payload}`,
+      );
+    });
   },
 });
 
@@ -369,6 +469,11 @@ export const selectGroupMetadata: (
 ) => GroupMetadataState | null = (state, groupId) => {
   if (!groupId) return null;
   return state.groupMetadataState.data[groupId] ?? null;
+};
+
+export const selectGroupStaleDataAvailable = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) return false;
+  return state.groupMetadataState.data[groupId]?.isDataStale ?? false;
 };
 
 export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
