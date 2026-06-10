@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { MapSupportInfo } from '../components/Maps/mapMeta';
-import LoadingState from '../constants/loadingState';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
@@ -38,7 +37,6 @@ export interface ProjectMetadataState {
   fields: ProjectViewField[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
   view: ProjectView | null;
-  viewLoadingState: LoadingState;
   metadata: Sample[] | null;
   emptyColumns: string[];
   errorMessage: string | null;
@@ -54,7 +52,6 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   fields: null,
   fieldUniqueValues: null,
   view: null,
-  viewLoadingState: LoadingState.IDLE,
   metadata: null,
   emptyColumns: [],
   errorMessage: null,
@@ -333,7 +330,6 @@ export const projectMetadataSlice = createSlice({
       // Set view and initialise unique values
       view.viewFields = view.fields.flatMap((field) => viewFieldMap[field]);
       state.data[projectAbbrev].view = view;
-      state.data[projectAbbrev].viewLoadingState = LoadingState.IDLE;
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field.columnName!] = null;
@@ -350,7 +346,6 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchDataView.pending, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-      state.data[projectAbbrev].viewLoadingState = LoadingState.LOADING;
       state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
     });
 
@@ -395,14 +390,12 @@ export const projectMetadataSlice = createSlice({
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
 
-      state.data[projectAbbrev].viewLoadingState = LoadingState.SUCCESS;
       state.data[projectAbbrev].dataLoadTime = new Date().toISOString();
       state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
     });
 
     builder.addCase(fetchDataView.rejected, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-      state.data[projectAbbrev].viewLoadingState = LoadingState.ERROR;
       state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
       state.data[projectAbbrev].errorMessage = `Unable to load project data: ${action.payload}`;
     });
