@@ -33,7 +33,14 @@ export function RoleAutocomplete(props: RoleAutocompleteProps) {
             icon={<CheckBoxOutlineBlank />}
             checkedIcon={<CheckBox />}
           />
-          {option.name}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <InfoTooltip
+              title={option.description || 'No description'}
+              fontSize="inherit"
+              color={Theme.PrimaryGrey500}
+            />
+            <span>{option.name}</span>
+          </Box>
         </li>
       )}
       renderTags={(tagValue, getTagProps) =>

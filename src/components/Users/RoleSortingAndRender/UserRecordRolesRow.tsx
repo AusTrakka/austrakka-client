@@ -1,11 +1,14 @@
 import { Cancel } from '@mui/icons-material';
 import { Box, Chip, Collapse, Stack, TableCell, TableRow, Typography } from '@mui/material';
-import type { RecordRole } from '../../../types/dtos';
+import { Theme } from '../../../assets/themes/theme';
+import type { RecordRole, Role } from '../../../types/dtos';
+import { InfoTooltip } from '../RowRender/InfoTooltip';
 
 interface UserGroupRolesRowProps {
   recordType: string;
   recordName: string;
   recordGlobalId: string;
+  allRoles: Role[];
   recordRoles: RecordRole[];
   onSelectionRemove: (
     role: RecordRole,
@@ -21,6 +24,7 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
   const {
     recordType,
     recordName,
+    allRoles,
     recordRoles,
     recordGlobalId,
     onSelectionRemove,
@@ -49,7 +53,16 @@ function UserRecordRolesRow(props: UserGroupRolesRowProps) {
               {recordRoles.map((role) => (
                 <Chip
                   key={`${recordName}-${role.roleName}`}
-                  label={role.roleName}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <InfoTooltip
+                        title={allRoles?.find((r) => r.name === role.roleName)?.description || ''}
+                        fontSize="inherit"
+                        color={editing ? Theme.PrimaryGrey200 : Theme.PrimaryGrey500} // Adjust fallback error color string/theme as needed
+                      />
+                      {role.roleName}
+                    </Box>
+                  }
                   color={editing ? 'error' : 'primary'}
                   variant={editing ? 'filled' : 'outlined'}
                   onDelete={

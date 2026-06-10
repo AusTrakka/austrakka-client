@@ -157,6 +157,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
             key={`${recordName}-${roles.join('-')}`}
             recordName={recordName}
             recordGlobalId={recordGlobalId}
+            allRoles={rolesForV2 ?? []}
             recordRoles={roles}
             isOpen={openGroupRoles.includes(recordType)}
             editing={editing}
