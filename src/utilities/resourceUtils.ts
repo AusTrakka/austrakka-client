@@ -10,6 +10,7 @@ import type {
   Project,
   ProjectDocument,
   ProjectSummary,
+  Role,
   Tree,
   TreeVersion,
   UserPatchV2,
@@ -194,7 +195,8 @@ export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/RolesV2', token);
+export const getRoles = (token: string): Promise<ResponseObject<Role[]>> =>
+  callGET('/api/RolesV2', token);
 
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) =>

@@ -1,12 +1,14 @@
 import { CheckBox, CheckBoxOutlineBlank } from '@mui/icons-material';
-import { Autocomplete, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Box, Checkbox, Chip, TextField, Tooltip } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
-import type { RolesV2 } from '../../../types/dtos';
+import { Theme } from '../../../assets/themes/theme';
+import type { Role } from '../../../types/dtos';
+import { InfoTooltip } from '../RowRender/InfoTooltip';
 
 interface RoleAutocompleteProps {
-  roles: RolesV2[];
-  selectedRoles: RolesV2[] | null;
-  setSelectedRoles: Dispatch<SetStateAction<RolesV2[] | null>>;
+  roles: Role[];
+  selectedRoles: Role[] | null;
+  setSelectedRoles: Dispatch<SetStateAction<Role[] | null>>;
 }
 
 export function RoleAutocomplete(props: RoleAutocompleteProps) {
