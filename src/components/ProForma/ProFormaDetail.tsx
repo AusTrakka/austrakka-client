@@ -149,8 +149,9 @@ function ProFormaDetail() {
 
   const versionListing = (version: ProFormaVersion): string => {
     if (version.isCurrent) {
-      return `${isoDateLocalDateNoTime(version.created.toString())} (latest)${version.originalFileName ? ` : ${version.originalFileName}` : ''
-        }`;
+      return `${isoDateLocalDateNoTime(version.created.toString())} (latest)${
+        version.originalFileName ? ` : ${version.originalFileName}` : ''
+      }`;
     }
     return `${isoDateLocalDateNoTime(version.created.toString())} : ${version.originalFileName}`;
   };
