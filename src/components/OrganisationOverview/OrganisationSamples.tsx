@@ -21,7 +21,9 @@ interface OrganisationSampleProps {
   groupStatus: LoadingState;
   groupStatusMessage: string;
   canShare: boolean;
+  canChangeOwnership: boolean;
   orgAbbrev: string;
+  orgName: string;
 }
 
 interface OrgGroupSelectorProps {
@@ -79,7 +81,16 @@ function OrgGroupSelector(props: OrgGroupSelectorProps) {
 }
 
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const { defaultGroup, groups, groupStatus, groupStatusMessage, canShare, orgAbbrev } = props;
+  const {
+    defaultGroup,
+    groups,
+    groupStatus,
+    groupStatusMessage,
+    canShare,
+    canChangeOwnership,
+    orgAbbrev,
+    orgName,
+  } = props;
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
 
   if (groupStatus === LoadingState.ERROR) {
@@ -107,7 +118,9 @@ function OrganisationSamples(props: OrganisationSampleProps) {
         groupContext={selectedGroup!.groupId}
         groupContextName={selectedGroup!.name}
         canShare={canShare}
+        canChangeOwnership={canChangeOwnership}
         orgAbbrev={orgAbbrev}
+        orgName={orgName}
       />
     </Box>
   );
