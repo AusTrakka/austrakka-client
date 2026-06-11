@@ -26,7 +26,7 @@ import { ScopeDefinitions } from '../../../constants/scopes';
 import { getRecordNamesWithScope } from '../../../permissions/accessTable';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
-import { changeSampleCustodian } from '../../../utilities/resourceUtils';
+import { changeSampleOwner } from '../../../utilities/resourceUtils';
 
 interface OrgSampleOwnershipProps {
   open: boolean;
@@ -52,7 +52,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
   const user: UserSliceState = useAppSelector(selectUserState);
   const [selectableOrgGroups, setSelectableOrgGroups] = useState<string[]>([]);
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [newCustodian, setNewCustodian] = useState<string>('');
+  const [newOwner, setNewOwner] = useState<string>('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const dispatch = useAppDispatch();
@@ -72,21 +72,21 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
   const handleSubmit = async () => {
     setStatus(LoadingState.LOADING);
     if (
-      newCustodian &&
+      newOwner &&
       token &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE
     ) {
       try {
-        const response: ResponseObject = await changeSampleCustodian(
+        const response: ResponseObject = await changeSampleOwner(
           token,
           selectedIds,
           orgAbbrev,
-          newCustodian,
+          newOwner,
         );
         if (response.status === ResponseType.Success) {
           setStatusMessage(
-            'Samples custodian changed successfully. These samples will no longer appear under the current organisations samples.',
+            'Samples transferred successfully. These samples will no longer appear under the current organisations samples.',
           );
           setStatus(LoadingState.SUCCESS);
           // Refresh to get updated sample list (delayed to allow sampleFlat update)
@@ -95,21 +95,19 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
           });
           dispatch(reloadGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
         } else {
-          setStatusMessage(
-            response.message || 'Failed to change samples custodian. Please try again.',
-          );
+          setStatusMessage(response.message || 'Failed to transfer samples. Please try again.');
           setStatus(LoadingState.ERROR);
         }
       } catch {
         setStatus(LoadingState.ERROR);
         setStatusMessage(
-          'An unexpected error occurred while changing samples custodian. Please try again.',
+          'An unexpected error occurred while transferring samples. Please try again.',
         );
       }
     } else {
       setStatus(LoadingState.ERROR);
       setStatusMessage(
-        'An unexpected error occurred while changing samples custodian. Please try again.',
+        'An unexpected error occurred while transferring samples. Please try again.',
       );
     }
   };
@@ -163,10 +161,11 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
             <DialogTitle>
               <SwapHorizIcon fontSize="large" color="primary" />
               <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
-                Change Sample Custodian
+                Transfer samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Are you sure you want to change the custodian for the selected samples?
+                Are you sure you want to transfer the selected samples to another organisation? You
+                will not be able to reverse this action yourself.
               </Typography>
             </DialogTitle>
             <DialogContent>
@@ -178,7 +177,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
                 {selectedSamples.length !== 1 ? 's' : ''} selected
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Current custodian organisation
+                Current organisation
               </Typography>
               <Typography variant="body1" sx={{ marginBottom: 2 }}>
                 <b>{orgName}</b> ({orgAbbrev})
@@ -188,11 +187,11 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
                 sx={{ minWidth: 220, maxWidth: 400, minHeight: 20, marginBottom: 2 }}
                 error={false}
               >
-                <InputLabel shrink>Select new custodian organisation</InputLabel>
+                <InputLabel shrink>Select new organisation</InputLabel>
                 <Select
-                  value={newCustodian}
-                  onChange={(e) => setNewCustodian(e.target.value)}
-                  label="Select new custodian"
+                  value={newOwner}
+                  onChange={(e) => setNewOwner(e.target.value)}
+                  label="Select new organisation"
                   disabled={status === LoadingState.LOADING}
                 >
                   {selectableOrgGroups.length > 0 ? (
@@ -215,7 +214,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
                 variant="contained"
                 color="success"
                 onClick={handleSubmit}
-                disabled={!newCustodian || status === LoadingState.LOADING}
+                disabled={!newOwner || status === LoadingState.LOADING}
                 startIcon={
                   !(status === LoadingState.LOADING) ? (
                     <CheckCircle />
@@ -224,7 +223,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
                   )
                 }
               >
-                Change Custodian
+                Transfer samples
               </Button>
             </DialogActions>
           </>

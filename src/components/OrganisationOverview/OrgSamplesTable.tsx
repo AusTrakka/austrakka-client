@@ -291,7 +291,7 @@ function OrgSamplesTable(props: SamplesProps) {
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {true && (
-            <Tooltip title="Change sample custodian" placement="top" arrow>
+            <Tooltip title="Transfer samples" placement="top" arrow>
               <IconButton onClick={handleChangeOwnerClick}>
                 <SwapHorizontalCircle />
               </IconButton>

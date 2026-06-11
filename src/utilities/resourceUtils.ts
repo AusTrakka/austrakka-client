@@ -235,7 +235,7 @@ export const getOrganisation = (
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
 
-export const changeSampleCustodian = (
+export const changeSampleOwner = (
   token: string,
   seqIds: string[],
   currentOrgAbbrev: string,

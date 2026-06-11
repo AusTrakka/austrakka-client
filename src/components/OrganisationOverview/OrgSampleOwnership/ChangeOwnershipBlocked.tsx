@@ -24,8 +24,7 @@ export function ChangeOwnershipBlocked(props: ChangeOwnershipBlockedProps) {
           Incorrect permissions
         </Typography>
         <Typography variant="body1">
-          Only users with <strong>ChangeSamplesOwner</strong> scope in the organisation can change
-          sample custodian.
+          You do not have permission to transfer samples to another organisation.
         </Typography>
       </>
     );
@@ -36,7 +35,7 @@ export function ChangeOwnershipBlocked(props: ChangeOwnershipBlockedProps) {
           No samples selected
         </Typography>
         <Typography variant="body1">
-          Please select at least one sample in the table to change custodian.
+          Please select at least one sample in the table to transfer.
         </Typography>
       </>
     );
@@ -44,10 +43,10 @@ export function ChangeOwnershipBlocked(props: ChangeOwnershipBlockedProps) {
     content = (
       <>
         <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
-          Error changing sample custodian
+          Error transferring samples
         </Typography>
         <Typography variant="body1">
-          There was an error initiating sample custodian change.
+          There was an error transferring the selected samples.
         </Typography>
       </>
     );
