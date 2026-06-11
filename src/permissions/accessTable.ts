@@ -83,3 +83,25 @@ export function hasPermissionV2ByRole(
 
   return hasRoleInRecord(user.scopes, role, recordName, recordType);
 }
+
+export function getRecordNamesWithScope(
+  user: UserSliceState,
+  recordType: RecordTypes,
+  scope: string,
+  excludeName?: string,
+): string[] {
+  const recordsOfType = user.scopes.filter((item) => item.recordType === recordType);
+  const allRecordRoles = recordsOfType.flatMap((item) => item.recordRoles);
+
+  const recordRolesWithScope = allRecordRoles.filter((recordRole) =>
+    recordRole.roles.some((role) => role.scopes.includes(scope)),
+  );
+
+  // Optionally exclude a specific record by name (e.g. the current org)
+  const filteredRecordRoles = excludeName
+    ? recordRolesWithScope.filter((recordRole) => recordRole.recordName !== excludeName)
+    : recordRolesWithScope;
+
+  // Return the names of the records that have the required scope
+  return filteredRecordRoles.map((recordRole) => recordRole.recordName);
+}

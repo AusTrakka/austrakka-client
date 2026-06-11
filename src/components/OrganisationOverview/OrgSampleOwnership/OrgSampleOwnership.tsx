@@ -20,7 +20,10 @@ import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
+import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
+import { ScopeDefinitions } from '../../../constants/scopes';
+import { getRecordNamesWithScope } from '../../../permissions/accessTable';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
 import { changeSampleCustodian } from '../../../utilities/resourceUtils';
@@ -55,22 +58,16 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (user?.groupRoles) {
-      // TODO:  - Update this to check for LinkSamplesToOrg scope in recipient org
-      const orgsWithContributorInOwnerGroup = user.groupRoles
-        .filter(
-          (item) =>
-            item.role.name === 'Contributor' &&
-            item.group.name.endsWith('-Owner') &&
-            item.group.organisation.abbreviation !== orgAbbrev, // Filter out current org
-        )
-        .map((item) => item.group.organisation.abbreviation);
-
-      const orgGroupsThatCanBeSelected: string[] = orgsWithContributorInOwnerGroup;
-
+    if (user?.scopes) {
+      const orgGroupsThatCanBeSelected = getRecordNamesWithScope(
+        user,
+        RecordTypes.ORGANISATION,
+        ScopeDefinitions.LinkSamplesToOrg,
+        orgAbbrev,
+      );
       setSelectableOrgGroups(orgGroupsThatCanBeSelected);
     }
-  }, [user, orgAbbrev]);
+  }, [orgAbbrev, user]);
 
   const handleSubmit = async () => {
     setStatus(LoadingState.LOADING);
