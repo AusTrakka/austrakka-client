@@ -40,6 +40,7 @@ export interface ProjectMetadataState {
   metadata: Sample[] | null;
   emptyColumns: string[];
   errorMessage: string | null;
+  isDataStale: boolean;
 }
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
@@ -55,6 +56,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   metadata: null,
   emptyColumns: [],
   errorMessage: null,
+  isDataStale: false,
 });
 
 interface ProjectMetadataSliceState {
@@ -99,6 +101,11 @@ interface FetchLatestActivityTimeResponse {
   timestamp: string;
 }
 
+interface PollProjectStalenessResponse {
+  projectAbbrev: string;
+  isStale: boolean;
+}
+
 const getProjectLatestActivityTime = createAsyncThunk(
   'projectMetadata/getProjectLatestActivityTime',
   async (
@@ -107,10 +114,12 @@ const getProjectLatestActivityTime = createAsyncThunk(
   ): Promise<FetchLatestActivityTimeResponse | unknown> => {
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
+
     const response = await getLatestActivityTime('Project', token!, projectAbbrev);
     if (response.status !== 'Success') {
       return rejectWithValue(response.error);
     }
+
     return fulfillWithValue<FetchLatestActivityTimeResponse>({ timestamp: response.data! });
   },
 );
@@ -124,10 +133,12 @@ const fetchProjectInfo = createAsyncThunk(
   ): Promise<FetchProjectInfoResponse | unknown> => {
     const { projectAbbrev } = params;
     const { token } = (getState() as RootState).projectMetadataState;
+
     const fieldsResponse = await getProjectFields(projectAbbrev, token!);
     if (fieldsResponse.status !== 'Success') {
       return rejectWithValue(fieldsResponse.error);
     }
+
     const viewsResponse = await getProjectView(projectAbbrev, token!);
     if (viewsResponse.status !== 'Success') {
       return rejectWithValue(viewsResponse.error);
@@ -135,10 +146,12 @@ const fetchProjectInfo = createAsyncThunk(
     if (!viewsResponse.data) {
       return rejectWithValue(`No project views found for ${projectAbbrev}`);
     }
+
     const projectSettingsResponse = await getProjectDetails(projectAbbrev, token!);
     if (projectSettingsResponse.status !== 'Success') {
       return rejectWithValue(projectSettingsResponse.error);
     }
+
     return fulfillWithValue<FetchProjectInfoResponse>({
       mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
@@ -157,7 +170,6 @@ const fetchDataView = createAsyncThunk(
     const state = getState() as RootState;
     const { token } = state.projectMetadataState;
     const response = await getProjectViewData(projectAbbrev, token!);
-
     if (response.ok) {
       try {
         const data: Sample[] = await response.json();
@@ -170,8 +182,29 @@ const fetchDataView = createAsyncThunk(
   },
 );
 
-// These listeners launch thunks in response to state changes or actions
-// The state update triggered by the listener will be the thunk's pending action
+// NEW: Polling thunk — runs on a timer while the user is on-page in DATA_LOADED.
+// Intentionally does not touch loadingState; only sets staleDataAvailable.
+// Failures are silent (logged only) so polling errors don't disrupt the UI.
+const pollProjectStaleness = createAsyncThunk(
+  'projectMetadata/pollProjectStaleness',
+  async (
+    params: { projectAbbrev: string },
+    { rejectWithValue, getState },
+  ): Promise<PollProjectStalenessResponse | unknown> => {
+    const { projectAbbrev } = params;
+    const state = getState() as RootState;
+    const { token } = state.projectMetadataState;
+    const currentTimestamp = state.projectMetadataState.data[projectAbbrev]?.dataLoadTime;
+
+    const response = await getLatestActivityTime('Project', token!, projectAbbrev);
+    if (response.status !== 'Success') {
+      return rejectWithValue(response.error);
+    }
+
+    const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
+    return { projectAbbrev, isStale };
+  },
+);
 
 // Launch getProjectLatestActivityTime in response to CHECK_FOR_UPDATE state
 listenerMiddleware.startListening({
@@ -236,6 +269,55 @@ listenerMiddleware.startListening({
   },
 });
 
+//INFO: Polling listener.
+// Starts when any project enters DATA_LOADED. Dispatches pollProjectStaleness every poll interval.
+// Cancels automatically when loadingState leaves DATA_LOADED for any reason
+// (user triggers reload via banner, navigation triggers CHECK_FOR_UPDATE).
+const POLL_INTERVAL_MS = 2 * 60 * 1000;
+
+listenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    const projectAbbrev =
+      (action as any)?.meta?.arg?.projectAbbrev ?? (action as any)?.payload?.projectAbbrev;
+    if (!projectAbbrev) return false;
+
+    const prev = (previousState as RootState).projectMetadataState.data[projectAbbrev]
+      ?.loadingState;
+    const curr = (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState;
+
+    return prev !== MetadataLoadingState.DATA_LOADED && curr === MetadataLoadingState.DATA_LOADED;
+  },
+  effect: async (action, listenerApi) => {
+    const projectAbbrev =
+      (action as any)?.meta?.arg?.projectAbbrev ?? (action as any)?.payload?.projectAbbrev;
+
+    while (true) {
+      // Race the interval delay against a state change that means we should stop.
+      // listenerApi.take resolves when the predicate returns true — we use it as
+      // a cancellation signal by throwing, which breaks the while loop via the catch.
+      const cancelled = await Promise.race([
+        listenerApi.delay(POLL_INTERVAL_MS).then(() => false),
+        listenerApi
+          .take(
+            (_a, currentState) =>
+              (currentState as RootState).projectMetadataState.data[projectAbbrev]?.loadingState !==
+              MetadataLoadingState.DATA_LOADED,
+          )
+          .then(() => true),
+      ]);
+
+      if (cancelled) break;
+
+      // Defensive re-check in case state changed between the race resolving and here
+      const loadingState = (listenerApi.getState() as RootState).projectMetadataState.data[
+        projectAbbrev
+      ]?.loadingState;
+      if (loadingState !== MetadataLoadingState.DATA_LOADED) break;
+
+      listenerApi.dispatch(pollProjectStaleness({ projectAbbrev }));
+    }
+  },
+});
 export const projectMetadataSlice = createSlice({
   name: 'projectMetadata',
   initialState,
@@ -297,7 +379,6 @@ export const projectMetadataSlice = createSlice({
 
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
 
-      // Sort fields by columnOrder and set state
       fields.sort((a, b) => {
         if (a.columnOrder !== b.columnOrder) {
           return a.columnOrder - b.columnOrder;
@@ -306,7 +387,6 @@ export const projectMetadataSlice = createSlice({
       });
       state.data[projectAbbrev].projectFields = fields;
 
-      // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
       fields.forEach((field) => {
         viewFieldMap[field.fieldName] = calculateViewFieldNames(
@@ -315,7 +395,6 @@ export const projectMetadataSlice = createSlice({
         );
       });
 
-      // Calculate view fields (ProjectViewFields) for the project as a whole
       state.data[projectAbbrev].fields = [];
       fields.forEach((projField: ProjectField) => {
         viewFieldMap[projField.fieldName].forEach((columnName: string) => {
@@ -327,7 +406,6 @@ export const projectMetadataSlice = createSlice({
         });
       });
 
-      // Set view and initialise unique values
       view.viewFields = view.fields.flatMap((field) => viewFieldMap[field]);
       state.data[projectAbbrev].view = view;
       state.data[projectAbbrev].fieldUniqueValues = {};
@@ -399,6 +477,21 @@ export const projectMetadataSlice = createSlice({
       state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
       state.data[projectAbbrev].errorMessage = `Unable to load project data: ${action.payload}`;
     });
+
+    // NEW: Polling reducers — only touch staleDataAvailable, nothing else
+    builder.addCase(pollProjectStaleness.fulfilled, (state, action) => {
+      const { projectAbbrev, isStale } = action.payload as PollProjectStalenessResponse;
+      if (isStale) {
+        state.data[projectAbbrev].isDataStale = true;
+      }
+    });
+    builder.addCase(pollProjectStaleness.rejected, (_, action) => {
+      // Silent fail — poll errors don't surface to the user
+      //biome-ignore lint/suspicious/noConsole: interim error logging
+      console.error(
+        `Staleness poll failed for ${action.meta.arg.projectAbbrev}: ${action.payload}`,
+      );
+    });
   },
 });
 
@@ -409,12 +502,11 @@ export default projectMetadataSlice.reducer;
 export const { fetchProjectMetadata } = projectMetadataSlice.actions;
 
 // selectors
-
 export const selectProjectMetadata: (
   state: RootState,
   projectAbbrev: string | null | undefined,
 ) => ProjectMetadataState | null = (state, projectAbbrev) => {
-  if (!projectAbbrev) return null; // should not be 0, which is fine
+  if (!projectAbbrev) return null;
   return state.projectMetadataState.data[projectAbbrev!] ?? null;
 };
 
@@ -444,4 +536,12 @@ export const selectProjectMergeAlgorithm = (
 ) => {
   if (!projectAbbrev) return null;
   return state.projectMetadataState.data[projectAbbrev]?.mergeAlgorithm;
+};
+
+export const selectProjectStaleDataAvailable = (
+  state: RootState,
+  projectAbbrev: string | undefined,
+) => {
+  if (!projectAbbrev) return false;
+  return state.projectMetadataState.data[projectAbbrev]?.isDataStale ?? false;
 };

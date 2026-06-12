@@ -12,6 +12,7 @@ import {
   AlertTitle,
   Backdrop,
   Box,
+  Button,
   CircularProgress,
   Dialog,
   IconButton,
@@ -36,6 +37,7 @@ import {
   type GroupMetadataState,
   selectAwaitingGroupMetadata,
   selectGroupMetadata,
+  selectGroupStaleDataAvailable,
 } from '../../app/groupMetadataSlice';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -118,6 +120,13 @@ function OrgSamplesTable(props: SamplesProps) {
   const isSamplesLoading: boolean = useAppSelector((state) =>
     selectAwaitingGroupMetadata(state, groupContext),
   );
+
+  const isDataStale = useAppSelector((state) => selectGroupStaleDataAvailable(state, groupContext));
+
+  const handleRefresh = () => {
+    if (!token) return;
+    dispatch(fetchGroupMetadata({ groupId: groupContext, token, orgAbbrev }));
+  };
 
   useEffect(() => {
     if (
@@ -398,6 +407,19 @@ function OrgSamplesTable(props: SamplesProps) {
 
   return (
     <div className="datatable-container-org">
+      {isDataStale && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this organisation.
+        </Alert>
+      )}
       <Backdrop
         sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
