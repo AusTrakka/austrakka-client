@@ -276,7 +276,7 @@ listenerMiddleware.startListening({
 // Starts when any project enters DATA_LOADED. Dispatches pollProjectStaleness every poll interval.
 // Cancels automatically when loadingState leaves DATA_LOADED for any reason
 // (user triggers reload via banner, navigation triggers CHECK_FOR_UPDATE).
-const POLL_INTERVAL_MS = 5 * 60 * 1000;
+const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
