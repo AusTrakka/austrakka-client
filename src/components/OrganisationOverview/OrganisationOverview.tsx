@@ -8,8 +8,14 @@ import { NavigationProvider } from '../../app/NavigationContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
-import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
+import { ScopeDefinitions } from '../../constants/scopes';
+import {
+  hasPermission,
+  hasPermissionV2ByScope,
+  PermissionLevel,
+} from '../../permissions/accessTable';
 import { RolesV1 } from '../../permissions/roles';
 import type { Group, GroupRole, Organisation } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
@@ -68,6 +74,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [orgDetailsError, setOrgDetailsError] = useState(false);
   // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
+  const [canChangeOwnership, setCanChangeOwnership] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);
 
@@ -80,6 +87,19 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
     if (user.loading === LoadingState.SUCCESS && (ownerOrgGroupName || user.admin)) {
       // give it an empty string if only the admin check passed in the or condition above
       setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
+    }
+  }, [orgAbbrev, user]);
+
+  useEffect(() => {
+    const checkChangeOwnershipPermissions = () =>
+      hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.ChangeSamplesOwner,
+        orgAbbrev,
+        RecordTypes.ORGANISATION,
+      );
+    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
+      setCanChangeOwnership(checkChangeOwnershipPermissions());
     }
   }, [orgAbbrev, user]);
 
@@ -195,7 +215,9 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           groupStatus={groupsStatus}
           groupStatusMessage={groupStatusMessage}
           canShare={canShare}
+          canChangeOwnership={canChangeOwnership}
           orgAbbrev={orgAbbrev}
+          orgName={organisation.name}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>

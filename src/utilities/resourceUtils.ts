@@ -235,6 +235,20 @@ export const getOrganisation = (
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
 
+export const changeSampleOwner = (
+  token: string,
+  seqIds: string[],
+  currentOrgAbbrev: string,
+  newOwnerAbbrev: string,
+  clientSessionId?: string,
+) =>
+  callPATCH(
+    `/api/OrganisationV2/${currentOrgAbbrev}/samplesOwner`,
+    token,
+    { seqIds, newOwnerAbbrev },
+    clientSessionId,
+  );
+
 export const postFeedback = (
   feedbackPostDto: FeedbackPost,
   token: string,

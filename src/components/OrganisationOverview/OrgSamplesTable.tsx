@@ -3,6 +3,7 @@ import {
   IosShare,
   RemoveCircleOutline,
   Settings,
+  SwapHorizontalCircle,
   Visibility,
   VisibilityOffOutlined,
 } from '@mui/icons-material';
@@ -53,6 +54,8 @@ import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
+import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
@@ -65,11 +68,14 @@ interface SamplesProps {
   groupContext: number;
   groupContextName: string | undefined;
   canShare: boolean;
+  canChangeOwnership: boolean;
   orgAbbrev: string;
+  orgName: string;
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { groupContext, groupContextName, canShare, orgAbbrev } = props;
+  const { groupContext, groupContextName, canShare, canChangeOwnership, orgAbbrev, orgName } =
+    props;
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -99,6 +105,9 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
   const [shareBlocked, setShareBlocked] = useState(false);
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
+  const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
+  const [changeOwnerBlocked, setChangeOwnerBlocked] = useState(false);
+  const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
 
   const dispatch = useAppDispatch();
 
@@ -187,6 +196,14 @@ function OrgSamplesTable(props: SamplesProps) {
   }, [selectedIds, canShare]);
 
   useEffect(() => {
+    if (selectedIds.length === 0 || canChangeOwnership === false) {
+      setChangeOwnerBlocked(true);
+    } else {
+      setChangeOwnerBlocked(false);
+    }
+  }, [selectedIds, canChangeOwnership]);
+
+  useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
     } else if (hasCompleteData(metadata?.loadingState)) {
@@ -246,6 +263,14 @@ function OrgSamplesTable(props: SamplesProps) {
     }
   };
 
+  const handleChangeOwnerClick = () => {
+    if (changeOwnerBlocked) {
+      setOpenChangeOwnerBlocked(true);
+    } else {
+      setOpenOwnershipDialog(true);
+    }
+  };
+
   const header = (
     <div
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
@@ -265,6 +290,13 @@ function OrgSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {true && (
+            <Tooltip title="Transfer samples" placement="top" arrow>
+              <IconButton onClick={handleChangeOwnerClick}>
+                <SwapHorizontalCircle />
+              </IconButton>
+            </Tooltip>
+          )}
           {showShare && (
             <>
               <Tooltip title="Share or unshare samples" placement="top" arrow>
@@ -413,6 +445,25 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
+          groupContext={groupContext}
+        />
+      )}
+      {openChangeOwnerBlocked && (
+        <ChangeOwnershipBlocked
+          canChangeOwnership={canChangeOwnership}
+          openChangeOwnershipBlocked={openChangeOwnerBlocked}
+          setOpenChangeOwnershipBlocked={setOpenChangeOwnerBlocked}
+          selectedIdsLength={selectedIds.length}
+        />
+      )}
+      {openOwnershipDialog && (
+        <OrgSampleOwnership
+          open={openOwnershipDialog}
+          onClose={() => setOpenOwnershipDialog(false)}
+          selectedSamples={selectedSamples}
+          selectedIds={selectedIds}
+          orgAbbrev={orgAbbrev}
+          orgName={orgName}
           groupContext={groupContext}
         />
       )}
