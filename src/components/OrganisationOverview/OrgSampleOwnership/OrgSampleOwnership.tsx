@@ -86,7 +86,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
         );
         if (response.status === ResponseType.Success) {
           setStatusMessage(
-            'Samples transferred successfully. These samples will no longer appear under the current organisations samples.',
+            `Samples transferred successfully. These samples will no longer appear under the current organisation's samples.`,
           );
           setStatus(LoadingState.SUCCESS);
           // Refresh to get updated sample list (delayed to allow sampleFlat update)
