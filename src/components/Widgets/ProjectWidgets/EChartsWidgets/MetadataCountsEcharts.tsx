@@ -14,7 +14,6 @@ import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
-import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
@@ -63,10 +62,6 @@ function MetadataCounts({
   const errorMessage = useMemo(() => {
     if (data?.loadingState === MetadataLoadingState.ERROR)
       return data.errorMessage ?? 'Unknown error';
-    if (data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.ERROR)
-      return `Error loading ${categoryFieldStable} values`;
-    if (data?.fieldLoadingStates?.[field] === LoadingState.ERROR)
-      return `Error loading ${field} values`;
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
@@ -239,7 +234,7 @@ function MetadataCounts({
     return () => observer.disconnect();
   }, []);
 
-  const fieldLoaded = data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.SUCCESS;
+  const loaded = hasCompleteData(data?.loadingState);
 
   return (
     <Box>
@@ -264,10 +259,10 @@ function MetadataCounts({
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
+        loaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
-      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
+      {!loaded && <div>Loading...</div>}
     </Box>
   );
 }

@@ -1,6 +1,5 @@
 // This implements AusTrakka data retrieval and Vega plot rendering
 // Implements elements common to all plot types
-
 import { Alert, Grid } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -10,7 +9,7 @@ import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import { hasAnyData, hasCompleteData } from '../../constants/metadataLoadingState';
+import { hasCompleteData } from '../../constants/metadataLoadingState';
 import type { Sample } from '../../types/sample.interface';
 import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
@@ -136,7 +135,12 @@ function VegaDataPlot(props: VegaDataPlotProps) {
     };
 
     // For now we recreate view if data changes, not just if spec changes
-    if (spec && hasAnyData(metadata?.loadingState) && mutableFilteredData && plotDiv?.current) {
+    if (
+      spec &&
+      hasCompleteData(metadata?.loadingState) &&
+      mutableFilteredData &&
+      plotDiv?.current
+    ) {
       // TODO it appears this may trigger too often - twice in a row
       createVegaView();
     }
@@ -146,7 +150,7 @@ function VegaDataPlot(props: VegaDataPlotProps) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
-    if (hasAnyData(metadata?.loadingState) && Object.keys(currentFilters).length === 0) {
+    if (hasCompleteData(metadata?.loadingState) && Object.keys(currentFilters).length === 0) {
       setMutableFilteredData(JSON.parse(JSON.stringify(metadata!.metadata!)));
       setLoading(false);
     }

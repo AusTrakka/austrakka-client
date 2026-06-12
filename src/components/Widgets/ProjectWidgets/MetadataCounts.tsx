@@ -22,7 +22,6 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
-import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
@@ -168,14 +167,6 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
       setErrorMessage(data.errorMessage);
       return;
     }
-    if (data?.fieldLoadingStates[categoryFieldStable] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${categoryFieldStable} values`);
-      return;
-    }
-    if (data?.fieldLoadingStates[field] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${field} values`);
-      return;
-    }
     if (categoryFieldStable && data?.fields && data?.fields.length > 0) {
       const fields = data.fields!.map((_field) => _field.columnName);
       if (!fields.includes(categoryFieldStable)) {
@@ -229,22 +220,21 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
             {title ?? `${field} counts`}
           </Typography>
         </Tooltip>
-        {!errorMessage &&
-          data?.fieldLoadingStates[categoryFieldStable] === LoadingState.SUCCESS && (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showMissingOnly}
-                  onChange={(e) => setShowMissingOnly(e.target.checked)}
-                  size="small"
-                />
-              }
-              slotProps={{
-                typography: { fontSize: '0.75rem', color: 'primary' },
-              }}
-              label="Show missing only"
-            />
-          )}
+        {!errorMessage && hasCompleteData(data?.loadingState) && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showMissingOnly}
+                onChange={(e) => setShowMissingOnly(e.target.checked)}
+                size="small"
+              />
+            }
+            slotProps={{
+              typography: { fontSize: '0.75rem', color: 'primary' },
+            }}
+            label="Show missing only"
+          />
+        )}
       </Box>
       {errorMessage ? (
         <Alert severity="error">
@@ -252,7 +242,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
           {errorMessage}
         </Alert>
       ) : (
-        data?.fieldLoadingStates[categoryFieldStable] === LoadingState.SUCCESS && (
+        hasCompleteData(data?.loadingState) && (
           <Grid container spacing={2}>
             <Grid size={11}>
               <div id="#plot-container" ref={plotDiv} style={{ width: '100%' }} />

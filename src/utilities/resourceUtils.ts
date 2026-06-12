@@ -10,6 +10,7 @@ import type {
   Project,
   ProjectDocument,
   ProjectSummary,
+  ProjectView,
   Tree,
   TreeVersion,
   UserPatchV2,
@@ -115,13 +116,15 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
-export const getProjectViews = (projectAbbrev: string, token: string) =>
+
+export const getProjectView = (
+  projectAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProjectView>> =>
   callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) =>
-  callSimpleGET(
-    `/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`,
-    token,
-  );
+
+export const getProjectViewData = (projectAbbrev: string, token: string): Promise<Response> =>
+  callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
