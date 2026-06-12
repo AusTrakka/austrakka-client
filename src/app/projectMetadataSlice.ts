@@ -1,6 +1,5 @@
-import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { MapSupportInfo } from '../components/Maps/mapMeta';
-import LoadingState from '../constants/loadingState';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
@@ -10,8 +9,8 @@ import {
   getLatestActivityTime,
   getProjectDetails,
   getProjectFields,
+  getProjectView,
   getProjectViewData,
-  getProjectViews,
 } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
 import {
@@ -33,14 +32,13 @@ export interface ProjectMetadataState {
   supportedMaps: MapSupportInfo[];
   loadingState: MetadataLoadingState;
   projectFields: ProjectField[] | null;
+  // TODO: With a single complete view, ProjectViewField may be redundant with ProjectField.
+  // columnName is likely always identical to fieldName. Might need to collapse.
   fields: ProjectViewField[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
-  views: Record<number, ProjectView>;
-  viewLoadingStates: Record<number, LoadingState>;
-  viewToFetch: number;
+  view: ProjectView | null;
   metadata: Sample[] | null;
   emptyColumns: string[];
-  fieldLoadingStates: Record<string, LoadingState>;
   errorMessage: string | null;
 }
 
@@ -53,12 +51,9 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   projectFields: null,
   fields: null,
   fieldUniqueValues: null,
-  views: {},
-  viewLoadingStates: {},
-  viewToFetch: 0,
+  view: null,
   metadata: null,
   emptyColumns: [],
-  fieldLoadingStates: {},
   errorMessage: null,
 });
 
@@ -73,7 +68,6 @@ const initialState: ProjectMetadataSliceState = {
 };
 
 // Input parameters and return types (on success/fulfilled) for actions and thunks
-
 interface FetchProjectMetadataParams {
   projectAbbrev: string;
   token: string;
@@ -86,12 +80,11 @@ interface FetchProjectInfoParams {
 interface FetchProjectInfoResponse {
   mergeAlgorithm: string;
   fields: ProjectField[];
-  views: ProjectView[];
+  view: ProjectView;
 }
 
 interface FetchDataViewParams {
   projectAbbrev: string;
-  viewIndex: number; // this is the lookup index, not the viewId
 }
 
 interface FetchDataViewResponse {
@@ -135,9 +128,12 @@ const fetchProjectInfo = createAsyncThunk(
     if (fieldsResponse.status !== 'Success') {
       return rejectWithValue(fieldsResponse.error);
     }
-    const viewsResponse = await getProjectViews(projectAbbrev, token!);
+    const viewsResponse = await getProjectView(projectAbbrev, token!);
     if (viewsResponse.status !== 'Success') {
       return rejectWithValue(viewsResponse.error);
+    }
+    if (!viewsResponse.data) {
+      return rejectWithValue(`No project views found for ${projectAbbrev}`);
     }
     const projectSettingsResponse = await getProjectDetails(projectAbbrev, token!);
     if (projectSettingsResponse.status !== 'Success') {
@@ -146,7 +142,7 @@ const fetchProjectInfo = createAsyncThunk(
     return fulfillWithValue<FetchProjectInfoResponse>({
       mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
-      views: viewsResponse.data as ProjectView[],
+      view: viewsResponse.data,
     });
   },
 );
@@ -157,12 +153,11 @@ const fetchDataView = createAsyncThunk(
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
   ): Promise<FetchDataViewResponse | unknown> => {
-    const { projectAbbrev, viewIndex } = params;
+    const { projectAbbrev } = params;
     const state = getState() as RootState;
     const { token } = state.projectMetadataState;
-    const view = state.projectMetadataState.data[projectAbbrev].views[viewIndex];
+    const response = await getProjectViewData(projectAbbrev, token!);
 
-    const response = await getProjectViewData(projectAbbrev, view.id, token!);
     if (response.ok) {
       try {
         const data: Sample[] = await response.json();
@@ -232,30 +227,12 @@ listenerMiddleware.startListening({
   },
 });
 
-// Launch needed data view fetch after project info retrieved or viewToFetch changes
+// Launch data view fetch after project info retrieved
 listenerMiddleware.startListening({
-  predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read projectAbbrev
-    if (!isAnyOf(fetchProjectInfo.fulfilled, fetchDataView.fulfilled)(action)) return false;
-    const { projectAbbrev } = (action as any).meta.arg;
-    // Check that viewToFetch has incremented
-    // biome-ignore format: readability
-    const previousViewToFetch =
-      (previousState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
-    // biome-ignore format: readability
-    const viewToFetch =
-      (currentState as RootState).projectMetadataState.data[projectAbbrev]?.viewToFetch;
-    return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
-  },
+  predicate: (action) => fetchProjectInfo.fulfilled.match(action),
   effect: (action, listenerApi) => {
     const { projectAbbrev } = (action as any).meta.arg;
-    const { views, viewToFetch } = (listenerApi.getState() as RootState).projectMetadataState.data[
-      projectAbbrev
-    ];
-    // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
-    // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
-    if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
-    listenerApi.dispatch(fetchDataView({ projectAbbrev, viewIndex: viewToFetch }));
+    listenerApi.dispatch(fetchDataView({ projectAbbrev }));
   },
 });
 
@@ -274,8 +251,7 @@ export const projectMetadataSlice = createSlice({
       // If we are in any other state (i.e. partway through load), do nothing, allow the load process to complete
       if (
         state.data[projectAbbrev].loadingState === MetadataLoadingState.IDLE ||
-        state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR ||
-        state.data[projectAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+        state.data[projectAbbrev].loadingState === MetadataLoadingState.ERROR
       ) {
         // If we are refreshing from error state, clear data in the meantime
         if (state.data[projectAbbrev].loadingState !== MetadataLoadingState.IDLE) {
@@ -317,8 +293,10 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-      const { mergeAlgorithm, fields, views } = action.payload as FetchProjectInfoResponse;
+      const { mergeAlgorithm, fields, view } = action.payload as FetchProjectInfoResponse;
+
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
+
       // Sort fields by columnOrder and set state
       fields.sort((a, b) => {
         if (a.columnOrder !== b.columnOrder) {
@@ -326,8 +304,8 @@ export const projectMetadataSlice = createSlice({
         }
         return a.fieldName.localeCompare(b.fieldName, undefined, { sensitivity: 'base' });
       });
-
       state.data[projectAbbrev].projectFields = fields;
+
       // Calculate view fields from analysis labels as a map
       const viewFieldMap: Record<string, string[]> = {};
       fields.forEach((field) => {
@@ -336,44 +314,27 @@ export const projectMetadataSlice = createSlice({
           state.data[projectAbbrev].mergeAlgorithm!,
         );
       });
+
       // Calculate view fields (ProjectViewFields) for the project as a whole
-      state.data[projectAbbrev].fields = fields.flatMap((projField: ProjectField) =>
-        viewFieldMap[projField.fieldName].map((columnName: string) => ({
-          ...projField,
-          projectFieldName: projField.fieldName,
-          columnName,
-        })),
-      );
       state.data[projectAbbrev].fields = [];
       fields.forEach((projField: ProjectField) => {
         viewFieldMap[projField.fieldName].forEach((columnName: string) => {
-          const viewField: ProjectViewField = {
+          state.data[projectAbbrev].fields!.push({
             ...projField,
             projectFieldName: projField.fieldName,
             columnName,
-          };
-          state.data[projectAbbrev].fields!.push(viewField);
+          });
         });
       });
-      // Set views, and set view loading states to IDLE for all views
-      const eligibleViews = views.filter((view) => view.fields.length > 0);
-      eligibleViews.sort((a, b) => a.fields.length - b.fields.length);
-      // Calculate view fields for each view
-      eligibleViews.forEach((view) => {
-        view.viewFields = view.fields.flatMap((field) => viewFieldMap[field]);
-      });
-      state.data[projectAbbrev].views = {};
-      eligibleViews.forEach((view, index) => {
-        state.data[projectAbbrev].views![index] = view;
-        state.data[projectAbbrev].viewLoadingStates![index] = LoadingState.IDLE;
-      });
-      state.data[projectAbbrev].viewToFetch = 0;
-      // Set column loading states to IDLE for all fields, and initialise unique values
+
+      // Set view and initialise unique values
+      view.viewFields = view.fields.flatMap((field) => viewFieldMap[field]);
+      state.data[projectAbbrev].view = view;
       state.data[projectAbbrev].fieldUniqueValues = {};
       state.data[projectAbbrev].fields!.forEach((field) => {
-        state.data[projectAbbrev].fieldLoadingStates[field.columnName!] = LoadingState.IDLE;
         state.data[projectAbbrev].fieldUniqueValues![field.columnName!] = null;
       });
+
       state.data[projectAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
     });
 
@@ -384,27 +345,15 @@ export const projectMetadataSlice = createSlice({
     });
 
     builder.addCase(fetchDataView.pending, (state, action) => {
-      const { projectAbbrev, viewIndex } = action.meta.arg;
-      const { viewFields } = state.data[projectAbbrev].views[viewIndex];
-      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.LOADING;
-      // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
-      if (viewIndex === 0) {
-        state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
-      }
-      viewFields.forEach((field) => {
-        // Check per-column state; columns new in this load get LOADING status
-        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.LOADING;
-        }
-      });
+      const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
     });
 
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
-      const { projectAbbrev, viewIndex } = action.meta.arg;
+      const { projectAbbrev } = action.meta.arg;
       const { data } = action.payload as FetchDataViewResponse;
-      const { viewFields } = state.data[projectAbbrev].views[viewIndex];
+      const { viewFields } = state.data[projectAbbrev].view!;
 
-      // For Has_sequences only
       if (viewFields.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
       }
@@ -416,11 +365,9 @@ export const projectMetadataSlice = createSlice({
 
       state.data[projectAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
-      // Each returned view is a superset of the previous; we always replace the data
       state.data[projectAbbrev].metadata = data;
 
-      // Default sort data by Seq_ID, which should be consistent across views.
-      // Could be done server-side, in which case this sort operation is redundant but cheap
+      // Default sort by Seq_ID; could be done server-side
       if (
         state.data[projectAbbrev].metadata!.length > 0 &&
         state.data[projectAbbrev].metadata![0][SAMPLE_ID_FIELD]
@@ -430,63 +377,27 @@ export const projectMetadataSlice = createSlice({
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
         );
       }
-      // Calculate unique values
-      // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
-      // Would be better to do server-side, but this operation is quite fast.
-      // Note that if categorical fields are included in project sub-views, they will be
-      // recalculated per-view, to ensure consistency.
+
+      // Calculate unique values; would be better server-side but this is quite fast
       const uniqueVals = calculateUniqueValues(viewFields, state.data[projectAbbrev].fields!, data);
 
       const geoFields = state.data[projectAbbrev]
         .fields!.filter((field) => field.geoField)
         .map((field) => field.columnName!);
-
       state.data[projectAbbrev].supportedMaps = calculateSupportedMaps(uniqueVals, geoFields);
 
       viewFields.forEach((field) => {
         state.data[projectAbbrev].fieldUniqueValues![field] = uniqueVals[field];
       });
 
-      // Set SUCCESS states
-      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
-      viewFields.forEach((field) => {
-        state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.SUCCESS;
-      });
-      // Increment viewToFetch, which will trigger the next view load
-      state.data[projectAbbrev].viewToFetch = viewIndex + 1;
-      // If this is the full dataset, we are done, otherwise we are in a partial load state
-      if (viewIndex === Object.keys(state.data[projectAbbrev].views).length - 1) {
-        // NB here expect also that fields.length === state.data[projectAbbrev].fields?.length
-        state.data[projectAbbrev].dataLoadTime = new Date().toISOString();
-        state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
-      } else {
-        state.data[projectAbbrev].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
-      }
+      state.data[projectAbbrev].dataLoadTime = new Date().toISOString();
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
     });
 
     builder.addCase(fetchDataView.rejected, (state, action) => {
-      const { projectAbbrev, viewIndex } = action.meta.arg;
-      const { fields } = state.data[projectAbbrev].views[viewIndex];
-      state.data[projectAbbrev].viewLoadingStates![viewIndex] = LoadingState.ERROR;
-      // Any column not already loaded by another thunk gets an error state
-      fields.forEach((field) => {
-        if (state.data[projectAbbrev].fieldLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[projectAbbrev].fieldLoadingStates[field] = LoadingState.ERROR;
-        }
-      });
-      // If this is the first view, we are in an error state, otherwise a partial error state
-      if (viewIndex === 0) {
-        state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
-        state.data[projectAbbrev].errorMessage = `Unable to load project data: ${action.payload}`;
-      } else {
-        state.data[projectAbbrev].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
-        state.data[projectAbbrev].errorMessage =
-          `Unable to complete loading project data: ${action.payload}`;
-      }
-      // Currently we don't try to fetch more views after an error
-      // If we want to, we should incremement viewToFetch if there are views left,
-      // and in that case set PARTIAL_DATA_LOADED state instead of error states.
-      // The error state would then occur if we try the final view without success.
+      const { projectAbbrev } = action.meta.arg;
+      state.data[projectAbbrev].loadingState = MetadataLoadingState.ERROR;
+      state.data[projectAbbrev].errorMessage = `Unable to load project data: ${action.payload}`;
     });
   },
 });
@@ -525,25 +436,6 @@ export const selectProjectMetadataFields = (
 export const selectProjectMetadataError = (state: RootState, projectAbbrev: string | undefined) => {
   if (!projectAbbrev) return null;
   return state.projectMetadataState.data[projectAbbrev]?.errorMessage;
-};
-
-// Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
-// data. This includes idle and awaiting fields states.
-// Returns false if any (including partial) data loaded, or if error state
-export const selectAwaitingPartialProjectMetadata = (
-  state: RootState,
-  projectAbbrev: string | undefined,
-) => {
-  if (!projectAbbrev) return true;
-  const loadingState = state.projectMetadataState.data[projectAbbrev]?.loadingState;
-  if (!loadingState) return true;
-  return (
-    loadingState === MetadataLoadingState.IDLE ||
-    loadingState === MetadataLoadingState.FETCH_REQUESTED ||
-    loadingState === MetadataLoadingState.AWAITING_FIELDS ||
-    loadingState === MetadataLoadingState.FIELDS_LOADED ||
-    loadingState === MetadataLoadingState.AWAITING_DATA
-  );
 };
 
 export const selectProjectMergeAlgorithm = (
