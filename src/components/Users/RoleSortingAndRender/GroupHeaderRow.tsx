@@ -13,7 +13,7 @@ import {
 import './autocompleteStyleOverride.css';
 import { Theme } from '../../../assets/themes/theme';
 import RecordTypes from '../../../constants/record-type.enum';
-import type { RolesV2 } from '../../../types/dtos';
+import type { Role } from '../../../types/dtos';
 import type { MinifiedRecord, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { RecordAutocomplete } from './RecordAutocomplete';
 import { RoleAutocomplete } from './RoleAutocomplete';
@@ -24,7 +24,7 @@ interface GroupHeaderRowProps {
   handleGroupRoleToggle: (groupName: string) => void;
   editing: boolean;
   rolesErrorMessage: string | null;
-  roles: RolesV2[];
+  roles: Role[];
   empty: boolean;
   onSelectionChange: (recordType: string, assignments: RoleAssignments[]) => void;
 }
@@ -41,7 +41,7 @@ function GroupHeaderRow(props: GroupHeaderRowProps) {
     onSelectionChange,
   } = props;
 
-  const [selectedRoles, setSelectedRoles] = useState<RolesV2[] | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<Role[] | null>(null);
   const [selectedRecords, setSelectedRecords] = useState<MinifiedRecord[] | null>(null);
   const [records, setRecords] = useState<MinifiedRecord[] | null>(null);
   const [recordFetchError, setRecordFetchError] = useState<string | null>(null);
