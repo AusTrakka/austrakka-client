@@ -11,7 +11,7 @@ export function FieldLabelWithTooltip({
     return (
       <span style={{ display: 'flex', alignItems: 'center' }}>
         {readableNames[field] || field}
-        {InfoTooltip('Analysis Server Username')}
+        <InfoTooltip title="Analysis Server Username" fontSize="inherit" />
       </span>
     );
   }

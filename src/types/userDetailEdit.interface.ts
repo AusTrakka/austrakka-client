@@ -1,4 +1,4 @@
-import type { RolesV2 } from './dtos';
+import type { Role } from './dtos';
 
 export interface PendingChange {
   type: 'POST' | 'DELETE';
@@ -16,7 +16,7 @@ export interface Payload {
 
 export interface RoleAssignments {
   record: MinifiedRecord;
-  roles: RolesV2[];
+  roles: Role[];
 }
 
 export interface MinifiedRecord {

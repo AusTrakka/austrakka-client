@@ -10,6 +10,8 @@ import type {
   Project,
   ProjectDocument,
   ProjectSummary,
+  ProjectView,
+  Role,
   Tree,
   TreeVersion,
   UserPatchV2,
@@ -115,13 +117,15 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
-export const getProjectViews = (projectAbbrev: string, token: string) =>
+
+export const getProjectView = (
+  projectAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProjectView>> =>
   callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) =>
-  callSimpleGET(
-    `/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`,
-    token,
-  );
+
+export const getProjectViewData = (projectAbbrev: string, token: string): Promise<Response> =>
+  callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
@@ -194,7 +198,8 @@ export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/RolesV2', token);
+export const getRoles = (token: string): Promise<ResponseObject<Role[]>> =>
+  callGET('/api/RolesV2', token);
 
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) =>
@@ -234,6 +239,20 @@ export const getOrganisation = (
 ): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
+
+export const changeSampleOwner = (
+  token: string,
+  seqIds: string[],
+  currentOrgAbbrev: string,
+  newOwnerAbbrev: string,
+  clientSessionId?: string,
+) =>
+  callPATCH(
+    `/api/OrganisationV2/${currentOrgAbbrev}/samplesOwner`,
+    token,
+    { seqIds, newOwnerAbbrev },
+    clientSessionId,
+  );
 
 export const postFeedback = (
   feedbackPostDto: FeedbackPost,

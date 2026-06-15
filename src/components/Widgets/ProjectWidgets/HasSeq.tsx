@@ -13,7 +13,6 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
-import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
@@ -167,14 +166,6 @@ function HasSeq(props: HasSeqWidgetProps) {
       setErrorMessage(data.errorMessage);
       return;
     }
-    if (data?.fieldLoadingStates[categoryField!] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${categoryField} values`);
-      return;
-    }
-    if (data?.fieldLoadingStates[HAS_SEQ] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${HAS_SEQ} values`);
-      return;
-    }
     if (
       categoryField &&
       data?.loadingState &&
@@ -188,7 +179,7 @@ function HasSeq(props: HasSeqWidgetProps) {
         setErrorMessage(`Field ${HAS_SEQ} not found in project`);
       }
     }
-  }, [data?.loadingState, data?.fieldLoadingStates, categoryField]);
+  }, [data?.loadingState, categoryField]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -231,7 +222,7 @@ function HasSeq(props: HasSeqWidgetProps) {
         <Typography variant="h5" paddingBottom={3} color="primary">
           Sequence counts
         </Typography>
-        {!errorMessage && data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
+        {!errorMessage && hasCompleteData(data?.loadingState) && (
           <FormControlLabel
             control={
               <Switch
@@ -253,7 +244,7 @@ function HasSeq(props: HasSeqWidgetProps) {
           {errorMessage}
         </Alert>
       ) : (
-        data?.fieldLoadingStates[categoryField] === LoadingState.SUCCESS && (
+        hasCompleteData(data?.loadingState) && (
           <Grid container spacing={2}>
             <Grid size={11}>
               <div id="#plot-container" ref={plotDiv} />
