@@ -1,15 +1,23 @@
 import { Info } from '@mui/icons-material';
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import { Theme } from '../../../assets/themes/theme';
 
-export function InfoTooltip(title: string) {
+interface InfoTooltipProps {
+  title: string;
+  fontSize?: 'inherit' | 'small' | 'medium' | 'large';
+  color?: string;
+}
+
+export function InfoTooltip({ title, fontSize = 'small', color }: InfoTooltipProps) {
   return (
     <Tooltip title={title}>
-      <span>
-        <IconButton size="small" style={{ padding: 0, marginLeft: '0.5rem' }}>
-          <Info fontSize="small" style={{ color: Theme.PrimaryGrey500 }} />
-        </IconButton>
-      </span>
+      <Info
+        fontSize={fontSize}
+        sx={{
+          color: color || Theme.PrimaryGrey500,
+          verticalAlign: 'middle',
+        }}
+      />
     </Tooltip>
   );
 }

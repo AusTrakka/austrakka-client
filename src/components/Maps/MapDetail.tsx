@@ -28,7 +28,7 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import type { MapKey } from './mapMeta';
+import { type MapKey, MapLabels } from './mapMeta';
 
 interface MapDetailProps {
   navigateFunction: NavigateFunction;
@@ -153,7 +153,7 @@ function MapDetail(props: MapDetailProps) {
           >
             {data?.supportedMaps.map(([mapKey, _]) => (
               <MenuItem key={mapKey} value={mapKey}>
-                {mapKey}
+                {MapLabels[mapKey]}
               </MenuItem>
             ))}
           </Select>

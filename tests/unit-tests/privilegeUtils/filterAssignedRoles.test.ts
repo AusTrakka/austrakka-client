@@ -13,14 +13,38 @@ describe('filterAssignedRoles', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' } as MinifiedRecord,
       roles: [
-        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
-        { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+        {
+          name: 'Admin',
+          globalId: 'role1',
+          resourceTypes: [],
+          privilegeLevel: 'Root',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
+        {
+          name: 'Editor',
+          globalId: 'role2',
+          resourceTypes: [],
+          privilegeLevel: 'TrakkaAdmin',
+          roleId: 2,
+          description: '',
+          scopes: [],
+        },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
-        { name: 'GroupViewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
+        {
+          name: 'GroupViewer',
+          globalId: 'role3',
+          resourceTypes: [],
+          privilegeLevel: 'Admin',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
       ],
     },
   ];
@@ -63,7 +87,15 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          {
+            name: 'Editor',
+            globalId: 'role2',
+            resourceTypes: [],
+            privilegeLevel: 'TrakkaAdmin',
+            description: '',
+            roleId: 2,
+            scopes: [],
+          },
         ],
       },
     ]);
@@ -75,7 +107,17 @@ describe('filterAssignedRoles', () => {
       [
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
-          roles: [{ name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' }],
+          roles: [
+            {
+              name: 'Admin',
+              globalId: 'role1',
+              resourceTypes: [],
+              privilegeLevel: 'Root',
+              roleId: 1,
+              description: '',
+              scopes: [],
+            },
+          ],
         },
       ],
       mockEditedPrivileges,
@@ -103,8 +145,24 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
-          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          {
+            name: 'Admin',
+            globalId: 'role1',
+            resourceTypes: [],
+            privilegeLevel: 'Root',
+            description: '',
+            roleId: 1,
+            scopes: [],
+          },
+          {
+            name: 'Editor',
+            globalId: 'role2',
+            resourceTypes: [],
+            privilegeLevel: 'TrakkaAdmin',
+            description: '',
+            roleId: 2,
+            scopes: [],
+          },
         ],
       },
     ]);
@@ -117,13 +175,29 @@ describe('filterAssignedRoles', () => {
       {
         record: { id: '1', name: 'User1', abbrev: 'U1' },
         roles: [
-          { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+          {
+            name: 'Editor',
+            globalId: 'role2',
+            resourceTypes: [],
+            privilegeLevel: 'TrakkaAdmin',
+            description: '',
+            roleId: 2,
+            scopes: [],
+          },
         ],
       },
       {
         record: { id: '2', name: 'User2', abbrev: 'U2' },
         roles: [
-          { name: 'GroupViewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
+          {
+            name: 'GroupViewer',
+            globalId: 'role3',
+            resourceTypes: [],
+            privilegeLevel: 'Admin',
+            description: '',
+            roleId: 1,
+            scopes: [],
+          },
         ],
       },
     ]);

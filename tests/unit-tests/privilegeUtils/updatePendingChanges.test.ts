@@ -8,14 +8,38 @@ describe('updatePendingChanges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
-        { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+        {
+          name: 'Admin',
+          globalId: 'role1',
+          resourceTypes: [],
+          privilegeLevel: 'Root',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
+        {
+          name: 'Editor',
+          globalId: 'role2',
+          resourceTypes: [],
+          privilegeLevel: 'TrakkaAdmin',
+          roleId: 2,
+          description: '',
+          scopes: [],
+        },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
-        { name: 'GroupViewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' },
+        {
+          name: 'GroupViewer',
+          globalId: 'role3',
+          resourceTypes: [],
+          privilegeLevel: 'Admin',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
       ],
     },
   ];
@@ -125,7 +149,17 @@ describe('updatePendingChanges', () => {
       [
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
-          roles: [{ name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' }],
+          roles: [
+            {
+              name: 'Admin',
+              globalId: 'role1',
+              resourceTypes: [],
+              privilegeLevel: 'Root',
+              roleId: 1,
+              description: '',
+              scopes: [],
+            },
+          ],
         },
       ],
     );
