@@ -15,6 +15,7 @@ import { formatDate } from '../../../../utilities/dateUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { selectGoodTimeBinUnitEchart } from '../../../../utilities/plotUtils';
 import type { EpiCurveChartProps } from '../EpiCurveChart';
+import ChartInfoTooltip from './InfoToolTip';
 
 const TIME_AXIS_FIELD = 'Date_coll';
 
@@ -292,8 +293,18 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
 
   return (
     <Box>
-      <Typography variant="h5" paddingBottom={2} color="primary">
+      <Typography
+        variant="h5"
+        paddingBottom={2}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         {`Samples (${timeFilterDescription})`}
+        <ChartInfoTooltip />
       </Typography>
 
       {errorMessage && (

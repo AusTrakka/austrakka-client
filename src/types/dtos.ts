@@ -379,15 +379,12 @@ export interface DataSetEntry {
 
 export interface Role {
   roleId: number;
+  globalId: string;
   name: string;
   description: string;
-}
-
-export interface RolesV2 {
-  name: string;
-  globalId: string;
-  resourceTypes: string[];
   privilegeLevel: string;
+  resourceTypes: string[];
+  scopes: string[];
 }
 
 export interface FeedbackPost {
@@ -436,6 +433,7 @@ export interface DerivedLog {
   eventStatus: string;
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
+  errorMessage: string;
 }
 
 export interface ProjectDocument {

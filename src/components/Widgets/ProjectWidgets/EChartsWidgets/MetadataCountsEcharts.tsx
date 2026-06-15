@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -14,12 +14,12 @@ import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
-import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
+import ChartInfoTooltip from './InfoToolTip';
 
 interface MetadataCountWidgetProps extends ProjectWidgetProps {
   projectAbbrev: string;
@@ -62,10 +62,6 @@ function MetadataCounts({
   const errorMessage = useMemo(() => {
     if (data?.loadingState === MetadataLoadingState.ERROR)
       return data.errorMessage ?? 'Unknown error';
-    if (data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.ERROR)
-      return `Error loading ${categoryFieldStable} values`;
-    if (data?.fieldLoadingStates?.[field] === LoadingState.ERROR)
-      return `Error loading ${field} values`;
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
@@ -238,26 +234,35 @@ function MetadataCounts({
     return () => observer.disconnect();
   }, []);
 
-  const fieldLoaded = data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.SUCCESS;
+  const loaded = hasCompleteData(data?.loadingState);
 
   return (
     <Box>
-      <Tooltip title={`Samples with populated ${field} values`} arrow placement="top">
-        <Typography variant="h5" paddingBottom={3} color="primary">
-          {title ?? `${field} counts`}
-        </Typography>
-      </Tooltip>
-
+      <Typography
+        variant="h5"
+        paddingBottom={3}
+        color="primary"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
+        {title ?? `${field} counts`}
+        <ChartInfoTooltip
+          text={`Samples with populated ${field} values \n Click legend items to show/hide · Hover for details`}
+        />
+      </Typography>
       {errorMessage ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {errorMessage}
         </Alert>
       ) : (
-        fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
+        loaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
-      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
+      {!loaded && <div>Loading...</div>}
     </Box>
   );
 }

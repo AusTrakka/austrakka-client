@@ -17,7 +17,6 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import {
@@ -113,22 +112,19 @@ export default function StCounts(props: ProjectWidgetProps) {
   const navigation = useNavigate();
 
   useEffect(() => {
-    if (data?.fieldLoadingStates[stFieldName] === LoadingState.SUCCESS) {
+    if (hasCompleteData(data?.loadingState)) {
       const counts = aggregateArrayObjects(stFieldName, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [filteredData, data?.fieldLoadingStates]);
+  }, [filteredData, data?.loadingState]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: redundant dependencies
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(stFieldName)) {
       setErrorMessage(`Field ${stFieldName} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[stFieldName] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${stFieldName} values`);
     }
-  }, [data?.fields, data?.loadingState, data?.fieldLoadingStates]);
+  }, [data?.fields, data?.loadingState, data?.errorMessage]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     const selectedRow = row.data;

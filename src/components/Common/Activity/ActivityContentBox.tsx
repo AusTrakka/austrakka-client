@@ -16,6 +16,7 @@ const displayFields: string[] = [
   'Event initiated by',
   'Resource',
   'Resource Type',
+  'Error Message',
   'Context',
 ];
 
@@ -61,6 +62,10 @@ function ActivityContentBox({ entry, logContext }: ContentBoxProps): JSX.Element
               f === 'Time stamp'
                 ? formatDate(entry[f as keyof ActivityDetailInfo])
                 : entry[f as keyof ActivityDetailInfo];
+
+            if (f === 'Error Message' && (value === '' || !value)) {
+              return null;
+            }
 
             return (
               <TableRow key={f}>

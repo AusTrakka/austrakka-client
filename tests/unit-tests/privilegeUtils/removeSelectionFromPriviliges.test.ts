@@ -21,7 +21,7 @@ describe('removeSelectionFromPrivileges', () => {
         {
           recordName: 'User2',
           recordGlobalId: '2',
-          roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
+          roles: [{ roleName: 'GroupViewer', privilegeGlobalId: undefined }],
         },
       ],
     },
@@ -57,7 +57,7 @@ describe('removeSelectionFromPrivileges', () => {
           {
             recordName: 'User2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
+            roles: [{ roleName: 'GroupViewer', privilegeGlobalId: undefined }],
           },
         ],
       },
@@ -149,7 +149,7 @@ describe('removeSelectionFromPrivileges', () => {
             {
               recordName: 'User2',
               recordGlobalId: '2',
-              roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
+              roles: [{ roleName: 'GroupViewer', privilegeGlobalId: undefined }],
             },
           ],
         },
@@ -171,7 +171,7 @@ describe('removeSelectionFromPrivileges', () => {
           {
             recordName: 'User2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeGlobalId: undefined }],
+            roles: [{ roleName: 'GroupViewer', privilegeGlobalId: undefined }],
           },
         ],
       },

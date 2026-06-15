@@ -3,6 +3,7 @@ import {
   IosShare,
   RemoveCircleOutline,
   Settings,
+  SwapHorizontalCircle,
   Visibility,
   VisibilityOffOutlined,
 } from '@mui/icons-material';
@@ -11,6 +12,7 @@ import {
   AlertTitle,
   Backdrop,
   Box,
+  Button,
   CircularProgress,
   Dialog,
   IconButton,
@@ -35,6 +37,7 @@ import {
   type GroupMetadataState,
   selectAwaitingGroupMetadata,
   selectGroupMetadata,
+  selectGroupStaleDataAvailable,
 } from '../../app/groupMetadataSlice';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { useAppDispatch, useAppSelector } from '../../app/store';
@@ -53,6 +56,8 @@ import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
+import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
@@ -65,11 +70,14 @@ interface SamplesProps {
   groupContext: number;
   groupContextName: string | undefined;
   canShare: boolean;
+  canChangeOwnership: boolean;
   orgAbbrev: string;
+  orgName: string;
 }
 
 function OrgSamplesTable(props: SamplesProps) {
-  const { groupContext, groupContextName, canShare, orgAbbrev } = props;
+  const { groupContext, groupContextName, canShare, canChangeOwnership, orgAbbrev, orgName } =
+    props;
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
@@ -99,6 +107,9 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
   const [shareBlocked, setShareBlocked] = useState(false);
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
+  const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
+  const [changeOwnerBlocked, setChangeOwnerBlocked] = useState(false);
+  const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
 
   const dispatch = useAppDispatch();
 
@@ -109,6 +120,13 @@ function OrgSamplesTable(props: SamplesProps) {
   const isSamplesLoading: boolean = useAppSelector((state) =>
     selectAwaitingGroupMetadata(state, groupContext),
   );
+
+  const isDataStale = useAppSelector((state) => selectGroupStaleDataAvailable(state, groupContext));
+
+  const handleRefresh = () => {
+    if (!token) return;
+    dispatch(fetchGroupMetadata({ groupId: groupContext, token, orgAbbrev }));
+  };
 
   useEffect(() => {
     if (
@@ -122,25 +140,19 @@ function OrgSamplesTable(props: SamplesProps) {
   }, [groupContext, orgAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
-    if (
-      metadata?.loadingState === MetadataLoadingState.ERROR ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-    ) {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
 
   useEffect(() => {
-    // BUILD COLUMNS
-    if (!metadata?.fields || !metadata?.columnLoadingStates) return;
+    if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
-    if (
-      Object.values(metadata.columnLoadingStates).every((field) => field === LoadingState.SUCCESS)
-    ) {
+    if (metadata.loadingState === MetadataLoadingState.DATA_LOADED) {
       setAllFieldsLoaded(true);
     }
-  }, [metadata?.columnLoadingStates, metadata?.fields]);
+  }, [metadata?.fields, metadata?.loadingState]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     // Prevent navigation from selection box column
@@ -185,6 +197,14 @@ function OrgSamplesTable(props: SamplesProps) {
       setShareBlocked(false);
     }
   }, [selectedIds, canShare]);
+
+  useEffect(() => {
+    if (selectedIds.length === 0 || canChangeOwnership === false) {
+      setChangeOwnerBlocked(true);
+    } else {
+      setChangeOwnerBlocked(false);
+    }
+  }, [selectedIds, canChangeOwnership]);
 
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
@@ -246,6 +266,14 @@ function OrgSamplesTable(props: SamplesProps) {
     }
   };
 
+  const handleChangeOwnerClick = () => {
+    if (changeOwnerBlocked) {
+      setOpenChangeOwnerBlocked(true);
+    } else {
+      setOpenOwnershipDialog(true);
+    }
+  };
+
   const header = (
     <div
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
@@ -265,6 +293,13 @@ function OrgSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {true && (
+            <Tooltip title="Transfer samples" placement="top" arrow>
+              <IconButton onClick={handleChangeOwnerClick}>
+                <SwapHorizontalCircle />
+              </IconButton>
+            </Tooltip>
+          )}
           {showShare && (
             <>
               <Tooltip title="Share or unshare samples" placement="top" arrow>
@@ -340,9 +375,7 @@ function OrgSamplesTable(props: SamplesProps) {
             emptyColumnNames={metadata?.emptyColumns ?? null}
           />
           <ExportTableData
-            dataToExport={
-              metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR ? [] : exportData
-            }
+            dataToExport={exportData ?? []}
             headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
             disabled={!hasCompleteData(metadata?.loadingState)}
             fileNamePrefix={groupContextName || 'org_samples'}
@@ -363,16 +396,9 @@ function OrgSamplesTable(props: SamplesProps) {
           <Close />
         </IconButton>
         <AlertTitle sx={{ paddingBottom: 1 }}>
-          <strong>
-            {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-              ? 'Organisation metadata could not be fully loaded'
-              : 'Organisation metadata could not be loaded'}
-          </strong>
+          <strong>'Organisation metadata could not be loaded'</strong>
         </AlertTitle>
-        {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-          ? `An error occurred loading organisation metadata. Some fields will be null, and 
-             CSV export will not be available. Refresh to reload.`
-          : 'An error occurred loading organisation metadata. Refresh to reload.'}
+        'An error occurred loading organisation metadata. Refresh to reload.'
         <br />
         Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
       </Alert>
@@ -381,6 +407,19 @@ function OrgSamplesTable(props: SamplesProps) {
 
   return (
     <div className="datatable-container-org">
+      {isDataStale && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this organisation.
+        </Alert>
+      )}
       <Backdrop
         sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
@@ -413,6 +452,25 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedSamples={selectedSamples}
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
+          groupContext={groupContext}
+        />
+      )}
+      {openChangeOwnerBlocked && (
+        <ChangeOwnershipBlocked
+          canChangeOwnership={canChangeOwnership}
+          openChangeOwnershipBlocked={openChangeOwnerBlocked}
+          setOpenChangeOwnershipBlocked={setOpenChangeOwnerBlocked}
+          selectedIdsLength={selectedIds.length}
+        />
+      )}
+      {openOwnershipDialog && (
+        <OrgSampleOwnership
+          open={openOwnershipDialog}
+          onClose={() => setOpenOwnershipDialog(false)}
+          selectedSamples={selectedSamples}
+          selectedIds={selectedIds}
+          orgAbbrev={orgAbbrev}
+          orgName={orgName}
           groupContext={groupContext}
         />
       )}

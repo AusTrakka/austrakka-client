@@ -8,13 +8,39 @@ describe('updatePendingChanges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
-        { name: 'Editor', globalId: 'role2', resourceTypes: [], privilegeLevel: 'TrakkaAdmin' },
+        {
+          name: 'Admin',
+          globalId: 'role1',
+          resourceTypes: [],
+          privilegeLevel: 'Root',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
+        {
+          name: 'Editor',
+          globalId: 'role2',
+          resourceTypes: [],
+          privilegeLevel: 'TrakkaAdmin',
+          roleId: 2,
+          description: '',
+          scopes: [],
+        },
       ],
     },
     {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
-      roles: [{ name: 'Viewer', globalId: 'role3', resourceTypes: [], privilegeLevel: 'Admin' }],
+      roles: [
+        {
+          name: 'GroupViewer',
+          globalId: 'role3',
+          resourceTypes: [],
+          privilegeLevel: 'Admin',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
+      ],
     },
   ];
 
@@ -56,7 +82,7 @@ describe('updatePendingChanges', () => {
           recordGlobalId: '2',
           roleGlobalId: 'role3',
           recordName: 'User2',
-          roleName: 'Viewer',
+          roleName: 'GroupViewer',
         },
       },
     ]);
@@ -93,7 +119,7 @@ describe('updatePendingChanges', () => {
           recordGlobalId: '2',
           roleGlobalId: 'role3',
           recordName: 'User2',
-          roleName: 'Viewer',
+          roleName: 'GroupViewer',
         },
       },
     ]);
@@ -123,7 +149,17 @@ describe('updatePendingChanges', () => {
       [
         {
           record: { id: '1', name: 'User1', abbrev: 'U1' },
-          roles: [{ name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' }],
+          roles: [
+            {
+              name: 'Admin',
+              globalId: 'role1',
+              resourceTypes: [],
+              privilegeLevel: 'Root',
+              roleId: 1,
+              description: '',
+              scopes: [],
+            },
+          ],
         },
       ],
     );
@@ -151,7 +187,7 @@ describe('updatePendingChanges', () => {
             recordGlobalId: '2',
             roleGlobalId: 'role3',
             recordName: 'User2',
-            roleName: 'Viewer',
+            roleName: 'GroupViewer',
           },
         },
       ],
@@ -167,7 +203,7 @@ describe('updatePendingChanges', () => {
           recordGlobalId: '2',
           recordName: 'User2',
           roleGlobalId: 'role3',
-          roleName: 'Viewer',
+          roleName: 'GroupViewer',
         },
       },
       {
@@ -187,7 +223,7 @@ describe('updatePendingChanges', () => {
           recordGlobalId: '2',
           roleGlobalId: 'role3',
           recordName: 'User2',
-          roleName: 'Viewer',
+          roleName: 'GroupViewer',
         },
       },
     ]);

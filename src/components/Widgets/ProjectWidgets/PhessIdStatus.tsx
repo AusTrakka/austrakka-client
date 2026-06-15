@@ -13,8 +13,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { countPresentOrMissing } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
@@ -41,21 +40,17 @@ export default function PhessIdStatus(props: ProjectWidgetProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS) {
-      // count Present if there is a PHESS_ID value and Missing if null/empty
-      // TODO is this going to be recalculated on multiple view loads?
+    if (hasCompleteData(data?.loadingState)) {
       const counts = countPresentOrMissing(PHESS_ID_FIELD_NAME, filteredData!) as CountRow[];
       setAggregatedCounts(counts);
     }
-  }, [data?.fieldLoadingStates, filteredData]);
+  }, [data?.loadingState, filteredData]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(PHESS_ID_FIELD_NAME)) {
       setErrorMessage(`Field ${PHESS_ID_FIELD_NAME} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${PHESS_ID_FIELD_NAME} values`);
     }
   }, [data]);
 
@@ -89,7 +84,7 @@ export default function PhessIdStatus(props: ProjectWidgetProps) {
       <Typography variant="h5" paddingBottom={3} color="primary">
         PHESS ID Status
       </Typography>
-      {data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.SUCCESS && (
+      {hasCompleteData(data?.loadingState) && (
         <DataTable
           value={aggregatedCounts}
           size="small"
@@ -107,11 +102,7 @@ export default function PhessIdStatus(props: ProjectWidgetProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.fieldLoadingStates ||
-        data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.LOADING ||
-        data?.fieldLoadingStates[PHESS_ID_FIELD_NAME] === LoadingState.IDLE) && (
-        <div>Loading...</div>
-      )}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }
