@@ -8,6 +8,7 @@ import {
   Alert,
   AlertTitle,
   Box,
+  Button,
   Grid,
   IconButton,
   type SelectChangeEvent,
@@ -24,6 +25,7 @@ import {
   fetchProjectMetadata,
   type ProjectMetadataState,
   selectProjectMetadata,
+  selectProjectStaleDataAvailable,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
@@ -118,6 +120,10 @@ function TreeDetail() {
   );
   const projectMetadata: ProjectMetadataState | null = useAppSelector((st) =>
     selectProjectMetadata(st, projectAbbrev),
+  );
+
+  const staleDataAvailable = useAppSelector((state) =>
+    selectProjectStaleDataAvailable(state, projectAbbrev),
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -302,6 +308,11 @@ function TreeDetail() {
     rootId,
     state.nodeColumn,
   ]);
+
+  const handleRefresh = () => {
+    if (!projectAbbrev || !token) return;
+    dispatch(fetchProjectMetadata({ projectAbbrev, token }));
+  };
 
   const handleAccordionChange =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -600,7 +611,19 @@ function TreeDetail() {
   return (
     <Box>
       {renderWarning()}
-
+      {staleDataAvailable && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this project.
+        </Alert>
+      )}
       <Box
         sx={{
           position: 'relative',
