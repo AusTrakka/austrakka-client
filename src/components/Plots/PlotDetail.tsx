@@ -1,8 +1,12 @@
-import { Alert, Typography } from '@mui/material';
+import { Alert, Button, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
-import { fetchProjectMetadata, selectProjectMetadataError } from '../../app/projectMetadataSlice';
+import {
+  fetchProjectMetadata,
+  selectProjectMetadataError,
+  selectProjectStaleDataAvailable,
+} from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { plotTypes } from '../../config/plotTypes';
 import LoadingState from '../../constants/loadingState';
@@ -66,6 +70,10 @@ function PlotDetail() {
     }
   }, [projectAbbrev, dispatch, token, tokenLoading]);
 
+  const staleDataAvailable = useAppSelector((state) =>
+    selectProjectStaleDataAvailable(state, projectAbbrev),
+  );
+
   const renderPlot = () => {
     if (errorMsg && errorMsg.length > 0) {
       return <Alert severity="error">{errorMsg}</Alert>;
@@ -84,8 +92,27 @@ function PlotDetail() {
     return React.createElement(plotTypes[plotType].component, props);
   };
 
+  const handleRefresh = () => {
+    if (!projectAbbrev || !token) return;
+    dispatch(fetchProjectMetadata({ projectAbbrev, token }));
+  };
+
   return (
     <>
+      {staleDataAvailable && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this project.
+        </Alert>
+      )}
+
       <Typography className="pageTitle">
         {plotType ? (plot?.name ?? plotTypes[plotType].name) : ''}
       </Typography>
