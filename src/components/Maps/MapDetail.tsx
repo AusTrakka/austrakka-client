@@ -91,7 +91,10 @@ function MapDetail(props: MapDetailProps) {
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       if (data.supportedMaps.length === 0) setNoSupportedMapsError(true);
-      else if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
+      else {
+        setNoSupportedMapsError(false); // reset on valid data
+        if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
+      }
     }
   }, [data, setSelectedMap]);
 
