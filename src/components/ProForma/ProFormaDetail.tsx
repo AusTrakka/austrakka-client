@@ -138,7 +138,21 @@ function ProFormaDetail() {
                 <MoveToInbox color="secondary" fontSize="large" />
               )}
               <Stack direction="column" width="calc(100% - 40px)">
-                <Typography gutterBottom>Download generated Excel pro forma template</Typography>
+                <Typography gutterBottom>Generate latest Excel pro forma template</Typography>
+                <Typography
+                  title={`Trakka_metadata_submission_${selectedVersion.abbreviation}_V${selectedVersion.version}`}
+                  noWrap
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
+                  {`Trakka_metadata_submission_${selectedVersion.abbreviation}_V${selectedVersion.version}`}
+                </Typography>
+                <Typography variant="caption" color="black" noWrap>
+                  {selectedVersion.createdBy}
+                  <br />
+                  {isoDateLocalDate(selectedVersion.created.toString())}
+                </Typography>
               </Stack>
             </Stack>
           )}

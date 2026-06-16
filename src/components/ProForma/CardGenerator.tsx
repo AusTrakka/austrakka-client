@@ -224,7 +224,11 @@ function GenerateCards(
             }}
           >
             <Typography
-              title={version.assetId ? version.originalFileName : 'Generate template'}
+              title={
+                version.assetId
+                  ? version.originalFileName
+                  : `Generate version ${version.version} template`
+              }
               noWrap
               gutterBottom
               variant="h5"
@@ -232,7 +236,7 @@ function GenerateCards(
               style={{ color: styleConfig.textColor, alignContent: 'end', pointerEvents: 'auto' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {version.assetId ? version.originalFileName : 'Generate template'}
+              {version.assetId ? version.originalFileName : `Generate template V${version.version}`}
             </Typography>
             <Typography
               variant="caption"
