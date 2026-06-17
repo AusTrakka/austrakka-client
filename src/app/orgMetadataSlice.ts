@@ -8,7 +8,7 @@ import type { Sample } from '../types/sample.interface';
 import {
   getLatestActivityTime,
   getOrgFields,
-  getOrgMetadataFields,
+  getOrgMetadataByField,
 } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
 import {
@@ -150,7 +150,7 @@ const fetchDataView = createAsyncThunk(
   ): Promise<FetchDataViewResponse | unknown> => {
     const { orgAbbrev, fields } = params;
     const { token } = (getState() as RootState).orgMetadataState;
-    const response = await getOrgMetadataFields(orgAbbrev, fields, token!);
+    const response = await getOrgMetadataByField(orgAbbrev, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue<FetchDataViewResponse>({
         data: response.data ?? [],

@@ -227,8 +227,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                 Unshare Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only unshare samples from projects in which you have Uploader
-                permissions in.
+                Please note you can only unshare samples from projects in which you have the
+                appropriate permissions.
               </Typography>
             </DialogTitle>
             <DialogContent>

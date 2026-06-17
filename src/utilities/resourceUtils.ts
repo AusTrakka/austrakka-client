@@ -218,7 +218,7 @@ export const getOrgFields = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Fields`, token) as Promise<
     ResponseObject<MetaDataColumn[]>
   >;
-export const getOrgMetadataFields = (identifier: string, fields: string[], token: string) => {
+export const getOrgMetadataByField = (identifier: string, fields: string[], token: string) => {
   const fieldsQuery: string = `?${fields.map((field) => `fields=${field}`).join('&')}`;
   return callGET(
     `/api/OrganisationV2/${identifier}/Metadata/Fields${fieldsQuery}`,

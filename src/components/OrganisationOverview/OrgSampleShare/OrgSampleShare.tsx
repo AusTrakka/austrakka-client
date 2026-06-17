@@ -189,8 +189,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                 Share Organisation Samples
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Please note you can only share samples to projects groups in which you have Uploader
-                permissions in.
+                Please note you can only share samples to projects in which you have the appropriate
+                permissions.
               </Typography>
               <Alert severity="info">
                 Sharing these sample records will register the sample as being a
