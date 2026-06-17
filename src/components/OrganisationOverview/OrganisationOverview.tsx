@@ -16,7 +16,6 @@ import {
   hasPermissionV2ByScope,
   PermissionLevel,
 } from '../../permissions/accessTable';
-import { RolesV1 } from '../../permissions/roles';
 import type { GroupRole, Organisation } from '../../types/dtos';
 import { getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
@@ -144,7 +143,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
-        <OrganisationSamples canShare={canShare} orgAbbrev={orgAbbrev} />
+        <OrganisationSamples
+          canShare={canShare}
+          orgAbbrev={orgAbbrev}
+          canChangeOwnership={canChangeOwnership}
+          orgName={organisation.name}
+        />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
         <OrgMembers orgAbbrev={orgAbbrev} />

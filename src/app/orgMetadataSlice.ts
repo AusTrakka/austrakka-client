@@ -87,25 +87,24 @@ interface FetchLatestActivityTimeResponse {
   timestamp: string;
 }
 
-interface PollGroupStalenessResponse {
-  groupId: number;
+interface PollOrgStalenessResponse {
+  orgAbbrev: string;
   isStale: boolean;
 }
 
-const pollGroupStaleness = createAsyncThunk(
-  'groupMetadata/pollGroupStaleness',
+const pollOrgStaleness = createAsyncThunk(
+  'orgMetadata/pollOrgStaleness',
   async (
-    params: { groupId: number },
+    params: { orgAbbrev: string },
     { rejectWithValue, getState },
-  ): Promise<PollGroupStalenessResponse | unknown> => {
-    const { groupId } = params;
+  ): Promise<PollOrgStalenessResponse | unknown> => {
+    const { orgAbbrev } = params;
     const state = getState() as RootState;
-    const { token } = state.groupMetadataState;
-    const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
-    const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
+    const { token } = state.orgMetadataState;
+    const currentTimestamp = state.orgMetadataState.data[orgAbbrev]?.dataLoadTime;
 
     if (!orgAbbrev) {
-      return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
+      return rejectWithValue(`No orgAbbrev in state for org ${orgAbbrev}`);
     }
 
     const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
@@ -115,39 +114,7 @@ const pollGroupStaleness = createAsyncThunk(
 
     const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
 
-    return { groupId, isStale };
-  },
-);
-
-interface PollGroupStalenessResponse {
-  groupId: number;
-  isStale: boolean;
-}
-
-const pollGroupStaleness = createAsyncThunk(
-  'groupMetadata/pollGroupStaleness',
-  async (
-    params: { groupId: number },
-    { rejectWithValue, getState },
-  ): Promise<PollGroupStalenessResponse | unknown> => {
-    const { groupId } = params;
-    const state = getState() as RootState;
-    const { token } = state.groupMetadataState;
-    const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
-    const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
-
-    if (!orgAbbrev) {
-      return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
-    }
-
-    const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
-    if (response.status !== 'Success') {
-      return rejectWithValue(response.error);
-    }
-
-    const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
-
-    return { groupId, isStale };
+    return { orgAbbrev, isStale };
   },
 );
 
@@ -236,16 +203,16 @@ const GROUP_POLL_INTERVAL_MS = 2 * 60 * 1000;
 
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
-    if (!groupId) return false;
+    const orgAbbrev = (action as any)?.meta?.arg?.orgAbbrev ?? (action as any)?.payload?.orgAbbrev;
+    if (!orgAbbrev) return false;
 
-    const prev = (previousState as RootState).groupMetadataState.data[groupId]?.loadingState;
-    const curr = (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    const prev = (previousState as RootState).orgMetadataState.data[orgAbbrev]?.loadingState;
+    const curr = (currentState as RootState).orgMetadataState.data[orgAbbrev]?.loadingState;
 
     return prev !== MetadataLoadingState.DATA_LOADED && curr === MetadataLoadingState.DATA_LOADED;
   },
   effect: async (action, listenerApi) => {
-    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
+    const orgAbbrev = (action as any)?.meta?.arg?.orgAbbrev ?? (action as any)?.payload?.orgAbbrev;
 
     while (true) {
       const cancelled = await Promise.race([
@@ -253,7 +220,7 @@ listenerMiddleware.startListening({
         listenerApi
           .take(
             (_a, currentState) =>
-              (currentState as RootState).groupMetadataState.data[groupId]?.loadingState !==
+              (currentState as RootState).orgMetadataState.data[orgAbbrev]?.loadingState !==
               MetadataLoadingState.DATA_LOADED,
           )
           .then(() => true),
@@ -261,11 +228,11 @@ listenerMiddleware.startListening({
 
       if (cancelled) break;
 
-      const loadingState = (listenerApi.getState() as RootState).groupMetadataState.data[groupId]
+      const loadingState = (listenerApi.getState() as RootState).orgMetadataState.data[orgAbbrev]
         ?.loadingState;
       if (loadingState !== MetadataLoadingState.DATA_LOADED) break;
 
-      listenerApi.dispatch(pollGroupStaleness({ groupId }));
+      listenerApi.dispatch(pollOrgStaleness({ orgAbbrev }));
     }
   },
 });
@@ -297,10 +264,10 @@ listenerMiddleware.startListening({
 
 // Launch data view fetch after group fields retrieved
 listenerMiddleware.startListening({
-  predicate: (action) => fetchGroupFields.fulfilled.match(action),
+  predicate: (action) => fetchOrgFields.fulfilled.match(action),
   effect: (action, listenerApi) => {
-    const { groupId } = (action as any).meta.arg;
-    listenerApi.dispatch(fetchDataView({ groupId }));
+    const { orgAbbrev } = (action as any).meta.arg;
+    listenerApi.dispatch(fetchDataView({ orgAbbrev }));
   },
 });
 
@@ -460,13 +427,13 @@ export const orgMetadataSlice = createSlice({
       state.data[orgAbbrev].errorMessage = `Unable to load metadata: ${action.payload}`;
     });
 
-    builder.addCase(pollGroupStaleness.fulfilled, (state, action) => {
-      const { orgAbbrev, isStale } = action.payload as PollGroupStalenessResponse;
+    builder.addCase(pollOrgStaleness.fulfilled, (state, action) => {
+      const { orgAbbrev, isStale } = action.payload as PollOrgStalenessResponse;
       if (isStale) {
         state.data[orgAbbrev].isDataStale = true;
       }
     });
-    builder.addCase(pollGroupStaleness.rejected, (_, action) => {
+    builder.addCase(pollOrgStaleness.rejected, (_, action) => {
       //biome-ignore lint/suspicious/noConsole: interim error logging
       console.error(
         `Staleness poll failed for org ${action.meta.arg.orgAbbrev}: ${action.payload}`,
@@ -483,36 +450,36 @@ export const { fetchOrgMetadata, reloadOrgMetadata } = orgMetadataSlice.actions;
 
 // selectors
 
-export const selectGroupMetadata: (
+export const selectOrgMetadata: (
   state: RootState,
-  groupId: number | undefined,
+  orgAbbrev: string | undefined,
 ) => OrgMetadataState | null = (state, orgAbbrev) => {
   if (!orgAbbrev) return null;
   return state.orgMetadataState.data[orgAbbrev] ?? null;
 };
 
-export const selectGroupStaleDataAvailable = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return false;
-  return state.groupMetadataState.data[groupId]?.isDataStale ?? false;
+export const selectOrgStaleDataAvailable = (state: RootState, orgAbbrev: string | undefined) => {
+  if (!orgAbbrev) return false;
+  return state.orgMetadataState.data[orgAbbrev]?.isDataStale ?? false;
 };
 
-export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) {
+export const selectOrgMetadataFields = (state: RootState, orgAbbrev: string | undefined) => {
+  if (!orgAbbrev) {
     return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
   }
   return {
-    fields: state.groupMetadataState.data[groupId]?.fields,
-    fieldUniqueValues: state.groupMetadataState.data[groupId]?.fieldUniqueValues,
-    loadingState: state.groupMetadataState.data[groupId]?.loadingState,
+    fields: state.orgMetadataState.data[orgAbbrev]?.fields,
+    fieldUniqueValues: state.orgMetadataState.data[orgAbbrev]?.fieldUniqueValues,
+    loadingState: state.orgMetadataState.data[orgAbbrev]?.loadingState,
   };
 };
 
-export const selectGroupMetadataError = (state: RootState, groupId: number | undefined) => {
-  if (!groupId) return null;
-  return state.groupMetadataState.data[groupId]?.errorMessage;
+export const selectOrgMetadataError = (state: RootState, orgAbbrev: string | undefined) => {
+  if (!orgAbbrev) return null;
+  return state.orgMetadataState.data[orgAbbrev]?.errorMessage;
 };
 
-export const selectAwaitingGroupMetadata = (state: RootState, orgAbbrev: string | undefined) => {
+export const selectAwaitingOrgMetadata = (state: RootState, orgAbbrev: string | undefined) => {
   if (!orgAbbrev) return true;
   const loadingState = state.orgMetadataState.data[orgAbbrev]?.loadingState;
   if (!loadingState) return true;

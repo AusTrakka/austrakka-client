@@ -36,9 +36,9 @@ import { useStableNavigate } from '../../app/NavigationContext';
 import {
   fetchOrgMetadata,
   type OrgMetadataState,
-  selectAwaitingGroupMetadata,
-  selectGroupMetadata,
-  selectGroupStaleDataAvailable,
+  selectAwaitingOrgMetadata,
+  selectOrgMetadata,
+  selectOrgStaleDataAvailable,
 } from '../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
@@ -111,17 +111,17 @@ function OrgSamplesTable(props: SamplesProps) {
 
   const { token, tokenLoading } = useApi();
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
-    selectGroupMetadata(state, orgAbbrev),
+    selectOrgMetadata(state, orgAbbrev),
   );
   const isSamplesLoading: boolean = useAppSelector((state) =>
-    selectAwaitingGroupMetadata(state, orgAbbrev),
+    selectAwaitingOrgMetadata(state, orgAbbrev),
   );
 
-  const isDataStale = useAppSelector((state) => selectGroupStaleDataAvailable(state, groupContext));
+  const isDataStale = useAppSelector((state) => selectOrgStaleDataAvailable(state, orgAbbrev));
 
   const handleRefresh = () => {
     if (!token) return;
-    dispatch(fetchGroupMetadata({ groupId: groupContext, token, orgAbbrev }));
+    dispatch(fetchOrgMetadata({ token, orgAbbrev }));
   };
 
   useEffect(() => {
@@ -455,7 +455,6 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
           orgName={orgName}
-          groupContext={groupContext}
         />
       )}
       {openChangeOwnerBlocked && (
@@ -474,7 +473,6 @@ function OrgSamplesTable(props: SamplesProps) {
           selectedIds={selectedIds}
           orgAbbrev={orgAbbrev}
           orgName={orgName}
-          groupContext={groupContext}
         />
       )}
       <Dialog onClose={handleDialogClose} open={exportCSVStatus === LoadingState.ERROR}>
