@@ -2,12 +2,15 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { PhylocanvasNode, PhylocanvasProps } from '../../types/phylocanvas.interface';
 import { Phylocanvas } from './PhylocanvasGL';
 
+export const DEFAULT_INIT_TREE_HEIGHT = 600;
+export const DEFAULT_INIT_TREE_WIDTH = 600;
+
 export interface TreeProps extends PhylocanvasProps {
-  resizeWidthTo: string | null;
+  resizeRef?: React.RefObject<HTMLElement>;
   onSelectedIdsChange: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export type TreeExportFuctions = {
+export type TreeExportFunctions = {
   exportNewick(): string;
   exportSVG(): Blob;
   exportPNG(): Blob;
@@ -19,7 +22,7 @@ export type TreeExportFuctions = {
 };
 
 const Tree = React.forwardRef(
-  ({ resizeWidthTo, onSelectedIdsChange, ...otherProps }: TreeProps, ref) => {
+  ({ resizeRef, onSelectedIdsChange, ...otherProps }: TreeProps, ref) => {
     const treeDiv = useRef<HTMLDivElement>(null);
     const tree = useRef<Phylocanvas | null>(null);
     const [size, setSize] = useState<{ width: number; height: number }>(otherProps.size);
@@ -52,17 +55,26 @@ const Tree = React.forwardRef(
     }));
 
     useEffect(() => {
-      function handleResize() {
-        const gridRef = document.querySelector(resizeWidthTo!);
-        const width = gridRef?.getBoundingClientRect().width;
-        if (width) {
-          setSize({ height: size.height, width: width - 10 });
-        }
-      }
+      if (!resizeRef) return;
+
+      const el = resizeRef.current;
+      if (!el) return;
+
+      const observer = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+        setSize({
+          height: height,
+          width: width,
+        });
+      });
+
+      observer.observe(el);
+
+      return () => observer.disconnect();
+    }, [resizeRef]);
+
+    useEffect(() => {
       if (tree.current == null && treeDiv.current !== null) {
-        if (resizeWidthTo !== null) {
-          handleResize();
-        }
         tree.current = new Phylocanvas(treeDiv.current, { ...otherProps });
         tree.current.addClickHandler(() => {
           // save the selectedIds in the state
@@ -70,14 +82,8 @@ const Tree = React.forwardRef(
           onSelectedIdsChange(selected);
         });
       }
-      if (resizeWidthTo !== null) {
-        window.addEventListener('resize', handleResize);
-      }
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
       // biome-ignore lint/correctness/useExhaustiveDependencies: historic otherProps used
-    }, [onSelectedIdsChange, otherProps, resizeWidthTo, size]);
+    }, [onSelectedIdsChange, otherProps]);
 
     useEffect(() => {
       const updatedProps = { ...otherProps, size };

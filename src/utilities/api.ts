@@ -17,6 +17,7 @@ const noToken = {
 };
 const WWW_AUTHENTICATE = 'www-authenticate';
 const INVALID_TOKEN = 'invalid_token';
+const USER_AGENT = 'trakka-web'; //User-Agent
 
 export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs: string[]): any {
   return {
@@ -26,7 +27,22 @@ export function buildUploadHeaders(ownerOrgAbbrev: string, sharedProjectAbbrevs:
   };
 }
 
+export function buildDocumentUploadHeaders(filename: string, description: string): any {
+  return {
+    'X-Metadata-Filename': filename,
+    'X-Metadata-Description': description,
+  };
+}
+
 function getHeaders(token: string): any {
+  return {
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
+    'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
+  };
+}
+function getHeadersPreviewFile(token: string): any {
   return {
     Accept: 'application/json',
     Authorization: `Bearer ${token}`,
@@ -40,6 +56,7 @@ function getHeadersPut(token: string): any {
     'Content-Type': 'application/json-patch+json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -49,6 +66,7 @@ function getHeadersPatch(token: string): any {
     'Content-Type': 'application/json-patch+json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -58,6 +76,7 @@ function getHeadersPost(token: string): any {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -66,6 +85,7 @@ function getHeadersMultipartPost(token: string): any {
     Accept: 'application/json',
     Authorization: `Bearer ${token}`,
     'Access-Control-Expose-Headers': '*',
+    'User-Agent': USER_AGENT,
   };
 }
 
@@ -310,6 +330,40 @@ export async function downloadFile(url: string, token: string, clientSessionId?:
   };
 
   let filename = 'no-file-name.xlsx'; // Default filename
+  const response = await fetch(base + url, options);
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok.');
+  }
+
+  const contentDisposition = response.headers.get('Content-Disposition');
+  if (contentDisposition) {
+    try {
+      const parts = contentDisposition.split(';');
+      const filenamePart = parts.find((part) => part.trim().startsWith('filename='));
+      if (filenamePart) {
+        filename = filenamePart.split('=')[1].trim().replace(/"/g, '');
+      }
+    } catch {
+      filename = 'no-file-name.xlsx';
+    }
+  }
+  const blob = await response.blob();
+  return { blob, suggestedFilename: filename };
+}
+
+export async function previewFile(url: string, token: string) {
+  if (!token) {
+    throw new Error('Authentication error: Unable to retrieve access token.');
+  }
+
+  const options: HTTPOptions = {
+    method: 'GET',
+    headers: getHeadersPreviewFile(token),
+  };
+
+  let filename = 'no-file-name.xlsx'; // Default filename
+
   const response = await fetch(base + url, options);
 
   if (!response.ok) {

@@ -9,7 +9,7 @@ import {
 } from 'primereact/datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
@@ -47,6 +47,7 @@ function ProjectsList() {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     type: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     async function getProjects() {
@@ -102,6 +103,11 @@ function ProjectsList() {
     const filtersCopy = { ...filters };
     (filtersCopy.type as DataTableFilterMetaData).value = value;
     setFilters(filtersCopy);
+    if (value) {
+      setSearchParams({ type: value });
+    } else {
+      setSearchParams({});
+    }
   };
 
   const resetFilters = () => {
@@ -114,7 +120,28 @@ function ProjectsList() {
   const onTypeFilterClear = () => {
     setSelectedValue(null);
     resetFilters();
+    setSearchParams({});
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: prevent infinite loop
+  useEffect(() => {
+    if (allTypes.length > 0) {
+      const typeFromUrl = searchParams.get('type');
+      if (typeFromUrl) {
+        const matchingType = allTypes.find(
+          (type) => type && type.toLowerCase() === typeFromUrl.toLowerCase(),
+        );
+        if (matchingType) {
+          setSelectedValue(matchingType);
+          const filtersCopy = { ...filters };
+          (filtersCopy.type as DataTableFilterMetaData).value = matchingType;
+          setFilters(filtersCopy);
+        } else {
+          onTypeFilterClear();
+        }
+      }
+    }
+  }, [allTypes, searchParams]);
 
   const header = (
     <div

@@ -11,4 +11,5 @@ export const PROJ_TABS: TabObjectRecord = {
   proformas: { index: 5, title: 'Proformas' },
   datasets: { index: 6, title: 'Datasets' },
   activity: { index: 7, title: 'Activity' },
+  documents: { index: 8, title: 'Documents' },
 } as const;

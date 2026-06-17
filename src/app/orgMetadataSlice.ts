@@ -1,5 +1,4 @@
-import { createAsyncThunk, createSlice, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
-import LoadingState from '../constants/loadingState';
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import RecordTypes from '../constants/record-type.enum';
@@ -19,21 +18,8 @@ import {
 } from './metadataSliceUtils';
 import type { RootState } from './store';
 
-// These are hard-coded views mimicking project views. The "full view" will be added automatically.
-const DATA_VIEWS = [[SAMPLE_ID_FIELD]];
-
-// This is an interim function based on hard-coded views
-const calculateDataViews = (fields: MetaDataColumn[]): string[][] => {
-  const fieldNames = fields.map((field) => field.columnName);
-  const dataViews = DATA_VIEWS.map((view) =>
-    view.filter((field) => fieldNames.includes(field)),
-  ).filter((view) => view.length > 0);
-  dataViews.push(fieldNames);
-  return dataViews;
-};
-
-// Note that this state now includes orgAbbrev, which must be supplied as a param,
-// implying that orgMetadataSlice is only used for org data. This is currently the case.
+// Note that this state includes orgAbbrev, which must be supplied as a param,
+// implying that groupMetadataSlice is only used for org data. This is currently the case.
 // If this were not the case we'd have to make orgAbbrev optional and skip the update checks when null.
 
 export interface OrgMetadataState {
@@ -42,13 +28,10 @@ export interface OrgMetadataState {
   loadingState: MetadataLoadingState;
   fields: MetaDataColumn[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
-  views: Record<number, string[]>;
-  viewLoadingStates: Record<number, LoadingState>;
-  viewToFetch: number;
   metadata: Sample[] | null;
-  columnLoadingStates: Record<string, LoadingState>;
   emptyColumns: string[];
   errorMessage: string | null;
+  isDataStale: boolean;
 }
 
 const orgMetadataInitialStateCreator = (orgAbbrev: string): OrgMetadataState => ({
@@ -57,13 +40,10 @@ const orgMetadataInitialStateCreator = (orgAbbrev: string): OrgMetadataState => 
   loadingState: MetadataLoadingState.IDLE,
   fields: null,
   fieldUniqueValues: null,
-  views: {},
-  viewLoadingStates: {},
-  viewToFetch: 0,
   metadata: null,
-  columnLoadingStates: {},
   emptyColumns: [],
   errorMessage: null,
+  isDataStale: false,
 });
 
 interface OrgMetadataSliceState {
@@ -93,9 +73,8 @@ interface FetchOrgFieldsResponse {
 
 interface FetchDataViewParams {
   orgAbbrev: string;
-  fields: string[];
-  viewIndex: number;
 }
+
 interface FetchDataViewResponse {
   data: Sample[];
 }
@@ -107,6 +86,70 @@ interface FetchLatestActivityTimeParams {
 interface FetchLatestActivityTimeResponse {
   timestamp: string;
 }
+
+interface PollGroupStalenessResponse {
+  groupId: number;
+  isStale: boolean;
+}
+
+const pollGroupStaleness = createAsyncThunk(
+  'groupMetadata/pollGroupStaleness',
+  async (
+    params: { groupId: number },
+    { rejectWithValue, getState },
+  ): Promise<PollGroupStalenessResponse | unknown> => {
+    const { groupId } = params;
+    const state = getState() as RootState;
+    const { token } = state.groupMetadataState;
+    const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
+    const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
+
+    if (!orgAbbrev) {
+      return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
+    }
+
+    const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
+    if (response.status !== 'Success') {
+      return rejectWithValue(response.error);
+    }
+
+    const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
+
+    return { groupId, isStale };
+  },
+);
+
+interface PollGroupStalenessResponse {
+  groupId: number;
+  isStale: boolean;
+}
+
+const pollGroupStaleness = createAsyncThunk(
+  'groupMetadata/pollGroupStaleness',
+  async (
+    params: { groupId: number },
+    { rejectWithValue, getState },
+  ): Promise<PollGroupStalenessResponse | unknown> => {
+    const { groupId } = params;
+    const state = getState() as RootState;
+    const { token } = state.groupMetadataState;
+    const orgAbbrev = state.groupMetadataState.data[groupId]?.orgAbbrev;
+    const currentTimestamp = state.groupMetadataState.data[groupId]?.dataLoadTime;
+
+    if (!orgAbbrev) {
+      return rejectWithValue(`No orgAbbrev in state for group ${groupId}`);
+    }
+
+    const response = await getLatestActivityTime('Organisation', token!, orgAbbrev);
+    if (response.status !== 'Success') {
+      return rejectWithValue(response.error);
+    }
+
+    const isStale = !currentTimestamp || new Date(response.data!) > new Date(currentTimestamp);
+
+    return { groupId, isStale };
+  },
+);
 
 const getOrgLatestActivityTime = createAsyncThunk(
   'orgMetadata/getOrgLatestActivityTime',
@@ -148,8 +191,10 @@ const fetchDataView = createAsyncThunk(
     params: FetchDataViewParams,
     { rejectWithValue, fulfillWithValue, getState },
   ): Promise<FetchDataViewResponse | unknown> => {
-    const { orgAbbrev, fields } = params;
-    const { token } = (getState() as RootState).orgMetadataState;
+    const { orgAbbrev } = params;
+    const state = getState() as RootState;
+    const { token } = state.orgMetadataState;
+    const fields = state.orgMetadataState.data[orgAbbrev].fields!.map((f) => f.columnName);
     const response = await getOrgMetadataByField(orgAbbrev, fields, token!);
     if (response.status === 'Success') {
       return fulfillWithValue<FetchDataViewResponse>({
@@ -187,7 +232,44 @@ listenerMiddleware.startListening({
   },
 });
 
-// Launch fetchOrgFields when FETCH_REQUESTED is set (initial load, explicit reload request, or stale data check)
+const GROUP_POLL_INTERVAL_MS = 2 * 60 * 1000;
+
+listenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
+    if (!groupId) return false;
+
+    const prev = (previousState as RootState).groupMetadataState.data[groupId]?.loadingState;
+    const curr = (currentState as RootState).groupMetadataState.data[groupId]?.loadingState;
+
+    return prev !== MetadataLoadingState.DATA_LOADED && curr === MetadataLoadingState.DATA_LOADED;
+  },
+  effect: async (action, listenerApi) => {
+    const groupId = (action as any)?.meta?.arg?.groupId ?? (action as any)?.payload?.groupId;
+
+    while (true) {
+      const cancelled = await Promise.race([
+        listenerApi.delay(GROUP_POLL_INTERVAL_MS).then(() => false),
+        listenerApi
+          .take(
+            (_a, currentState) =>
+              (currentState as RootState).groupMetadataState.data[groupId]?.loadingState !==
+              MetadataLoadingState.DATA_LOADED,
+          )
+          .then(() => true),
+      ]);
+
+      if (cancelled) break;
+
+      const loadingState = (listenerApi.getState() as RootState).groupMetadataState.data[groupId]
+        ?.loadingState;
+      if (loadingState !== MetadataLoadingState.DATA_LOADED) break;
+
+      listenerApi.dispatch(pollGroupStaleness({ groupId }));
+    }
+  },
+});
+// Launch fetchGroupFields when FETCH_REQUESTED is set (initial load, explicit reload request, or stale data check)
 const FETCH_REQUESTED_ACTIONS = [
   'orgMetadata/fetchOrgMetadata',
   'orgMetadata/reloadOrgMetadata',
@@ -195,7 +277,6 @@ const FETCH_REQUESTED_ACTIONS = [
 ];
 listenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't spend time reading state
     if (!FETCH_REQUESTED_ACTIONS.includes(action.type)) return false;
     const orgAbbrev = (action as any)?.payload?.orgAbbrev ?? (action as any)?.meta?.arg?.orgAbbrev;
     if (!orgAbbrev) return false;
@@ -214,29 +295,12 @@ listenerMiddleware.startListening({
   },
 });
 
-// Launch needed data view fetch after viewToFetch changes
+// Launch data view fetch after group fields retrieved
 listenerMiddleware.startListening({
-  predicate: (action, currentState, previousState) => {
-    // Return early if wrong action; don't try to read orgAbbrev
-    if (!isAnyOf(fetchOrgFields.fulfilled, fetchDataView.fulfilled)(action)) return false;
-    const { orgAbbrev } = (action as any).meta.arg;
-    // Check that viewToFetch has incremented
-    const previousViewToFetch = (previousState as RootState).orgMetadataState.data[orgAbbrev]
-      ?.viewToFetch;
-    const viewToFetch = (currentState as RootState).orgMetadataState.data[orgAbbrev]?.viewToFetch;
-    return viewToFetch === 0 || previousViewToFetch !== viewToFetch;
-  },
+  predicate: (action) => fetchGroupFields.fulfilled.match(action),
   effect: (action, listenerApi) => {
-    const { orgAbbrev } = (action as any).meta.arg;
-    const { views, viewToFetch } = (listenerApi.getState() as RootState).orgMetadataState.data[
-      orgAbbrev
-    ];
-    // Dispatch the requested next view load, unless it is out of range (i.e. we are finished)
-    // Alternatively could test state and stop if MetadataLoadingState.DATA_LOADED
-    if (viewToFetch < 0 || viewToFetch >= Object.keys(views).length) return;
-    listenerApi.dispatch(
-      fetchDataView({ orgAbbrev, fields: views[viewToFetch], viewIndex: viewToFetch }),
-    );
+    const { groupId } = (action as any).meta.arg;
+    listenerApi.dispatch(fetchDataView({ groupId }));
   },
 });
 
@@ -255,8 +319,7 @@ export const orgMetadataSlice = createSlice({
       // If we are in any other state (i.e. partway through load), do nothing, allow the load process to complete
       if (
         state.data[orgAbbrev].loadingState === MetadataLoadingState.IDLE ||
-        state.data[orgAbbrev].loadingState === MetadataLoadingState.ERROR ||
-        state.data[orgAbbrev].loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
+        state.data[orgAbbrev].loadingState === MetadataLoadingState.ERROR
       ) {
         // If we were in an error state and are refreshing, clear data
         if (state.data[orgAbbrev].loadingState !== MetadataLoadingState.IDLE) {
@@ -313,18 +376,8 @@ export const orgMetadataSlice = createSlice({
       // Sort fields by columnOrder and set state
       fields.sort((a, b) => a.columnOrder - b.columnOrder);
       state.data[orgAbbrev].fields = fields;
-      // Set views (field lists), and set view loading states to IDLE for all views
-      // This is an interim measure; later we will use a thunk to fetch project data views
-      const views = calculateDataViews(fields);
-      state.data[orgAbbrev].views = {};
-      views.forEach((view, index) => {
-        state.data[orgAbbrev].views![index] = view;
-        state.data[orgAbbrev].viewLoadingStates![index] = LoadingState.IDLE;
-      });
-      // Set column loading states to IDLE for all fields, and initialise unique values
       state.data[orgAbbrev].fieldUniqueValues = {};
-      state.data[orgAbbrev].fields!.forEach((field) => {
-        state.data[orgAbbrev].columnLoadingStates[field.columnName] = LoadingState.IDLE;
+      fields.forEach((field) => {
         state.data[orgAbbrev].fieldUniqueValues![field.columnName] = null;
       });
       state.data[orgAbbrev].loadingState = MetadataLoadingState.FIELDS_LOADED;
@@ -334,34 +387,28 @@ export const orgMetadataSlice = createSlice({
       state.data[orgAbbrev].errorMessage = `Unable to load org fields: ${action.payload}`;
       state.data[orgAbbrev].loadingState = MetadataLoadingState.ERROR;
     });
+
     builder.addCase(fetchDataView.pending, (state, action) => {
-      const { orgAbbrev, fields, viewIndex } = action.meta.arg;
-      state.data[orgAbbrev].viewLoadingStates![viewIndex] = LoadingState.LOADING;
-      // If not yet awaiting, start awaiting; if AWAITING or PARTIAL_DATA_LOADED, no change
-      if (viewIndex === 0) {
-        state.data[orgAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
-      }
-      fields.forEach((field) => {
-        // Check per-column state; columns new in this load get LOADING status
-        if (state.data[orgAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[orgAbbrev].columnLoadingStates[field] = LoadingState.LOADING;
-        }
-      });
+      const { orgAbbrev } = action.meta.arg;
+      state.data[orgAbbrev].loadingState = MetadataLoadingState.AWAITING_DATA;
     });
+
     builder.addCase(fetchDataView.fulfilled, (state, action) => {
-      const { orgAbbrev, fields, viewIndex } = action.meta.arg;
+      const { orgAbbrev } = action.meta.arg;
       const { data } = action.payload as FetchDataViewResponse;
-      const viewFields = state.data[orgAbbrev].views[viewIndex];
-      // Each returned view is a superset of the previous; we always replace the data
-      if (viewFields.includes(HAS_SEQUENCES)) {
+      const fields = state.data[orgAbbrev].fields!;
+      const fieldNames = fields.map((f) => f.columnName);
+
+      if (fieldNames.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
       }
       replaceNullsWithEmpty(data);
-      state.data[orgAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
-      replaceDateStrings(data, state.data[orgAbbrev].fields!, viewFields);
+
+      state.data[orgAbbrev].emptyColumns = getEmptyStringColumns(data, fieldNames);
+      replaceDateStrings(data, fields, fieldNames);
       state.data[orgAbbrev].metadata = data;
-      // Default sort data by Seq_ID, which should be consistent across views.
-      // Could be done server-side, in which case this sort operation is redundant but cheap
+
+      // Default sort by Seq_ID; could be done server-side
       if (
         state.data[orgAbbrev].metadata!.length > 0 &&
         state.data[orgAbbrev].metadata![0][SAMPLE_ID_FIELD]
@@ -371,31 +418,19 @@ export const orgMetadataSlice = createSlice({
           collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
         );
       }
-      // Calculate unique values
-      // Note that the view is not considered "loaded" until this is done, as we are in the reducer.
-      // Would be better to do server-side, but this operation is quite fast.
-      // Note that if categorical fields are included in project sub-views, they will be
-      // recalculated per-view, to ensure consistency.
-      const fieldDetails: MetaDataColumn[] = fields.map((field) => {
-        const fieldDetail = state.data[orgAbbrev].fields!.find((f) => f.columnName === field);
-        if (!fieldDetail) {
-          throw new Error(
-            'Unexpected error in fetchDataView.fullfilled: ' +
-              `field ${field} in data not found in expected fields`,
-          );
-        }
-        return fieldDetail;
-      });
-      // fields with defined valid values can just be looked up
-      const categoricalFields = fieldDetails.filter(
+
+      // Calculate unique values; would be better server-side but this is quite fast
+      // Fields with defined valid values can just be looked up
+      const categoricalFields = fields.filter(
         (field) => field.canVisualise && field.metaDataColumnValidValues,
       );
       categoricalFields.forEach((field) => {
         state.data[orgAbbrev].fieldUniqueValues![field.columnName] =
           field.metaDataColumnValidValues;
       });
-      // visualisable string field unique values must be calculated
-      const visualisableFields = fieldDetails.filter(
+
+      // Visualisable string field unique values must be calculated
+      const visualisableFields = fields.filter(
         (field) => field.canVisualise && field.primitiveType === 'string',
       );
       const valueSets: Record<string, Set<string>> = {};
@@ -405,56 +440,37 @@ export const orgMetadataSlice = createSlice({
       data.forEach((sample) => {
         visualisableFields.forEach((field) => {
           const value = sample[field.columnName];
-          // we conflate the string 'null' with empty values, but there may not be a better option
           valueSets[field.columnName].add(value === null ? 'null' : value);
         });
       });
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
       visualisableFields.forEach((field) => {
         state.data[orgAbbrev].fieldUniqueValues![field.columnName] = Array.from(
           valueSets[field.columnName],
-        );
+        ).sort(collator.compare);
       });
-      // Sort unique values using natural sort order
-      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-      visualisableFields.forEach((field) => {
-        state.data[orgAbbrev].fieldUniqueValues![field.columnName]!.sort(collator.compare);
-      });
-      // Set SUCCESS states
-      state.data[orgAbbrev].viewLoadingStates![viewIndex] = LoadingState.SUCCESS;
-      fields.forEach((field) => {
-        state.data[orgAbbrev].columnLoadingStates[field] = LoadingState.SUCCESS;
-      });
-      // Increment viewToFetch, which will trigger the next view load
-      state.data[orgAbbrev].viewToFetch = viewIndex + 1;
-      // If this is the full dataset, we are done, otherwise we are in a partial load state
-      if (viewIndex === Object.keys(state.data[orgAbbrev].views).length - 1) {
-        // NB here expect also that fields.length === state.data[orgAbbrev].fields?.length
-        state.data[orgAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
-        state.data[orgAbbrev].dataLoadTime = new Date().toISOString();
-      } else {
-        state.data[orgAbbrev].loadingState = MetadataLoadingState.PARTIAL_DATA_LOADED;
+
+      state.data[orgAbbrev].dataLoadTime = new Date().toISOString();
+      state.data[orgAbbrev].loadingState = MetadataLoadingState.DATA_LOADED;
+    });
+
+    builder.addCase(fetchDataView.rejected, (state, action) => {
+      const { orgAbbrev } = action.meta.arg;
+      state.data[orgAbbrev].loadingState = MetadataLoadingState.ERROR;
+      state.data[orgAbbrev].errorMessage = `Unable to load metadata: ${action.payload}`;
+    });
+
+    builder.addCase(pollGroupStaleness.fulfilled, (state, action) => {
+      const { orgAbbrev, isStale } = action.payload as PollGroupStalenessResponse;
+      if (isStale) {
+        state.data[orgAbbrev].isDataStale = true;
       }
     });
-    builder.addCase(fetchDataView.rejected, (state, action) => {
-      const { orgAbbrev, fields, viewIndex } = action.meta.arg;
-      state.data[orgAbbrev].viewLoadingStates![viewIndex] = LoadingState.ERROR;
-      // Any column not already loaded by another thunk gets an error state
-      fields.forEach((field) => {
-        if (state.data[orgAbbrev].columnLoadingStates[field] !== LoadingState.SUCCESS) {
-          state.data[orgAbbrev].columnLoadingStates[field] = LoadingState.ERROR;
-        }
-      });
-      // If this is the first view, we are in an error state, otherwise a partial error state
-      if (viewIndex === 0) {
-        state.data[orgAbbrev].loadingState = MetadataLoadingState.ERROR;
-        state.data[orgAbbrev].errorMessage = `Unable to load metadata: ${action.payload}`;
-      } else {
-        state.data[orgAbbrev].loadingState = MetadataLoadingState.PARTIAL_LOAD_ERROR;
-        state.data[orgAbbrev].errorMessage = `Unable to complete metadata: ${action.payload}`;
-      }
-      // Currently we don't try to fetch more views after an error
-      // If we want to, we should incremement viewToFetch if there are views left,
-      // and set PARTIAL_DATA_LOADED state instead of error states.
+    builder.addCase(pollGroupStaleness.rejected, (_, action) => {
+      //biome-ignore lint/suspicious/noConsole: interim error logging
+      console.error(
+        `Staleness poll failed for org ${action.meta.arg.orgAbbrev}: ${action.payload}`,
+      );
     });
   },
 });
@@ -469,22 +485,42 @@ export const { fetchOrgMetadata, reloadOrgMetadata } = orgMetadataSlice.actions;
 
 export const selectGroupMetadata: (
   state: RootState,
-  orgAbbrev: string | undefined,
+  groupId: number | undefined,
 ) => OrgMetadataState | null = (state, orgAbbrev) => {
-  if (!orgAbbrev) return null; // should not be 0, which is fine
-  return state.orgMetadataState.data[orgAbbrev!] ?? null;
+  if (!orgAbbrev) return null;
+  return state.orgMetadataState.data[orgAbbrev] ?? null;
 };
 
-// Returns true iff the metadata has not yet loaded to a useable state, i.e. we are awaiting initial
-// data. This includes idle and awaiting fields states.
-// Returns false if any (including partial) data loaded, or if error state
+export const selectGroupStaleDataAvailable = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) return false;
+  return state.groupMetadataState.data[groupId]?.isDataStale ?? false;
+};
+
+export const selectGroupMetadataFields = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) {
+    return { fields: null, fieldUniqueValues: null, loadingState: MetadataLoadingState.IDLE };
+  }
+  return {
+    fields: state.groupMetadataState.data[groupId]?.fields,
+    fieldUniqueValues: state.groupMetadataState.data[groupId]?.fieldUniqueValues,
+    loadingState: state.groupMetadataState.data[groupId]?.loadingState,
+  };
+};
+
+export const selectGroupMetadataError = (state: RootState, groupId: number | undefined) => {
+  if (!groupId) return null;
+  return state.groupMetadataState.data[groupId]?.errorMessage;
+};
+
 export const selectAwaitingGroupMetadata = (state: RootState, orgAbbrev: string | undefined) => {
   if (!orgAbbrev) return true;
   const loadingState = state.orgMetadataState.data[orgAbbrev]?.loadingState;
+  if (!loadingState) return true;
   return (
     loadingState === MetadataLoadingState.IDLE ||
     loadingState === MetadataLoadingState.FETCH_REQUESTED ||
     loadingState === MetadataLoadingState.AWAITING_FIELDS ||
+    loadingState === MetadataLoadingState.FIELDS_LOADED ||
     loadingState === MetadataLoadingState.AWAITING_DATA
   );
 };

@@ -10,7 +10,6 @@ import {
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
-import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
@@ -33,10 +32,11 @@ const DEFAULT_COLOUR_SCHEME = 'tableau10';
 
 const UniformColourSpec = { value: Theme.SecondaryDarkGreen };
 
-interface EpiCurveChartProps extends ProjectWidgetProps {
+export interface EpiCurveChartProps extends ProjectWidgetProps {
   preferredColourField?: string;
   dateFilterField: string;
   colourMapping?: Record<string, string> | undefined;
+  tall?: boolean;
 }
 
 /** Widget displaying a basic Epi Curve
@@ -168,16 +168,13 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     }
   }, [data?.loadingState]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(TIME_AXIS_FIELD)) {
       setErrorMessage(`Field ${TIME_AXIS_FIELD} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[TIME_AXIS_FIELD] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${TIME_AXIS_FIELD} values`);
     }
-  }, [data?.fields, data?.loadingState]);
+  }, [data?.fields, data?.loadingState, data?.errorMessage]);
 
   useEffect(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {

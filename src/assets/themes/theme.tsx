@@ -80,7 +80,8 @@ const muiTheme: ThemeOptions = createTheme({
       fontWeight: 'bold',
     },
     h3: {
-      fontSize: '1.5rem',
+      fontSize: '1.6rem',
+      fontWeight: 'bold',
     },
     h4: {
       fontSize: '1.2rem',
@@ -154,6 +155,45 @@ export const globalStyles = {
 
 // INFO:   Local quick reference
 //
+// Trakka:
+// PrimaryMain = '#1C1C28',
+// SecondaryMain = '#3D5FA0',
+// PrimaryGrey = '#F4F5F8',
+// SecondaryDarkGrey = '#3E4352',
+// SecondaryLightGrey = '#B3B6C2',
+// SecondaryTeal = '#3A9E82',
+// SecondaryLightGreen = '#52A87A',
+// SecondaryDarkGreen = '#2F6E4E',
+// SecondaryBlue = '#3B82C4',
+// SecondaryPurple = '#7B6FC4',
+// SecondaryOrange = '#C4622A',
+// SecondaryRed = '#C0395A',
+// SecondaryYellow = '#DDB830',
+// Background = '#F7F8FB',
+// SecondaryMain50 = '#ECF0F9',
+// SecondaryMain100 = '#C5CEEC',
+// SecondaryMain200 = '#96A8DB',
+// SecondaryMain300 = '#6280C4',
+// SecondaryMain400 = '#3D5FA0',
+// SecondaryMain500 = '#2E4A82',
+// SecondaryMain600 = '#213666',
+// SecondaryMain700 = '#15244A',
+// SecondaryMain800 = '#0C1530',
+// SecondaryMain900 = '#060A1A',
+//   PrimaryGrey50 = '#fafafa',
+//   PrimaryGrey100 = '#f5f5f5',
+//   PrimaryGrey200 = '#eeeeee',
+//   PrimaryGrey300 = '#e0e0e0',
+//   PrimaryGrey400 = '#bdbdbd',
+//   PrimaryGrey500 = '#9e9e9e',
+//   PrimaryGrey600 = '#757575',
+//   PrimaryGrey700 = '#616161',
+//   PrimaryGrey800 = '#424242',
+//   PrimaryGrey900 = '#212121',
+// PrimaryMainBackground = '#EEF0F7',
+//
+//
+// AusTrakka:
 //   PrimaryMain = '#0a3546',
 //   SecondaryMain = '#90CA6D',
 //   PrimaryGrey = '#F6F7F8',

@@ -5,6 +5,7 @@ import {
   Description,
   Domain,
   Help,
+  Home as HomeIcon,
   Inventory,
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
@@ -24,6 +25,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Link as MuiLink,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -34,7 +36,7 @@ import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import { hasPermissionV2ByRole } from '../../permissions/accessTable';
-import { RoleV2SeededName } from '../../permissions/roles';
+import { Roles } from '../../permissions/roles';
 import Cli from '../Cli/Cli';
 import LogoutButton from '../Common/LogoutButton';
 import Feedback from '../Feedback/Feedback';
@@ -93,6 +95,7 @@ function MainMenuLayout() {
     fields: 'Fields',
     datasets: 'Datasets',
     share: 'Share',
+    documents: 'Documents',
     plots: 'Plots',
     map: 'Map',
   };
@@ -116,6 +119,7 @@ function MainMenuLayout() {
     'proformas',
     'datasets',
     'activity',
+    'documents',
   ];
 
   const location = useLocation();
@@ -174,7 +178,7 @@ function MainMenuLayout() {
     },
   ];
 
-  const hasAdminRights: boolean = hasPermissionV2ByRole(user, RoleV2SeededName.Admin);
+  const hasAdminRights: boolean = hasPermissionV2ByRole(user, Roles.Admin);
 
   const visiblePages = pages.filter((page) => !page.permissionDomain || hasAdminRights);
 
@@ -337,7 +341,19 @@ function MainMenuLayout() {
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link to="/">Home</Link>
+              <MuiLink
+                component={Link}
+                to="/"
+                color="inherit"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  lineHeight: 1,
+                  height: '24px',
+                }}
+              >
+                <HomeIcon sx={{ fontSize: '1rem', lineHeight: 1 }} />
+              </MuiLink>
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
                 const nolink = breadcrumbNoLink.includes(value);

@@ -8,7 +8,10 @@ import type {
   Plot,
   PlotListing,
   Project,
+  ProjectDocument,
   ProjectSummary,
+  ProjectView,
+  Role,
   Tree,
   TreeVersion,
   UserPatchV2,
@@ -17,6 +20,7 @@ import type {
 import type { ResponseObject } from '../types/responseObject.interface';
 import type { Sample } from '../types/sample.interface';
 import {
+  buildDocumentUploadHeaders,
   buildUploadHeaders,
   callDELETE,
   callGET,
@@ -26,6 +30,7 @@ import {
   callPostMultipart,
   callSimpleGET,
   downloadFile,
+  previewFile,
 } from './api';
 
 // Definition of endpoints
@@ -95,13 +100,15 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/project-field-list`, token);
-export const getProjectViews = (projectAbbrev: string, token: string) =>
+
+export const getProjectView = (
+  projectAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProjectView>> =>
   callGET(`/api/Projects/${projectAbbrev}/project-views`, token);
-export const getProjectViewData = (projectAbbrev: string, viewId: number, token: string) =>
-  callSimpleGET(
-    `/api/Projects/${projectAbbrev}/download-project-view?datasetViewId=${viewId}`,
-    token,
-  );
+
+export const getProjectViewData = (projectAbbrev: string, token: string): Promise<Response> =>
+  callSimpleGET(`/api/Projects/${projectAbbrev}/download-project-view?datasetViewId`, token);
 
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
@@ -174,7 +181,8 @@ export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
 
 // Role endpoints
-export const getRoles = (token: string) => callGET('/api/RolesV2', token);
+export const getRoles = (token: string): Promise<ResponseObject<Role[]>> =>
+  callGET('/api/RolesV2', token);
 
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) =>
@@ -234,6 +242,20 @@ export const getOrgMetadata = (
     ResponseObject<Sample[]>
   >;
 };
+
+export const changeSampleOwner = (
+  token: string,
+  seqIds: string[],
+  currentOrgAbbrev: string,
+  newOwnerAbbrev: string,
+  clientSessionId?: string,
+) =>
+  callPATCH(
+    `/api/OrganisationV2/${currentOrgAbbrev}/samplesOwner`,
+    token,
+    { seqIds, newOwnerAbbrev },
+    clientSessionId,
+  );
 
 export const postFeedback = (
   feedbackPostDto: FeedbackPost,
@@ -398,4 +420,70 @@ export const getLatestActivityTime = (
     resourcePath = `/api/Projects/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   }
   return callGET(resourcePath, token);
+};
+
+// Project documents endpoints
+export const getDocuments = (
+  projectAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProjectDocument[]>> =>
+  callGET(`/api/Projects/${projectAbbrev}/documents`, token);
+export const getDocument = (
+  projectAbbrev: string,
+  documentStringId: string,
+  token: string,
+): Promise<ResponseObject<ProjectDocument>> =>
+  callGET(`/api/Projects/${projectAbbrev}/documents/${documentStringId}`, token);
+
+export const uploadDocument = (
+  projectAbbrev: string,
+  filename: string,
+  description: string,
+  formData: FormData,
+  token: string,
+): Promise<ResponseObject<ProjectDocument>> => {
+  const customHeaders = buildDocumentUploadHeaders(filename, description);
+  return callPOSTForm(
+    `/api/Projects/${projectAbbrev}/documents/upload`,
+    formData,
+    token,
+    customHeaders,
+  );
+};
+export const disableDocument = (projectAbbrev: string, documentStringId: string, token: string) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/disable`, token);
+export const enableDocument = (projectAbbrev: string, documentStringId: string, token: string) =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/enable`, token);
+export const updateDocument = (
+  projectAbbrev: string,
+  documentStringId: string,
+  token: string,
+  filename: string,
+  description: string,
+): Promise<ResponseObject<ProjectDocument>> =>
+  callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/update`, token, {
+    filename,
+    description,
+  });
+export const downloadDocument = async (
+  projectAbbrev: string,
+  documentStringId: string,
+  token: string,
+) => {
+  const response = await downloadFile(
+    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/download`,
+    token,
+  );
+  return response;
+};
+export const previewDocument = async (
+  projectAbbrev: string,
+  documentStringId: string,
+  token: string,
+) => {
+  const response = await previewFile(
+    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/preview`,
+    token,
+  );
+  return response;
 };

@@ -9,12 +9,23 @@ describe('updateEditedPrivileges', () => {
     {
       record: { id: '1', name: 'User1', abbrev: 'U1' },
       roles: [
-        { name: 'Admin', globalId: 'role1', resourceTypes: [], privilegeLevel: 'Root' },
+        {
+          name: 'Admin',
+          globalId: 'role1',
+          resourceTypes: [],
+          privilegeLevel: 'Root',
+          roleId: 1,
+          description: '',
+          scopes: [],
+        },
         {
           name: 'Editor',
           globalId: 'role2',
           resourceTypes: [],
           privilegeLevel: 'TrakkaAdmin',
+          roleId: 2,
+          description: '',
+          scopes: [],
         },
       ],
     },
@@ -22,10 +33,13 @@ describe('updateEditedPrivileges', () => {
       record: { id: '2', name: 'User2', abbrev: 'U2' },
       roles: [
         {
-          name: 'Viewer',
+          name: 'GroupViewer',
           globalId: 'role3',
           resourceTypes: [],
           privilegeLevel: 'Admin',
+          roleId: 1,
+          description: '',
+          scopes: [],
         },
       ],
     },
@@ -67,7 +81,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },
@@ -92,7 +108,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },
@@ -117,7 +135,9 @@ describe('updateEditedPrivileges', () => {
           {
             recordName: 'U2',
             recordGlobalId: '2',
-            roles: [{ roleName: 'Viewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined }],
+            roles: [
+              { roleName: 'GroupViewer', privilegeLevel: 'Admin', privilegeGlobalId: undefined },
+            ],
           },
         ],
       },

@@ -22,6 +22,7 @@ import OrganisationOverviewWrapper from './components/OrganisationOverview/Organ
 import Platform from './components/Platform/Platform';
 import PlotDetail from './components/Plots/PlotDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
+import DocumentPreview from './components/ProjectDocuments/PreviewDocument';
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
 import ProjectsList from './components/ProjectsList/ProjectsList';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
@@ -81,6 +82,11 @@ function App() {
                   <Route path="users/:username" element={<UserDetailOverview />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
+                {/* Document preview to sit outside main layout */}
+                <Route
+                  path="/projects/:abbreviation/documents/:documentStringId/preview"
+                  element={<DocumentPreview />}
+                />
               </Routes>
             </MsalAuthenticationTemplate>
           </AuthenticatedTemplate>

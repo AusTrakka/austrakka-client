@@ -3,11 +3,13 @@ import OrgSamplesTable from './OrgSamplesTable';
 
 interface OrganisationSampleProps {
   canShare: boolean;
+  canChangeOwnership: boolean;
   orgAbbrev: string;
+  orgName: string;
 }
 
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const { canShare, orgAbbrev } = props;
+  const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
   return (
     <Box>
       <Typography sx={{ paddingBottom: 2 }} align="left" variant="subtitle2" color="primary">
@@ -17,7 +19,12 @@ function OrganisationSamples(props: OrganisationSampleProps) {
         in your organisation&lsquo;s
         <b> Owner group</b>.
       </Typography>
-      <OrgSamplesTable canShare={canShare} orgAbbrev={orgAbbrev} />
+      <OrgSamplesTable
+        canShare={canShare}
+        orgAbbrev={orgAbbrev}
+        canChangeOwnership={canChangeOwnership}
+        orgName={orgName}
+      />
     </Box>
   );
 }

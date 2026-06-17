@@ -1,7 +1,7 @@
 import type { UserSliceState } from '../app/userSlice';
 import RecordTypes from '../constants/record-type.enum';
 import { hasRoleInRecord, hasScopeInRecord } from '../utilities/accessTableUtils';
-import { RoleName, type RoleV2SeededName } from './roles';
+import { type Roles, RolesV1 } from './roles';
 
 export enum PermissionLevel {
   CanClick = 'canClick', // maybe should be renamed to canInteract
@@ -15,19 +15,19 @@ interface ResourcePrivileges {
 
 const componentPermissions: Readonly<Record<string, ResourcePrivileges>> = {
   users: {
-    [PermissionLevel.CanShow]: [RoleName.TrakkaAdmin],
+    [PermissionLevel.CanShow]: [RolesV1.TrakkaAdmin],
   },
   'project/tabs/datasettab': {
-    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
-    [PermissionLevel.CanClick]: [RoleName.Viewer, RoleName.ProjectAnalyst],
+    [PermissionLevel.CanShow]: [RolesV1.GroupViewer, RolesV1.ProjectAnalyst],
+    [PermissionLevel.CanClick]: [RolesV1.GroupViewer, RolesV1.ProjectAnalyst],
   },
   'project/tabs/datasettab/datasettable': {
-    [PermissionLevel.CanShow]: [RoleName.Viewer, RoleName.ProjectAnalyst],
-    [PermissionLevel.CanClick]: [RoleName.ProjectAnalyst],
+    [PermissionLevel.CanShow]: [RolesV1.GroupViewer, RolesV1.ProjectAnalyst],
+    [PermissionLevel.CanClick]: [RolesV1.ProjectAnalyst],
   },
   'organisation/sample/share': {
     // if a button is hidden then when it is shown we expect it to be clickable
-    [PermissionLevel.CanShow]: [RoleName.Uploader, RoleName.TrakkaAdmin],
+    [PermissionLevel.CanShow]: [RolesV1.Uploader, RolesV1.TrakkaAdmin],
   },
 };
 
@@ -72,7 +72,7 @@ export function hasPermissionV2ByScope(
 
 export function hasPermissionV2ByRole(
   user: UserSliceState,
-  role: RoleV2SeededName,
+  role: Roles,
   recordName: string = '',
   recordType = RecordTypes.SYSTEM,
 ): boolean {
@@ -82,4 +82,26 @@ export function hasPermissionV2ByRole(
   if (!user.scopes || user.scopes.length === 0) return false;
 
   return hasRoleInRecord(user.scopes, role, recordName, recordType);
+}
+
+export function getRecordNamesWithScope(
+  user: UserSliceState,
+  recordType: RecordTypes,
+  scope: string,
+  excludeName?: string,
+): string[] {
+  const recordsOfType = user.scopes.filter((item) => item.recordType === recordType);
+  const allRecordRoles = recordsOfType.flatMap((item) => item.recordRoles);
+
+  const recordRolesWithScope = allRecordRoles.filter((recordRole) =>
+    recordRole.roles.some((role) => role.scopes.includes(scope)),
+  );
+
+  // Optionally exclude a specific record by name (e.g. the current org)
+  const filteredRecordRoles = excludeName
+    ? recordRolesWithScope.filter((recordRole) => recordRole.recordName !== excludeName)
+    : recordRolesWithScope;
+
+  // Return the names of the records that have the required scope
+  return filteredRecordRoles.map((recordRole) => recordRole.recordName);
 }

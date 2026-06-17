@@ -16,7 +16,6 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoadingState from '../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
 import type { ProjectViewField } from '../../types/dtos';
@@ -37,26 +36,11 @@ interface TreeSampleTableProps {
   displayFields: ProjectViewField[];
   uniqueValues: Record<string, string[] | null> | null;
   emptyColumns: string[];
-  fieldLoadingState: Record<string, LoadingState>;
   metadataLoadingState: MetadataLoadingState;
   selectedIds: string[];
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
   tableMetadata: Sample[];
   treeName: string;
-}
-
-interface BodyComponentProps {
-  col: Sample;
-  readyFields: Record<string, LoadingState>;
-}
-
-function BodyComponent(props: BodyComponentProps) {
-  const { col, readyFields } = props;
-  return readyFields[col.field] !== LoadingState.SUCCESS ? (
-    <Skeleton /> // Replace with your skeleton component
-  ) : (
-    col.body // Wrap your existing body content
-  );
 }
 
 export default function TreeSamplesTable(props: TreeSampleTableProps) {
@@ -67,7 +51,6 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
     uniqueValues,
     tableMetadata,
     metadataLoadingState,
-    fieldLoadingState,
     emptyColumns,
     treeName,
   } = props;
@@ -136,13 +119,11 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
   }, [currentFilters, metadataLoadingState, tableMetadata]);
 
   useEffect(() => {
-    if (fieldLoadingState && displayRows.length > 0) {
-      if (Object.values(fieldLoadingState).every((field) => field === LoadingState.SUCCESS)) {
-        setAllFieldsLoaded(true);
-        setAllIds(tableMetadata.map((sample: any) => sample.Seq_ID));
-      }
+    if (hasCompleteData(metadataLoadingState) && displayRows.length > 0) {
+      setAllFieldsLoaded(true);
+      setAllIds(tableMetadata.map((sample: any) => sample.Seq_ID));
     }
-  }, [displayRows.length, fieldLoadingState, tableMetadata]);
+  }, [displayRows.length, metadataLoadingState, tableMetadata]);
 
   useEffect(() => {
     if (selectAll && Object.keys(currentFilters).length === 0) {
@@ -263,7 +244,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
         dataLoaded={allFieldsLoaded}
         setLoadingState={setLoading}
       />
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper elevation={2} sx={{ marginBottom: 4 }}>
         <div>
           <DataTable
             value={displayRows}
@@ -316,7 +297,7 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
                     </div>
                   )
                 }
-                body={BodyComponent({ col, readyFields: fieldLoadingState })}
+                body={col.body}
                 hidden={col.hidden}
                 sortable
                 resizeable

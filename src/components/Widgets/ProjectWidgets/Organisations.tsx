@@ -14,8 +14,7 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
-import MetadataLoadingState from '../../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import { aggregateArrayObjects, type CountRow } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
@@ -35,8 +34,13 @@ const columns = [
   },
 ];
 
-export default function Organisations(props: ProjectWidgetProps) {
-  const { projectAbbrev, filteredData, timeFilterObject } = props;
+interface OrganisationWidgetProps extends ProjectWidgetProps {
+  clamped?: boolean;
+}
+
+export default function Organisations(props: OrganisationWidgetProps) {
+  const { projectAbbrev, filteredData, timeFilterObject, clamped } = props;
+  const resolvedClamped = clamped ?? false;
   const { navigate } = useStableNavigate();
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
@@ -45,20 +49,18 @@ export default function Organisations(props: ProjectWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS) {
+    if (hasCompleteData(data?.loadingState)) {
       const counts = aggregateArrayObjects(ORG_FIELD_NAME, filteredData!) as CountRow[];
       counts.sort((a, b) => b.count - a.count);
       setAggregatedCounts(counts);
     }
-  }, [filteredData, data?.fieldLoadingStates]);
+  }, [filteredData, data?.loadingState]);
 
   useEffect(() => {
     if (data?.fields && !data.fields.map((fld) => fld.columnName).includes(ORG_FIELD_NAME)) {
       setErrorMessage(`Field ${ORG_FIELD_NAME} not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.ERROR) {
-      setErrorMessage(`Error loading ${ORG_FIELD_NAME} values`);
     }
   }, [data]);
 
@@ -92,10 +94,12 @@ export default function Organisations(props: ProjectWidgetProps) {
       <Typography variant="h5" paddingBottom={3} color="primary">
         Owner organisations
       </Typography>
-      {data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.SUCCESS && (
+      {hasCompleteData(data?.loadingState) && (
         <DataTable
           value={aggregatedCounts}
           size="small"
+          scrollable={resolvedClamped}
+          scrollHeight={resolvedClamped ? '250px' : undefined}
           onRowClick={rowClickHandler}
           selectionMode="single"
         >
@@ -110,9 +114,7 @@ export default function Organisations(props: ProjectWidgetProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.fieldLoadingStates ||
-        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.LOADING ||
-        data?.fieldLoadingStates[ORG_FIELD_NAME] === LoadingState.IDLE) && <div>Loading...</div>}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }

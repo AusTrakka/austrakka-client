@@ -265,7 +265,7 @@ function UploadMetadata() {
 
   return (
     <>
-      <Typography variant="h2" paddingBottom={1} color="primary">
+      <Typography variant="h3" paddingBottom={1} color="primary">
         Upload Metadata
       </Typography>
       {/* Top section */}
@@ -452,7 +452,7 @@ function UploadMetadata() {
       {/* Lower section: file selector */}
       <Grid container alignItems="center" justifyContent="center">
         <Box sx={{ minWidth: 350, maxWidth: 600 }}>
-          <Typography variant="h4" color="primary" paddingTop={1}>
+          <Typography variant="h4" color="primary" paddingTop={1} paddingBottom={2}>
             Select metadata file
           </Typography>
           <FileDragDrop files={files} setFiles={setFiles} validFormats={validFormats} />

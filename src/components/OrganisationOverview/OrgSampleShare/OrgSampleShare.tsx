@@ -24,6 +24,7 @@ import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
+import { RolesV1 } from '../../../permissions/roles';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
 import { getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
@@ -84,7 +85,8 @@ function OrgSampleShare(props: OrgSampleShareProps) {
       setDestination(selectedDestination);
 
       const canViewPreview = Object.entries(user.groupRolesByGroup).some(
-        ([groupName, roles]) => groupName === selectedDestination && roles.includes('Viewer'),
+        ([groupName, roles]) =>
+          groupName === selectedDestination && roles.includes(RolesV1.GroupViewer),
       );
 
       setCanViewDestinationFields(canViewPreview);

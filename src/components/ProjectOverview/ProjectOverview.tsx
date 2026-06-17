@@ -1,9 +1,13 @@
-import { Alert, Typography } from '@mui/material';
+import { Alert, Button, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { NavigationProvider } from '../../app/NavigationContext';
-import { fetchProjectMetadata, selectProjectMergeAlgorithm } from '../../app/projectMetadataSlice';
+import {
+  fetchProjectMetadata,
+  selectProjectMergeAlgorithm,
+  selectProjectStaleDataAvailable, // NEW
+} from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
@@ -14,6 +18,7 @@ import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import Datasets from '../ProjectDatasets/Datasets';
+import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
 import PlotList from './PlotList';
 import ProFormas from './ProFormas';
@@ -28,7 +33,7 @@ interface ProjectOverviewProps {
 
 const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).reduce(
   (acc, t) => {
-    acc[t.index] = true; // loading by default
+    acc[t.index] = true;
     return acc;
   },
   {} as Record<number, boolean>,
@@ -58,8 +63,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
   );
 
   const [projectDetails, setProjectDetails] = useState<Project | null>(null);
-
-  // Project Overview component states
   const [isOverviewError, setIsOverviewError] = useState({
     detailsError: false,
     detailsErrorMessage: '',
@@ -93,10 +96,18 @@ function ProjectOverview(props: ProjectOverviewProps) {
     selectProjectMergeAlgorithm(state, projectDetails?.abbreviation),
   );
 
-  useEffect(() => {
-    const tabKey = tab.toLowerCase(); // e.g. "plots"
-    const tabObj = PROJ_TABS[tabKey];
+  const staleDataAvailable = useAppSelector((state) =>
+    selectProjectStaleDataAvailable(state, projectDetails?.abbreviation),
+  );
 
+  const handleRefresh = () => {
+    if (!projectDetails?.abbreviation || !token) return;
+    dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
+  };
+
+  useEffect(() => {
+    const tabKey = tab.toLowerCase();
+    const tabObj = PROJ_TABS[tabKey];
     if (tabObj) {
       setTabValue(tabObj.index);
     }
@@ -111,6 +122,20 @@ function ProjectOverview(props: ProjectOverviewProps) {
   ) : (
     <>
       <Typography className="pageTitle">{projectDetails ? projectDetails.name : ''}</Typography>
+      {staleDataAvailable && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this project.
+        </Alert>
+      )}
+
       <CustomTabs value={tabValue} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
       <TabPanel value={tabValue} index={PROJ_TABS.dashboard.index}>
         <ProjectDashboard
@@ -171,6 +196,9 @@ function ProjectOverview(props: ProjectOverviewProps) {
       <TabPanel value={tabValue} index={PROJ_TABS.activity.index}>
         <Activity recordType="Project" rGuid={projectDetails?.globalId ?? ''} />
       </TabPanel>
+      <TabPanel value={tabValue} index={PROJ_TABS.documents.index}>
+        <ProjectDocuments projectDetails={projectDetails} />
+      </TabPanel>
     </>
   );
 }
@@ -190,4 +218,5 @@ function ProjectOverviewWrapper() {
     </NavigationProvider>
   );
 }
+
 export default ProjectOverviewWrapper;

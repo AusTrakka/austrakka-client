@@ -21,12 +21,10 @@ import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
 import { memo, useEffect, useState } from 'react';
 import './Samples.css';
-import { Skeleton } from 'primereact/skeleton';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
-import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
@@ -49,23 +47,8 @@ interface SamplesProps {
   projectAbbrev: string;
 }
 
-interface BodyComponentProps {
-  col: Sample;
-  readyFields: Record<string, LoadingState> | undefined;
-}
-
-function BodyComponent(props: BodyComponentProps) {
-  const { col, readyFields } = props;
-  return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
-    <Skeleton /> // Replace with your skeleton component
-  ) : (
-    col.body // Wrap your existing body content
-  );
-}
-
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
-
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -91,25 +74,17 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
   // Set column headers from metadata state
   useEffect(() => {
-    if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
+    if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    if (
-      Object.values(metadata.fieldLoadingStates).every(
-        (field) => field === LoadingState.SUCCESS || field === LoadingState.IDLE,
-      )
-    ) {
+    if (metadata.loadingState === MetadataLoadingState.DATA_LOADED) {
       setAllFieldsLoaded(true);
     }
     setSampleTableColumns(columnBuilder);
     setFilteredDataLength(metadata.metadata?.length ?? 0);
-  }, [metadata?.fields, metadata?.fieldLoadingStates, metadata?.metadata?.length]);
+  }, [metadata?.fields, metadata?.loadingState, metadata?.metadata?.length]);
 
-  // Open error dialog if loading state changes to error
   useEffect(() => {
-    if (
-      metadata?.loadingState === MetadataLoadingState.ERROR ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-    ) {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -175,11 +150,7 @@ function ProjectSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <ExportTableData
-          dataToExport={
-            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-              ? []
-              : (filteredData ?? [])
-          }
+          dataToExport={filteredData ?? []}
           headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
           disabled={!hasCompleteData(metadata?.loadingState)}
           fileNamePrefix={projectAbbrev}
@@ -255,16 +226,9 @@ function ProjectSamplesTable(props: SamplesProps) {
             <Close />
           </IconButton>
           <AlertTitle sx={{ paddingBottom: 1 }}>
-            <strong>
-              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-                ? 'Project metadata could not be fully loaded'
-                : 'Project metadata could not be loaded'}
-            </strong>
+            <strong> 'Project metadata could not be loaded'</strong>
           </AlertTitle>
-          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-            ? `An error occurred loading project metadata. Some fields will be null, and 
-          CSV export will not be available. Refresh to reload.`
-            : 'An error occurred loading project metadata. Refresh to reload.'}
+          'An error occurred loading project metadata. Refresh to reload.
           <br />
           Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
         </Alert>
@@ -325,7 +289,7 @@ function ProjectSamplesTable(props: SamplesProps) {
                   key={col.field}
                   field={col.field}
                   header={getColumnHeader(col, index, verticalHeaders)}
-                  body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
+                  body={col.body}
                   hidden={col.hidden}
                   sortable
                   resizeable

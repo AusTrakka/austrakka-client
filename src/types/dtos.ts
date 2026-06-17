@@ -63,9 +63,7 @@ export interface Tree {
   name: string;
   description: string;
   latestTreeLastUpdated: Date;
-  project: {
-    abbreviation: string;
-  };
+  projectAbbrev: string;
   projectName: string;
   isActive: boolean;
   created: Date;
@@ -381,15 +379,12 @@ export interface DataSetEntry {
 
 export interface Role {
   roleId: number;
+  globalId: string;
   name: string;
   description: string;
-}
-
-export interface RolesV2 {
-  name: string;
-  globalId: string;
-  resourceTypes: string[];
   privilegeLevel: string;
+  resourceTypes: string[];
+  scopes: string[];
 }
 
 export interface FeedbackPost {
@@ -438,4 +433,18 @@ export interface DerivedLog {
   eventStatus: string;
   data: string; // TODO needs to be parsed
   visChain: VisChainEntry[];
+  errorMessage: string;
+}
+
+export interface ProjectDocument {
+  globalId: string;
+  uniqueStringId: string;
+  fileName: string;
+  description: string;
+  isActive: boolean;
+  fileSize: number;
+  createdBy: string;
+  created: Date;
+  lastUpdated: Date;
+  lastUpdatedBy: string;
 }

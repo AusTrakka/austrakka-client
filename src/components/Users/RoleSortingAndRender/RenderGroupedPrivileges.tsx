@@ -7,7 +7,7 @@ import type {
   GroupedPrivilegesByRecordType,
   PrivilegeWithRoles,
   RecordRole,
-  RolesV2,
+  Role,
 } from '../../../types/dtos';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { RoleAssignments } from '../../../types/userDetailEdit.interface';
@@ -46,7 +46,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
     onSelectionRemove,
   } = props;
 
-  const [rolesForV2, setRolesForV2] = useState<RolesV2[] | null>(null);
+  const [rolesForV2, setRolesForV2] = useState<Role[] | null>(null);
   const [ugpFilledAndSorted, setUgpFilledAndSorted] = useState<GroupedPrivilegesByRecordType[]>(
     userGroupedPrivileges ?? [],
   );
@@ -60,9 +60,9 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
         setErrorMessage(response.message);
         return;
       }
-      const allRoles: RolesV2[] = response?.data ?? [];
+      const allRoles: Role[] = response?.data ?? [];
 
-      const rolesV2: RolesV2[] = allRoles
+      const rolesV2: Role[] = allRoles
         .filter((role) => role.resourceTypes?.length)
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -157,6 +157,7 @@ function RenderGroupedPrivileges(props: RenderGroupedRolesAndGroupsProps) {
             key={`${recordName}-${roles.join('-')}`}
             recordName={recordName}
             recordGlobalId={recordGlobalId}
+            allRoles={rolesForV2 ?? []}
             recordRoles={roles}
             isOpen={openGroupRoles.includes(recordType)}
             editing={editing}

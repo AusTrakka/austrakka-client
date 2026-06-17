@@ -47,7 +47,33 @@ export const renderValue = (value: any, field: string, type: string): string => 
   return renderValueOrEmptyString(value);
 };
 
-export function bytesToMB(bytes?: number): string {
-  if (!bytes || bytes <= 0) return '0';
-  return (bytes / (1024 * 1024)).toString();
+export function formatBytes(bytes: number, useBinary: boolean = false, unit?: string): string {
+  if (unit) {
+    const unitMap: Record<string, number> = {
+      B: 1,
+      KB: useBinary ? 1024 : 1000,
+      MB: useBinary ? 1024 * 1024 : 1000 * 1000,
+      GB: useBinary ? 1024 * 1024 * 1024 : 1000 * 1000 * 1000,
+      TB: useBinary ? 1024 * 1024 * 1024 * 1024 : 1000 * 1000 * 1000 * 1000,
+    };
+
+    const divisor = unitMap[unit.toUpperCase()] || 1;
+    const size = bytes / divisor;
+    return size.toString();
+  }
+
+  const unitThreshold = useBinary ? 1024 : 1000;
+  if (bytes < unitThreshold) return `${bytes} B`;
+
+  const units = useBinary ? ['KB', 'MB', 'GB', 'TB'] : ['kB', 'MB', 'GB', 'TB'];
+
+  let size = bytes / unitThreshold;
+  let i = 0;
+
+  while (size >= unitThreshold && i < units.length - 1) {
+    size /= unitThreshold;
+    i += 1;
+  }
+
+  return `${size.toFixed(2)} ${units[i]}`;
 }
