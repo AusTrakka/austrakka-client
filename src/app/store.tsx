@@ -1,14 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { type TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import groupMetadataReducer from './groupMetadataSlice';
 import { listenerMiddleware } from './listenerMiddleware';
+import orgMetadataReducer from './orgMetadataSlice';
 import projectMetadataReducer from './projectMetadataSlice';
 import userReducer from './userSlice';
 
 const store = configureStore({
   reducer: {
     projectMetadataState: projectMetadataReducer,
-    groupMetadataState: groupMetadataReducer,
+    orgMetadataState: orgMetadataReducer,
     userState: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
