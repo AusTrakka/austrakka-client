@@ -6,6 +6,7 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -328,7 +329,7 @@ function UploadMetadata() {
           <ListSubheader
             sx={{
               height: 40,
-              borderBottom: `1px solid ${theme.palette.divider}`,
+              lineHeight: '40px',
             }}
           >
             Projects selected proforma has been shared with
@@ -342,10 +343,11 @@ function UploadMetadata() {
               </MenuItem>
             ))
           )}
+          <Divider sx={{ my: 0.5 }} />
           <ListSubheader
             sx={{
               height: 40,
-              borderBottom: `1px solid ${theme.palette.divider}`,
+              lineHeight: '40px',
             }}
           >
             Other projects
