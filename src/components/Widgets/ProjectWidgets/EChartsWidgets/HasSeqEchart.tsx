@@ -14,7 +14,6 @@ import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
-import LoadingState from '../../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type { Sample } from '../../../../types/sample.interface';
 import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
@@ -69,10 +68,6 @@ function HasSeq({
   const errorMessage = useMemo(() => {
     if (data?.loadingState === MetadataLoadingState.ERROR)
       return data.errorMessage ?? 'Unknown error';
-    if (data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.ERROR)
-      return `Error loading ${categoryFieldStable} values`;
-    if (data?.fieldLoadingStates?.[HAS_SEQ] === LoadingState.ERROR)
-      return `Error loading ${HAS_SEQ} values`;
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
@@ -237,7 +232,7 @@ function HasSeq({
     return () => observer.disconnect();
   }, []);
 
-  const fieldLoaded = data?.fieldLoadingStates?.[categoryFieldStable] === LoadingState.SUCCESS;
+  const fieldLoaded = hasCompleteData(data?.loadingState);
 
   return (
     <Box>
@@ -264,7 +259,7 @@ function HasSeq({
         fieldLoaded && <div ref={chartRef} style={{ width: '100%', height: `${chartHeight}px` }} />
       )}
 
-      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
+      {!fieldLoaded && <div>Loading...</div>}
     </Box>
   );
 }

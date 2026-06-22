@@ -8,12 +8,16 @@ import { NavigationProvider } from '../../app/NavigationContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
-import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
-import { RolesV1 } from '../../permissions/roles';
-import type { Group, GroupRole, Organisation } from '../../types/dtos';
-import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupList, getOrganisation } from '../../utilities/resourceUtils';
+import { ScopeDefinitions } from '../../constants/scopes';
+import {
+  hasPermission,
+  hasPermissionV2ByScope,
+  PermissionLevel,
+} from '../../permissions/accessTable';
+import type { GroupRole, Organisation } from '../../types/dtos';
+import { getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
@@ -21,36 +25,6 @@ import OrgDashboard from '../Dashboards/OrgDashboard/OrgDashboard';
 import OrganisationSamples from './OrganisationSamples';
 import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
-
-const getCorrectGroups = (groupRoles: GroupRole[], orgAbbrev: string): GroupRole[] =>
-  groupRoles
-    .filter(
-      (groupRole: GroupRole) =>
-        (groupRole.group.name === `${orgAbbrev}-Owner` ||
-          groupRole.group.name === `${orgAbbrev}-Everyone`) &&
-        groupRole.role.name === RolesV1.GroupViewer,
-    )
-    .sort((a: any, b: any) => {
-      // Owner group first
-      if (a.group.name.endsWith('-Owner') && b.group.name.endsWith('-Owner')) return 0;
-      if (a.group.name.endsWith('-Owner')) return -1;
-      if (b.group.name.endsWith('-Owner')) return 1;
-      return 0;
-    });
-
-const getCorrectGroupsAdmin = (groups: Group[], orgAbbrev: string): Group[] =>
-  groups
-    .filter(
-      (group: Group) =>
-        group.name === `${orgAbbrev}-Owner` || group.name === `${orgAbbrev}-Everyone`,
-    )
-    .sort((a: any, b: any) => {
-      // Owner group first
-      if (a.name.endsWith('-Owner') && b.name.endsWith('-Owner')) return 0;
-      if (a.name.endsWith('-Owner')) return -1;
-      if (b.name.endsWith('-Owner')) return 1;
-      return 0;
-    });
 
 interface OrganisationOverviewProps {
   orgAbbrev: string;
@@ -61,14 +35,11 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
   const [organisation, setOrganisation] = useState<Organisation>();
-  const [userGroups, setUserGroups] = useState<Group[]>([]);
-  const [groupsStatus, setGroupStatus] = useState(LoadingState.IDLE);
-  const [groupStatusMessage, setGroupStatusMessage] = useState('');
-  const [isUserGroupsLoading, setIsUserGroupsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
   // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
+  const [canChangeOwnership, setCanChangeOwnership] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);
 
@@ -81,6 +52,19 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
     if (user.loading === LoadingState.SUCCESS && (ownerOrgGroupName || user.admin)) {
       // give it an empty string if only the admin check passed in the or condition above
       setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
+    }
+  }, [orgAbbrev, user]);
+
+  useEffect(() => {
+    const checkChangeOwnershipPermissions = () =>
+      hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.ChangeSamplesOwner,
+        orgAbbrev,
+        RecordTypes.ORGANISATION,
+      );
+    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
+      setCanChangeOwnership(checkChangeOwnershipPermissions());
     }
   }, [orgAbbrev, user]);
 
@@ -110,24 +94,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       }
     }
 
-    async function getGroups() {
-      setGroupStatus(LoadingState.LOADING);
-      const { groupRoles, admin } = user;
-      if (!admin) {
-        const orgViewerGroups = getCorrectGroups(groupRoles, orgAbbrev);
-        setUserGroups(orgViewerGroups.map((groupRole: GroupRole) => groupRole.group));
-      } else {
-        const groupsResponseObject: ResponseObject = await getGroupList(token);
-        if (groupsResponseObject.status === ResponseType.Success) {
-          const groupsData = groupsResponseObject.data as Group[];
-          const orgAdminGroups = getCorrectGroupsAdmin(groupsData, orgAbbrev);
-          setUserGroups(orgAdminGroups);
-        }
-      }
-      setIsUserGroupsLoading(false);
-      setGroupStatus(LoadingState.SUCCESS);
-    }
-
     if (
       user.loading === LoadingState.SUCCESS &&
       tokenLoading !== LoadingState.IDLE &&
@@ -139,10 +105,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       } else {
         getOrgDetails();
       }
-      getGroups();
     } else if (user.loading === LoadingState.ERROR) {
-      setGroupStatus(LoadingState.ERROR);
-      setGroupStatusMessage(user.errorMessage);
     }
   }, [orgAbbrev, token, tokenLoading, user]);
 
@@ -156,21 +119,12 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
 
   // If groupStatus is error, or orgDetailsError is true, or the user is not in any groups,
   // we cannot show the page. Give a generic message
-  if (
-    orgDetailsError ||
-    groupsStatus === LoadingState.ERROR ||
-    (groupsStatus === LoadingState.SUCCESS && userGroups.length === 0)
-  ) {
+  if (orgDetailsError) {
     return <Alert severity="error">There was an error loading the organisation data</Alert>;
   }
 
   // If organisation details not loaded yet, but no error
-  if (
-    !organisation ||
-    groupsStatus === LoadingState.LOADING ||
-    groupsStatus === LoadingState.IDLE ||
-    isUserGroupsLoading
-  ) {
+  if (!organisation) {
     return <Typography>Loading...</Typography>;
   }
 
@@ -191,12 +145,10 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
         <OrganisationSamples
-          defaultGroup={userGroups![0]}
-          groups={userGroups!}
-          groupStatus={groupsStatus}
-          groupStatusMessage={groupStatusMessage}
           canShare={canShare}
           orgAbbrev={orgAbbrev}
+          canChangeOwnership={canChangeOwnership}
+          orgName={organisation.name}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>

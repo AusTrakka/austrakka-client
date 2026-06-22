@@ -14,7 +14,6 @@ import {
   selectProjectMetadata,
 } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
-import LoadingState from '../../../constants/loadingState';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type ProjectWidgetProps from '../../../types/projectwidget.props';
 import type { Sample } from '../../../types/sample.interface';
@@ -67,21 +66,15 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
   const fields = getFields();
 
   useEffect(() => {
-    if (
-      hasCompleteData(data?.loadingState) ||
-      (data?.loadingState === MetadataLoadingState.PARTIAL_DATA_LOADED &&
-        fields.every((field) => data.fieldLoadingStates[field] === LoadingState.SUCCESS))
-    ) {
-      // Use the same approach as ProjectSamplesTable: build columns with correct renderers
+    if (hasCompleteData(data?.loadingState)) {
       const columns = data?.fields
         ? buildPrimeReactColumnDefinitionsPVF(
             data.fields.filter((f) => fields.includes(f.columnName)),
           )
         : fields.map((field) => ({ field, header: field }));
-
       setTableColumns(columns);
     }
-  }, [fields, data?.loadingState, data?.fieldLoadingStates, data?.fields]);
+  }, [fields, data?.loadingState, data?.fields]);
 
   useEffect(() => {
     if (
@@ -91,8 +84,6 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
       setErrorMessage(`One or more fields not found in project`);
     } else if (data?.loadingState === MetadataLoadingState.ERROR) {
       setErrorMessage(data.errorMessage);
-    } else if (fields.some((field) => data?.fieldLoadingStates[field] === LoadingState.ERROR)) {
-      setErrorMessage(`Error loading one or more field values`);
     }
   }, [data, fields]);
 
@@ -169,7 +160,7 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
           View all in Samples table
         </Button>
       </Box>
-      {fields.every((field) => data?.fieldLoadingStates[field] === LoadingState.SUCCESS) && (
+      {hasCompleteData(data?.loadingState) && (
         <Box flex={1} minHeight={0}>
           <DataTable
             value={tableData}
@@ -215,11 +206,7 @@ export default function SummaryMetadataTable(props: SummaryMetadataTableProps) {
           {errorMessage}
         </Alert>
       )}
-      {(!data?.fieldLoadingStates ||
-        fields.some((field) => data?.fieldLoadingStates[field] === LoadingState.LOADING) ||
-        fields.some((field) => data?.fieldLoadingStates[field] === LoadingState.IDLE)) && (
-        <div>Loading...</div>
-      )}
+      {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
     </Box>
   );
 }
