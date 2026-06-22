@@ -96,6 +96,8 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
       : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
+export const getProformaGroups = (proFormaAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/${proFormaAbbrev}/listgroups`, token);
 
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
