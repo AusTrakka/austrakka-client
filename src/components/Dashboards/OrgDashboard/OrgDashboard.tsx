@@ -2,18 +2,14 @@ import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
 import {
-  fetchGroupMetadata,
-  type GroupMetadataState,
-  selectAwaitingGroupMetadata,
-  selectGroupMetadata,
-} from '../../../app/groupMetadataSlice';
+  fetchOrgMetadata,
+  type OrgMetadataState,
+  selectAwaitingOrgMetadata,
+  selectOrgMetadata,
+} from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
 import LoadingState from '../../../constants/loadingState';
-
-// TODO: Dispatch request for org metadata, unless OrganisationOverview component is already doing this
-
-const TESTING_GROUP_CTX = 10;
 
 interface OrgDashboardProps {
   orgAbbrev: string;
@@ -21,28 +17,26 @@ interface OrgDashboardProps {
 
 function OrgDashboard(props: OrgDashboardProps) {
   const { orgAbbrev } = props;
-  const groupContext = TESTING_GROUP_CTX;
   const { token, tokenLoading } = useApi();
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const dispatch = useAppDispatch();
-  const metadata: GroupMetadataState | null = useAppSelector((state) =>
-    selectGroupMetadata(state, groupContext),
+  const metadata: OrgMetadataState | null = useAppSelector((state) =>
+    selectOrgMetadata(state, orgAbbrev),
   );
   const isSamplesLoading: boolean = useAppSelector((state) =>
-    selectAwaitingGroupMetadata(state, groupContext),
+    selectAwaitingOrgMetadata(state, orgAbbrev),
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only needed to suppress when using testing groupCtx const
   useEffect(() => {
     if (
-      groupContext !== undefined &&
+      orgAbbrev !== undefined &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE
     ) {
       setAllFieldsLoaded(false);
-      dispatch(fetchGroupMetadata({ groupId: groupContext, token, orgAbbrev }));
+      dispatch(fetchOrgMetadata({ token, orgAbbrev }));
     }
-  }, [groupContext, orgAbbrev, token, tokenLoading, dispatch]);
+  }, [orgAbbrev, token, tokenLoading, dispatch]);
 
   return (
     <Grid container spacing={2}>
