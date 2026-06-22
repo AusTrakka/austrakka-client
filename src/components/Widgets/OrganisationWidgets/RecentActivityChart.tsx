@@ -66,6 +66,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     return () => chart.dispose();
   }, []);
 
+  const showChart = !dataLoading && !isLoadingErrorMsg && !!refinedLogs?.length;
+
   useEffect(() => {
     if (!chartRef.current || dataLoading) return;
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
@@ -153,46 +155,6 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     return () => observer.disconnect();
   }, []);
 
-  let chartContent: React.ReactNode;
-  if (isLoadingErrorMsg) {
-    chartContent = (
-      <Alert severity="error">
-        <AlertTitle>Error</AlertTitle>
-        {isLoadingErrorMsg}
-      </Alert>
-    );
-  } else if (dataLoading) {
-    chartContent = (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: CHART_HEIGHT,
-        }}
-      >
-        <CircularProgress size={24} />
-      </Box>
-    );
-  } else if (!refinedLogs?.length) {
-    chartContent = (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: CHART_HEIGHT,
-        }}
-      >
-        <Typography variant="body2" color={Theme.SecondaryMain}>
-          No activity in the last 7 days
-        </Typography>
-      </Box>
-    );
-  } else {
-    chartContent = <div ref={chartRef} style={{ width: '100%', height: `${CHART_HEIGHT}px` }} />;
-  }
-
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -211,13 +173,50 @@ function RecentActivityChart(props: RecentActivityChartProps) {
           sx={{ borderColor: Theme.SecondaryMain, color: Theme.SecondaryMain }}
         />
       </Box>
+
       {isLoadingErrorMsg && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
           {isLoadingErrorMsg}
         </Alert>
       )}
-      {chartContent}
+
+      {!isLoadingErrorMsg && dataLoading && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: CHART_HEIGHT,
+          }}
+        >
+          <CircularProgress size={24} />
+        </Box>
+      )}
+
+      {!isLoadingErrorMsg && !dataLoading && !refinedLogs?.length && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: CHART_HEIGHT,
+          }}
+        >
+          <Typography variant="body2" color={Theme.SecondaryMain}>
+            No activity in the last 7 days
+          </Typography>
+        </Box>
+      )}
+
+      <div
+        ref={chartRef}
+        style={{
+          width: '100%',
+          height: `${CHART_HEIGHT}px`,
+          display: showChart ? 'block' : 'none',
+        }}
+      />
     </Box>
   );
 }
