@@ -1,11 +1,17 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { DATE_UPDATED, HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import {
+  DATE_CREATED,
+  DATE_UPDATED,
+  HAS_SEQUENCES,
+  SAMPLE_ID_FIELD,
+} from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import type { MetaDataColumn } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
 import { getDisplayFields, getLatestActivityTime, getMetadata } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
 import {
+  compareDatesDesc,
   getEmptyStringColumns,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
@@ -380,21 +386,16 @@ export const groupMetadataSlice = createSlice({
         const [firstRow] = state.data[groupId].metadata!;
 
         if (firstRow[DATE_UPDATED]) {
-          state.data[groupId].metadata!.sort((a, b) => {
-            const aDate = a[DATE_UPDATED] as Date | null;
-            const bDate = b[DATE_UPDATED] as Date | null;
-
-            if (!aDate && !bDate) return 0;
-            if (!aDate) return 1; // nulls sorted last (not sure if this is possible)
-            if (!bDate) return -1;
-
-            return bDate.getTime() - aDate.getTime(); // most recent first
-          });
-        }
-        //fallback
-        else if (firstRow[SAMPLE_ID_FIELD]) {
+          firstRow.sort((a: Sample, b: Sample) =>
+            compareDatesDesc(a[DATE_UPDATED], b[DATE_UPDATED]),
+          );
+        } else if (firstRow[DATE_CREATED]) {
+          firstRow.sort((a: Sample, b: Sample) =>
+            compareDatesDesc(a[DATE_CREATED], b[DATE_CREATED]),
+          );
+        } else if (firstRow[SAMPLE_ID_FIELD]) {
           const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-          state.data[groupId].metadata!.sort((a, b) =>
+          firstRow.sort((a: Sample, b: Sample) =>
             collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
           );
         }

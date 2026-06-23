@@ -125,6 +125,14 @@ export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: 
   });
 }
 
+export function compareDatesDesc(aDate: Date | null, bDate: Date | null): number {
+  if (!aDate && !bDate) return 0;
+  if (!aDate) return 1;
+  if (!bDate) return -1;
+
+  return bDate.getTime() - aDate.getTime();
+}
+
 // Given a list of field names, calculate or look up the unique values for the fields
 export function calculateUniqueValues(
   fieldNames: string[],
