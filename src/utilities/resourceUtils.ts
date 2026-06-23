@@ -3,7 +3,7 @@ import type {
   CreateMsg,
   DerivedLog,
   FeedbackPost,
-  Group,
+  MetaDataColumn,
   Organisation,
   Plot,
   PlotListing,
@@ -18,6 +18,7 @@ import type {
   UserRoleRecordPrivilegePost,
 } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
+import type { Sample } from '../types/sample.interface';
 import {
   buildDocumentUploadHeaders,
   buildUploadHeaders,
@@ -75,24 +76,6 @@ export const getTreeVersions = (
 ): Promise<ResponseObject<TreeVersion[]>> =>
   callGET(`/api/TreeVersion/${treeId}/AllVersions`, token);
 
-// Metadata endpoints
-export const getMetadata = (groupId: number, fields: string[], token: string) => {
-  const fieldsQuery: string = fields.map((field) => `fields=${field}`).join('&');
-  return callGET(`/api/MetadataSearch/by-field/?groupContext=${groupId}&${fieldsQuery}`, token);
-};
-export const getSamples = (token: string, groupId: number, searchParams?: URLSearchParams) => {
-  if (!searchParams) return callGET(`/api/MetadataSearch?groupContext=${groupId}`, token);
-  searchParams.append('groupContext', String(groupId));
-  return callGET(`/api/MetadataSearch?${searchParams}`, token);
-};
-
-// Group endpoints
-export const getDisplayFields = (groupId: number, token: string) =>
-  callGET(`/api/Group/display-fields?groupContext=${groupId}`, token);
-export const getGroupList = (token: string) => callGET('/api/Group', token);
-export const getGroup = (groupName: string, token: string): Promise<ResponseObject<Group>> =>
-  callGET(`/api/Group/${groupName}`, token);
-
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
 // and we don't need to do anything
@@ -113,6 +96,8 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
       : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
   return response;
 };
+export const getProformaGroups = (proFormaAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/${proFormaAbbrev}/listgroups`, token);
 
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
@@ -239,6 +224,26 @@ export const getOrganisation = (
 ): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
+export const getOrgFields = (identifier: string, token: string) =>
+  callGET(`/api/OrganisationV2/${identifier}/Fields`, token) as Promise<
+    ResponseObject<MetaDataColumn[]>
+  >;
+export const getOrgMetadataByField = (identifier: string, fields: string[], token: string) => {
+  const fieldsQuery: string = `?${fields.map((field) => `fields=${field}`).join('&')}`;
+  return callGET(
+    `/api/OrganisationV2/${identifier}/Metadata/Fields${fieldsQuery}`,
+    token,
+  ) as Promise<ResponseObject<Sample[]>>;
+};
+export const getOrgMetadata = (
+  identifier: string,
+  token: string,
+  searchParams?: URLSearchParams,
+) => {
+  return callGET(`/api/OrganisationV2/${identifier}/Metadata?${searchParams}`, token) as Promise<
+    ResponseObject<Sample[]>
+  >;
+};
 
 export const changeSampleOwner = (
   token: string,

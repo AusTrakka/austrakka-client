@@ -1,103 +1,15 @@
-import { Error as ErrorIcon } from '@mui/icons-material';
-import {
-  Alert,
-  Box,
-  FormControl,
-  InputLabel,
-  LinearProgress,
-  MenuItem,
-  Select,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { useState } from 'react';
-import LoadingState from '../../constants/loadingState';
-import type { Group } from '../../types/dtos';
+import { Box, Typography } from '@mui/material';
 import OrgSamplesTable from './OrgSamplesTable';
 
 interface OrganisationSampleProps {
-  defaultGroup: Group;
-  groups: Group[];
-  groupStatus: LoadingState;
-  groupStatusMessage: string;
   canShare: boolean;
   canChangeOwnership: boolean;
   orgAbbrev: string;
   orgName: string;
 }
 
-interface OrgGroupSelectorProps {
-  selectedGroup: Group;
-  setSelectedGroup: (group: Group) => void;
-  groups: Group[];
-  groupStatus: LoadingState;
-  groupStatusMessage: string;
-}
-
-function OrgGroupSelector(props: OrgGroupSelectorProps) {
-  const { selectedGroup, setSelectedGroup, groups, groupStatus, groupStatusMessage } = props;
-  return (
-    <>
-      {groupStatus === LoadingState.ERROR ? (
-        <Tooltip title={groupStatusMessage}>
-          <ErrorIcon color="error" />
-        </Tooltip>
-      ) : null}
-      <FormControl
-        variant="standard"
-        sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
-        error={groupStatus === LoadingState.ERROR}
-      >
-        <InputLabel id="org-select-label">Organisation group</InputLabel>
-        <Select
-          labelId="org-select-label"
-          id="org-select"
-          value={selectedGroup.groupId} // Use a unique identifier as the value
-          onChange={(e) => {
-            const selectedGroupId = e.target.value;
-            const selectedGroupObject = groups.find((group) => group.groupId === selectedGroupId);
-
-            if (selectedGroupObject) {
-              setSelectedGroup(selectedGroupObject);
-            }
-          }}
-          label="Organisation group"
-          autoWidth
-        >
-          {groups.map((rg: Group) => (
-            <MenuItem
-              value={rg.groupId} // Use the group's ID as the value
-              key={rg.groupId}
-            >
-              {rg.name}
-            </MenuItem>
-          ))}
-          {groups.length === 0 ? <MenuItem disabled>No owner groups available</MenuItem> : null}
-        </Select>
-        {groupStatus === LoadingState.LOADING ? <LinearProgress color="secondary" /> : null}
-      </FormControl>
-    </>
-  );
-}
-
 function OrganisationSamples(props: OrganisationSampleProps) {
-  const {
-    defaultGroup,
-    groups,
-    groupStatus,
-    groupStatusMessage,
-    canShare,
-    canChangeOwnership,
-    orgAbbrev,
-    orgName,
-  } = props;
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(defaultGroup || null);
-
-  if (groupStatus === LoadingState.ERROR) {
-    return <Alert severity="error">{groupStatusMessage}</Alert>;
-  }
-
-  // Now, you can safely access selectedGroup and its properties
+  const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
   return (
     <Box>
       <Typography sx={{ paddingBottom: 2 }} align="left" variant="subtitle2" color="primary">
@@ -107,19 +19,10 @@ function OrganisationSamples(props: OrganisationSampleProps) {
         in your organisation&lsquo;s
         <b> Owner group</b>.
       </Typography>
-      <OrgGroupSelector
-        groups={groups}
-        groupStatus={groupStatus}
-        groupStatusMessage={groupStatusMessage}
-        selectedGroup={selectedGroup!}
-        setSelectedGroup={setSelectedGroup}
-      />
       <OrgSamplesTable
-        groupContext={selectedGroup!.groupId}
-        groupContextName={selectedGroup!.name}
         canShare={canShare}
-        canChangeOwnership={canChangeOwnership}
         orgAbbrev={orgAbbrev}
+        canChangeOwnership={canChangeOwnership}
         orgName={orgName}
       />
     </Box>
