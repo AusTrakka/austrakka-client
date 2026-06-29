@@ -2,6 +2,7 @@ import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import * as echarts from 'echarts';
 import type { DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import { useEffect, useMemo, useRef } from 'react';
+import { type OrgMetadataState, selectOrgMetadata } from '../../../../app/orgMetadataSlice';
 import {
   type ProjectMetadataState,
   selectProjectMetadata,
@@ -10,7 +11,7 @@ import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import type { Sample } from '../../../../types/sample.interface';
-import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
+import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
 import { NULL_COLOUR, resolveColourMap } from '../../../../utilities/colourUtils';
 import { formatDate } from '../../../../utilities/dateUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
@@ -81,16 +82,21 @@ interface EpiCurveChartProps extends GenericMetadataWidgetProps {
 
 function EpiCurveEchart(props: EpiCurveChartProps) {
   const { widgetType, identifier, filteredData, timeFilterObject, dateFilterField, tall } = props;
-  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
-
   const metadataSelector = useMemo(
     () => (state: RootState) => {
-      return selectProjectMetadata(state, identifier);
+      switch (widgetType) {
+        case WidgetType.Organisation:
+          return selectOrgMetadata(state, identifier);
+        case WidgetType.Project:
+          return selectProjectMetadata(state, identifier);
+        default:
+          throw new Error(`This widget is not supported for widget type: ${widgetType}`);
+      }
     },
-    [identifier],
+    [identifier, widgetType],
   );
 
-  const data: ProjectMetadataState | null = useAppSelector(metadataSelector);
+  const data: ProjectMetadataState | OrgMetadataState | null = useAppSelector(metadataSelector);
 
   const plotDiv = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);

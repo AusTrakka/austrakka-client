@@ -11,17 +11,21 @@ import type { DataTableFilterMeta } from 'primereact/datatable';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
+import { selectOrgMetadata } from '../../../../app/orgMetadataSlice';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
+import { columnStyleRules, styleRules } from '../../../../styles/metadataFieldStyles';
 import type { Sample } from '../../../../types/sample.interface';
-import type { GenericMetadataWidgetProps } from '../../../../types/widget.props';
+import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
+
+const UNKNOWN_VALUE_LABEL = 'unknown'; // label for samples with no value for the category field
 
 interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
@@ -44,14 +48,19 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
 
   const { navigate } = useStableNavigate();
 
-  // Ignore organisation level metadata not implemented yet - will need to add a conditional on widget type
   const metadataSelector = useMemo(
     () => (state: RootState) => {
-      return selectProjectMetadata(state, identifier);
+      switch (widgetType) {
+        case WidgetType.Organisation:
+          return selectOrgMetadata(state, identifier);
+        case WidgetType.Project:
+          return selectProjectMetadata(state, identifier);
+        default:
+          throw new Error(`This widget is not supported for widget type: ${widgetType}`);
+      }
     },
-    [identifier],
+    [identifier, widgetType],
   );
-
   const data = useAppSelector(metadataSelector, shallowEqual);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +153,14 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
             },
           },
         },
-        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+        tooltip: {
+          trigger: 'item',
+          appendTo: () => document.body,
+          formatter: (params) => {
+            const p = Array.isArray(params) ? params[0] : params;
+            return `<span class="${p.name !== UNKNOWN_VALUE_LABEL ? columnStyleRules[field] : ''}">${p.name}</span>: ${p.value} (${p.percent}%)`;
+          },
+        },
         legend: {
           orient: 'horizontal',
           width: '100%',
@@ -152,7 +168,16 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
           icon: 'square',
           itemWidth: 10,
           itemHeight: 10,
-          textStyle: { fontSize: 10 },
+          textStyle: {
+            fontSize: 10,
+            rich: {
+              italic: { fontStyle: 'italic', fontSize: 10 },
+            },
+          },
+          formatter: (name: string) => {
+            const isItalic = columnStyleRules[field] === styleRules.italic;
+            return isItalic && name !== UNKNOWN_VALUE_LABEL ? `{italic|${name}}` : name;
+          },
         },
         series: [
           {
@@ -160,13 +185,22 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
             radius: ['30%', '65%'],
             center: ['50%', '40%'],
             cursor: 'pointer',
-            label: { show: true, formatter: '{d}%', fontSize: 11, color: '#000' },
-            labelLine: { show: true },
+            avoidLabelOverlap: true,
+            label: {
+              show: true,
+              formatter: '{d}%',
+              fontSize: 11,
+              color: '#000',
+              alignTo: 'edge',
+              edgeDistance: 20,
+              width: 90, // forces wrapping/truncation instead of unbounded text width
+            },
+            labelLayout: {},
             emphasis: {
               itemStyle: { shadowBlur: 8, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' },
             },
             data: pieData.map((item) => ({
-              name: item.name || 'unknown',
+              name: item.name || UNKNOWN_VALUE_LABEL,
               value: item.value,
               itemStyle: { color: colorMap[item.name] },
             })),
@@ -175,7 +209,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
       } satisfies EChartsOption,
       true,
     );
-  }, [pieData, colorMap, errorMessage, infoMessage, handleClick]);
+  }, [pieData, colorMap, errorMessage, infoMessage, handleClick, field]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -187,22 +221,24 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   const canRender = !errorMessage && !infoMessage && hasCompleteData(data?.loadingState);
 
   return (
-    <Box>
-      <Typography
-        variant="h5"
-        paddingBottom={3}
-        color="primary"
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 0.5,
-        }}
-      >
-        {title ?? `${field} counts`}
-        <ChartInfoTooltip
-          text={`${field} values \n Click legend items to show/hide · Hover for details`}
-        />
-      </Typography>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {title !== '' && (
+        <Typography
+          variant="h5"
+          paddingBottom={3}
+          color="primary"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          {title ?? `${field} counts`}
+          <ChartInfoTooltip
+            text={`${field} values \n Click legend items to show/hide · Hover for details`}
+          />
+        </Typography>
+      )}
 
       {errorMessage && (
         <Alert severity="error">
@@ -215,7 +251,9 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
 
       {!hasCompleteData(data?.loadingState) && !errorMessage && <div>Loading...</div>}
 
-      {canRender && <div ref={chartRef} style={{ width: '100%', minHeight: '280px' }} />}
+      {canRender && (
+        <div ref={chartRef} style={{ width: '100%', height: '100%', minHeight: '280px' }} />
+      )}
     </Box>
   );
 }
