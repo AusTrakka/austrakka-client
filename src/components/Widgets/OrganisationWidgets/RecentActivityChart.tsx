@@ -1,12 +1,20 @@
 import { Alert, AlertTitle, Box, Chip, CircularProgress, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import { type ECharts, type EChartsOption, getInstanceByDom, init } from 'echarts';
-import { memo, useEffect, useRef, useState } from 'react';
+import {
+  type ECElementEvent,
+  type ECharts,
+  type EChartsOption,
+  getInstanceByDom,
+  init,
+} from 'echarts';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useStableNavigate } from '../../../app/NavigationContext';
 import { Theme } from '../../../assets/themes/theme';
 import type RecordTypes from '../../../constants/record-type.enum';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import type { WidgetType } from '../../../types/widget.props';
 import { getWidgetExportName } from '../../../utilities/fileUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import type { Filters } from '../../Common/Activity/ActivityFilters';
 import ChartInfoTooltip from '../ProjectWidgets/EChartsWidgets/InfoToolTip';
 
@@ -38,8 +46,6 @@ interface RecentActivityChartProps {
   title?: string | undefined;
 }
 
-const CHART_HEIGHT = 280;
-
 function RecentActivityChart(props: RecentActivityChartProps) {
   const { recordType, identifier, title } = props;
   const chartRef = useRef<HTMLDivElement>(null);
@@ -53,6 +59,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     eventType: null,
     submitterDisplayName: null,
   });
+  const { navigate } = useStableNavigate();
 
   const { refinedLogs, dataLoading, isLoadingErrorMsg } = useActivityLogs(
     recordType,
@@ -68,9 +75,24 @@ function RecentActivityChart(props: RecentActivityChartProps) {
 
   const showChart = !dataLoading && !isLoadingErrorMsg && !!refinedLogs?.length;
 
+  const handleClick = useCallback(
+    (params: ECElementEvent) => {
+      // TODO: Implement recent activity chart drill down (involves adding filter params to the URL)
+      console.log(
+        params.seriesName,
+        dayjs(params.name, 'ddd DD').endOf('day').toDate(),
+        dayjs(params.name, 'ddd DD').startOf('day').toDate(),
+      );
+      updateTabUrlWithSearch(navigate, '/activity');
+    },
+    [navigate],
+  );
+
   useEffect(() => {
     if (!chartRef.current || dataLoading) return;
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
+    chart.off('click');
+    chart.on('click', handleClick);
 
     const { days, countsByType } = buildChartData(refinedLogs);
 
@@ -123,7 +145,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         itemHeight: 10,
         textStyle: { fontSize: 10 },
       },
-      grid: { right: 24, bottom: 85, top: 16, left: 56 },
+      grid: { right: 50, bottom: 90, top: 16, left: 60 },
       xAxis: {
         type: 'category',
         data: days,
@@ -142,9 +164,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
       series,
     };
 
-    chart.off('click');
     chart.setOption(option, true);
-  }, [refinedLogs, dataLoading]);
+  }, [refinedLogs, dataLoading, handleClick]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -156,8 +177,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
   }, []);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', flex: '0 0 auto' }}>
         <Typography
           variant="h5"
           paddingBottom={3}
@@ -187,7 +208,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: CHART_HEIGHT,
+            flex: 1,
+            minHeight: 0,
           }}
         >
           <CircularProgress size={24} />
@@ -200,7 +222,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: CHART_HEIGHT,
+            flex: 1,
+            minHeight: 0,
           }}
         >
           <Typography variant="body2" color={Theme.SecondaryMain}>
@@ -213,8 +236,9 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         ref={chartRef}
         style={{
           width: '100%',
-          height: `${CHART_HEIGHT}px`,
           display: showChart ? 'block' : 'none',
+          flex: showChart ? 1 : 0,
+          minHeight: 0,
         }}
       />
     </Box>
