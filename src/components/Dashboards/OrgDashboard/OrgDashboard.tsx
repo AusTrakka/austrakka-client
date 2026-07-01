@@ -100,15 +100,15 @@ function OrgDashboard(props: OrgDashboardProps) {
         </Grid>
       ) : (
         <>
-          {/* Top two rows - together in one grid for flexible resizing */}
+          {/* TOP ROW: Summary counts, recent activity and project contributions */}
           <Grid
             size={12}
             container
             spacing={2}
             sx={{ height: '100%', display: 'flex', minHeight: 0, overflow: 'hidden' }}
           >
-            <Grid size={8}>
-              <Card sx={{ ...cardStyle, height: '100%', maxHeight: 400 }}>
+            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 3 }}>
+              <Card sx={{ ...cardStyle, height: '100%' }}>
                 <CardContent
                   sx={{
                     height: '100%',
@@ -118,10 +118,9 @@ function OrgDashboard(props: OrgDashboardProps) {
                     overflow: 'hidden',
                   }}
                 >
-                  {/* Summary counts */}
                   <Grid size={12} container sx={{ height: '100%', display: 'flex' }}>
                     <Grid
-                      size={4}
+                      size={12}
                       container
                       direction="column"
                       sx={{ minHeight: 0, height: '100%' }}
@@ -149,13 +148,10 @@ function OrgDashboard(props: OrgDashboardProps) {
                           N/A
                         </Typography>
                       )}
-                    </Grid>
-                    {/* Pie charts */}
-                    <Grid size={8} container spacing={1} sx={{ minHeight: 0 }}>
-                      <Grid size={6} sx={{ minHeight: 0 }}>
+                      <Grid size={12} sx={{ minHeight: 0 }}>
                         Sequence status chart
                       </Grid>
-                      <Grid size={6} sx={{ minHeight: 0 }}>
+                      <Grid size={12} sx={{ minHeight: 0 }}>
                         Shared status chart
                       </Grid>
                     </Grid>
@@ -163,7 +159,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={4}>
+            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 4 }}>
               <Card
                 sx={{
                   ...cardStyle,
@@ -184,7 +180,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={5}>
+            <Grid size={{ xs: 12, xl: 5 }} sx={{ minHeight: '400px' }}>
               <Card sx={{ ...cardStyle, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent
                   sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
@@ -197,12 +193,20 @@ function OrgDashboard(props: OrgDashboardProps) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={7} container direction="column">
+          </Grid>
+          {/* MIDDLE ROW: Species summary pie chart and table */}
+          <Grid
+            size={12}
+            container
+            spacing={2}
+            sx={{ height: '100%', display: 'flex', minHeight: 0, overflow: 'hidden' }}
+          >
+            <Grid size={{ xs: 12 }} container direction="column">
               <Card
                 sx={{
                   ...tallCardStyle,
-                  height: '100%',
-                  maxHeight: 450,
+                  height: { xs: 'auto', md: '100%' },
+                  maxHeight: { xs: 'none', md: 450 },
                   display: 'flex',
                   flexDirection: 'column',
                 }}
@@ -213,7 +217,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                     display: 'flex',
                     flexDirection: 'column',
                     minHeight: 0,
-                    overflow: 'hidden',
+                    overflow: { xs: 'visible', md: 'hidden' },
                     pb: 2,
                   }}
                 >
@@ -224,13 +228,22 @@ function OrgDashboard(props: OrgDashboardProps) {
                       color="primary"
                       sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
                     >
-                      Species distribution
+                      Species summary
                     </Typography>
                   </Box>
-
-                  <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex' }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minHeight: 0,
+                      overflow: { xs: 'visible', md: 'hidden' },
+                      display: 'flex',
+                    }}
+                  >
                     <Grid container spacing={1} sx={{ width: '100%' }}>
-                      <Grid size={5} sx={{ height: '100%' }}>
+                      <Grid
+                        size={{ xs: 12, sm: 12, md: 4 }}
+                        sx={{ height: { xs: 'auto', md: '100%' } }}
+                      >
                         <MetadataValuePieChart
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
@@ -240,13 +253,14 @@ function OrgDashboard(props: OrgDashboardProps) {
                         />
                       </Grid>
                       <Grid
-                        size={7}
+                        size={{ xs: 12, sm: 12, md: 8 }}
                         sx={{
-                          height: '100%',
+                          height: { xs: 'auto', md: '100%' },
+                          maxHeight: { xs: '400px', md: 'none' },
                           display: 'flex',
                           flexDirection: 'column',
                           minHeight: 0,
-                          overflow: 'hidden',
+                          overflow: { xs: 'auto', md: 'hidden' },
                         }}
                       >
                         <MetadataCountsByProject
@@ -263,9 +277,9 @@ function OrgDashboard(props: OrgDashboardProps) {
               </Card>
             </Grid>
           </Grid>
-          {/* Bottom row */}
+          {/* BOTTOM ROW: Metadata counts and has sequence counts */}
           <Grid container spacing={2} size={12}>
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
               <Card sx={{ ...cardStyle, height: '100%' }}>
                 <CardContent>
                   <MetadataCounts
@@ -279,7 +293,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
               <Card sx={{ ...tallCardStyle, height: '100%' }}>
                 <CardContent>
                   <HasSeq
