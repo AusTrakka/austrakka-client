@@ -106,7 +106,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   const handleClick = useCallback(
     (params: ECElementEvent) => {
       if (params.name === undefined) return;
-      const isNull = params.name === '';
+      const isNull = params.name === UNKNOWN_VALUE_LABEL || params.name === '';
       const filters: DataTableFilterMeta = {
         [field]: {
           operator: FilterOperator.AND,
