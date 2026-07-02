@@ -95,6 +95,17 @@ export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
   return data;
 }
 
+export function normaliseHasSequencesTrueBoolWithString(data: Sample[]) {
+  data.map((sample) => {
+    if (sample[HAS_SEQUENCES] === 'True' || sample[HAS_SEQUENCES] === true) {
+      sample[HAS_SEQUENCES] = 'True';
+    }
+    return sample;
+  });
+
+  return data;
+}
+
 // Given sample data and field details, replace date strings with Date objects
 export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
   const fieldDetails = getFieldDetails(fieldNames, fields);

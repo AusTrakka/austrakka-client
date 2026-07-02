@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid2';
 import { memo } from 'react';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import { WidgetType } from '../../../types/widget.props';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
 import HasSeqEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
 import MetadataCountsEcharts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';
@@ -33,7 +34,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <EpiCurveEchart
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 dateFilterField={dateFilterField}
@@ -57,7 +59,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <MetadataCountsEcharts
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Date_coll"
@@ -70,7 +73,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <HasSeqEchart
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
               />
@@ -82,7 +86,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <MetadataCountsEcharts
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Reads_accession"
@@ -94,7 +99,8 @@ function ApgDashboard(props: ProjectDashboardTemplateProps) {
           <Card sx={tallCardStyle}>
             <CardContent>
               <MetadataCountsEcharts
-                projectAbbrev={projectAbbrev}
+                widgetType={WidgetType.Project}
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Assembly_accession"

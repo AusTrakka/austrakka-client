@@ -19,6 +19,7 @@ import {
   calculateViewFieldNames,
   getEmptyStringColumns,
   insertUnpopulatedOverrideFields,
+  normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
@@ -434,6 +435,7 @@ export const projectMetadataSlice = createSlice({
 
       if (viewFields.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
+        normaliseHasSequencesTrueBoolWithString(data);
       }
       replaceNullsWithEmpty(data);
 
