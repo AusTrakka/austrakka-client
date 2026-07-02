@@ -138,6 +138,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         },
       },
       legend: {
+        type: 'scroll',
         orient: 'horizontal',
         bottom: 0,
         icon: 'square',
