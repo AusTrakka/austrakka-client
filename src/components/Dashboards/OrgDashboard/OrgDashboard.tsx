@@ -19,6 +19,7 @@ import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
 import MetadataCountsByProject from '../../Widgets/OrganisationWidgets/MetadataCountsByProject';
 import ProjectCounts from '../../Widgets/OrganisationWidgets/ProjectCounts';
 import RecentActivityChart from '../../Widgets/OrganisationWidgets/RecentActivityChart';
+import SimpleMetadataBarChart from '../../Widgets/OrganisationWidgets/SimpleMetadataBarChart';
 import HasSeq from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
 import MetadataCounts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataValuePieEchart';
@@ -139,20 +140,39 @@ function OrgDashboard(props: OrgDashboardProps) {
                           <Typography variant="h2" paddingBottom={1} color="primary">
                             {latestUploadDate[0]}
                           </Typography>
-                          <Typography variant="subtitle2" paddingBottom={1} color="primary">
+                          <Typography variant="subtitle2" paddingBottom={3} color="primary">
                             {latestUploadDate[1]}
                           </Typography>
                         </>
                       ) : (
-                        <Typography variant="h2" paddingBottom={1} color="primary">
+                        <Typography variant="h2" paddingBottom={3} color="primary">
                           N/A
                         </Typography>
                       )}
                       <Grid size={12} sx={{ minHeight: 0 }}>
-                        Sequence status chart
-                      </Grid>
-                      <Grid size={12} sx={{ minHeight: 0 }}>
-                        Shared status chart
+                        <SimpleMetadataBarChart
+                          widgetType={WidgetType.Organisation}
+                          identifier={orgAbbrev}
+                          filteredData={data?.metadata ?? []}
+                          field="Shared_groups"
+                          title="Sharing status"
+                          colorMapping={{
+                            Shared: Theme.SecondaryMain,
+                            'Not shared': Theme.SecondaryYellow,
+                          }}
+                        />
+                        <br />
+                        <SimpleMetadataBarChart
+                          widgetType={WidgetType.Organisation}
+                          identifier={orgAbbrev}
+                          filteredData={data?.metadata ?? []}
+                          field="Has_sequences"
+                          title="Sequence status"
+                          colorMapping={{
+                            Available: Theme.SecondaryMain,
+                            Missing: Theme.SecondaryYellow,
+                          }}
+                        />
                       </Grid>
                     </Grid>
                   </Grid>
