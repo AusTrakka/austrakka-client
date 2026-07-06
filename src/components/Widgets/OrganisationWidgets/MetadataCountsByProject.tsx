@@ -135,12 +135,16 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
   const errorMessage = useMemo(() => {
     if (data?.loadingState === MetadataLoadingState.ERROR)
       return data.errorMessage ?? 'Unknown error';
+    return null;
+  }, [data]);
+
+  const infoMessage = useMemo(() => {
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(SHARED_GROUPS_FIELD))
-        return `Field ${SHARED_GROUPS_FIELD} not found in ${widgetType}`;
+        return `Field ${SHARED_GROUPS_FIELD} not found in ${widgetType}. Add this field to the ${widgetType} to see data.`;
       if (!fieldNames.includes(categoryField))
-        return `Field ${categoryField} not found in ${widgetType}`;
+        return `Field ${categoryField} not found in ${widgetType}. Add this field to the ${widgetType} to see data.`;
     }
     return null;
   }, [data, categoryField, widgetType]);
@@ -180,7 +184,9 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
         </Alert>
       )}
 
-      {!loaded && !errorMessage && (
+      {infoMessage && !errorMessage && <Alert severity="info">{infoMessage}</Alert>}
+
+      {!loaded && !errorMessage && !infoMessage && (
         <Box
           sx={{
             display: 'flex',
@@ -194,7 +200,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
         </Box>
       )}
 
-      {loaded && !errorMessage && (
+      {loaded && !errorMessage && !infoMessage && (
         <Box flex={1} minHeight={0}>
           <DataTable value={rows} scrollable scrollHeight="flex" className="my-flexible-table">
             <Column

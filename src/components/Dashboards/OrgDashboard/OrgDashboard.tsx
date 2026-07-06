@@ -267,7 +267,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                         <MetadataValuePieChart
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
-                          field="Species"
+                          field="Species_in_silico"
                           title=""
                           filteredData={data?.metadata ?? []}
                         />
@@ -287,7 +287,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
                           title=""
-                          categoryField="Species"
+                          categoryField="Species_in_silico"
                           filteredData={data?.metadata ?? []}
                         />
                       </Grid>
