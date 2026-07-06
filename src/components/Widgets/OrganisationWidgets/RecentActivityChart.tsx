@@ -14,7 +14,7 @@ import type RecordTypes from '../../../constants/record-type.enum';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import type { WidgetType } from '../../../types/widget.props';
 import { getWidgetExportName } from '../../../utilities/fileUtils';
-import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { updateActivityTabUrlWithFilters } from '../../../utilities/navigationUtils';
 import type { Filters } from '../../Common/Activity/ActivityFilters';
 import ChartInfoTooltip from '../ProjectWidgets/EChartsWidgets/InfoToolTip';
 
@@ -77,13 +77,14 @@ function RecentActivityChart(props: RecentActivityChartProps) {
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
-      // TODO: Implement recent activity chart drill down (involves adding filter params to the URL)
-      console.log(
-        params.seriesName,
-        dayjs(params.name, 'ddd DD').endOf('day').toDate(),
-        dayjs(params.name, 'ddd DD').startOf('day').toDate(),
-      );
-      updateTabUrlWithSearch(navigate, '/activity');
+      const eventType = params.seriesName;
+      const startDate = dayjs(params.name, 'ddd DD').startOf('day').toDate();
+      const endDate = dayjs(params.name, 'ddd DD').endOf('day').toDate();
+      updateActivityTabUrlWithFilters(navigate, '/activity', {
+        eventType,
+        startDate,
+        endDate,
+      });
     },
     [navigate],
   );

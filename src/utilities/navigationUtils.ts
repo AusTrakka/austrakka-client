@@ -1,5 +1,6 @@
 import type { DataTableFilterMeta } from 'primereact/datatable';
 import type { NavigateFunction } from 'react-router-dom';
+import type { Filters } from '../components/Common/Activity/ActivityFilters';
 import { ORG_TABS } from '../components/OrganisationOverview/orgTabConstants';
 import { PROJ_TABS } from '../components/ProjectOverview/projTabConstants';
 import { encodeFilterObj } from './urlUtils';
@@ -80,4 +81,49 @@ export const updateTabUrlWithSearch = (
   }
 
   navigate(newPath);
+};
+
+export const updateActivityTabUrlWithFilters = (
+  navigate: NavigateFunction,
+  tabUrl: string,
+  filters?: Partial<Filters>,
+) => {
+  const currentPath = window.location.pathname;
+  const currentSearch = window.location.search;
+
+  const newPath = buildNewPath(currentPath, tabUrl);
+
+  if (!filters) {
+    navigate(newPath + currentSearch);
+    return;
+  }
+
+  const params: Record<string, string> = {};
+
+  const stringFilters = [
+    'resourceUniqueString',
+    'resourceType',
+    'eventType',
+    'submitterDisplayName',
+  ] as const satisfies readonly (keyof Filters)[];
+
+  const dateFilters = ['startDate', 'endDate'] as const satisfies readonly (keyof Filters)[];
+
+  stringFilters.forEach((key) => {
+    if (filters[key] !== undefined) {
+      params[key] = filters[key] ?? 'null';
+    }
+  });
+
+  dateFilters.forEach((key) => {
+    if (filters[key] !== undefined) {
+      params[key] = filters[key] ? filters[key]!.toISOString() : 'none';
+    }
+  });
+
+  const queryString = Object.entries(params)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  navigate(queryString ? `${newPath}?${queryString}` : newPath);
 };
