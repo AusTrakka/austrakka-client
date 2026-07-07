@@ -8,7 +8,9 @@ import type {
   Plot,
   PlotListing,
   Project,
+  ProjectDashboardDetails,
   ProjectDocument,
+  ProjectPut,
   ProjectSummary,
   ProjectView,
   Role,
@@ -28,6 +30,7 @@ import {
   callPOSTForm,
   callPost,
   callPostMultipart,
+  callPUT,
   callSimpleGET,
   downloadFile,
   previewFile,
@@ -42,6 +45,12 @@ export const getProjectDetails = (
   abbrev: string,
   token: string,
 ): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
+
+export const putProjectDetails = (
+  identifer: string,
+  putDto: ProjectPut,
+  token: string,
+): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
 
 export const getProjectMembers = (identifier: string, token: string) =>
   callGET(`/api/Projects/${identifier}/Members`, token);
@@ -115,6 +124,10 @@ export const getProjectViewData = (projectAbbrev: string, token: string): Promis
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
+
+export const getAvailableProjectDashboards = (
+  token: string,
+): Promise<ResponseObject<ProjectDashboardDetails[]>> => callGET('/api/ProjectDashboards', token);
 
 // User dashboard endpoints
 export const getUserDashboardOverview = (token: string) =>
