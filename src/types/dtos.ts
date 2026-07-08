@@ -35,9 +35,7 @@ export interface ProjectPut {
   requestingOrg: string;
   dashboardName: string;
   type: string;
-  //should not be usable on the the client
-  //clientType: string;
-  //isActive: boolean;
+  clientType: string;
   mergeAlgorithm: MergeAlgorithm;
 }
 
