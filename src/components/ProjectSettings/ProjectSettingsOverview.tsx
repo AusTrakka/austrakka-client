@@ -67,6 +67,93 @@ function ProjectSettingsOverview() {
 
   return (
     <div>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        maxWidth="900px"
+        sx={{ mb: 2 }} // Adds a bit of breathing room below the header
+      >
+        {/* Left: Back Button and Project Name */}
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography
+            className="pageTitle"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              paddingBottom: 0,
+            }}
+          >
+            <IconButton aria-label="back" onClick={() => navigateToSummary()}>
+              <ArrowBack fontSize="small" />
+            </IconButton>
+            {projectDetails!.name}
+          </Typography>
+        </Box>
+
+        {/* Right: Project Metadata (Created & Updated info) */}
+        <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
+          <Stack direction="row" spacing={3}>
+            {/* Left Column: Creation Info */}
+            <Stack direction="column" spacing={0.2} minWidth={200}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  Created:
+                </Typography>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  {isoDateOrNotRecorded(new Date(projectDetails.created).toISOString())}
+                </Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  Created By:
+                </Typography>
+                <Typography
+                  variant="caption"
+                  fontSize=".8rem"
+                  color={Theme.PrimaryGrey700}
+                  sx={{ fontWeight: 500 }}
+                >
+                  {projectDetails.createdBy || 'N/A'}
+                </Typography>
+              </Stack>
+            </Stack>
+
+            {/* Right Column: Update Info */}
+            <Stack direction="column" spacing={0.2} minWidth={200}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  Last Updated:
+                </Typography>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  {isoDateOrNotRecorded(new Date(projectDetails.lastUpdated).toISOString())}
+                </Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
+                  Updated By:
+                </Typography>
+                <Typography
+                  variant="caption"
+                  fontSize=".8rem"
+                  color={Theme.PrimaryGrey700}
+                  sx={{ fontWeight: 500 }}
+                >
+                  {projectDetails.lastUpdatedBy || 'N/A'}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Paper>
+      </Box>
+      <BasicPropertiesSection
+        projectAbbrev={projectAbbrev}
+        canonical={projectDetails}
+        onSaved={refetchProject}
+        dashboards={dashboards}
+        editable={isAdmin}
+      />
     </div>
   );
 }
