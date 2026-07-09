@@ -1,13 +1,17 @@
 import { Alert, AlertTitle, Box, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
 import { useEffect, useMemo, useState } from 'react';
+import { useStableNavigate } from '../../../app/NavigationContext';
 import { selectOrgMetadata } from '../../../app/orgMetadataSlice';
 import { type RootState, useAppSelector } from '../../../app/store';
+import { Theme } from '../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type RecordTypes from '../../../constants/record-type.enum';
 import type { Sample } from '../../../types/sample.interface';
 import { WidgetType } from '../../../types/widget.props';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // Displays a table of counts of samples by each project (Shared_groups)
 // Requires Shared_groups field to be present in the metadata
@@ -84,6 +88,7 @@ function calculateSharedGroups(data: Sample[]): ProjectSharingCount[] {
 export default function ProjectCounts(props: ProjectCountsProps) {
   const { identifier, title, widgetType } = props;
   const [projectCounts, setProjectCounts] = useState<ProjectSharingCount[]>([]);
+  const { navigate } = useStableNavigate();
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
@@ -110,6 +115,23 @@ export default function ProjectCounts(props: ProjectCountsProps) {
     }
     return null;
   }, [data, widgetType]);
+
+  const handleClick = (project: string) => {
+    const unsharedFlag = project === UNSHARED_COLUMN;
+
+    const filters: DataTableFilterMeta = {
+      [SHARED_GROUPS_FIELD]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: unsharedFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.CONTAINS,
+            value: unsharedFlag ? 'true' : project,
+          },
+        ],
+      },
+    };
+    updateTabUrlWithSearch(navigate, '/samples', filters);
+  };
 
   // Calculate project sharing counts
   useEffect(() => {
@@ -172,6 +194,25 @@ export default function ProjectCounts(props: ProjectCountsProps) {
               bodyClassName="value-cells"
               frozen
               style={{ minWidth: '150px' }}
+              body={(rowData) => (
+                <Box
+                  component="span"
+                  onClick={() => handleClick(rowData.project)}
+                  sx={{
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 16,
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                    '&:hover': {
+                      backgroundColor: Theme.SecondaryMain50,
+                    },
+                  }}
+                >
+                  {rowData.project}
+                </Box>
+              )}
             />
             <Column
               field="total"
