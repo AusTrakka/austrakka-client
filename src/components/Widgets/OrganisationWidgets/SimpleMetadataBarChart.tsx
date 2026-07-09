@@ -131,6 +131,14 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
   useEffect(() => {
     if (!chartRef.current || barData.length === 0) return;
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
+    // Find the last segment that will actually render (non-zero value)
+    let lastVisibleIndex = -1;
+    for (let i = barData.length - 1; i >= 0; i--) {
+      if (barData[i].value > 0) {
+        lastVisibleIndex = i;
+        break;
+      }
+    }
 
     chart.setOption(
       {
@@ -169,8 +177,8 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
             color: colorMap[item.name],
             borderRadius: [
               0,
-              index === barData.length - 1 ? 10 : 0,
-              index === barData.length - 1 ? 10 : 0,
+              index === lastVisibleIndex ? 10 : 0,
+              index === lastVisibleIndex ? 10 : 0,
               0,
             ],
           },
