@@ -1,7 +1,10 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { type ECharts, type EChartsOption, getInstanceByDom, init } from 'echarts';
-import { useEffect, useMemo, useRef } from 'react';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import type { DataTableFilterMeta } from 'primereact/datatable';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { shallowEqual } from 'react-redux';
+import { useStableNavigate } from '../../../app/NavigationContext';
 import { selectOrgMetadata } from '../../../app/orgMetadataSlice';
 import { selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../../app/store';
@@ -10,6 +13,7 @@ import type { Sample } from '../../../types/sample.interface';
 import { type GenericMetadataWidgetProps, WidgetType } from '../../../types/widget.props';
 import { resolveColourMap } from '../../../utilities/colourUtils';
 import { isNullOrEmpty } from '../../../utilities/dataProcessingUtils';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // This is a simple single-bar bar chart that shows a breakdown of a single metadata field for a set of samples.
 // It currently show no legend, but does provide a detailed hover tooltip breakdown.
@@ -56,6 +60,9 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
   );
   const data = useAppSelector(metadataSelector, shallowEqual);
   const chartRef = useRef<HTMLDivElement>(null);
+  const [hintOpen, setHintOpen] = useState(false);
+  const chartInstanceId = useId();
+  const { navigate } = useStableNavigate();
 
   const isHasSeq = field === HAS_SEQ;
   const isSharedGroups = field === SHARED_GROUPS_FIELD;
@@ -128,6 +135,42 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
     return () => chart.dispose();
   }, []);
 
+  const handleClick = useCallback(
+    (segmentName: string) => {
+      let filters: DataTableFilterMeta;
+      // Special handling for Has_sequences/Shared_groups fields
+      if (isHasSeq || isSharedGroups) {
+        const trueLabel = isHasSeq ? 'Available' : 'Not shared';
+        filters = {
+          [field]: {
+            operator: FilterOperator.AND,
+            constraints: [
+              {
+                matchMode: isSharedGroups ? FilterMatchMode.CUSTOM : FilterMatchMode.EQUALS,
+                value: segmentName === trueLabel ? 'True' : 'False',
+              },
+            ],
+          },
+        };
+      } else {
+        // Default handling for remaining metadata fields
+        filters = {
+          [field]: {
+            operator: FilterOperator.AND,
+            constraints: [
+              {
+                matchMode: FilterMatchMode.EQUALS,
+                value: segmentName,
+              },
+            ],
+          },
+        };
+      }
+      updateTabUrlWithSearch(navigate, '/samples', filters);
+    },
+    [field, isHasSeq, navigate, isSharedGroups],
+  );
+
   useEffect(() => {
     if (!chartRef.current || barData.length === 0) return;
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
@@ -144,17 +187,36 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
       {
         tooltip: {
           trigger: 'axis',
+          triggerOn: 'click',
           axisPointer: { type: 'shadow' },
           appendToBody: true,
+          enterable: true,
+          confine: false,
+          position: (point, _params, _dom, _rect, size) => {
+            const [tooltipWidth] = size.contentSize;
+            return [point[0] - tooltipWidth / 2, point[1] + 8];
+          },
           formatter: (params: any) => {
             const total = data?.metadata?.length ?? filteredData.length;
-
             const rows = params
+              .filter((p: any) => p.value > 0)
               .map((p: any) => {
                 const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : '0.0';
-                return `${p.marker} ${p.seriesName}: ${p.value} (${pct}%)`;
+                return `
+                  <div
+                    bar-chart-segment-name="${encodeURIComponent(p.seriesName)}"
+                    bar-chart-instance-id="${chartInstanceId}"
+                    style="cursor:pointer; padding:3px 4px; border-radius:16px; display:flex; justify-content:space-between; gap:12px;"
+                    onmouseover="this.style.background='rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.background='transparent'"
+                  >
+                    <span>${p.marker} ${p.seriesName}</span>
+                    <span><strong>${p.value}</strong> (${pct}%)</span>
+                  </div>
+                `;
               })
-              .join('<br/>');
+              .join('');
+
             return `<strong>${title ?? 'Breakdown'}</strong><br/>${rows}<br/> Total: ${total}`;
           },
         },
@@ -175,6 +237,7 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
           label: { show: false },
           itemStyle: {
             color: colorMap[item.name],
+            cursor: item.value > 0 ? 'pointer' : 'default',
             borderRadius: [
               0,
               index === lastVisibleIndex ? 10 : 0,
@@ -187,7 +250,40 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
       } satisfies EChartsOption,
       true,
     );
-  }, [barData, colorMap, field, title, data?.metadata?.length, filteredData.length]);
+  }, [
+    barData,
+    colorMap,
+    field,
+    title,
+    data?.metadata?.length,
+    filteredData.length,
+    chartInstanceId,
+  ]);
+
+  // Listener for clicks on individual tooltip rows
+  useEffect(() => {
+    const handleTooltipClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest('[bar-chart-segment-name]');
+      if (!target) return;
+      if (target.getAttribute('bar-chart-instance-id') !== chartInstanceId) return;
+      const name = decodeURIComponent(target.getAttribute('bar-chart-segment-name')!);
+      handleClick(name);
+
+      // Hide the tooltip after clicking a row
+      let node: HTMLElement | null = target as HTMLElement;
+      while (node && node.parentElement !== document.body) {
+        node = node.parentElement;
+      }
+      if (node) node.style.display = 'none';
+
+      if (chartRef.current) {
+        const chart = getInstanceByDom(chartRef.current);
+        chart?.dispatchAction({ type: 'hideTip' });
+      }
+    };
+    document.addEventListener('click', handleTooltipClick);
+    return () => document.removeEventListener('click', handleTooltipClick);
+  }, [chartInstanceId, handleClick]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -207,7 +303,22 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
       )}
       {!hasCompleteData(data?.loadingState) && <div>Loading...</div>}
       {canRender && (
-        <div ref={chartRef} style={{ width: '100%', height: `calc(${BAR_THICKNESS}px + 5px)` }} />
+        <Tooltip
+          title="Click to view breakdown"
+          open={hintOpen}
+          onOpen={() => setHintOpen(true)}
+          onClose={() => setHintOpen(false)}
+          disableInteractive
+          arrow
+          followCursor
+          slotProps={{
+            popper: {
+              modifiers: [{ name: 'offset', options: { offset: [0, 14] } }],
+            },
+          }}
+        >
+          <div ref={chartRef} style={{ width: '100%', height: `calc(${BAR_THICKNESS}px + 5px)` }} />
+        </Tooltip>
       )}
     </Box>
   );
