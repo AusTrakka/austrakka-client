@@ -1,7 +1,9 @@
 import { Alert, AlertTitle, Box, CircularProgress, Typography } from '@mui/material';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
 import { useEffect, useMemo, useState } from 'react';
+import { useStableNavigate } from '../../../app/NavigationContext';
 import { type OrgMetadataState, selectOrgMetadata } from '../../../app/orgMetadataSlice';
 import { type RootState, useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
@@ -9,6 +11,7 @@ import MetadataLoadingState, { hasCompleteData } from '../../../constants/metada
 import { columnStyleRules, combineClasses } from '../../../styles/metadataFieldStyles';
 import type { Sample } from '../../../types/sample.interface';
 import { WidgetType } from '../../../types/widget.props';
+import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import type { PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 
 // Displays matrix of sample counts for projects vs a single metadata category
@@ -116,6 +119,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
   const { identifier, title, categoryField, widgetType } = props;
   const [rows, setRows] = useState<SharedGroupsMatrixRow[]>([]);
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
+  const { navigate } = useStableNavigate();
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
@@ -161,6 +165,52 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
       setColumns(projectColumns);
     }
   }, [data?.metadata, data?.fields, data?.loadingState, categoryField, errorMessage]);
+
+  // Metadata value drilldown
+  const handleCategoryClick = (categoryValue: string) => {
+    const unknownFlag = categoryValue === UNKNOWN_VALUE_LABEL;
+
+    const filters: DataTableFilterMeta = {
+      [categoryField]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: unknownFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.EQUALS,
+            value: unknownFlag ? 'true' : categoryValue,
+          },
+        ],
+      },
+    };
+    updateTabUrlWithSearch(navigate, '/samples', filters);
+  };
+
+  // Combined metadata value and project drilldown
+  const handleCellClick = (project: string, categoryValue: string) => {
+    const unsharedFlag = project === UNSHARED_COLUMN;
+    const unknownFlag = categoryValue === UNKNOWN_VALUE_LABEL;
+
+    const filters: DataTableFilterMeta = {
+      [SHARED_GROUPS_FIELD]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: unsharedFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.CONTAINS,
+            value: unsharedFlag ? 'true' : project,
+          },
+        ],
+      },
+      [categoryField]: {
+        operator: FilterOperator.AND,
+        constraints: [
+          {
+            matchMode: unknownFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.EQUALS,
+            value: unknownFlag ? 'true' : categoryValue,
+          },
+        ],
+      },
+    };
+    updateTabUrlWithSearch(navigate, '/samples', filters);
+  };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -209,15 +259,28 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
               align="left"
               frozen
               body={(row: SharedGroupsMatrixRow) => (
-                <span
+                <Box
+                  component="span"
                   className={
                     row.category !== UNKNOWN_VALUE_LABEL
                       ? combineClasses(columnStyleRules[categoryField])
                       : undefined
                   }
+                  onClick={() => handleCategoryClick(row.category)}
+                  sx={{
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 16,
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                    '&:hover': {
+                      backgroundColor: Theme.SecondaryMain50,
+                    },
+                  }}
                 >
                   {row.category}
-                </span>
+                </Box>
               )}
             />
             {columns.map(({ field, header }) => (
@@ -226,11 +289,38 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                 field={field}
                 header={header}
                 bodyStyle={
-                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey200 } : undefined
+                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey100 } : undefined
                 }
                 headerStyle={
-                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey200 } : undefined
+                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey100 } : undefined
                 }
+                body={(row: SharedGroupsMatrixRow) => (
+                  <Box
+                    component="span"
+                    className={
+                      row.category !== UNKNOWN_VALUE_LABEL
+                        ? combineClasses(columnStyleRules[categoryField])
+                        : undefined
+                    }
+                    onClick={() => handleCellClick(header, row.category)}
+                    sx={{
+                      cursor: 'pointer',
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 16,
+                      transition: 'background-color 0.15s ease, color 0.15s ease',
+                      '&:hover': {
+                        backgroundColor:
+                          field === UNSHARED_COLUMN
+                            ? Theme.SecondaryMain100
+                            : Theme.SecondaryMain50,
+                      },
+                    }}
+                  >
+                    {row[field] as number}
+                  </Box>
+                )}
               />
             ))}
           </DataTable>
