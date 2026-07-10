@@ -92,78 +92,107 @@ function ProjectSettingsOverview() {
         justifyContent="space-between"
         alignItems="center"
         maxWidth="900px"
-        sx={{ mb: 2 }} // Adds a bit of breathing room below the header
+        gap={3}
+        sx={{ mb: 2 }}
       >
-        {/* Left: Back Button and Project Name */}
-        <Box display="flex" alignItems="center" gap={1}>
+        {/* Left: Back Button and Project Name (Maximized horizontal space) */}
+        <Box display="flex" alignItems="center" gap={1} sx={{ minWidth: 0, flexGrow: 1 }}>
+          <IconButton aria-label="back" onClick={() => navigateToSummary()} sx={{ flexShrink: 0 }}>
+            <ArrowBack fontSize="small" />
+          </IconButton>
           <Typography
             className="pageTitle"
+            noWrap
             sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1,
-              paddingBottom: 0,
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              display: 'block',
             }}
           >
-            <IconButton aria-label="back" onClick={() => navigateToSummary()}>
-              <ArrowBack fontSize="small" />
-            </IconButton>
-            {projectDetails!.name}
+            {projectDetails?.name}
           </Typography>
         </Box>
 
-        {/* Right: Project Metadata (Created & Updated info) */}
-        <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
-          <Stack direction="row" spacing={3}>
-            {/* Left Column: Creation Info */}
-            <Stack direction="column" spacing={0.2} minWidth={200}>
-              <Stack direction="row" justifyContent="space-between" spacing={2}>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  Created:
-                </Typography>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  {isoDateOrNotRecorded(new Date(projectDetails.created).toISOString())}
-                </Typography>
-              </Stack>
-              <Stack direction="row" justifyContent="space-between" spacing={2}>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  Created By:
-                </Typography>
-                <Typography
-                  variant="caption"
-                  fontSize=".8rem"
-                  color={Theme.PrimaryGrey700}
-                  sx={{ fontWeight: 500 }}
-                >
-                  {projectDetails.createdBy || 'N/A'}
-                </Typography>
-              </Stack>
-            </Stack>
+        {/* Right: Ultra-Compact Vertically Stacked Metadata Card */}
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            padding: '6px 12px',
+            flexShrink: 0, // Ensures the card stays tight and never squishes
+          }}
+        >
+          <Stack direction="column" spacing={0.5}>
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.725rem', color: 'text.secondary', fontWeight: 500 }}
+              >
+                Created:
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.725rem', color: Theme.PrimaryGrey700 }}
+              >
+                {projectDetails?.created
+                  ? isoDateOrNotRecorded(new Date(projectDetails.created).toISOString())
+                  : 'N/A'}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.725rem', color: 'text.secondary' }}>
+                by
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.725rem',
+                  fontWeight: 600,
+                  color: Theme.PrimaryGrey700,
+                  maxWidth: '80px', // Tightened slightly more for the vertical stack layout
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={projectDetails?.createdBy}
+              >
+                {projectDetails?.createdBy || 'N/A'}
+              </Typography>
+            </Box>
 
-            {/* Right Column: Update Info */}
-            <Stack direction="column" spacing={0.2} minWidth={200}>
-              <Stack direction="row" justifyContent="space-between" spacing={2}>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  Last Updated:
-                </Typography>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  {isoDateOrNotRecorded(new Date(projectDetails.lastUpdated).toISOString())}
-                </Typography>
-              </Stack>
-              <Stack direction="row" justifyContent="space-between" spacing={2}>
-                <Typography variant="caption" fontSize=".8rem" color={Theme.PrimaryGrey700}>
-                  Updated By:
-                </Typography>
-                <Typography
-                  variant="caption"
-                  fontSize=".8rem"
-                  color={Theme.PrimaryGrey700}
-                  sx={{ fontWeight: 500 }}
-                >
-                  {projectDetails.lastUpdatedBy || 'N/A'}
-                </Typography>
-              </Stack>
-            </Stack>
+            {/* Row 2: Update Info */}
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.725rem', color: 'text.secondary', fontWeight: 500 }}
+              >
+                Updated:
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.725rem', color: Theme.PrimaryGrey700 }}
+              >
+                {projectDetails?.lastUpdated
+                  ? isoDateOrNotRecorded(new Date(projectDetails.lastUpdated).toISOString())
+                  : 'N/A'}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.725rem', color: 'text.secondary' }}>
+                by
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.725rem',
+                  fontWeight: 600,
+                  color: Theme.PrimaryGrey700,
+                  maxWidth: '80px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={projectDetails?.lastUpdatedBy}
+              >
+                {projectDetails?.lastUpdatedBy || 'N/A'}
+              </Typography>
+            </Box>
           </Stack>
         </Paper>
       </Box>
