@@ -1,6 +1,5 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
-  Alert,
   FormControl,
   InputAdornment,
   MenuItem,
@@ -193,32 +192,44 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           variant="filled"
           size="small"
           fullWidth
+          multiline
+          rows={1}
           hiddenLabel
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
+          sx={{
+            '& .MuiInputBase-root': {
+              display: 'flex',
+              alignItems: 'stretch', // default cross-axis behavior: children fill height
+              resize: 'vertical',
+              overflow: 'auto',
+              minHeight: '45px',
+            },
+            '& .MuiInputBase-input': {
+              resize: 'none',
+              flex: 1,
+              height: '100% !important',
+              boxSizing: 'border-box',
+            },
+          }}
           slotProps={{
-            // 1. Native HTML input element properties
             htmlInput: {
               maxLength: descriptionMaxLength,
             },
-            // 2. MUI Input component properties (where endAdornment lives)
             input: {
               endAdornment: (
                 <InputAdornment
                   position="end"
-                  sx={{ '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-                >{`${value?.length ?? 0}/${descriptionMaxLength}`}</InputAdornment>
+                  sx={{
+                    alignSelf: 'center', // overrides the root's stretch, just for this child
+                    margin: 0,
+                    pl: 1,
+                    '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
+                  }}
+                >
+                  {`${value?.length ?? 0}/${descriptionMaxLength}`}
+                </InputAdornment>
               ),
-              sx: {
-                alignItems: 'center',
-                '& input': {
-                  minWidth: 0,
-                  flex: 1,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                },
-              },
             },
           }}
         />
@@ -237,7 +248,7 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           </Tooltip>
         </div>
       );
-    // Default to the standard TextField for any other fields
+
     default:
       return (
         <TextField
@@ -275,9 +286,9 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
         Object.keys(restDiff).length > 0
           ? putProjectDetails(projectAbbrev, putPayload, token)
           : Promise.resolve({ status: ResponseType.Success }),
-        // isActive !== undefined
-        //   ? putProjectActiveStatus(projectAbbrev, isActive, token) // whatever your endpoint helper is
-        //   : Promise.resolve({ status: ResponseType.Success }),
+        isActive !== undefined
+          ? pathchProjectIsActive(isActive, projectAbbrev, token)
+          : Promise.resolve({ status: ResponseType.Success }),
       ]);
 
       if (results.every((r) => r.status === ResponseType.Success)) {
