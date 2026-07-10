@@ -19,12 +19,12 @@ import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
-import TypeFilterSelect from '../TableComponents/TypeFilterSelect';
+import LabelFilterSelect from '../TableComponents/TypeFilterSelect';
 
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
-  { field: 'type', header: 'Type' },
+  { field: 'label', header: 'Label' },
   { field: 'description', header: 'Description' },
   {
     field: 'created',
@@ -39,13 +39,13 @@ function ProjectsList() {
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedProject, setSelectedProject] = useState({});
-  const [allTypes, setAllTypes] = useState<string[]>([]);
+  const [allLabels, setAllLabels] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
   const [filters, setFilters] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    type: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    label: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -86,8 +86,8 @@ function ProjectsList() {
   };
 
   useEffect(() => {
-    const distinctTypes = [...new Set(projectsList.map((project: any) => project.type))];
-    setAllTypes(distinctTypes);
+    const distinctLabels = [...new Set(projectsList.map((project: Project) => project.label))];
+    setAllLabels(distinctLabels);
   }, [projectsList]);
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,14 +97,14 @@ function ProjectsList() {
     setFilters(filtersCopy);
   };
 
-  const onTypeFilterChange = (e: SelectChangeEvent<string | null>) => {
+  const onLabelFilterChange = (e: SelectChangeEvent<string | null>) => {
     const { value } = e.target;
     setSelectedValue(value || null);
     const filtersCopy = { ...filters };
-    (filtersCopy.type as DataTableFilterMetaData).value = value;
+    (filtersCopy.label as DataTableFilterMetaData).value = value;
     setFilters(filtersCopy);
     if (value) {
-      setSearchParams({ type: value });
+      setSearchParams({ label: value });
     } else {
       setSearchParams({});
     }
@@ -113,11 +113,11 @@ function ProjectsList() {
   const resetFilters = () => {
     const filtersCopy = { ...filters };
     (filtersCopy.global as DataTableFilterMetaData).value = null;
-    (filtersCopy.type as DataTableFilterMetaData).value = null;
+    (filtersCopy.label as DataTableFilterMetaData).value = null;
     setFilters(filtersCopy);
   };
 
-  const onTypeFilterClear = () => {
+  const onLabelFilterClear = () => {
     setSelectedValue(null);
     resetFilters();
     setSearchParams({});
@@ -125,23 +125,23 @@ function ProjectsList() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: prevent infinite loop
   useEffect(() => {
-    if (allTypes.length > 0) {
-      const typeFromUrl = searchParams.get('type');
-      if (typeFromUrl) {
-        const matchingType = allTypes.find(
-          (type) => type && type.toLowerCase() === typeFromUrl.toLowerCase(),
+    if (allLabels.length > 0) {
+      const labelFromUrl = searchParams.get('label');
+      if (labelFromUrl) {
+        const matchingLabel = allLabels.find(
+          (label) => label && label.toLowerCase() === labelFromUrl.toLowerCase(),
         );
-        if (matchingType) {
-          setSelectedValue(matchingType);
+        if (matchingLabel) {
+          setSelectedValue(matchingLabel);
           const filtersCopy = { ...filters };
-          (filtersCopy.type as DataTableFilterMetaData).value = matchingType;
+          (filtersCopy.label as DataTableFilterMetaData).value = matchingLabel;
           setFilters(filtersCopy);
         } else {
-          onTypeFilterClear();
+          onLabelFilterClear();
         }
       }
     }
-  }, [allTypes, searchParams]);
+  }, [allLabels, searchParams]);
 
   const header = (
     <div
@@ -152,11 +152,11 @@ function ProjectsList() {
           value={(filters.global as DataTableFilterMetaData).value || ''}
           onChange={onGlobalFilterChange}
         />
-        <TypeFilterSelect
+        <LabelFilterSelect
           selectedValue={selectedValue}
-          onTypeFilterChange={onTypeFilterChange}
-          onTypeFilterClear={onTypeFilterClear}
-          allTypes={allTypes}
+          onLabelFilterChange={onLabelFilterChange}
+          onLabelFilterClear={onLabelFilterClear}
+          allLabels={allLabels}
         />
       </Stack>
     </div>
