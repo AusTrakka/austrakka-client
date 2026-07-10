@@ -1,5 +1,6 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
+  AlertColor,
   FormControl,
   InputAdornment,
   MenuItem,
@@ -32,7 +33,7 @@ interface BasicPropertiesSectionProps {
   projectAbbrev: string | undefined;
   canonical: Project;
   onSaved: () => Promise<void>;
-  onSaveResult: (severity: 'success' | 'error', message: string) => void;
+  onSaveResult: (severity: AlertColor, message: string) => void;
   dashboards: string[];
   editable: boolean;
 }
@@ -156,29 +157,31 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           hiddenLabel
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
+          sx={{
+            '& .MuiInputBase-input': {
+              resize: 'none',
+              flex: 1,
+              height: '100% !important',
+              boxSizing: 'border-box',
+            },
+          }}
           slotProps={{
             htmlInput: {
               maxLength: nameMaxLength,
             },
             input: {
-              style: {
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexWrap: 'nowrap',
-              },
               endAdornment: (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    color: 'rgba(0, 0, 0, 0.6)',
-                    whiteSpace: 'nowrap',
-                    paddingLeft: '8px',
-                    flexShrink: 0,
+                <InputAdornment
+                  position="end"
+                  sx={{
+                    alignSelf: 'center',
+                    margin: 0,
+                    pl: 1,
+                    '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
                   }}
                 >
-                  {`${value?.length ?? 0}/${nameMaxLength}`}
-                </span>
+                  {`${value?.length ?? 0}/${descriptionMaxLength}`}
+                </InputAdornment>
               ),
             },
           }}
@@ -290,7 +293,10 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
         setIsEditing(false);
         onSaveResult('success', 'Project details updated successfully');
       } else {
-        onSaveResult('error', 'Could not save project details');
+        onSaveResult(
+          'error',
+          'Could not update project details. Please check network connection or contact an admin.',
+        );
       }
     } finally {
       setIsSaving(false);

@@ -50,7 +50,7 @@ export const putProjectDetails = (
   identifer: string,
   putDto: ProjectPut,
   token: string,
-): Promise<ResponseObject<Project>> => callPUT(`/api/Pojects/${identifer}`, token, putDto);
+): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
 
 export const pathchProjectIsActive = (
   isActive: boolean,

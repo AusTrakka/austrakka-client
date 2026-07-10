@@ -45,7 +45,7 @@ function ProjectSettingsOverview() {
 
   const isAdmin = admin || superUser;
 
-  const handleBasicPropertiesSaved = (message: string, severity: AlertColor) => {
+  const handleBasicPropertiesSaved = (severity: AlertColor, message: string) => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -170,6 +170,8 @@ function ProjectSettingsOverview() {
       <BasicPropertiesSection
         projectAbbrev={projectAbbrev}
         canonical={projectDetails}
+        onSaved={refetchProject}
+        onSaveResult={handleBasicPropertiesSaved}
         dashboards={dashboards}
         editable={isAdmin}
       />
