@@ -1,5 +1,10 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { HAS_SEQUENCES, SAMPLE_ID_FIELD } from '../constants/metadataConsts';
+import {
+  DATE_CREATED,
+  DATE_UPDATED,
+  HAS_SEQUENCES,
+  SAMPLE_ID_FIELD,
+} from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import RecordTypes from '../constants/record-type.enum';
 import type { MetaDataColumn } from '../types/dtos';
@@ -11,6 +16,7 @@ import {
 } from '../utilities/resourceUtils';
 import { listenerMiddleware } from './listenerMiddleware';
 import {
+  compareDatesDesc,
   getEmptyStringColumns,
   normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
@@ -377,15 +383,25 @@ export const orgMetadataSlice = createSlice({
       replaceDateStrings(data, fields, fieldNames);
       state.data[orgAbbrev].metadata = data;
 
-      // Default sort by Seq_ID; could be done server-side
-      if (
-        state.data[orgAbbrev].metadata!.length > 0 &&
-        state.data[orgAbbrev].metadata![0][SAMPLE_ID_FIELD]
-      ) {
-        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-        state.data[orgAbbrev].metadata!.sort((a, b) =>
-          collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
-        );
+      // Default sort by Date_updated, fallback to SEQID
+      if (state.data[orgAbbrev].metadata!.length > 0) {
+        const metadata = state.data[orgAbbrev].metadata!;
+        const [firstRow] = metadata;
+
+        if (firstRow[DATE_UPDATED]) {
+          metadata.sort((a: Sample, b: Sample) =>
+            compareDatesDesc(a[DATE_UPDATED], b[DATE_UPDATED]),
+          );
+        } else if (firstRow[DATE_CREATED]) {
+          metadata.sort((a: Sample, b: Sample) =>
+            compareDatesDesc(a[DATE_CREATED], b[DATE_CREATED]),
+          );
+        } else if (firstRow[SAMPLE_ID_FIELD]) {
+          const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+          metadata.sort((a: Sample, b: Sample) =>
+            collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
+          );
+        }
       }
 
       // Calculate unique values; would be better server-side but this is quite fast

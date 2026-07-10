@@ -6,6 +6,7 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -15,6 +16,7 @@ import {
   Link,
   List,
   ListItemText,
+  ListSubheader,
   MenuItem,
   Select,
   Tooltip,
@@ -35,6 +37,7 @@ import type { Proforma, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { OrgDescriptor } from '../../types/sequploadtypes';
 import {
+  getProformaGroups,
   getProjectList,
   getUserProformas,
   uploadSubmissions,
@@ -50,6 +53,11 @@ interface Options {
   validate: boolean;
   blank: boolean;
   append: boolean;
+}
+
+interface ProformaShareProjects {
+  shared: Project[];
+  other: Project[];
 }
 
 const uploadOptions = [
@@ -98,6 +106,10 @@ function UploadMetadata() {
   const [availableDataOwners, setAvailableDataOwners] = useState<string[]>([]); // Org abbreviations
   const [selectedDataOwner, setSelectedDataOwner] = useState<string | null>(null);
   const [projectAbbrevs, setProjectAbbrevs] = useState<string[]>([]);
+  const [proformaProjects, setProformaProjects] = useState<ProformaShareProjects>({
+    shared: [],
+    other: [],
+  });
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [selectedProjectShare, setSelectedProjectShare] = useState<string[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
@@ -182,6 +194,45 @@ function UploadMetadata() {
   }, [token, tokenLoading]);
 
   useEffect(() => {
+    const getProformaGroupList = async () => {
+      const proformaGroupsResponse: ResponseObject = await getProformaGroups(
+        selectedProforma!.abbreviation,
+        token,
+      );
+      if (proformaGroupsResponse.status === ResponseType.Success) {
+        const sharedGroupNames = new Set(
+          proformaGroupsResponse.data.map((g: any) => g.name.replace(/-Group$/, '')),
+        );
+
+        const sharedProjects = availableProjects.filter((project: Project) =>
+          sharedGroupNames.has(project.abbreviation),
+        );
+
+        const otherProjects = availableProjects.filter(
+          (project: Project) => !sharedGroupNames.has(project.abbreviation),
+        );
+
+        setProformaProjects({
+          shared: sharedProjects,
+          other: otherProjects,
+        });
+      } else {
+        setProformaProjects({
+          shared: [],
+          other: [],
+        });
+      }
+    };
+    if (
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE &&
+      selectedProforma
+    ) {
+      getProformaGroupList();
+    }
+  }, [selectedProforma, token, tokenLoading, availableProjects]);
+
+  useEffect(() => {
     // Scroll validation or upload response messages into view
     if (submission.messages?.length !== 0) {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -263,6 +314,84 @@ function UploadMetadata() {
     });
   }, [files, options]);
 
+  // Render sharing project list
+  const renderProjectShareListSelect = () => {
+    if (selectedProforma && proformaProjects.shared.length + proformaProjects.other.length > 0) {
+      return (
+        <Select
+          labelId="select-project-share-label"
+          id="select-project-share"
+          name="Share with Projects"
+          value={selectedProjectShare}
+          multiple
+          onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
+        >
+          <ListSubheader
+            sx={{
+              height: 40,
+              lineHeight: '40px',
+            }}
+          >
+            Projects selected proforma has been shared with
+          </ListSubheader>
+          {proformaProjects.shared.length === 0 ? (
+            <MenuItem disabled>No projects available</MenuItem>
+          ) : (
+            proformaProjects.shared.map((project: Project) => (
+              <MenuItem value={project.abbreviation} key={project.abbreviation}>
+                {`${project.abbreviation} : ${project.name}`}
+              </MenuItem>
+            ))
+          )}
+          <Divider sx={{ my: 0.5 }} />
+          <ListSubheader
+            sx={{
+              height: 40,
+              lineHeight: '40px',
+            }}
+          >
+            Other projects
+          </ListSubheader>
+          {proformaProjects.other.length === 0 ? (
+            <MenuItem disabled>No other projects available</MenuItem>
+          ) : (
+            proformaProjects.other.map((project: Project) => (
+              <MenuItem value={project.abbreviation} key={project.abbreviation}>
+                {`${project.abbreviation} : ${project.name}`}
+              </MenuItem>
+            ))
+          )}
+        </Select>
+      );
+    }
+    return (
+      <Select
+        labelId="select-project-share-label"
+        id="select-project-share"
+        name="Share with Projects"
+        value={selectedProjectShare}
+        multiple
+        onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
+      >
+        {/* If detailed project list isn't populated, use abbreviation list only */}
+        {availableProjects && availableProjects.length > 0
+          ? availableProjects.map((project: Project) => (
+              <MenuItem value={project.abbreviation} key={project.abbreviation}>
+                {`${project.abbreviation} : ${project.name}`}
+              </MenuItem>
+            ))
+          : projectAbbrevs.map((project: string) => (
+              <MenuItem value={project} key={project}>
+                {project}
+              </MenuItem>
+            ))}
+        {availableProjects.length === 0 && projectAbbrevs.length === 0 ? (
+          <MenuItem disabled>No available projects to share with</MenuItem>
+        ) : null}
+      </Select>
+    );
+  };
+
   return (
     <>
       <Typography variant="h3" paddingBottom={1} color="primary">
@@ -337,37 +466,6 @@ function UploadMetadata() {
             <FormHelperText>Required</FormHelperText>
           </FormControl>
           <Typography variant="h4" color="primary">
-            Sharing
-          </Typography>
-          <FormControl
-            size="small"
-            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
-            variant="standard"
-          >
-            <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
-            <Select
-              labelId="select-project-share-label"
-              id="select-project-share"
-              name="Share with Projects"
-              value={selectedProjectShare}
-              multiple
-              onChange={(e) => setSelectedProjectShare([e.target.value].flat())}
-            >
-              {/* If detailed project list isn't populated, use abbreviation list only */}
-              {availableProjects && availableProjects.length > 0
-                ? availableProjects.map((project: Project) => (
-                    <MenuItem value={project.abbreviation} key={project.abbreviation}>
-                      {`${project.abbreviation} : ${project.name}`}
-                    </MenuItem>
-                  ))
-                : projectAbbrevs.map((project: string) => (
-                    <MenuItem value={project} key={project}>
-                      {project}
-                    </MenuItem>
-                  ))}
-            </Select>
-          </FormControl>
-          <Typography variant="h4" color="primary">
             Select proforma
           </Typography>
           <Tooltip title={proformaStatusMessage} placement="left" arrow>
@@ -406,6 +504,17 @@ function UploadMetadata() {
               <FormHelperText>Required</FormHelperText>
             </FormControl>
           </Tooltip>
+          <Typography variant="h4" color="primary">
+            Sharing
+          </Typography>
+          <FormControl
+            size="small"
+            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
+            variant="standard"
+          >
+            <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
+            {renderProjectShareListSelect()}
+          </FormControl>
           {selectedProforma ? (
             <List>
               <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
