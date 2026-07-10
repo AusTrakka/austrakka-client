@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, CircularProgress, Typography } from '@mui/material';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
@@ -219,29 +219,6 @@ export default function ProjectCounts(props: ProjectCountsProps) {
               className="flexible-column"
               bodyClassName="value-cells"
               header="Sample Count"
-              body={(rowData) => (
-                <>
-                  {rowData.total}
-                  {rowData.sharedWithOthers > 0 && (
-                    <Tooltip
-                      title={`${rowData.sharedWithOthers} of these ${rowData.total} samples are also shared with at least one other project`}
-                      sx={{ marginLeft: 1.5 }}
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            lineHeight: 1.3,
-                            textAlign: 'center',
-                            '& > *': { margin: 0 },
-                          },
-                        },
-                      }}
-                      arrow
-                    >
-                      <Chip label={`${rowData.sharedWithOthers} shared`} />
-                    </Tooltip>
-                  )}
-                </>
-              )}
             />
           </DataTable>
         </Box>
