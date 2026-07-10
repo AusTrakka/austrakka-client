@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate, useNavigation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
