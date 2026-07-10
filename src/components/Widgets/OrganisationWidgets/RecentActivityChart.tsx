@@ -100,10 +100,10 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     const series: EChartsOption['series'] = Object.entries(countsByType).map(
       ([eventType, dayCounts]) => ({
         name: eventType,
-        type: 'bar',
-        stack: 'total',
-        barMaxWidth: 60,
-        barCategoryGap: '10%',
+        type: 'line',
+        smooth: false,
+        symbol: 'circle',
+        symbolSize: 6,
         emphasis: { focus: 'series' },
         data: days.map((d) => dayCounts[d]),
       }),
@@ -124,7 +124,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
       },
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'shadow' },
+        axisPointer: { type: 'line' },
         appendTo: () => document.body,
         confine: false,
         formatter: (params) => {
@@ -154,6 +154,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         name: 'Day',
         nameLocation: 'middle',
         nameGap: 32,
+        boundaryGap: false,
         axisLabel: { fontSize: 11 },
       },
       yAxis: {
