@@ -174,14 +174,6 @@ function OrgDashboard(props: OrgDashboardProps) {
                             Missing: Theme.SecondaryYellow,
                           }}
                         />
-                        <br />
-                        <SimpleMetadataBarChart
-                          widgetType={WidgetType.Organisation}
-                          identifier={orgAbbrev}
-                          filteredData={data?.metadata ?? []}
-                          field="State"
-                          title="State distribution"
-                        />
                       </Grid>
                     </Grid>
                   </Grid>
