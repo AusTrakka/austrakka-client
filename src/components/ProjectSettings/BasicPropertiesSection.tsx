@@ -305,7 +305,6 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
   const handleCancel = () => {
     setDraft(canonicalPut);
     setIsEditing(false);
-    setSaveError(null);
   };
 
   if (!canonical) return null;
