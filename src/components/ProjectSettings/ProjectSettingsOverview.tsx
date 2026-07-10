@@ -10,9 +10,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useNavigation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
-import { useStableNavigate } from '../../app/NavigationContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
@@ -27,7 +26,7 @@ import { useProjectDetails } from './useProjectDetails';
 
 function ProjectSettingsOverview() {
   const { projectAbbrev } = useParams();
-  const { navigate } = useStableNavigate();
+  const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
   const { projectDetails, status, errorMessage, refetchProject } = useProjectDetails(
     projectAbbrev,
@@ -126,6 +125,7 @@ function ProjectSettingsOverview() {
               fontSize: '1.25rem',
               fontWeight: 'bold',
               display: 'block',
+              paddingBottom: '0px !important',
             }}
           >
             {projectDetails?.name}
