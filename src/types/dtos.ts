@@ -7,7 +7,7 @@ export interface Project {
   globalId: string;
   abbreviation: string;
   name: string;
-  type: string;
+  label: string;
   clientType: string;
   description: string;
   projectMembers: {
@@ -34,7 +34,7 @@ export interface ProjectPut {
   description: string;
   requestingOrg: string;
   dashboardName: string;
-  type: string;
+  label: string;
   clientType: string;
   mergeAlgorithm: MergeAlgorithm;
 }

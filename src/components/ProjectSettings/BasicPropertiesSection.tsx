@@ -62,7 +62,7 @@ const readonlyFields: ReadonlyArray<keyof Project> = ['abbreviation', 'requestin
 const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> = [
   'name',
   'description',
-  'type',
+  'label',
   'dashboardName',
   'mergeAlgorithm',
   'isActive',
@@ -76,7 +76,7 @@ const readableNames: Record<string, string> = {
   lastUpdatedBy: 'Last Updated By',
   name: 'Name',
   description: 'Description',
-  type: 'Type',
+  label: 'Label',
   requestingOrg: 'Requesting Organisation',
   dashboardName: 'Dashboard Name',
   mergeAlgorithm: 'Merge Algorithm',
@@ -97,7 +97,7 @@ function toProjectPut(project: Project): ProjectPut {
     description: project.description,
     requestingOrg: project.requestingOrg,
     dashboardName: project.dashboardName,
-    type: project.type,
+    label: project.label,
     mergeAlgorithm: project.mergeAlgorithm as MergeAlgorithm,
     clientType: project.clientType,
   };

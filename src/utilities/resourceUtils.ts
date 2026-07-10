@@ -50,7 +50,19 @@ export const putProjectDetails = (
   identifer: string,
   putDto: ProjectPut,
   token: string,
-): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
+): Promise<ResponseObject<Project>> => callPUT(`/api/Pojects/${identifer}`, token, putDto);
+
+export const pathchProjectIsActive = (
+  isActive: boolean,
+  identifier: string,
+  token: string,
+): Promise<ResponseObject> => {
+  if (isActive) {
+    return callPATCH(`/api/Projects/${identifier}/Enable`, token);
+  } else {
+    return callPATCH(`/api/Projects/${identifier}/Disable`, token);
+  }
+};
 
 export const getProjectMembers = (identifier: string, token: string) =>
   callGET(`/api/Projects/${identifier}/Members`, token);
