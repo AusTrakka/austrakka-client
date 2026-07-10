@@ -252,7 +252,13 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
 
       {loaded && !errorMessage && !infoMessage && (
         <Box flex={1} minHeight={0}>
-          <DataTable value={rows} scrollable scrollHeight="flex" className="my-flexible-table">
+          <DataTable
+            value={rows}
+            size="small"
+            scrollable
+            scrollHeight="flex"
+            className="my-flexible-table"
+          >
             <Column
               field="category"
               header={categoryField}
