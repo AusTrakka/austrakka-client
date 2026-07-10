@@ -22,7 +22,7 @@
   padding-bottom: 5px;
 }
 
-.basic-info-table {
+.basic-user-info-table {
   margin-top: 1em;
   border: none;
   padding: 20px;
@@ -33,7 +33,7 @@
   overflow: hidden;
 }
 
-.basic-info-table .table-container {
+.basic-user-info-table .table-container {
   flex-grow: 1;
   overflow-y: auto;
 }
