@@ -241,8 +241,12 @@ export const unshareSamples = (
   );
 
 // Organisation endpoints
-export const getOrganisations = (includeAll: boolean, token: string) =>
+export const getOrganisations = (
+  includeAll: boolean,
+  token: string,
+): Promise<ResponseObject<Organisation[]>> =>
   callGET(`/api/Organisations?includeall=${includeAll}`, token);
+
 export const getOrganisation = (
   abbrev: string,
   token: string,
@@ -367,7 +371,7 @@ export const enableUser = (userGlobalId: string, token: string, clientSessionId?
 
 // OrganisationV2
 
-export const getOrganisationsV2 = (organisationGlobalId: string, token: string) =>
+export const getOrganisationV2 = (organisationGlobalId: string, token: string) =>
   callGET(`/api/OrganisationV2/${organisationGlobalId}`, token);
 
 export const patchUserOrganisationV2 = (

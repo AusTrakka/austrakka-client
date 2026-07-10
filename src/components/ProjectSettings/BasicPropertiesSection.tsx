@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { Theme } from '../../assets/themes/theme';
 import { ResponseType } from '../../constants/responseType';
-import type { Project } from '../../types/dtos';
+import type { Organisation, Project } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
 import { FieldLabelWithTooltip } from '../Common/SettingsPage/FieldLabelWithToolTip';
@@ -36,6 +36,7 @@ interface BasicPropertiesSectionProps {
   onSaved: () => Promise<void>;
   onSaveResult: (severity: AlertColor, message: string) => void;
   dashboards: string[];
+  organisations: Organisation[];
   editable: boolean;
 }
 
@@ -154,6 +155,10 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
                       value={draft[field]}
                       onChange={(newValue: unknown) => setDraft({ ...draft, [field]: newValue })}
                       dashboards={dashboards}
+                      organisations={props.organisations.map((org) => ({
+                        name: org.name,
+                        abbrev: org.abbreviation,
+                      }))}
                     />
                   ) : (
                     formatValue(draft[field])

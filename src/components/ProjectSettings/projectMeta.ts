@@ -22,7 +22,7 @@ export function toProjectPut(project: Project): ProjectPut {
   };
 }
 
-export const readonlyFields: ReadonlyArray<keyof Project> = ['abbreviation', 'requestingOrg'];
+export const readonlyFields: ReadonlyArray<keyof Project> = ['abbreviation'];
 
 export const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> = [
   'name',
@@ -30,6 +30,7 @@ export const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> 
   'label',
   'dashboardName',
   'mergeAlgorithm',
+  'requestingOrg',
   'isActive',
 ];
 

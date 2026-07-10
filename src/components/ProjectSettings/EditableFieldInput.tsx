@@ -13,6 +13,7 @@ interface EditableFieldInputProps {
   value: any;
   dashboards: string[];
   onChange: (newValue: unknown) => void;
+  organisations: { name: string; abbrev: string }[];
 }
 
 export const EditableFieldInput = ({
@@ -20,6 +21,7 @@ export const EditableFieldInput = ({
   value,
   onChange,
   dashboards,
+  organisations,
 }: EditableFieldInputProps) => {
   switch (field) {
     case 'mergeAlgorithm':
@@ -28,6 +30,18 @@ export const EditableFieldInput = ({
           <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
             <MenuItem value={MergeAlgorithm.OVERRIDE}>Override</MenuItem>
             <MenuItem value={MergeAlgorithm.SHOW_ALL}>Show all</MenuItem>
+          </Select>
+        </FormControl>
+      );
+    case 'requestingOrg':
+      return (
+        <FormControl fullWidth size="small" variant="filled" hiddenLabel>
+          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
+            {organisations.map((org: { name: string; abbrev: string }) => (
+              <MenuItem key={org.abbrev} value={org.abbrev}>
+                {`${org.name} (${org.abbrev})`}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       );

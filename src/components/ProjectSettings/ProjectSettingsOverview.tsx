@@ -18,10 +18,10 @@ import { selectUserState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
-import type { ProjectDashboardDetails } from '../../types/dtos';
+import type { Organisation, ProjectDashboardDetails } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
-import { getAvailableProjectDashboards } from '../../utilities/resourceUtils';
+import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
 import { useProjectDetails } from './useProjectDetails';
 
@@ -36,6 +36,8 @@ function ProjectSettingsOverview() {
   );
   const [dashboards, setDashboards] = useState<string[]>([]);
   const [dashboardErrorMessage, setDashboardErrorMessage] = useState<string | null>(null);
+  const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [organisationErrorMessage, setOrganisationErrorMessage] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -68,15 +70,33 @@ function ProjectSettingsOverview() {
     }
   }, [token, tokenLoading, isAdmin]);
 
+  useEffect(() => {
+    async function fetchAvailableOrganisations() {
+      const response: ResponseObject<Organisation[]> = await getOrganisations(false, token);
+      if (response.status !== ResponseType.Success) {
+        setOrganisationErrorMessage(response.message);
+        return;
+      }
+      const organsiations = response.data ?? [];
+      setOrganisations(organsiations);
+    }
+
+    if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
+      fetchAvailableOrganisations();
+    }
+  }, [token, tokenLoading, isAdmin]);
+
   const navigateToSummary = () => {
     if (!projectAbbrev) return;
     navigate(`/projects/${projectAbbrev}/summary`);
   };
 
-  if (status === LoadingState.ERROR || dashboardErrorMessage) {
+  if (status === LoadingState.ERROR || dashboardErrorMessage || organisationErrorMessage) {
     return (
       <div>
-        <Alert severity="error">{errorMessage ?? dashboardErrorMessage}</Alert>
+        <Alert severity="error">
+          {errorMessage ?? dashboardErrorMessage ?? organisationErrorMessage}
+        </Alert>
       </div>
     );
   }
@@ -199,6 +219,7 @@ function ProjectSettingsOverview() {
         canonical={projectDetails}
         onSaved={refetchProject}
         onSaveResult={handleBasicPropertiesSaved}
+        organisations={organisations}
         dashboards={dashboards}
         editable={isAdmin}
       />
