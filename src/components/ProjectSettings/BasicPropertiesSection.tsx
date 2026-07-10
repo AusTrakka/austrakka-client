@@ -1,6 +1,6 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
-  AlertColor,
+  type AlertColor,
   FormControl,
   InputAdornment,
   MenuItem,
@@ -25,8 +25,8 @@ import { ResponseType } from '../../constants/responseType';
 import type { Project, ProjectPut } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
+import { FieldLabelWithTooltip } from '../Common/SettingsPage/FieldLabelWithToolTip';
 import EditButtons from '../Users/EditButtons';
-import { FieldLabelWithTooltip } from '../Users/RowRender/FieldLabelWithToolTip';
 import { useDraftState } from './useDraftState';
 
 interface BasicPropertiesSectionProps {

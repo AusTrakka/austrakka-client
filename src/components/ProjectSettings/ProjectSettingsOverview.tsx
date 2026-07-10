@@ -95,7 +95,6 @@ function ProjectSettingsOverview() {
         gap={3}
         sx={{ mb: 2 }}
       >
-        {/* Left: Back Button and Project Name (Maximized horizontal space) */}
         <Box display="flex" alignItems="center" gap={1} sx={{ minWidth: 0, flexGrow: 1 }}>
           <IconButton aria-label="back" onClick={() => navigateToSummary()} sx={{ flexShrink: 0 }}>
             <ArrowBack fontSize="small" />
@@ -113,13 +112,12 @@ function ProjectSettingsOverview() {
           </Typography>
         </Box>
 
-        {/* Right: Ultra-Compact Vertically Stacked Metadata Card */}
         <Paper
           elevation={0}
           variant="outlined"
           sx={{
             padding: '6px 12px',
-            flexShrink: 0, // Ensures the card stays tight and never squishes
+            flexShrink: 0,
           }}
         >
           <Stack direction="column" spacing={0.5}>

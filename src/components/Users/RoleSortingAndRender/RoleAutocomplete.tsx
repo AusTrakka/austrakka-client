@@ -3,7 +3,7 @@ import { Autocomplete, Box, Checkbox, Chip, TextField, Tooltip } from '@mui/mate
 import type { Dispatch, SetStateAction } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import type { Role } from '../../../types/dtos';
-import { InfoTooltip } from '../RowRender/InfoTooltip';
+import { InfoTooltip } from '../../Common/SettingsPage/InfoTooltip';
 
 interface RoleAutocompleteProps {
   roles: Role[];
