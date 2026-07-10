@@ -23,7 +23,7 @@ import { MergeAlgorithm } from '../../constants/mergeAlgorithm';
 import { ResponseType } from '../../constants/responseType';
 import type { Project, ProjectPut } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { putProjectDetails } from '../../utilities/resourceUtils';
+import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
 import EditButtons from '../Users/EditButtons';
 import { FieldLabelWithTooltip } from '../Users/RowRender/FieldLabelWithToolTip';
 import { useDraftState } from './useDraftState';
@@ -32,6 +32,7 @@ interface BasicPropertiesSectionProps {
   projectAbbrev: string | undefined;
   canonical: Project;
   onSaved: () => Promise<void>;
+  onSaveResult: (severity: 'success' | 'error', message: string) => void;
   dashboards: string[];
   editable: boolean;
 }
@@ -264,11 +265,10 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
 };
 
 function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
-  const { projectAbbrev, canonical, onSaved, dashboards, editable } = props;
+  const { projectAbbrev, canonical, onSaved, dashboards, editable, onSaveResult } = props;
   const { token } = useApi();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const canonicalPut = toProjectDraft(canonical);
   const { draft, setDraft, isDirty, diff } = useDraftState(canonicalPut);
@@ -276,7 +276,6 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
   const handleSave = async () => {
     if (!projectAbbrev) return;
     setIsSaving(true);
-    setSaveError(null);
 
     try {
       const { isActive, ...restDiff } = diff;
@@ -294,8 +293,9 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
       if (results.every((r) => r.status === ResponseType.Success)) {
         await onSaved();
         setIsEditing(false);
+        onSaveResult('success', 'Project details updated successfully');
       } else {
-        setSaveError('Could not save project details');
+        onSaveResult('error', 'Could not save project details');
       }
     } finally {
       setIsSaving(false);
@@ -331,13 +331,6 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           onSaveLoading={isSaving}
         />
       </Stack>
-
-      {saveError && (
-        <Alert severity="error" onClose={() => setSaveError(null)}>
-          {saveError}
-        </Alert>
-      )}
-
       <TableContainer>
         <Table sx={{ borderBottom: 'none' }}>
           <TableBody>

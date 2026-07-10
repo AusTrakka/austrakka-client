@@ -1,6 +1,15 @@
 import { ArrowBack } from '@mui/icons-material';
-import { Alert, Box, IconButton, Paper, Stack, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  AlertColor,
+  Box,
+  IconButton,
+  Paper,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { useStableNavigate } from '../../app/NavigationContext';
@@ -27,9 +36,20 @@ function ProjectSettingsOverview() {
   );
   const [dashboards, setDashboards] = useState<string[]>([]);
   const [dashboardErrorMessage, setDashboardErrorMessage] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: AlertColor;
+  }>({ open: false, message: '', severity: 'success' });
   const { superUser, admin } = useAppSelector(selectUserState);
 
   const isAdmin = admin || superUser;
+
+  const handleBasicPropertiesSaved = (message: string, severity: AlertColor) => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const closeSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
 
   useEffect(() => {
     async function fetchAvailableDashboards() {
@@ -150,10 +170,19 @@ function ProjectSettingsOverview() {
       <BasicPropertiesSection
         projectAbbrev={projectAbbrev}
         canonical={projectDetails}
-        onSaved={refetchProject}
         dashboards={dashboards}
         editable={isAdmin}
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={closeSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
