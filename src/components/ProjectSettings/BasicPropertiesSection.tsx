@@ -135,7 +135,6 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           </Select>
         </FormControl>
       );
-
     case 'dashboardName':
       return (
         <FormControl fullWidth size="small" variant="filled" hiddenLabel>
@@ -158,11 +157,9 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
           slotProps={{
-            // 1. Native HTML input element properties
             htmlInput: {
               maxLength: nameMaxLength,
             },
-            // 2. MUI Input component properties (where endAdornment lives)
             input: {
               style: {
                 display: 'flex',
@@ -201,7 +198,7 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           sx={{
             '& .MuiInputBase-root': {
               display: 'flex',
-              alignItems: 'stretch', // default cross-axis behavior: children fill height
+              alignItems: 'stretch',
               resize: 'vertical',
               overflow: 'auto',
               minHeight: '45px',
@@ -222,7 +219,7 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
                 <InputAdornment
                   position="end"
                   sx={{
-                    alignSelf: 'center', // overrides the root's stretch, just for this child
+                    alignSelf: 'center',
                     margin: 0,
                     pl: 1,
                     '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
@@ -235,7 +232,6 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           }}
         />
       );
-
     case 'isActive':
       return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -249,7 +245,6 @@ const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFiel
           </Tooltip>
         </div>
       );
-
     default:
       return (
         <TextField
@@ -279,7 +274,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
 
     try {
       const { isActive, ...restDiff } = diff;
-      const { isActive: _omit, ...putPayload } = draft; // strip isActive out of the PUT body
+      const { isActive: _omit, ...putPayload } = draft;
 
       const results = await Promise.all([
         Object.keys(restDiff).length > 0
@@ -326,7 +321,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           onSave={handleSave}
           onCancel={handleCancel}
           hasSavedChanges={isDirty}
-          canSee={() => editable} // wire up your permission check here
+          canSee={() => editable}
           onSaveLoading={isSaving}
         />
       </Stack>
