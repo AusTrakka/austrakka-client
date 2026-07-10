@@ -1,11 +1,7 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
   type AlertColor,
-  FormControl,
-  InputAdornment,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Switch,
   Table,
@@ -13,20 +9,25 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { Theme } from '../../assets/themes/theme';
-import { MergeAlgorithm } from '../../constants/mergeAlgorithm';
 import { ResponseType } from '../../constants/responseType';
-import type { Project, ProjectPut } from '../../types/dtos';
+import type { Project } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
 import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
 import { FieldLabelWithTooltip } from '../Common/SettingsPage/FieldLabelWithToolTip';
 import EditButtons from '../Users/EditButtons';
+import { EditableFieldInput } from './EditableFieldInput';
+import {
+  desiredOrderingOfEditableFields,
+  readableNames,
+  readonlyFields,
+  toProjectDraft,
+} from './projectMeta';
 import { useDraftState } from './useDraftState';
 
 interface BasicPropertiesSectionProps {
@@ -36,72 +37,6 @@ interface BasicPropertiesSectionProps {
   onSaveResult: (severity: AlertColor, message: string) => void;
   dashboards: string[];
   editable: boolean;
-}
-
-interface EditableFieldInputProps {
-  field: keyof ProjectDraft;
-  value: any;
-  dashboards: string[];
-  onChange: (newValue: unknown) => void;
-}
-
-const nonDisplayFields: ReadonlyArray<keyof Project> = [
-  'projectId',
-  'globalId',
-  'projectMembers',
-  'trees',
-  'groupName',
-  'clientType',
-  'created',
-  'createdBy',
-  'lastUpdated',
-  'lastUpdatedBy',
-];
-
-const readonlyFields: ReadonlyArray<keyof Project> = ['abbreviation', 'requestingOrg'];
-
-const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> = [
-  'name',
-  'description',
-  'label',
-  'dashboardName',
-  'mergeAlgorithm',
-  'isActive',
-];
-
-const readableNames: Record<string, string> = {
-  abbreviation: 'Abbreviation',
-  created: 'Created',
-  createdBy: 'Created By',
-  lastUpdated: 'Last Updated',
-  lastUpdatedBy: 'Last Updated By',
-  name: 'Name',
-  description: 'Description',
-  label: 'Label',
-  requestingOrg: 'Requesting Organisation',
-  dashboardName: 'Dashboard Name',
-  mergeAlgorithm: 'Merge Algorithm',
-  isActive: 'Active',
-};
-
-type ProjectDraft = ProjectPut & { isActive: boolean };
-function toProjectDraft(project: Project): ProjectDraft {
-  return {
-    ...toProjectPut(project),
-    isActive: project.isActive,
-  };
-}
-
-function toProjectPut(project: Project): ProjectPut {
-  return {
-    name: project.name,
-    description: project.description,
-    requestingOrg: project.requestingOrg,
-    dashboardName: project.dashboardName,
-    label: project.label,
-    mergeAlgorithm: project.mergeAlgorithm as MergeAlgorithm,
-    clientType: project.clientType,
-  };
 }
 
 function formatValue(value: unknown) {
@@ -122,145 +57,6 @@ function formatValue(value: unknown) {
   if (value instanceof Date) return isoDateLocalDate(value.toISOString());
   return String(value);
 }
-
-const EditableFieldInput = ({ field, value, onChange, dashboards }: EditableFieldInputProps) => {
-  const descriptionMaxLength: number = 500;
-  const nameMaxLength: number = 50;
-  switch (field) {
-    case 'mergeAlgorithm':
-      return (
-        <FormControl fullWidth size="small" variant="filled" hiddenLabel>
-          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
-            <MenuItem value={MergeAlgorithm.OVERRIDE}>Override</MenuItem>
-            <MenuItem value={MergeAlgorithm.SHOW_ALL}>Show all</MenuItem>
-          </Select>
-        </FormControl>
-      );
-    case 'dashboardName':
-      return (
-        <FormControl fullWidth size="small" variant="filled" hiddenLabel>
-          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
-            {dashboards.map((dashboardName: string) => (
-              <MenuItem key={dashboardName} value={dashboardName}>
-                {dashboardName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      );
-    case 'name':
-      return (
-        <TextField
-          variant="filled"
-          size="small"
-          fullWidth
-          hiddenLabel
-          value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-          sx={{
-            '& .MuiInputBase-input': {
-              resize: 'none',
-              flex: 1,
-              height: '100% !important',
-              boxSizing: 'border-box',
-            },
-          }}
-          slotProps={{
-            htmlInput: {
-              maxLength: nameMaxLength,
-            },
-            input: {
-              endAdornment: (
-                <InputAdornment
-                  position="end"
-                  sx={{
-                    alignSelf: 'center',
-                    margin: 0,
-                    pl: 1,
-                    '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
-                  }}
-                >
-                  {`${value?.length ?? 0}/${descriptionMaxLength}`}
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      );
-    case 'description':
-      return (
-        <TextField
-          variant="filled"
-          size="small"
-          fullWidth
-          multiline
-          rows={1}
-          hiddenLabel
-          value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-          sx={{
-            '& .MuiInputBase-root': {
-              display: 'flex',
-              alignItems: 'stretch',
-              resize: 'vertical',
-              overflow: 'auto',
-              minHeight: '45px',
-            },
-            '& .MuiInputBase-input': {
-              resize: 'none',
-              flex: 1,
-              height: '100% !important',
-              boxSizing: 'border-box',
-            },
-          }}
-          slotProps={{
-            htmlInput: {
-              maxLength: descriptionMaxLength,
-            },
-            input: {
-              endAdornment: (
-                <InputAdornment
-                  position="end"
-                  sx={{
-                    alignSelf: 'center',
-                    margin: 0,
-                    pl: 1,
-                    '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
-                  }}
-                >
-                  {`${value?.length ?? 0}/${descriptionMaxLength}`}
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      );
-    case 'isActive':
-      return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Switch checked={value} size="small" onChange={(e) => onChange(e.target.checked)} />
-          <Tooltip title={(value as boolean) ? 'Active' : 'Disabled'} arrow placement="top">
-            {(value as boolean) || false ? (
-              <CheckCircleOutlined fontSize="small" style={{ color: Theme.SecondaryLightGreen }} />
-            ) : (
-              <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />
-            )}
-          </Tooltip>
-        </div>
-      );
-    default:
-      return (
-        <TextField
-          variant="filled"
-          size="small"
-          fullWidth
-          hiddenLabel
-          value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      );
-  }
-};
 
 function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
   const { projectAbbrev, canonical, onSaved, dashboards, editable, onSaveResult } = props;

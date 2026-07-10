@@ -1,7 +1,7 @@
 import { ArrowBack } from '@mui/icons-material';
 import {
   Alert,
-  AlertColor,
+  type AlertColor,
   Box,
   IconButton,
   Paper,
