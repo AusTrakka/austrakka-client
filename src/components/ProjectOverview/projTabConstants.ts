@@ -10,6 +10,6 @@ export const PROJ_TABS: TabObjectRecord = {
   members: { index: 4, title: 'Members' },
   proformas: { index: 5, title: 'Proformas' },
   datasets: { index: 6, title: 'Datasets' },
-  activity: { index: 7, title: 'Activity' },
-  documents: { index: 8, title: 'Documents' },
+  documents: { index: 7, title: 'Documents' },
+  activity: { index: 8, title: 'Activity' },
 } as const;
