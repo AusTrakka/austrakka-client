@@ -18,6 +18,7 @@ import { listenerMiddleware } from './listenerMiddleware';
 import {
   compareDatesDesc,
   getEmptyStringColumns,
+  normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
@@ -374,6 +375,7 @@ export const orgMetadataSlice = createSlice({
 
       if (fieldNames.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
+        normaliseHasSequencesTrueBoolWithString(data);
       }
       replaceNullsWithEmpty(data);
 

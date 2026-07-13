@@ -62,10 +62,6 @@ import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
 
-// TODO:
-// - Check if there is a clean way to make sure openShareDialog && openUnshareDialog != true
-// -
-
 interface SamplesProps {
   canShare: boolean;
   canChangeOwnership: boolean;
