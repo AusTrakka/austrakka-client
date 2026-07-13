@@ -58,9 +58,7 @@ function Users() {
     );
 
   const usernameBodyTemplate = (rowData: UserList) =>
-    !rowData.username ||
-    rowData.username === '' ||
-    rowData.username === undefined ? (
+    !rowData.username || rowData.username === '' || rowData.username === undefined ? (
       <Typography variant="inherit" color="textDisabled">
         Unavailable
       </Typography>
