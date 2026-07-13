@@ -8,7 +8,9 @@ import type {
   Plot,
   PlotListing,
   Project,
+  ProjectDashboardDetails,
   ProjectDocument,
+  ProjectPut,
   ProjectSummary,
   ProjectView,
   Role,
@@ -28,6 +30,7 @@ import {
   callPOSTForm,
   callPost,
   callPostMultipart,
+  callPUT,
   callSimpleGET,
   downloadFile,
   previewFile,
@@ -42,6 +45,24 @@ export const getProjectDetails = (
   abbrev: string,
   token: string,
 ): Promise<ResponseObject<Project>> => callGET(`/api/Projects/${abbrev}`, token);
+
+export const putProjectDetails = (
+  identifer: string,
+  putDto: ProjectPut,
+  token: string,
+): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
+
+export const pathchProjectIsActive = (
+  isActive: boolean,
+  identifier: string,
+  token: string,
+): Promise<ResponseObject> => {
+  if (isActive) {
+    return callPATCH(`/api/Projects/${identifier}/Enable`, token);
+  } else {
+    return callPATCH(`/api/Projects/${identifier}/Disable`, token);
+  }
+};
 
 export const getProjectMembers = (identifier: string, token: string) =>
   callGET(`/api/Projects/${identifier}/Members`, token);
@@ -115,6 +136,10 @@ export const getProjectViewData = (projectAbbrev: string, token: string): Promis
 // Project dashboards endpoints
 export const getProjectDashboard = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/assigned-dashboard/${projectAbbrev}`, token);
+
+export const getAvailableProjectDashboards = (
+  token: string,
+): Promise<ResponseObject<ProjectDashboardDetails[]>> => callGET('/api/ProjectDashboards', token);
 
 // User dashboard endpoints
 export const getUserDashboardOverview = (token: string) =>
@@ -216,8 +241,12 @@ export const unshareSamples = (
   );
 
 // Organisation endpoints
-export const getOrganisations = (includeAll: boolean, token: string) =>
+export const getOrganisations = (
+  includeAll: boolean,
+  token: string,
+): Promise<ResponseObject<Organisation[]>> =>
   callGET(`/api/Organisations?includeall=${includeAll}`, token);
+
 export const getOrganisation = (
   abbrev: string,
   token: string,
@@ -342,7 +371,7 @@ export const enableUser = (userGlobalId: string, token: string, clientSessionId?
 
 // OrganisationV2
 
-export const getOrganisationsV2 = (organisationGlobalId: string, token: string) =>
+export const getOrganisationV2 = (organisationGlobalId: string, token: string) =>
   callGET(`/api/OrganisationV2/${organisationGlobalId}`, token);
 
 export const patchUserOrganisationV2 = (

@@ -24,6 +24,7 @@ import PlotDetail from './components/Plots/PlotDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
 import DocumentPreview from './components/ProjectDocuments/PreviewDocument';
 import ProjectOverviewWrapper from './components/ProjectOverview/ProjectOverview';
+import ProjectSettingsOverview from './components/ProjectSettings/ProjectSettingsOverview';
 import ProjectsList from './components/ProjectsList/ProjectsList';
 import OrgSampleDetail from './components/SampleDetail/OrgSampleDetail';
 import ProjectSampleDetail from './components/SampleDetail/ProjectSampleDetail';
@@ -75,6 +76,10 @@ function App() {
                   <Route
                     path="projects/:projectAbbrev/:tab?"
                     element={<ProjectOverviewWrapper />}
+                  />
+                  <Route
+                    path="projects/:projectAbbrev/settings"
+                    element={<ProjectSettingsOverview />}
                   />
                   <Route path="records/:seqId" element={<OrgSampleDetail />} />
                   <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />

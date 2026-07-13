@@ -40,7 +40,7 @@ export default function UserPrivileges({
   onSelectionAdd,
 }: UserPrivilegesProps) {
   return (
-    <Paper elevation={1} className="basic-info-table">
+    <Paper elevation={1} className="basic-user-info-table">
       <Stack
         direction="row"
         justifyContent="space-between"

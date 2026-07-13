@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 import type { User } from '../../../types/dtos';
+import BasicRow from '../../Common/SettingsPage/BasicRow';
+import EditableRow from '../../Common/SettingsPage/EditableRow';
 import EditButtons from '../EditButtons';
-import BasicRow from '../RowRender/BasicRow';
-import EditableRow from '../RowRender/EditableRow';
 
 interface UserPropertiesProps {
   user: User;
@@ -64,7 +64,7 @@ export default function UserProperties(props: UserPropertiesProps) {
   };
 
   return (
-    <Paper elevation={1} className="basic-info-table">
+    <Paper elevation={1} className="basic-user-info-table">
       <Stack
         direction="row"
         justifyContent="space-between"
