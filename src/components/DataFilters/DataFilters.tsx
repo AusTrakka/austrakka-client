@@ -531,22 +531,33 @@ function DataFilters(props: DataFiltersProps) {
     // Find the field type to set conditions and format dates
     const fieldType =
       fields.find((f) => f.columnName === _fieldName)?.primitiveType ?? FieldTypes.STRING;
-    if (fieldType) {
-      setSelectedFieldType(fieldType as FieldTypes);
-      if (fieldType === FieldTypes.DATE) {
-        setConditions(dateConditions);
-      } else if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
-        setConditions(numberConditions);
-      } else if (fieldType === FieldTypes.BOOLEAN) {
-        setConditions(booleanConditions);
-      } else {
-        const uniqueValuesForField = fieldUniqueValues?.[_fieldName];
-        if (uniqueValuesForField && uniqueValuesForField.length > 0) {
-          setConditions([...stringConditions, ...stringInConditions]);
-        } else {
-          setConditions(stringConditions);
-        }
-      }
+
+    let newConditions = stringConditions;
+    if (fieldType === FieldTypes.DATE) {
+      newConditions = dateConditions;
+    } else if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
+      newConditions = numberConditions;
+    } else if (fieldType === FieldTypes.BOOLEAN) {
+      newConditions = booleanConditions;
+    } else {
+      const uniqueValuesForField = fieldUniqueValues?.[_fieldName];
+      newConditions =
+        uniqueValuesForField && uniqueValuesForField.length > 0
+          ? [...stringConditions, ...stringInConditions]
+          : stringConditions;
+    }
+    setConditions(newConditions);
+    setSelectedFieldType(fieldType as FieldTypes);
+
+    const isCustomMatch = _constraint.matchMode === FilterMatchMode.CUSTOM;
+    setNullOrEmptyFlag(isCustomMatch);
+
+    let conditionForForm: string | CustomFilterOperators | FilterMatchMode = _constraint.matchMode;
+    if (isCustomMatch) {
+      conditionForForm =
+        _constraint.value === true
+          ? CustomFilterOperators.NULL_OR_EMPTY
+          : CustomFilterOperators.NOT_NULL_OR_EMPTY;
     }
 
     // Convert Date to dayjs if it's a date field
@@ -557,7 +568,7 @@ function DataFilters(props: DataFiltersProps) {
 
     setFilterFormValues({
       field: _fieldName,
-      condition: _constraint.matchMode,
+      condition: conditionForForm,
       value: formValue,
       fieldType,
       operator: 'and',
