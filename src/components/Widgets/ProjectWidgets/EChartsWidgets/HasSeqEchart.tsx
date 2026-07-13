@@ -11,15 +11,21 @@ import type { DataTableFilterMeta } from 'primereact/datatable';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
+import { selectOrgMetadata } from '../../../../app/orgMetadataSlice';
 import { selectProjectMetadata } from '../../../../app/projectMetadataSlice';
-import { useAppSelector } from '../../../../app/store';
+import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
-import type ProjectWidgetProps from '../../../../types/projectwidget.props';
 import type { Sample } from '../../../../types/sample.interface';
+import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
+
+const STABLE_CAT_FIELD = 'Owner_group';
+const STABLE_CAT_FIELD_LABEL = 'Organisation';
+const SHARED_GROUPS_FIELD = 'Shared_groups';
+const UNSHARED_VALUE = 'Not shared'; // label for samples with no value for the category field
 
 const HAS_SEQ = 'Has_sequences';
 const ROW_HEIGHT = 45;
@@ -31,10 +37,7 @@ const CHART_COLORS = {
   MISSING: Theme.SecondaryYellow,
 } as const;
 
-interface HasSeqWidgetProps extends ProjectWidgetProps {
-  projectAbbrev: string;
-  filteredData?: Sample[];
-  timeFilterObject?: DataTableFilterMeta;
+interface HasSeqWidgetProps extends GenericMetadataWidgetProps {
   categoryField?: string;
 }
 
@@ -42,17 +45,44 @@ function stripOwnerSuffix(value: string): string {
   return value.split('-Owner')[0];
 }
 
+function isGroupName(name: string): boolean {
+  return name.endsWith('-Group');
+}
+
+function getSharedProjectNames(raw: string | undefined): string[] {
+  if (!raw) return [];
+  const groups: string[] = JSON.parse(raw).filter(isGroupName);
+  if (groups.length === 0) return []; // no groups at all = not shared
+  return groups.map((g) => g.slice(0, -'-Group'.length));
+}
+
 function HasSeq({
-  projectAbbrev,
+  widgetType,
+  identifier,
   filteredData,
   timeFilterObject,
   categoryField,
 }: HasSeqWidgetProps) {
-  const categoryFieldStable = categoryField ?? 'Owner_group';
-  const axisTitleStable = categoryField ?? 'Organisation';
+  const categoryFieldStable = categoryField ?? STABLE_CAT_FIELD;
+  const axisTitleStable = categoryField ?? STABLE_CAT_FIELD_LABEL;
 
   const { navigate } = useStableNavigate();
-  const data = useAppSelector((state) => selectProjectMetadata(state, projectAbbrev), shallowEqual);
+
+  const metadataSelector = useMemo(
+    () => (state: RootState) => {
+      switch (widgetType) {
+        case WidgetType.Organisation:
+          return selectOrgMetadata(state, identifier);
+        case WidgetType.Project:
+          return selectProjectMetadata(state, identifier);
+        default:
+          throw new Error(`This widget is not supported for widget type: ${widgetType}`);
+      }
+    },
+    [identifier, widgetType],
+  );
+
+  const data = useAppSelector(metadataSelector, shallowEqual);
 
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -62,25 +92,48 @@ function HasSeq({
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(categoryFieldStable))
-        return `Field ${categoryFieldStable} not found in project`;
-      if (!fieldNames.includes(HAS_SEQ)) return `Field ${HAS_SEQ} not found in project`;
+        return `Field ${categoryFieldStable} not found in ${widgetType}`;
+      if (!fieldNames.includes(HAS_SEQ)) return `Field ${HAS_SEQ} not found in ${widgetType}`;
     }
     return null;
-  }, [data, categoryFieldStable]);
+  }, [data, categoryFieldStable, widgetType]);
 
   const { categories, availableCounts, missingCounts } = useMemo(() => {
     const availableMap = new Map<string, number>();
     const missingMap = new Map<string, number>();
 
-    for (const sample of filteredData ?? []) {
-      const raw = (sample[categoryFieldStable as keyof Sample] as string) ?? '';
-      const label = categoryFieldStable === 'Owner_group' ? stripOwnerSuffix(raw) : raw;
-      const isAvailable = sample[HAS_SEQ as keyof Sample] === 'True';
+    if (categoryFieldStable === SHARED_GROUPS_FIELD) {
+      // Special case: bucket by each project the sample is shared with
+      // (a sample with >=1 group is "shared" and can land in multiple bars),
+      // rather than a single flat category column.
+      for (const sample of filteredData) {
+        const projects = getSharedProjectNames(
+          sample[SHARED_GROUPS_FIELD as keyof Sample] as string | undefined,
+        );
+        if (projects.length === 0) {
+          projects.push(UNSHARED_VALUE); // add to "not shared" category instead of skipping
+        }
 
-      if (isAvailable) {
-        availableMap.set(label, (availableMap.get(label) ?? 0) + 1);
-      } else {
-        missingMap.set(label, (missingMap.get(label) ?? 0) + 1);
+        const isAvailable = sample[HAS_SEQ as keyof Sample] === 'True';
+
+        projects.forEach((project) => {
+          if (isAvailable) {
+            availableMap.set(project, (availableMap.get(project) ?? 0) + 1);
+          } else {
+            missingMap.set(project, (missingMap.get(project) ?? 0) + 1);
+          }
+        });
+      }
+    } else {
+      for (const sample of filteredData) {
+        const raw = (sample[categoryFieldStable as keyof Sample] as string) ?? '';
+        const label = categoryFieldStable === 'Owner_group' ? stripOwnerSuffix(raw) : raw;
+        const isAvailable = sample[HAS_SEQ as keyof Sample] === 'True';
+        if (isAvailable) {
+          availableMap.set(label, (availableMap.get(label) ?? 0) + 1);
+        } else {
+          missingMap.set(label, (missingMap.get(label) ?? 0) + 1);
+        }
       }
     }
 
@@ -108,15 +161,40 @@ function HasSeq({
       const rawCategory =
         categoryFieldStable === 'Owner_group' ? `${params.name}-Owner` : params.name;
 
+      let categoryFilter: DataTableFilterMeta;
+
+      if (categoryFieldStable === SHARED_GROUPS_FIELD) {
+        if (params.name === UNSHARED_VALUE) {
+          // Unshared: filter for samples where the field is null/empty
+          categoryFilter = {
+            [SHARED_GROUPS_FIELD]: {
+              operator: FilterOperator.AND,
+              constraints: [{ matchMode: FilterMatchMode.CUSTOM, value: true }],
+            },
+          };
+        } else {
+          categoryFilter = {
+            [SHARED_GROUPS_FIELD]: {
+              operator: FilterOperator.AND,
+              constraints: [{ matchMode: FilterMatchMode.CONTAINS, value: `${params.name}-Group` }],
+            },
+          };
+        }
+      } else {
+        categoryFilter = {
+          [categoryFieldStable]: {
+            operator: FilterOperator.AND,
+            constraints: [{ matchMode: FilterMatchMode.EQUALS, value: rawCategory }],
+          },
+        };
+      }
+
       const filters: DataTableFilterMeta = {
         [HAS_SEQ]: {
           operator: FilterOperator.AND,
           constraints: [{ matchMode: FilterMatchMode.EQUALS, value: isAvailable }],
         },
-        [categoryFieldStable]: {
-          operator: FilterOperator.AND,
-          constraints: [{ matchMode: FilterMatchMode.EQUALS, value: rawCategory }],
-        },
+        ...categoryFilter,
       };
 
       const combined =
@@ -159,7 +237,7 @@ function HasSeq({
           },
         },
       },
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, appendTo: () => document.body },
       legend: {
         orient: 'horizontal',
         left: 90,
@@ -174,7 +252,7 @@ function HasSeq({
       yAxis: {
         type: 'category',
         axisLabel: { fontSize: 11 },
-        name: axisTitleStable,
+        name: axisTitleStable === 'Shared_groups' ? 'Projects' : axisTitleStable,
         nameLocation: 'middle',
         nameRotate: 90,
         nameGap: 60,

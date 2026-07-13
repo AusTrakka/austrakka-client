@@ -8,6 +8,7 @@ import {
   type TreeTableExpandedKeysType,
   type TreeTableToggleEvent,
 } from 'primereact/treetable';
+import { useNavigate } from 'react-router-dom';
 import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import {
@@ -22,7 +23,14 @@ import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
 import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import '../../../styles/TreeTable.css';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import RecordTypes from '../../../constants/record-type.enum';
 import {
   aggregateLogsToTree,
@@ -30,6 +38,7 @@ import {
   processTreeNodes,
   splitLargeChildrenGroups,
 } from '../../../utilities/activityTreeUtils';
+import { useStateFromSearchParamsForObject } from '../../../utilities/stateUtils';
 
 interface ActivityProps {
   recordType: string;
@@ -47,6 +56,31 @@ const emptyDetailInfo: ActivityDetailInfo = {
   Details: null,
 };
 
+// URL filters type for search params, using string for dates to avoid serialization issues
+type UrlFilters = {
+  resourceUniqueString: string | null;
+  resourceType: string | null;
+  eventType: string | null;
+  submitterDisplayName: string | null;
+  startDate: string; // 'default' | 'none' | ISO string
+  endDate: string; // 'default' | 'none' | ISO string
+};
+
+const defaultUrlFilters: UrlFilters = {
+  resourceUniqueString: null,
+  resourceType: null,
+  eventType: null,
+  submitterDisplayName: null,
+  startDate: 'default',
+  endDate: 'default',
+};
+
+function resolveUrlDate(value: string, defaultValue: Date): Date | null {
+  if (value === 'none') return null;
+  if (value === 'default') return defaultValue;
+  return new Date(value);
+}
+
 function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
@@ -55,18 +89,67 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>({});
   const MAX_VISIBLE_CHILDREN = 600;
+  const navigate = useNavigate();
 
-  const today = dayjs();
-  const lastWeek = dayjs().subtract(7, 'day');
+  const defaultDateRange = useMemo(
+    () => ({
+      startDate: dayjs().subtract(7, 'day').toDate(),
+      endDate: dayjs().toDate(),
+    }),
+    [],
+  );
 
-  const [filters, setFilters] = useState<Filters>({
-    startDate: lastWeek.toDate(),
-    endDate: today.toDate(),
-    resourceUniqueString: null,
-    resourceType: null,
-    eventType: null,
-    submitterDisplayName: null,
-  });
+  const [urlFilters, setUrlFilters] = useStateFromSearchParamsForObject<UrlFilters>(
+    defaultUrlFilters,
+    navigate,
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: seed default range once on mount only
+  useEffect(() => {
+    if (urlFilters.startDate === null && urlFilters.endDate === null) {
+      setUrlFilters((prev) => ({
+        ...prev,
+        startDate: defaultDateRange.startDate.toISOString(),
+        endDate: defaultDateRange.endDate.toISOString(),
+      }));
+    }
+  }, []);
+
+  const filters = useMemo<Filters>(
+    () => ({
+      resourceUniqueString: urlFilters.resourceUniqueString,
+      resourceType: urlFilters.resourceType,
+      eventType: urlFilters.eventType,
+      submitterDisplayName: urlFilters.submitterDisplayName,
+      startDate: resolveUrlDate(urlFilters.startDate, defaultDateRange.startDate),
+      endDate: resolveUrlDate(urlFilters.endDate, defaultDateRange.endDate),
+    }),
+    [
+      urlFilters.resourceUniqueString,
+      urlFilters.resourceType,
+      urlFilters.eventType,
+      urlFilters.submitterDisplayName,
+      urlFilters.startDate,
+      urlFilters.endDate,
+      defaultDateRange,
+    ],
+  );
+  const setFilters: Dispatch<SetStateAction<Filters>> = useCallback(
+    (newStateOrUpdater) => {
+      const nextFilters =
+        typeof newStateOrUpdater === 'function' ? newStateOrUpdater(filters) : newStateOrUpdater;
+
+      setUrlFilters({
+        resourceUniqueString: nextFilters.resourceUniqueString ?? null,
+        resourceType: nextFilters.resourceType ?? null,
+        eventType: nextFilters.eventType ?? null,
+        submitterDisplayName: nextFilters.submitterDisplayName ?? null,
+        startDate: nextFilters.startDate ? nextFilters.startDate.toISOString() : 'none',
+        endDate: nextFilters.endDate ? nextFilters.endDate.toISOString() : 'none',
+      });
+    },
+    [filters, setUrlFilters],
+  );
 
   const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
     recordType,

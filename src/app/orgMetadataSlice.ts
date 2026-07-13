@@ -18,6 +18,7 @@ import { listenerMiddleware } from './listenerMiddleware';
 import {
   compareDatesDesc,
   getEmptyStringColumns,
+  normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
   replaceNullsWithEmpty,
@@ -374,6 +375,7 @@ export const orgMetadataSlice = createSlice({
 
       if (fieldNames.includes(HAS_SEQUENCES)) {
         replaceHasSequencesNullsWithFalse(data);
+        normaliseHasSequencesTrueBoolWithString(data);
       }
       replaceNullsWithEmpty(data);
 
@@ -395,7 +397,7 @@ export const orgMetadataSlice = createSlice({
             compareDatesDesc(a[DATE_CREATED], b[DATE_CREATED]),
           );
         } else if (firstRow[SAMPLE_ID_FIELD]) {
-          const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+          const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
           metadata.sort((a: Sample, b: Sample) =>
             collator.compare(a[SAMPLE_ID_FIELD], b[SAMPLE_ID_FIELD]),
           );

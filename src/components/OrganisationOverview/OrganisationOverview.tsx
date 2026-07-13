@@ -2,7 +2,7 @@
 
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { NavigationProvider } from '../../app/NavigationContext';
 import { useAppSelector } from '../../app/store';
@@ -21,6 +21,7 @@ import { getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
+import OrgDashboard from '../Dashboards/OrgDashboard/OrgDashboard';
 import OrganisationSamples from './OrganisationSamples';
 import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
@@ -33,6 +34,7 @@ interface OrganisationOverviewProps {
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
+  const location = useLocation();
   const [organisation, setOrganisation] = useState<Organisation>();
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
@@ -143,17 +145,21 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
+        <OrgDashboard orgAbbrev={orgAbbrev} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={1}>
         <OrganisationSamples
           canShare={canShare}
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
           orgName={organisation.name}
+          key={location.search}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={2}>
         <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={2}>
+      <TabPanel value={tabValue} index={3}>
         <Activity recordType="Organisation" rGuid={organisation.globalId} />
       </TabPanel>
     </>
