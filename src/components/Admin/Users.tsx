@@ -57,15 +57,13 @@ function Users() {
       rowData.contactEmail
     );
 
-  const analysisServerUsernameBodyTemplate = (rowData: UserList) =>
-    !rowData.analysisServerUsername ||
-    rowData.analysisServerUsername === '' ||
-    rowData.analysisServerUsername === undefined ? (
+  const usernameBodyTemplate = (rowData: UserList) =>
+    !rowData.username || rowData.username === '' || rowData.username === undefined ? (
       <Typography variant="inherit" color="textDisabled">
         Unavailable
       </Typography>
     ) : (
-      rowData.analysisServerUsername
+      rowData.username
     );
 
   const columns = [
@@ -77,9 +75,9 @@ function Users() {
     { field: 'contactEmail', header: 'Email', body: emailBodyTemplate },
     { field: 'organisation', header: 'Organisation' },
     {
-      field: 'analysisServerUsername',
-      header: 'Analysis Server Username',
-      body: (rowData: UserList) => analysisServerUsernameBodyTemplate(rowData),
+      field: 'username',
+      header: 'Username',
+      body: (rowData: UserList) => usernameBodyTemplate(rowData),
     },
     {
       field: 'lastLogIn',
