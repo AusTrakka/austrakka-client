@@ -1,6 +1,6 @@
 import type { TabObjectRecord } from '../Common/CustomTabs';
 
-export const ORG_HOME_TAB = 'samples';
+export const ORG_HOME_TAB = 'dashboard';
 
 export const ORG_TABS: TabObjectRecord = {
   dashboard: { index: 0, title: 'Dashboard' },
