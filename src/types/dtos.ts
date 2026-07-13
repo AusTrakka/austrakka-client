@@ -204,7 +204,7 @@ export interface UserList {
   lastActive: Date;
   isAusTrakkaAdmin: boolean;
   isAusTrakkaProcess: boolean;
-  analysisServerUsername: string;
+  username: string;
 }
 
 export interface MetaDataColumnMapping {
