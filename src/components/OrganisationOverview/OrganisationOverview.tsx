@@ -145,6 +145,9 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
+        <OrgDashboard orgAbbrev={orgAbbrev} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={1}>
         <OrganisationSamples
           canShare={canShare}
           orgAbbrev={orgAbbrev}
@@ -153,14 +156,11 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           key={location.search}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={2}>
         <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={2}>
-        <Activity recordType="Organisation" rGuid={organisation.globalId} />
-      </TabPanel>
       <TabPanel value={tabValue} index={3}>
-        <OrgDashboard orgAbbrev={orgAbbrev} />
+        <Activity recordType="Organisation" rGuid={organisation.globalId} />
       </TabPanel>
     </>
   );
