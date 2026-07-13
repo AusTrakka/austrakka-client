@@ -108,6 +108,10 @@ export default function ProjectCounts(props: ProjectCountsProps) {
   const errorMessage = useMemo(() => {
     if (data?.loadingState === MetadataLoadingState.ERROR)
       return data.errorMessage ?? 'Unknown error';
+    return null;
+  }, [data]);
+
+  const infoMessage = useMemo(() => {
     if (data?.fields && data.fields.length > 0) {
       const fieldNames = data.fields.map((f) => f.columnName);
       if (!fieldNames.includes(SHARED_GROUPS_FIELD))
@@ -164,7 +168,9 @@ export default function ProjectCounts(props: ProjectCountsProps) {
         </Alert>
       )}
 
-      {!loaded && !errorMessage && (
+      {infoMessage && !errorMessage && <Alert severity="info">{infoMessage}</Alert>}
+
+      {!loaded && !errorMessage && !infoMessage && (
         <Box
           sx={{
             display: 'flex',
@@ -177,7 +183,7 @@ export default function ProjectCounts(props: ProjectCountsProps) {
           <CircularProgress size={24} />
         </Box>
       )}
-      {loaded && !errorMessage && (
+      {loaded && !errorMessage && !infoMessage && (
         <Box sx={{ flex: 1, minHeight: 0 }}>
           <DataTable
             value={projectCounts}
