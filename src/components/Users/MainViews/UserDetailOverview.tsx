@@ -18,7 +18,7 @@ import type {
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import { disableUser, enableUser, getUser, patchUser } from '../../../utilities/resourceUtils';
 import renderIcon from '../../Admin/UserIconRenderer';
-import '../RowRender/RowAndCell.css';
+import '../../Common/SettingsPage/RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
 import type { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';

@@ -12,18 +12,18 @@ import {
 
 type TypeFilterSelectProps = {
   selectedValue: string | null;
-  onTypeFilterChange: (e: SelectChangeEvent<string | null>) => void;
-  onTypeFilterClear: () => void;
-  allTypes: string[];
+  onLabelFilterChange: (e: SelectChangeEvent<string | null>) => void;
+  onLabelFilterClear: () => void;
+  allLabels: string[];
 };
 
-function TypeFilterSelect(props: TypeFilterSelectProps) {
-  const { selectedValue, onTypeFilterChange, onTypeFilterClear, allTypes } = props;
+function LabelFilterSelect(props: TypeFilterSelectProps) {
+  const { selectedValue, onLabelFilterChange, onLabelFilterClear, allLabels } = props;
   return (
     <FormControl size="small" className="form-control">
       <Select
         value={selectedValue || ''}
-        onChange={(e) => onTypeFilterChange(e)}
+        onChange={(e) => onLabelFilterChange(e)}
         size="small"
         variant="outlined"
         displayEmpty
@@ -42,14 +42,14 @@ function TypeFilterSelect(props: TypeFilterSelectProps) {
             </em>
           ) : (
             <Typography color="textDisabled" variant="subtitle2" sx={{ whiteSpace: 'nowrap' }}>
-              Filter by Type
+              Filter by Label
             </Typography>
           )
         }
         endAdornment={
           selectedValue && (
             <InputAdornment position="end" sx={{ ml: 0, flexShrink: 0 }}>
-              <IconButton onClick={onTypeFilterClear} size="small">
+              <IconButton onClick={onLabelFilterClear} size="small">
                 <Clear fontSize="small" />
               </IconButton>
             </InputAdornment>
@@ -63,7 +63,7 @@ function TypeFilterSelect(props: TypeFilterSelectProps) {
           },
         }}
       >
-        {allTypes.map((option) => (
+        {allLabels.map((option) => (
           <MenuItem key={option} value={option} style={{ fontSize: '0.9em' }}>
             {option}
           </MenuItem>
@@ -73,4 +73,4 @@ function TypeFilterSelect(props: TypeFilterSelectProps) {
   );
 }
 
-export default TypeFilterSelect;
+export default LabelFilterSelect;

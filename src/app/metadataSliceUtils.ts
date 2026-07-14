@@ -95,6 +95,17 @@ export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
   return data;
 }
 
+export function normaliseHasSequencesTrueBoolWithString(data: Sample[]) {
+  data.map((sample) => {
+    if (sample[HAS_SEQUENCES] === 'True' || sample[HAS_SEQUENCES] === true) {
+      sample[HAS_SEQUENCES] = 'True';
+    }
+    return sample;
+  });
+
+  return data;
+}
+
 // Given sample data and field details, replace date strings with Date objects
 export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
   const fieldDetails = getFieldDetails(fieldNames, fields);
@@ -123,6 +134,14 @@ export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: 
       }
     });
   });
+}
+
+export function compareDatesDesc(aDate: Date | null, bDate: Date | null): number {
+  if (!aDate && !bDate) return 0;
+  if (!aDate) return 1;
+  if (!bDate) return -1;
+
+  return bDate.getTime() - aDate.getTime();
 }
 
 // Given a list of field names, calculate or look up the unique values for the fields

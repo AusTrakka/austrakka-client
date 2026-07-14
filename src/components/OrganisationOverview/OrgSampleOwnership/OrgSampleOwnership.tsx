@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
-import { reloadGroupMetadata } from '../../../app/groupMetadataSlice';
+import { reloadOrgMetadata } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
@@ -35,7 +35,6 @@ interface OrgSampleOwnershipProps {
   selectedIds: string[];
   orgName: string;
   orgAbbrev: string;
-  groupContext: number;
 }
 
 type SubmitStatusProps = {
@@ -47,7 +46,7 @@ type SubmitStatusProps = {
 };
 
 function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
-  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, orgName, groupContext } = props;
+  const { open, onClose, selectedSamples, selectedIds, orgAbbrev, orgName } = props;
   const { token, tokenLoading } = useApi();
   const user: UserSliceState = useAppSelector(selectUserState);
   const [selectableOrgGroups, setSelectableOrgGroups] = useState<string[]>([]);
@@ -93,7 +92,7 @@ function OrgSampleOwnership(props: OrgSampleOwnershipProps) {
           await new Promise<void>((resolve) => {
             setTimeout(resolve, 500);
           });
-          dispatch(reloadGroupMetadata({ groupId: groupContext!, token, orgAbbrev }));
+          dispatch(reloadOrgMetadata({ token, orgAbbrev }));
         } else {
           setStatusMessage(response.message || 'Failed to transfer samples. Please try again.');
           setStatus(LoadingState.ERROR);

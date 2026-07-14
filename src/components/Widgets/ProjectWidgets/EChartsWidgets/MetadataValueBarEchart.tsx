@@ -20,21 +20,25 @@ import { columnStyleRules, styleRules } from '../../../../styles/metadataFieldSt
 import type { Sample } from '../../../../types/sample.interface';
 import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
+import { filterExcluded, isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
 
 const UNKNOWN_VALUE_LABEL = 'unknown'; // label for samples with no value for the category field
+const BAR_THICKNESS = 30;
 
-interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
+interface MetadataValueBarEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
   title?: string | undefined;
   colorScheme?: string | undefined;
   colorMapping?: Record<string, string> | undefined;
+  categoryLimit?: number | undefined; // Optional limit for number of categories to show
+  exclude?: { field: string; value: string }[] | undefined; // Optional field/value pairs to exclude
+  vertical?: boolean | undefined; // Whether to display bar vertically or horizontally
 }
 
-function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
+function MetadataValueBarEchart(props: MetadataValueBarEchartWidgetProps) {
   const {
     widgetType,
     identifier,
@@ -44,6 +48,9 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     title,
     colorScheme,
     colorMapping,
+    categoryLimit,
+    exclude,
+    vertical = false,
   } = props;
 
   const { navigate } = useStableNavigate();
@@ -80,40 +87,54 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     return null;
   }, [data, field, widgetType]);
 
-  const pieData = useMemo(() => {
+  // Aggregate counts per category, applying exclude + categoryLimit, same semantics
+  // as the old truncateData()/topCategories() pipeline.
+  const barData = useMemo(() => {
+    let rows: Sample[] = filteredData;
+    if (exclude && exclude.length > 0) {
+      rows = filterExcluded(rows, exclude);
+    }
+
     const countMap = new Map<string, number>();
-    for (const sample of filteredData) {
+    for (const sample of rows) {
       const raw = sample[field as keyof Sample] as string | null | undefined;
       const key = isNullOrEmpty(raw) ? '' : (raw as string);
       countMap.set(key, (countMap.get(key) ?? 0) + 1);
     }
-    return [...countMap.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name, value }));
-  }, [filteredData, field]);
+
+    let entries = [...countMap.entries()].sort((a, b) => b[1] - a[1]);
+
+    if (categoryLimit) {
+      // categoryLimit historically excludes empty/null categories from the "top N"
+      entries = entries.filter(([name]) => name !== '');
+      entries = entries.slice(0, categoryLimit);
+    }
+
+    return entries.map(([name, value]) => ({ name, value }));
+  }, [filteredData, field, exclude, categoryLimit]);
 
   const colorMap = useMemo(() => {
     if (errorMessage) return {};
-    const values = pieData.map((item) => item.name);
+    const values = barData.map((item) => item.name);
 
     if (colorMapping) {
       return resolveColourMap(values, 'tableau10', colorMapping);
     }
 
     return resolveColourMap(values, colorScheme ?? 'tableau10');
-  }, [pieData, colorScheme, colorMapping, errorMessage]);
+  }, [barData, colorScheme, colorMapping, errorMessage]);
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
-      if (params.name === undefined) return;
-      const isNull = params.name === UNKNOWN_VALUE_LABEL || params.name === '';
+      if (params.seriesName === undefined) return;
+      const isNull = params.seriesName === UNKNOWN_VALUE_LABEL;
       const filters: DataTableFilterMeta = {
         [field]: {
           operator: FilterOperator.AND,
           constraints: [
             isNull
               ? { matchMode: FilterMatchMode.CUSTOM, value: true }
-              : { matchMode: FilterMatchMode.EQUALS, value: params.name },
+              : { matchMode: FilterMatchMode.EQUALS, value: params.seriesName },
           ],
         },
       };
@@ -137,6 +158,21 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
     chart.off('click');
     chart.on('click', handleClick);
+
+    // Single fixed slot — there's only ever one bar made up of stacked segments
+    const categoryAxis = {
+      type: 'category' as const,
+      data: [field],
+      axisLabel: { show: false },
+      axisTick: { show: false },
+    };
+    const valueAxis = {
+      type: 'value' as const,
+      name: 'Count',
+      nameLocation: 'middle' as const,
+      nameGap: 28,
+    };
+
     chart.setOption(
       {
         toolbox: {
@@ -144,7 +180,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
             saveAsImage: {
               title: 'Export to PNG',
               pixelRatio: 2,
-              name: getWidgetExportName('piechart'),
+              name: getWidgetExportName('barchart'),
             },
           },
           emphasis: {
@@ -158,7 +194,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
           appendTo: () => document.body,
           formatter: (params) => {
             const p = Array.isArray(params) ? params[0] : params;
-            return `<span class="${p.name !== UNKNOWN_VALUE_LABEL ? columnStyleRules[field] : ''}">${p.name}</span>: ${p.value} (${p.percent}%)`;
+            return `<span class="${p.seriesName !== UNKNOWN_VALUE_LABEL ? columnStyleRules[field] : ''}">${p.seriesName}</span>: ${p.value}`;
           },
         },
         legend: {
@@ -168,6 +204,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
           icon: 'square',
           itemWidth: 10,
           itemHeight: 10,
+          data: barData.map((item) => item.name || UNKNOWN_VALUE_LABEL),
           textStyle: {
             fontSize: 10,
             rich: {
@@ -179,37 +216,27 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
             return isItalic && name !== UNKNOWN_VALUE_LABEL ? `{italic|${name}}` : name;
           },
         },
-        series: [
-          {
-            type: 'pie',
-            radius: ['30%', '65%'],
-            center: ['50%', '40%'],
-            cursor: 'pointer',
-            avoidLabelOverlap: true,
-            label: {
-              show: true,
-              formatter: '{d}%',
-              fontSize: 11,
-              color: '#000',
-              alignTo: 'edge',
-              edgeDistance: 20,
-              width: 90, // forces wrapping/truncation instead of unbounded text width
-            },
-            labelLayout: {},
-            emphasis: {
-              itemStyle: { shadowBlur: 8, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' },
-            },
-            data: pieData.map((item) => ({
-              name: item.name || UNKNOWN_VALUE_LABEL,
-              value: item.value,
-              itemStyle: { color: colorMap[item.name] },
-            })),
+        grid: vertical
+          ? { left: 'center', right: 40, width: BAR_THICKNESS, top: 10, bottom: 90 }
+          : { left: 0, right: 50, height: BAR_THICKNESS, top: 'center' },
+        xAxis: vertical ? categoryAxis : valueAxis,
+        yAxis: vertical ? valueAxis : categoryAxis,
+        series: barData.map((item) => ({
+          type: 'bar' as const,
+          name: item.name || UNKNOWN_VALUE_LABEL,
+          stack: 'total',
+          cursor: 'pointer',
+          barWidth: BAR_THICKNESS,
+          emphasis: {
+            itemStyle: { shadowBlur: 8, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' },
           },
-        ],
+          itemStyle: { color: colorMap[item.name] },
+          data: [item.value],
+        })),
       } satisfies EChartsOption,
       true,
     );
-  }, [pieData, colorMap, errorMessage, infoMessage, handleClick, field]);
+  }, [barData, colorMap, errorMessage, infoMessage, handleClick, field, vertical]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -258,4 +285,4 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   );
 }
 
-export default memo(MetadataValuePieEchart);
+export default memo(MetadataValueBarEchart);

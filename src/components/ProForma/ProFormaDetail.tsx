@@ -131,7 +131,30 @@ function ProFormaDetail() {
               </Stack>
             </Stack>
           ) : (
-            <Typography>This pro forma currently has no template available for download</Typography>
+            <Stack direction="row" spacing={1}>
+              {loadingState ? (
+                <CircularProgress size={35} color="secondary" />
+              ) : (
+                <MoveToInbox color="secondary" fontSize="large" />
+              )}
+              <Stack direction="column" width="calc(100% - 40px)">
+                <Typography gutterBottom>Generate latest Excel pro forma template</Typography>
+                <Typography
+                  title={`Trakka_metadata_submission_${selectedVersion.abbreviation}_V${selectedVersion.version}`}
+                  noWrap
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
+                  {`Trakka_metadata_submission_${selectedVersion.abbreviation}_V${selectedVersion.version}`}
+                </Typography>
+                <Typography variant="caption" color="black" noWrap>
+                  {selectedVersion.createdBy}
+                  <br />
+                  {isoDateLocalDate(selectedVersion.created.toString())}
+                </Typography>
+              </Stack>
+            </Stack>
           )}
         </CardContent>
       </Paper>
