@@ -2,7 +2,7 @@ import { Cancel } from '@mui/icons-material';
 import { Box, Chip, Collapse, Stack, TableCell, TableRow, Typography } from '@mui/material';
 import { Theme } from '../../../assets/themes/theme';
 import type { RecordRole, Role } from '../../../types/dtos';
-import { InfoTooltip } from '../RowRender/InfoTooltip';
+import { InfoTooltip } from '../../Common/SettingsPage/InfoTooltip';
 
 interface UserGroupRolesRowProps {
   recordType: string;

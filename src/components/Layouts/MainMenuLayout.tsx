@@ -98,6 +98,7 @@ function MainMenuLayout() {
     documents: 'Documents',
     plots: 'Plots',
     map: 'Map',
+    settings: 'Settings',
   };
 
   const breadcrumbNoLink: string[] = ['versions', 'records', 'org'];
@@ -122,11 +123,17 @@ function MainMenuLayout() {
     'documents',
   ];
 
+  const exceptionBreadcrumbs: string[] = ['settings'];
+
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   const lastPath = pathnames.at(-1) ?? '';
-  const validTabKeys = new Set([...Object.keys(PROJ_TABS), ...Object.keys(ORG_TABS)]);
+  const validTabKeys = new Set([
+    ...Object.keys(PROJ_TABS),
+    ...Object.keys(ORG_TABS),
+    ...exceptionBreadcrumbs,
+  ]);
 
   const isShortPath = pathnames.length > 0 && pathnames.length <= 3;
   const isNoBreadcrumbItem = noBreadCrumbIfLast.some((item) => lastPath.endsWith(item));

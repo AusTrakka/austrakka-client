@@ -1,9 +1,6 @@
 import {
   Alert,
-  FormControl,
-  MenuItem,
   Paper,
-  Select,
   Snackbar,
   Table,
   TableBody,
@@ -14,7 +11,7 @@ import {
 } from '@mui/material';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -24,25 +21,16 @@ import type { Field, Group, MetaDataColumn } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { Sample } from '../../types/sample.interface';
 import { renderValue } from '../../utilities/renderUtils';
-import { getDisplayFields, getSampleGroups, getSamples } from '../../utilities/resourceUtils';
-import { useStateFromSearchParamsForPrimitive } from '../../utilities/stateUtils';
+import { getOrgFields, getOrgMetadata, getSampleGroups } from '../../utilities/resourceUtils';
 
 function SampleDetail() {
   const { seqId } = useParams();
-  const navigate = useNavigate();
-  const [groupName, setGroupName] = useStateFromSearchParamsForPrimitive<string | null>(
-    'groupName',
-    null,
-    navigate,
-  );
-  const [groups, setGroups] = useState<Group[] | null>();
-  const [errorGroupName, setErrorGroupName] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<Group>();
   const [displayFields, setDisplayFields] = useState<MetaDataColumn[]>([]);
   const [data, setData] = useState<Sample | null>();
   const [colWidth, setColWidth] = useState<number>(100);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [errToast, setErrToast] = useState<boolean>(false);
+  const [orgAbbrev, setOrgAbbrev] = useState<string | null>(null);
   const { token, tokenLoading } = useApi();
 
   const handleClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
@@ -59,28 +47,14 @@ function SampleDetail() {
         const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
         if (sampleResponse.status === ResponseType.Success) {
           const groupsData = sampleResponse.data as Group[];
-          const ownerAbbrev = groupsData.find((g) => g.name.endsWith('-Everyone'))?.organisation
+          const ownerAbbrev = groupsData.find((g) => g.name.endsWith('-Owner'))?.organisation
             .abbreviation;
           if (ownerAbbrev === undefined) {
             // biome-ignore lint/suspicious/noConsole: historic
-            console.error('Organisation Everyone group cannot be found for the current user');
+            console.error('Organisation Owner group cannot be found for the current user');
+            return;
           }
-          const sortedGroups = groupsData.sort((groupA, groupB) => {
-            if (groupA.name.endsWith('-Owner') && !groupB.name.endsWith('-Owner')) {
-              return -1;
-            }
-            if (!groupA.name.endsWith('-Owner') && groupB.name.endsWith('-Owner')) {
-              return 1;
-            }
-            if (groupA.name.includes(ownerAbbrev!) && !groupB.name.includes(ownerAbbrev!)) {
-              return -1;
-            }
-            if (!groupA.name.includes(ownerAbbrev!) && groupB.name.includes(ownerAbbrev!)) {
-              return 1;
-            }
-            return 0;
-          });
-          setGroups(sortedGroups);
+          setOrgAbbrev(ownerAbbrev);
         } else {
           setErrMsg(`Sample: ${seqId} could not be accessed`);
         }
@@ -90,42 +64,23 @@ function SampleDetail() {
       }
     };
     if (
-      (seqId || groupName) &&
+      (seqId || orgAbbrev) &&
       tokenLoading !== LoadingState.LOADING &&
       tokenLoading !== LoadingState.IDLE
     ) {
       updateProject();
     }
-  }, [token, seqId, groupName, tokenLoading]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
-  useEffect(() => {
-    if (groups) {
-      // Check if selectedGroup is already set, otherwise set it
-      if (!selectedGroup && groups.some((g) => g.name === groupName)) {
-        setSelectedGroup(groups?.find((group) => group.name === groupName));
-      } else if (!selectedGroup) {
-        if (groupName) {
-          setErrToast(true);
-          setErrorGroupName(groupName);
-        }
-        setSelectedGroup(groups[0]);
-      }
-      if (selectedGroup) {
-        setGroupName(selectedGroup.name);
-      }
-    }
-  }, [groupName, groups, selectedGroup]);
+  }, [token, seqId, orgAbbrev, tokenLoading]);
 
   useEffect(() => {
     const updateDisplayFields = async () => {
       try {
-        if (selectedGroup) {
-          const response = await getDisplayFields(selectedGroup.groupId!, token);
+        if (orgAbbrev) {
+          const response = await getOrgFields(orgAbbrev, token);
           if (response.status === ResponseType.Success) {
             setDisplayFields(response.data as MetaDataColumn[]);
           } else {
-            setErrMsg(`Metadata fields for ${selectedGroup.name} could not be loaded`);
+            setErrMsg(`Metadata fields for ${orgAbbrev} could not be loaded`);
           }
         }
       } catch (error) {
@@ -134,38 +89,30 @@ function SampleDetail() {
       }
     };
 
-    // Make sure selectedGroup is not null before updating display fields
-    if (
-      selectedGroup &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
+    // Make sure orgAbbrev is not null before updating display fields
+    if (orgAbbrev && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       updateDisplayFields();
     }
-  }, [token, tokenLoading, selectedGroup]);
+  }, [token, tokenLoading, orgAbbrev]);
 
   useEffect(() => {
     const updateSampleData = async () => {
       const searchParams = new URLSearchParams({
         filters: `${SAMPLE_ID_FIELD}==${seqId}`,
       });
-      const response = await getSamples(token, selectedGroup!.groupId, searchParams);
+      const response = await getOrgMetadata(orgAbbrev as string, token, searchParams);
+
+      // @ts-expect-error
       if (response.status === ResponseType.Success && response.data.length > 0) {
-        setData(response.data[0] as Sample);
+        setData(response.data![0] as Sample);
       } else {
-        setErrMsg(
-          `Record ${seqId} could not be found within the context of ${selectedGroup!.name}`,
-        );
+        setErrMsg(`Record ${seqId} could not be found within the context of ${orgAbbrev}`);
       }
     };
-    if (
-      selectedGroup &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
+    if (orgAbbrev && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       updateSampleData();
     }
-  }, [token, tokenLoading, selectedGroup, seqId]);
+  }, [token, tokenLoading, orgAbbrev, seqId]);
 
   useEffect(() => {
     if (displayFields.length > 0) {
@@ -192,48 +139,8 @@ function SampleDetail() {
         open={errToast}
         autoHideDuration={6000}
         onClose={handleClose}
-      >
-        <Alert onClose={handleClose} severity="warning">
-          The group {errorGroupName} is not available or does not exist
-        </Alert>
-      </Snackbar>
-      <Typography className="pageTitle">{`${seqId} (${selectedGroup?.name} view)`}</Typography>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography>
-          {`Information available through ${selectedGroup?.name} for record ${seqId} is listed here.`}
-        </Typography>
-        <FormControl
-          variant="standard"
-          sx={{ marginX: 1, margin: 1, minWidth: 220, minHeight: 20 }}
-        >
-          <Select
-            labelId="org-select-label"
-            id="org-select"
-            defaultValue=""
-            value={selectedGroup ? selectedGroup.name : ''}
-            onChange={(e) => {
-              const selectedGroupName = e.target.value;
-              const selected = groups?.find((group) => group.name === selectedGroupName);
-
-              if (selected) {
-                setSelectedGroup(selected);
-                setGroupName(selected.name);
-              } else {
-                // biome-ignore lint/suspicious/noConsole: historic
-                console.error(`Group with name ${selectedGroupName} not found.`);
-              }
-            }}
-            label="Organisation group"
-            autoWidth
-          >
-            {groups?.map((group) => (
-              <MenuItem key={group.groupId} value={group.name}>
-                {group.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
+      ></Snackbar>
+      <Typography className="pageTitle">{seqId}</Typography>
       {errMsg ? (
         <Alert severity="error">{errMsg}</Alert>
       ) : (

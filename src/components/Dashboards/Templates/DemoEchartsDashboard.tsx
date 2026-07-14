@@ -2,6 +2,7 @@ import { Box, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
+import { WidgetType } from '../../../types/widget.props';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
 import HasSeqEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
 import MetadataCountsEcharts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';
@@ -39,7 +40,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={cardStyle}>
               <CardContent>
                 <EpiCurveEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   dateFilterField={dateFilterField}
@@ -51,7 +53,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataCountsEcharts
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   field="Date_coll"
@@ -64,7 +67,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <HasSeqEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                 />
@@ -87,7 +91,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   field="State"
@@ -103,7 +108,8 @@ function DemoEchartsDashboard(props: ProjectDashboardTemplateProps) {
             <Card sx={tallCardStyle}>
               <CardContent>
                 <MetadataValuePieEchart
-                  projectAbbrev={projectAbbrev}
+                  widgetType={WidgetType.Project}
+                  identifier={projectAbbrev}
                   filteredData={filteredData}
                   timeFilterObject={timeFilterObject}
                   field="Serotype"

@@ -1,8 +1,9 @@
-import { Alert, Button, Typography } from '@mui/material';
+import { Settings } from '@mui/icons-material';
+import { Alert, Button, IconButton, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
-import { NavigationProvider } from '../../app/NavigationContext';
+import { NavigationProvider, useStableNavigate } from '../../app/NavigationContext';
 import {
   fetchProjectMetadata,
   selectProjectMergeAlgorithm,
@@ -16,7 +17,7 @@ import { getProjectDetails } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
-import ProjectDashboard from '../Dashboards/ProjectDashboard/ProjectDashboard';
+import ProjectDashboardDetails from '../Dashboards/ProjectDashboard/ProjectDashboard';
 import Datasets from '../ProjectDatasets/Datasets';
 import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
@@ -42,6 +43,7 @@ const initialTabLoadStates: Record<number, boolean> = Object.values(PROJ_TABS).r
 function ProjectOverview(props: ProjectOverviewProps) {
   const { projectAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
+  const { navigate } = useStableNavigate();
   const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [tabLoadStates, setTabLoadStates] = useState<Record<number, boolean>>(initialTabLoadStates);
@@ -105,6 +107,10 @@ function ProjectOverview(props: ProjectOverviewProps) {
     dispatch(fetchProjectMetadata({ projectAbbrev: projectDetails.abbreviation, token }));
   };
 
+  const navigateToSettings = () => {
+    navigate(`/projects/${projectAbbrev}/settings`);
+  };
+
   useEffect(() => {
     const tabKey = tab.toLowerCase();
     const tabObj = PROJ_TABS[tabKey];
@@ -121,7 +127,19 @@ function ProjectOverview(props: ProjectOverviewProps) {
     <Alert severity="error">{isOverviewError.detailsErrorMessage}</Alert>
   ) : (
     <>
-      <Typography className="pageTitle">{projectDetails ? projectDetails.name : ''}</Typography>
+      <Typography
+        className="pageTitle"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        {projectDetails ? projectDetails.name : ''}
+        <IconButton aria-label="settings" onClick={() => navigateToSettings()}>
+          <Settings fontSize="small" />
+        </IconButton>
+      </Typography>
       {staleDataAvailable && (
         <Alert
           severity="info"
@@ -138,7 +156,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
 
       <CustomTabs value={tabValue} tabContent={Object.values(PROJ_TABS)} setValue={setTabValue} />
       <TabPanel value={tabValue} index={PROJ_TABS.dashboard.index}>
-        <ProjectDashboard
+        <ProjectDashboardDetails
           projectDesc={projectDetails ? projectDetails.description : ''}
           projectAbbrev={projectAbbrev!}
         />

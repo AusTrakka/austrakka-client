@@ -1,14 +1,15 @@
 import type { VisChainEntry } from '../components/Common/Activity/activityViewModels.interface';
+import type { MergeAlgorithm } from '../constants/mergeAlgorithm';
 
 // These are view models; should correspond to server-side DTO.
 export interface Project {
   projectId: number;
-  abbreviation: string;
   globalId: string;
+  abbreviation: string;
   name: string;
-  description: string;
-  type: string;
+  label: string;
   clientType: string;
+  description: string;
   projectMembers: {
     id: number;
     name: string;
@@ -18,9 +19,29 @@ export interface Project {
     name: string;
   }[];
   isActive: boolean;
+  groupName: string;
   created: Date;
+  lastUpdated: Date;
+  createdBy: string;
+  lastUpdatedBy: string;
+  requestingOrg: string;
+  dashboardName: string;
   mergeAlgorithm: string;
-  // could add auditable fields - created, createdBy
+}
+
+export interface ProjectPut {
+  name: string;
+  description: string;
+  requestingOrg: string;
+  dashboardName: string;
+  label: string;
+  clientType: string;
+  mergeAlgorithm: MergeAlgorithm;
+}
+
+export interface ProjectDashboardDetails {
+  projectDashboardId: number;
+  name: string;
 }
 
 // Summary statistics about a project
@@ -204,7 +225,7 @@ export interface UserList {
   lastActive: Date;
   isAusTrakkaAdmin: boolean;
   isAusTrakkaProcess: boolean;
-  analysisServerUsername: string;
+  username: string;
 }
 
 export interface MetaDataColumnMapping {
@@ -395,11 +416,6 @@ export interface FeedbackPost {
 
 export interface CreateMsg {
   msgId: number;
-}
-
-export interface ProjectDashboardDetails {
-  projectDashboardId: number;
-  name: string;
 }
 
 export interface UserPatchV2 {
