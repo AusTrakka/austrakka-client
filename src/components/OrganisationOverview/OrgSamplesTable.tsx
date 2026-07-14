@@ -378,11 +378,12 @@ function OrgSamplesTable(props: SamplesProps) {
           <Close />
         </IconButton>
         <AlertTitle sx={{ paddingBottom: 1 }}>
-          <strong>'Organisation metadata could not be loaded'</strong>
+          <strong>Organisation metadata could not be loaded</strong>
         </AlertTitle>
-        'An error occurred loading organisation metadata. Refresh to reload.'
+        An error occurred loading organisation metadata.
         <br />
-        Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
+        Please check you have appropriate permissions to view organisation sample data, and contact
+        the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
       </Alert>
     </Dialog>
   );
