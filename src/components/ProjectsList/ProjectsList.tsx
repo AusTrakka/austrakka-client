@@ -1,13 +1,12 @@
 import { Alert, Paper, type SelectChangeEvent, Stack, Typography } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
-import { Column } from 'primereact/column';
 import {
   DataTable,
   type DataTableFilterMeta,
   type DataTableFilterMetaData,
-  type DataTableRowClickEvent,
+  type DataTableRowClickEvent, DataTableSortMeta,
 } from 'primereact/datatable';
-import type React from 'react';
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
@@ -21,10 +20,26 @@ import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import LabelFilterSelect from '../TableComponents/TypeFilterSelect';
 
+const statusSortOrder: Record<string, number> = {
+  open: 1,
+  closed: 100
+}
+
+const initialMultiSortMeta: DataTableSortMeta[] = [
+  { field: 'statusSortOrder', order: 1 },
+  { field: 'created', order: -1 },
+];
+
 const columns = [
   { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
   { field: 'label', header: 'Label' },
+  {
+    field: 'statusSortOrder',
+    header: 'Status',
+    body: (rowData: any) => rowData.status,
+  },
+  { field: 'type', header: 'Type' },
   { field: 'description', header: 'Description' },
   {
     field: 'created',
@@ -56,7 +71,13 @@ function ProjectsList() {
         const filteredProjects = projectResponse.data?.filter(
           ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
         );
-        setProjectsList(filteredProjects ?? []);
+
+        const projectsWithSort = filteredProjects?.map((project) => ({
+          ...project,
+          statusSortOrder: statusSortOrder[project.status.toLowerCase()] ?? 0,
+        })) ?? [];
+
+        setProjectsList(projectsWithSort);
         setIsLoading(false);
         setIsError(false);
       } else {
@@ -174,7 +195,8 @@ function ProjectsList() {
           resizableColumns
           reorderableColumns
           sortIcon={sortIcon}
-          sortField="created" // Initial sort order
+          sortMode="multiple"
+          multiSortMeta={initialMultiSortMeta}
           sortOrder={-1}
           filters={filters}
           globalFilterFields={columns.map((col) => col.field)}

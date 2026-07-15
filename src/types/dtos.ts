@@ -27,6 +27,8 @@ export interface Project {
   requestingOrg: string;
   dashboardName: string;
   mergeAlgorithm: string;
+  status: string; // todo: check if we use enums/types anywhere else for this instead
+  // could add auditable fields - created, createdBy
 }
 
 export interface ProjectPut {
