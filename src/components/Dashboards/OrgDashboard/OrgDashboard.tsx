@@ -62,7 +62,8 @@ function OrgDashboard(props: OrgDashboardProps) {
 
         // Set latest upload date
         const uploadDates = data.fields.find((field) => field.columnName === UPLOAD_DATE_FIELD);
-        if (uploadDates) {
+
+        if (uploadDates && data.metadata.length > 0) {
           setLatestUploadDate(
             formatDateAsTwoStrings(
               maxObj(data.metadata.map((sample) => sample[UPLOAD_DATE_FIELD])),

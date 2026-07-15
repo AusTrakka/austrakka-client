@@ -258,6 +258,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
             scrollable
             scrollHeight="flex"
             className="my-flexible-table"
+            emptyMessage="No data available"
           >
             <Column
               field="category"
@@ -303,11 +304,6 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                 body={(row: SharedGroupsMatrixRow) => (
                   <Box
                     component="span"
-                    className={
-                      row.category !== UNKNOWN_VALUE_LABEL
-                        ? combineClasses(columnStyleRules[categoryField])
-                        : undefined
-                    }
                     onClick={() => handleCellClick(header, row.category)}
                     sx={{
                       cursor: 'pointer',
