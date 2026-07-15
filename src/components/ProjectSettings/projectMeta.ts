@@ -19,6 +19,7 @@ export function toProjectPut(project: Project): ProjectPut {
     label: project.label,
     mergeAlgorithm: project.mergeAlgorithm as MergeAlgorithm,
     clientType: project.clientType,
+    status: project.status,
   };
 }
 
@@ -27,6 +28,7 @@ export const readonlyFields: ReadonlyArray<keyof Project> = ['abbreviation'];
 export const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> = [
   'name',
   'description',
+  'status',
   'label',
   'dashboardName',
   'mergeAlgorithm',
@@ -42,6 +44,7 @@ export const readableNames: Record<string, string> = {
   lastUpdatedBy: 'Last Updated By',
   name: 'Name',
   description: 'Description',
+  status: 'Status',
   label: 'Label',
   requestingOrg: 'Requesting Organisation',
   dashboardName: 'Dashboard Name',

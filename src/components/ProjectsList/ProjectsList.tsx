@@ -1,16 +1,19 @@
 import { Alert, Paper, type SelectChangeEvent, Stack, Typography } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
+import { Column } from 'primereact/column';
 import {
   DataTable,
   type DataTableFilterMeta,
   type DataTableFilterMetaData,
-  type DataTableRowClickEvent, DataTableSortMeta,
+  type DataTableRowClickEvent,
+  type DataTableSortMeta,
 } from 'primereact/datatable';
-import React from 'react';
+import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import LoadingState from '../../constants/loadingState';
+import ProjectStatus from '../../constants/projectStatus';
 import { ResponseType } from '../../constants/responseType';
 import type { Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
@@ -19,11 +22,12 @@ import { getProjectList } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import LabelFilterSelect from '../TableComponents/TypeFilterSelect';
+import styles from './ProjectsList.module.css';
 
-const statusSortOrder: Record<string, number> = {
-  open: 1,
-  closed: 100
-}
+const statusSortOrder: Record<ProjectStatus, number> = {
+  Open: 1,
+  Closed: 100,
+};
 
 const initialMultiSortMeta: DataTableSortMeta[] = [
   { field: 'statusSortOrder', order: 1 },
@@ -39,7 +43,6 @@ const columns = [
     header: 'Status',
     body: (rowData: any) => rowData.status,
   },
-  { field: 'type', header: 'Type' },
   { field: 'description', header: 'Description' },
   {
     field: 'created',
@@ -72,10 +75,11 @@ function ProjectsList() {
           ({ clientType }) => !clientType || clientType === import.meta.env.VITE_BRANDING_ID,
         );
 
-        const projectsWithSort = filteredProjects?.map((project) => ({
-          ...project,
-          statusSortOrder: statusSortOrder[project.status.toLowerCase()] ?? 0,
-        })) ?? [];
+        const projectsWithSort =
+          filteredProjects?.map((project) => ({
+            ...project,
+            statusSortOrder: statusSortOrder[project.status as ProjectStatus] ?? 0,
+          })) ?? [];
 
         setProjectsList(projectsWithSort);
         setIsLoading(false);
@@ -204,6 +208,9 @@ function ProjectsList() {
           removableSort
           scrollable
           rows={25}
+          rowClassName={(rowData) =>
+            (rowData.status as ProjectStatus) === ProjectStatus.CLOSED ? styles['closed-row'] : ''
+          }
           scrollHeight="calc(100vh - 300px)"
           onRowClick={rowClickHandler}
           selectionMode="single"
