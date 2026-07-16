@@ -52,3 +52,24 @@
   opacity: 70%;
   font-weight: bold;
 }
+
+.projectStatus {
+  display: flex;
+  margin-left: auto;
+  margin-right: 5px;
+  background-color: var(--primary-grey-500);
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 5px 10px 5px 10px;
+  color: white;
+}
+
+.statusOpen {
+  composes: projectStatus;
+  background-color: var(--secondary-light-green);
+}
+
+.statusClosed {
+  composes: projectStatus;
+  background-color: var(--secondary-red);
+}

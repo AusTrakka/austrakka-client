@@ -1,5 +1,5 @@
 import { Settings } from '@mui/icons-material';
-import { Alert, Button, IconButton, Typography } from '@mui/material';
+import { Alert, Button, Chip, IconButton, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
@@ -11,6 +11,7 @@ import {
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
+import ProjectStatus from '../../constants/projectStatus';
 import { ResponseType } from '../../constants/responseType';
 import type { Project } from '../../types/dtos';
 import { getProjectDetails } from '../../utilities/resourceUtils';
@@ -23,6 +24,7 @@ import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
 import PlotList from './PlotList';
 import ProFormas from './ProFormas';
+import style from './ProjectOverview.module.css';
 import ProjectSamplesTable from './ProjectSamplesTable';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
 import TreeList from './TreeList';
@@ -111,6 +113,23 @@ function ProjectOverview(props: ProjectOverviewProps) {
     navigate(`/projects/${projectAbbrev}/settings`);
   };
 
+  const getProjectStatusStyle = (status: ProjectStatus) => {
+    let statusStyle = style.projectStatus;
+
+    switch (status) {
+      case ProjectStatus.CLOSED:
+        statusStyle = style.statusClosed;
+        break;
+      case ProjectStatus.OPEN:
+        statusStyle = style.statusOpen;
+        break;
+      default:
+        break;
+    }
+
+    return statusStyle;
+  };
+
   useEffect(() => {
     const tabKey = tab.toLowerCase();
     const tabObj = PROJ_TABS[tabKey];
@@ -130,15 +149,23 @@ function ProjectOverview(props: ProjectOverviewProps) {
       <Typography
         className="pageTitle"
         sx={{
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
           gap: 1,
         }}
       >
-        {projectDetails ? projectDetails.name : ''}
-        <IconButton aria-label="settings" onClick={() => navigateToSettings()}>
-          <Settings fontSize="small" />
-        </IconButton>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {projectDetails ? projectDetails.name : ''}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+          <Chip
+            className={getProjectStatusStyle(projectDetails?.status as ProjectStatus)}
+            label={`status: ${projectDetails?.status}`}
+          />
+          <IconButton aria-label="settings" onClick={() => navigateToSettings()}>
+            <Settings fontSize="small" />
+          </IconButton>
+        </div>
       </Typography>
       {staleDataAvailable && (
         <Alert
