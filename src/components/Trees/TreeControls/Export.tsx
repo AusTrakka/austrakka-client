@@ -3,6 +3,7 @@ import { IconButton, Menu, Tooltip } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import html2canvas from 'html2canvas';
 import * as React from 'react';
+import { Theme } from '../../../assets/themes/theme';
 import type { TreeExportFunctions } from '../Tree';
 
 const base64toBlob = (base64Image: string) => {
@@ -27,9 +28,15 @@ interface Props {
   treeName: string;
   phylocanvasRef: React.RefObject<TreeExportFunctions>;
   legendRef: React.RefObject<HTMLDivElement>;
+  watermarkPNGOnly?: boolean; // Prop that determines whether to limit export options to only PNG with watermark
 }
 
-export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Props) {
+export default function ExportButton({
+  treeName,
+  phylocanvasRef,
+  legendRef,
+  watermarkPNGOnly = false,
+}: Props) {
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
     if (typeof blob === 'string' && encode) {
@@ -142,6 +149,53 @@ export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Pr
     return svg;
   };
 
+  const addWatermark = async (dataUri: string, text: string): Promise<string> => {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUri;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+
+    // Save state, rotate around centre, draw text, restore
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(-Math.PI / 6); // -30 degrees
+
+    ctx.font = `bold ${Math.max(32, canvas.width / 10)}px sans-serif`;
+    ctx.fillStyle = Theme.PrimaryGrey200;
+    ctx.globalAlpha = 0.2;
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    return canvas.toDataURL('image/png');
+  };
+
+  const exportPNG = async () => {
+    const pngBlob = phylocanvasRef.current?.exportPNG();
+    if (!pngBlob) {
+      throw new Error('PNG export failed');
+    }
+    if (!watermarkPNGOnly) {
+      return pngBlob;
+    } else {
+      return addWatermark(
+        pngBlob,
+        `© ${import.meta.env.VITE_BRANDING_NAME} ${new Date().getFullYear()}`,
+      );
+    }
+  };
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -159,19 +213,21 @@ export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Pr
         </IconButton>
       </Tooltip>
       <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}>
-        <MenuItem
-          key="Export tree as SVG"
-          onClick={async () => {
-            const blob = await getSVGBlob();
-            if (blob) download(blob, `${treeName}.svg`, false);
-          }}
-        >
-          Export tree as SVG
-        </MenuItem>
+        {!watermarkPNGOnly && (
+          <MenuItem
+            key="Export tree as SVG"
+            onClick={async () => {
+              const blob = await getSVGBlob();
+              if (blob) download(blob, `${treeName}.svg`, false);
+            }}
+          >
+            Export tree as SVG
+          </MenuItem>
+        )}
         <MenuItem
           key="Export tree as PNG"
           onClick={async () => {
-            const blob = phylocanvasRef.current?.exportPNG();
+            const blob = await exportPNG();
             if (blob) download(blob, `${treeName}.png`, true);
           }}
         >
