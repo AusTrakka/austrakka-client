@@ -36,6 +36,7 @@ import UserDetailOverview from './components/Users/MainViews/UserDetailOverview'
 import UserProvider from './providers/UserProvider';
 import { msalInstance } from './utilities/authUtils';
 import CustomNavigationClient from './utilities/NavigationClient';
+import OrganisationsList from './components/OrganisationsList/OrganisationsList';
 
 function App() {
   const navigate = useNavigate();
@@ -53,7 +54,8 @@ function App() {
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="platform/:tab?" element={<Platform />} />
-                  <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
+                  <Route path="organisations" element={<OrganisationsList />} />
+                  <Route path="organisations/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
