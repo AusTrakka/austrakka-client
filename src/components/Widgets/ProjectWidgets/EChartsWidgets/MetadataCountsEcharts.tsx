@@ -277,7 +277,7 @@ function MetadataCounts({
           label: {
             show: true,
             position: 'inside',
-            color: '#000',
+            color: Theme.PrimaryGrey900,
             formatter: (params) => (params.value === 0 ? '' : String(params.value)),
           },
           data: [...availableCounts].reverse(),
@@ -300,7 +300,7 @@ function MetadataCounts({
           label: {
             show: true,
             position: 'inside',
-            color: '#000',
+            color: Theme.PrimaryGrey900,
             formatter: (params) => (params.value === 0 ? '' : String(params.value)),
           },
           data: [...missingCounts].reverse(),
