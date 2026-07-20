@@ -8,6 +8,7 @@ import { useStableNavigate } from '../../../app/NavigationContext';
 import { selectOrgMetadata } from '../../../app/orgMetadataSlice';
 import { selectProjectMetadata } from '../../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../../app/store';
+import { Theme } from '../../../assets/themes/theme';
 import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import type { Sample } from '../../../types/sample.interface';
 import { type GenericMetadataWidgetProps, WidgetType } from '../../../types/widget.props';
@@ -20,6 +21,8 @@ import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 const UNKNOWN_VALUE_LABEL = 'unknown'; // label for samples with no value for the category field
 const BAR_THICKNESS = 20;
+const NO_DATA_LABEL = 'No data';
+const NO_DATA_COLOR = Theme.PrimaryGrey300; // color for the "No data" segment
 
 // Fields that need bespoke bucketing instead of "count each distinct raw value"
 const HAS_SEQ = 'Has_sequences';
@@ -69,6 +72,10 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
 
   // Aggregate counts per category for this field
   const barData = useMemo(() => {
+    if (!data?.metadata || data.metadata.length === 0) {
+      // If there is no data, return a single segment with a "No data" label
+      return [{ name: NO_DATA_LABEL, value: 1 }];
+    }
     if (isHasSeq) {
       let available = 0;
       let missing = 0;
@@ -121,9 +128,12 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
     return [...countMap.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([name, value]) => ({ name, value }));
-  }, [filteredData, field, isHasSeq, isSharedGroups]);
+  }, [filteredData, field, isHasSeq, isSharedGroups, data]);
 
   const colorMap = useMemo(() => {
+    if (barData.length === 1 && barData[0].name === NO_DATA_LABEL) {
+      return { [NO_DATA_LABEL]: NO_DATA_COLOR };
+    }
     const values = barData.map((item) => item.name);
     if (colorMapping) return resolveColourMap(values, colorScheme ?? 'tableau10', colorMapping);
     return resolveColourMap(values, colorScheme ?? 'tableau10');
@@ -137,6 +147,8 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
 
   const handleClick = useCallback(
     (segmentName: string) => {
+      if (segmentName === NO_DATA_LABEL) return; // Do not navigate if the user clicks on the "No data" segment
+
       let filters: DataTableFilterMeta;
       // Special handling for Has_sequences/Shared_groups fields
       if (isHasSeq || isSharedGroups) {
@@ -197,6 +209,9 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
             return [point[0] - tooltipWidth / 2, point[1] + 8];
           },
           formatter: (params: any) => {
+            if (params.length === 1 && params[0].seriesName === NO_DATA_LABEL) {
+              return `<strong>${title ?? 'Breakdown'}</strong><br/>No data available`;
+            }
             const total = data?.metadata?.length ?? filteredData.length;
             const rows = params
               .filter((p: any) => p.value > 0)

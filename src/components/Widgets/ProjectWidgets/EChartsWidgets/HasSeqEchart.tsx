@@ -269,7 +269,12 @@ function HasSeq({
           barMaxWidth: 60,
           barCategoryGap: '10%',
           color: CHART_COLORS.AVAILABLE,
-          label: { show: true, position: 'inside', color: '#000' },
+          label: {
+            show: true,
+            position: 'inside',
+            color: '#000',
+            formatter: (params) => (params.value === 0 ? '' : String(params.value)),
+          },
           data: [...availableCounts].reverse(),
         },
         {
@@ -282,7 +287,12 @@ function HasSeq({
           barMaxWidth: 60,
           barCategoryGap: '10%',
           color: CHART_COLORS.MISSING,
-          label: { show: true, position: 'inside', color: '#000' },
+          label: {
+            show: true,
+            position: 'inside',
+            color: '#000',
+            formatter: (params) => (params.value === 0 ? '' : String(params.value)),
+          },
           data: [...missingCounts].reverse(),
         },
       ],
