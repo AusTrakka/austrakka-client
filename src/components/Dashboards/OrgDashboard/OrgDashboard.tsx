@@ -253,7 +253,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                         minHeight: 0,
                       }}
                     >
-                      <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-start' }}>
                         <Typography
                           variant="h5"
                           paddingBottom={2}
