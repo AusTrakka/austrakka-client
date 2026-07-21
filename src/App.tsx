@@ -19,6 +19,7 @@ import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import Login from './components/Login/Login';
 import MapPage from './components/Maps/MapPage';
 import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
+import OrganisationsList from './components/OrganisationsList/OrganisationsList';
 import Platform from './components/Platform/Platform';
 import PlotDetail from './components/Plots/PlotDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
@@ -36,7 +37,6 @@ import UserDetailOverview from './components/Users/MainViews/UserDetailOverview'
 import UserProvider from './providers/UserProvider';
 import { msalInstance } from './utilities/authUtils';
 import CustomNavigationClient from './utilities/NavigationClient';
-import OrganisationsList from './components/OrganisationsList/OrganisationsList';
 
 function App() {
   const navigate = useNavigate();
@@ -55,7 +55,10 @@ function App() {
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="platform/:tab?" element={<Platform />} />
                   <Route path="organisations" element={<OrganisationsList />} />
-                  <Route path="organisations/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
+                  <Route
+                    path="organisations/:orgAbbrev/:tab?"
+                    element={<OrganisationOverviewWrapper />}
+                  />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />
