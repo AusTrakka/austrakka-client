@@ -190,7 +190,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
               show: true,
               formatter: '{d}%',
               fontSize: 11,
-              color: '#000',
+              color: Theme.PrimaryGrey900,
               alignTo: 'edge',
               edgeDistance: 20,
               width: 90, // forces wrapping/truncation instead of unbounded text width

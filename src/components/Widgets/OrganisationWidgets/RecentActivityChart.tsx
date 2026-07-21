@@ -1,3 +1,4 @@
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { Alert, AlertTitle, Box, Chip, CircularProgress, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import {
@@ -194,7 +195,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         <Chip
           label="Last 7 days"
           variant="outlined"
-          sx={{ borderColor: Theme.SecondaryMain, color: Theme.SecondaryMain }}
+          sx={{ borderColor: Theme.PrimaryMain, color: Theme.PrimaryMain }}
         />
       </Box>
 
@@ -226,10 +227,12 @@ function RecentActivityChart(props: RecentActivityChartProps) {
             alignItems: 'center',
             justifyContent: 'center',
             flex: 1,
+            flexDirection: 'column',
             minHeight: 0,
           }}
         >
-          <Typography variant="body2" color={Theme.SecondaryMain}>
+          <SearchOffIcon sx={{ color: Theme.PrimaryGrey500, fontSize: 40 }} />
+          <Typography variant="body2" color={Theme.PrimaryGrey500}>
             No activity in the last 7 days
           </Typography>
         </Box>
