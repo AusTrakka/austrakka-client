@@ -73,7 +73,7 @@ function OrganisationsList() {
     if (!isTokenReady) return;
 
     const fetchOrganisations = async () => {
-      const orgRes = await getOrganisations(true, token);
+      const orgRes = await getOrganisations(false, token);
 
       if (orgRes.status !== ResponseType.Success) {
         setIsError(true);
