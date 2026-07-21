@@ -1,4 +1,12 @@
-import { Box, Card, CardContent, CircularProgress, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
@@ -6,6 +14,7 @@ import {
   fetchOrgMetadata,
   type OrgMetadataState,
   selectOrgMetadata,
+  selectOrgMetadataError,
 } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
@@ -38,6 +47,9 @@ function OrgDashboard(props: OrgDashboardProps) {
   const data: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
   );
+  const dataErrorMessage: string | null = useAppSelector((state) =>
+    selectOrgMetadataError(state, orgAbbrev),
+  );
   const [totalSampleCount, setTotalSampleCount] = useState<number | null>(null);
   const [latestUploadDate, setLatestUploadDate] = useState<string[] | null>(null);
   const loaded = hasCompleteData(data?.loadingState);
@@ -62,7 +74,8 @@ function OrgDashboard(props: OrgDashboardProps) {
 
         // Set latest upload date
         const uploadDates = data.fields.find((field) => field.columnName === UPLOAD_DATE_FIELD);
-        if (uploadDates) {
+
+        if (uploadDates && data.metadata.length > 0) {
           setLatestUploadDate(
             formatDateAsTwoStrings(
               maxObj(data.metadata.map((sample) => sample[UPLOAD_DATE_FIELD])),
@@ -74,6 +87,20 @@ function OrgDashboard(props: OrgDashboardProps) {
       }
     }
   }, [data?.metadata, data?.fields, loaded]);
+
+  if (dataErrorMessage) {
+    return (
+      <Alert severity="error" sx={{ padding: 3 }}>
+        <AlertTitle sx={{ paddingBottom: 1 }}>
+          <strong>Organisation metadata could not be loaded</strong>
+        </AlertTitle>
+        An error occurred loading organisation metadata.
+        <br />
+        Please check you have appropriate permissions to view organisation sample data, and contact
+        the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
+      </Alert>
+    );
+  }
 
   return (
     <Grid
@@ -242,35 +269,33 @@ function OrgDashboard(props: OrgDashboardProps) {
                     pb: 2,
                   }}
                 >
-                  <Box sx={{ flex: '0 0 auto' }}>
-                    <Typography
-                      variant="h5"
-                      paddingBottom={2}
-                      color="primary"
+                  <Grid container spacing={1} sx={{ width: '100%', flex: 1, minHeight: 0 }}>
+                    <Grid
+                      size={{ xs: 12, sm: 12, md: 4 }}
                       sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        paddingRight: 1,
+                        height: { xs: 'auto', md: '100%' },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: 0,
                       }}
                     >
-                      Species summary
-                    </Typography>
-                    <ChartInfoTooltip text="Click legend items to show/hide · Hover for details" />
-                  </Box>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      minHeight: 0,
-                      overflow: { xs: 'visible', md: 'hidden' },
-                      display: 'flex',
-                    }}
-                  >
-                    <Grid container spacing={1} sx={{ width: '100%' }}>
-                      <Grid
-                        size={{ xs: 12, sm: 12, md: 4 }}
-                        sx={{ height: { xs: 'auto', md: '100%' } }}
-                      >
+                      <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-start' }}>
+                        <Typography
+                          variant="h5"
+                          paddingBottom={2}
+                          color="primary"
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            paddingRight: 1,
+                          }}
+                        >
+                          Species summary
+                        </Typography>
+                        <ChartInfoTooltip text="Click legend items to show/hide · Hover for details" />
+                      </Box>
+                      <Box sx={{ flex: 1, minHeight: 0 }}>
                         <MetadataValuePieChart
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
@@ -278,28 +303,27 @@ function OrgDashboard(props: OrgDashboardProps) {
                           title=""
                           filteredData={data?.metadata ?? []}
                         />
-                      </Grid>
-                      <Grid
-                        size={{ xs: 12, sm: 12, md: 8 }}
-                        sx={{
-                          height: { xs: 'auto', md: '100%' },
-                          maxHeight: { xs: '400px', md: 'none' },
-                          display: 'flex',
-                          flexDirection: 'column',
-                          minHeight: 0,
-                          overflow: { xs: 'auto', md: 'hidden' },
-                        }}
-                      >
-                        <MetadataCountsByProject
-                          widgetType={WidgetType.Organisation}
-                          identifier={orgAbbrev}
-                          title=""
-                          categoryField="Species_in_silico"
-                          filteredData={data?.metadata ?? []}
-                        />
-                      </Grid>
+                      </Box>
                     </Grid>
-                  </Box>
+                    <Grid
+                      size={{ xs: 12, sm: 12, md: 8 }}
+                      sx={{
+                        height: { xs: 'auto', md: '100%' },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: 0,
+                        overflow: { xs: 'auto', md: 'hidden' },
+                      }}
+                    >
+                      <MetadataCountsByProject
+                        widgetType={WidgetType.Organisation}
+                        identifier={orgAbbrev}
+                        title=""
+                        categoryField="Species_in_silico"
+                        filteredData={data?.metadata ?? []}
+                      />
+                    </Grid>
+                  </Grid>
                 </CardContent>
               </Card>
             </Grid>

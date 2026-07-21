@@ -1,5 +1,5 @@
 import { Settings } from '@mui/icons-material';
-import { Alert, Button, IconButton, Typography } from '@mui/material';
+import { Alert, Button, Chip, IconButton, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
@@ -7,10 +7,11 @@ import { NavigationProvider, useStableNavigate } from '../../app/NavigationConte
 import {
   fetchProjectMetadata,
   selectProjectMergeAlgorithm,
-  selectProjectStaleDataAvailable, // NEW
+  selectProjectStaleDataAvailable,
 } from '../../app/projectMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
+import ProjectStatus from '../../constants/projectStatus';
 import { ResponseType } from '../../constants/responseType';
 import type { Project } from '../../types/dtos';
 import { getProjectDetails } from '../../utilities/resourceUtils';
@@ -23,7 +24,9 @@ import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
 import PlotList from './PlotList';
 import ProFormas from './ProFormas';
+import style from './ProjectOverview.module.css';
 import ProjectSamplesTable from './ProjectSamplesTable';
+import { PROJECT_STATUS_TYPE_COLOURS, type ProjectStatusType } from './projectStatusMeta';
 import { PROJ_HOME_TAB, PROJ_TABS } from './projTabConstants';
 import TreeList from './TreeList';
 
@@ -111,6 +114,23 @@ function ProjectOverview(props: ProjectOverviewProps) {
     navigate(`/projects/${projectAbbrev}/settings`);
   };
 
+  const getProjectStatusStyle = (status: ProjectStatus) => {
+    let statusStyle = style.projectStatus;
+
+    switch (status) {
+      case ProjectStatus.CLOSED:
+        statusStyle = style.statusClosed;
+        break;
+      case ProjectStatus.OPEN:
+        statusStyle = style.statusOpen;
+        break;
+      default:
+        break;
+    }
+
+    return statusStyle;
+  };
+
   useEffect(() => {
     const tabKey = tab.toLowerCase();
     const tabObj = PROJ_TABS[tabKey];
@@ -130,15 +150,34 @@ function ProjectOverview(props: ProjectOverviewProps) {
       <Typography
         className="pageTitle"
         sx={{
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
           gap: 1,
         }}
       >
-        {projectDetails ? projectDetails.name : ''}
-        <IconButton aria-label="settings" onClick={() => navigateToSettings()}>
-          <Settings fontSize="small" />
-        </IconButton>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {projectDetails ? projectDetails.name : ''}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+          <Chip
+            className={getProjectStatusStyle(projectDetails?.status as ProjectStatus)}
+            label={`status: ${projectDetails?.status}`}
+            sx={{
+              display: 'flex',
+              marginLeft: 'auto',
+              fontWeight: 'bold',
+              borderRadius: 5,
+              padding: '5px 10px 5px 10px',
+              color: 'white',
+              backgroundColor:
+                PROJECT_STATUS_TYPE_COLOURS[projectDetails?.status as ProjectStatusType] ??
+                PROJECT_STATUS_TYPE_COLOURS.default,
+            }}
+          />
+          <IconButton aria-label="settings" onClick={() => navigateToSettings()}>
+            <Settings fontSize="small" />
+          </IconButton>
+        </div>
       </Typography>
       {staleDataAvailable && (
         <Alert
