@@ -250,7 +250,7 @@ export const getOrganisations = (
 export const getOrganisation = (
   abbrev: string,
   token: string,
-): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
+): Promise<ResponseObject<Organisation>> => callGET(`/api/OrganisationV2/${abbrev}`, token);
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
 export const getOrgFields = (identifier: string, token: string) =>
