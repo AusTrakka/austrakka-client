@@ -245,7 +245,7 @@ export const getOrganisations = (
   includeAll: boolean,
   token: string,
 ): Promise<ResponseObject<Organisation[]>> =>
-  callGET(`/api/Organisations?includeall=${includeAll}`, token);
+  callGET(`/api/OrganisationV2?includeall=${includeAll}`, token);
 
 export const getOrganisation = (
   abbrev: string,
