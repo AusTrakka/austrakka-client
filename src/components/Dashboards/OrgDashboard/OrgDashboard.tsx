@@ -1,4 +1,12 @@
-import { Box, Card, CardContent, CircularProgress, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
@@ -6,6 +14,7 @@ import {
   fetchOrgMetadata,
   type OrgMetadataState,
   selectOrgMetadata,
+  selectOrgMetadataError,
 } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
@@ -37,6 +46,9 @@ function OrgDashboard(props: OrgDashboardProps) {
   const dispatch = useAppDispatch();
   const data: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
+  );
+  const dataErrorMessage: string | null = useAppSelector((state) =>
+    selectOrgMetadataError(state, orgAbbrev),
   );
   const [totalSampleCount, setTotalSampleCount] = useState<number | null>(null);
   const [latestUploadDate, setLatestUploadDate] = useState<string[] | null>(null);
@@ -74,6 +86,20 @@ function OrgDashboard(props: OrgDashboardProps) {
       }
     }
   }, [data?.metadata, data?.fields, loaded]);
+
+  if (dataErrorMessage) {
+    return (
+      <Alert severity="error" sx={{ padding: 3 }}>
+        <AlertTitle sx={{ paddingBottom: 1 }}>
+          <strong>Organisation metadata could not be loaded</strong>
+        </AlertTitle>
+        An error occurred loading organisation metadata.
+        <br />
+        Please check you have appropriate permissions to view organisation sample data, and contact
+        the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
+      </Alert>
+    );
+  }
 
   return (
     <Grid
