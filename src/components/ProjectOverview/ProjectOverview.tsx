@@ -161,7 +161,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
           <Chip
             className={getProjectStatusStyle(projectDetails?.status as ProjectStatus)}
-            label={`status: ${projectDetails?.status}`}
+            label={`Status: ${projectDetails?.status}`}
             sx={{
               display: 'flex',
               marginLeft: 'auto',
