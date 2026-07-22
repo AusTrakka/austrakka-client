@@ -24,6 +24,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { Column } from 'primereact/column';
+import type { DataTableFilterMeta } from 'primereact/datatable';
 import {
   DataTable,
   type DataTableRowClickEvent,
@@ -47,7 +48,6 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
@@ -78,11 +78,7 @@ function OrgSamplesTable(props: SamplesProps) {
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
-  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
-    'filters',
-    defaultState,
-    navigate,
-  );
+  const [currentFilters, setCurrentFilters] = useState<DataTableFilterMeta>(defaultState);
   const [exportData, setExportData] = useState<Sample[]>([]);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   // Table row selection/display
