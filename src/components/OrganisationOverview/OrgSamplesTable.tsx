@@ -29,7 +29,7 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -79,24 +79,20 @@ function OrgSamplesTable(props: SamplesProps) {
     defaultState,
     navigate,
   );
-  const [exportData, setExportData] = useState<Sample[]>([]);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   // Table row selection/display
   const [selectAll, setSelectAll] = useState(false);
   // const [allIds, setAllIds] = useState<string[]>([]);
   const [displayRows, setDisplayRows] = useState<Sample[]>([]);
   const [showSelectedRowsOnly, setShowSelectedRowsOnly] = useState(false);
-  const [selectedSamples, setSelectedSamples] = useState<Sample[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   // Sharing samples
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openShareDialog, setOpenShareDialog] = useState<boolean>(false);
   const [openUnshareDialog, setOpenUnshareDialog] = useState<boolean>(false);
-  const [shareBlocked, setShareBlocked] = useState(false);
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
-  const [changeOwnerBlocked, setChangeOwnerBlocked] = useState(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
 
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
@@ -116,10 +112,14 @@ function OrgSamplesTable(props: SamplesProps) {
     if (!metadata?.fields) return;
     const columnBuilder = buildPrimeReactColumnDefinitions(metadata.fields);
     setSampleTableColumns(columnBuilder);
-    if (metadata.loadingState === MetadataLoadingState.DATA_LOADED) {
+
+    if (hasCompleteData(metadata.loadingState)) {
       setAllFieldsLoaded(true);
+      setFilteredSampleList(metadata.metadata ?? []);
+      setFormattedData(metadata.metadata ?? []);
+      setDisplayRows(metadata.metadata ?? []);
     }
-  }, [metadata?.fields, metadata?.loadingState]);
+  }, [metadata?.fields, metadata?.loadingState, metadata?.metadata]);
 
   const rowClickHandler = (row: DataTableRowClickEvent) => {
     // Prevent navigation from selection box column
@@ -137,77 +137,50 @@ function OrgSamplesTable(props: SamplesProps) {
     }
   };
 
-  useEffect(() => {
-    if (hasCompleteData(metadata?.loadingState)) {
-      setFilteredSampleList(metadata?.metadata ?? []);
-      setFormattedData(metadata?.metadata ?? []);
-      setDisplayRows(metadata?.metadata ?? []);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
-
   const handleDialogClose = () => {
     setExportCSVStatus(LoadingState.IDLE);
   };
 
-  useEffect(() => {
-    if (selectedIds.length === 0 || canShare === false) {
-      setShareBlocked(true);
-    } else {
-      setShareBlocked(false);
-    }
-  }, [selectedIds, canShare]);
+  const selectedSamples = useMemo(
+    () => formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)),
+    [formattedData, selectedIds],
+  );
 
-  useEffect(() => {
-    if (selectedIds.length === 0 || canChangeOwnership === false) {
-      setChangeOwnerBlocked(true);
-    } else {
-      setChangeOwnerBlocked(false);
-    }
-  }, [selectedIds, canChangeOwnership]);
+  const shareBlocked = selectedIds.length === 0 || !canShare;
+  const changeOwnerBlocked = selectedIds.length === 0 || !canChangeOwnership;
 
   useEffect(() => {
     if (showSelectedRowsOnly && selectedSamples.length > 0) {
       setDisplayRows(selectedSamples);
-    } else if (hasCompleteData(metadata?.loadingState)) {
-      setShowSelectedRowsOnly(false);
+    }
+  }, [selectedSamples, showSelectedRowsOnly]);
+
+  useEffect(() => {
+    if (!showSelectedRowsOnly && hasCompleteData(metadata?.loadingState)) {
       setDisplayRows(metadata?.metadata ?? []);
     }
-  }, [selectedSamples, showSelectedRowsOnly, metadata?.metadata, metadata?.loadingState]);
+  }, [metadata?.metadata, metadata?.loadingState, showSelectedRowsOnly]);
 
   const toggleShowSelectedRowsOnly = () => {
     setShowSelectedRowsOnly((prev) => !prev);
-    if (showSelectedRowsOnly) {
-      setDisplayRows(metadata?.metadata ?? []);
-    } else {
-      setDisplayRows(selectedSamples);
-    }
   };
 
   const onSelectAllChange = (e: DataTableSelectAllChangeEvent) => {
     const { checked } = e;
     if (checked) {
       setSelectAll(true);
-      setSelectedSamples(formattedData); // Use memoized version
-      setSelectedIds(formattedData.map((sample: any) => sample.Seq_ID));
+      setSelectedIds(checked ? formattedData.map((s: any) => s.Seq_ID) : []);
     } else {
       setSelectAll(false);
-      setSelectedSamples([]);
       setSelectedIds([]);
     }
   };
 
-  useEffect(() => {
-    setSelectedSamples(formattedData.filter((sample: any) => selectedIds.includes(sample.Seq_ID)));
-  }, [formattedData, selectedIds]);
-
   // Set export data based on filtered vs display data length
-  useEffect(() => {
-    if (displayRows.length < filteredSampleList.length) {
-      setExportData(displayRows);
-    } else {
-      setExportData(filteredSampleList);
-    }
-  }, [displayRows, filteredSampleList]);
+  const exportData = useMemo(
+    () => (displayRows.length < filteredSampleList.length ? displayRows : filteredSampleList),
+    [displayRows, filteredSampleList],
+  );
 
   const handleShareClick = () => {
     if (shareBlocked) {
@@ -497,7 +470,6 @@ function OrgSamplesTable(props: SamplesProps) {
           selectAll={selectAll}
           onSelectAllChange={onSelectAllChange}
           onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
-            setSelectedSamples(e.value as Sample[]);
             setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
           }}
         >
