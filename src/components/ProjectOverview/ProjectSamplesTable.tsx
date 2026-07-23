@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Samples.css';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -305,4 +305,4 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-export default memo(ProjectSamplesTable);
+export default ProjectSamplesTable;

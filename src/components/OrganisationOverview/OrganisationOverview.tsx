@@ -2,7 +2,7 @@
 
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { NavigationProvider } from '../../app/NavigationContext';
 import { fetchOrgMetadata, selectOrgStaleDataAvailable } from '../../app/orgMetadataSlice';
@@ -35,7 +35,6 @@ interface OrganisationOverviewProps {
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
-  const location = useLocation();
   const dispatch = useAppDispatch();
   const [organisation, setOrganisation] = useState<Organisation>();
   const [tabValue, setTabValue] = useState<number | null>(null);
@@ -187,7 +186,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
           orgName={organisation.name}
-          key={location.search}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={2}>

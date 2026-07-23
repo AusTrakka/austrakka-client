@@ -29,7 +29,7 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -523,4 +523,4 @@ function OrgSamplesTable(props: SamplesProps) {
   );
 }
 
-export default memo(OrgSamplesTable);
+export default OrgSamplesTable;
