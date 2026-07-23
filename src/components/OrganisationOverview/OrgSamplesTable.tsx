@@ -12,7 +12,6 @@ import {
   AlertTitle,
   Backdrop,
   Box,
-  Button,
   CircularProgress,
   Dialog,
   IconButton,
@@ -31,16 +30,13 @@ import {
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
 import { memo, useEffect, useState } from 'react';
-import { useApi } from '../../app/ApiContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
-  fetchOrgMetadata,
   type OrgMetadataState,
   selectAwaitingOrgMetadata,
   selectOrgMetadata,
-  selectOrgStaleDataAvailable,
 } from '../../app/orgMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
@@ -103,33 +99,12 @@ function OrgSamplesTable(props: SamplesProps) {
   const [changeOwnerBlocked, setChangeOwnerBlocked] = useState(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
 
-  const dispatch = useAppDispatch();
-
-  const { token, tokenLoading } = useApi();
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
   );
   const isSamplesLoading: boolean = useAppSelector((state) =>
     selectAwaitingOrgMetadata(state, orgAbbrev),
   );
-
-  const isDataStale = useAppSelector((state) => selectOrgStaleDataAvailable(state, orgAbbrev));
-
-  const handleRefresh = () => {
-    if (!token) return;
-    dispatch(fetchOrgMetadata({ token, orgAbbrev }));
-  };
-
-  useEffect(() => {
-    if (
-      orgAbbrev !== undefined &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
-      setAllFieldsLoaded(false);
-      dispatch(fetchOrgMetadata({ token, orgAbbrev }));
-    }
-  }, [orgAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.ERROR) {
@@ -390,19 +365,6 @@ function OrgSamplesTable(props: SamplesProps) {
 
   return (
     <div className="datatable-container-org">
-      {isDataStale && (
-        <Alert
-          severity="info"
-          action={
-            <Button color="inherit" size="small" onClick={handleRefresh}>
-              Refresh
-            </Button>
-          }
-          sx={{ mb: 1 }}
-        >
-          Newer data is available for this organisation.
-        </Alert>
-      )}
       <Backdrop
         sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
