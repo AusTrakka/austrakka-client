@@ -186,6 +186,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
           orgName={organisation.name}
+          key={location.search}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={2}>

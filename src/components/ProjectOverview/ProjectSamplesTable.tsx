@@ -297,4 +297,4 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-export default ProjectSamplesTable;
+export default memo(ProjectSamplesTable);

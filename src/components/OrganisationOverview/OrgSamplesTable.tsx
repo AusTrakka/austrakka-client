@@ -169,7 +169,7 @@ function OrgSamplesTable(props: SamplesProps) {
     const { checked } = e;
     if (checked) {
       setSelectAll(true);
-      setSelectedIds(checked ? formattedData.map((s: any) => s.Seq_ID) : []);
+      setSelectedIds(formattedData.map((s: any) => s.Seq_ID));
     } else {
       setSelectAll(false);
       setSelectedIds([]);
@@ -495,4 +495,4 @@ function OrgSamplesTable(props: SamplesProps) {
   );
 }
 
-export default OrgSamplesTable;
+export default memo(OrgSamplesTable);
