@@ -1,11 +1,12 @@
 // first lets make the get organisation information
 
-import { Alert, Box, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { NavigationProvider } from '../../app/NavigationContext';
-import { useAppSelector } from '../../app/store';
+import { fetchOrgMetadata, selectOrgStaleDataAvailable } from '../../app/orgMetadataSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import RecordTypes from '../../constants/record-type.enum';
@@ -34,7 +35,7 @@ interface OrganisationOverviewProps {
 function OrganisationOverview(props: OrganisationOverviewProps) {
   const { orgAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
-  const location = useLocation();
+  const dispatch = useAppDispatch();
   const [organisation, setOrganisation] = useState<Organisation>();
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [orgDetailsError, setOrgDetailsError] = useState(false);
@@ -111,6 +112,25 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   }, [orgAbbrev, token, tokenLoading, user]);
 
   useEffect(() => {
+    if (
+      orgAbbrev !== undefined &&
+      tokenLoading !== LoadingState.LOADING &&
+      tokenLoading !== LoadingState.IDLE
+    ) {
+      dispatch(fetchOrgMetadata({ token, orgAbbrev }));
+    }
+  }, [orgAbbrev, token, tokenLoading, dispatch]);
+
+  const staleDataAvailable = useAppSelector((state) =>
+    selectOrgStaleDataAvailable(state, orgAbbrev),
+  );
+
+  const handleRefresh = () => {
+    if (!token) return;
+    dispatch(fetchOrgMetadata({ token, orgAbbrev }));
+  };
+
+  useEffect(() => {
     const tabKey = tab.toLowerCase(); // e.g. "plots"
     const tabObj = ORG_TABS[tabKey];
     if (tabObj) {
@@ -143,6 +163,19 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           </Typography>
         </Stack>
       </Box>
+      {staleDataAvailable && (
+        <Alert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+          sx={{ mb: 1 }}
+        >
+          Newer data is available for this organisation.
+        </Alert>
+      )}
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
       <TabPanel value={tabValue} index={0}>
         <OrgDashboard orgAbbrev={orgAbbrev} />
