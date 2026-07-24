@@ -29,7 +29,7 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
