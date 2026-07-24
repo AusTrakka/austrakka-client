@@ -115,8 +115,8 @@ function OrgSamplesTable(props: SamplesProps) {
 
     if (hasCompleteData(metadata.loadingState)) {
       setAllFieldsLoaded(true);
-      setFilteredSampleList(metadata.metadata ?? []);
-      setFormattedData(metadata.metadata ?? []);
+      // setFilteredSampleList(metadata.metadata ?? []);
+      // setFormattedData(metadata.metadata ?? []);
       setDisplayRows(metadata.metadata ?? []);
     }
   }, [metadata?.fields, metadata?.loadingState, metadata?.metadata]);
@@ -175,6 +175,12 @@ function OrgSamplesTable(props: SamplesProps) {
       setSelectedIds([]);
     }
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const dataTableFilters = useMemo(
+    () => ({ ...(allFieldsLoaded ? currentFilters : defaultState) }),
+    [allFieldsLoaded, currentFilters, displayRows],
+  );
 
   // Set export data based on filtered vs display data length
   const exportData = useMemo(
@@ -444,7 +450,7 @@ function OrgSamplesTable(props: SamplesProps) {
             setFilteredSampleList(e);
             setFormattedData(e);
           }}
-          filters={allFieldsLoaded ? currentFilters : defaultState}
+          filters={dataTableFilters}
           size="small"
           columnResizeMode="expand"
           resizableColumns
