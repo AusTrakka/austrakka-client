@@ -115,8 +115,6 @@ function OrgSamplesTable(props: SamplesProps) {
 
     if (hasCompleteData(metadata.loadingState)) {
       setAllFieldsLoaded(true);
-      // setFilteredSampleList(metadata.metadata ?? []);
-      // setFormattedData(metadata.metadata ?? []);
       setDisplayRows(metadata.metadata ?? []);
     }
   }, [metadata?.fields, metadata?.loadingState, metadata?.metadata]);
