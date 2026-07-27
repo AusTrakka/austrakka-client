@@ -245,12 +245,12 @@ export const getOrganisations = (
   includeAll: boolean,
   token: string,
 ): Promise<ResponseObject<Organisation[]>> =>
-  callGET(`/api/Organisations?includeall=${includeAll}`, token);
+  callGET(`/api/OrganisationV2?includeall=${includeAll}`, token);
 
 export const getOrganisation = (
   abbrev: string,
   token: string,
-): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
+): Promise<ResponseObject<Organisation>> => callGET(`/api/OrganisationV2/${abbrev}`, token);
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/OrganisationV2/${identifier}/Members`, token);
 export const getOrgFields = (identifier: string, token: string) =>

@@ -84,7 +84,7 @@ function MainMenuLayout() {
     records: 'Records',
     versions: 'Versions',
     upload: 'Upload',
-    org: 'Organisation',
+    organisations: 'Organisations',
     sequences: 'Sequences',
     metadata: 'Metadata',
     dashboard: 'Dashboard',
@@ -157,8 +157,8 @@ function MainMenuLayout() {
       icon: <Inventory />,
     },
     {
-      title: 'Organisation',
-      link: `/org/${user.orgAbbrev}`,
+      title: 'Organisations',
+      link: `/organisations`,
       icon: <AccountTree />,
     },
     {

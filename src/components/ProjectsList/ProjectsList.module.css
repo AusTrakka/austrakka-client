@@ -1,0 +1,4 @@
+.closed-row {
+  opacity: 0.6;
+  background-color: var(--primary-grey-100);
+}

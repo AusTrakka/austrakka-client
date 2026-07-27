@@ -251,18 +251,30 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
       )}
 
       {loaded && !errorMessage && !infoMessage && (
-        <Box flex={1} minHeight={0}>
+        <Box
+          flex={1}
+          minHeight={0}
+          sx={{
+            borderTop: `1px solid ${Theme.PrimaryGrey200}`,
+            borderBottom: `1px solid ${Theme.PrimaryGrey200}`,
+            overflow: 'hidden',
+          }}
+        >
           <DataTable
             value={rows}
             size="small"
             scrollable
             scrollHeight="flex"
             className="my-flexible-table"
+            emptyMessage="No data available"
           >
             <Column
               field="category"
               header={categoryField}
+              className="flexible-column"
+              bodyClassName="value-cells"
               align="left"
+              style={{ minWidth: '150px' }}
               frozen
               body={(row: SharedGroupsMatrixRow) => (
                 <Box
@@ -294,6 +306,8 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                 key={field}
                 field={field}
                 header={header}
+                className="flexible-column"
+                bodyClassName="value-cells"
                 bodyStyle={
                   field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey100 } : undefined
                 }
@@ -303,11 +317,6 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                 body={(row: SharedGroupsMatrixRow) => (
                   <Box
                     component="span"
-                    className={
-                      row.category !== UNKNOWN_VALUE_LABEL
-                        ? combineClasses(columnStyleRules[categoryField])
-                        : undefined
-                    }
                     onClick={() => handleCellClick(header, row.category)}
                     sx={{
                       cursor: 'pointer',

@@ -2,6 +2,7 @@ import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import { FormControl, MenuItem, Select, Switch, TextField, Tooltip } from '@mui/material';
 import { Theme } from '../../assets/themes/theme';
 import { MergeAlgorithm } from '../../constants/mergeAlgorithm';
+import ProjectStatus from '../../constants/projectStatus';
 import { CharCountedTextField } from '../Common/SettingsPage/CharCountTextField';
 import type { ProjectDraft } from './projectMeta';
 
@@ -42,6 +43,15 @@ export const EditableFieldInput = ({
                 {`${org.name} (${org.abbrev})`}
               </MenuItem>
             ))}
+          </Select>
+        </FormControl>
+      );
+    case 'status':
+      return (
+        <FormControl fullWidth size="small" variant="filled" hiddenLabel>
+          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)} displayEmpty>
+            <MenuItem value={ProjectStatus.OPEN}>Open</MenuItem>
+            <MenuItem value={ProjectStatus.CLOSED}>Closed</MenuItem>
           </Select>
         </FormControl>
       );

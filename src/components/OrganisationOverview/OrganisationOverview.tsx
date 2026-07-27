@@ -172,7 +172,7 @@ function OrganisationOverviewWrapper() {
   let resolvedTab: string = tab ?? ORG_HOME_TAB;
   const allowedKeys: string[] = Object.keys(ORG_TABS) as Array<string>;
   if (!allowedKeys.includes(resolvedTab)) {
-    window.history.replaceState(null, '', `/org/${orgAbbrev}`);
+    window.history.replaceState(null, '', `/organisations/${orgAbbrev}`);
     resolvedTab = ORG_HOME_TAB;
   }
   return (

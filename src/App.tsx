@@ -19,6 +19,7 @@ import MainMenuLayout from './components/Layouts/MainMenuLayout';
 import Login from './components/Login/Login';
 import MapPage from './components/Maps/MapPage';
 import OrganisationOverviewWrapper from './components/OrganisationOverview/OrganisationOverview';
+import OrganisationsList from './components/OrganisationsList/OrganisationsList';
 import Platform from './components/Platform/Platform';
 import PlotDetail from './components/Plots/PlotDetail';
 import ProFormaDetail from './components/ProForma/ProFormaDetail';
@@ -53,7 +54,11 @@ function App() {
                 <Route element={<MainMenuLayout />}>
                   <Route path="/" element={<UserDashboard />} />
                   <Route path="platform/:tab?" element={<Platform />} />
-                  <Route path="org/:orgAbbrev/:tab?" element={<OrganisationOverviewWrapper />} />
+                  <Route path="organisations" element={<OrganisationsList />} />
+                  <Route
+                    path="organisations/:orgAbbrev/:tab?"
+                    element={<OrganisationOverviewWrapper />}
+                  />
                   <Route path="upload" element={<Upload />} />
                   <Route path="users" element={<Users />} />
                   <Route path="upload/metadata" element={<UploadMetadata />} />

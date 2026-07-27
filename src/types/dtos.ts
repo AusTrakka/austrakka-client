@@ -27,6 +27,8 @@ export interface Project {
   requestingOrg: string;
   dashboardName: string;
   mergeAlgorithm: string;
+  status: string;
+  // could add auditable fields - created, createdBy
   watermarkTrees: boolean;
 }
 
@@ -38,6 +40,7 @@ export interface ProjectPut {
   label: string;
   clientType: string;
   mergeAlgorithm: MergeAlgorithm;
+  status: string;
 }
 
 export interface ProjectDashboardDetails {
