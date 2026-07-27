@@ -27,6 +27,7 @@ export interface Project {
   requestingOrg: string;
   dashboardName: string;
   mergeAlgorithm: string;
+  watermarkTrees: boolean;
 }
 
 export interface ProjectPut {

@@ -28,14 +28,14 @@ interface Props {
   treeName: string;
   phylocanvasRef: React.RefObject<TreeExportFunctions>;
   legendRef: React.RefObject<HTMLDivElement>;
-  watermarkPNGOnly?: boolean; // Prop that determines whether to limit export options to only PNG with watermark
+  watermarkTree?: boolean; // Prop that determines whether to limit export options to only PNG with watermark
 }
 
 export default function ExportButton({
   treeName,
   phylocanvasRef,
   legendRef,
-  watermarkPNGOnly = false,
+  watermarkTree = false,
 }: Props) {
   const download = (blob: Blob | string, filename: string, encode: boolean) => {
     let blobData: Blob | string;
@@ -169,7 +169,7 @@ export default function ExportButton({
     ctx.rotate(-Math.PI / 6); // -30 degrees
 
     ctx.font = `bold ${Math.max(32, canvas.width / 10)}px sans-serif`;
-    ctx.fillStyle = Theme.PrimaryGrey200;
+    ctx.fillStyle = Theme.PrimaryGrey500;
     ctx.globalAlpha = 0.2;
 
     ctx.textAlign = 'center';
@@ -186,7 +186,7 @@ export default function ExportButton({
     if (!pngBlob) {
       throw new Error('PNG export failed');
     }
-    if (!watermarkPNGOnly) {
+    if (!watermarkTree) {
       return pngBlob;
     } else {
       return addWatermark(
@@ -213,7 +213,7 @@ export default function ExportButton({
         </IconButton>
       </Tooltip>
       <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}>
-        {!watermarkPNGOnly && (
+        {!watermarkTree && (
           <MenuItem
             key="Export tree as SVG"
             onClick={async () => {
