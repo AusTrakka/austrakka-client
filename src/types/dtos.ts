@@ -41,6 +41,7 @@ export interface ProjectPut {
   clientType: string;
   mergeAlgorithm: MergeAlgorithm;
   status: string;
+  watermarkTrees: boolean;
 }
 
 export interface ProjectDashboardDetails {
