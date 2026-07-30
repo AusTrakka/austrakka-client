@@ -2,7 +2,7 @@ import { MoreVert } from '@mui/icons-material';
 import { Alert, AlertTitle, Dialog, IconButton, Menu, MenuItem } from '@mui/material';
 import type React from 'react';
 import { memo, useState } from 'react';
-import { generateFilename } from '../../utilities/file';
+import { generateFilename } from '../../utilities/fileUtils';
 
 function ExportVegaPlot(props: any) {
   const { vegaView } = props;

@@ -1,0 +1,82 @@
+.key-cell {
+  width: 180px;
+  border-bottom: none;
+  padding-left: 10px;
+}
+
+.key-cell-editing {
+  width: 180px;
+  border-bottom: none;
+  padding-left: 10px;
+}
+
+.value-cell {
+  border-bottom: none;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.value-cell-editing {
+  border-bottom: none;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.basic-user-info-table {
+  margin-top: 1em;
+  border: none;
+  padding: 20px;
+  border-radius: 6px;
+  height: 530px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.basic-user-info-table .table-container {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.basic-project-info-table {
+  margin-top: 1em;
+  border: none;
+  padding: 20px;
+  max-width: 900px;
+  border-radius: 6px;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.basic-project-info-table .table-container {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.project-key-cell {
+  width: 250px;
+  border-bottom: none;
+  padding-left: 10px;
+  font-size: 1rem;
+}
+
+.project-key-cell-editing {
+  width: 250px;
+  border-bottom: none;
+  padding-left: 10px;
+  font-size: 1rem;
+}
+
+.project-value-cell {
+  border-bottom: none;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 1rem;
+}
+
+.project-value-cell-editing {
+  border-bottom: none;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 1rem;
+}

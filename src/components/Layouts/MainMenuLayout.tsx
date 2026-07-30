@@ -3,6 +3,7 @@
 import {
   AccountTree,
   Description,
+  Home as HomeIcon,
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   Upload,
@@ -18,10 +19,11 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Link as MuiLink,
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import styles from './MainMenuLayout.module.css';
@@ -29,7 +31,6 @@ import styles from './MainMenuLayout.module.css';
 function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
-  const [warningBanner, updateWarningBanner] = useState('warningBannerPadded');
   const [drawer, setDrawer] = useState(true);
   const settings = [
     {
@@ -48,7 +49,7 @@ function MainMenuLayout() {
     records: 'Records',
     versions: 'Versions',
     upload: 'Upload',
-    org: 'Organisation',
+    organisations: 'Organisations',
     sequences: 'Sequences',
     metadata: 'Metadata',
     summary: 'Summary',
@@ -57,6 +58,10 @@ function MainMenuLayout() {
     members: 'Members',
     fields: 'Fields',
     datasets: 'Datasets',
+    share: 'Share',
+    documents: 'Documents',
+    map: 'Map',
+    settings: 'Settings',
   };
 
   const breadcrumbNoLink: string[] = ['versions', 'records'];
@@ -69,7 +74,12 @@ function MainMenuLayout() {
     'members',
     'proformas',
     'datasets',
+    'activity',
+    'documents',
   ];
+
+  const exceptionBreadcrumbs: string[] = ['settings'];
+
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -100,14 +110,12 @@ function MainMenuLayout() {
     }
   ];
   const visiblePages = pages;
-
+  
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
-      updateWarningBanner('warningBannerPadded');
     } else {
       updatePageStyling('page');
-      updateWarningBanner('warningBanner');
     }
   };
 
@@ -213,26 +221,23 @@ function MainMenuLayout() {
           </List>
         </Drawer>
       </Box>
-      {pathnames.includes('usersV2') ? (
-        <div className={warningBanner}>
-          <Typography
-            variant="body2"
-            style={{
-              fontWeight: 'bold',
-              textAlign: 'center',
-              padding: '10px',
-            }}
-          >
-            This is the new user interface with an in-progress permissions system. Not all new roles
-            have been implemented.
-          </Typography>
-        </div>
-      ) : null}
       <div className={pageStyling}>
         <div className="pageHeader">
           <div className="breadcrumbs">
             <Breadcrumbs aria-label="breadcrumb">
-              <Link to="/">Home</Link>
+              <MuiLink
+                component={Link}
+                to="/"
+                color="inherit"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  lineHeight: 1,
+                  height: '24px',
+                }}
+              >
+                <HomeIcon sx={{ fontSize: '1rem', lineHeight: 1 }} />
+              </MuiLink>
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
                 const nolink = breadcrumbNoLink.includes(value);

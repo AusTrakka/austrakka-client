@@ -4,7 +4,7 @@ import { useState } from 'react';
 import streamSaver from 'streamsaver';
 import LoadingState from '../../constants/loadingState';
 import { estimateCSVSize, generateCSVStream } from '../../utilities/exportUtils';
-import { generateFilename } from '../../utilities/file';
+import { generateFilename } from '../../utilities/fileUtils';
 
 // Do not recalculate CSV data when filters are reapplied or removed
 // This will only be effective so long as the export filename is not changed

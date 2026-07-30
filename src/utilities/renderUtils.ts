@@ -6,6 +6,7 @@ export const renderValueOrEmptyString = (value: any): string => {
   }
   return String(value);
 };
+
 // Maps from a hard-coded metadata field name to a function to render the data value
 // Note that some datetime fields are included here in order to render them as datetime,
 // not just dates, which is the type default below. Ideally the server should tell us
@@ -27,6 +28,7 @@ export const fieldRenderFunctions: { [index: string]: Function } = {
   Date_updated: (value: string) => isoDateLocalDate(value),
   eventTime: (value: string) => isoDateLocalDate(value),
 };
+
 // Maps from a primitive field type to a function to render the data value
 // Not every type may be here; missing types will have a default render in the caller
 // biome-ignore lint/complexity/noBannedTypes: historic
@@ -45,7 +47,33 @@ export const renderValue = (value: any, field: string, type: string): string => 
   return renderValueOrEmptyString(value);
 };
 
-export function bytesToMB(bytes?: number): string {
-  if (!bytes || bytes <= 0) return '0';
-  return (bytes / (1024 * 1024)).toString();
+export function formatBytes(bytes: number, useBinary: boolean = false, unit?: string): string {
+  if (unit) {
+    const unitMap: Record<string, number> = {
+      B: 1,
+      KB: useBinary ? 1024 : 1000,
+      MB: useBinary ? 1024 * 1024 : 1000 * 1000,
+      GB: useBinary ? 1024 * 1024 * 1024 : 1000 * 1000 * 1000,
+      TB: useBinary ? 1024 * 1024 * 1024 * 1024 : 1000 * 1000 * 1000 * 1000,
+    };
+
+    const divisor = unitMap[unit.toUpperCase()] || 1;
+    const size = bytes / divisor;
+    return size.toString();
+  }
+
+  const unitThreshold = useBinary ? 1024 : 1000;
+  if (bytes < unitThreshold) return `${bytes} B`;
+
+  const units = useBinary ? ['KB', 'MB', 'GB', 'TB'] : ['kB', 'MB', 'GB', 'TB'];
+
+  let size = bytes / unitThreshold;
+  let i = 0;
+
+  while (size >= unitThreshold && i < units.length - 1) {
+    size /= unitThreshold;
+    i += 1;
+  }
+
+  return `${size.toFixed(2)} ${units[i]}`;
 }

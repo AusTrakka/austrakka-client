@@ -1,5 +1,3 @@
-// TODO probably rename to fileUtils
-
 export function generateFilename(name: string = ''): string {
   if (name !== '') {
     name = `_${name}`;
@@ -12,6 +10,12 @@ export function generateFilename(name: string = ''): string {
   const m = dateObject.getMinutes();
   const s = dateObject.getSeconds();
   return `${import.meta.env.VITE_BRANDING_NAME.toLowerCase()}${name}_export_${year}${month}${day}_${h}${m}${s}`;
+}
+
+export function getWidgetExportName(widgetName: string): string {
+  const timestamp = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
+  const brand = import.meta.env.VITE_BRANDING_NAME.toLowerCase();
+  return `${brand}_${widgetName}_${timestamp}`;
 }
 
 export async function generateHash(textBuffer: ArrayBuffer) {

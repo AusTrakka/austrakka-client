@@ -1,3 +1,4 @@
+import { Chip } from '@mui/material';
 import type React from 'react';
 import type { Field, ProjectViewField } from '../types/dtos';
 import { fieldRenderFunctions, typeRenderFunctions } from './renderUtils';
@@ -66,4 +67,24 @@ export function buildPrimeReactColumnDefinitionsPVF(fields: ProjectViewField[]) 
     }
   });
   return columnBuilder;
+}
+
+export function renderList(cell: any): JSX.Element[] {
+  const item = cell;
+  if (Array.isArray(item)) {
+    return item
+      .sort()
+      .map((r) => (
+        <Chip
+          key={r}
+          label={r}
+          variant="filled"
+          color="secondary"
+          size="small"
+          style={{ margin: '3px' }}
+        />
+      ));
+  }
+
+  return [<Chip key={item} variant="filled" color="secondary" size="small" label={item} />];
 }

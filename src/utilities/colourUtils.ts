@@ -7,6 +7,7 @@ import {
   valueMappedColorSchemes,
 } from '../constants/schemes';
 import type { Legend } from '../types/phylocanvas.interface';
+import { isNullOrEmpty } from './dataProcessingUtils';
 
 export const NULL_COLOUR = Theme.PrimaryGrey500;
 
@@ -61,6 +62,37 @@ export function createColourMapping(uniqueValues: string[], colorScheme: string)
     mapping[''] = NULL_COLOUR;
   }
   return mapping;
+}
+
+export function resolveColourMap(
+  fieldValues: string[],
+  schemeName: string,
+  colorMapping?: Record<string, string>,
+): Record<string, string> {
+  if (colorMapping) {
+    return Object.fromEntries(
+      fieldValues.map((v) => [
+        v,
+        isNullOrEmpty(v)
+          ? NULL_COLOUR
+          : (colorMapping[v] ?? `hsl(${Math.floor(Math.random() * 360)}, 70%, 70%)`),
+      ]),
+    );
+  }
+
+  const scheme = discreteColorSchemes[schemeName] ?? allColorSchemes[schemeName];
+  if (valueMappedColorSchemes.has(schemeName)) {
+    return Object.fromEntries(
+      fieldValues.map((v) => [
+        v,
+        isNullOrEmpty(v) ? NULL_COLOUR : (scheme as d3.ScaleOrdinal<string, string>)(v),
+      ]),
+    );
+  }
+
+  const scale = discreteColorSchemes[schemeName];
+  scale.domain(fieldValues);
+  return Object.fromEntries(fieldValues.map((v) => [v, isNullOrEmpty(v) ? NULL_COLOUR : scale(v)]));
 }
 
 export function getColorArrayFromScheme(schemeName: string, count: number): string[] {

@@ -19,16 +19,14 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import './Samples.css';
-import { Skeleton } from 'primereact/skeleton';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
 import { Theme } from '../../assets/themes/theme';
-import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
-import MetadataLoadingState from '../../constants/metadataLoadingState';
+import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { ProjectField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
@@ -49,23 +47,8 @@ interface SamplesProps {
   projectAbbrev: string;
 }
 
-interface BodyComponentProps {
-  col: Sample;
-  readyFields: Record<string, LoadingState> | undefined;
-}
-
-function BodyComponent(props: BodyComponentProps) {
-  const { col, readyFields } = props;
-  return !readyFields || readyFields[col.field] !== LoadingState.SUCCESS ? (
-    <Skeleton /> // Replace with your skeleton component
-  ) : (
-    col.body // Wrap your existing body content
-  );
-}
-
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
-
   const { navigate } = useStableNavigate();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
@@ -80,7 +63,6 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
 
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
@@ -91,23 +73,16 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
   // Set column headers from metadata state
   useEffect(() => {
-    if (!metadata?.fields || !metadata?.fieldLoadingStates) return;
-    const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    if (
-      Object.values(metadata.fieldLoadingStates).every((field) => field === LoadingState.SUCCESS)
-    ) {
+    if (!metadata?.fields) return;
+    setSampleTableColumns(buildPrimeReactColumnDefinitionsPVF(metadata.fields));
+
+    if (hasCompleteData(metadata.loadingState)) {
       setAllFieldsLoaded(true);
     }
-    setSampleTableColumns(columnBuilder);
-    setFilteredDataLength(metadata.metadata?.length ?? 0);
-  }, [metadata?.fields, metadata?.fieldLoadingStates, metadata?.metadata?.length]);
+  }, [metadata?.fields, metadata?.loadingState]);
 
-  // Open error dialog if loading state changes to error
   useEffect(() => {
-    if (
-      metadata?.loadingState === MetadataLoadingState.ERROR ||
-      metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-    ) {
+    if (metadata?.loadingState === MetadataLoadingState.ERROR) {
       setErrorDialogOpen(true);
     }
   }, [metadata?.loadingState]);
@@ -119,17 +94,17 @@ function ProjectSamplesTable(props: SamplesProps) {
     }
   };
 
-  useEffect(() => {
-    if (metadata?.loadingState === MetadataLoadingState.DATA_LOADED) {
-      setFilteredData(metadata?.metadata ?? []);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
-
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find((f) => f.columnName === field);
     // Field Object returned from the server ideally shouldn't include "Source From" string
     return `${fieldObj?.fieldSource.replace(/^Source From\s*/i, '')}`;
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const dataTableFilters = useMemo(
+    () => ({ ...(allFieldsLoaded ? currentFilters : defaultState) }),
+    [allFieldsLoaded, currentFilters, metadata?.metadata],
+  );
 
   const header = (
     <div
@@ -173,13 +148,9 @@ function ProjectSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <ExportTableData
-          dataToExport={
-            metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-              ? []
-              : (filteredData ?? [])
-          }
+          dataToExport={filteredData ?? []}
           headers={sampleTableColumns.filter((col) => !col.hidden).map((col) => col.header)}
-          disabled={metadata?.loadingState !== MetadataLoadingState.DATA_LOADED}
+          disabled={!hasCompleteData(metadata?.loadingState)}
           fileNamePrefix={projectAbbrev}
         />
       </div>
@@ -253,23 +224,16 @@ function ProjectSamplesTable(props: SamplesProps) {
             <Close />
           </IconButton>
           <AlertTitle sx={{ paddingBottom: 1 }}>
-            <strong>
-              {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-                ? 'Project metadata could not be fully loaded'
-                : 'Project metadata could not be loaded'}
-            </strong>
+            <strong> 'Project metadata could not be loaded'</strong>
           </AlertTitle>
-          {metadata?.loadingState === MetadataLoadingState.PARTIAL_LOAD_ERROR
-            ? `An error occurred loading project metadata. Some fields will be null, and 
-          CSV export will not be available. Refresh to reload.`
-            : 'An error occurred loading project metadata. Refresh to reload.'}
+          'An error occurred loading project metadata. Refresh to reload.
           <br />
           Please contact the {import.meta.env.VITE_BRANDING_NAME} team if this error persists.
         </Alert>
       </Dialog>
       <DataFilters
         dataLength={metadata?.metadata?.length ?? 0}
-        filteredDataLength={filteredDataLength}
+        filteredDataLength={filteredData.length}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
         fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
@@ -285,7 +249,6 @@ function ProjectSamplesTable(props: SamplesProps) {
         <DataTable
           value={metadata?.metadata ?? []}
           onValueChange={(e) => {
-            setFilteredDataLength(e.length);
             setLoadingState(false);
             setFilteredData(e);
           }}
@@ -307,7 +270,7 @@ function ProjectSamplesTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-          filters={allFieldsLoaded ? currentFilters : defaultState}
+          filters={dataTableFilters}
           reorderableColumns
           resizableColumns
           sortIcon={sortIcon}
@@ -323,7 +286,7 @@ function ProjectSamplesTable(props: SamplesProps) {
                   key={col.field}
                   field={col.field}
                   header={getColumnHeader(col, index, verticalHeaders)}
-                  body={BodyComponent({ col, readyFields: metadata?.fieldLoadingStates })}
+                  body={col.body}
                   hidden={col.hidden}
                   sortable
                   resizeable

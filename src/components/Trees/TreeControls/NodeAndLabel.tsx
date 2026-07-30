@@ -25,6 +25,9 @@ interface State {
   labelBlocks: string[];
   keyValueLabelBlocks: boolean;
   nodeColumn: string;
+  showShapeBorders: boolean;
+  shapeBorderWidth: number;
+  shapeBorderAlpha: number;
 }
 
 export default function NodeAndLabelControls({
@@ -132,6 +135,16 @@ export default function NodeAndLabelControls({
             }
             label="Show branch lengths"
           />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={state.showShapeBorders}
+                onChange={onChange}
+                name="showShapeBorders"
+              />
+            }
+            label="Show node borders"
+          />
         </FormGroup>
       </FormControl>
       {state.showLeafLabels || state.showInternalLabels || state.showBranchLengths ? (
@@ -158,6 +171,18 @@ export default function NodeAndLabelControls({
           max={24}
         />
       </FormControl>
+      {state.showShapeBorders ? (
+        <FormControl fullWidth>
+          <InputSlider
+            name="shapeBorderWidth"
+            label="Node border width"
+            value={state.shapeBorderWidth}
+            onChange={onChange}
+            min={1}
+            max={10}
+          />
+        </FormControl>
+      ) : null}
     </Grid>
   );
 }

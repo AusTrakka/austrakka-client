@@ -14,7 +14,7 @@ import type { TreeVersion } from '../../../types/dtos';
 import type { PhylocanvasNode } from '../../../types/phylocanvas.interface';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { Phylocanvas, TreeTypes } from '../PhylocanvasGL';
-import type { TreeExportFuctions } from '../Tree';
+import type { TreeExportFunctions } from '../Tree';
 
 interface State {
   type: string;
@@ -28,7 +28,7 @@ interface TreeNavigationProps {
   rootId: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
   onJumpToSubtree: (id: string) => void;
-  phylocanvasRef: React.RefObject<TreeExportFuctions>;
+  phylocanvasRef: React.RefObject<TreeExportFunctions>;
 }
 
 export default function TreeNavigation({
@@ -183,15 +183,25 @@ export default function TreeNavigation({
           ))}
         </Select>
       </FormControl>
-      <Button
-        variant="outlined"
-        disabled={rootId === '0'}
-        fullWidth
-        sx={{ marginBottom: 1 }}
-        onClick={handleGoToRoot}
-      >
-        Go to Root
-      </Button>
+      <ButtonGroup fullWidth sx={{ marginBottom: 1 }}>
+        <Button
+          variant="outlined"
+          disabled={rootId === '0'}
+          fullWidth
+          sx={{ marginBottom: 1 }}
+          onClick={handleGoToRoot}
+        >
+          Go to Root
+        </Button>
+        <Button
+          variant="outlined"
+          sx={{ marginBottom: 1 }}
+          fullWidth
+          onClick={() => phylocanvasRef.current?.fitInCanvas()}
+        >
+          Recenter
+        </Button>
+      </ButtonGroup>
       <Button
         variant="outlined"
         disabled={selectedIds.length === 0}

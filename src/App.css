@@ -23,9 +23,9 @@ span {
 
 /* CSS that is applied across all pages */
 .page {
-  margin-left: 70px;
+  margin-left: 65px;
   /* transition: all 330ms ease-in-out; */
-  padding: 0px 35px 0px 35px;
+  padding: 0px 15px 0px 35px;
   /* width: 100vw; */
   min-height: 100vh;
 }
@@ -33,15 +33,15 @@ span {
 .pagePadded {
   /* transform: translate(150px); */
   transition: all 330ms ease-in-out;
-  padding: 0px 35px 0px 35px;
-  margin-left: 190px;
+  padding: 0px 20px 0px 35px;
+  margin-left: 175px;
   min-height: 100vh;
   /* width: calc(100vw - 240px);  */
 }
 
 .warningBannerPadded {
   transition: all 330ms ease-in-out;
-  padding: 0px 35px 0px 35px;
+  padding: 0px 20px 0px 35px;
   margin-left: 190px;
   background-color: var(--secondary-yellow);
   top: 0;
@@ -60,35 +60,30 @@ span {
 }
 
 .pageHeader {
-  margin-bottom: 20px;
-  padding-top: 20px;
+  margin-bottom: 8px;
+  padding-top: 16px;
 }
 
 .breadcrumbs a {
   color: var(--primary-main);
   text-decoration: none;
-  padding-bottom: 10px;
+  font-size: 16px;
 }
 
 .breadcrumbs a:hover {
   color: var(--primary-main);
   text-decoration: underline;
-  padding-bottom: 10px;
 }
 
 .breadcrumbs p {
   color: var(--primary-main);
 }
 
-.breadcrumbs li {
-  color: var(--primary-main);
-}
-
 .pageTitle {
   color: var(--primary-main);
   font-weight: bold;
-  font-size: 2rem;
-  padding-bottom: 10px;
+  font-size: 1.6rem;
+  padding-bottom: 5px;
 }
 
 /* Metadata column styles */

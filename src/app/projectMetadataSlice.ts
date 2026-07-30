@@ -219,10 +219,3 @@ export const selectAwaitingProjectMetadata = (
   );
 };
 
-export const selectProjectMergeAlgorithm = (
-  state: RootState,
-  projectAbbrev: string | undefined,
-) => {
-  if (!projectAbbrev) return null;
-  return state.projectMetadataState.data[projectAbbrev]?.mergeAlgorithm;
-};

@@ -18,4 +18,7 @@ export default interface TreeState {
   labelBlocks: string[];
   keyValueLabelBlocks: boolean;
   showShapes: boolean;
+  showShapeBorders: boolean;
+  shapeBorderWidth: number;
+  shapeBorderAlpha: number;
 }

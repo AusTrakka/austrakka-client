@@ -58,6 +58,26 @@ export function replaceNullsWithEmpty(data: Sample[]): void {
   data.forEach(replaceNullsInObject);
 }
 
+export function insertUnpopulatedOverrideFields(
+  data: Sample[],
+  projectFields: ProjectField[],
+  viewFields: string[],
+): void {
+  const currentFields = projectFields.filter(
+    (field) => viewFields.includes(field.fieldName) && field.fieldSource === FieldSource.DATASET,
+  );
+
+  const missingFields = currentFields.filter(
+    (field) => !data.some((sample) => field.fieldName in sample),
+  );
+
+  missingFields.forEach((field) => {
+    data.forEach((sample) => {
+      sample[field.fieldName] = '';
+    });
+  });
+}
+
 export function getEmptyStringColumns(data: Sample[], fields: string[]): string[] {
   if (data.length === 0) return [];
 
@@ -68,6 +88,17 @@ export function replaceHasSequencesNullsWithFalse(data: Sample[]) {
   data.map((sample) => {
     if (sample[HAS_SEQUENCES] === null || sample[HAS_SEQUENCES] === '') {
       sample[HAS_SEQUENCES] = false;
+    }
+    return sample;
+  });
+
+  return data;
+}
+
+export function normaliseHasSequencesTrueBoolWithString(data: Sample[]) {
+  data.map((sample) => {
+    if (sample[HAS_SEQUENCES] === 'True' || sample[HAS_SEQUENCES] === true) {
+      sample[HAS_SEQUENCES] = 'True';
     }
     return sample;
   });
@@ -103,6 +134,14 @@ export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: 
       }
     });
   });
+}
+
+export function compareDatesDesc(aDate: Date | null, bDate: Date | null): number {
+  if (!aDate && !bDate) return 0;
+  if (!aDate) return 1;
+  if (!bDate) return -1;
+
+  return bDate.getTime() - aDate.getTime();
 }
 
 // Given a list of field names, calculate or look up the unique values for the fields

@@ -1,7 +1,6 @@
 import {
   Alert,
   Paper,
-  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +18,7 @@ import {
 import { useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
+import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
@@ -28,7 +28,6 @@ function SampleDetail() {
   const { projectAbbrev, seqId } = useParams();
   const [colWidth, setColWidth] = useState<number>(100);
 
-  // Would there be any benefit in more refined selectors which select out sample?
   const projectMetadata: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
@@ -36,11 +35,9 @@ function SampleDetail() {
     selectAwaitingProjectMetadata(state, projectAbbrev),
   );
   // If not awaiting metadata, at least one view and therefore Seq_ID should be loaded
-  const sample =
-    !awaitingMetadata &&
-    projectMetadata?.fieldLoadingStates[SAMPLE_ID_FIELD] === LoadingState.SUCCESS
-      ? projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId)
-      : null;
+  const sample = hasCompleteData(projectMetadata?.loadingState)
+    ? projectMetadata?.metadata?.find((s: Sample) => s[SAMPLE_ID_FIELD] === seqId)
+    : null;
 
   useEffect(() => {
     if (projectMetadata?.fields && projectMetadata.fields.length > 0) {
@@ -55,12 +52,7 @@ function SampleDetail() {
     <TableRow key={field.columnName}>
       <TableCell width={`${colWidth}em`}>{field.columnName}</TableCell>
       <TableCell className={columnStyleRules[field.columnName]}>
-        {projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.IDLE ||
-        projectMetadata?.fieldLoadingStates[field.columnName] === LoadingState.LOADING ? (
-          <Skeleton variant="text" animation="wave" width="20em" />
-        ) : (
-          renderValue(value, field.columnName, field.primitiveType ?? 'category')
-        )}
+        {renderValue(value, field.columnName, field.primitiveType ?? 'category')}
       </TableCell>
     </TableRow>
   );
@@ -79,7 +71,7 @@ function SampleDetail() {
           <TableContainer component={Paper} sx={{ mt: 3 }}>
             <Table>
               <TableBody>
-                {projectMetadata?.fields.map((field) => renderRow(field, sample[field.columnName]))}
+                {projectMetadata.fields.map((field) => renderRow(field, sample[field.columnName]))}
               </TableBody>
             </Table>
           </TableContainer>

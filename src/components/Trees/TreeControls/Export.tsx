@@ -1,10 +1,9 @@
 import DownloadIcon from '@mui/icons-material/Download';
-import { Menu } from '@mui/material';
-import Button from '@mui/material/Button';
+import { IconButton, Menu, Tooltip } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import html2canvas from 'html2canvas';
 import * as React from 'react';
-import type { TreeExportFuctions } from '../Tree';
+import type { TreeExportFunctions } from '../Tree';
 
 const base64toBlob = (base64Image: string) => {
   // Remove the data URL prefix
@@ -26,7 +25,7 @@ const base64toBlob = (base64Image: string) => {
 
 interface Props {
   treeName: string;
-  phylocanvasRef: React.RefObject<TreeExportFuctions>;
+  phylocanvasRef: React.RefObject<TreeExportFunctions>;
   legendRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -154,15 +153,11 @@ export default function ExportButton({ treeName, phylocanvasRef, legendRef }: Pr
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        startIcon={<DownloadIcon />}
-        variant="contained"
-        size="small"
-        sx={{ marginTop: 1 }}
-      >
-        Export
-      </Button>
+      <Tooltip title="Export tree or legend" arrow>
+        <IconButton onClick={handleClick} size="small" color="primary">
+          <DownloadIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
       <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}>
         <MenuItem
           key="Export tree as SVG"
