@@ -407,7 +407,7 @@ export interface Role {
   name: string;
   description: string;
   privilegeLevel: string;
-  resourceTypes: string[];
+  resourceType: string | null;
   scopes: string[];
 }
 

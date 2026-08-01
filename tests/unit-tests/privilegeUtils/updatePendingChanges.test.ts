@@ -11,7 +11,7 @@ describe('updatePendingChanges', () => {
         {
           name: 'Admin',
           globalId: 'role1',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'Root',
           roleId: 1,
           description: '',
@@ -20,7 +20,7 @@ describe('updatePendingChanges', () => {
         {
           name: 'Editor',
           globalId: 'role2',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'TrakkaAdmin',
           roleId: 2,
           description: '',
@@ -34,7 +34,7 @@ describe('updatePendingChanges', () => {
         {
           name: 'GroupViewer',
           globalId: 'role3',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'Admin',
           roleId: 1,
           description: '',
@@ -153,7 +153,7 @@ describe('updatePendingChanges', () => {
             {
               name: 'Admin',
               globalId: 'role1',
-              resourceTypes: [],
+              resourceType: null,
               privilegeLevel: 'Root',
               roleId: 1,
               description: '',
