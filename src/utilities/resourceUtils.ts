@@ -304,13 +304,13 @@ export const postProjectPrivilege = (
 
 export const deleteProjectPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -324,13 +324,13 @@ export const postProformaPrivilege = (
 
 export const deleteProformaPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -344,13 +344,13 @@ export const postTenantPrivilege = (
 
 export const deleteTenantPrivilege = (
   _: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Tenant/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -393,13 +393,13 @@ export const postOrgPrivilege = (
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Organisations/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Organisations/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );

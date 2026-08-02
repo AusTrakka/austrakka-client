@@ -431,8 +431,8 @@ export interface UserPatchV2 {
 }
 
 export interface UserRoleRecordPrivilegePost {
-  assigneeGlobalId: string;
-  roleGlobalId: string;
+  assigneeIdentifier: string;
+  roleIdentifier: string;
 }
 
 export interface DerivedLog {
