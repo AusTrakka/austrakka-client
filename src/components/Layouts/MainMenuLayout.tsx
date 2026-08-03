@@ -97,6 +97,7 @@ function MainMenuLayout() {
     share: 'Share',
     documents: 'Documents',
     plots: 'Plots',
+    summaries: 'Summaries',
     map: 'Map',
     settings: 'Settings',
   };
@@ -116,6 +117,7 @@ function MainMenuLayout() {
     'samples',
     'trees',
     'plots',
+    'summaries',
     'members',
     'proformas',
     'datasets',

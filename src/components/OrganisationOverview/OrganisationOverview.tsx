@@ -22,6 +22,7 @@ import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import OrgDashboard from '../Dashboards/OrgDashboard/OrgDashboard';
+import DataSummaries from '../DataSummaries/DataSummaries';
 import OrganisationSamples from './OrganisationSamples';
 import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
@@ -144,10 +145,10 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         </Stack>
       </Box>
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
-      <TabPanel value={tabValue} index={0}>
+      <TabPanel value={tabValue} index={ORG_TABS.dashboard.index}>
         <OrgDashboard orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={ORG_TABS.samples.index}>
         <OrganisationSamples
           canShare={canShare}
           orgAbbrev={orgAbbrev}
@@ -156,11 +157,17 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           key={location.search}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={2}>
+      <TabPanel value={tabValue} index={ORG_TABS.summaries.index}>
+        <DataSummaries
+          identifier={organisation?.abbreviation ?? ''}
+          recordType={RecordTypes.ORGANISATION}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={ORG_TABS.members.index}>
         <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={3}>
-        <Activity recordType="Organisation" rGuid={organisation.globalId} />
+      <TabPanel value={tabValue} index={ORG_TABS.activity.index}>
+        <Activity recordType={RecordTypes.ORGANISATION} rGuid={organisation.globalId} />
       </TabPanel>
     </>
   );

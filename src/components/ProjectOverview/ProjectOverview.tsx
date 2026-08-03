@@ -12,6 +12,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../app/store';
 import LoadingState from '../../constants/loadingState';
 import ProjectStatus from '../../constants/projectStatus';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
 import type { Project } from '../../types/dtos';
 import { getProjectDetails } from '../../utilities/resourceUtils';
@@ -19,6 +20,7 @@ import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import ProjectDashboardDetails from '../Dashboards/ProjectDashboard/ProjectDashboard';
+import DataSummaries from '../DataSummaries/DataSummaries';
 import Datasets from '../ProjectDatasets/Datasets';
 import ProjectDocuments from '../ProjectDocuments/ProjectDocuments';
 import MemberList from './MemberList';
@@ -223,6 +225,12 @@ function ProjectOverview(props: ProjectOverviewProps) {
         <PlotList
           projectDetails={projectDetails}
           setIsLoading={tabLoadingSetters[PROJ_TABS.plots.index]}
+        />
+      </TabPanel>
+      <TabPanel value={tabValue} index={PROJ_TABS.summaries.index}>
+        <DataSummaries
+          identifier={projectDetails?.abbreviation ?? ''}
+          recordType={RecordTypes.PROJECT}
         />
       </TabPanel>
       <TabPanel
