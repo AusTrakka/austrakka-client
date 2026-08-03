@@ -1,7 +1,7 @@
 import { Settings } from '@mui/icons-material';
 import { Alert, Button, Chip, IconButton, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { NavigationProvider, useStableNavigate } from '../../app/NavigationContext';
 import {
@@ -49,7 +49,6 @@ function ProjectOverview(props: ProjectOverviewProps) {
   const { projectAbbrev, tab } = props;
   const { token, tokenLoading } = useApi();
   const { navigate } = useStableNavigate();
-  const location = useLocation();
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [tabLoadStates, setTabLoadStates] = useState<Record<number, boolean>>(initialTabLoadStates);
 
@@ -203,7 +202,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
         />
       </TabPanel>
       <TabPanel value={tabValue} index={PROJ_TABS.samples.index}>
-        <ProjectSamplesTable key={location.search} projectAbbrev={projectAbbrev!} />
+        <ProjectSamplesTable projectAbbrev={projectAbbrev!} key={location.search} />
       </TabPanel>
       <TabPanel
         value={tabValue}
