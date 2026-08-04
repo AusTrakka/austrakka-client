@@ -8,6 +8,8 @@ export const BLANK_GROUP_VALUE = '-';
 export const OTHER_GROUP_VALUE = 'Other';
 export const GROUP_KEY_SEPARATOR = '_'; // Can change this to something more unique (like a unicode character)
 export const ALL_SAMPLES_KEY = 'all';
+export const UNAVAILABLE_FIELDS = new Set<string>(['']);
+export const TOTAL_FIELD = '__rowCount'; // Special field for total row count
 
 export enum DateGranularity {
   Year = 'year',
@@ -37,9 +39,9 @@ export enum AggregationType {
 }
 
 export const AGG_TYPE_DEFAULT: AggregationType[] = [
-  AggregationType.Total,
-  AggregationType.NonEmpty,
+  // AggregationType.Total,
   AggregationType.Empty,
+  AggregationType.NonEmpty,
   AggregationType.Unique,
 ];
 
@@ -84,6 +86,7 @@ export interface PivotConfig {
   selectedAggregations: Record<string, AggregationType[]>;
   groupByGranularity: GroupByGranularityMap;
   groupByBinSize: GroupByBinSizeMap;
+  showTotalCountFooter: boolean;
 }
 
 export interface PivotGroup {

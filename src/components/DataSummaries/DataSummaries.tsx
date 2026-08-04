@@ -1,18 +1,10 @@
-import { InfoOutlined, RestartAlt, SwapHoriz, Tune } from '@mui/icons-material';
+import { RestartAlt, SwapHoriz, Tune } from '@mui/icons-material';
 import {
   Badge,
   Box,
-  Checkbox,
   CircularProgress,
-  FormControl,
   IconButton,
-  InputLabel,
-  ListItemText,
-  MenuItem,
   Paper,
-  Popover,
-  Select,
-  type SelectChangeEvent,
   Stack,
   Tooltip,
   Typography,
@@ -31,6 +23,7 @@ import FieldTypes from '../../constants/fieldTypes';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import RecordTypes from '../../constants/record-type.enum';
 import type { MetaDataColumn, ProjectViewField } from '../../types/dtos';
+import CustomDrawer from '../Common/CustomDrawer';
 import SearchInput from '../TableComponents/SearchInput';
 import {
   AGG_TYPE_LABELS,
@@ -43,24 +36,24 @@ import {
   type PivotConfig,
   type RowRecord,
   TableOrientation,
+  TOTAL_FIELD,
 } from './dataSummariesMeta';
 import { buildPivotGroups, computeSuggestedBinSize } from './dataSummariesUtils';
 import PivotFieldConfig from './PivotFieldConfig';
 
-// Enhancements:
+// Possible enhancements:
 // - Add data filters to the table
-// - Support for aggregation/pivoting on Shared_groups field
+// - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
 // - Add export button to download CSV of the pivot table
 // - Hide repeat row values for group-by fields (row grouping)
-// - Convert the dropdowns to use autocomplete with checkboxes so that users can search for fields when there are many
 // - Other aggregations - % of total, Top N with other group
-// - Re-orderable display fields and group-by fields (drag and drop in popover maybe)
+// - Show appropriate totals in footer row depending on the aggregation type (currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations)
+//    could calculate dataset-wide grand totals or display "—" for non-additive aggregations
+// - Consider adding per-field total rows rather than a single totals row
+// - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
+// - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Fix up popover styling and test with different/dynamic screen sizes
-// - Maybe the popover chips can be replaced with mini multiselect dropdowns for each field (at the moment theres a risk of the popover getting really wide)
-// - Maybe it doesn't make sense for a display field to HAVE to be selected - maybe default call just be "Total records" aggregation, and all other breakdowns are added
-// - Clean up all formatting/structure
 // - Test with csv from a real project to see what it looks like
 
 interface DataSummariesProps {
@@ -74,9 +67,9 @@ const INITIAL_PIVOT_CONFIG: PivotConfig = {
   selectedAggregations: {},
   groupByGranularity: {},
   groupByBinSize: {},
+  showTotalCountFooter: false,
 };
 
-const UNAVAILABLE_FIELDS = new Set<string>(['']);
 const KNOWN_FIELD_TYPES = new Set<string>(Object.values(FieldTypes));
 
 function fieldType(field: ProjectViewField | MetaDataColumn): FieldTypes {
@@ -93,7 +86,7 @@ function DataSummaries(props: DataSummariesProps) {
   const [orientation, setOrientation] = useState<TableOrientation>(
     TableOrientation.FieldsHorizontal,
   );
-  const [aggPanelAnchor, setAggPanelAnchor] = useState<HTMLElement | null>(null);
+  const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
@@ -150,10 +143,7 @@ function DataSummaries(props: DataSummariesProps) {
     setOrientation(TableOrientation.FieldsHorizontal);
   }
 
-  function handleGroupByChange(event: SelectChangeEvent<string[]>) {
-    const { value } = event.target;
-    const nextGroupByFields = typeof value === 'string' ? value.split(',') : value;
-
+  function handleGroupByChange(nextGroupByFields: string[]) {
     setPivotConfig((prev) => {
       // Drop granularity entries for columns no longer grouped on
       const nextGranularity: GroupByGranularityMap = {};
@@ -164,7 +154,6 @@ function DataSummaries(props: DataSummariesProps) {
       }
 
       const nextBinSize: GroupByBinSizeMap = {};
-
       for (const col of nextGroupByFields) {
         if (prev.groupByBinSize[col] !== undefined) {
           nextBinSize[col] = prev.groupByBinSize[col];
@@ -180,19 +169,14 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
-  function handleDisplayFieldsChange(event: SelectChangeEvent<string[]>) {
-    const { value } = event.target;
-    const nextDisplayFields = typeof value === 'string' ? value.split(',') : value;
-
+  function handleDisplayFieldsChange(nextDisplayFields: string[]) {
     setPivotConfig((prev) => {
       const nextSelectedAggregations: Record<string, AggregationType[]> = {};
       for (const col of nextDisplayFields) {
         const allowed = FIELD_TYPE_AGGREGATION_TYPES[fieldTypes[col]] ?? [];
-        // Keep existing selection if present (filtered to still-valid types),
-        // otherwise default to whatever was already chosen for this column.
         nextSelectedAggregations[col] =
           prev.selectedAggregations[col]?.filter((agg) => allowed.includes(agg)) ??
-          allowed.slice(0, 1); // sensible default: first allowed aggregation
+          allowed.slice(0, 1);
       }
 
       return {
@@ -308,6 +292,13 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
+  function handleShowTotalCountFooterChange(show: boolean) {
+    setPivotConfig((prev) => ({
+      ...prev,
+      showTotalCountFooter: show,
+    }));
+  }
+
   // Compute pivot
   const pivotGroups = useMemo(
     () =>
@@ -350,11 +341,18 @@ function DataSummaries(props: DataSummariesProps) {
 
   const verticalTableRows = useMemo(() => {
     const out: Record<string, unknown>[] = [];
-    for (const col of pivotConfig.displayFields) {
+
+    // Fallback field list if displayFields is empty
+    // Simply splitting all records by the group by fields and showing the total record count for each group
+    const fieldsToRender =
+      pivotConfig.displayFields.length > 0 ? pivotConfig.displayFields : ['__record_count__'];
+
+    for (const col of fieldsToRender) {
+      const isFallback = col === '__record_count__';
       const aggsForCol = new Set(pivotConfig.selectedAggregations[col] ?? []);
       for (const group of pivotGroups) {
         const row: Record<string, unknown> = {
-          field: fieldLabelByKey[col] ?? col,
+          field: isFallback ? '-' : (fieldLabelByKey[col] ?? col),
           ...group.groupValues,
           __rowCount: group.rowCount,
         };
@@ -384,7 +382,7 @@ function DataSummaries(props: DataSummariesProps) {
   // generated dynamically rather than being a fixed, known set — one list
   // per orientation since the two layouts use different field keys.
   const horizontalGlobalFilterFields = useMemo(() => {
-    const fields: string[] = [...pivotConfig.groupByFields];
+    const fields: string[] = [TOTAL_FIELD, ...pivotConfig.groupByFields];
     for (const col of pivotConfig.displayFields) {
       for (const agg of pivotConfig.selectedAggregations[col] ?? []) {
         fields.push(`${col}__${agg}`);
@@ -394,21 +392,73 @@ function DataSummaries(props: DataSummariesProps) {
   }, [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.selectedAggregations]);
 
   const verticalGlobalFilterFields = useMemo(
-    () => ['field', ...pivotConfig.groupByFields, ...verticalAggregationColumns],
+    () => ['field', ...pivotConfig.groupByFields, TOTAL_FIELD, ...verticalAggregationColumns],
     [pivotConfig.groupByFields, verticalAggregationColumns],
   );
 
   // Display conditionals
-  const hasAnyAggregationSelected = Object.values(pivotConfig.selectedAggregations).some(
-    (aggregations) => aggregations.length > 0,
-  );
-  const showEmptyState = pivotConfig.displayFields.length === 0 || !hasAnyAggregationSelected;
+  const showEmptyState = rows.length === 0;
   const shouldShowTable = !showEmptyState;
   const emptyStateMessage = (
     <Typography variant="body2" component="div" sx={{ p: 2 }} color={Theme.PrimaryGrey600}>
-      Choose at least one field to display aggregations for
+      No data available
     </Typography>
   );
+
+  // Compute totals summary rows
+  const grandTotalRecords = useMemo(
+    () => pivotGroups.reduce((accumulatedCount, group) => accumulatedCount + group.rowCount, 0),
+    [pivotGroups],
+  );
+
+  const verticalColumnTotals = useMemo(() => {
+    if (!shouldShowTable || verticalTableRows.length === 0) return {};
+
+    const totals: Record<string, number | string> = {};
+
+    totals.__rowCount = grandTotalRecords;
+
+    // Sum up numeric values in aggregation columns
+    for (const verticalAgg of verticalAggregationColumns) {
+      totals[verticalAgg] = verticalTableRows.reduce((accumulatedCount, row) => {
+        const val = Number(row[verticalAgg]);
+        return accumulatedCount + (Number.isFinite(val) ? val : 0);
+      }, 0);
+    }
+
+    return totals;
+  }, [shouldShowTable, verticalTableRows, verticalAggregationColumns, grandTotalRecords]);
+
+  const horizontalColumnTotals = useMemo(() => {
+    if (!shouldShowTable || horizontalTableRows.length === 0) return {};
+
+    const totals: Record<string, number> = {};
+
+    // Total records count
+    totals.__rowCount = horizontalTableRows.reduce(
+      (accumulatedCount, row) => accumulatedCount + (Number(row.__rowCount) || 0),
+      0,
+    );
+
+    // Sum up totals for each display field and aggregation type combination
+    for (const col of pivotConfig.displayFields) {
+      const aggsForCol = pivotConfig.selectedAggregations[col] ?? [];
+      for (const agg of aggsForCol) {
+        const key = `${col}__${agg}`;
+        totals[key] = horizontalTableRows.reduce((accumulatedCount, row) => {
+          const val = Number(row[key]);
+          return accumulatedCount + (Number.isFinite(val) ? val : 0);
+        }, 0);
+      }
+    }
+
+    return totals;
+  }, [
+    shouldShowTable,
+    horizontalTableRows,
+    pivotConfig.displayFields,
+    pivotConfig.selectedAggregations,
+  ]);
 
   const tableHeaderControls = (
     <div
@@ -420,105 +470,8 @@ function DataSummaries(props: DataSummariesProps) {
           onChange={onGlobalFilterChange}
         />
         <Stack direction="row" spacing={1} alignItems="center">
-          <FormControl
-            sx={{
-              width: 220,
-            }}
-            size="small"
-          >
-            <InputLabel id="display-fields-label">Display fields</InputLabel>
-            <Select
-              labelId="display-fields-label"
-              multiple
-              value={pivotConfig.displayFields}
-              onChange={handleDisplayFieldsChange}
-              label="Display fields"
-              renderValue={(selected) =>
-                selected.map((col) => fieldLabelByKey[col] ?? col).join(', ')
-              }
-            >
-              {sortedFields.length === 0 ? (
-                <MenuItem disabled>
-                  <ListItemText primary="No fields available" />
-                </MenuItem>
-              ) : (
-                sortedFields.map((field) => {
-                  const key = field.columnName;
-                  const isUnavailable = UNAVAILABLE_FIELDS.has(key);
-                  return (
-                    <MenuItem key={key} value={key} disabled={isUnavailable}>
-                      <Checkbox checked={pivotConfig.displayFields.includes(key)} />
-                      <ListItemText primary={field.columnName} />
-                      {isUnavailable && (
-                        <Tooltip
-                          title="This field is currently unavailable for summary generation"
-                          arrow
-                        >
-                          <Box
-                            component="span"
-                            sx={{ pointerEvents: 'auto', display: 'flex', ml: 1 }}
-                          >
-                            <InfoOutlined fontSize="small" />
-                          </Box>
-                        </Tooltip>
-                      )}
-                    </MenuItem>
-                  );
-                })
-              )}
-            </Select>
-          </FormControl>
-          <FormControl
-            sx={{
-              width: 220,
-            }}
-            size="small"
-          >
-            <InputLabel id="group-by-label">Group-by fields</InputLabel>
-            <Select
-              labelId="group-by-label"
-              multiple
-              value={pivotConfig.groupByFields}
-              onChange={handleGroupByChange}
-              label="Group-by fields"
-              renderValue={(selected) =>
-                selected.map((col) => fieldLabelByKey[col] ?? col).join(', ')
-              }
-            >
-              {sortedFields.length === 0 ? (
-                <MenuItem disabled>
-                  <ListItemText primary="No fields available" />
-                </MenuItem>
-              ) : (
-                sortedFields.map((field) => {
-                  const key = field.columnName;
-                  const isUnavailable = UNAVAILABLE_FIELDS.has(key);
-                  return (
-                    <MenuItem key={key} value={key} disabled={isUnavailable}>
-                      <Checkbox checked={pivotConfig.groupByFields.includes(key)} />
-                      <ListItemText primary={field.columnName} />
-                      {isUnavailable && (
-                        <Tooltip
-                          title="This field is currently unavailable for summary generation"
-                          arrow
-                        >
-                          <Box
-                            component="span"
-                            sx={{ pointerEvents: 'auto', display: 'flex', ml: 1 }}
-                          >
-                            <InfoOutlined fontSize="small" />
-                          </Box>
-                        </Tooltip>
-                      )}
-                    </MenuItem>
-                  );
-                })
-              )}
-            </Select>
-          </FormControl>
-
-          <Tooltip title="Configure aggregations" arrow>
-            <IconButton size="small" onClick={(event) => setAggPanelAnchor(event.currentTarget)}>
+          <Tooltip title="Configure table fields" arrow>
+            <IconButton size="small" onClick={() => setConfigDrawerOpen(true)}>
               <Badge
                 badgeContent={pivotConfig.displayFields.length + pivotConfig.groupByFields.length}
                 sx={{
@@ -577,12 +530,7 @@ function DataSummaries(props: DataSummariesProps) {
 
   return (
     <Box>
-      <Popover
-        open={Boolean(aggPanelAnchor)}
-        anchorEl={aggPanelAnchor}
-        onClose={() => setAggPanelAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
+      <CustomDrawer drawerOpen={configDrawerOpen} setDrawerOpen={setConfigDrawerOpen}>
         <PivotFieldConfig
           pivotConfig={pivotConfig}
           fieldTypes={fieldTypes}
@@ -595,8 +543,12 @@ function DataSummaries(props: DataSummariesProps) {
           onBinSizeInputChange={handleBinSizeInputChange}
           onBinSizeBlur={handleBinSizeBlur}
           onToggleAggregation={toggleAggregation}
+          sortedFields={sortedFields}
+          onDisplayFieldsChange={handleDisplayFieldsChange}
+          onGroupByFieldsChange={handleGroupByChange}
+          onShowTotalCountFooterChange={handleShowTotalCountFooterChange}
         />
-      </Popover>
+      </CustomDrawer>
 
       {orientation === TableOrientation.FieldsHorizontal && (
         <Paper variant="outlined">
@@ -621,6 +573,13 @@ function DataSummaries(props: DataSummariesProps) {
                       bodyClassName="value-cells"
                     />
                   ))}
+                  {/* Total display */}
+                  <Column
+                    header="Total records"
+                    rowSpan={2}
+                    className="flexible-column"
+                    bodyClassName="value-cells"
+                  />
                   {pivotConfig.displayFields.map((col) => {
                     const aggsForCol = pivotConfig.selectedAggregations[col] ?? [];
                     if (aggsForCol.length === 0) return null;
@@ -649,6 +608,45 @@ function DataSummaries(props: DataSummariesProps) {
                 </Row>
               </ColumnGroup>
             }
+            footerColumnGroup={
+              pivotConfig.showTotalCountFooter ? (
+                <ColumnGroup>
+                  <Row>
+                    {pivotConfig.groupByFields.map((col, index) => (
+                      <Column
+                        key={`footer_groupby_${col}`}
+                        footer={index === 0 ? 'Total' : ''}
+                        footerStyle={{ fontWeight: 'bold' }}
+                        className="flexible-column"
+                      />
+                    ))}
+                    <Column
+                      key="footer_total_records"
+                      footer={
+                        pivotConfig.groupByFields.length === 0
+                          ? `Total (${horizontalColumnTotals.__rowCount ?? 0})`
+                          : (horizontalColumnTotals.__rowCount ?? 0)
+                      }
+                      footerStyle={{ fontWeight: 'bold' }}
+                      className="flexible-column"
+                    />
+                    {pivotConfig.displayFields.flatMap((col) =>
+                      (pivotConfig.selectedAggregations[col] ?? []).map((agg) => {
+                        const key = `${col}__${agg}`;
+                        return (
+                          <Column
+                            key={`footer_agg_${key}`}
+                            footer={horizontalColumnTotals[key] ?? '—'}
+                            footerStyle={{ fontWeight: 'bold' }}
+                            className="flexible-column"
+                          />
+                        );
+                      }),
+                    )}
+                  </Row>
+                </ColumnGroup>
+              ) : null
+            }
           >
             {pivotConfig.groupByFields.map((col) => (
               <Column
@@ -658,6 +656,8 @@ function DataSummaries(props: DataSummariesProps) {
                 bodyClassName="value-cells"
               />
             ))}
+            {/* Total display */}
+            <Column field={TOTAL_FIELD} className="flexible-column" bodyClassName="value-cells" />
             {pivotConfig.displayFields.map((col) =>
               (pivotConfig.selectedAggregations[col] ?? []).map((agg) => (
                 <Column
@@ -685,6 +685,36 @@ function DataSummaries(props: DataSummariesProps) {
             rowGroupMode="rowspan"
             groupRowsBy="field"
             className="my-flexible-table"
+            /* Only show footer totals if there are active group-by fields */
+            footerColumnGroup={
+              pivotConfig.showTotalCountFooter ? (
+                <ColumnGroup>
+                  <Row>
+                    <Column
+                      footer="Total"
+                      colSpan={1 + pivotConfig.groupByFields.length}
+                      footerStyle={{ fontWeight: 'bold' }}
+                      className="flexible-column"
+                    />
+                    {/* Overall total of record counts */}
+                    <Column
+                      footer={verticalColumnTotals.__rowCount ?? 0}
+                      footerStyle={{ fontWeight: 'bold' }}
+                      className="flexible-column"
+                    />
+                    {/* Totals for each aggregation column */}
+                    {verticalAggregationColumns.map((agg) => (
+                      <Column
+                        key={agg}
+                        footer={verticalColumnTotals[agg] ?? '—'}
+                        footerStyle={{ fontWeight: 'bold' }}
+                        className="flexible-column"
+                      />
+                    ))}
+                  </Row>
+                </ColumnGroup>
+              ) : null
+            }
           >
             <Column
               field="field"
@@ -701,6 +731,12 @@ function DataSummaries(props: DataSummariesProps) {
                 bodyClassName="value-cells"
               />
             ))}
+            <Column
+              field={TOTAL_FIELD}
+              header="Total records"
+              className="flexible-column"
+              bodyClassName="value-cells"
+            />
             {verticalAggregationColumns.map((agg) => (
               <Column
                 key={agg}
