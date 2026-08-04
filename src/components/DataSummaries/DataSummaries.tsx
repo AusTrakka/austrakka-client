@@ -45,7 +45,7 @@ import PivotFieldConfig from './PivotFieldConfig';
 // - Add data filters to the table
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
 // - Add export button to download CSV of the pivot table
-// - Hide repeat row values for group-by fields (row grouping)
+// - Reorderable group-by and display fields (drag-and-drop)
 // - Other aggregations - % of total, Top N with other group
 // - Show appropriate totals in footer row depending on the aggregation type (currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations)
 //    could calculate dataset-wide grand totals or display "—" for non-additive aggregations
@@ -557,6 +557,12 @@ function DataSummaries(props: DataSummariesProps) {
             size="small"
             className="my-flexible-table"
             scrollable
+            rowGroupMode="rowspan"
+            // Limitation of the current implementation: DataTable is designed for single-level grouping only
+            // This means that if the user selects multiple group-by fields, only the first one will be used for grouping in the table display
+            groupRowsBy={
+              pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : undefined
+            }
             emptyMessage={emptyStateMessage}
             header={tableHeaderControls}
             filters={filters}
