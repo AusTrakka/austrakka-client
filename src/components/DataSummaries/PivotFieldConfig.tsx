@@ -37,6 +37,7 @@ import {
 } from './dataSummariesMeta';
 
 const DATE_GRANULARITY_OPTIONS = Object.values(DateGranularity);
+const FONT_SIZE_SMALL = 14; // px
 
 interface PivotFieldConfigProps {
   pivotConfig: PivotConfig;
@@ -171,7 +172,10 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
 
           return (
             <li key={optionKey} {...otherProps}>
-              <Checkbox checked={selected} sx={{ '& .MuiSvgIcon-root': { fontSize: 16 } }} />
+              <Checkbox
+                checked={selected}
+                sx={{ '& .MuiSvgIcon-root': { fontSize: FONT_SIZE_SMALL } }}
+              />
               <Box component="span" sx={{ flexGrow: 1 }}>
                 {fieldLabelByKey[key] ?? key}
               </Box>
@@ -189,6 +193,9 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
             label="Select fields"
             sx={{
               mb: 2,
+              fontSize: FONT_SIZE_SMALL,
+              '& .MuiInputBase-input': { fontSize: FONT_SIZE_SMALL },
+              '& .MuiInputLabel-root': { fontSize: FONT_SIZE_SMALL },
             }}
           />
         )}

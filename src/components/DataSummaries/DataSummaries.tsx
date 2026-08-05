@@ -42,19 +42,21 @@ import { buildPivotGroups, computeSuggestedBinSize } from './dataSummariesUtils'
 import PivotFieldConfig from './PivotFieldConfig';
 
 // Possible enhancements:
-// - Add data filters to the table
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
 // - Add export button to download CSV of the pivot table
 // - Reorderable group-by and display fields (drag-and-drop)
 // - Other aggregations - % of total, Top N with other group
-// - Show appropriate totals in footer row depending on the aggregation type (currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations)
-//    could calculate dataset-wide grand totals or display "—" for non-additive aggregations
+// - Show appropriate totals in footer row depending on the aggregation type
+//    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
+//    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
 // - Consider adding per-field total rows rather than a single totals row
 // - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
+// - Add data filters to the table - what will happen with the filters in the URL?
 // - Test with csv from a real project to see what it looks like
+// - Simplify font sizes in the config drawer
 
 interface DataSummariesProps {
   identifier: string;
