@@ -9,7 +9,8 @@ export const OTHER_GROUP_VALUE = 'Other';
 export const GROUP_KEY_SEPARATOR = '_'; // Can change this to something more unique (like a unicode character)
 export const ALL_SAMPLES_KEY = 'all';
 export const UNAVAILABLE_FIELDS = new Set<string>(['']);
-export const TOTAL_FIELD = '__rowCount'; // Special field for total row count
+export const TOTAL_FIELD = '__totalCount'; // Special field for total row count
+export const RECORD_COUNT_FALLBACK_KEY = '__record_count__';
 
 export enum DateGranularity {
   Year = 'year',

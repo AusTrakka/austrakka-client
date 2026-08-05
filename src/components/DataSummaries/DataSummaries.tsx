@@ -14,7 +14,7 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable, type DataTableFilterMetaData } from 'primereact/datatable';
 import { Row } from 'primereact/row';
-import { type ChangeEvent, useMemo, useState } from 'react';
+import { type ChangeEvent, useMemo, useRef, useState } from 'react';
 import { selectOrgMetadata } from '../../app/orgMetadataSlice';
 import { selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { type RootState, useAppSelector } from '../../app/store';
@@ -24,6 +24,7 @@ import { hasCompleteData } from '../../constants/metadataLoadingState';
 import RecordTypes from '../../constants/record-type.enum';
 import type { MetaDataColumn, ProjectViewField } from '../../types/dtos';
 import CustomDrawer from '../Common/CustomDrawer';
+import ExportTableData from '../Common/ExportTableData';
 import SearchInput from '../TableComponents/SearchInput';
 import {
   AGG_TYPE_LABELS,
@@ -34,6 +35,7 @@ import {
   type GroupByBinSizeMap,
   type GroupByGranularityMap,
   type PivotConfig,
+  RECORD_COUNT_FALLBACK_KEY,
   type RowRecord,
   TableOrientation,
   TOTAL_FIELD,
@@ -43,19 +45,16 @@ import PivotFieldConfig from './PivotFieldConfig';
 
 // Possible enhancements:
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
-// - Add export button to download CSV of the pivot table
 // - Reorderable group-by and display fields (drag-and-drop)
-// - Other aggregations - % of total, Top N with other group
+// - Other aggregations - % of total, Top N with other group (OTHER_GROUP_VALUE placeholder exists already)
 // - Show appropriate totals in footer row depending on the aggregation type
 //    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
 //    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
-// - Consider adding per-field total rows rather than a single totals row
 // - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
 // - Add data filters to the table - what will happen with the filters in the URL?
-// - Test with csv from a real project to see what it looks like
 // - Simplify font sizes in the config drawer
 
 interface DataSummariesProps {
@@ -89,6 +88,8 @@ function DataSummaries(props: DataSummariesProps) {
     TableOrientation.FieldsHorizontal,
   );
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
+  const horizontalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
+  const verticalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
@@ -319,7 +320,10 @@ function DataSummaries(props: DataSummariesProps) {
   const horizontalTableRows = useMemo(
     () =>
       pivotGroups.map((group) => {
-        const row: Record<string, unknown> = { ...group.groupValues, __rowCount: group.rowCount };
+        const row: Record<string, unknown> = {
+          ...group.groupValues,
+          [TOTAL_FIELD]: group.rowCount,
+        };
         for (const col of pivotConfig.displayFields) {
           const aggsForCol = pivotConfig.selectedAggregations[col] ?? [];
           for (const agg of aggsForCol) {
@@ -347,16 +351,18 @@ function DataSummaries(props: DataSummariesProps) {
     // Fallback field list if displayFields is empty
     // Simply splitting all records by the group by fields and showing the total record count for each group
     const fieldsToRender =
-      pivotConfig.displayFields.length > 0 ? pivotConfig.displayFields : ['__record_count__'];
+      pivotConfig.displayFields.length > 0
+        ? pivotConfig.displayFields
+        : [RECORD_COUNT_FALLBACK_KEY];
 
     for (const col of fieldsToRender) {
-      const isFallback = col === '__record_count__';
+      const isFallback = col === RECORD_COUNT_FALLBACK_KEY;
       const aggsForCol = new Set(pivotConfig.selectedAggregations[col] ?? []);
       for (const group of pivotGroups) {
         const row: Record<string, unknown> = {
           field: isFallback ? '-' : (fieldLabelByKey[col] ?? col),
           ...group.groupValues,
-          __rowCount: group.rowCount,
+          [TOTAL_FIELD]: group.rowCount,
         };
         for (const agg of verticalAggregationColumns) {
           row[agg] = aggsForCol.has(agg) ? (group.counts[col]?.[agg] ?? '—') : '';
@@ -418,7 +424,7 @@ function DataSummaries(props: DataSummariesProps) {
 
     const totals: Record<string, number | string> = {};
 
-    totals.__rowCount = grandTotalRecords;
+    totals[TOTAL_FIELD] = grandTotalRecords;
 
     // Sum up numeric values in aggregation columns
     for (const verticalAgg of verticalAggregationColumns) {
@@ -437,8 +443,8 @@ function DataSummaries(props: DataSummariesProps) {
     const totals: Record<string, number> = {};
 
     // Total records count
-    totals.__rowCount = horizontalTableRows.reduce(
-      (accumulatedCount, row) => accumulatedCount + (Number(row.__rowCount) || 0),
+    totals[TOTAL_FIELD] = horizontalTableRows.reduce(
+      (accumulatedCount, row) => accumulatedCount + (Number(row[TOTAL_FIELD]) || 0),
       0,
     );
 
@@ -460,6 +466,65 @@ function DataSummaries(props: DataSummariesProps) {
     horizontalTableRows,
     pivotConfig.displayFields,
     pivotConfig.selectedAggregations,
+  ]);
+
+  const horizontalExportHeaders = useMemo(() => {
+    const headers = [...pivotConfig.groupByFields, TOTAL_FIELD];
+    for (const col of pivotConfig.displayFields) {
+      for (const agg of pivotConfig.selectedAggregations[col] ?? []) {
+        headers.push(`${col}__${agg}`);
+      }
+    }
+    return headers;
+  }, [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.selectedAggregations]);
+
+  const verticalExportHeaders = useMemo(
+    () => ['field', ...pivotConfig.groupByFields, TOTAL_FIELD, ...verticalAggregationColumns],
+    [pivotConfig.groupByFields, verticalAggregationColumns],
+  );
+
+  const activeExportRows = useMemo(() => {
+    const baseRows =
+      orientation === TableOrientation.FieldsHorizontal ? horizontalTableRows : verticalTableRows;
+
+    if (!pivotConfig.showTotalCountFooter) {
+      return baseRows;
+    }
+
+    const isHorizontal = orientation === TableOrientation.FieldsHorizontal;
+    const totals = isHorizontal ? horizontalColumnTotals : verticalColumnTotals;
+    const headers = isHorizontal ? horizontalExportHeaders : verticalExportHeaders;
+
+    // Build a totals row with every header present
+    const totalsRow: Record<string, unknown> = {};
+    headers.forEach((header, index) => {
+      if (header === TOTAL_FIELD) {
+        // Header is the total records column
+        totalsRow[header] = totals[TOTAL_FIELD] ?? 0;
+      } else if (header in totals) {
+        // Header is a display field + aggregation combination
+        totalsRow[header] = totals[header];
+      } else if (header === 'field') {
+        // Header is the "field" column in vertical orientation - show "Total" in the first column of the totals row
+        totalsRow[header] = 'Total';
+      } else if (index === 0) {
+        // Header is the first column in horizontal orientation - show "Total" in the first column of the totals row
+        totalsRow[header] = 'Total';
+      } else {
+        totalsRow[header] = '';
+      }
+    });
+
+    return [...baseRows, totalsRow];
+  }, [
+    orientation,
+    horizontalTableRows,
+    verticalTableRows,
+    pivotConfig.showTotalCountFooter,
+    horizontalColumnTotals,
+    verticalColumnTotals,
+    horizontalExportHeaders,
+    verticalExportHeaders,
   ]);
 
   const tableHeaderControls = (
@@ -502,6 +567,16 @@ function DataSummaries(props: DataSummariesProps) {
               <SwapHoriz fontSize="small" />
             </IconButton>
           </Tooltip>
+          <ExportTableData
+            dataToExport={activeExportRows}
+            headers={
+              orientation === TableOrientation.FieldsHorizontal
+                ? horizontalExportHeaders
+                : verticalExportHeaders
+            }
+            disabled={showEmptyState}
+            fileNamePrefix="data_summary"
+          />
           <Tooltip title="Reset table configuration" arrow>
             <IconButton size="small" onClick={handleReset} color="error" disabled={showEmptyState}>
               <RestartAlt fontSize="small" />
@@ -559,6 +634,7 @@ function DataSummaries(props: DataSummariesProps) {
             size="small"
             className="my-flexible-table"
             scrollable
+            ref={horizontalTableRef}
             rowGroupMode="rowspan"
             // Limitation of the current implementation: DataTable is designed for single-level grouping only
             // This means that if the user selects multiple group-by fields, only the first one will be used for grouping in the table display
@@ -632,8 +708,8 @@ function DataSummaries(props: DataSummariesProps) {
                       key="footer_total_records"
                       footer={
                         pivotConfig.groupByFields.length === 0
-                          ? `Total (${horizontalColumnTotals.__rowCount ?? 0})`
-                          : (horizontalColumnTotals.__rowCount ?? 0)
+                          ? `Total (${horizontalColumnTotals[TOTAL_FIELD] ?? 0})`
+                          : (horizontalColumnTotals[TOTAL_FIELD] ?? 0)
                       }
                       footerStyle={{ fontWeight: 'bold' }}
                       className="flexible-column"
@@ -671,6 +747,7 @@ function DataSummaries(props: DataSummariesProps) {
                 <Column
                   key={`${col}__${agg}`}
                   field={`${col}__${agg}`}
+                  header={`${fieldLabelByKey[col] ?? col} (${AGG_TYPE_LABELS[agg]})`}
                   className="flexible-column"
                   bodyClassName="value-cells"
                 />
@@ -687,6 +764,7 @@ function DataSummaries(props: DataSummariesProps) {
             size="small"
             emptyMessage={emptyStateMessage}
             scrollable
+            ref={verticalTableRef}
             header={tableHeaderControls}
             filters={filters}
             globalFilterFields={verticalGlobalFilterFields}
@@ -706,7 +784,7 @@ function DataSummaries(props: DataSummariesProps) {
                     />
                     {/* Overall total of record counts */}
                     <Column
-                      footer={verticalColumnTotals.__rowCount ?? 0}
+                      footer={verticalColumnTotals[TOTAL_FIELD] ?? 0}
                       footerStyle={{ fontWeight: 'bold' }}
                       className="flexible-column"
                     />
