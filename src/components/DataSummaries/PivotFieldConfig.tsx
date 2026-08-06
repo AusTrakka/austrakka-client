@@ -44,12 +44,16 @@ interface PivotFieldConfigProps {
   fieldTypes: FieldTypeMap;
   fieldLabelByKey: Record<string, string>;
   binSizeInputText: Record<string, string>;
+  topNInputText: Record<string, string>;
   sortedFields: (ProjectViewField | MetaDataColumn)[];
   onDisplayFieldsChange: (nextDisplayFields: string[]) => void;
   onGroupByFieldsChange: (nextGroupByFields: string[]) => void;
   onRemoveGroupByField: (col: string) => void;
   onRemoveDisplayField: (col: string) => void;
   onSetGroupByGranularity: (col: string, granularity: DateGranularity) => void;
+  onSetGroupByTopNEnabled: (col: string, enabled: boolean) => void;
+  onSetGroupByTopNInputChange: (col: string, rawValue: string) => void;
+  onTopNSizeBlur: (col: string) => void;
   onSetBinningEnabled: (col: string, enabled: boolean) => void;
   onBinSizeInputChange: (col: string, rawValue: string) => void;
   onBinSizeBlur: (col: string) => void;
@@ -117,6 +121,7 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
     fieldTypes,
     fieldLabelByKey,
     binSizeInputText,
+    topNInputText,
     onRemoveGroupByField,
     onRemoveDisplayField,
     onSetGroupByGranularity,
@@ -128,6 +133,9 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
     onDisplayFieldsChange,
     onGroupByFieldsChange,
     onShowTotalCountFooterChange,
+    onSetGroupByTopNEnabled,
+    onSetGroupByTopNInputChange,
+    onTopNSizeBlur,
   } = props;
 
   // Group-by and display menu anchor states
@@ -436,17 +444,63 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
               </MenuItem>
             ),
           ]}
-
         {groupByMenu &&
-          fieldTypes[groupByMenu.col] !== FieldTypes.DATE &&
-          fieldTypes[groupByMenu.col] !== FieldTypes.NUMBER &&
-          fieldTypes[groupByMenu.col] !== FieldTypes.DOUBLE && (
-            <MenuItem disabled>
-              <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                No options available for this field
+          fieldTypes[groupByMenu.col] === FieldTypes.STRING && [
+            <>
+              <Typography
+                key="number-binning-title"
+                variant="caption"
+                sx={{ px: 2, py: 0.5, color: Theme.PrimaryGrey500, display: 'block' }}
+              >
+                Top-N grouping
               </Typography>
-            </MenuItem>
-          )}
+              <MenuItem>
+                <FormGroup>
+                  <FormControlLabel
+                    sx={{ mr: 0, p: 0 }}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined}
+                        onChange={(e) => onSetGroupByTopNEnabled(groupByMenu.col, e.target.checked)}
+                      />
+                    }
+                    label={<Typography variant="body2">Group into top N</Typography>}
+                  />
+                </FormGroup>
+              </MenuItem>
+            </>,
+            pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined && (
+              <MenuItem
+                key="top-n-size"
+                onClick={(e) => e.stopPropagation()}
+                disableRipple
+                sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+              >
+                <TextField
+                  type="number"
+                  label="Top N size"
+                  size="small"
+                  sx={{ width: 120 }}
+                  value={
+                    topNInputText[groupByMenu.col] ??
+                    pivotConfig.groupByTopNSize[groupByMenu.col] ??
+                    ''
+                  }
+                  onChange={(e) => onSetGroupByTopNInputChange(groupByMenu.col, e.target.value)}
+                  onBlur={() => onTopNSizeBlur(groupByMenu.col)}
+                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                />
+              </MenuItem>
+            ),
+          ]}
+        {groupByMenu && fieldTypes[groupByMenu.col] === FieldTypes.BOOLEAN && (
+          <MenuItem disabled>
+            <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+              No options available for this field
+            </Typography>
+          </MenuItem>
+        )}
 
         <Divider />
         <MenuItem

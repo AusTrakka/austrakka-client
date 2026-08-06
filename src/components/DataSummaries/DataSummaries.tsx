@@ -38,6 +38,7 @@ import {
   type FieldTypeMap,
   type GroupByBinSizeMap,
   type GroupByGranularityMap,
+  type GroupByTopNMap,
   type PivotConfig,
   RECORD_COUNT_FALLBACK_KEY,
   type RowRecord,
@@ -49,20 +50,21 @@ import PivotFieldConfig from './PivotFieldConfig';
 
 // Possible enhancements:
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
-// - Reorderable group-by and display fields (drag-and-drop)
-// - Other aggregations - % of total, Top N with other group (OTHER_GROUP_VALUE placeholder exists already)
-// - Show appropriate totals in footer row depending on the aggregation type
-//    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
-//    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
+// - Other aggregations - for example, show % of total
 // - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Simplify font sizes in the config drawer
 // - Clean up data filters race condition
 //      Currently filtering relies on effect/render ordering to avoid a race between
 //      1. The effect resetting filteredData to unfiltered data on page refresh/metadata state update and,
 //      2. The hidden table's onValueChange setting it to the actually-filtered result.
+// - Toggle for users to choose to evaluate top-N globally or per parent group
+// - Add a switch on the samples table to allow users to view samples table vs summary table
+// - Show appropriate totals in footer row depending on the aggregation type
+//    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
+//    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
+// - Reorderable group-by and display fields (drag-and-drop)
 
 interface DataSummariesProps {
   identifier: string;
@@ -76,6 +78,7 @@ const INITIAL_PIVOT_CONFIG: PivotConfig = {
   groupByGranularity: {},
   groupByBinSize: {},
   showTotalCountFooter: false,
+  groupByTopNSize: {},
 };
 
 const KNOWN_FIELD_TYPES = new Set<string>(Object.values(FieldTypes));
@@ -100,7 +103,7 @@ function DataSummaries(props: DataSummariesProps) {
   const horizontalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
   const verticalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
-    'pivotFilters',
+    'filters',
     defaultState,
     navigate,
   );
@@ -186,11 +189,19 @@ function DataSummaries(props: DataSummariesProps) {
         }
       }
 
+      const nextTopN: GroupByTopNMap = {};
+      for (const col of nextGroupByFields) {
+        if (prev.groupByTopNSize[col] !== undefined) {
+          nextTopN[col] = prev.groupByTopNSize[col];
+        }
+      }
+
       return {
         ...prev,
         groupByFields: nextGroupByFields,
         groupByGranularity: nextGranularity,
         groupByBinSize: nextBinSize,
+        groupByTopNSize: nextTopN,
       };
     });
   }
@@ -255,6 +266,37 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
+  function setGroupByTopNEnabled(col: string, enabled: boolean) {
+    setPivotConfig((prev) => {
+      const nextTopN = { ...prev.groupByTopNSize };
+      if (enabled) {
+        nextTopN[col] = topNInputText[col] !== undefined ? Number(topNInputText[col]) : 5; // Default top N value
+      } else {
+        delete nextTopN[col];
+      }
+      return { ...prev, groupByTopNSize: nextTopN };
+    });
+  }
+  const [topNInputText, setTopNInputText] = useState<Record<string, string>>({});
+
+  function handleGroupByTopNInputChange(col: string, rawValue: string) {
+    setTopNInputText((prev) => ({ ...prev, [col]: rawValue }));
+
+    if (rawValue === '') {
+      return;
+    }
+
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return;
+    }
+
+    setPivotConfig((prev) => ({
+      ...prev,
+      groupByTopNSize: { ...prev.groupByTopNSize, [col]: parsed },
+    }));
+  }
+
   const [binSizeInputText, setBinSizeInputText] = useState<Record<string, string>>({});
 
   function handleBinSizeInputChange(col: string, rawValue: string) {
@@ -281,17 +323,26 @@ function DataSummaries(props: DataSummariesProps) {
       delete next[col];
       return next;
     });
+    setTopNInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
     setPivotConfig((prev) => {
       const nextGroupByFields = prev.groupByFields.filter((f) => f !== col);
       const nextGranularity = { ...prev.groupByGranularity };
       delete nextGranularity[col];
       const nextBinSize = { ...prev.groupByBinSize };
       delete nextBinSize[col];
+      const nextTopN = { ...prev.groupByTopNSize };
+      delete nextTopN[col];
+
       return {
         ...prev,
         groupByFields: nextGroupByFields,
         groupByGranularity: nextGranularity,
         groupByBinSize: nextBinSize,
+        groupByTopNSize: nextTopN,
       };
     });
   }
@@ -318,6 +369,15 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
+  // Clear the input text when the user leaves the field, so that it will revert to the actual value in the pivotConfig if they didn't enter a valid number
+  function handleTopNBlur(col: string) {
+    setTopNInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+  }
+
   function handleShowTotalCountFooterChange(show: boolean) {
     setPivotConfig((prev) => ({
       ...prev,
@@ -336,6 +396,7 @@ function DataSummaries(props: DataSummariesProps) {
         pivotConfig.selectedAggregations,
         pivotConfig.groupByGranularity as GroupByGranularityMap,
         pivotConfig.groupByBinSize as GroupByBinSizeMap,
+        pivotConfig.groupByTopNSize as GroupByTopNMap,
       ),
     [rows, pivotConfig, fieldTypes],
   );
@@ -661,9 +722,13 @@ function DataSummaries(props: DataSummariesProps) {
           fieldTypes={fieldTypes}
           fieldLabelByKey={fieldLabelByKey}
           binSizeInputText={binSizeInputText}
+          topNInputText={topNInputText}
           onRemoveGroupByField={handleRemoveGroupByField}
           onRemoveDisplayField={handleRemoveDisplayField}
           onSetGroupByGranularity={setGroupByGranularity}
+          onSetGroupByTopNEnabled={setGroupByTopNEnabled}
+          onSetGroupByTopNInputChange={handleGroupByTopNInputChange}
+          onTopNSizeBlur={handleTopNBlur}
           onSetBinningEnabled={setBinningEnabled}
           onBinSizeInputChange={handleBinSizeInputChange}
           onBinSizeBlur={handleBinSizeBlur}
@@ -678,6 +743,8 @@ function DataSummaries(props: DataSummariesProps) {
       {orientation === TableOrientation.FieldsHorizontal && (
         <Paper variant="outlined">
           <DataTable
+            // Key needed to force re-render when groupByFields or groupByTopNSize changes, otherwise the table will not update correctly
+            key={`horizontal_${JSON.stringify(pivotConfig)}`}
             value={shouldShowTable ? horizontalTableRows : []}
             size="small"
             className="my-flexible-table"
@@ -808,6 +875,7 @@ function DataSummaries(props: DataSummariesProps) {
       {orientation === TableOrientation.FieldsVertical && (
         <Paper variant="outlined">
           <DataTable
+            key={`vertical_${JSON.stringify(pivotConfig)}`}
             value={shouldShowTable ? verticalTableRows : []}
             size="small"
             emptyMessage={emptyStateMessage}
@@ -817,7 +885,9 @@ function DataSummaries(props: DataSummariesProps) {
             filters={filters}
             globalFilterFields={verticalGlobalFilterFields}
             rowGroupMode="rowspan"
-            groupRowsBy="field"
+            groupRowsBy={
+              pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : 'field'
+            }
             className="my-flexible-table"
             /* Only show footer totals if there are active group-by fields */
             footerColumnGroup={

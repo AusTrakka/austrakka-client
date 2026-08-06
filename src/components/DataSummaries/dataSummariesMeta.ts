@@ -79,6 +79,7 @@ export type FieldTypeMap = Record<string, FieldTypes>;
 // Group-by configuration maps
 export type GroupByGranularityMap = Record<string, DateGranularity>; // DATE
 export type GroupByBinSizeMap = Record<string, number>; // NUMBER/DOUBLE
+export type GroupByTopNMap = Record<string, number>; // STRING (can extend to BOOLEAN/DATE/NUMBER/DOUBLE)
 
 // Initial pivot config state
 export interface PivotConfig {
@@ -88,6 +89,7 @@ export interface PivotConfig {
   groupByGranularity: GroupByGranularityMap;
   groupByBinSize: GroupByBinSizeMap;
   showTotalCountFooter: boolean;
+  groupByTopNSize: GroupByTopNMap;
 }
 
 export interface PivotGroup {
@@ -95,10 +97,4 @@ export interface PivotGroup {
   groupValues: Record<string, string>;
   rowCount: number;
   counts: Record<string, Partial<Record<AggregationType, number | null>>>;
-}
-
-export interface PivotGroupBucket {
-  key: string;
-  groupValues: Record<string, string>;
-  rows: RowRecord[];
 }

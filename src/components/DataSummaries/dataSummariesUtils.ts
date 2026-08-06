@@ -10,9 +10,9 @@ import {
   GROUP_KEY_SEPARATOR,
   type GroupByBinSizeMap,
   type GroupByGranularityMap,
+  type GroupByTopNMap,
   OTHER_GROUP_VALUE,
   type PivotGroup,
-  type PivotGroupBucket,
   type RowRecord,
 } from './dataSummariesMeta';
 
@@ -25,10 +25,42 @@ function bucketDateValue(value: unknown, granularity: DateGranularity): string {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   if (granularity === DateGranularity.Week)
     return `${date.getFullYear()}-W${String(getISOWeek(date)).padStart(2, '0')}`;
-  return date.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  return date.toISOString().slice(0, 10);
 }
 
-// Buckets a numeric value into a fixed width range
+function getTopNKeys(
+  rows: RowRecord[],
+  col: string,
+  topNSize: number | string,
+  fieldTypes: FieldTypeMap,
+  groupByGranularity: GroupByGranularityMap,
+  groupByBinSize: GroupByBinSizeMap,
+): Set<string> {
+  const numericSize =
+    typeof topNSize === 'number' ? topNSize : Number.parseInt(String(topNSize), 10);
+  if (!Number.isFinite(numericSize) || numericSize <= 0) return new Set();
+
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const bucketLabel = resolveGroupValueForNode(
+      row,
+      col,
+      fieldTypes,
+      groupByGranularity,
+      groupByBinSize,
+    );
+    if (bucketLabel === BLANK_GROUP_VALUE) continue;
+    counts.set(bucketLabel, (counts.get(bucketLabel) ?? 0) + 1);
+  }
+
+  const sortedKeys = Array.from(counts.entries())
+    .sort((a, b) => (b[1] !== a[1] ? b[1] - a[1] : a[0].localeCompare(b[0])))
+    .slice(0, numericSize)
+    .map(([k]) => k);
+
+  return new Set(sortedKeys);
+}
+
 function bucketNumberValue(value: unknown, bucketSize: number): string {
   const valueNumber = toNumber(value);
   if (valueNumber === null || !Number.isFinite(bucketSize) || bucketSize <= 0) {
@@ -61,12 +93,10 @@ function makeGroupKey(values: string[]): string {
   return values.join(GROUP_KEY_SEPARATOR);
 }
 
-// Sorts group keys in this order:
-// 1. Sorted string values
-// 2. Numeric values in ascending order
-// 3. Blank values
-// 4. "Other"
+// Fixed sort logic with proper equality handling
 function sortGroupKeys(a: string, b: string, fieldType: FieldTypes): number {
+  if (a === b) return 0; // Ensures strict weak ordering
+
   if (a === BLANK_GROUP_VALUE) return 1;
   if (b === BLANK_GROUP_VALUE) return -1;
 
@@ -74,8 +104,8 @@ function sortGroupKeys(a: string, b: string, fieldType: FieldTypes): number {
   if (b === OTHER_GROUP_VALUE) return -1;
 
   if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
-    if (a === BLANK_GROUP_VALUE) return 1;
-    if (b === BLANK_GROUP_VALUE) return -1;
+    // if (a === BLANK_GROUP_VALUE) return 1;
+    // if (b === BLANK_GROUP_VALUE) return -1;
     const na = Number.parseFloat(a);
     const nb = Number.parseFloat(b);
 
@@ -175,30 +205,41 @@ function computeCounts(
   return counts;
 }
 
-// Resolves the value for a group-by column based on the field type and any specified granularity or bin size
-// Returns a string representation of the bucketed value, or a placeholder for empty values
-// Note: Here we call granularity/bin size a "bucket"
-function resolveGroupValue(
+function resolveGroupValueForNode(
   row: RowRecord,
   col: string,
   fieldTypes: FieldTypeMap,
   groupByGranularity: GroupByGranularityMap,
   groupByBinSize: GroupByBinSizeMap,
+  topNSet?: Set<string>,
 ): string {
   const fieldType = fieldTypes[col];
-  if (fieldType === FieldTypes.DATE) {
-    const granularity = groupByGranularity[col] ?? DateGranularity.Month;
-    return bucketDateValue(row[col], granularity);
-  }
-  if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
-    const bucketSize = groupByBinSize[col];
+  const rawValue = row[col];
+  let bucketLabel: string;
 
-    if (bucketSize !== undefined) {
-      return bucketNumberValue(row[col], bucketSize);
+  // STEP 1: Binning and label transformation
+  if (isEmptyValue(rawValue)) {
+    bucketLabel = BLANK_GROUP_VALUE;
+  } else if (fieldType === FieldTypes.DATE) {
+    const granularity = groupByGranularity[col] ?? DateGranularity.Month;
+    bucketLabel = bucketDateValue(rawValue, granularity);
+  } else if (
+    (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) &&
+    groupByBinSize[col] !== undefined
+  ) {
+    bucketLabel = bucketNumberValue(rawValue, groupByBinSize[col]!);
+  } else {
+    bucketLabel = String(rawValue);
+  }
+
+  // STEP 2: Top-N evaluation (applies to ALL binned field types)
+  if (topNSet) {
+    if (bucketLabel === BLANK_GROUP_VALUE || !topNSet.has(bucketLabel)) {
+      return OTHER_GROUP_VALUE;
     }
   }
-  const value = row[col];
-  return isEmptyValue(value) ? BLANK_GROUP_VALUE : String(value);
+
+  return bucketLabel;
 }
 
 export function buildPivotGroups(
@@ -209,6 +250,7 @@ export function buildPivotGroups(
   selectedAggregations: Record<string, AggregationType[]>,
   groupByGranularity: GroupByGranularityMap,
   groupByBinSize: GroupByBinSizeMap,
+  groupByTopNSize: GroupByTopNMap,
 ): PivotGroup[] {
   // If no group-by fields are selected, return a single group representing all samples
   if (groupByFields.length === 0) {
@@ -222,47 +264,73 @@ export function buildPivotGroups(
     ];
   }
 
-  // Create a map to hold the grouped rows, keyed by a composite key of the group-by field values
-  const groups = new Map<string, PivotGroupBucket>();
-
-  // Iterate through each row and assign it to the appropriate group based on the group-by field values
-  for (const row of rows) {
-    const groupValues: Record<string, string> = {};
-    for (const col of groupByFields) {
-      groupValues[col] = resolveGroupValue(
-        row,
+  // Pre-calculate Top-N sets per field across the global dataset for consistent row-span layout
+  const topNSets: Record<string, Set<string>> = {};
+  for (const col of groupByFields) {
+    if (groupByTopNSize[col] !== undefined) {
+      topNSets[col] = getTopNKeys(
+        rows,
         col,
+        groupByTopNSize[col]!,
         fieldTypes,
         groupByGranularity,
         groupByBinSize,
       );
     }
-    const key = makeGroupKey(groupByFields.map((col) => groupValues[col]));
-
-    let group = groups.get(key);
-    if (!group) {
-      group = { key, groupValues, rows: [] };
-      groups.set(key, group);
-    }
-    group.rows.push(row);
   }
 
-  // Convert the groups map into an array of PivotGroup objects, computing counts for each group
-  const groupsArray: PivotGroup[] = Array.from(groups.values()).map((group) => ({
-    key: group.key,
-    groupValues: group.groupValues,
-    rowCount: group.rows.length,
-    counts: computeCounts(group.rows, displayFields, fieldTypes, selectedAggregations),
-  }));
-
-  // Sort group by fields to give nested look
-  groupsArray.sort((a, b) => {
-    for (const col of groupByFields) {
-      const compare = sortGroupKeys(a.groupValues[col], b.groupValues[col], fieldTypes[col]);
-      if (compare !== 0) return compare;
+  function groupRecursively(
+    currentRows: RowRecord[],
+    fieldIndex: number,
+    accumulatedGroupValues: Record<string, string>,
+  ): PivotGroup[] {
+    if (fieldIndex >= groupByFields.length) {
+      const key = makeGroupKey(groupByFields.map((f) => accumulatedGroupValues[f]));
+      return [
+        {
+          key,
+          groupValues: { ...accumulatedGroupValues },
+          rowCount: currentRows.length,
+          counts: computeCounts(currentRows, displayFields, fieldTypes, selectedAggregations),
+        },
+      ];
     }
-    return 0;
-  });
 
-  return groupsArray;
+    const col = groupByFields[fieldIndex];
+    const fieldType = fieldTypes[col];
+    const topNSet = topNSets[col];
+
+    const buckets = new Map<string, RowRecord[]>();
+    for (const row of currentRows) {
+      const groupVal = resolveGroupValueForNode(
+        row,
+        col,
+        fieldTypes,
+        groupByGranularity,
+        groupByBinSize,
+        topNSet,
+      );
+      let bucket = buckets.get(groupVal);
+      if (!bucket) {
+        bucket = [];
+        buckets.set(groupVal, bucket);
+      }
+      bucket.push(row);
+    }
+
+    const sortedGroupValues = Array.from(buckets.keys()).sort((a, b) =>
+      sortGroupKeys(a, b, fieldType),
+    );
+
+    const results: PivotGroup[] = [];
+    for (const val of sortedGroupValues) {
+      const subRows = buckets.get(val)!;
+      const nextGroupValues = { ...accumulatedGroupValues, [col]: val };
+      results.push(...groupRecursively(subRows, fieldIndex + 1, nextGroupValues));
+    }
+
+    return results;
+  }
+
+  return groupRecursively(rows, 0, {});
 }
