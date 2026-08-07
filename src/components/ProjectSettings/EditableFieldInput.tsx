@@ -78,6 +78,23 @@ export const EditableFieldInput = ({
           onChange={onChange}
         />
       );
+    case 'watermarkTrees':
+      return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Switch checked={value} size="small" onChange={(e) => onChange(e.target.checked)} />
+          <Tooltip
+            title={(value as boolean) ? 'Watermark trees enabled' : 'Watermark trees disabled'}
+            arrow
+            placement="top"
+          >
+            {(value as boolean) || false ? (
+              <CheckCircleOutlined fontSize="small" style={{ color: Theme.SecondaryLightGreen }} />
+            ) : (
+              <CancelOutlined fontSize="small" style={{ color: Theme.SecondaryOrange }} />
+            )}
+          </Tooltip>
+        </div>
+      );
     case 'isActive':
       return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
