@@ -9,16 +9,13 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { useEffect, useState } from 'react';
-import { useApi } from '../../../app/ApiContext';
 import {
-  fetchOrgMetadata,
   type OrgMetadataState,
   selectOrgMetadata,
   selectOrgMetadataError,
 } from '../../../app/orgMetadataSlice';
-import { useAppDispatch, useAppSelector } from '../../../app/store';
+import { useAppSelector } from '../../../app/store';
 import { Theme } from '../../../assets/themes/theme';
-import LoadingState from '../../../constants/loadingState';
 import { hasCompleteData } from '../../../constants/metadataLoadingState';
 import RecordTypes from '../../../constants/record-type.enum';
 import { cardStyle, tallCardStyle } from '../../../styles/dashboardStyles';
@@ -42,8 +39,6 @@ interface OrgDashboardProps {
 
 function OrgDashboard(props: OrgDashboardProps) {
   const { orgAbbrev } = props;
-  const { token, tokenLoading } = useApi();
-  const dispatch = useAppDispatch();
   const data: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
   );
@@ -53,16 +48,6 @@ function OrgDashboard(props: OrgDashboardProps) {
   const [totalSampleCount, setTotalSampleCount] = useState<number | null>(null);
   const [latestUploadDate, setLatestUploadDate] = useState<string[] | null>(null);
   const loaded = hasCompleteData(data?.loadingState);
-
-  useEffect(() => {
-    if (
-      orgAbbrev !== undefined &&
-      tokenLoading !== LoadingState.LOADING &&
-      tokenLoading !== LoadingState.IDLE
-    ) {
-      dispatch(fetchOrgMetadata({ token, orgAbbrev }));
-    }
-  }, [orgAbbrev, token, tokenLoading, dispatch]);
 
   useEffect(() => {
     if (!data?.fields) return;

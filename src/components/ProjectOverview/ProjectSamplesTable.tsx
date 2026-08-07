@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import './Samples.css';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -63,7 +63,6 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [loadingState, setLoadingState] = useState<boolean>(false);
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-  const [filteredDataLength, setFilteredDataLength] = useState<number>(0);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
 
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
@@ -75,13 +74,12 @@ function ProjectSamplesTable(props: SamplesProps) {
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
-    const columnBuilder = buildPrimeReactColumnDefinitionsPVF(metadata.fields);
-    if (metadata.loadingState === MetadataLoadingState.DATA_LOADED) {
+    setSampleTableColumns(buildPrimeReactColumnDefinitionsPVF(metadata.fields));
+
+    if (hasCompleteData(metadata.loadingState)) {
       setAllFieldsLoaded(true);
     }
-    setSampleTableColumns(columnBuilder);
-    setFilteredDataLength(metadata.metadata?.length ?? 0);
-  }, [metadata?.fields, metadata?.loadingState, metadata?.metadata?.length]);
+  }, [metadata?.fields, metadata?.loadingState]);
 
   useEffect(() => {
     if (metadata?.loadingState === MetadataLoadingState.ERROR) {
@@ -96,17 +94,17 @@ function ProjectSamplesTable(props: SamplesProps) {
     }
   };
 
-  useEffect(() => {
-    if (hasCompleteData(metadata?.loadingState)) {
-      setFilteredData(metadata?.metadata ?? []);
-    }
-  }, [metadata?.loadingState, metadata?.metadata]);
-
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find((f) => f.columnName === field);
     // Field Object returned from the server ideally shouldn't include "Source From" string
     return `${fieldObj?.fieldSource.replace(/^Source From\s*/i, '')}`;
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const dataTableFilters = useMemo(
+    () => ({ ...(allFieldsLoaded ? currentFilters : defaultState) }),
+    [allFieldsLoaded, currentFilters, metadata?.metadata],
+  );
 
   const header = (
     <div
@@ -235,7 +233,7 @@ function ProjectSamplesTable(props: SamplesProps) {
       </Dialog>
       <DataFilters
         dataLength={metadata?.metadata?.length ?? 0}
-        filteredDataLength={filteredDataLength}
+        filteredDataLength={filteredData.length}
         visibleFields={sampleTableColumns}
         allFields={metadata?.fields ?? []} // want to pass in field loading states?
         fieldUniqueValues={metadata?.fieldUniqueValues ?? null}
@@ -251,7 +249,6 @@ function ProjectSamplesTable(props: SamplesProps) {
         <DataTable
           value={metadata?.metadata ?? []}
           onValueChange={(e) => {
-            setFilteredDataLength(e.length);
             setLoadingState(false);
             setFilteredData(e);
           }}
@@ -273,7 +270,7 @@ function ProjectSamplesTable(props: SamplesProps) {
           onRowClick={rowClickHandler}
           selectionMode="single"
           className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-          filters={allFieldsLoaded ? currentFilters : defaultState}
+          filters={dataTableFilters}
           reorderableColumns
           resizableColumns
           sortIcon={sortIcon}
