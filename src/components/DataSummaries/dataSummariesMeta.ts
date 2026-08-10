@@ -74,6 +74,15 @@ export const FIELD_TYPE_AGGREGATION_TYPES: Record<FieldTypes, AggregationType[]>
   [FieldTypes.DOUBLE]: [...AGG_TYPE_DEFAULT, ...AGG_TYPE_NUMERIC],
 };
 
+// Set of aggregation types that can be summed across groups for the footer row
+export const SUMMABLE_AGGREGATION_TYPES = new Set<AggregationType>([
+  AggregationType.Total,
+  AggregationType.NonEmpty,
+  AggregationType.Empty,
+  AggregationType.Unique,
+  AggregationType.Sum,
+]);
+
 export type FieldTypeMap = Record<string, FieldTypes>;
 
 // Group-by configuration maps

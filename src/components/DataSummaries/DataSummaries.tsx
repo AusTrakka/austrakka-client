@@ -38,6 +38,7 @@ import {
   type PivotConfig,
   RECORD_COUNT_FALLBACK_KEY,
   type RowRecord,
+  SUMMABLE_AGGREGATION_TYPES,
   TableOrientation,
   TOTAL_FIELD,
 } from './dataSummariesMeta';
@@ -53,9 +54,9 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 
 // TODO:
 // - Toggle for users to choose to evaluate top-N globally or per parent group
-// - Show appropriate totals in footer row depending on the aggregation type
-//    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
-//    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
+//      - Only useful if its not the top-level group
+//      - If its top level, then it will always be global so maybe the toggle is disabled with a tooltip explaining why
+// - Expand top-N to other field types (currently only STRING is supported, but ensure its calculated after binning)
 // - Reorderable group-by and display fields (drag-and-drop)
 
 interface DataSummariesProps {
@@ -473,6 +474,8 @@ function DataSummaries(props: DataSummariesProps) {
 
     // Sum up numeric values in aggregation columns
     for (const verticalAgg of verticalAggregationColumns) {
+      if (!SUMMABLE_AGGREGATION_TYPES.has(verticalAgg)) continue;
+
       totals[verticalAgg] = verticalTableRows.reduce((accumulatedCount, row) => {
         const val = Number(row[verticalAgg]);
         return accumulatedCount + (Number.isFinite(val) ? val : 0);
@@ -497,6 +500,8 @@ function DataSummaries(props: DataSummariesProps) {
     for (const col of pivotConfig.displayFields) {
       const aggsForCol = pivotConfig.selectedAggregations[col] ?? [];
       for (const agg of aggsForCol) {
+        if (!SUMMABLE_AGGREGATION_TYPES.has(agg)) continue;
+
         const key = `${col}__${agg}`;
         totals[key] = horizontalTableRows.reduce((accumulatedCount, row) => {
           const val = Number(row[key]);
