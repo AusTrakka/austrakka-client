@@ -50,6 +50,8 @@ import {
 } from '../../utilities/tableUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import DataSummaries from '../DataSummaries/DataSummaries';
+import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
 import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
@@ -57,6 +59,11 @@ import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
+
+export enum TableType {
+  RawMetadata = 'RawMetadata',
+  SummaryMetadata = 'SummaryMetadata',
+}
 
 interface SamplesProps {
   canShare: boolean;
@@ -93,6 +100,13 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
+
+  const [activeTable, setActiveTable] = useState<TableType>(TableType.RawMetadata);
+  const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
+
+  useEffect(() => {
+    if (activeTable === TableType.SummaryMetadata) setShownSummaryMetadata(true);
+  }, [activeTable]);
 
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
@@ -228,6 +242,7 @@ function OrgSamplesTable(props: SamplesProps) {
           </IconButton>
         </Tooltip>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
               <IconButton onClick={handleChangeOwnerClick}>
@@ -441,58 +456,70 @@ function OrgSamplesTable(props: SamplesProps) {
         dataLoaded={allFieldsLoaded}
       />
       <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-        <DataTable
-          value={displayRows}
-          onValueChange={(e) => {
-            setFilteredSampleList(e);
-            setFormattedData(e);
-          }}
-          filters={dataTableFilters}
-          size="small"
-          columnResizeMode="expand"
-          resizableColumns
-          showGridlines
-          reorderableColumns
-          removableSort
-          header={header}
-          scrollable
-          scrollHeight="flex"
-          sortIcon={sortIcon}
-          paginator
-          onRowClick={rowClickHandler}
-          selectionMode="multiple"
-          rows={25}
-          loading={filtering || isSamplesLoading}
-          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-          paginatorPosition="bottom"
-          paginatorRight
-          className="my-flexible-table"
-          selection={selectedSamples}
-          selectAll={selectAll}
-          onSelectAllChange={onSelectAllChange}
-          onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
-            setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
-          }}
-        >
-          <Column selectionMode="multiple" style={{ width: '3em' }} />
-          {sampleTableColumns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              hidden={col.hidden ?? false}
-              sortable
-              resizeable
-              style={{ minWidth: '150px' }}
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+          <DataTable
+            value={displayRows}
+            onValueChange={(e) => {
+              setFilteredSampleList(e);
+              setFormattedData(e);
+            }}
+            filters={dataTableFilters}
+            size="small"
+            columnResizeMode="expand"
+            resizableColumns
+            showGridlines
+            reorderableColumns
+            removableSort
+            header={header}
+            scrollable
+            scrollHeight="flex"
+            sortIcon={sortIcon}
+            paginator
+            onRowClick={rowClickHandler}
+            selectionMode="multiple"
+            rows={25}
+            loading={filtering || isSamplesLoading}
+            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            paginatorPosition="bottom"
+            paginatorRight
+            className="my-flexible-table"
+            selection={selectedSamples}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
+            onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
+              setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
+            }}
+          >
+            <Column selectionMode="multiple" style={{ width: '3em' }} />
+            {sampleTableColumns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                hidden={col.hidden ?? false}
+                sortable
+                resizeable
+                style={{ minWidth: '150px' }}
+                headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+              />
+            ))}
+          </DataTable>
+        </div>
+        {shownSummaryMetadata && (
+          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+            <DataSummaries
+              data={metadata}
+              metadata={filteredSampleList}
+              activeTable={activeTable}
+              setActiveTable={setActiveTable}
             />
-          ))}
-        </DataTable>
+          </div>
+        )}
       </Paper>
     </div>
   );
