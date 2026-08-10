@@ -29,7 +29,7 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -77,7 +77,6 @@ function OrgSamplesTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   // Table row selection/display
@@ -499,4 +498,4 @@ function OrgSamplesTable(props: SamplesProps) {
   );
 }
 
-export default memo(OrgSamplesTable);
+export default OrgSamplesTable;

@@ -14,21 +14,17 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable, type DataTableFilterMetaData } from 'primereact/datatable';
 import { Row } from 'primereact/row';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useStableNavigate } from '../../app/NavigationContext';
-import { selectOrgMetadata } from '../../app/orgMetadataSlice';
-import { selectProjectMetadata } from '../../app/projectMetadataSlice';
-import { type RootState, useAppSelector } from '../../app/store';
+import { type ChangeEvent, useMemo, useRef, useState } from 'react';
+import type { OrgMetadataState } from '../../app/orgMetadataSlice';
+import type { ProjectMetadataState } from '../../app/projectMetadataSlice';
 import { Theme } from '../../assets/themes/theme';
 import FieldTypes from '../../constants/fieldTypes';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
-import RecordTypes from '../../constants/record-type.enum';
 import type { MetaDataColumn, ProjectViewField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
 import CustomDrawer from '../Common/CustomDrawer';
 import ExportTableData from '../Common/ExportTableData';
-import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import type { TableType } from '../ProjectOverview/ProjectSamplesTable';
 import SearchInput from '../TableComponents/SearchInput';
 import {
   AGG_TYPE_LABELS,
@@ -47,6 +43,7 @@ import {
 } from './dataSummariesMeta';
 import { buildPivotGroups, computeSuggestedBinSize } from './dataSummariesUtils';
 import PivotFieldConfig from './PivotFieldConfig';
+import ViewSummariesToggle from './ViewSummariesToggle';
 
 // Possible enhancements:
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
@@ -55,20 +52,17 @@ import PivotFieldConfig from './PivotFieldConfig';
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Clean up data filters race condition
-//      Currently filtering relies on effect/render ordering to avoid a race between
-//      1. The effect resetting filteredData to unfiltered data on page refresh/metadata state update and,
-//      2. The hidden table's onValueChange setting it to the actually-filtered result.
 // - Toggle for users to choose to evaluate top-N globally or per parent group
-// - Add a switch on the samples table to allow users to view samples table vs summary table
 // - Show appropriate totals in footer row depending on the aggregation type
 //    Currently only sums are shown which isn't particularly useful for mean/median/min/max aggregations
 //    Could calculate dataset-wide grand totals or display "—" for non-additive aggregations
 // - Reorderable group-by and display fields (drag-and-drop)
 
 interface DataSummariesProps {
-  identifier: string;
-  recordType?: RecordTypes;
+  data: OrgMetadataState | ProjectMetadataState | null;
+  metadata: Sample[];
+  activeTable: TableType;
+  setActiveTable: (table: TableType) => void;
 }
 
 const INITIAL_PIVOT_CONFIG: PivotConfig = {
@@ -92,8 +86,7 @@ function fieldType(field: ProjectViewField | MetaDataColumn): FieldTypes {
 }
 
 function DataSummaries(props: DataSummariesProps) {
-  const { identifier, recordType } = props;
-  const { navigate } = useStableNavigate();
+  const { data, metadata, activeTable, setActiveTable } = props;
 
   const [pivotConfig, setPivotConfig] = useState<PivotConfig>(INITIAL_PIVOT_CONFIG);
   const [orientation, setOrientation] = useState<TableOrientation>(
@@ -102,47 +95,15 @@ function DataSummaries(props: DataSummariesProps) {
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
   const horizontalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
   const verticalTableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
-  const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
-    'filters',
-    defaultState,
-    navigate,
-  );
-  const [filteredData, setFilteredData] = useState<Sample[]>([]);
-  const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
-  const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
-  const [loadingState, setLoadingState] = useState<boolean>(false);
-
-  const metadataSelector = useMemo(
-    () => (state: RootState) => {
-      switch (recordType) {
-        case RecordTypes.ORGANISATION:
-          return selectOrgMetadata(state, identifier);
-        case RecordTypes.PROJECT:
-          return selectProjectMetadata(state, identifier);
-        default:
-          return null;
-      }
-    },
-    [recordType, identifier],
-  );
-
-  const data = useAppSelector(metadataSelector);
   const loaded = hasCompleteData(data?.loadingState);
   const rawFields = data?.fields;
   const fields: ProjectViewField[] | MetaDataColumn[] = Array.isArray(rawFields) ? rawFields : [];
 
-  const rows: RowRecord[] = Array.isArray(filteredData) ? (filteredData as RowRecord[]) : [];
+  const rows: RowRecord[] = Array.isArray(metadata) ? (metadata as RowRecord[]) : [];
 
   const [filters, setFilters] = useState({
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
-
-  useEffect(() => {
-    if (hasCompleteData(data?.loadingState)) {
-      setFilteredData(data?.metadata ?? []);
-      setAllFieldsLoaded(true);
-    }
-  }, [data?.loadingState, data?.metadata]);
 
   const fieldTypes: FieldTypeMap = useMemo(() => {
     const map: FieldTypeMap = {};
@@ -613,7 +574,12 @@ function DataSummaries(props: DataSummariesProps) {
 
   const tableHeaderControls = (
     <div
-      style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: '100%',
+      }}
     >
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
         <SearchInput
@@ -621,6 +587,7 @@ function DataSummaries(props: DataSummariesProps) {
           onChange={onGlobalFilterChange}
         />
         <Stack direction="row" spacing={1} alignItems="center">
+          <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
           <Tooltip title="Configure table fields" arrow>
             <IconButton size="small" onClick={() => setConfigDrawerOpen(true)}>
               <Badge
@@ -691,31 +658,6 @@ function DataSummaries(props: DataSummariesProps) {
 
   return (
     <Box>
-      <DataFilters
-        dataLength={data?.metadata?.length ?? 0}
-        filteredDataLength={filteredData.length ?? 0}
-        visibleFields={null}
-        allFields={data?.fields ?? []}
-        fieldUniqueValues={data?.fieldUniqueValues ?? null}
-        setPrimeReactFilters={setCurrentFilters}
-        isOpen={isDataFiltersOpen}
-        setIsOpen={setIsDataFiltersOpen}
-        dataLoaded={loadingState || hasCompleteData(data?.loadingState)}
-        setLoadingState={setLoadingState}
-        primeReactFilters={currentFilters}
-      />
-      <div style={{ display: 'none' }}>
-        <DataTable
-          value={data?.metadata ?? []}
-          filters={allFieldsLoaded ? currentFilters : defaultState}
-          paginator
-          rows={1}
-          onValueChange={(e) => {
-            setFilteredData(e);
-          }}
-        />
-      </div>
-
       <CustomDrawer drawerOpen={configDrawerOpen} setDrawerOpen={setConfigDrawerOpen}>
         <PivotFieldConfig
           pivotConfig={pivotConfig}

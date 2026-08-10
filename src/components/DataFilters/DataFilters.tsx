@@ -111,7 +111,6 @@ function DataFilters(props: DataFiltersProps) {
   const {
     dataLength,
     filteredDataLength,
-    visibleFields,
     allFields,
     fieldUniqueValues,
     setPrimeReactFilters,
@@ -146,12 +145,6 @@ function DataFilters(props: DataFiltersProps) {
     setTotalRows(dataLength);
   }, [dataLength, filteredDataLength]);
 
-  function filterFieldsByVisibility<T extends Field>(_fields: T[], _visibleFields: any[]): T[] {
-    return _fields.filter((field): field is T =>
-      _visibleFields.some((visibleField) => visibleField.field === field.columnName),
-    );
-  }
-
   function registerFilterHandlers<T extends Field>(_fields: T[]) {
     _fields.forEach((field) => {
       FilterService.register(`custom_${field.columnName}`, (value, filters) =>
@@ -163,17 +156,10 @@ function DataFilters(props: DataFiltersProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: we don't care if the registerFilterHandlers changes
   useEffect(() => {
     if (allFields.length > 0) {
-      if (visibleFields === null) {
-        setFields(allFields);
-      } else {
-        const onlyVisibleField = visibleFields.filter((field) => !field.hidden);
-        const vFields = filterFieldsByVisibility<Field>(allFields, onlyVisibleField);
-        setFields(vFields);
-      }
-
+      setFields(allFields);
       registerFilterHandlers<Field>(allFields);
     }
-  }, [allFields, visibleFields]);
+  }, [allFields]);
 
   const handleFilterChange = (event: SelectChangeEvent | EventLike) => {
     const { name, value } = event.target;
@@ -412,7 +398,7 @@ function DataFilters(props: DataFiltersProps) {
             ? handleDateDependingOnCondition(filterMatchMode, filterFormValues.value)
             : filterFormValues.value;
 
-        const updatedFilters = { ...primeReactFilters };
+        const updatedFilters = structuredClone(primeReactFilters);
 
         if (editingFilter) {
           const existingEditFilter = updatedFilters[
@@ -492,7 +478,7 @@ function DataFilters(props: DataFiltersProps) {
     _fieldName: string,
     _constraint: { value: any; matchMode: FilterMatchMode },
   ) => {
-    const updatedFilters = { ...primeReactFilters };
+    const updatedFilters = structuredClone(primeReactFilters);
     Object.entries(updatedFilters).forEach(([fieldName, filter]) => {
       if (_fieldName !== fieldName) return;
 

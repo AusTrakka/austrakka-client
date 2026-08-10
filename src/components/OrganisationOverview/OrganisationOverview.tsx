@@ -23,7 +23,6 @@ import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
 import TabPanel from '../Common/TabPanel';
 import OrgDashboard from '../Dashboards/OrgDashboard/OrgDashboard';
-import DataSummaries from '../DataSummaries/DataSummaries';
 import OrganisationSamples from './OrganisationSamples';
 import OrgMembers from './OrgMemberList';
 import { ORG_HOME_TAB, ORG_TABS } from './orgTabConstants';
@@ -187,13 +186,6 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
           orgName={organisation.name}
-          key={location.search}
-        />
-      </TabPanel>
-      <TabPanel value={tabValue} index={ORG_TABS.summaries.index}>
-        <DataSummaries
-          identifier={organisation?.abbreviation ?? ''}
-          recordType={RecordTypes.ORGANISATION}
         />
       </TabPanel>
       <TabPanel value={tabValue} index={ORG_TABS.members.index}>

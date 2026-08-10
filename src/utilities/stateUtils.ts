@@ -134,53 +134,53 @@ function resolveState(
 export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
-  navigate: NavigateFunction,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
-  const stateSearchParams = getFilterObjFromSearchParams(paramName, defaultFilter);
-  // This default initialisation only happens on the first render.
-  // Thus when the stateSearchParams changes, the state here will not be updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <need the url>
+  const stateSearchParams = useMemo(() => {
+    return getFilterObjFromSearchParams(paramName, defaultFilter);
+  }, [paramName, defaultFilter, window.location.search]);
+
   const [state, setState] = useState<DataTableFilterMeta>(stateSearchParams);
 
-  // This is why we need to use useEffect
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
+  // Sync URL -> State: covers real browser back/forward, and any other
+  // code that mutates history (native popstate only, not our own writes below)
   useEffect(() => {
-    // Stringify and compare to avoid reference inequality in objects
+    const onPopState = () => {
+      const next = getFilterObjFromSearchParams(paramName, defaultFilter);
+      setState((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [paramName, defaultFilter]);
+
+  useEffect(() => {
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
     }
-  }, [stateSearchParams]);
+  }, [stateSearchParams, state]);
 
+  // Sync State -> URL, bypassing the router entirely
   const useStateWithQueryParam = (newState: React.SetStateAction<DataTableFilterMeta>) => {
-    setState(newState);
     const resolvedState = resolveState(newState, state);
+    if (JSON.stringify(resolvedState) === JSON.stringify(state)) {
+      return;
+    }
+    setState(resolvedState);
 
     const rawParams = getRawQueryParams(window.location.search);
-
-    // Delete existing value if present
-    if (paramName in rawParams) {
-      delete rawParams[paramName];
-    }
-
-    // Only add param if the filter state is not equal to the default
+    if (paramName in rawParams) delete rawParams[paramName];
     if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
-      // This should return a string like 'type%3Aimage'
       rawParams[paramName] = encodeFilterObj(resolvedState);
     }
-
     const queryString = Object.entries(rawParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    if (queryString === '' || queryString === `${paramName}=()`) {
-      navigate(window.location.pathname, { replace: true });
-      return;
-    }
-
-    const newUrl = `${window.location.pathname}?${queryString}`;
-    navigate(newUrl, { replace: true });
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+    window.history.replaceState(window.history.state, '', newUrl);
   };
 
-  // the function we return here acts like a setter and should not be updated on every render
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
-  return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultFilter, setState])];
+  return [state, useStateWithQueryParam];
 }

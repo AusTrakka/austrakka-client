@@ -69,7 +69,6 @@ function MapDetail(props: MapDetailProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigateFunction,
   );
 
   // This use effect will set the state of the region toggle and also if it's disabled
