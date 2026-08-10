@@ -32,8 +32,8 @@ const deleteApiMap: Record<
   string,
   (
     recordGlobalId: string,
-    assigneeGlobalId: string,
-    roleGlobalId: string,
+    assigneeIdentifier: string,
+    roleIdentifier: string,
     token: string,
     clientSessionId?: string,
   ) => Promise<ResponseObject<any>>
@@ -56,8 +56,8 @@ export async function processPrivilegeChanges(
     try {
       if (change.type === 'POST' && postApiMap[change.recordType]) {
         const postBody: UserRoleRecordPrivilegePost = {
-          assigneeGlobalId: userGlobalId,
-          roleGlobalId: change.payload.roleGlobalId!,
+          assigneeIdentifier: userGlobalId,
+          roleIdentifier: change.payload.roleGlobalId!,
         };
         const response = await postApiMap[change.recordType](
           change.payload.recordGlobalId!,
