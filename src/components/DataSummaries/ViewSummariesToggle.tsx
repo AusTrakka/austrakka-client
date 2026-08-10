@@ -39,12 +39,12 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
         {activeTable === TableType.RawMetadata ? (
           <>
             <PivotTableChartIcon sx={{ marginRight: 1 }} />
-            View Summary table
+            View summary table
           </>
         ) : (
           <>
             <TableChartIcon sx={{ marginRight: 1 }} />
-            View Raw Metadata
+            View raw metadata
           </>
         )}
       </Button>
