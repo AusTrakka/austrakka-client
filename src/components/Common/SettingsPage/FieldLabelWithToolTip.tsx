@@ -43,6 +43,15 @@ const FIELD_HELPERS: Record<string, FieldHelper> = {
       </Typography>
     ),
   },
+  watermarkTrees: {
+    title: 'Watermark Trees',
+    description: (
+      <Typography variant="body2">
+        When enabled, trees exported from this project will have a watermark applied to them. As a
+        result, only PNG exports will be available for trees in this project.
+      </Typography>
+    ),
+  },
 };
 
 interface FieldLabelWithTooltipProps {

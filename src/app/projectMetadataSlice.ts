@@ -42,6 +42,7 @@ export interface ProjectMetadataState {
   emptyColumns: string[];
   errorMessage: string | null;
   isDataStale: boolean;
+  watermarkTrees: boolean;
 }
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
@@ -58,6 +59,7 @@ const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetad
   emptyColumns: [],
   errorMessage: null,
   isDataStale: false,
+  watermarkTrees: false,
 });
 
 interface ProjectMetadataSliceState {
@@ -84,6 +86,7 @@ interface FetchProjectInfoResponse {
   mergeAlgorithm: string;
   fields: ProjectField[];
   view: ProjectView;
+  watermarkTrees: boolean;
 }
 
 interface FetchDataViewParams {
@@ -157,6 +160,7 @@ const fetchProjectInfo = createAsyncThunk(
       mergeAlgorithm: projectSettingsResponse.data!.mergeAlgorithm,
       fields: fieldsResponse.data as ProjectField[],
       view: viewsResponse.data,
+      watermarkTrees: projectSettingsResponse.data!.watermarkTrees,
     });
   },
 );
@@ -376,9 +380,11 @@ export const projectMetadataSlice = createSlice({
 
     builder.addCase(fetchProjectInfo.fulfilled, (state, action) => {
       const { projectAbbrev } = action.meta.arg;
-      const { mergeAlgorithm, fields, view } = action.payload as FetchProjectInfoResponse;
+      const { mergeAlgorithm, fields, view, watermarkTrees } =
+        action.payload as FetchProjectInfoResponse;
 
       state.data[projectAbbrev].mergeAlgorithm = mergeAlgorithm;
+      state.data[projectAbbrev].watermarkTrees = watermarkTrees;
 
       fields.sort((a, b) => {
         if (a.columnOrder !== b.columnOrder) {

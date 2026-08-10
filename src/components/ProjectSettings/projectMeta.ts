@@ -20,6 +20,7 @@ export function toProjectPut(project: Project): ProjectPut {
     mergeAlgorithm: project.mergeAlgorithm as MergeAlgorithm,
     clientType: project.clientType,
     status: project.status,
+    watermarkTrees: project.watermarkTrees,
   };
 }
 
@@ -33,6 +34,7 @@ export const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> 
   'dashboardName',
   'mergeAlgorithm',
   'requestingOrg',
+  'watermarkTrees',
   'isActive',
 ];
 
@@ -49,5 +51,6 @@ export const readableNames: Record<string, string> = {
   requestingOrg: 'Requesting Organisation',
   dashboardName: 'Dashboard Name',
   mergeAlgorithm: 'Merge Algorithm',
+  watermarkTrees: 'Watermark Trees',
   isActive: 'Active',
 };
