@@ -16,7 +16,7 @@ describe('filterAssignedRoles', () => {
         {
           name: 'Admin',
           globalId: 'role1',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'Root',
           roleId: 1,
           description: '',
@@ -25,7 +25,7 @@ describe('filterAssignedRoles', () => {
         {
           name: 'Editor',
           globalId: 'role2',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'TrakkaAdmin',
           roleId: 2,
           description: '',
@@ -39,7 +39,7 @@ describe('filterAssignedRoles', () => {
         {
           name: 'GroupViewer',
           globalId: 'role3',
-          resourceTypes: [],
+          resourceType: null,
           privilegeLevel: 'Admin',
           roleId: 1,
           description: '',
@@ -90,7 +90,7 @@ describe('filterAssignedRoles', () => {
           {
             name: 'Editor',
             globalId: 'role2',
-            resourceTypes: [],
+            resourceType: null,
             privilegeLevel: 'TrakkaAdmin',
             description: '',
             roleId: 2,
@@ -111,7 +111,7 @@ describe('filterAssignedRoles', () => {
             {
               name: 'Admin',
               globalId: 'role1',
-              resourceTypes: [],
+              resourceType: null,
               privilegeLevel: 'Root',
               roleId: 1,
               description: '',
@@ -148,7 +148,7 @@ describe('filterAssignedRoles', () => {
           {
             name: 'Admin',
             globalId: 'role1',
-            resourceTypes: [],
+            resourceType: null,
             privilegeLevel: 'Root',
             description: '',
             roleId: 1,
@@ -157,7 +157,7 @@ describe('filterAssignedRoles', () => {
           {
             name: 'Editor',
             globalId: 'role2',
-            resourceTypes: [],
+            resourceType: null,
             privilegeLevel: 'TrakkaAdmin',
             description: '',
             roleId: 2,
@@ -178,7 +178,7 @@ describe('filterAssignedRoles', () => {
           {
             name: 'Editor',
             globalId: 'role2',
-            resourceTypes: [],
+            resourceType: null,
             privilegeLevel: 'TrakkaAdmin',
             description: '',
             roleId: 2,
@@ -192,7 +192,7 @@ describe('filterAssignedRoles', () => {
           {
             name: 'GroupViewer',
             globalId: 'role3',
-            resourceTypes: [],
+            resourceType: null,
             privilegeLevel: 'Admin',
             description: '',
             roleId: 1,
