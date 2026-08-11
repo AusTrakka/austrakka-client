@@ -435,34 +435,34 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
         onClose={closeGroupByMenu}
         {...menuAnchorProps}
       >
-        {groupByMenu && fieldTypes[groupByMenu.col] === FieldTypes.DATE && (
-          <Typography
-            variant="caption"
-            sx={{ px: 2, py: 0.5, color: Theme.PrimaryGrey500, display: 'block' }}
-          >
-            Date granularity
-          </Typography>
-        )}
-
         {groupByMenu &&
-          fieldTypes[groupByMenu.col] === FieldTypes.DATE &&
-          DATE_GRANULARITY_OPTIONS.map((option) => {
-            const isSelected =
-              (pivotConfig.groupByGranularity[groupByMenu.col] ?? DateGranularity.Month) === option;
-            return (
-              <MenuItem
-                key={option}
-                selected={isSelected}
-                onClick={() => {
-                  onSetGroupByGranularity(groupByMenu.col, option);
-                  closeGroupByMenu();
-                }}
-              >
-                <Typography variant="body2">{DATE_GRANULARITY_LABELS[option]}</Typography>
-              </MenuItem>
-            );
-          })}
-
+          fieldTypes[groupByMenu.col] === FieldTypes.DATE && [
+            <Typography
+              key="date-granularity-header"
+              variant="caption"
+              sx={{ px: 2, py: 0.5, color: Theme.PrimaryGrey500, display: 'block' }}
+            >
+              Date granularity
+            </Typography>,
+            ...DATE_GRANULARITY_OPTIONS.map((option) => {
+              const isSelected =
+                (pivotConfig.groupByGranularity[groupByMenu.col] ?? DateGranularity.Month) ===
+                option;
+              return (
+                <MenuItem
+                  key={option}
+                  selected={isSelected}
+                  onClick={() => {
+                    onSetGroupByGranularity(groupByMenu.col, option);
+                    closeGroupByMenu();
+                  }}
+                >
+                  <Typography variant="body2">{DATE_GRANULARITY_LABELS[option]}</Typography>
+                </MenuItem>
+              );
+            }),
+            <Divider key="date-binning-divider" />,
+          ]}
         {groupByMenu &&
           (fieldTypes[groupByMenu.col] === FieldTypes.NUMBER ||
             fieldTypes[groupByMenu.col] === FieldTypes.DOUBLE) && [
@@ -493,140 +493,136 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
                 />
               </FormGroup>
             </MenuItem>,
+            <Divider key="number-binning-divider" />,
             pivotConfig.groupByBinSize[groupByMenu.col] !== undefined && (
-              <MenuItem
-                key="bin-size"
-                onClick={(e) => e.stopPropagation()}
-                disableRipple
-                sx={{ '&:hover': { backgroundColor: 'transparent' } }}
-              >
-                <TextField
-                  type="number"
-                  label="Bin size"
-                  size="small"
-                  sx={{ width: 120 }}
-                  value={
-                    binSizeInputText[groupByMenu.col] ??
-                    pivotConfig.groupByBinSize[groupByMenu.col] ??
-                    ''
-                  }
-                  onChange={(e) => onBinSizeInputChange(groupByMenu.col, e.target.value)}
-                  onBlur={() => onBinSizeBlur(groupByMenu.col)}
-                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                />
-              </MenuItem>
+              <>
+                <MenuItem
+                  key="bin-size"
+                  onClick={(e) => e.stopPropagation()}
+                  disableRipple
+                  sx={{ '&:hover': { backgroundColor: 'transparent' } }}
+                >
+                  <TextField
+                    type="number"
+                    label="Bin size"
+                    size="small"
+                    sx={{ width: 120 }}
+                    value={
+                      binSizeInputText[groupByMenu.col] ??
+                      pivotConfig.groupByBinSize[groupByMenu.col] ??
+                      ''
+                    }
+                    onChange={(e) => onBinSizeInputChange(groupByMenu.col, e.target.value)}
+                    onBlur={() => onBinSizeBlur(groupByMenu.col)}
+                    slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                  />
+                </MenuItem>
+                <Divider sx={{ my: 0 }} />
+              </>
             ),
           ]}
-        {groupByMenu &&
-          fieldTypes[groupByMenu.col] === FieldTypes.STRING && [
-            <>
-              <Typography
-                key="number-binning-title"
-                variant="caption"
-                sx={{ px: 2, py: 0.5, color: Theme.PrimaryGrey500, display: 'block' }}
-              >
-                Top-N grouping
-              </Typography>
-              <MenuItem>
-                <FormGroup>
-                  <FormControlLabel
-                    sx={{ mr: 0, p: 0 }}
-                    control={
-                      <Checkbox
-                        size="small"
-                        checked={pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined}
-                        onChange={(e) => onSetGroupByTopNEnabled(groupByMenu.col, e.target.checked)}
-                      />
-                    }
-                    label={<Typography variant="body2">Group into top N</Typography>}
-                  />
-                </FormGroup>
-              </MenuItem>
-            </>,
-            pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined && (
-              <MenuItem
-                key="top-n-size"
-                onClick={(e) => e.stopPropagation()}
-                disableRipple
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': { backgroundColor: 'transparent', cursor: 'default' },
+        {groupByMenu && [
+          <>
+            <Typography
+              key="number-binning-title"
+              variant="caption"
+              sx={{ px: 2, color: Theme.PrimaryGrey500, display: 'block' }}
+            >
+              Top-N grouping
+            </Typography>
+            <MenuItem>
+              <FormGroup>
+                <FormControlLabel
+                  sx={{ mr: 0, p: 0 }}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined}
+                      onChange={(e) => onSetGroupByTopNEnabled(groupByMenu.col, e.target.checked)}
+                    />
+                  }
+                  label={<Typography variant="body2">Group into top N</Typography>}
+                />
+              </FormGroup>
+            </MenuItem>
+          </>,
+          pivotConfig.groupByTopNSize[groupByMenu.col] !== undefined && (
+            <MenuItem
+              key="top-n-size"
+              onClick={(e) => e.stopPropagation()}
+              disableRipple
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': { backgroundColor: 'transparent', cursor: 'default' },
+              }}
+            >
+              <TextField
+                type="number"
+                label="Top N size"
+                size="small"
+                sx={{ width: 120, mt: 0.5, mb: 1.5 }}
+                value={
+                  topNInputText[groupByMenu.col] ??
+                  pivotConfig.groupByTopNSize[groupByMenu.col] ??
+                  ''
+                }
+                onChange={(e) => onSetGroupByTopNInputChange(groupByMenu.col, e.target.value)}
+                onBlur={() => onTopNSizeBlur(groupByMenu.col)}
+                slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+              />
+              <Popover
+                open={isOpen}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      p: 2,
+                      maxWidth: 320,
+                      boxShadow: 3,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                    },
+                  },
                 }}
               >
-                <TextField
-                  type="number"
-                  label="Top N size"
-                  size="small"
-                  sx={{ width: 120, mt: 0.5, mb: 1.5 }}
-                  value={
-                    topNInputText[groupByMenu.col] ??
-                    pivotConfig.groupByTopNSize[groupByMenu.col] ??
-                    ''
-                  }
-                  onChange={(e) => onSetGroupByTopNInputChange(groupByMenu.col, e.target.value)}
-                  onBlur={() => onTopNSizeBlur(groupByMenu.col)}
-                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                />
-                <Popover
-                  open={isOpen}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  slotProps={{
-                    paper: {
-                      sx: {
-                        p: 2,
-                        maxWidth: 320,
-                        boxShadow: 3,
-                        borderRadius: 2,
-                        bgcolor: 'background.paper',
-                      },
-                    },
-                  }}
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}
                 >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}
-                  >
-                    Group into top N calculation level
-                  </Typography>
-                  <Typography variant="body2">
-                    <b>Global:</b> The top N values are calculated across all groups. For example,
-                    if the top 5 values are selected, the same 5 values will be shown for each
-                    group.
-                    <br />
-                    <br />
-                    <b>Per group:</b> The top N values are calculated separately for each group. For
-                    example, if the top 5 values are selected, each group will show its own top 5
-                    values.
-                    <br />
-                    <i>
-                      Per group calculation is only applicable if the field is not the only group-by
-                      field, or if it is not the first group-by field.
-                    </i>
-                  </Typography>
-                </Popover>
-                <FormControl>
-                  <FormLabel sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                    <Typography variant="body2">Calculation level</Typography>
-                    <IconButton onClick={handleOpen} size="small" sx={{ p: 0.25 }}>
-                      <InfoOutlined sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </FormLabel>
-                  <RadioGroup
-                    defaultValue={true}
-                    value={String(pivotConfig.groupByTopNGlobal[groupByMenu.col])}
-                    onChange={(e) =>
-                      setGroupByTopNGlobal(groupByMenu.col, e.target.value === 'true')
-                    }
-                  >
-                    <FormControlLabel
-                      value="true"
-                      control={<Radio size="small" sx={{ pt: 0.5, pb: 0.5 }} />}
-                      label={<Typography variant="body2">Global</Typography>}
-                    />
+                  Group into top N calculation level
+                </Typography>
+                <Typography variant="body2">
+                  <b>Global:</b> The top N values are calculated across all groups. For example, if
+                  the top 5 values are selected, the same 5 values will be shown for each group.
+                  <br />
+                  <br />
+                  <b>Per group:</b> The top N values are calculated separately for each group. For
+                  example, if the top 5 values are selected, each group will show its own top 5
+                  values.
+                </Typography>
+              </Popover>
+              <FormControl>
+                <FormLabel sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                  <Typography variant="body2">Calculation level</Typography>
+                  <IconButton onClick={handleOpen} size="small" sx={{ p: 0.25 }}>
+                    <InfoOutlined sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </FormLabel>
+                <RadioGroup
+                  defaultValue={true}
+                  value={String(pivotConfig.groupByTopNGlobal[groupByMenu.col])}
+                  onChange={(e) => setGroupByTopNGlobal(groupByMenu.col, e.target.value === 'true')}
+                >
+                  <FormControlLabel
+                    value="true"
+                    control={<Radio size="small" sx={{ pt: 0.5, pb: 0.5 }} />}
+                    label={<Typography variant="body2">Global</Typography>}
+                  />
+                  <Tooltip title="Per group calculation is only applicable if the field is not the only group-by field, or if it is not the first group-by field.">
                     <FormControlLabel
                       value="false"
                       control={<Radio size="small" sx={{ pt: 0.5, pb: 0.5 }} />}
@@ -649,11 +645,12 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
                         </Typography>
                       }
                     />
-                  </RadioGroup>
-                </FormControl>
-              </MenuItem>
-            ),
-          ]}
+                  </Tooltip>
+                </RadioGroup>
+              </FormControl>
+            </MenuItem>
+          ),
+        ]}
         {groupByMenu && fieldTypes[groupByMenu.col] === FieldTypes.BOOLEAN && (
           <MenuItem disabled>
             <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
@@ -661,7 +658,6 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
             </Typography>
           </MenuItem>
         )}
-
         <Divider />
         <MenuItem
           onClick={() => {

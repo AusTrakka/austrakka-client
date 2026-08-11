@@ -104,8 +104,6 @@ function sortGroupKeys(a: string, b: string, fieldType: FieldTypes): number {
   if (b === OTHER_GROUP_VALUE) return -1;
 
   if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
-    // if (a === BLANK_GROUP_VALUE) return 1;
-    // if (b === BLANK_GROUP_VALUE) return -1;
     const na = Number.parseFloat(a);
     const nb = Number.parseFloat(b);
 
@@ -302,7 +300,7 @@ export function buildPivotGroups(
     // undefined - top-N not enabled for this field
     // true - global mode, reuse the set precomputed once over all rows
     // false - per-group mode, recompute scoped to just this branch's rows
-    const topNMode = groupByTopNGlobal[col] ?? undefined;
+    const topNMode = groupByTopNGlobal[col];
     let topNSet: Set<string> | undefined;
     if (topNMode !== undefined) {
       topNSet = topNMode

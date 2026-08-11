@@ -53,7 +53,7 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Expand top-N to other field types (currently only STRING is supported, but ensure its calculated after binning)
+// - Currently empty values are by default grouped into other (but maybe we should could them as a separate group instead, and only use "other" for top-N grouping)
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
