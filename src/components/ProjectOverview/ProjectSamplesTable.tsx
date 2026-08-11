@@ -113,9 +113,10 @@ function ProjectSamplesTable(props: SamplesProps) {
     return `${fieldObj?.fieldSource.replace(/^Source From\s*/i, '')}`;
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
   const dataTableFilters = useMemo(
-    () => (allFieldsLoaded ? currentFilters : defaultState),
-    [allFieldsLoaded, currentFilters],
+    () => ({ ...(allFieldsLoaded ? currentFilters : defaultState) }),
+    [allFieldsLoaded, currentFilters, metadata?.metadata],
   );
 
   const header = (
