@@ -53,9 +53,6 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Toggle for users to choose to evaluate top-N globally or per parent group
-//      - Only useful if its not the top-level group
-//      - If its top level, then it will always be global so maybe the toggle is disabled with a tooltip explaining why
 // - Expand top-N to other field types (currently only STRING is supported, but ensure its calculated after binning)
 
 interface DataSummariesProps {
@@ -73,6 +70,7 @@ const INITIAL_PIVOT_CONFIG: PivotConfig = {
   groupByBinSize: {},
   showTotalCountFooter: false,
   groupByTopNSize: {},
+  groupByTopNGlobal: {},
 };
 
 const KNOWN_FIELD_TYPES = new Set<string>(Object.values(FieldTypes));
@@ -157,12 +155,20 @@ function DataSummaries(props: DataSummariesProps) {
         }
       }
 
+      const nextTopNGlobal: Record<string, boolean> = {};
+      for (const col of nextGroupByFields) {
+        if (prev.groupByTopNGlobal[col] !== undefined) {
+          nextTopNGlobal[col] = prev.groupByTopNGlobal[col];
+        }
+      }
+
       return {
         ...prev,
         groupByFields: nextGroupByFields,
         groupByGranularity: nextGranularity,
         groupByBinSize: nextBinSize,
         groupByTopNSize: nextTopN,
+        groupByTopNGlobal: nextTopNGlobal,
       };
     });
   }
@@ -230,12 +236,19 @@ function DataSummaries(props: DataSummariesProps) {
   function setGroupByTopNEnabled(col: string, enabled: boolean) {
     setPivotConfig((prev) => {
       const nextTopN = { ...prev.groupByTopNSize };
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
       if (enabled) {
-        nextTopN[col] = topNInputText[col] !== undefined ? Number(topNInputText[col]) : 5; // Default top N value
+        // Default top N value
+        nextTopN[col] = topNInputText[col] !== undefined ? Number(topNInputText[col]) : 5;
+        // Set default to global if not already set
+        if (prev.groupByTopNGlobal[col] === undefined) {
+          nextTopNGlobal[col] = true;
+        }
       } else {
         delete nextTopN[col];
+        delete nextTopNGlobal[col];
       }
-      return { ...prev, groupByTopNSize: nextTopN };
+      return { ...prev, groupByTopNSize: nextTopN, groupByTopNGlobal: nextTopNGlobal };
     });
   }
   const [topNInputText, setTopNInputText] = useState<Record<string, string>>({});
@@ -256,6 +269,14 @@ function DataSummaries(props: DataSummariesProps) {
       ...prev,
       groupByTopNSize: { ...prev.groupByTopNSize, [col]: parsed },
     }));
+  }
+
+  function handleSetGroupByTopNGlobal(col: string, isGlobal: boolean) {
+    setPivotConfig((prev) => {
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
+      nextTopNGlobal[col] = isGlobal;
+      return { ...prev, groupByTopNGlobal: nextTopNGlobal };
+    });
   }
 
   const [binSizeInputText, setBinSizeInputText] = useState<Record<string, string>>({});
@@ -297,6 +318,8 @@ function DataSummaries(props: DataSummariesProps) {
       delete nextBinSize[col];
       const nextTopN = { ...prev.groupByTopNSize };
       delete nextTopN[col];
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
+      delete nextTopNGlobal[col];
 
       return {
         ...prev,
@@ -304,6 +327,7 @@ function DataSummaries(props: DataSummariesProps) {
         groupByGranularity: nextGranularity,
         groupByBinSize: nextBinSize,
         groupByTopNSize: nextTopN,
+        groupByTopNGlobal: nextTopNGlobal,
       };
     });
   }
@@ -358,6 +382,7 @@ function DataSummaries(props: DataSummariesProps) {
         pivotConfig.groupByGranularity as GroupByGranularityMap,
         pivotConfig.groupByBinSize as GroupByBinSizeMap,
         pivotConfig.groupByTopNSize as GroupByTopNMap,
+        pivotConfig.groupByTopNGlobal as Record<string, boolean>,
       ),
     [rows, pivotConfig, fieldTypes],
   );
@@ -674,6 +699,7 @@ function DataSummaries(props: DataSummariesProps) {
           onSetGroupByGranularity={setGroupByGranularity}
           onSetGroupByTopNEnabled={setGroupByTopNEnabled}
           onSetGroupByTopNInputChange={handleGroupByTopNInputChange}
+          setGroupByTopNGlobal={handleSetGroupByTopNGlobal}
           onTopNSizeBlur={handleTopNBlur}
           onSetBinningEnabled={setBinningEnabled}
           onBinSizeInputChange={handleBinSizeInputChange}

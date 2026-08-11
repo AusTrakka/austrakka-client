@@ -99,6 +99,7 @@ export interface PivotConfig {
   groupByBinSize: GroupByBinSizeMap;
   showTotalCountFooter: boolean;
   groupByTopNSize: GroupByTopNMap;
+  groupByTopNGlobal: Record<string, boolean>;
 }
 
 export interface PivotGroup {

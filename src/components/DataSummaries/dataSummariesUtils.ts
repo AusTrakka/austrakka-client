@@ -251,6 +251,7 @@ export function buildPivotGroups(
   groupByGranularity: GroupByGranularityMap,
   groupByBinSize: GroupByBinSizeMap,
   groupByTopNSize: GroupByTopNMap,
+  groupByTopNGlobal: Record<string, boolean>,
 ): PivotGroup[] {
   // If no group-by fields are selected, return a single group representing all samples
   if (groupByFields.length === 0) {
@@ -263,11 +264,10 @@ export function buildPivotGroups(
       },
     ];
   }
-
   // Pre-calculate Top-N sets per field across the global dataset for consistent row-span layout
   const topNSets: Record<string, Set<string>> = {};
   for (const col of groupByFields) {
-    if (groupByTopNSize[col] !== undefined) {
+    if (groupByTopNSize[col] !== undefined && groupByTopNGlobal[col] === true) {
       topNSets[col] = getTopNKeys(
         rows,
         col,
@@ -298,7 +298,24 @@ export function buildPivotGroups(
 
     const col = groupByFields[fieldIndex];
     const fieldType = fieldTypes[col];
-    const topNSet = topNSets[col];
+
+    // undefined - top-N not enabled for this field
+    // true - global mode, reuse the set precomputed once over all rows
+    // false - per-group mode, recompute scoped to just this branch's rows
+    const topNMode = groupByTopNGlobal[col] ?? undefined;
+    let topNSet: Set<string> | undefined;
+    if (topNMode !== undefined) {
+      topNSet = topNMode
+        ? topNSets[col]
+        : getTopNKeys(
+            currentRows,
+            col,
+            groupByTopNSize[col],
+            fieldTypes,
+            groupByGranularity,
+            groupByBinSize,
+          );
+    }
 
     const buckets = new Map<string, RowRecord[]>();
     for (const row of currentRows) {
