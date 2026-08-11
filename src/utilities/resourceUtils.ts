@@ -245,22 +245,22 @@ export const getOrganisations = (
   includeAll: boolean,
   token: string,
 ): Promise<ResponseObject<Organisation[]>> =>
-  callGET(`/api/OrganisationV2?includeall=${includeAll}`, token);
+  callGET(`/api/Organisations?includeall=${includeAll}`, token);
 
 export const getOrganisation = (
   abbrev: string,
   token: string,
-): Promise<ResponseObject<Organisation>> => callGET(`/api/OrganisationV2/${abbrev}`, token);
+): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
 export const getOrgMembers = (identifier: string, token: string) =>
-  callGET(`/api/OrganisationV2/${identifier}/Members`, token);
+  callGET(`/api/Organisations/${identifier}/Members`, token);
 export const getOrgFields = (identifier: string, token: string) =>
-  callGET(`/api/OrganisationV2/${identifier}/Fields`, token) as Promise<
+  callGET(`/api/Organisations/${identifier}/Fields`, token) as Promise<
     ResponseObject<MetaDataColumn[]>
   >;
 export const getOrgMetadataByField = (identifier: string, fields: string[], token: string) => {
   const fieldsQuery: string = `?${fields.map((field) => `fields=${field}`).join('&')}`;
   return callGET(
-    `/api/OrganisationV2/${identifier}/Metadata/Fields${fieldsQuery}`,
+    `/api/Organisations/${identifier}/Metadata/Fields${fieldsQuery}`,
     token,
   ) as Promise<ResponseObject<Sample[]>>;
 };
@@ -269,7 +269,7 @@ export const getOrgMetadata = (
   token: string,
   searchParams?: URLSearchParams,
 ) => {
-  return callGET(`/api/OrganisationV2/${identifier}/Metadata?${searchParams}`, token) as Promise<
+  return callGET(`/api/Organisations/${identifier}/Metadata?${searchParams}`, token) as Promise<
     ResponseObject<Sample[]>
   >;
 };
@@ -282,7 +282,7 @@ export const changeSampleOwner = (
   clientSessionId?: string,
 ) =>
   callPATCH(
-    `/api/OrganisationV2/${currentOrgAbbrev}/samplesOwner`,
+    `/api/Organisations/${currentOrgAbbrev}/samplesOwner`,
     token,
     { seqIds, newOwnerAbbrev },
     clientSessionId,
@@ -304,13 +304,13 @@ export const postProjectPrivilege = (
 
 export const deleteProjectPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Projects/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -324,13 +324,13 @@ export const postProformaPrivilege = (
 
 export const deleteProformaPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -344,13 +344,13 @@ export const postTenantPrivilege = (
 
 export const deleteTenantPrivilege = (
   _: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/Tenant/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Tenant/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -369,10 +369,7 @@ export const disableUser = (userGlobalId: string, token: string, clientSessionId
 export const enableUser = (userGlobalId: string, token: string, clientSessionId?: string) =>
   callPATCH(`/api/Users/enable/${userGlobalId}`, token, clientSessionId);
 
-// OrganisationV2
-
-export const getOrganisationV2 = (organisationGlobalId: string, token: string) =>
-  callGET(`/api/OrganisationV2/${organisationGlobalId}`, token);
+// Organisations
 
 export const patchUserOrganisationV2 = (
   userGlobalId: string,
@@ -381,7 +378,7 @@ export const patchUserOrganisationV2 = (
   token: string,
 ) =>
   callPATCH(
-    `/api/OrganisationV2/${organisationGlobalId}/User/${userGlobalId}`,
+    `/api/Organisations/${organisationGlobalId}/User/${userGlobalId}`,
     token,
     targetOrgGlobalId,
   );
@@ -392,22 +389,17 @@ export const postOrgPrivilege = (
   token: string,
   clientSessionId?: string,
 ) =>
-  callPost(
-    `/api/OrganisationV2/${recordGlobalId}/Privilege`,
-    token,
-    privilegeBody,
-    clientSessionId,
-  );
+  callPost(`/api/Organisations/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
 
 export const deleteOrgPrivilege = (
   recordGlobalId: string,
-  assigneeGlobalId: string,
-  roleGlobalId: string,
+  assigneeIdentifier: string,
+  roleIdentifier: string,
   token: string,
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/OrganisationV2/${recordGlobalId}/Privilege?roleIdentifier=${roleGlobalId}&userIdentifier=${assigneeGlobalId}`,
+    `/api/Organisations/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );
@@ -428,7 +420,7 @@ export const getActivities = (
   if (recordType === RecordTypes.SYSTEM) {
     resourcePath = `/api/Tenant/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.ORGANISATION) {
-    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog?${searchParams}`;
+    resourcePath = `/api/Organisations/${recordId}/ActivityLog?${searchParams}`;
   } else if (recordType === RecordTypes.PROJECT) {
     resourcePath = `/api/Projects/${recordId}/ActivityLog?${searchParams}`;
   }
@@ -446,7 +438,7 @@ export const getLatestActivityTime = (
   if (recordType === 'Tenant') {
     resourcePath = `/api/Tenant/ActivityLog/LatestTime?${searchParams}`;
   } else if (recordType === RecordTypes.ORGANISATION) {
-    resourcePath = `/api/OrganisationV2/${recordId}/ActivityLog/LatestTime?${searchParams}`;
+    resourcePath = `/api/Organisations/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   } else if (recordType === RecordTypes.PROJECT) {
     resourcePath = `/api/Projects/${recordId}/ActivityLog/LatestTime?${searchParams}`;
   }

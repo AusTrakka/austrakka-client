@@ -13,7 +13,7 @@ export interface TreeProps extends PhylocanvasProps {
 export type TreeExportFunctions = {
   exportNewick(): string;
   exportSVG(): Blob;
-  exportPNG(): Blob;
+  exportPNG(): string;
   exportJSON(): string;
   getSelectedLeafIDs(): string[];
   getVisibleLeafIDs(): string[];
