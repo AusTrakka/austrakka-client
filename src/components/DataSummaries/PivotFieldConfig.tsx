@@ -1,6 +1,9 @@
+import { move } from '@dnd-kit/helpers';
+import { DragDropProvider, DragOverlay } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
 import {
   DeleteOutline,
-  // DragIndicator,
+  DragIndicator,
   InfoOutlined,
   KeyboardArrowDown,
   QuestionMark,
@@ -84,6 +87,53 @@ function FieldTypeIndicator({ fieldType }: { fieldType: FieldTypes }) {
         }}
       />
     </Tooltip>
+  );
+}
+
+// Sortable row wrapper for drag-and-drop
+function SortableFieldRow({
+  col,
+  index,
+  fieldType,
+  label,
+  onOpenMenu,
+}: {
+  col: string;
+  index: number;
+  fieldType: FieldTypes;
+  label: string;
+  onOpenMenu: (col: string, e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => void;
+}) {
+  const { ref, handleRef, isDragging } = useSortable({ id: col, index });
+
+  return (
+    <Box
+      ref={ref}
+      sx={{ ...rowBoxSx, opacity: isDragging ? 0.3 : 1, transition: 'opacity 0.15s ease' }}
+      role="button"
+      tabIndex={0}
+      onClick={(e) => onOpenMenu(col, e)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpenMenu(col, e);
+        }
+      }}
+    >
+      <DragIndicator
+        ref={handleRef}
+        fontSize="small"
+        sx={{
+          mr: 0.5,
+          color: Theme.PrimaryGrey500,
+          cursor: 'grab',
+          ':hover': { color: Theme.PrimaryGrey700 },
+        }}
+      />
+      <FieldTypeIndicator fieldType={fieldType} />
+      <Box sx={{ flex: 1 }}>{label}</Box>
+      <KeyboardArrowDown fontSize="small" sx={{ color: Theme.PrimaryGrey500 }} />
+    </Box>
   );
 }
 
@@ -236,38 +286,42 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
         Display fields
       </Typography>
       {renderFieldSelect(pivotConfig.displayFields, onDisplayFieldsChange)}
-      {pivotConfig.displayFields.length !== 0 ? (
-        <Stack spacing={1}>
-          {pivotConfig.displayFields.map((col) => {
-            return (
-              <Box
+      <DragDropProvider
+        onDragEnd={(event) => {
+          if (event.canceled) return;
+          onDisplayFieldsChange(move(pivotConfig.displayFields, event));
+        }}
+      >
+        {pivotConfig.displayFields.length !== 0 ? (
+          <Stack spacing={1}>
+            {pivotConfig.displayFields.map((col, index) => (
+              <SortableFieldRow
                 key={col}
-                sx={{
-                  ...rowBoxSx,
-                }}
-                role="button"
-                tabIndex={0}
-                onClick={(e) => openDisplayMenu(col, e)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openDisplayMenu(col, e);
-                  }
-                }}
-              >
-                {/* <DragIndicator
-                  fontSize="small"
-                  sx={{ mr: 0.5, color: Theme.PrimaryGrey500, cursor: 'grab' }}
-                  onClick={(e) => e.stopPropagation()}
-                /> */}
-                <FieldTypeIndicator fieldType={fieldTypes[col]} />
-                <Box sx={{ flex: 1 }}>{fieldLabelByKey[col] ?? col}</Box>
-                <KeyboardArrowDown fontSize="small" sx={{ color: Theme.PrimaryGrey500 }} />
-              </Box>
-            );
-          })}
-        </Stack>
-      ) : null}
+                col={col}
+                index={index}
+                fieldType={fieldTypes[col]}
+                label={fieldLabelByKey[col] ?? col}
+                onOpenMenu={openDisplayMenu}
+              />
+            ))}
+          </Stack>
+        ) : null}
+        <DragOverlay>
+          {(source) => (
+            <Box
+              sx={{
+                ...rowBoxSx,
+                width: 368 /* TODO: Do a better calculation for the width */,
+              }}
+            >
+              <DragIndicator fontSize="small" sx={{ mr: 0.5, color: Theme.PrimaryGrey200 }} />
+              <FieldTypeIndicator fieldType={fieldTypes[source.id as string]} />
+              <Box sx={{ flex: 1 }}>{fieldLabelByKey[source.id as string] ?? source.id}</Box>
+              <KeyboardArrowDown fontSize="small" sx={{ color: Theme.PrimaryGrey500 }} />
+            </Box>
+          )}
+        </DragOverlay>
+      </DragDropProvider>
 
       {/* Display field aggregation menu */}
       <Menu
@@ -317,43 +371,48 @@ function PivotFieldConfig(props: PivotFieldConfigProps) {
         </MenuItem>
       </Menu>
       <br />
+
       {/* GROUP-BY FIELDS */}
       <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
         Group-by fields
       </Typography>
       {renderFieldSelect(pivotConfig.groupByFields, onGroupByFieldsChange)}
-      {pivotConfig.groupByFields.length !== 0 ? (
-        <Stack spacing={1}>
-          {pivotConfig.groupByFields.map((col) => {
-            return (
-              <Box
+      <DragDropProvider
+        onDragEnd={(event) => {
+          if (event.canceled) return;
+          onGroupByFieldsChange(move(pivotConfig.groupByFields, event));
+        }}
+      >
+        {pivotConfig.groupByFields.length !== 0 ? (
+          <Stack spacing={1}>
+            {pivotConfig.groupByFields.map((col, index) => (
+              <SortableFieldRow
                 key={col}
-                sx={{
-                  ...rowBoxSx,
-                }}
-                role="button"
-                tabIndex={0}
-                onClick={(e) => openGroupByMenu(col, e)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openGroupByMenu(col, e);
-                  }
-                }}
-              >
-                {/* <DragIndicator
-                  fontSize="small"
-                  sx={{ mr: 0.5, color: Theme.PrimaryGrey500, cursor: 'grab' }}
-                  onClick={(e) => e.stopPropagation()}
-                /> */}
-                <FieldTypeIndicator fieldType={fieldTypes[col]} />
-                <Box sx={{ flex: 1 }}>{fieldLabelByKey[col] ?? col}</Box>
-                <KeyboardArrowDown fontSize="small" sx={{ color: Theme.PrimaryGrey500 }} />
-              </Box>
-            );
-          })}
-        </Stack>
-      ) : null}
+                col={col}
+                index={index}
+                fieldType={fieldTypes[col]}
+                label={fieldLabelByKey[col] ?? col}
+                onOpenMenu={openGroupByMenu}
+              />
+            ))}
+          </Stack>
+        ) : null}
+        <DragOverlay>
+          {(source) => (
+            <Box
+              sx={{
+                ...rowBoxSx,
+                width: 368 /* TODO: Do a better calculation for the width */,
+              }}
+            >
+              <DragIndicator fontSize="small" sx={{ mr: 0.5, color: Theme.PrimaryGrey200 }} />
+              <FieldTypeIndicator fieldType={fieldTypes[source.id as string]} />
+              <Box sx={{ flex: 1 }}>{fieldLabelByKey[source.id as string] ?? source.id}</Box>
+              <KeyboardArrowDown fontSize="small" sx={{ color: Theme.PrimaryGrey500 }} />
+            </Box>
+          )}
+        </DragOverlay>
+      </DragDropProvider>
 
       {/* Group-by options menu (date granularity / binning) */}
       <Menu

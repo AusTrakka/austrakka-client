@@ -57,7 +57,6 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 //      - Only useful if its not the top-level group
 //      - If its top level, then it will always be global so maybe the toggle is disabled with a tooltip explaining why
 // - Expand top-N to other field types (currently only STRING is supported, but ensure its calculated after binning)
-// - Reorderable group-by and display fields (drag-and-drop)
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
