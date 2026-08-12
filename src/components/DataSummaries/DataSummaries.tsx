@@ -48,12 +48,14 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 
 // Possible enhancements:
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
-// - Other aggregations - for example, show % of total
 // - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
 // - Currently empty values are by default grouped into other (but maybe we should could them as a separate group instead, and only use "other" for top-N grouping)
+// - If a group-by field is reordered to the top AND it is group into top-N per-group, this calculation need to be updated to global
+// - Add display table to URL - will we need to add the pivot table config to the URL too then maybe?
+// - Move "switch orientation" button into the drawer and add a small description (e.g. horizontal vs vertical)
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
@@ -68,7 +70,9 @@ const INITIAL_PIVOT_CONFIG: PivotConfig = {
   selectedAggregations: {},
   groupByGranularity: {},
   groupByBinSize: {},
-  showTotalCountFooter: false,
+  showTotalCountFooter: true,
+  showRelativePercentages: false,
+  hideEmptyNullGroups: false,
   groupByTopNSize: {},
   groupByTopNGlobal: {},
 };
@@ -81,6 +85,29 @@ function fieldType(field: ProjectViewField | MetaDataColumn): FieldTypes {
     return raw as FieldTypes;
   }
   return FieldTypes.STRING;
+}
+
+function renderCell(value: unknown, pct: unknown, showPercentage: boolean) {
+  if (value === null || value === undefined || value === '' || value === '—') {
+    return '—';
+  }
+
+  if (!showPercentage || typeof pct !== 'number') {
+    return String(value);
+  }
+
+  return (
+    <Stack direction="row" spacing={0.75} alignItems="baseline" display="inline-flex">
+      <span>{value as React.ReactNode}</span>
+      <Typography
+        component="span"
+        variant="caption"
+        sx={{ color: 'text.secondary', fontWeight: 400 }}
+      >
+        ({pct}%)
+      </Typography>
+    </Stack>
+  );
 }
 
 function DataSummaries(props: DataSummariesProps) {
@@ -370,6 +397,20 @@ function DataSummaries(props: DataSummariesProps) {
     }));
   }
 
+  function onShowRelativePercentagesChange(show: boolean) {
+    setPivotConfig((prev) => ({
+      ...prev,
+      showRelativePercentages: show,
+    }));
+  }
+
+  function onHideEmptyNullGroupsChange(hide: boolean) {
+    setPivotConfig((prev) => ({
+      ...prev,
+      hideEmptyNullGroups: hide,
+    }));
+  }
+
   // Compute pivot
   const pivotGroups = useMemo(
     () =>
@@ -383,6 +424,10 @@ function DataSummaries(props: DataSummariesProps) {
         pivotConfig.groupByBinSize as GroupByBinSizeMap,
         pivotConfig.groupByTopNSize as GroupByTopNMap,
         pivotConfig.groupByTopNGlobal as Record<string, boolean>,
+        {
+          showRelativePercentages: pivotConfig.showRelativePercentages,
+          hideEmptyNullGroups: pivotConfig.hideEmptyNullGroups,
+        },
       ),
     [rows, pivotConfig, fieldTypes],
   );
@@ -393,11 +438,14 @@ function DataSummaries(props: DataSummariesProps) {
         const row: Record<string, unknown> = {
           ...group.groupValues,
           [TOTAL_FIELD]: group.rowCount,
+          [`${TOTAL_FIELD}__pct`]: group.rowCountPercentage,
         };
         for (const col of pivotConfig.displayFields) {
           const aggsForCol = pivotConfig.selectedAggregations[col] ?? [];
           for (const agg of aggsForCol) {
-            row[`${col}__${agg}`] = group.counts[col]?.[agg] ?? '—';
+            const key = `${col}__${agg}`;
+            row[key] = group.counts[col]?.[agg] ?? null;
+            row[`${key}__pct`] = group.percentages?.[col]?.[agg] ?? null;
           }
         }
         return row;
@@ -433,9 +481,15 @@ function DataSummaries(props: DataSummariesProps) {
           field: isFallback ? '-' : (fieldLabelByKey[col] ?? col),
           ...group.groupValues,
           [TOTAL_FIELD]: group.rowCount,
+          [`${TOTAL_FIELD}__pct`]: group.rowCountPercentage,
         };
         for (const agg of verticalAggregationColumns) {
-          row[agg] = aggsForCol.has(agg) ? (group.counts[col]?.[agg] ?? '—') : '';
+          if (aggsForCol.has(agg)) {
+            row[agg] = group.counts[col]?.[agg] ?? null;
+            row[`${agg}__pct`] = group.percentages?.[col]?.[agg] ?? null;
+          } else {
+            row[agg] = '';
+          }
         }
         out.push(row);
       }
@@ -709,6 +763,8 @@ function DataSummaries(props: DataSummariesProps) {
           onDisplayFieldsChange={handleDisplayFieldsChange}
           onGroupByFieldsChange={handleGroupByChange}
           onShowTotalCountFooterChange={handleShowTotalCountFooterChange}
+          onShowRelativePercentagesChange={onShowRelativePercentagesChange}
+          onHideEmptyNullGroupsChange={onHideEmptyNullGroupsChange}
         />
       </CustomDrawer>
 
@@ -828,17 +884,38 @@ function DataSummaries(props: DataSummariesProps) {
               />
             ))}
             {/* Total display */}
-            <Column field={TOTAL_FIELD} className="flexible-column" bodyClassName="value-cells" />
+            <Column
+              field={TOTAL_FIELD}
+              className="flexible-column"
+              bodyClassName="value-cells"
+              body={(rowData) =>
+                renderCell(
+                  rowData[TOTAL_FIELD],
+                  rowData[`${TOTAL_FIELD}__pct`],
+                  pivotConfig.showRelativePercentages,
+                )
+              }
+            />
             {pivotConfig.displayFields.map((col) =>
-              (pivotConfig.selectedAggregations[col] ?? []).map((agg) => (
-                <Column
-                  key={`${col}__${agg}`}
-                  field={`${col}__${agg}`}
-                  header={`${fieldLabelByKey[col] ?? col} (${AGG_TYPE_LABELS[agg]})`}
-                  className="flexible-column"
-                  bodyClassName="value-cells"
-                />
-              )),
+              (pivotConfig.selectedAggregations[col] ?? []).map((agg) => {
+                const key = `${col}__${agg}`;
+                return (
+                  <Column
+                    key={key}
+                    field={key}
+                    header={`${fieldLabelByKey[col] ?? col} (${AGG_TYPE_LABELS[agg]})`}
+                    className="flexible-column"
+                    bodyClassName="value-cells"
+                    body={(rowData) =>
+                      renderCell(
+                        rowData[key],
+                        rowData[`${key}__pct`],
+                        pivotConfig.showRelativePercentages,
+                      )
+                    }
+                  />
+                );
+              }),
             )}
           </DataTable>
         </Paper>
@@ -867,7 +944,7 @@ function DataSummaries(props: DataSummariesProps) {
                 <ColumnGroup>
                   <Row>
                     <Column
-                      footer="Total"
+                      footer="Total (distinct)"
                       colSpan={1 + pivotConfig.groupByFields.length}
                       footerStyle={{ fontWeight: 'bold' }}
                       className="flexible-column"
@@ -882,7 +959,7 @@ function DataSummaries(props: DataSummariesProps) {
                     {verticalAggregationColumns.map((agg) => (
                       <Column
                         key={agg}
-                        footer={verticalColumnTotals[agg] ?? '—'}
+                        footer={'—'}
                         footerStyle={{ fontWeight: 'bold' }}
                         className="flexible-column"
                       />
@@ -912,6 +989,13 @@ function DataSummaries(props: DataSummariesProps) {
               header="Total records"
               className="flexible-column"
               bodyClassName="value-cells"
+              body={(rowData) =>
+                renderCell(
+                  rowData[TOTAL_FIELD],
+                  rowData[`${TOTAL_FIELD}__pct`],
+                  pivotConfig.showRelativePercentages,
+                )
+              }
             />
             {verticalAggregationColumns.map((agg) => (
               <Column
@@ -920,6 +1004,13 @@ function DataSummaries(props: DataSummariesProps) {
                 header={AGG_TYPE_LABELS[agg]}
                 className="flexible-column"
                 bodyClassName="value-cells"
+                body={(rowData) =>
+                  renderCell(
+                    rowData[agg],
+                    rowData[`${agg}__pct`],
+                    pivotConfig.showRelativePercentages,
+                  )
+                }
               />
             ))}
           </DataTable>

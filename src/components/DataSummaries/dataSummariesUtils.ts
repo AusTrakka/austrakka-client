@@ -13,6 +13,8 @@ import {
   type GroupByTopNMap,
   OTHER_GROUP_VALUE,
   type PivotGroup,
+  type PivotOptions,
+  ROW_COUNT_AGGREGATION_TYPES,
   type RowRecord,
 } from './dataSummariesMeta';
 
@@ -250,10 +252,13 @@ export function buildPivotGroups(
   groupByBinSize: GroupByBinSizeMap,
   groupByTopNSize: GroupByTopNMap,
   groupByTopNGlobal: Record<string, boolean>,
+  options: PivotOptions = {},
 ): PivotGroup[] {
-  // If no group-by fields are selected, return a single group representing all samples
+  let pivotGroups: PivotGroup[] = [];
+
+  // 1. Handle case with no group-by fields
   if (groupByFields.length === 0) {
-    return [
+    pivotGroups = [
       {
         key: ALL_SAMPLES_KEY,
         groupValues: {},
@@ -261,91 +266,136 @@ export function buildPivotGroups(
         counts: computeCounts(rows, displayFields, fieldTypes, selectedAggregations),
       },
     ];
-  }
-  // Pre-calculate Top-N sets per field across the global dataset for consistent row-span layout
-  const topNSets: Record<string, Set<string>> = {};
-  for (const col of groupByFields) {
-    if (groupByTopNSize[col] !== undefined && groupByTopNGlobal[col] === true) {
-      topNSets[col] = getTopNKeys(
-        rows,
-        col,
-        groupByTopNSize[col]!,
-        fieldTypes,
-        groupByGranularity,
-        groupByBinSize,
-      );
-    }
-  }
-
-  function groupRecursively(
-    currentRows: RowRecord[],
-    fieldIndex: number,
-    accumulatedGroupValues: Record<string, string>,
-  ): PivotGroup[] {
-    if (fieldIndex >= groupByFields.length) {
-      const key = makeGroupKey(groupByFields.map((f) => accumulatedGroupValues[f]));
-      return [
-        {
-          key,
-          groupValues: { ...accumulatedGroupValues },
-          rowCount: currentRows.length,
-          counts: computeCounts(currentRows, displayFields, fieldTypes, selectedAggregations),
-        },
-      ];
-    }
-
-    const col = groupByFields[fieldIndex];
-    const fieldType = fieldTypes[col];
-
-    // undefined - top-N not enabled for this field
-    // true - global mode, reuse the set precomputed once over all rows
-    // false - per-group mode, recompute scoped to just this branch's rows
-    const topNMode = groupByTopNGlobal[col];
-    let topNSet: Set<string> | undefined;
-    if (topNMode !== undefined) {
-      topNSet = topNMode
-        ? topNSets[col]
-        : getTopNKeys(
-            currentRows,
-            col,
-            groupByTopNSize[col],
-            fieldTypes,
-            groupByGranularity,
-            groupByBinSize,
-          );
-    }
-
-    const buckets = new Map<string, RowRecord[]>();
-    for (const row of currentRows) {
-      const groupVal = resolveGroupValueForNode(
-        row,
-        col,
-        fieldTypes,
-        groupByGranularity,
-        groupByBinSize,
-        topNSet,
-      );
-      let bucket = buckets.get(groupVal);
-      if (!bucket) {
-        bucket = [];
-        buckets.set(groupVal, bucket);
+  } else {
+    // Pre-calculate Top-N sets per field across the global dataset for consistent row-span layout
+    const topNSets: Record<string, Set<string>> = {};
+    for (const col of groupByFields) {
+      if (groupByTopNSize[col] !== undefined && groupByTopNGlobal[col] === true) {
+        topNSets[col] = getTopNKeys(
+          rows,
+          col,
+          groupByTopNSize[col]!,
+          fieldTypes,
+          groupByGranularity,
+          groupByBinSize,
+        );
       }
-      bucket.push(row);
     }
 
-    const sortedGroupValues = Array.from(buckets.keys()).sort((a, b) =>
-      sortGroupKeys(a, b, fieldType),
-    );
+    function groupRecursively(
+      currentRows: RowRecord[],
+      fieldIndex: number,
+      accumulatedGroupValues: Record<string, string>,
+    ): PivotGroup[] {
+      // Base case: Compute raw group counts for leaf node
+      if (fieldIndex >= groupByFields.length) {
+        const key = makeGroupKey(groupByFields.map((f) => accumulatedGroupValues[f]));
+        const groupCounts = computeCounts(
+          currentRows,
+          displayFields,
+          fieldTypes,
+          selectedAggregations,
+        );
 
-    const results: PivotGroup[] = [];
-    for (const val of sortedGroupValues) {
-      const subRows = buckets.get(val)!;
-      const nextGroupValues = { ...accumulatedGroupValues, [col]: val };
-      results.push(...groupRecursively(subRows, fieldIndex + 1, nextGroupValues));
+        return [
+          {
+            key,
+            groupValues: { ...accumulatedGroupValues },
+            rowCount: currentRows.length,
+            counts: groupCounts,
+          },
+        ];
+      }
+
+      const col = groupByFields[fieldIndex];
+      const fieldType = fieldTypes[col];
+
+      const topNMode = groupByTopNGlobal[col];
+      let topNSet: Set<string> | undefined;
+      if (topNMode !== undefined) {
+        topNSet = topNMode
+          ? topNSets[col]
+          : getTopNKeys(
+              currentRows,
+              col,
+              groupByTopNSize[col],
+              fieldTypes,
+              groupByGranularity,
+              groupByBinSize,
+            );
+      }
+
+      const buckets = new Map<string, RowRecord[]>();
+      for (const row of currentRows) {
+        const groupVal = resolveGroupValueForNode(
+          row,
+          col,
+          fieldTypes,
+          groupByGranularity,
+          groupByBinSize,
+          topNSet,
+        );
+        let bucket = buckets.get(groupVal);
+        if (!bucket) {
+          bucket = [];
+          buckets.set(groupVal, bucket);
+        }
+        bucket.push(row);
+      }
+
+      const sortedGroupValues = Array.from(buckets.keys()).sort((a, b) =>
+        sortGroupKeys(a, b, fieldType),
+      );
+
+      const results: PivotGroup[] = [];
+      for (const val of sortedGroupValues) {
+        // Filter out blank/null category groups if hideEmptyNullGroups option is active
+        if (options.hideEmptyNullGroups && val === BLANK_GROUP_VALUE) {
+          continue;
+        }
+        const subRows = buckets.get(val)!;
+        const nextGroupValues = { ...accumulatedGroupValues, [col]: val };
+        results.push(...groupRecursively(subRows, fieldIndex + 1, nextGroupValues));
+      }
+
+      return results;
     }
 
-    return results;
+    pivotGroups = groupRecursively(rows, 0, {});
   }
 
-  return groupRecursively(rows, 0, {});
+  // 2. Post-process relative percentages based strictly on TOTAL VISIBLE DATASET
+  if (options.showRelativePercentages) {
+    // Single global denominator across all metrics
+    const visibleTotalRows = pivotGroups.reduce((sum, g) => sum + g.rowCount, 0);
+
+    for (const group of pivotGroups) {
+      // Group row count %
+      group.rowCountPercentage =
+        visibleTotalRows > 0 ? Number(((group.rowCount / visibleTotalRows) * 100).toFixed(2)) : 0;
+
+      // Aggregation field % (relative to total dataset)
+      group.percentages = {};
+      for (const col of displayFields) {
+        group.percentages[col] = {};
+        for (const agg of selectedAggregations[col] ?? []) {
+          const groupVal = group.counts[col]?.[agg];
+
+          // Only compute percentage for row-count aggregations
+          if (
+            ROW_COUNT_AGGREGATION_TYPES.has(agg) &&
+            typeof groupVal === 'number' &&
+            visibleTotalRows > 0
+          ) {
+            group.percentages[col][agg] = Number(((groupVal / visibleTotalRows) * 100).toFixed(2));
+          } else {
+            // Remaining aggregation types are not relative to total dataset, so we set them to null
+            group.percentages[col][agg] = null;
+          }
+        }
+      }
+    }
+  }
+
+  return pivotGroups;
 }

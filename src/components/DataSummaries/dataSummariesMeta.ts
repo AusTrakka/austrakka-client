@@ -83,6 +83,14 @@ export const SUMMABLE_AGGREGATION_TYPES = new Set<AggregationType>([
   AggregationType.Sum,
 ]);
 
+// Pure row-count aggregation types that can be used for relative percentage calculations
+export const ROW_COUNT_AGGREGATION_TYPES = new Set<AggregationType>([
+  AggregationType.Total,
+  AggregationType.NonEmpty,
+  AggregationType.Empty,
+  AggregationType.Unique, // Not sure if a relative percentage for unique values makes sense
+]);
+
 export type FieldTypeMap = Record<string, FieldTypes>;
 
 // Group-by configuration maps
@@ -98,6 +106,8 @@ export interface PivotConfig {
   groupByGranularity: GroupByGranularityMap;
   groupByBinSize: GroupByBinSizeMap;
   showTotalCountFooter: boolean;
+  showRelativePercentages: boolean;
+  hideEmptyNullGroups: boolean;
   groupByTopNSize: GroupByTopNMap;
   groupByTopNGlobal: Record<string, boolean>;
 }
@@ -107,4 +117,11 @@ export interface PivotGroup {
   groupValues: Record<string, string>;
   rowCount: number;
   counts: Record<string, Partial<Record<AggregationType, number | null>>>;
+  rowCountPercentage?: number;
+  percentages?: Record<string, Partial<Record<AggregationType, number | null>>>;
+}
+
+export interface PivotOptions {
+  showRelativePercentages?: boolean;
+  hideEmptyNullGroups?: boolean;
 }
