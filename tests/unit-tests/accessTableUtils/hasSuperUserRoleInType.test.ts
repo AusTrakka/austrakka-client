@@ -1,4 +1,3 @@
-import { ScopeDefinitions } from '../../../src/constants/scopes';
 import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
 import { hasSuperUserRoleInType } from '../../../src/utilities/accessTableUtils';
 
@@ -15,9 +14,9 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'SuperUser',
-                  privilegeLevel: '',
+                  privilegeLevel: 'Root',
                   privilegeGlobalId: 'global-id-1',
-                  scopes: [ScopeDefinitions.Everything],
+                  scopes: [],
                 },
               ],
             },
@@ -28,7 +27,7 @@ describe('hasSuperUserRoleInType', () => {
       expect(hasSuperUserRoleInType(groups)).toBe(true);
     });
 
-    test('return true when user has ScopeDefinitions.Everything scope', () => {
+    test('return true when user has Root privilegeLevel', () => {
       const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
         {
           recordType: 'System',
@@ -39,9 +38,9 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'RegularUser',
-                  privilegeLevel: 'User',
+                  privilegeLevel: 'Root',
                   privilegeGlobalId: 'global-id-1',
-                  scopes: [ScopeDefinitions.Everything],
+                  scopes: ['some-other-scope'],
                 },
               ],
             },
@@ -161,9 +160,9 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'SuperUser',
-                  privilegeLevel: '',
+                  privilegeLevel: 'Root',
                   privilegeGlobalId: 'global-id-2',
-                  scopes: [ScopeDefinitions.Everything],
+                  scopes: [],
                 },
               ],
             },
