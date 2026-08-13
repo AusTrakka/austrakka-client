@@ -52,10 +52,7 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
-// - Currently empty values are by default grouped into other (but maybe we should could them as a separate group instead, and only use "other" for top-N grouping)
-// - If a group-by field is reordered to the top AND it is group into top-N per-group, this calculation need to be updated to global
 // - Add display table to URL - will we need to add the pivot table config to the URL too then maybe?
-// - Move "switch orientation" button into the drawer and add a small description (e.g. horizontal vs vertical)
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
@@ -187,6 +184,13 @@ function DataSummaries(props: DataSummariesProps) {
         if (prev.groupByTopNGlobal[col] !== undefined) {
           nextTopNGlobal[col] = prev.groupByTopNGlobal[col];
         }
+      }
+
+      // If reordering just moved a field into first position while it was set to per-group,
+      // Ensure it switches back to global rather than leaving an invalid state
+      const [firstField] = nextGroupByFields;
+      if (firstField !== undefined && nextTopNGlobal[firstField] === false) {
+        nextTopNGlobal[firstField] = true;
       }
 
       return {
@@ -686,7 +690,14 @@ function DataSummaries(props: DataSummariesProps) {
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Switch table orientation" arrow>
+          <Tooltip
+            title={
+              orientation === TableOrientation.FieldsHorizontal
+                ? 'Show display fields as rows'
+                : 'Show display fields as columns'
+            }
+            arrow
+          >
             <IconButton
               size="small"
               disabled={showEmptyState}
@@ -765,6 +776,7 @@ function DataSummaries(props: DataSummariesProps) {
           onShowTotalCountFooterChange={handleShowTotalCountFooterChange}
           onShowRelativePercentagesChange={onShowRelativePercentagesChange}
           onHideEmptyNullGroupsChange={onHideEmptyNullGroupsChange}
+          handleReset={handleReset}
         />
       </CustomDrawer>
 

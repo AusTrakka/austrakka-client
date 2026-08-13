@@ -51,7 +51,6 @@ function getTopNKeys(
       groupByGranularity,
       groupByBinSize,
     );
-    if (bucketLabel === BLANK_GROUP_VALUE) continue;
     counts.set(bucketLabel, (counts.get(bucketLabel) ?? 0) + 1);
   }
 
@@ -99,11 +98,11 @@ function makeGroupKey(values: string[]): string {
 function sortGroupKeys(a: string, b: string, fieldType: FieldTypes): number {
   if (a === b) return 0; // Ensures strict weak ordering
 
-  if (a === BLANK_GROUP_VALUE) return 1;
-  if (b === BLANK_GROUP_VALUE) return -1;
-
   if (a === OTHER_GROUP_VALUE) return 1;
   if (b === OTHER_GROUP_VALUE) return -1;
+
+  if (a === BLANK_GROUP_VALUE) return 1;
+  if (b === BLANK_GROUP_VALUE) return -1;
 
   if (fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) {
     const na = Number.parseFloat(a);
@@ -233,10 +232,8 @@ function resolveGroupValueForNode(
   }
 
   // STEP 2: Top-N evaluation (applies to ALL binned field types)
-  if (topNSet) {
-    if (bucketLabel === BLANK_GROUP_VALUE || !topNSet.has(bucketLabel)) {
-      return OTHER_GROUP_VALUE;
-    }
+  if (topNSet && !topNSet.has(bucketLabel)) {
+    return OTHER_GROUP_VALUE;
   }
 
   return bucketLabel;
