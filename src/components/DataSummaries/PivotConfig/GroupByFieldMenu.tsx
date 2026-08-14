@@ -18,7 +18,13 @@ import {
 import { useState } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import FieldTypes from '../../../constants/fieldTypes';
-import { DATE_GRANULARITY_LABELS, DateGranularity, type PivotConfig } from '../dataSummariesMeta';
+import {
+  DATE_GRANULARITY_LABELS,
+  DateGranularity,
+  type PivotConfig,
+  type RowRecord,
+} from '../dataSummariesMeta';
+import { computeSuggestedBinSize } from '../dataSummariesUtils';
 
 const DATE_GRANULARITY_OPTIONS = Object.values(DateGranularity);
 
@@ -261,22 +267,13 @@ function TopNOptions({
 }
 
 interface GroupByFieldMenuProps {
+  setPivotConfig: React.Dispatch<React.SetStateAction<PivotConfig>>;
   anchorEl: HTMLElement | null;
   activeCol: string | null;
   fieldType?: FieldTypes;
   pivotConfig: PivotConfig;
-  binSizeInputText: Record<string, string>;
-  topNInputText: Record<string, string>;
   onClose: () => void;
-  onRemoveGroupByField: (col: string) => void;
-  onSetGroupByGranularity: (col: string, granularity: DateGranularity) => void;
-  onSetBinningEnabled: (col: string, enabled: boolean) => void;
-  onBinSizeInputChange: (col: string, rawValue: string) => void;
-  onBinSizeBlur: (col: string) => void;
-  onSetGroupByTopNEnabled: (col: string, enabled: boolean) => void;
-  onSetGroupByTopNInputChange: (col: string, rawValue: string) => void;
-  onTopNSizeBlur: (col: string) => void;
-  setGroupByTopNGlobal: (col: string, isGlobal: boolean) => void;
+  rows: RowRecord[];
 }
 
 export function GroupByFieldMenu({
@@ -284,23 +281,156 @@ export function GroupByFieldMenu({
   activeCol,
   fieldType,
   pivotConfig,
-  binSizeInputText,
-  topNInputText,
+  rows,
   onClose,
-  onRemoveGroupByField,
-  onSetGroupByGranularity,
-  onSetBinningEnabled,
-  onBinSizeInputChange,
-  onBinSizeBlur,
-  onSetGroupByTopNEnabled,
-  onSetGroupByTopNInputChange,
-  onTopNSizeBlur,
-  setGroupByTopNGlobal,
+  setPivotConfig,
 }: GroupByFieldMenuProps) {
+  const [binSizeInputText, setBinSizeInputText] = useState<Record<string, string>>({});
+  const [topNInputText, setTopNInputText] = useState<Record<string, string>>({});
+
   if (!activeCol) return null;
 
   const isFirstOrOnlyGroupField =
     pivotConfig.groupByFields.length === 1 || activeCol === pivotConfig.groupByFields[0];
+
+  function handleBinSizeInputChange(col: string, rawValue: string) {
+    setBinSizeInputText((prev) => ({ ...prev, [col]: rawValue }));
+
+    if (rawValue === '') {
+      return;
+    }
+
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return;
+    }
+
+    setPivotConfig((prev) => ({
+      ...prev,
+      groupByBinSize: { ...prev.groupByBinSize, [col]: parsed },
+    }));
+  }
+
+  function handleRemoveGroupByField(col: string) {
+    setBinSizeInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+    setTopNInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+    setPivotConfig((prev) => {
+      const nextGroupByFields = prev.groupByFields.filter((f) => f !== col);
+      const nextGranularity = { ...prev.groupByGranularity };
+      delete nextGranularity[col];
+      const nextBinSize = { ...prev.groupByBinSize };
+      delete nextBinSize[col];
+      const nextTopN = { ...prev.groupByTopNSize };
+      delete nextTopN[col];
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
+      delete nextTopNGlobal[col];
+
+      return {
+        ...prev,
+        groupByFields: nextGroupByFields,
+        groupByGranularity: nextGranularity,
+        groupByBinSize: nextBinSize,
+        groupByTopNSize: nextTopN,
+        groupByTopNGlobal: nextTopNGlobal,
+      };
+    });
+  }
+
+  function setBinningEnabled(col: string, enabled: boolean) {
+    setBinSizeInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+    setPivotConfig((prev) => {
+      const nextBinSize = { ...prev.groupByBinSize };
+      if (enabled) {
+        nextBinSize[col] = computeSuggestedBinSize(rows, col);
+      } else {
+        delete nextBinSize[col];
+      }
+      return { ...prev, groupByBinSize: nextBinSize };
+    });
+  }
+
+  function setGroupByTopNEnabled(col: string, enabled: boolean) {
+    setPivotConfig((prev) => {
+      const nextTopN = { ...prev.groupByTopNSize };
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
+      if (enabled) {
+        // Default top N value
+        nextTopN[col] = topNInputText[col] !== undefined ? Number(topNInputText[col]) : 5;
+        // Set default to global if not already set
+        if (prev.groupByTopNGlobal[col] === undefined) {
+          nextTopNGlobal[col] = true;
+        }
+      } else {
+        delete nextTopN[col];
+        delete nextTopNGlobal[col];
+      }
+      return { ...prev, groupByTopNSize: nextTopN, groupByTopNGlobal: nextTopNGlobal };
+    });
+  }
+
+  function handleSetGroupByTopNGlobal(col: string, isGlobal: boolean) {
+    setPivotConfig((prev) => {
+      const nextTopNGlobal = { ...prev.groupByTopNGlobal };
+      nextTopNGlobal[col] = isGlobal;
+      return { ...prev, groupByTopNGlobal: nextTopNGlobal };
+    });
+  }
+
+  function handleBinSizeBlur(col: string) {
+    setBinSizeInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+  }
+
+  function handleTopNBlur(col: string) {
+    setTopNInputText((prev) => {
+      const next = { ...prev };
+      delete next[col];
+      return next;
+    });
+  }
+
+  function setGroupByGranularity(col: string, granularity: DateGranularity) {
+    setPivotConfig((prev) => ({
+      ...prev,
+      groupByGranularity: {
+        ...prev.groupByGranularity,
+        [col]: granularity,
+      },
+    }));
+  }
+
+  function handleGroupByTopNInputChange(col: string, rawValue: string) {
+    setTopNInputText((prev) => ({ ...prev, [col]: rawValue }));
+
+    if (rawValue === '') {
+      return;
+    }
+
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return;
+    }
+
+    setPivotConfig((prev) => ({
+      ...prev,
+      groupByTopNSize: { ...prev.groupByTopNSize, [col]: parsed },
+    }));
+  }
 
   return (
     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} {...menuAnchorProps}>
@@ -308,7 +438,7 @@ export function GroupByFieldMenu({
         <DateGranularityOptions
           activeCol={activeCol}
           pivotConfig={pivotConfig}
-          onSetGroupByGranularity={onSetGroupByGranularity}
+          onSetGroupByGranularity={setGroupByGranularity}
         />
       )}
 
@@ -317,22 +447,23 @@ export function GroupByFieldMenu({
           activeCol={activeCol}
           pivotConfig={pivotConfig}
           binSizeInputText={binSizeInputText}
-          onSetBinningEnabled={onSetBinningEnabled}
-          onBinSizeInputChange={onBinSizeInputChange}
-          onBinSizeBlur={onBinSizeBlur}
+          onSetBinningEnabled={setBinningEnabled}
+          onBinSizeInputChange={handleBinSizeInputChange}
+          onBinSizeBlur={handleBinSizeBlur}
         />
       )}
 
-      {fieldType !== FieldTypes.BOOLEAN && (
+      {fieldType !== FieldTypes.BOOLEAN && fieldType !== undefined && (
         <TopNOptions
+          key={activeCol}
           activeCol={activeCol}
           pivotConfig={pivotConfig}
           topNInputText={topNInputText}
           isFirstOrOnlyGroupField={isFirstOrOnlyGroupField}
-          onSetGroupByTopNEnabled={onSetGroupByTopNEnabled}
-          onSetGroupByTopNInputChange={onSetGroupByTopNInputChange}
-          onTopNSizeBlur={onTopNSizeBlur}
-          setGroupByTopNGlobal={setGroupByTopNGlobal}
+          onSetGroupByTopNEnabled={setGroupByTopNEnabled}
+          onSetGroupByTopNInputChange={handleGroupByTopNInputChange}
+          onTopNSizeBlur={handleTopNBlur}
+          setGroupByTopNGlobal={handleSetGroupByTopNGlobal}
         />
       )}
 
@@ -348,7 +479,7 @@ export function GroupByFieldMenu({
 
       <MenuItem
         onClick={() => {
-          onRemoveGroupByField(activeCol);
+          handleRemoveGroupByField(activeCol);
           onClose();
         }}
         sx={{ color: Theme.SecondaryRed }}

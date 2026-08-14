@@ -2,6 +2,7 @@ import { DeleteOutline } from '@mui/icons-material';
 import { Checkbox, Divider, Menu, MenuItem, Typography } from '@mui/material';
 import { Theme } from '../../../assets/themes/theme';
 import type FieldTypes from '../../../constants/fieldTypes';
+import type { PivotConfig } from '../dataSummariesMeta';
 import {
   AGG_TYPE_LABELS,
   type AggregationType,
@@ -19,8 +20,7 @@ interface DisplayFieldMenuProps {
   fieldType?: FieldTypes;
   selectedAggregations: AggregationType[];
   onClose: () => void;
-  onToggleAggregation: (col: string, agg: AggregationType) => void;
-  onRemoveDisplayField: (col: string) => void;
+  setPivotConfig: React.Dispatch<React.SetStateAction<PivotConfig>>;
 }
 
 export function DisplayFieldMenu({
@@ -29,11 +29,37 @@ export function DisplayFieldMenu({
   fieldType,
   selectedAggregations,
   onClose,
-  onToggleAggregation,
-  onRemoveDisplayField,
+  setPivotConfig,
 }: DisplayFieldMenuProps) {
   if (!activeCol) return null;
 
+  function toggleAggregation(col: string, agg: AggregationType) {
+    setPivotConfig((prev) => {
+      const current = prev.selectedAggregations[col] ?? [];
+      const next = current.includes(agg) ? current.filter((a) => a !== agg) : [...current, agg];
+
+      return {
+        ...prev,
+        selectedAggregations: {
+          ...prev.selectedAggregations,
+          [col]: next,
+        },
+      };
+    });
+  }
+
+  function handleRemoveDisplayField(col: string) {
+    setPivotConfig((prev) => {
+      const nextDisplayFields = prev.displayFields.filter((f) => f !== col);
+      const nextSelectedAggregations = { ...prev.selectedAggregations };
+      delete nextSelectedAggregations[col];
+      return {
+        ...prev,
+        displayFields: nextDisplayFields,
+        selectedAggregations: nextSelectedAggregations,
+      };
+    });
+  }
   const availableAggs = fieldType ? (FIELD_TYPE_AGGREGATION_TYPES[fieldType] ?? []) : [];
 
   return (
@@ -55,7 +81,7 @@ export function DisplayFieldMenu({
         availableAggs.map((agg) => {
           const isSelected = selectedAggregations.includes(agg);
           return (
-            <MenuItem key={agg} onClick={() => onToggleAggregation(activeCol, agg)}>
+            <MenuItem key={agg} onClick={() => toggleAggregation(activeCol, agg)}>
               <Checkbox size="small" checked={isSelected} sx={{ mr: 1, p: 0 }} />
               <Typography variant="body2">{AGG_TYPE_LABELS[agg]}</Typography>
             </MenuItem>
@@ -65,7 +91,7 @@ export function DisplayFieldMenu({
       <Divider />
       <MenuItem
         onClick={() => {
-          onRemoveDisplayField(activeCol);
+          handleRemoveDisplayField(activeCol);
           onClose();
         }}
         sx={{ color: Theme.SecondaryRed }}

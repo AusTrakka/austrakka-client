@@ -46,7 +46,6 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 
 // TODO:
 // - Add display table to URL - will we need to add the pivot table config to the URL too then maybe?
-// - We could also consider parsing setPivotConfig to the other children components and localising the handlers even more?
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
@@ -279,8 +278,6 @@ function DataSummaries(props: DataSummariesProps) {
           pivotConfig={pivotConfig}
           setPivotConfig={setPivotConfig}
           fieldTypes={fieldTypes}
-          fieldLabelByKey={fieldLabelByKey}
-          setOrientation={setOrientation}
           sortedFields={sortedFields}
         />
       </CustomDrawer>
