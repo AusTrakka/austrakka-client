@@ -253,7 +253,7 @@ export function buildPivotGroups(
 ): PivotGroup[] {
   let pivotGroups: PivotGroup[] = [];
 
-  // 1. Handle case with no group-by fields
+  // Handle case with no group-by fields
   if (groupByFields.length === 0) {
     pivotGroups = [
       {
@@ -361,7 +361,7 @@ export function buildPivotGroups(
     pivotGroups = groupRecursively(rows, 0, {});
   }
 
-  // 2. Post-process relative percentages based strictly on TOTAL VISIBLE DATASET
+  // Post-process relative percentages based strictly on TOTAL VISIBLE DATASET
   if (options.showRelativePercentages) {
     // Single global denominator across all metrics
     const visibleTotalRows = pivotGroups.reduce((sum, g) => sum + g.rowCount, 0);

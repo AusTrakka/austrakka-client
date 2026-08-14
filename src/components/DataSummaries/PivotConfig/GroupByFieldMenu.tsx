@@ -56,7 +56,6 @@ function DateGranularityOptions({
               selected={isSelected}
               onClick={() => {
                 onSetGroupByGranularity(activeCol, option);
-                // onClose();
               }}
             >
               <Radio checked={isSelected} size="small" sx={{ mr: 1.5, p: 0 }} />

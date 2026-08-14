@@ -88,7 +88,6 @@ export const ROW_COUNT_AGGREGATION_TYPES = new Set<AggregationType>([
   AggregationType.Total,
   AggregationType.NonEmpty,
   AggregationType.Empty,
-  AggregationType.Unique, // Not sure if a relative percentage for unique values makes sense
 ]);
 
 export type FieldTypeMap = Record<string, FieldTypes>;
