@@ -30,7 +30,7 @@ export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithSco
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
-            role.scopes.includes(ScopeDefinitions.Everything) ||
+            role.privilegeLevel === 'Root' ||
             role.scopes.includes(ScopeDefinitions.GetUserByGlobalId),
         ),
       ),
@@ -60,7 +60,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
       scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some(
         (record) =>
-          record.roles.some((role) => role.scopes.includes(ScopeDefinitions.Everything)) ||
+          record.roles.some((role) => role.privilegeLevel === 'Root') ||
           record.roles.some(hasAllScopes),
       ),
   );

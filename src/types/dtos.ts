@@ -29,6 +29,7 @@ export interface Project {
   mergeAlgorithm: string;
   status: string;
   // could add auditable fields - created, createdBy
+  watermarkTrees: boolean;
 }
 
 export interface ProjectPut {
@@ -40,6 +41,7 @@ export interface ProjectPut {
   clientType: string;
   mergeAlgorithm: MergeAlgorithm;
   status: string;
+  watermarkTrees: boolean;
 }
 
 export interface ProjectDashboardDetails {
@@ -407,7 +409,7 @@ export interface Role {
   name: string;
   description: string;
   privilegeLevel: string;
-  resourceTypes: string[];
+  resourceType: string | null;
   scopes: string[];
 }
 
@@ -431,8 +433,8 @@ export interface UserPatchV2 {
 }
 
 export interface UserRoleRecordPrivilegePost {
-  assigneeGlobalId: string;
-  roleGlobalId: string;
+  assigneeIdentifier: string;
+  roleIdentifier: string;
 }
 
 export interface DerivedLog {

@@ -678,6 +678,7 @@ function TreeDetail() {
                   treeName={tree.treeName}
                   phylocanvasRef={treeRef}
                   legendRef={legRef}
+                  watermarkTree={projectMetadata?.watermarkTrees || false}
                 />
               )}
             </Box>
