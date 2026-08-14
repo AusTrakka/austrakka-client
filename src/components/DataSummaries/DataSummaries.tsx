@@ -43,16 +43,17 @@ import {
   TOTAL_FIELD,
 } from './dataSummariesMeta';
 import { buildPivotGroups, computeSuggestedBinSize } from './dataSummariesUtils';
-import PivotFieldConfig from './PivotFieldConfig';
+import PivotConfigOptions from './PivotConfig/PivotConfigOptions';
 import ViewSummariesToggle from './ViewSummariesToggle';
 
 // Possible enhancements:
 // - Support for aggregation/pivoting on Shared_groups field (and other multi-value fields)
-// - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension)
+// - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension, "show fields as column values" per display field maybe)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
 // TODO:
 // - Add display table to URL - will we need to add the pivot table config to the URL too then maybe?
+// - Add ability to export pivot table to CSV
 
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
@@ -376,7 +377,6 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
-  // Clear the input text when the user leaves the field, so that it will revert to the actual value in the pivotConfig if they didn't enter a valid number
   function handleBinSizeBlur(col: string) {
     setBinSizeInputText((prev) => {
       const next = { ...prev };
@@ -385,7 +385,6 @@ function DataSummaries(props: DataSummariesProps) {
     });
   }
 
-  // Clear the input text when the user leaves the field, so that it will revert to the actual value in the pivotConfig if they didn't enter a valid number
   function handleTopNBlur(col: string) {
     setTopNInputText((prev) => {
       const next = { ...prev };
@@ -753,7 +752,7 @@ function DataSummaries(props: DataSummariesProps) {
   return (
     <Box>
       <CustomDrawer drawerOpen={configDrawerOpen} setDrawerOpen={setConfigDrawerOpen}>
-        <PivotFieldConfig
+        <PivotConfigOptions
           pivotConfig={pivotConfig}
           fieldTypes={fieldTypes}
           fieldLabelByKey={fieldLabelByKey}
