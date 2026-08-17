@@ -3,7 +3,7 @@ import { useApi } from '../app/ApiContext';
 import type { Filters } from '../components/Common/Activity/ActivityFilters';
 import LoadingState from '../constants/loadingState';
 import { ResponseType } from '../constants/responseType';
-import TrakkaResponseHeaders from '../constants/trakkaResponseHeaders';
+import type { ResponseMessage } from '../types/apiResponse.interface';
 import type { DerivedLog } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
@@ -20,8 +20,7 @@ export type ActivityLogsResponse = {
   dataLoading: boolean;
   httpStatusCode: number;
   isLoadingErrorMsg: string;
-  maxLimitReached: boolean;
-  maxLimit: number;
+  apiMessages: ResponseMessage[];
 };
 
 // TODO look at this structure; it mimics a hook but is not one
@@ -36,8 +35,7 @@ export default function useActivityLogs({
   const [httpStatusCode, setHttpStatusCode] = useState<number>(-1);
   const [isLoadingErrorMsg, setIsLoadingErrorMsg] = useState<string>('');
   const [dataLoading, setDataLoading] = useState<boolean>(true);
-  const [maxLimitReached, setMaxLimitReached] = useState<boolean>(false);
-  const [maxLimit, setMaxLimit] = useState<number>(-1);
+  const [apiMessages, setApiMessages] = useState<ResponseMessage[]>([]);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -63,11 +61,7 @@ export default function useActivityLogs({
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
         setHttpStatusCode(resp.httpStatusCode || -1);
-        const maxLimitReached = resp.headers?.get(TrakkaResponseHeaders.MaxLimitReached);
-        if (maxLimitReached) {
-          setMaxLimitReached(true);
-          setMaxLimit(parseInt(maxLimitReached, 10));
-        }
+        setApiMessages(resp.messages || []);
       } else {
         setRefinedLogs([]);
         setHttpStatusCode(resp.httpStatusCode || -1);
@@ -93,7 +87,6 @@ export default function useActivityLogs({
     dataLoading: dataLoading,
     httpStatusCode: httpStatusCode,
     isLoadingErrorMsg: isLoadingErrorMsg,
-    maxLimitReached: maxLimitReached,
-    maxLimit: maxLimit,
+    apiMessages: apiMessages,
   };
 }

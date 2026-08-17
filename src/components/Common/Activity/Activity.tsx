@@ -32,6 +32,7 @@ import React, {
   useState,
 } from 'react';
 import RecordTypes from '../../../constants/record-type.enum';
+import { ResponseType } from '../../../constants/responseType';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -81,7 +82,7 @@ function resolveUrlDate(value: string, defaultValue: Date): Date | null {
   return new Date(value);
 }
 
-function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
+function Activity({ recordType, rGuid }: ActivityProps): React.JSX.Element {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
@@ -394,16 +395,17 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         </Alert>
       ) : (
         <>
-          {activityRes.maxLimitReached ? (
-            <Alert
-              severity="warning"
-              style={{ whiteSpace: 'normal', wordBreak: 'break-word', marginBottom: '10px' }}
-            >
-              {`Request result exceeds the maximum limit of ${activityRes.maxLimit.toLocaleString()} records. 
-                      Please apply additional filters to reduce the number of results.`}
-            </Alert>
-          ) : null}
-
+          {activityRes.apiMessages.map((rm) =>
+            rm.ResponseType === ResponseType.Warning ? (
+              <Alert
+                key={rm.ResponseMessage}
+                severity="warning"
+                style={{ whiteSpace: 'normal', wordBreak: 'break-word', marginBottom: '10px' }}
+              >
+                {rm.ResponseMessage}
+              </Alert>
+            ) : null,
+          )}
           <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
             {isTableLoading ? (
               <Box sx={{ p: 4 }}>
