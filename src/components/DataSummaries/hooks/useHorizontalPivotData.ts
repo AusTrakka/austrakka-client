@@ -5,6 +5,7 @@ import {
   type PivotGroup,
   SUMMABLE_AGGREGATION_TYPES,
   TOTAL_FIELD,
+  TOTAL_FIELD_LABEL,
 } from '../dataSummariesMeta';
 
 interface UseHorizontalPivotDataParams {
@@ -77,7 +78,7 @@ export function useHorizontalPivotData({
       headers.push(fieldLabelByKey[col] ?? col);
     }
 
-    headers.push('Total Records');
+    headers.push(TOTAL_FIELD_LABEL);
 
     // Display fields & aggregation headers
     for (const col of pivotConfig.displayFields) {
@@ -109,7 +110,7 @@ export function useHorizontalPivotData({
         exportRow[label] = row[col] ?? '';
       }
 
-      exportRow['Total Records'] = row[TOTAL_FIELD] ?? 0;
+      exportRow[TOTAL_FIELD_LABEL] = row[TOTAL_FIELD] ?? 0;
 
       for (const col of pivotConfig.displayFields) {
         const colLabel = fieldLabelByKey[col] ?? col;
@@ -135,7 +136,7 @@ export function useHorizontalPivotData({
         totalsRow[label] = i === 0 ? 'Total' : '';
       }
 
-      totalsRow['Total Records'] = columnTotals[TOTAL_FIELD] ?? 0;
+      totalsRow[TOTAL_FIELD_LABEL] = columnTotals[TOTAL_FIELD] ?? 0;
 
       for (const col of pivotConfig.displayFields) {
         const colLabel = fieldLabelByKey[col] ?? col;

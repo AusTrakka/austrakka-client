@@ -6,6 +6,7 @@ import {
   type PivotGroup,
   RECORD_COUNT_FALLBACK_KEY,
   TOTAL_FIELD,
+  TOTAL_FIELD_LABEL,
 } from '../dataSummariesMeta';
 
 interface UseVerticalPivotDataParams {
@@ -96,7 +97,7 @@ export function useVerticalPivotData({
     return [
       'Field',
       ...pivotConfig.groupByFields.map((col) => fieldLabelByKey[col] ?? col),
-      'Total Records',
+      TOTAL_FIELD_LABEL,
       ...verticalAggregationColumns.map((agg) => AGG_TYPE_LABELS[agg]),
     ];
   }, [pivotConfig.groupByFields, fieldLabelByKey, verticalAggregationColumns]);
@@ -114,7 +115,7 @@ export function useVerticalPivotData({
         exportRow[label] = row[col] ?? '';
       }
 
-      exportRow['Total Records'] = row[TOTAL_FIELD] ?? 0;
+      exportRow[TOTAL_FIELD_LABEL] = row[TOTAL_FIELD] ?? 0;
 
       for (const agg of verticalAggregationColumns) {
         const label = AGG_TYPE_LABELS[agg];
@@ -134,7 +135,7 @@ export function useVerticalPivotData({
         totalsRow[label] = '';
       }
 
-      totalsRow['Total Records'] = columnTotals[TOTAL_FIELD] ?? 0;
+      totalsRow[TOTAL_FIELD_LABEL] = columnTotals[TOTAL_FIELD] ?? 0;
 
       for (const agg of verticalAggregationColumns) {
         const label = AGG_TYPE_LABELS[agg];
