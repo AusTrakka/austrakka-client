@@ -131,3 +131,34 @@ export const getFilterObjFromSearchParams = (
 };
 
 // Decodes a URL value to a string, number, or boolean
+
+export const updateSearchParamInUrl = (
+  key: string,
+  value: string | null | undefined,
+  preserveRawEncoding = true,
+) => {
+  const params = new URLSearchParams(window.location.search);
+  const currentValue = params.get(key);
+
+  // Skip updating history if the parameter in the URL is already identical
+  if ((value ?? null) === (currentValue ?? null)) {
+    return;
+  }
+
+  if (value) {
+    params.set(key, value);
+  } else {
+    params.delete(key);
+  }
+
+  let searchString = params.toString();
+  if (preserveRawEncoding) {
+    searchString = decodeURIComponent(searchString);
+  }
+
+  const newUrl = searchString
+    ? `${window.location.pathname}?${searchString}`
+    : window.location.pathname;
+
+  window.history.pushState(window.history.state, '', newUrl);
+};

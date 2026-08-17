@@ -44,9 +44,6 @@ import ViewSummariesToggle from './ViewSummariesToggle';
 // - Consider adding the ability for matrix-style pivoting (2 dimensions of grouping rather than just a single group-by dimension, "show fields as column values" per display field maybe)
 // - Could expand the per-field config to allow user to update formatting options (e.g. number of decimal places, date format, etc.)
 
-// TODO:
-// - Add display table to URL - will we need to add the pivot table config to the URL too then maybe?
-
 interface DataSummariesProps {
   data: OrgMetadataState | ProjectMetadataState | null;
   metadata: Sample[];

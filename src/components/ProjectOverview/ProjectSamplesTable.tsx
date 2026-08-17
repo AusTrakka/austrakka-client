@@ -30,11 +30,15 @@ import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataL
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { ProjectField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  useStateFromSearchParam,
+  useStateFromSearchParamsForFilterObject,
+} from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitionsPVF,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
+import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import DataSummaries from '../DataSummaries/DataSummaries';
@@ -71,7 +75,6 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
 
-  const [activeTable, setActiveTable] = useState<TableType>(TableType.RawMetadata);
   const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
 
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
@@ -101,6 +104,19 @@ function ProjectSamplesTable(props: SamplesProps) {
     if (SAMPLE_ID_FIELD in selectedRow) {
       navigate(`/projects/${projectAbbrev}/records/${selectedRow[SAMPLE_ID_FIELD]}`);
     }
+  };
+
+  const [activeTable, setActiveTableState] = useStateFromSearchParam<TableType>(
+    'view',
+    TableType.RawMetadata,
+  );
+
+  const setActiveTable = (table: TableType) => {
+    setActiveTableState(table);
+    updateSearchParamInUrl(
+      'view',
+      table === TableType.SummaryMetadata ? TableType.SummaryMetadata : null,
+    );
   };
 
   useEffect(() => {

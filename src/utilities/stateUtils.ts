@@ -5,7 +5,12 @@ import { type SetStateAction, useEffect, useMemo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { isDataTableFiltersEqual } from './filterUtils';
 import getQueryParamOrDefault from './navigationUtils';
-import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
+import {
+  encodeFilterObj,
+  getFilterObjFromSearchParams,
+  getRawQueryParams,
+  updateSearchParamInUrl,
+} from './urlUtils';
 
 export function useStateFromSearchParamsForPrimitive<
   T extends string | number | boolean | null | Array<string | number | boolean | null>,
@@ -183,4 +188,38 @@ export function useStateFromSearchParamsForFilterObject(
   };
 
   return [state, useStateWithQueryParam];
+}
+
+function readSearchParam<T extends string>(paramName: string, defaultValue: T): T {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get(paramName) as T) ?? defaultValue;
+}
+
+export function useStateFromSearchParam<T extends string>(
+  paramName: string,
+  defaultValue: T,
+): [T, (newValue: T | null) => void] {
+  const [state, setState] = useState<T>(() => readSearchParam(paramName, defaultValue));
+
+  useEffect(() => {
+    // Pop state listener to update state when the user navigates using the browser's back/forward buttons
+    const handlePopState = () => {
+      setState(readSearchParam(paramName, defaultValue));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [paramName, defaultValue]);
+
+  const setParamState = (newValue: T | null) => {
+    // If setting to null or the default value, remove param from URL
+    const isDefault = newValue === null || newValue === defaultValue;
+    const resolvedState = isDefault ? defaultValue : newValue;
+    const urlValue = isDefault ? null : newValue;
+
+    setState(resolvedState);
+    updateSearchParamInUrl(paramName, urlValue, true);
+  };
+
+  return [state, setParamState];
 }

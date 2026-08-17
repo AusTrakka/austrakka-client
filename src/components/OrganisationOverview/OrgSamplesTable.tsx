@@ -43,11 +43,15 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  useStateFromSearchParam,
+  useStateFromSearchParamsForFilterObject,
+} from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
+import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import DataSummaries from '../DataSummaries/DataSummaries';
@@ -100,9 +104,20 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
-
-  const [activeTable, setActiveTable] = useState<TableType>(TableType.RawMetadata);
   const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
+
+  const [activeTable, setActiveTableState] = useStateFromSearchParam<TableType>(
+    'view',
+    TableType.RawMetadata,
+  );
+
+  const setActiveTable = (table: TableType) => {
+    setActiveTableState(table);
+    updateSearchParamInUrl(
+      'view',
+      table === TableType.SummaryMetadata ? TableType.SummaryMetadata : null,
+    );
+  };
 
   useEffect(() => {
     if (activeTable === TableType.SummaryMetadata) setShownSummaryMetadata(true);
