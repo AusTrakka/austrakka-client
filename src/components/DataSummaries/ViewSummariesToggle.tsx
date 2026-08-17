@@ -1,6 +1,6 @@
 import PivotTableChartIcon from '@mui/icons-material/PivotTableChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 import { TableType } from '../ProjectOverview/ProjectSamplesTable';
@@ -31,9 +31,9 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
         cursor: 'pointer',
         borderRadius: 6,
         border: '1px solid',
-        borderColor: isHovered ? Theme.PrimaryGrey600 : 'transparent',
+        borderColor: isHovered ? Theme.PrimaryGrey500 : 'transparent',
         transition: 'all 0.2s ease',
-        padding: isHovered ? '0px 8px 0px 8px' : '0',
+        padding: isHovered ? '0px 8px 0px 0px' : '0',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -49,11 +49,11 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
       >
         {activeTable === TableType.RawMetadata ? (
           <>
-            <PivotTableChartIcon sx={{ marginRight: 1 }} />
+            <PivotTableChartIcon />
           </>
         ) : (
           <>
-            <TableChartIcon sx={{ marginRight: 1 }} />
+            <TableChartIcon />
           </>
         )}
       </Button>
@@ -69,7 +69,9 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
           transition: 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out',
         }}
       >
-        {activeTable === TableType.RawMetadata ? <>View summary table</> : <>View raw metadata</>}
+        <Typography variant="body2" sx={{ color: Theme.PrimaryGrey600 }}>
+          {activeTable === TableType.RawMetadata ? <>View summary table</> : <>View raw metadata</>}
+        </Typography>
       </Box>
     </Box>
   );
