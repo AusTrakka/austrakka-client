@@ -275,7 +275,7 @@ function ProjectSamplesTable(props: SamplesProps) {
         primeReactFilters={currentFilters}
       />
       {/* TODO: Make a function for the table so that a different sort is used per column type */}
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 0 }}>
         <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
           <DataTable
             value={metadata?.metadata ?? []}

@@ -2,7 +2,7 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
 import { Row } from 'primereact/row';
-import { useMemo, useRef } from 'react';
+import { type ReactNode, useMemo, useRef } from 'react';
 import {
   AGG_TYPE_LABELS,
   type AggregationType,
@@ -18,8 +18,8 @@ interface VerticalModeTableProps {
   pivotConfig: PivotConfig;
   fieldLabelByKey: Record<string, string>;
   filters: DataTableFilterMeta | undefined;
-  headerControls: React.ReactNode;
-  emptyStateMessage: React.ReactNode;
+  headerControls: ReactNode;
+  emptyStateMessage: ReactNode;
   shouldShowTable: boolean;
 }
 
@@ -116,7 +116,7 @@ export function VerticalModeTable({
         bodyClassName="value-cells"
         body={(rowData: Record<string, unknown>) => (
           <PivotCell
-            value={rowData[TOTAL_FIELD] as React.ReactNode}
+            value={rowData[TOTAL_FIELD] as ReactNode}
             percentage={rowData[`${TOTAL_FIELD}__pct`] as number | string | null}
             showPercentage={pivotConfig.showRelativePercentages}
           />
@@ -131,7 +131,7 @@ export function VerticalModeTable({
           bodyClassName="value-cells"
           body={(rowData: Record<string, unknown>) => (
             <PivotCell
-              value={rowData[agg] as React.ReactNode}
+              value={rowData[agg] as ReactNode}
               percentage={rowData[`${agg}__pct`] as number | string | null}
               showPercentage={pivotConfig.showRelativePercentages}
             />

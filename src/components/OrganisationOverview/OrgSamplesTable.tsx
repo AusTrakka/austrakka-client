@@ -470,7 +470,7 @@ function OrgSamplesTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1 }}>
         <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
           <DataTable
             value={displayRows}

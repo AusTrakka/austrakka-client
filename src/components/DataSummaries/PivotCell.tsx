@@ -25,11 +25,11 @@ export function PivotCell({ value, percentage, showPercentage = false }: PivotCe
 
   return (
     <Stack direction="row" spacing={0.75} alignItems="baseline" display="inline-flex">
-      <span>{value}</span>
+      {value}
       <Typography
         component="span"
         variant="caption"
-        sx={{ color: 'text.secondary', fontWeight: 400 }}
+        sx={{ color: 'text.secondary', fontWeight: 400, pl: 0.5 }}
       >
         ({formattedPct})
       </Typography>

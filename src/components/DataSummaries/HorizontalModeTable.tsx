@@ -2,7 +2,7 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
 import { Row } from 'primereact/row';
-import { useMemo, useRef } from 'react';
+import { type ReactNode, useMemo, useRef } from 'react';
 import { AGG_TYPE_LABELS, type PivotConfig, TOTAL_FIELD } from './dataSummariesMeta';
 import { PivotCell } from './PivotCell'; // Custom or inline cell renderer
 
@@ -12,8 +12,8 @@ interface HorizontalModeTableProps {
   pivotConfig: PivotConfig;
   fieldLabelByKey: Record<string, string>;
   filters: DataTableFilterMeta | undefined;
-  headerControls: React.ReactNode;
-  emptyStateMessage: React.ReactNode;
+  headerControls: ReactNode;
+  emptyStateMessage: ReactNode;
   shouldShowTable: boolean;
 }
 
@@ -56,7 +56,7 @@ export function HorizontalModeTable({
       size="small"
       className="my-flexible-table"
       scrollable
-      rowGroupMode="rowspan"
+      rowGroupMode="rowspan" // Requires pre-sorting of rows by group-by fields
       // Limitation of the current implementation: DataTable is designed for single-level grouping only
       // This means that if the user selects multiple group-by fields, only the first one will be used for grouping in the table display
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : undefined}
