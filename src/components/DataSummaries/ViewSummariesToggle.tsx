@@ -1,6 +1,6 @@
 import PivotTableChartIcon from '@mui/icons-material/PivotTableChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import { Box, Button, IconButton, type IconButtonProps, styled } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useRef, useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 import { TableType } from '../ProjectOverview/ProjectSamplesTable';
@@ -9,18 +9,6 @@ type ViewSummariesToggleProps = {
   activeTable: TableType;
   setActiveTable: (table: TableType) => void;
 };
-
-interface HoverableIconButtonProps extends IconButtonProps {
-  isHovered?: string;
-}
-
-const HoverableIconButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== 'isHovered',
-})<HoverableIconButtonProps>(({ theme, isHovered }) => ({
-  ...(isHovered === 'true' && {
-    backgroundColor: theme.palette.action.hover,
-  }),
-}));
 
 function ViewSummariesToggle(props: ViewSummariesToggleProps) {
   const { activeTable, setActiveTable } = props;
