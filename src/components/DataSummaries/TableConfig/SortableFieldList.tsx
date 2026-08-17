@@ -115,6 +115,8 @@ function SortableFieldRow({
       <DragIndicator
         ref={handleRef}
         fontSize="small"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         sx={{
           mr: 0.5,
           color: Theme.PrimaryGrey500,
@@ -238,7 +240,7 @@ export function SortableFieldList({
             const fieldType = getFieldType(fieldObj);
 
             return (
-              <Box sx={{ ...rowBoxSx, width: 368 }}>
+              <Box sx={{ ...rowBoxSx, width: '100%' }}>
                 <DragIndicator fontSize="small" sx={{ mr: 0.5, color: Theme.PrimaryGrey700 }} />
                 <FieldTypeIndicator fieldType={fieldType} />
                 <Box

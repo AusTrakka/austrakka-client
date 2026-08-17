@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { type Dispatch, type MouseEvent, type SetStateAction, useState } from 'react';
 import type { PivotConfig } from '../dataSummariesMeta';
 
 interface Option {
@@ -23,7 +23,7 @@ function OptionCheckboxItem({ option }: { option: Option }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
-  const handleOpenPopover = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenPopover = (event: MouseEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -48,7 +48,12 @@ function OptionCheckboxItem({ option }: { option: Option }) {
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography variant="body2">{option.label}</Typography>
             {option.description && (
-              <IconButton size="small" onClick={handleOpenPopover} sx={{ p: 0.25 }}>
+              <IconButton
+                size="small"
+                onClick={handleOpenPopover}
+                onMouseDown={(e) => e.stopPropagation()}
+                sx={{ p: 0.25 }}
+              >
                 <InfoOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             )}
@@ -82,12 +87,12 @@ function OptionCheckboxItem({ option }: { option: Option }) {
   );
 }
 
-interface TableMenuProps {
+interface GlobalOptionsProps {
   pivotConfig: PivotConfig;
-  setPivotConfig: React.Dispatch<React.SetStateAction<PivotConfig>>;
+  setPivotConfig: Dispatch<SetStateAction<PivotConfig>>;
 }
 
-export function TableMenu({ pivotConfig, setPivotConfig }: TableMenuProps) {
+export function GlobalOptions({ pivotConfig, setPivotConfig }: GlobalOptionsProps) {
   function handleShowTotalCountFooterChange(show: boolean) {
     setPivotConfig((prev) => ({
       ...prev,
@@ -95,14 +100,14 @@ export function TableMenu({ pivotConfig, setPivotConfig }: TableMenuProps) {
     }));
   }
 
-  function onShowRelativePercentagesChange(show: boolean) {
+  function handleShowRelativePercentagesChange(show: boolean) {
     setPivotConfig((prev) => ({
       ...prev,
       showRelativePercentages: show,
     }));
   }
 
-  function onHideEmptyNullGroupsChange(hide: boolean) {
+  function handleHideEmptyNullGroupsChange(hide: boolean) {
     setPivotConfig((prev) => ({
       ...prev,
       hideEmptyNullGroups: hide,
@@ -121,7 +126,7 @@ export function TableMenu({ pivotConfig, setPivotConfig }: TableMenuProps) {
       description:
         'Relative percentages represent percentages relative to the total count of records visible in the table. These percentages are only calculated for row-count metrics (e.g. total count) and will not be calculated for other aggregation types (e.g. sum, mean, median).',
       checked: pivotConfig.showRelativePercentages,
-      onChange: onShowRelativePercentagesChange,
+      onChange: handleShowRelativePercentagesChange,
     },
     {
       id: 'hideEmptyNullGroups',
@@ -129,7 +134,7 @@ export function TableMenu({ pivotConfig, setPivotConfig }: TableMenuProps) {
       description:
         'This option hides all groups where one or more group-by fields have empty or null values. Hiding these groups will affect the total counts and relative percentages for other groups within the table. This option will only have a visible effect if there are group-by fields selected and there are empty/null values for those fields in the dataset.',
       checked: pivotConfig.hideEmptyNullGroups,
-      onChange: onHideEmptyNullGroupsChange,
+      onChange: handleHideEmptyNullGroupsChange,
     },
   ];
   return (

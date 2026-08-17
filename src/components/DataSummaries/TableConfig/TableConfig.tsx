@@ -21,11 +21,11 @@ import {
   UNAVAILABLE_FIELDS,
 } from '../dataSummariesMeta';
 import { DisplayFieldMenu } from './DisplayFieldMenu';
+import { GlobalOptions } from './GlobalOptions';
 import { GroupByFieldMenu } from './GroupByFieldMenu';
 import { SortableFieldList } from './SortableFieldList';
-import { TableMenu } from './TableMenu';
 
-interface PivotConfigOptionsProps {
+interface TableConfigProps {
   pivotConfig: PivotConfig;
   fieldTypes: FieldTypeMap;
   handleReset: () => void;
@@ -34,7 +34,7 @@ interface PivotConfigOptionsProps {
   setPivotConfig: Dispatch<SetStateAction<PivotConfig>>;
 }
 
-function PivotConfigOptions(props: PivotConfigOptionsProps) {
+function TableConfig(props: TableConfigProps) {
   const { pivotConfig, fieldTypes, setPivotConfig, rows, sortedFields, handleReset } = props;
 
   // Group-by and display menu anchor states
@@ -79,30 +79,21 @@ function PivotConfigOptions(props: PivotConfigOptionsProps) {
 
   function handleGroupByChange(nextGroupByFields: string[]) {
     setPivotConfig((prev) => {
-      // Drop granularity entries for columns no longer grouped on
       const nextGranularity: GroupByGranularityMap = {};
+      const nextBinSize: GroupByBinSizeMap = {};
+      const nextTopN: GroupByTopNMap = {};
+      const nextTopNGlobal: Record<string, boolean> = {};
+
       for (const col of nextGroupByFields) {
         if (prev.groupByGranularity[col]) {
           nextGranularity[col] = prev.groupByGranularity[col];
         }
-      }
-
-      const nextBinSize: GroupByBinSizeMap = {};
-      for (const col of nextGroupByFields) {
         if (prev.groupByBinSize[col] !== undefined) {
           nextBinSize[col] = prev.groupByBinSize[col];
         }
-      }
-
-      const nextTopN: GroupByTopNMap = {};
-      for (const col of nextGroupByFields) {
         if (prev.groupByTopNSize[col] !== undefined) {
           nextTopN[col] = prev.groupByTopNSize[col];
         }
-      }
-
-      const nextTopNGlobal: Record<string, boolean> = {};
-      for (const col of nextGroupByFields) {
         if (prev.groupByTopNGlobal[col] !== undefined) {
           nextTopNGlobal[col] = prev.groupByTopNGlobal[col];
         }
@@ -141,43 +132,46 @@ function PivotConfigOptions(props: PivotConfigOptionsProps) {
         <Typography variant="h4" color="primary" sx={{ mb: 1.5 }}>
           Table configuration
         </Typography>
-        <TableMenu pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
-        <SortableFieldList
-          title="Display fields"
-          fields={sortedFields as ProjectViewField[] | MetaDataColumn[]}
-          selectedFieldNames={pivotConfig.displayFields}
-          onChange={handleDisplayFieldsChange}
-          onOpenItemMenu={openDisplayFieldMenu}
-          unavailableFields={UNAVAILABLE_FIELDS}
-        />
-        <DisplayFieldMenu
-          anchorEl={displayAnchorEl}
-          activeCol={activeDisplayCol}
-          fieldType={activeDisplayCol ? fieldTypes[activeDisplayCol] : undefined}
-          selectedAggregations={
-            activeDisplayCol ? (pivotConfig.selectedAggregations[activeDisplayCol] ?? []) : []
-          }
-          onClose={() => setDisplayAnchorEl(null)}
-          setPivotConfig={setPivotConfig}
-        />
-        <br />
-        <SortableFieldList
-          title="Group-by fields"
-          fields={sortedFields as ProjectViewField[] | MetaDataColumn[]}
-          selectedFieldNames={pivotConfig.groupByFields}
-          onChange={handleGroupByChange}
-          onOpenItemMenu={openGroupByFieldMenu}
-          unavailableFields={UNAVAILABLE_FIELDS}
-        />
-        <GroupByFieldMenu
-          setPivotConfig={setPivotConfig}
-          anchorEl={groupByAnchorEl}
-          activeCol={activeGroupByCol}
-          fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
-          pivotConfig={pivotConfig}
-          rows={rows}
-          onClose={() => setGroupByAnchorEl(null)}
-        />
+        <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
+        <Box sx={{ my: 2 }}>
+          <SortableFieldList
+            title="Display fields"
+            fields={sortedFields}
+            selectedFieldNames={pivotConfig.displayFields}
+            onChange={handleDisplayFieldsChange}
+            onOpenItemMenu={openDisplayFieldMenu}
+            unavailableFields={UNAVAILABLE_FIELDS}
+          />
+          <DisplayFieldMenu
+            anchorEl={displayAnchorEl}
+            activeCol={activeDisplayCol}
+            fieldType={activeDisplayCol ? fieldTypes[activeDisplayCol] : undefined}
+            selectedAggregations={
+              activeDisplayCol ? (pivotConfig.selectedAggregations[activeDisplayCol] ?? []) : []
+            }
+            onClose={() => setDisplayAnchorEl(null)}
+            setPivotConfig={setPivotConfig}
+          />
+        </Box>
+        <Box>
+          <SortableFieldList
+            title="Group-by fields"
+            fields={sortedFields}
+            selectedFieldNames={pivotConfig.groupByFields}
+            onChange={handleGroupByChange}
+            onOpenItemMenu={openGroupByFieldMenu}
+            unavailableFields={UNAVAILABLE_FIELDS}
+          />
+          <GroupByFieldMenu
+            setPivotConfig={setPivotConfig}
+            anchorEl={groupByAnchorEl}
+            activeCol={activeGroupByCol}
+            fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
+            pivotConfig={pivotConfig}
+            rows={rows}
+            onClose={() => setGroupByAnchorEl(null)}
+          />
+        </Box>
       </Box>
       <Box sx={{ mt: 'auto', mb: 1, display: 'flex', justifyContent: 'flex-start' }}>
         <Button
@@ -196,4 +190,4 @@ function PivotConfigOptions(props: PivotConfigOptionsProps) {
   );
 }
 
-export default PivotConfigOptions;
+export default TableConfig;

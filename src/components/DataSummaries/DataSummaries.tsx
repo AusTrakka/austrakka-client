@@ -35,7 +35,7 @@ import { buildPivotGroups } from './dataSummariesUtils';
 import { HorizontalModeTable } from './HorizontalModeTable';
 import { useHorizontalPivotData } from './hooks/useHorizontalPivotData';
 import { useVerticalPivotData } from './hooks/useVerticalPivotData';
-import PivotConfigOptions from './PivotConfig/PivotConfigOptions';
+import TableConfig from './TableConfig/TableConfig';
 import { VerticalModeTable } from './VerticalModeTable';
 import ViewSummariesToggle from './ViewSummariesToggle';
 
@@ -90,7 +90,7 @@ function DataSummaries(props: DataSummariesProps) {
   const fields: ProjectViewField[] | MetaDataColumn[] = Array.isArray(rawFields) ? rawFields : [];
   const rows: RowRecord[] = Array.isArray(metadata) ? (metadata as RowRecord[]) : [];
 
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Record<string, DataTableFilterMetaData>>({
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
   });
 
@@ -105,7 +105,7 @@ function DataSummaries(props: DataSummariesProps) {
   const fieldLabelByKey: Record<string, string> = useMemo(() => {
     const map: Record<string, string> = {};
     for (const field of fields) {
-      map[field.columnName] = field.columnName;
+      map[field.columnName] = field.headerName ?? field.columnName;
     }
     return map;
   }, [fields]);
@@ -143,9 +143,10 @@ function DataSummaries(props: DataSummariesProps) {
 
   function onGlobalFilterChange(event: ChangeEvent<HTMLInputElement>) {
     const { value } = event.target;
-    const nextFilters = { ...filters };
-    (nextFilters.global as DataTableFilterMetaData).value = value;
-    setFilters(nextFilters);
+    setFilters((prev) => ({
+      ...prev,
+      global: { ...prev.global, value },
+    }));
   }
 
   // Display conditionals
@@ -192,24 +193,20 @@ function DataSummaries(props: DataSummariesProps) {
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-        <SearchInput
-          value={(filters.global as DataTableFilterMetaData).value || ''}
-          onChange={onGlobalFilterChange}
-        />
+        <SearchInput value={filters.global?.value || ''} onChange={onGlobalFilterChange} />
         <Stack direction="row" spacing={1} alignItems="center">
           <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
           <Tooltip title="Configure table fields" arrow>
             <IconButton size="small" onClick={() => setConfigDrawerOpen(true)}>
               <Badge
                 badgeContent={pivotConfig.displayFields.length + pivotConfig.groupByFields.length}
+                color="primary"
                 sx={{
-                  color: 'white',
-                  top: -12,
-                  right: -22,
                   '& .MuiBadge-badge': { backgroundColor: Theme.PrimaryMain },
                 }}
-              />
-              <Tune fontSize="small" />
+              >
+                <Tune fontSize="small" />
+              </Badge>
             </IconButton>
           </Tooltip>
 
@@ -272,7 +269,7 @@ function DataSummaries(props: DataSummariesProps) {
   return (
     <Box>
       <CustomDrawer drawerOpen={configDrawerOpen} setDrawerOpen={setConfigDrawerOpen}>
-        <PivotConfigOptions
+        <TableConfig
           rows={rows}
           handleReset={handleReset}
           pivotConfig={pivotConfig}

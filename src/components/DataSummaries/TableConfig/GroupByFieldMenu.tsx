@@ -15,7 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { type Dispatch, type MouseEvent, type SetStateAction, useState } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import FieldTypes from '../../../constants/fieldTypes';
 import {
@@ -53,23 +53,21 @@ function DateGranularityOptions({
         Date granularity
       </Typography>
 
-      <RadioGroup value={selectedValue}>
-        {DATE_GRANULARITY_OPTIONS.map((option) => {
-          const isSelected = selectedValue === option;
-          return (
-            <MenuItem
-              key={option}
-              selected={isSelected}
-              onClick={() => {
-                onSetGroupByGranularity(activeCol, option);
-              }}
-            >
-              <Radio checked={isSelected} size="small" sx={{ mr: 1.5, p: 0 }} />
-              <Typography variant="body2">{DATE_GRANULARITY_LABELS[option]}</Typography>
-            </MenuItem>
-          );
-        })}
-      </RadioGroup>
+      {DATE_GRANULARITY_OPTIONS.map((option) => {
+        const isSelected = selectedValue === option;
+        return (
+          <MenuItem
+            key={option}
+            selected={isSelected}
+            onClick={() => {
+              onSetGroupByGranularity(activeCol, option);
+            }}
+          >
+            <Radio checked={isSelected} size="small" sx={{ mr: 1.5, p: 0 }} />
+            <Typography variant="body2">{DATE_GRANULARITY_LABELS[option]}</Typography>
+          </MenuItem>
+        );
+      })}
     </>
   );
 }
@@ -158,7 +156,9 @@ function TopNOptions({
   const [infoAnchorEl, setInfoAnchorEl] = useState<HTMLElement | null>(null);
   const isInfoOpen = Boolean(infoAnchorEl);
 
-  function handleInfoOpen(event: React.MouseEvent<HTMLElement>) {
+  function handleInfoOpen(event: MouseEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
     setInfoAnchorEl(event.currentTarget);
   }
   function handleInfoClose() {
@@ -267,7 +267,7 @@ function TopNOptions({
 }
 
 interface GroupByFieldMenuProps {
-  setPivotConfig: React.Dispatch<React.SetStateAction<PivotConfig>>;
+  setPivotConfig: Dispatch<SetStateAction<PivotConfig>>;
   anchorEl: HTMLElement | null;
   activeCol: string | null;
   fieldType?: FieldTypes;
@@ -287,8 +287,6 @@ export function GroupByFieldMenu({
 }: GroupByFieldMenuProps) {
   const [binSizeInputText, setBinSizeInputText] = useState<Record<string, string>>({});
   const [topNInputText, setTopNInputText] = useState<Record<string, string>>({});
-
-  if (!activeCol) return null;
 
   const isFirstOrOnlyGroupField =
     pivotConfig.groupByFields.length === 1 || activeCol === pivotConfig.groupByFields[0];
@@ -433,10 +431,15 @@ export function GroupByFieldMenu({
   }
 
   return (
-    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} {...menuAnchorProps}>
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl && activeCol)}
+      onClose={onClose}
+      {...menuAnchorProps}
+    >
       {fieldType === FieldTypes.DATE && (
         <DateGranularityOptions
-          activeCol={activeCol}
+          activeCol={activeCol!}
           pivotConfig={pivotConfig}
           onSetGroupByGranularity={setGroupByGranularity}
         />
@@ -444,7 +447,7 @@ export function GroupByFieldMenu({
 
       {(fieldType === FieldTypes.NUMBER || fieldType === FieldTypes.DOUBLE) && (
         <NumberBinningOptions
-          activeCol={activeCol}
+          activeCol={activeCol!}
           pivotConfig={pivotConfig}
           binSizeInputText={binSizeInputText}
           onSetBinningEnabled={setBinningEnabled}
@@ -456,7 +459,7 @@ export function GroupByFieldMenu({
       {fieldType !== FieldTypes.BOOLEAN && fieldType !== undefined && (
         <TopNOptions
           key={activeCol}
-          activeCol={activeCol}
+          activeCol={activeCol!}
           pivotConfig={pivotConfig}
           topNInputText={topNInputText}
           isFirstOrOnlyGroupField={isFirstOrOnlyGroupField}
@@ -479,7 +482,7 @@ export function GroupByFieldMenu({
 
       <MenuItem
         onClick={() => {
-          handleRemoveGroupByField(activeCol);
+          handleRemoveGroupByField(activeCol!);
           onClose();
         }}
         sx={{ color: Theme.SecondaryRed }}

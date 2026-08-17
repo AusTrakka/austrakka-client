@@ -1,5 +1,6 @@
 import { DeleteOutline } from '@mui/icons-material';
 import { Checkbox, Divider, Menu, MenuItem, Typography } from '@mui/material';
+import type { Dispatch, SetStateAction } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import type FieldTypes from '../../../constants/fieldTypes';
 import type { PivotConfig } from '../dataSummariesMeta';
@@ -20,7 +21,7 @@ interface DisplayFieldMenuProps {
   fieldType?: FieldTypes;
   selectedAggregations: AggregationType[];
   onClose: () => void;
-  setPivotConfig: React.Dispatch<React.SetStateAction<PivotConfig>>;
+  setPivotConfig: Dispatch<SetStateAction<PivotConfig>>;
 }
 
 export function DisplayFieldMenu({
@@ -31,8 +32,6 @@ export function DisplayFieldMenu({
   onClose,
   setPivotConfig,
 }: DisplayFieldMenuProps) {
-  if (!activeCol) return null;
-
   function toggleAggregation(col: string, agg: AggregationType) {
     setPivotConfig((prev) => {
       const current = prev.selectedAggregations[col] ?? [];
@@ -60,10 +59,15 @@ export function DisplayFieldMenu({
       };
     });
   }
-  const availableAggs = fieldType ? (FIELD_TYPE_AGGREGATION_TYPES[fieldType] ?? []) : [];
+  const availableAggregations = fieldType ? (FIELD_TYPE_AGGREGATION_TYPES[fieldType] ?? []) : [];
 
   return (
-    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} {...menuAnchorProps}>
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl && activeCol)}
+      onClose={onClose}
+      {...menuAnchorProps}
+    >
       <Typography
         variant="caption"
         sx={{ px: 2, py: 0.5, color: Theme.PrimaryGrey500, display: 'block' }}
@@ -71,18 +75,18 @@ export function DisplayFieldMenu({
         Aggregations
       </Typography>
 
-      {availableAggs.length === 0 ? (
+      {availableAggregations.length === 0 ? (
         <MenuItem disabled>
           <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
             No options available for this field
           </Typography>
         </MenuItem>
       ) : (
-        availableAggs.map((agg) => {
+        availableAggregations.map((agg) => {
           const isSelected = selectedAggregations.includes(agg);
           return (
-            <MenuItem key={agg} onClick={() => toggleAggregation(activeCol, agg)}>
-              <Checkbox size="small" checked={isSelected} sx={{ mr: 1, p: 0 }} />
+            <MenuItem key={agg} onClick={() => toggleAggregation(activeCol!, agg)}>
+              <Checkbox size="small" checked={isSelected} sx={{ mr: 1, p: 0 }} disableRipple />
               <Typography variant="body2">{AGG_TYPE_LABELS[agg]}</Typography>
             </MenuItem>
           );
@@ -91,7 +95,7 @@ export function DisplayFieldMenu({
       <Divider />
       <MenuItem
         onClick={() => {
-          handleRemoveDisplayField(activeCol);
+          handleRemoveDisplayField(activeCol!);
           onClose();
         }}
         sx={{ color: Theme.SecondaryRed }}
