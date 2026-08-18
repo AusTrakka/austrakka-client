@@ -21,22 +21,25 @@ span {
   font-family: Roboto, "Open Sans", sans-serif;
 }
 
-/* CSS that is applied across all pages */
 .page {
   margin-left: 65px;
-  /* transition: all 330ms ease-in-out; */
   padding: 0px 15px 0px 35px;
-  /* width: 100vw; */
   min-height: 100vh;
 }
 
 .pagePadded {
-  /* transform: translate(150px); */
   transition: all 330ms ease-in-out;
   padding: 0px 20px 0px 35px;
   margin-left: 175px;
   min-height: 100vh;
-  /* width: calc(100vw - 240px);  */
+}
+
+.app-container.compact-mode .pagePadded {
+  padding: 0px var(--density-spacing-lg) 0px var(--density-spacing-xl);
+}
+
+.app-container.compact-mode .page {
+  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-xl);
 }
 
 .warningBannerPadded {
@@ -60,8 +63,7 @@ span {
 }
 
 .pageHeader {
-  margin-bottom: 8px;
-  padding-top: 16px;
+  padding-top: 10px;
 }
 
 .breadcrumbs a {
@@ -84,6 +86,10 @@ span {
   font-weight: bold;
   font-size: 1.6rem;
   padding-bottom: 5px;
+}
+
+.app-container.compact-mode .pageTitle {
+  font-size: 1.4rem !important;
 }
 
 /* Metadata column styles */

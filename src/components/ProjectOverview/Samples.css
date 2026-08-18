@@ -81,3 +81,15 @@
   align-items: center;
   padding: 5px;
 }
+
+.app-container.compact-mode .custom-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px; /* Remove extra padding in compact mode */
+}
+
+.app-container.compact-mode .custom-icon-container svg {
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}

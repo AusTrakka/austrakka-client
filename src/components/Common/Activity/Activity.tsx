@@ -278,16 +278,22 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
       if (data[countKey] && data[countKey] > 1) {
         return (
-          <span>
+          <Typography
+            component="span"
+            variant={'inherit'}
+            sx={{ display: 'inline-flex', alignItems: 'center' }}
+          >
             {data[previewKey]}
             <Chip
               variant="outlined"
               color="primary"
               size="small"
               label={`+${data[countKey] - 1} more`}
-              sx={{ marginLeft: '8px' }}
+              sx={{
+                marginLeft: '8px',
+              }}
             />
-          </span>
+          </Typography>
         );
       }
       return data[valueKey] || '-';

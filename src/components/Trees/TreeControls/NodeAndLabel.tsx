@@ -11,7 +11,9 @@ import {
   Switch,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import '../TreeDetail.css';
 import type * as React from 'react';
+import { useCompactMode } from '../../../app/CompactModeContext';
 import InputSlider from './Slider';
 import getStyles, { MenuProps } from './utils';
 
@@ -41,6 +43,7 @@ export default function NodeAndLabelControls({
   state: State;
   onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
 }) {
+  const { compact } = useCompactMode();
   const theme = useTheme();
   return (
     <Grid>
@@ -93,8 +96,10 @@ export default function NodeAndLabelControls({
         <FormGroup>
           {state.labelBlocks.length > 0 ? (
             <FormControlLabel
+              className="tree-control-switch"
               control={
                 <Switch
+                  size={compact ? 'small' : 'medium'}
                   checked={state.keyValueLabelBlocks}
                   onChange={onChange}
                   name="keyValueLabelBlocks"
@@ -106,18 +111,34 @@ export default function NodeAndLabelControls({
             <div />
           )}
           <FormControlLabel
-            control={<Switch checked={state.alignLabels} onChange={onChange} name="alignLabels" />}
+            className="tree-control-switch"
+            control={
+              <Switch
+                size={compact ? 'small' : 'medium'}
+                checked={state.alignLabels}
+                onChange={onChange}
+                name="alignLabels"
+              />
+            }
             label="Align labels"
           />
           <FormControlLabel
+            className="tree-control-switch"
             control={
-              <Switch checked={state.showLeafLabels} onChange={onChange} name="showLeafLabels" />
+              <Switch
+                size={compact ? 'small' : 'medium'}
+                checked={state.showLeafLabels}
+                onChange={onChange}
+                name="showLeafLabels"
+              />
             }
             label="Show tip labels"
           />
           <FormControlLabel
+            className="tree-control-switch"
             control={
               <Switch
+                size={compact ? 'small' : 'medium'}
                 checked={state.showInternalLabels}
                 onChange={onChange}
                 name="showInternalLabels"
@@ -126,8 +147,10 @@ export default function NodeAndLabelControls({
             label="Show internal labels"
           />
           <FormControlLabel
+            className="tree-control-switch"
             control={
               <Switch
+                size={compact ? 'small' : 'medium'}
                 checked={state.showBranchLengths}
                 onChange={onChange}
                 name="showBranchLengths"
@@ -136,8 +159,10 @@ export default function NodeAndLabelControls({
             label="Show branch lengths"
           />
           <FormControlLabel
+            className="tree-control-switch"
             control={
               <Switch
+                size={compact ? 'small' : 'medium'}
                 checked={state.showShapeBorders}
                 onChange={onChange}
                 name="showShapeBorders"
@@ -154,6 +179,7 @@ export default function NodeAndLabelControls({
             label="Font size"
             value={state.fontSize}
             onChange={onChange}
+            compact={compact}
             min={1}
             max={24}
           />
@@ -167,6 +193,7 @@ export default function NodeAndLabelControls({
           label="Node size"
           value={state.nodeSize}
           onChange={onChange}
+          compact={compact}
           min={1}
           max={24}
         />
@@ -178,6 +205,7 @@ export default function NodeAndLabelControls({
             label="Node border width"
             value={state.shapeBorderWidth}
             onChange={onChange}
+            compact={compact}
             min={1}
             max={10}
           />

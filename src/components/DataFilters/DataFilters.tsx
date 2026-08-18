@@ -663,7 +663,9 @@ function DataFilters(props: DataFiltersProps) {
                   </Stack>
                 </Grid>
                 <Grid item sx={{ paddingLeft: 8 }}>
-                  {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
+                  <Typography variant="body2" color="textSecondary">
+                    {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
+                  </Typography>
                 </Grid>
               </Grid>
             </Button>

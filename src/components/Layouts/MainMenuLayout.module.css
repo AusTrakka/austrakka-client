@@ -1,11 +1,12 @@
-.logocontainer {
-  flex-grow: 1;
-}
-
 .logo {
   height: 45px;
   margin: 8px;
   /* padding: 5px; */
+}
+
+:global(.app-container.compact-mode) .logo {
+  height: 40px;
+  margin: 4px;
 }
 
 .drawer {
