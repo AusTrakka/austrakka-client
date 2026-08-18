@@ -1,9 +1,13 @@
-@import "../../../node_modules/primereact/resources/themes/fluent-light/theme.css";
+@import "../../../node_modules/primereact/resources/themes/mdc-light-indigo/theme.css";
+/* @import "../../../node_modules/primereact/resources/themes/nano/theme.css"; */
+@import "../themes/compact-mode-variables.css";
+@import "../themes/prime-react-compact-overrides.css";
+@import "../themes/mui-compact-overrides.css";
 
 .p-datatable.p-datatable-gridlines {
   --data-table-border-color: var(--primary-grey-300);
   /* This will change the border 
-                                                colours should be some sort of grey */
+                                               colours should be some sort of grey */
 }
 
 .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th,
@@ -14,6 +18,45 @@
 
 .p-datatable-wrapper {
   min-height: 80px;
+}
+
+/* --- Global DataTable Header Alignment (Title Left, Badge Middle, Icon Right) --- */
+.p-datatable .p-datatable-thead > tr > th .p-column-header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 1. Title takes up the left side */
+.p-datatable .p-column-title {
+  order: 1;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 2. Badge is forced into the middle */
+.p-datatable .p-sortable-column-badge {
+  order: 2;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+/* 3. Sort section / custom icon container is forced to the far right */
+.p-datatable span[data-pc-section="sort"],
+.p-datatable .custom-icon-container {
+  order: 3;
+  margin-left: auto;
+}
+/* --------------------------------------------------------------------------------- */
+
+.p-dropdown {
+  height: 40px;
+}
+
+.p-dropdown .p-dropdown-label {
+  padding: 8px 10px;
 }
 
 .p-dropdown:not(.p-disabled).p-focus {
@@ -41,6 +84,6 @@
 .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
   outline: 0 none;
   outline-offset: 0;
-  box-shadow: inset 0 0 0 1px var(primary-grey-700);
+  box-shadow: inset 0 0 0 1px var(--primary-grey-700);
   border-color: var(--secondary-light-green);
 }

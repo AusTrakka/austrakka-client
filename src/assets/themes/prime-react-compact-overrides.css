@@ -64,8 +64,8 @@
 }
 
 .app-container.compact-mode .p-treetable .p-treetable-toggler svg {
-  width: var(--density-icon-size-sm);
-  height: var(--density-icon-size-sm);
+  width: var(--density-icon-size-xs);
+  height: var(--density-icon-size-xs);
 }
 
 /* --- Inputs --- */

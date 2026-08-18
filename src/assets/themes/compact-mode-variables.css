@@ -28,8 +28,10 @@
 
   --density-icon-size-md: 18px;
   --density-icon-size-sm: 14px;
+  --density-icon-size-xs: 10px;
 
   --density-border-radius: 4px;
 
   --density-table-row-height: 28px;
+  --density-small-chip-height: 20px;
 }

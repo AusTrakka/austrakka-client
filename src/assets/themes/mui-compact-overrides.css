@@ -120,8 +120,20 @@
   padding-top: var(--density-spacing-null);
   padding-bottom: var(--density-spacing-null);
   padding-left: var(--density-spacing-md);
-  /* Extra right padding on selects prevents text from clashing with the dropdown arrow */
-  padding-right: calc(var(--density-spacing-md) + 20px);
+}
+
+.app-container.compact-mode .MuiInputBase-input[type="number"] {
+  height: var(--density-input-height);
+  padding-top: var(--density-spacing-xs);
+  padding-bottom: var(--density-spacing-xs);
+  padding-right: var(--density-spacing-md);
+  box-sizing: border-box;
+}
+
+/* Ensure the parent wrapper matches the row height constraint */
+.app-container.compact-mode .MuiInputBase-root:has(input[type="number"]) {
+  height: var(--density-row-height);
+  min-height: var(--density-row-height);
 }
 
 /* 2. Labels */
@@ -140,9 +152,8 @@
 }
 
 /* Chip Overrides */
-
 .app-container.compact-mode .MuiChip-root {
-  height: var(--density-input-height);
+  height: var(--density-small-chip-height);
   font-size: var(--density-font-size-body2);
   display: inline-flex;
   align-items: center;
@@ -150,4 +161,11 @@
 
 .app-container.compact-mode .MuiChip-label {
   line-height: 1;
+}
+
+/* Buttons */
+.app-container.compact-mode .MuiButton-root {
+  font-size: var(--density-font-size-body1);
+  padding: var(--density-spacing-sm) var(--density-spacing-sm);
+  min-height: var(--density-input-height);
 }
