@@ -2,22 +2,23 @@
 
 import type { DataTableFilterMeta } from 'primereact/datatable';
 import { type SetStateAction, useEffect, useMemo, useState } from 'react';
-import type { NavigateFunction } from 'react-router-dom';
 import { isDataTableFiltersEqual } from './filterUtils';
 import getQueryParamOrDefault from './navigationUtils';
-import {
-  encodeFilterObj,
-  getFilterObjFromSearchParams,
-  getRawQueryParams,
-  updateSearchParamInUrl,
-} from './urlUtils';
+import { encodeFilterObj, getFilterObjFromSearchParams, getRawQueryParams } from './urlUtils';
+
+function resolvePrimitiveState<T>(newState: React.SetStateAction<T>, currentState: T): T {
+  if (typeof newState === 'function') {
+    return (newState as (prevState: T) => T)(currentState);
+  }
+  return newState;
+}
 
 export function useStateFromSearchParamsForPrimitive<
   T extends string | number | boolean | null | Array<string | number | boolean | null>,
 >(
   paramName: string,
   defaultState: T,
-  navigate: NavigateFunction,
+  pushHistory = false, // Optional parameter to determine whether to push or replace history state
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const initCurrentSearchParams = getRawQueryParams(window.location.search);
   const stateSearchParams = getQueryParamOrDefault<T>(
@@ -27,14 +28,27 @@ export function useStateFromSearchParamsForPrimitive<
   );
   const [state, setState] = useState<T>(stateSearchParams);
 
+  // Sync URL
+  useEffect(() => {
+    const onPopState = () => {
+      const rawParams = getRawQueryParams(window.location.search);
+      const next = getQueryParamOrDefault<T>(paramName, defaultState, rawParams);
+      setState((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [paramName, defaultState]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (JSON.stringify(stateSearchParams) !== JSON.stringify(state)) {
       setState(stateSearchParams);
     }
   }, [stateSearchParams]);
+
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
-    setState(newState);
+    const resolvedState = resolvePrimitiveState(newState, state);
+    setState(resolvedState);
 
     const currentSearchParams = getRawQueryParams(window.location.search);
 
@@ -44,24 +58,34 @@ export function useStateFromSearchParamsForPrimitive<
     }
 
     // Append only if value is not the default
-    if (newState !== defaultState) {
-      currentSearchParams[paramName] = String(newState); // Raw string
+    if (resolvedState !== defaultState) {
+      currentSearchParams[paramName] = String(resolvedState); // Raw string
     }
 
     const queryString = Object.entries(currentSearchParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    navigate(`${window.location.pathname}?${queryString}`, { replace: true });
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+
+    if (pushHistory) {
+      window.history.pushState(window.history.state, '', newUrl);
+    } else {
+      window.history.replaceState(window.history.state, '', newUrl);
+    }
   };
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
-  return [state, useMemo(() => useStateWithQueryParam, [paramName, defaultState, setState])];
+  return [
+    state,
+    // biome-ignore lint/correctness/useExhaustiveDependencies: historic
+    useMemo(() => useStateWithQueryParam, [paramName, defaultState, state, pushHistory]),
+  ];
 }
 
-// TODO: Need to move this function else where as it is more than a utillitiy
+// TODO: Need to move this function else where as it is more than a utility
 export function useStateFromSearchParamsForObject<T extends Record<string, any>>(
   defaultState: T,
-  navigate: NavigateFunction,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const stateSearchParams = getRawQueryParams(window.location.search);
   const state: T = { ...defaultState };
@@ -88,7 +112,7 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
 
   const useStateWithQueryParam = (newState: React.SetStateAction<T>) => {
     setStateObject(newState);
-    // const currentSearchParams = new URLSearchParams(window.location.search);
+
     const currentSearchParams = new Map<string, string>();
 
     const rawParams = getRawQueryParams(window.location.search);
@@ -117,7 +141,10 @@ export function useStateFromSearchParamsForObject<T extends Record<string, any>>
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
-    navigate(`${window.location.pathname}?${queryString}`, { replace: true });
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+    window.history.replaceState(window.history.state, '', newUrl);
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   return [stateObject, useMemo(() => useStateWithQueryParam, [defaultState, setStateObject])];
@@ -177,6 +204,18 @@ export function useStateFromSearchParamsForFilterObject(
     if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
       rawParams[paramName] = encodeFilterObj(resolvedState);
     }
+
+    // If target param is empty, remove it before constructing the query string
+    Object.keys(rawParams).forEach(() => {
+      if (
+        rawParams[paramName] === '' ||
+        rawParams[paramName] == null ||
+        rawParams[paramName] === '()'
+      ) {
+        delete rawParams[paramName];
+      }
+    });
+
     const queryString = Object.entries(rawParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
@@ -184,42 +223,9 @@ export function useStateFromSearchParamsForFilterObject(
     const newUrl = queryString
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
+
     window.history.replaceState(window.history.state, '', newUrl);
   };
 
   return [state, useStateWithQueryParam];
-}
-
-function readSearchParam<T extends string>(paramName: string, defaultValue: T): T {
-  const params = new URLSearchParams(window.location.search);
-  return (params.get(paramName) as T) ?? defaultValue;
-}
-
-export function useStateFromSearchParam<T extends string>(
-  paramName: string,
-  defaultValue: T,
-): [T, (newValue: T | null) => void] {
-  const [state, setState] = useState<T>(() => readSearchParam(paramName, defaultValue));
-
-  useEffect(() => {
-    // Pop state listener to update state when the user navigates using the browser's back/forward buttons
-    const handlePopState = () => {
-      setState(readSearchParam(paramName, defaultValue));
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [paramName, defaultValue]);
-
-  const setParamState = (newValue: T | null) => {
-    // If setting to null or the default value, remove param from URL
-    const isDefault = newValue === null || newValue === defaultValue;
-    const resolvedState = isDefault ? defaultValue : newValue;
-    const urlValue = isDefault ? null : newValue;
-
-    setState(resolvedState);
-    updateSearchParamInUrl(paramName, urlValue, true);
-  };
-
-  return [state, setParamState];
 }

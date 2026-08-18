@@ -44,14 +44,14 @@ import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataL
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
 import {
-  useStateFromSearchParam,
   useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
 } from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
-import { updateSearchParamInUrl } from '../../utilities/urlUtils';
+// import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import DataSummaries from '../DataSummaries/DataSummaries';
@@ -106,17 +106,14 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
   const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
 
-  const [activeTable, setActiveTableState] = useStateFromSearchParam<TableType>(
+  const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
     'view',
     TableType.RawMetadata,
+    true, // pushHistory
   );
 
   const setActiveTable = (table: TableType) => {
     setActiveTableState(table);
-    updateSearchParamInUrl(
-      'view',
-      table === TableType.SummaryMetadata ? TableType.SummaryMetadata : null,
-    );
   };
 
   useEffect(() => {

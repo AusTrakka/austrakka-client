@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import type React from 'react';
 import { createRef, type SyntheticEvent, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 import {
@@ -99,7 +99,6 @@ const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
   const { projectAbbrev, treeId, treeVersionId } = useParams();
-  const navigate = useNavigate();
   const [tree, setTree] = useState<TreeVersion | null>();
   const treeRef = createRef<TreeExportFunctions>();
   const legRef = createRef<HTMLDivElement>();
@@ -112,13 +111,9 @@ function TreeDetail() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
-  const [state, setState] = useStateFromSearchParamsForObject(defaultState, navigate);
+  const [state, setState] = useStateFromSearchParamsForObject(defaultState);
   const rootIdDefault: string = '0';
-  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
-    'rootId',
-    rootIdDefault,
-    navigate,
-  );
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive('rootId', rootIdDefault);
   const projectMetadata: ProjectMetadataState | null = useAppSelector((st) =>
     selectProjectMetadata(st, projectAbbrev),
   );

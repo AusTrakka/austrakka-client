@@ -1,4 +1,3 @@
-import FieldTypes from '../../constants/fieldTypes';
 import {
   AGG_TYPE_DEFAULT,
   AggregationType,
@@ -16,7 +15,8 @@ import {
   type PivotOptions,
   ROW_COUNT_AGGREGATION_TYPES,
   type RowRecord,
-} from './dataSummariesMeta';
+} from '../components/DataSummaries/dataSummariesMeta';
+import FieldTypes from '../constants/fieldTypes';
 
 // Buckets a date value into a string representation of the bucket based on the specified granularity
 function bucketDateValue(value: unknown, granularity: DateGranularity): string {

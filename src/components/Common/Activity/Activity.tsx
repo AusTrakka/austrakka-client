@@ -8,7 +8,6 @@ import {
   type TreeTableExpandedKeysType,
   type TreeTableToggleEvent,
 } from 'primereact/treetable';
-import { useNavigate } from 'react-router-dom';
 import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs from '../../../hooks/useActivityLogs';
 import {
@@ -89,7 +88,6 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>({});
   const MAX_VISIBLE_CHILDREN = 600;
-  const navigate = useNavigate();
 
   const defaultDateRange = useMemo(
     () => ({
@@ -99,10 +97,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     [],
   );
 
-  const [urlFilters, setUrlFilters] = useStateFromSearchParamsForObject<UrlFilters>(
-    defaultUrlFilters,
-    navigate,
-  );
+  const [urlFilters, setUrlFilters] =
+    useStateFromSearchParamsForObject<UrlFilters>(defaultUrlFilters);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: seed default range once on mount only
   useEffect(() => {

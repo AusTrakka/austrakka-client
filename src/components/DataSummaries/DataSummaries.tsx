@@ -18,6 +18,7 @@ import FieldTypes from '../../constants/fieldTypes';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import type { MetaDataColumn, ProjectViewField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
+import { buildPivotGroups } from '../../utilities/dataSummariesUtils';
 import CustomDrawer from '../Common/CustomDrawer';
 import ExportTableData from '../Common/ExportTableData';
 import type { TableType } from '../ProjectOverview/ProjectSamplesTable';
@@ -31,7 +32,6 @@ import {
   type RowRecord,
   TableOrientation,
 } from './dataSummariesMeta';
-import { buildPivotGroups } from './dataSummariesUtils';
 import { HorizontalModeTable } from './HorizontalModeTable';
 import { useHorizontalPivotData } from './hooks/useHorizontalPivotData';
 import { useVerticalPivotData } from './hooks/useVerticalPivotData';
