@@ -290,9 +290,9 @@ function ProjectSamplesTable(props: SamplesProps) {
             scrollHeight="flex"
             paginator
             loading={loadingState}
-            rows={25}
+            rows={100}
             columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            rowsPerPageOptions={[100, 500, 1000, 2000]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
