@@ -167,6 +167,7 @@ export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
+  console.log(paramName);
   // biome-ignore lint/correctness/useExhaustiveDependencies: <need the url>
   const stateSearchParams = useMemo(() => {
     return getFilterObjFromSearchParams(paramName, defaultFilter);
@@ -204,6 +205,18 @@ export function useStateFromSearchParamsForFilterObject(
     if (!isDataTableFiltersEqual(resolvedState, defaultFilter)) {
       rawParams[paramName] = encodeFilterObj(resolvedState);
     }
+
+    // If target param is empty, remove it before constructing the query string
+    Object.keys(rawParams).forEach(() => {
+      if (
+        rawParams[paramName] === '' ||
+        rawParams[paramName] == null ||
+        rawParams[paramName] === '()'
+      ) {
+        delete rawParams[paramName];
+      }
+    });
+
     const queryString = Object.entries(rawParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
@@ -211,6 +224,7 @@ export function useStateFromSearchParamsForFilterObject(
     const newUrl = queryString
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
+
     window.history.replaceState(window.history.state, '', newUrl);
   };
 
