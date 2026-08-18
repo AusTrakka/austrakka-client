@@ -1,0 +1,153 @@
+/* .app-container.compact-mode .MuiButton-root { */
+/*   padding: var(--density-button-padding-y) var(--density-button-padding-x); */
+/*   font-size: var(--density-font-size-body); */
+/* } */
+/* .app-container.compact-mode .MuiIconButton-root { */
+/*   padding: var(--density-spacing-sm); */
+/* } */
+/* .app-container.compact-mode .MuiInputBase-root { */
+/*   font-size: var(--density-font-size-body); */
+/* } */
+/* .app-container.compact-mode .MuiInputBase-input { */
+/*   padding-top: var(--density-spacing-lg); */
+/*   padding-bottom: var(--density-spacing-lg); */
+/*   font-size: var(--density-font-size-body); */
+/* } */
+/* .app-container.compact-mode .MuiTableCell-root { */
+/*   padding: var(--density-spacing-sm) var(--density-spacing-md); */
+/*   font-size: var(--density-font-size-body); */
+/* } */
+/* .app-container.compact-mode .MuiTableRow-root { */
+/*   height: var(--density-row-height); */
+/* } */
+/* .app-container.compact-mode .MuiTypography-body1, */
+/* .app-container.compact-mode .MuiTypography-body2 { */
+/*   font-size: var(--density-font-size-body); */
+/* } */
+/* .app-container.compact-mode .MuiCardContent-root { */
+/*   padding: var(--density-spacing-md); */
+/* } */
+/* .app-container.compact-mode .MuiCardContent-root:last-child { */
+/*   padding-bottom: var(--density-spacing-md); */
+/* } */
+/* --- MUI Compact Typography Overrides --- */
+.app-container.compact-mode .MuiTypography-h1 {
+  font-size: var(--density-font-size-h1);
+}
+
+.app-container.compact-mode .MuiTypography-h2 {
+  font-size: var(--density-font-size-h2);
+}
+
+.app-container.compact-mode .MuiTypography-h3 {
+  font-size: var(--density-font-size-h3);
+}
+
+.app-container.compact-mode .MuiTypography-h4 {
+  font-size: var(--density-font-size-h4);
+}
+
+.app-container.compact-mode .MuiTypography-h5 {
+  font-size: var(--density-font-size-h5);
+}
+
+.app-container.compact-mode .MuiTypography-h6 {
+  font-size: var(--density-font-size-h6);
+}
+
+.app-container.compact-mode .MuiIconButton-sizeMedium {
+  padding: var(--density-spacing-sm);
+}
+
+.app-container.compact-mode .MuiSvgIcon-fontSizeMedium {
+  font-size: var(--density-icon-size-md);
+}
+
+.app-container.compact-mode .MuiTypography-body1 {
+  font-size: var(--density-font-size-body1);
+}
+
+.app-container.compact-mode .MuiTypography-body2 {
+  font-size: var(--density-font-size-body2);
+}
+
+.app-container.compact-mode .MuiTabs-root {
+  min-height: var(--density-row-height);
+}
+
+.app-container.compact-mode .MuiTabs-scroller {
+  height: var(--density-row-height);
+}
+
+.app-container.compact-mode .MuiTab-root {
+  padding: var(--density-spacing-sm) var(--density-spacing-sm);
+  font-size: var(--density-font-size-body1);
+  min-height: 32px;
+}
+
+.app-container.compact-mode .MuiBreadcrumbs-root a,
+.app-container.compact-mode .MuiBreadcrumbs-root p,
+.app-container.compact-mode .MuiBreadcrumbs-root span {
+  font-size: var(--density-font-size-body1);
+}
+
+.app-container.compact-mode .MuiBreadcrumbs-root svg {
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}
+
+.app-container.compact-mode .MuiTypography-subtitle1 {
+  font-size: var(--density-font-size-subtitle1);
+}
+
+.app-container.compact-mode .MuiTypography-subtitle2 {
+  font-size: var(--density-font-size-subtitle2);
+}
+
+.app-container.compact-mode div > span[data-mui-internal-clone-element="true"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Autocomplete and Textbox */
+
+/* 1. Inputs, Selects, and Autocomplete text fields */
+.app-container.compact-mode .MuiInputBase-input,
+.app-container.compact-mode .MuiSelect-select,
+.app-container.compact-mode .MuiAutocomplete-input {
+  font-size: var(--density-font-size-body1);
+  padding-top: var(--density-spacing-null);
+  padding-bottom: var(--density-spacing-null);
+  padding-left: var(--density-spacing-md);
+  /* Extra right padding on selects prevents text from clashing with the dropdown arrow */
+  padding-right: calc(var(--density-spacing-md) + 20px);
+}
+
+/* 2. Labels */
+.app-container.compact-mode .MuiInputLabel-root {
+  font-size: var(--density-font-size-body1);
+  top: -1px;
+}
+
+/* 3. Root containers for Standard, Outlined, and Autocomplete fields */
+.app-container.compact-mode .MuiInput-root,
+.app-container.compact-mode .MuiOutlinedInput-root,
+.app-container.compact-mode .MuiAutocomplete-inputRoot,
+.app-container.compact-mode .MuiSelect-root {
+  height: var(--density-row-height);
+  min-height: var(--density-row-height);
+}
+
+/* Chip Overrides */
+
+.app-container.compact-mode .MuiChip-root {
+  height: var(--density-input-height);
+  font-size: var(--density-font-size-body2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-container.compact-mode .MuiChip-label {
+  line-height: 1;
+}
