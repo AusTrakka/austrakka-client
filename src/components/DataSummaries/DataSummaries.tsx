@@ -218,6 +218,7 @@ function DataSummaries(props: DataSummariesProps) {
             headers={activeExportHeaders}
             disabled={showEmptyState}
             fileNamePrefix="data_summary"
+            formatFields={true} // Required to ensure fields are formatted as presented in the table (particularly for date fields)
           />
           <Tooltip title="Reset table configuration" arrow>
             <IconButton size="small" onClick={handleReset} color="error" disabled={showEmptyState}>
