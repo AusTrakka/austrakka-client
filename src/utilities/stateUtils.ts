@@ -167,7 +167,6 @@ export function useStateFromSearchParamsForFilterObject(
   paramName: string,
   defaultFilter: DataTableFilterMeta,
 ): [DataTableFilterMeta, React.Dispatch<React.SetStateAction<DataTableFilterMeta>>] {
-  console.log(paramName);
   // biome-ignore lint/correctness/useExhaustiveDependencies: <need the url>
   const stateSearchParams = useMemo(() => {
     return getFilterObjFromSearchParams(paramName, defaultFilter);
