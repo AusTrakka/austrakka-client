@@ -31,14 +31,13 @@ import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyl
 import type { ProjectField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
 import {
-  useStateFromSearchParam,
   useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
 } from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitionsPVF,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
-import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import DataSummaries from '../DataSummaries/DataSummaries';
@@ -106,17 +105,14 @@ function ProjectSamplesTable(props: SamplesProps) {
     }
   };
 
-  const [activeTable, setActiveTableState] = useStateFromSearchParam<TableType>(
+  const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
     'view',
     TableType.RawMetadata,
+    true, // View state is pushed to history for back/forward navigation
   );
 
   const setActiveTable = (table: TableType) => {
     setActiveTableState(table);
-    updateSearchParamInUrl(
-      'view',
-      table === TableType.SummaryMetadata ? TableType.SummaryMetadata : null,
-    );
   };
 
   useEffect(() => {

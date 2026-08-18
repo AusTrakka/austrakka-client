@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
@@ -39,7 +38,6 @@ const defaultSpec: TopLevelSpec = {
 
 function Histogram(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
-  const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
     selectProjectMetadataFields(state, projectAbbrev),
@@ -49,33 +47,18 @@ function Histogram(props: PlotTypeProps) {
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    navigate,
   );
-  const [binMode, setBinMode] = useStateFromSearchParamsForPrimitive<string>(
-    'binMode',
-    'auto',
-    navigate,
-  );
-  const [stepSize, setStepSize] = useStateFromSearchParamsForPrimitive<number>(
-    'stepSize',
-    1,
-    navigate,
-  );
-  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
-    'fontSize',
-    11,
-    navigate,
-  );
+  const [binMode, setBinMode] = useStateFromSearchParamsForPrimitive<string>('binMode', 'auto');
+  const [stepSize, setStepSize] = useStateFromSearchParamsForPrimitive<number>('stepSize', 1);
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>('fontSize', 11);
 
   // Set spec on load
   useEffect(() => {
