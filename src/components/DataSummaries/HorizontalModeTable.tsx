@@ -1,6 +1,6 @@
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
-import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import { Row } from 'primereact/row';
 import { type ReactNode, useMemo, useRef } from 'react';
 import { AGG_TYPE_LABELS, type PivotConfig, TOTAL_FIELD } from './dataSummariesMeta';
@@ -11,7 +11,6 @@ interface HorizontalModeTableProps {
   horizontalColumnTotals: Record<string, number>;
   pivotConfig: PivotConfig;
   fieldLabelByKey: Record<string, string>;
-  filters: DataTableFilterMeta | undefined;
   headerControls: ReactNode;
   emptyStateMessage: ReactNode;
   shouldShowTable: boolean;
@@ -22,31 +21,15 @@ export function HorizontalModeTable({
   horizontalColumnTotals,
   pivotConfig,
   fieldLabelByKey,
-  filters,
   headerControls,
   emptyStateMessage,
   shouldShowTable,
 }: HorizontalModeTableProps) {
   const tableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
 
-  // Filter fields
-  const globalFilterFields = useMemo(() => {
-    const fields: string[] = [TOTAL_FIELD, ...pivotConfig.groupByFields];
-    for (const col of pivotConfig.displayFields) {
-      for (const agg of pivotConfig.selectedAggregations[col] ?? []) {
-        fields.push(`${col}__${agg}`);
-      }
-    }
-    return fields;
-  }, [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.selectedAggregations]);
-
-  const tableKey = useMemo(
-    () =>
-      `horizontal_${pivotConfig.groupByFields.join('_')}_${pivotConfig.displayFields.join('_')}_${
-        pivotConfig.showRelativePercentages ? 'pct' : 'raw'
-      }`,
-    [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.showRelativePercentages],
-  );
+  // Key needs to be updated when any configuration or underlying data changes (including filtering, stale data refresh, etc.)
+  // Otherwise DataTable does not handle all rendering changes correctly (row spans not updating correctly)
+  const tableKey = useMemo(() => `horizontal_${JSON.stringify(pivotConfig)}`, [pivotConfig]);
 
   return (
     <DataTable
@@ -62,8 +45,6 @@ export function HorizontalModeTable({
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : undefined}
       emptyMessage={emptyStateMessage}
       header={headerControls}
-      filters={filters}
-      globalFilterFields={globalFilterFields}
       headerColumnGroup={
         <ColumnGroup>
           <Row>

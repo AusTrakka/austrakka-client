@@ -1,6 +1,6 @@
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
-import { DataTable, type DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import { Row } from 'primereact/row';
 import { type ReactNode, useMemo, useRef } from 'react';
 import {
@@ -17,38 +17,26 @@ interface VerticalModeTableProps {
   verticalAggregationColumns: AggregationType[];
   pivotConfig: PivotConfig;
   fieldLabelByKey: Record<string, string>;
-  filters: DataTableFilterMeta | undefined;
   headerControls: ReactNode;
   emptyStateMessage: ReactNode;
   shouldShowTable: boolean;
 }
 
-export function VerticalModeTable({
+function VerticalModeTable({
   verticalTableRows,
   verticalColumnTotals,
   verticalAggregationColumns,
   pivotConfig,
   fieldLabelByKey,
-  filters,
   headerControls,
   emptyStateMessage,
   shouldShowTable,
 }: VerticalModeTableProps) {
   const tableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
 
-  // Filter fields
-  const globalFilterFields = useMemo(
-    () => ['field', ...pivotConfig.groupByFields, TOTAL_FIELD, ...verticalAggregationColumns],
-    [pivotConfig.groupByFields, verticalAggregationColumns],
-  );
-
-  const tableKey = useMemo(
-    () =>
-      `vertical_${pivotConfig.groupByFields.join('_')}_${pivotConfig.displayFields.join('_')}_${
-        pivotConfig.showRelativePercentages ? 'pct' : 'raw'
-      }`,
-    [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.showRelativePercentages],
-  );
+  // Key needs to be updated when any configuration or underlying data changes (including filtering, stale data refresh, etc.)
+  // Otherwise DataTable does not handle all rendering changes correctly (row spans not updating correctly)
+  const tableKey = useMemo(() => `vertical_${JSON.stringify(pivotConfig)}`, [pivotConfig]);
 
   return (
     <DataTable
@@ -62,8 +50,6 @@ export function VerticalModeTable({
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : 'field'}
       emptyMessage={emptyStateMessage}
       header={headerControls}
-      filters={filters}
-      globalFilterFields={globalFilterFields}
       footerColumnGroup={
         pivotConfig.showTotalCountFooter ? (
           <ColumnGroup>
@@ -141,3 +127,5 @@ export function VerticalModeTable({
     </DataTable>
   );
 }
+
+export default VerticalModeTable;

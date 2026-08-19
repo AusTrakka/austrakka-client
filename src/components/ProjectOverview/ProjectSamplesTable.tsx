@@ -135,13 +135,13 @@ function ProjectSamplesTable(props: SamplesProps) {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         height: '100%',
       }}
     >
+      <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <HeaderColourToggle colourBySource={colourBySource} setColourBySource={setColourBySource} />
         <KeyValuePopOver
           data={metadata?.projectFields || []}

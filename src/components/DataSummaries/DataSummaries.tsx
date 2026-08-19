@@ -8,9 +8,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { FilterMatchMode } from 'primereact/api';
-import type { DataTableFilterMetaData } from 'primereact/datatable';
-import { type ChangeEvent, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { OrgMetadataState } from '../../app/orgMetadataSlice';
 import type { ProjectMetadataState } from '../../app/projectMetadataSlice';
 import { Theme } from '../../assets/themes/theme';
@@ -22,7 +20,6 @@ import { buildPivotGroups } from '../../utilities/dataSummariesUtils';
 import CustomDrawer from '../Common/CustomDrawer';
 import ExportTableData from '../Common/ExportTableData';
 import type { TableType } from '../ProjectOverview/ProjectSamplesTable';
-import SearchInput from '../TableComponents/SearchInput';
 import {
   type FieldTypeMap,
   type GroupByBinSizeMap,
@@ -36,7 +33,7 @@ import { HorizontalModeTable } from './HorizontalModeTable';
 import { useHorizontalPivotData } from './hooks/useHorizontalPivotData';
 import { useVerticalPivotData } from './hooks/useVerticalPivotData';
 import TableConfig from './TableConfig/TableConfig';
-import { VerticalModeTable } from './VerticalModeTable';
+import VerticalModeTable from './VerticalModeTable';
 import ViewSummariesToggle from './ViewSummariesToggle';
 
 // Possible enhancements:
@@ -87,10 +84,6 @@ function DataSummaries(props: DataSummariesProps) {
   const fields: ProjectViewField[] | MetaDataColumn[] = Array.isArray(rawFields) ? rawFields : [];
   const rows: RowRecord[] = Array.isArray(metadata) ? (metadata as RowRecord[]) : [];
 
-  const [filters, setFilters] = useState<Record<string, DataTableFilterMetaData>>({
-    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
-  });
-
   const fieldTypes: FieldTypeMap = useMemo(() => {
     const map: FieldTypeMap = {};
     for (const field of fields) {
@@ -138,14 +131,6 @@ function DataSummaries(props: DataSummariesProps) {
     [rows, pivotConfig, fieldTypes],
   );
 
-  function onGlobalFilterChange(event: ChangeEvent<HTMLInputElement>) {
-    const { value } = event.target;
-    setFilters((prev) => ({
-      ...prev,
-      global: { ...prev.global, value },
-    }));
-  }
-
   // Display conditionals
   const showEmptyState = rows.length === 0;
   const shouldShowTable = !showEmptyState;
@@ -190,9 +175,8 @@ function DataSummaries(props: DataSummariesProps) {
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-        <SearchInput value={filters.global?.value || ''} onChange={onGlobalFilterChange} />
+        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <Stack direction="row" spacing={1} alignItems="center">
-          <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
           <Tooltip title="Configure table fields" arrow>
             <IconButton size="small" onClick={() => setConfigDrawerOpen(true)}>
               <Badge
@@ -234,6 +218,7 @@ function DataSummaries(props: DataSummariesProps) {
             headers={activeExportHeaders}
             disabled={showEmptyState}
             fileNamePrefix="data_summary"
+            formatFields={false} // Required to ensure fields are formatted as presented in the table (particularly for date fields)
           />
           <Tooltip title="Reset table configuration" arrow>
             <IconButton size="small" onClick={handleReset} color="error" disabled={showEmptyState}>
@@ -282,7 +267,6 @@ function DataSummaries(props: DataSummariesProps) {
           horizontalColumnTotals={horizontalData.columnTotals}
           pivotConfig={pivotConfig}
           fieldLabelByKey={fieldLabelByKey}
-          filters={filters}
           headerControls={tableHeaderControls}
           emptyStateMessage={emptyStateMessage}
           shouldShowTable={shouldShowTable}
@@ -296,7 +280,6 @@ function DataSummaries(props: DataSummariesProps) {
           verticalAggregationColumns={verticalData.verticalAggregationColumns}
           pivotConfig={pivotConfig}
           fieldLabelByKey={fieldLabelByKey}
-          filters={filters}
           headerControls={tableHeaderControls}
           emptyStateMessage={emptyStateMessage}
           shouldShowTable={shouldShowTable}

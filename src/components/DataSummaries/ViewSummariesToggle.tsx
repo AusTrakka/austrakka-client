@@ -1,7 +1,7 @@
 import PivotTableChartIcon from '@mui/icons-material/PivotTableChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import { Box, Button, Typography } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 import { TableType } from '../ProjectOverview/ProjectSamplesTable';
 
@@ -12,7 +12,6 @@ type ViewSummariesToggleProps = {
 
 function ViewSummariesToggle(props: ViewSummariesToggleProps) {
   const { activeTable, setActiveTable } = props;
-  const boxRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   function handleToggle() {
@@ -29,11 +28,9 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
         alignItems: 'center',
         position: 'relative',
         cursor: 'pointer',
-        borderRadius: 6,
-        border: '1px solid',
-        borderColor: isHovered ? Theme.PrimaryGrey500 : 'transparent',
+        borderRadius: 2,
+        backgroundColor: isHovered ? Theme.PrimaryGrey700 : 'transparent',
         transition: 'all 0.2s ease',
-        padding: isHovered ? '0px 8px 0px 0px' : '0',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -42,7 +39,7 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
       <Button
         sx={{
           textTransform: 'none',
-          color: Theme.PrimaryGrey600,
+          color: isHovered ? 'white' : Theme.PrimaryGrey700,
           minWidth: 0,
           borderRadius: 6,
         }}
@@ -50,29 +47,25 @@ function ViewSummariesToggle(props: ViewSummariesToggleProps) {
         {activeTable === TableType.RawMetadata ? (
           <>
             <PivotTableChartIcon />
+            <Typography
+              variant="body2"
+              sx={{ color: isHovered ? 'white' : Theme.PrimaryGrey700, pl: 1 }}
+            >
+              View summary table
+            </Typography>
           </>
         ) : (
           <>
             <TableChartIcon />
+            <Typography
+              variant="body2"
+              sx={{ color: isHovered ? 'white' : Theme.PrimaryGrey700, pl: 1 }}
+            >
+              View raw metadata
+            </Typography>
           </>
         )}
       </Button>
-      <Box
-        ref={boxRef}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          maxWidth: isHovered ? '200px' : '0px',
-          opacity: isHovered ? 1 : 0,
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          transition: 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out',
-        }}
-      >
-        <Typography variant="body2" sx={{ color: Theme.PrimaryGrey600 }}>
-          {activeTable === TableType.RawMetadata ? <>View summary table</> : <>View raw metadata</>}
-        </Typography>
-      </Box>
     </Box>
   );
 }
