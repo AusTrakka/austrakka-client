@@ -22,6 +22,7 @@ import {
   normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
+  replaceIntStrings,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
 import type { RootState } from './store';
@@ -451,6 +452,7 @@ export const projectMetadataSlice = createSlice({
 
       state.data[projectAbbrev].emptyColumns = getEmptyStringColumns(data, viewFields);
       replaceDateStrings(data, state.data[projectAbbrev].fields!, viewFields);
+      replaceIntStrings(data, state.data[projectAbbrev].fields!, viewFields);
       state.data[projectAbbrev].metadata = data;
 
       // Default sort by Seq_ID; could be done server-side
