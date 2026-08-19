@@ -1,13 +1,13 @@
 .datatable-container-proj {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
+  overflow: hidden;
 }
 
 .datatable-container-org {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 310px);
+  overflow: hidden;
 }
 
 .my-flexible-table {
@@ -15,7 +15,7 @@
 }
 
 .my-flexible-table .p-datatable-wrapper {
-  overflow: hidden;
+  overflow: auto;
 }
 
 .my-flexible-table .p-datatable-table {

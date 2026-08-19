@@ -21,6 +21,8 @@ import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
 import { useEffect, useMemo, useState } from 'react';
 import './Samples.css';
+import { memo } from 'react';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
@@ -47,6 +49,7 @@ import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import sortIcon from '../TableComponents/SortIcon';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 
 export enum TableType {
   RawMetadata = 'RawMetadata',
@@ -60,8 +63,10 @@ interface SamplesProps {
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
   const { navigate } = useStableNavigate();
+  const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
+
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
@@ -82,6 +87,11 @@ function ProjectSamplesTable(props: SamplesProps) {
   const { maxHeight, getHeaderRef } = useMaxHeaderHeight(
     metadata?.loadingState ?? MetadataLoadingState.IDLE,
   );
+
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    recalcDeps: [compact],
+  });
+
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
@@ -239,7 +249,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   };
 
   return (
-    <div className="datatable-container-proj">
+    <div ref={tableAreaRef} className="datatable-container-proj" style={{ height: tableHeight }}>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -271,8 +281,25 @@ function ProjectSamplesTable(props: SamplesProps) {
         primeReactFilters={currentFilters}
       />
       {/* TODO: Make a function for the table so that a different sort is used per column type */}
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 0 }}>
-        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: activeTable === TableType.RawMetadata ? 'flex' : 'none',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <DataTable
             value={metadata?.metadata ?? []}
             onValueChange={(e) => {
@@ -327,7 +354,14 @@ function ProjectSamplesTable(props: SamplesProps) {
           </DataTable>
         </div>
         {shownSummaryMetadata && (
-          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+          <div
+            style={{
+              display: activeTable === TableType.SummaryMetadata ? 'flex' : 'none',
+              flexDirection: 'column',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
             <DataSummaries
               data={metadata}
               metadata={filteredData}
@@ -340,4 +374,5 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-export default ProjectSamplesTable;
+
+export default memo(ProjectSamplesTable);
