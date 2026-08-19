@@ -35,11 +35,21 @@ span {
 }
 
 .app-container.compact-mode .pagePadded {
-  padding: 0px var(--density-spacing-lg) 0px var(--density-spacing-xl);
+  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-md);
+  margin-left: 165px;
 }
 
 .app-container.compact-mode .page {
   padding: 0px var(--density-spacing-md) 0px var(--density-spacing-xl);
+}
+
+.pageDrawer {
+  z-index: 10;
+}
+
+.app-container.compact-mode .MuiDrawer- .pageDrawer .MuiMenuItem-root {
+  padding: var(--density-spacing-md) var(--density-spacing-md) var(--density-spacing-md)
+    var(--density-spacing-sm);
 }
 
 .warningBannerPadded {

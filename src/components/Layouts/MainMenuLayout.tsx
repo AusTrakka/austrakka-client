@@ -226,11 +226,11 @@ function MainMenuLayout() {
     <>
       <Box sx={{ display: 'flex' }}>
         <Drawer
+          className="pageDrawer"
           open={drawer}
           variant="permanent"
           PaperProps={{
             sx: {
-              boxShadow: '0px 0px 8px var(--primary-grey-300)',
               maxWidth: 190,
               minWidth: 70,
             },
@@ -349,7 +349,7 @@ function MainMenuLayout() {
                   sx={{
                     color: 'primary.main',
                     minWidth: 0,
-                    mr: drawer ? 1 : 'auto',
+                    mr: getIconMargin(drawer),
                     justifyContent: 'center',
                   }}
                 >
@@ -360,7 +360,7 @@ function MainMenuLayout() {
                 ) : null}
               </MenuItem>
             ))}
-            <LogoutButton showText={drawer} />
+            <LogoutButton showText={drawer} margin={getIconMargin(drawer)} />
           </List>
         </Drawer>
       </Box>

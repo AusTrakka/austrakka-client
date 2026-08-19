@@ -4,7 +4,7 @@ import { ListItemIcon, ListItemText, MenuItem, Tooltip } from '@mui/material';
 
 export default function LogoutButton(props: any) {
   const { instance } = useMsal();
-  const { showText } = props;
+  const { showText, margin } = props;
   const logoutRequest = {
     account: instance.getActiveAccount(),
     postLogoutRedirectUri: '/',
@@ -22,7 +22,7 @@ export default function LogoutButton(props: any) {
           sx={{
             color: 'primary.main',
             minWidth: 0,
-            mr: showText ? 1 : 'auto',
+            mr: margin,
             justifyContent: 'center',
           }}
         >
