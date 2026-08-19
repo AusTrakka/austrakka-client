@@ -29,13 +29,7 @@ export function HorizontalModeTable({
 
   // Key needs to be updated when any configuration or underlying data changes (including filtering, stale data refresh, etc.)
   // Otherwise DataTable does not handle all rendering changes correctly (row spans not updating correctly)
-  const tableKey = useMemo(
-    () =>
-      `horizontal_${pivotConfig.groupByFields.join('_')}_${pivotConfig.displayFields.join('_')}_${
-        pivotConfig.showRelativePercentages ? 'pct' : 'raw'
-      }`,
-    [pivotConfig.groupByFields, pivotConfig.displayFields, pivotConfig.showRelativePercentages],
-  );
+  const tableKey = useMemo(() => `horizontal_${JSON.stringify(pivotConfig)}`, [pivotConfig]);
 
   return (
     <DataTable
