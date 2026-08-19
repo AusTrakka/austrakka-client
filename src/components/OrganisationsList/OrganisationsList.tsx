@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
-import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
 import type { Organisation } from '../../types/dtos';
