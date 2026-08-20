@@ -106,3 +106,16 @@
   height: var(--density-input-height);
   padding: 0;
 }
+
+/* --- Checkbox --- */
+
+.app-container.compact-mode .p-checkbox .p-checkbox-box {
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}
+
+.app-container.compact-mode .p-checkbox .p-checkbox-box .p-checkbox-icon {
+  font-size: var(--density-icon-size-sm);
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}

@@ -1,35 +1,3 @@
-/* .app-container.compact-mode .MuiButton-root { */
-/*   padding: var(--density-button-padding-y) var(--density-button-padding-x); */
-/*   font-size: var(--density-font-size-body); */
-/* } */
-/* .app-container.compact-mode .MuiIconButton-root { */
-/*   padding: var(--density-spacing-sm); */
-/* } */
-/* .app-container.compact-mode .MuiInputBase-root { */
-/*   font-size: var(--density-font-size-body); */
-/* } */
-/* .app-container.compact-mode .MuiInputBase-input { */
-/*   padding-top: var(--density-spacing-lg); */
-/*   padding-bottom: var(--density-spacing-lg); */
-/*   font-size: var(--density-font-size-body); */
-/* } */
-/* .app-container.compact-mode .MuiTableCell-root { */
-/*   padding: var(--density-spacing-sm) var(--density-spacing-md); */
-/*   font-size: var(--density-font-size-body); */
-/* } */
-/* .app-container.compact-mode .MuiTableRow-root { */
-/*   height: var(--density-row-height); */
-/* } */
-/* .app-container.compact-mode .MuiTypography-body1, */
-/* .app-container.compact-mode .MuiTypography-body2 { */
-/*   font-size: var(--density-font-size-body); */
-/* } */
-/* .app-container.compact-mode .MuiCardContent-root { */
-/*   padding: var(--density-spacing-md); */
-/* } */
-/* .app-container.compact-mode .MuiCardContent-root:last-child { */
-/*   padding-bottom: var(--density-spacing-md); */
-/* } */
 /* --- MUI Compact Typography Overrides --- */
 .app-container.compact-mode .MuiTypography-h1 {
   font-size: var(--density-font-size-h1);
@@ -168,4 +136,13 @@
   font-size: var(--density-font-size-body1);
   padding: var(--density-spacing-sm) var(--density-spacing-sm);
   min-height: var(--density-input-height);
+}
+
+/* Badges - using your caption font size token */
+.app-container.compact-mode .MuiBadge-badge {
+  height: var(--density-icon-size-sm);
+  min-width: var(--density-icon-size-sm);
+  font-size: var(--density-font-size-superscript);
+  padding: var(--density-spacing-null);
+  margin: var(--density-spacing-sm);
 }

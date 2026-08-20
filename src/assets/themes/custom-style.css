@@ -87,3 +87,35 @@
   box-shadow: inset 0 0 0 1px var(--primary-grey-700);
   border-color: var(--secondary-light-green);
 }
+
+/* --- Chip Table Alignment --- */
+
+/* Body cell alignment */
+.p-datatable .p-datatable-tbody > tr > td:has(.p-checkbox),
+.p-treetable .p-treetable-tbody > tr > td:has(.p-checkbox) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+td:has(.p-checkbox) .p-checkbox {
+  margin: 0 auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Header cell alignment */
+.p-datatable .p-datatable-thead th:has(.p-checkbox),
+.p-treetable .p-treetable-thead th:has(.p-checkbox) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+th:has(.p-checkbox) .p-checkbox {
+  margin: 0 auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+th:has(.p-checkbox) .p-column-title:empty {
+  display: none;
+}
