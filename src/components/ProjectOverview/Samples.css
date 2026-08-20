@@ -12,6 +12,10 @@
 
 .my-flexible-table {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .my-flexible-table .p-datatable-wrapper {
@@ -50,6 +54,13 @@
   align-items: center;
   white-space: nowrap;
   flex-direction: row;
+}
+
+.vertical-table-mode {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Ensure the th takes full height */

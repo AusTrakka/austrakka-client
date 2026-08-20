@@ -30,6 +30,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useCompactMode } from '../../../app/CompactModeContext';
 import RecordTypes from '../../../constants/record-type.enum';
 import {
   aggregateLogsToTree,
@@ -38,6 +39,7 @@ import {
   splitLargeChildrenGroups,
 } from '../../../utilities/activityTreeUtils';
 import { useStateFromSearchParamsForObject } from '../../../utilities/stateUtils';
+import { useViewportClampedHeight } from '../../TableComponents/useViewportClampedHeight';
 
 interface ActivityProps {
   recordType: string;
@@ -87,6 +89,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>({});
+  const { compact } = useCompactMode();
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
+
   const MAX_VISIBLE_CHILDREN = 600;
 
   const defaultDateRange = useMemo(
@@ -376,7 +384,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   );
 
   const tableContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', maxHeight: tableHeight, overflow: 'hidden' }}
+      ref={tableAreaRef}
+    >
       <ActivityDetails
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
@@ -395,7 +406,17 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
           {isLoadingErrorMsg || 'An error occurred while fetching the activity log.'}
         </Alert>
       ) : (
-        <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
+        <Paper
+          elevation={2}
+          sx={{
+            marginBottom: 1,
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
           {isTableLoading ? (
             <Box sx={{ p: 4 }}>
               <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
@@ -411,6 +432,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               onRowClick={handleTreeRowClick}
               showGridlines
               removableSort
+              scrollable
+              scrollHeight="flex"
               sortIcon={sortIcon}
               paginator
               rows={500}

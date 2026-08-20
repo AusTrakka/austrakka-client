@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './Samples.css';
 import { memo } from 'react';
 import { useCompactMode } from '../../app/CompactModeContext';
@@ -62,6 +62,19 @@ interface SamplesProps {
 
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+
+  // Tracks Remounts (Runs once on mount, and cleanup runs on unmount)
+  useEffect(() => {
+    console.log('🔄 [ProjectSamplesTable] REMOUNTED');
+    return () => {
+      console.log('❌ [ProjectSamplesTable] UNMOUNTED');
+    };
+  }, []);
+
+  // Tracks Re-renders
+  console.log(`⚡ [ProjectSamplesTable] Re-rendered (Total renders: ${renderCount.current})`);
   const { navigate } = useStableNavigate();
   const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
@@ -89,6 +102,7 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
 
   const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
     recalcDeps: [compact],
   });
 
@@ -193,63 +207,69 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
-  const getColumnHeader = (column: any, index: number, vertical: boolean) => {
-    const source = getFieldSource(column.field).toLowerCase();
-    const iconColour = Theme.PrimaryGrey500;
-
-    const icon = (() => {
-      switch (source?.toLowerCase()) {
-        case 'sample record':
-          return <Description fontSize="inherit" sx={{ color: iconColour }} />;
-
-        case 'dataset':
-          return <Insights fontSize="inherit" sx={{ color: iconColour }} />;
-
-        case 'both':
-          return <MergeType fontSize="inherit" sx={{ color: iconColour }} />;
-
-        default:
-          return <InfoOutlined fontSize="inherit" sx={{ color: iconColour }} />;
-      }
-    })();
-
-    return !vertical ? (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {column.header}
-        <Tooltip title={`Source from ${source}`} placement="top" arrow>
-          {icon}
-        </Tooltip>
-      </div>
-    ) : (
-      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
-        <span className="vertical-text">{column.header}</span>
-        <Tooltip title={`Source from ${source}`} placement="top" arrow>
-          {icon}
-        </Tooltip>
-      </div>
-    );
-  };
-
-  const getColumnHeaderStyle = (vertical: boolean, column: any) => {
-    const source = getFieldSource(column.field);
-    let headerColour: string | undefined;
-    if (colourBySource) {
-      if (source.includes('Dataset')) {
-        headerColour = alpha(Theme.SecondaryTeal, 0.3);
-      } else if (source.includes('Both')) {
-        headerColour = alpha(Theme.SecondaryMain, 0.3);
-      }
+  const getSourceIcon = (source: string, color: string) => {
+    switch (source?.toLowerCase()) {
+      case 'sample record':
+        return <Description fontSize="inherit" sx={{ color }} />;
+      case 'dataset':
+        return <Insights fontSize="inherit" sx={{ color }} />;
+      case 'both':
+        return <MergeType fontSize="inherit" sx={{ color }} />;
+      default:
+        return <InfoOutlined fontSize="inherit" sx={{ color }} />;
     }
-
-    const headerStyle = vertical
-      ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
-      : { width: `${maxHeight}px`, backgroundColor: headerColour };
-
-    return headerStyle;
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const getColumnHeader = useCallback(
+    (column: any, index: number, vertical: boolean) => {
+      const source = getFieldSource(column.field).toLowerCase();
+      const icon = getSourceIcon(source, Theme.PrimaryGrey500);
+
+      if (!vertical) {
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {column.header}
+            <Tooltip title={`Source from ${source}`} placement="top" arrow>
+              {icon}
+            </Tooltip>
+          </div>
+        );
+      }
+
+      return (
+        <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
+          <span className="vertical-text">{column.header}</span>
+          <Tooltip title={`Source from ${source}`} placement="top" arrow>
+            {icon}
+          </Tooltip>
+        </div>
+      );
+    },
+    [getHeaderRef, metadata?.fields],
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const getColumnHeaderStyle = useCallback(
+    (vertical: boolean, column: any) => {
+      const source = getFieldSource(column.field);
+      let headerColour: string | undefined;
+      if (colourBySource) {
+        if (source.includes('Dataset')) {
+          headerColour = alpha(Theme.SecondaryTeal, 0.3);
+        } else if (source.includes('Both')) {
+          headerColour = alpha(Theme.SecondaryMain, 0.3);
+        }
+      }
+      return vertical
+        ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
+        : { width: `${maxHeight}px`, backgroundColor: headerColour };
+    },
+    [colourBySource, maxHeight, metadata?.fields],
+  );
 
   return (
-    <div ref={tableAreaRef} className="datatable-container-proj" style={{ height: tableHeight }}>
+    <div ref={tableAreaRef} className="datatable-container-proj" style={{ maxHeight: tableHeight }}>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton

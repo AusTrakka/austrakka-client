@@ -46,6 +46,8 @@ function VerticalModeTable({
       size="small"
       className="my-flexible-table"
       scrollable
+      showGridlines
+      scrollHeight="flex"
       rowGroupMode="rowspan"
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : 'field'}
       emptyMessage={emptyStateMessage}

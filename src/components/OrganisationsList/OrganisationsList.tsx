@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
@@ -19,6 +20,7 @@ import type { Organisation } from '../../types/dtos';
 import { getOrganisations } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 import styles from './OrganisationsList.module.css';
 
 function OrganisationsList() {
@@ -31,6 +33,12 @@ function OrganisationsList() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { token, tokenLoading } = useApi();
   const navigate = useNavigate();
+  const { compact } = useCompactMode();
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
+
   const user: UserSliceState = useAppSelector(selectUserState);
   const [filters, setFilters] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -139,9 +147,28 @@ function OrganisationsList() {
   return isError ? (
     <Alert severity="error">{errorMessage}</Alert>
   ) : (
-    <div hidden={isLoading || organisations.length === 1}>
+    <div
+      hidden={isLoading || organisations.length === 1}
+      ref={tableAreaRef}
+      style={{
+        maxHeight: tableHeight,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <Typography className="pageTitle">Organisations</Typography>
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <DataTable
           frozenValue={homeOrg}
           value={filteredOrgs}
@@ -160,7 +187,7 @@ function OrganisationsList() {
           rowClassName={(rowData) =>
             rowData.abbreviation === user.orgAbbrev ? styles['home-row'] : ''
           }
-          scrollHeight="calc(100vh - 300px)"
+          scrollHeight="flex"
           onRowClick={rowClickHandler}
           selectionMode="single"
           showGridlines

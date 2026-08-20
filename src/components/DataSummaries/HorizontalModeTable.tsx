@@ -37,8 +37,10 @@ export function HorizontalModeTable({
       ref={tableRef}
       value={shouldShowTable ? horizontalTableRows : []}
       size="small"
+      showGridlines
       className="my-flexible-table"
       scrollable
+      scrollHeight="flex"
       rowGroupMode="rowspan" // Requires pre-sorting of rows by group-by fields
       // Limitation of the current implementation: DataTable is designed for single-level grouping only
       // This means that if the user selects multiple group-by fields, only the first one will be used for grouping in the table display

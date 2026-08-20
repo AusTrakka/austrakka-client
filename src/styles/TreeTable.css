@@ -4,7 +4,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Ensure column headers and icons are properly aligned */

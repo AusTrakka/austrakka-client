@@ -2,42 +2,65 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Options {
   bottomPadding?: number;
-  recalcDeps?: unknown[];
+  recalcDeps?: React.DependencyList;
 }
 
+/**
+ * Custom hook to calculate and clamp a container's height based on
+ * available viewport space, preventing it from overflowing the screen.
+ */
 export function useViewportClampedHeight<T extends HTMLElement>({
   bottomPadding = 16,
   recalcDeps = [],
 }: Options = {}) {
   const ref = useRef<T>(null);
-  const [tableHeight, setTableHeight] = useState<number | undefined>(undefined);
+  const [tableHeight, setTableHeight] = useState<number>();
 
+  // Calculates the maximum allowable height based on the element's position and viewport size
   const recalculate = useCallback(() => {
     const el = ref.current;
     if (!el) return;
 
+    // Get the element's current position relative to the visible viewport
     const { top } = el.getBoundingClientRect();
+
+    // Use visualViewport if available (handles mobile pinch-zoom/keyboards), fallback to window height
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-    const cap = Math.max(0, viewportHeight - top - bottomPadding);
 
-    const previousHeight = el.style.height;
-    el.style.height = '';
-    const naturalHeight = el.scrollHeight;
-    el.style.height = previousHeight;
+    // Clamp top to 0: prevents height calculations from breaking if the user scrolls past the top of the element
+    const effectiveTop = Math.max(0, top);
 
-    setTableHeight(naturalHeight > cap ? cap : undefined);
+    // Compute remaining vertical space minus the safety bottom padding
+    const cap = Math.max(0, viewportHeight - effectiveTop - bottomPadding);
+
+    // State deduplication: only update if the height value actually changed to prevent render loops
+    setTableHeight((current) => (current === cap ? current : cap));
   }, [bottomPadding]);
 
   useEffect(() => {
+    let frameId: number;
+
+    // Throttles resize events to match the browser's paint cycle:
+    // 1. cancelAnimationFrame drops any outdated, pending calculation.
+    // 2. requestAnimationFrame queues the latest calculation right before the next frame paints.
+    const handleResize = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(recalculate);
+    };
+
+    // Trigger initial calculation and bind window resize listener
     recalculate();
-    window.addEventListener('resize', recalculate);
+    window.addEventListener('resize', handleResize);
 
-    const bodyEl = ref.current?.querySelector('.p-datatable-tbody');
-    const observer = bodyEl ? new ResizeObserver(() => recalculate()) : undefined;
-    if (bodyEl && observer) observer.observe(bodyEl);
+    // Set up a ResizeObserver to catch internal layout shifts (like rows expanding or collapsing)
+    const containerEl = ref.current;
+    const observer = containerEl ? new ResizeObserver(handleResize) : undefined;
+    if (containerEl && observer) observer.observe(containerEl);
 
+    // Clean up event listeners, pending animation frames, and observers on unmount
     return () => {
-      window.removeEventListener('resize', recalculate);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(frameId);
       observer?.disconnect();
     };
   }, [recalculate, ...recalcDeps]);
