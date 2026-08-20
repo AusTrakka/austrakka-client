@@ -21,6 +21,10 @@ export function useViewportClampedHeight<T extends HTMLElement>({
     const el = ref.current;
     if (!el) return;
 
+    // GUARD: If the element (or a parent) is hidden (e.g., inside an inactive tab),
+    // offsetParent will be null. Skip recalculation to prevent ghost state updates.
+    if (el.offsetParent === null) return;
+
     // Get the element's current position relative to the visible viewport
     const { top } = el.getBoundingClientRect();
 

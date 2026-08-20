@@ -62,19 +62,6 @@ interface SamplesProps {
 
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-
-  // Tracks Remounts (Runs once on mount, and cleanup runs on unmount)
-  useEffect(() => {
-    console.log('🔄 [ProjectSamplesTable] REMOUNTED');
-    return () => {
-      console.log('❌ [ProjectSamplesTable] UNMOUNTED');
-    };
-  }, []);
-
-  // Tracks Re-renders
-  console.log(`⚡ [ProjectSamplesTable] Re-rendered (Total renders: ${renderCount.current})`);
   const { navigate } = useStableNavigate();
   const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
