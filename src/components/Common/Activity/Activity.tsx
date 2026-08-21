@@ -409,12 +409,12 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         <Paper
           elevation={2}
           sx={{
+            margin: 1,
             marginBottom: 1,
             flex: 1,
             minHeight: 0,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
           }}
         >
           {isTableLoading ? (
@@ -431,6 +431,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               onToggle={(e) => handleToggleClick(e)}
               onRowClick={handleTreeRowClick}
               showGridlines
+              resizableColumns
+              columnResizeMode="expand"
               removableSort
               scrollable
               scrollHeight="flex"
@@ -466,36 +468,45 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                 body={firstColumnTemplate}
                 sortable
                 expander
+                style={{ width: '220px' }} // Give the main tree column a fixed/min width
               />
               {columns
                 ? columns
                     .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
-                    .map((col: any) => (
-                      <Column
-                        key={col.field}
-                        field={col.field}
-                        header={col.header}
-                        hidden={false}
-                        body={(node: TreeNode) => {
-                          if (col.field === 'resourceUniqueString') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceCount',
-                              previewKey: 'resourcePreview',
-                              valueKey: 'resourceUniqueString',
-                            });
+                    .map((col: any, index, array) => {
+                      const isLast = index === array.length - 1;
+                      return (
+                        <Column
+                          key={col.field}
+                          field={col.field}
+                          header={col.header}
+                          hidden={false}
+                          style={
+                            isLast
+                              ? { minWidth: '150px', width: 'auto' } // Let the last column fill the remaining space
+                              : { minWidth: '160px', width: '180px' } // Give middle columns a stable width
                           }
-                          if (col.field === 'resourceType') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceTypeCount',
-                              previewKey: 'resourceTypePreview',
-                              valueKey: 'resourceType',
-                            });
-                          }
-                          return unaggregatedCellTemplate(node, col);
-                        }}
-                        sortable
-                      />
-                    ))
+                          body={(node: TreeNode) => {
+                            if (col.field === 'resourceUniqueString') {
+                              return aggregatedCellTemplate(node, {
+                                countKey: 'resourceCount',
+                                previewKey: 'resourcePreview',
+                                valueKey: 'resourceUniqueString',
+                              });
+                            }
+                            if (col.field === 'resourceType') {
+                              return aggregatedCellTemplate(node, {
+                                countKey: 'resourceTypeCount',
+                                previewKey: 'resourceTypePreview',
+                                valueKey: 'resourceType',
+                              });
+                            }
+                            return unaggregatedCellTemplate(node, col);
+                          }}
+                          sortable
+                        />
+                      );
+                    })
                 : null}
             </TreeTable>
           )}
