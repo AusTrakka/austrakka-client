@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import './Samples.css';
 import { memo } from 'react';
 import { useCompactMode } from '../../app/CompactModeContext';
