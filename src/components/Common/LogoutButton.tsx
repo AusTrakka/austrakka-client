@@ -17,7 +17,10 @@ export default function LogoutButton(props: any) {
   };
   return (
     <Tooltip title={showText ? '' : 'Logout'} arrow placement="right">
-      <MenuItem onClick={() => handleLogout('redirect')}>
+      <MenuItem
+        sx={{ paddingTop: '10px', paddingBottom: '10px' }}
+        onClick={() => handleLogout('redirect')}
+      >
         <ListItemIcon
           sx={{
             color: 'primary.main',

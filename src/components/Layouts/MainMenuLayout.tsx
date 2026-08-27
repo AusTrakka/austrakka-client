@@ -65,26 +65,26 @@ function MainMenuLayout() {
   const settings = [
     {
       title: 'Documentation',
-      icon: <Description fontSize="small" />,
+      icon: <Description />,
       onClick: () => {
         window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
     },
     {
       title: 'CLI',
-      icon: <Terminal fontSize="small" />,
+      icon: <Terminal />,
       disabled: false,
       onClick: () => setCli((prev) => !prev),
     },
     {
       title: compact ? 'Comfortable' : 'Compact',
-      icon: compact ? <DensityMedium fontSize="small" /> : <DensitySmall fontSize="small" />,
+      icon: compact ? <DensityMedium /> : <DensitySmall />,
       disabled: false,
       onClick: toggleCompact,
     },
     {
       title: 'Support',
-      icon: <Help fontSize="small" />,
+      icon: <Help />,
       disabled: false,
       onClick: () => setHelp((prev) => !prev),
     },
@@ -289,9 +289,6 @@ function MainMenuLayout() {
                     <MenuItem
                       key={page.title}
                       sx={{
-                        '&:hover': {
-                          backgroundColor: Theme.PrimaryGrey300,
-                        },
                         width: '100%',
                       }}
                     >
@@ -344,7 +341,12 @@ function MainMenuLayout() {
           <Divider />
           <List>
             {settings.map((setting) => (
-              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
+              <MenuItem
+                sx={{ width: '100%', paddingTop: '10px', paddingBottom: '10px' }}
+                key={setting.title}
+                disabled={setting.disabled}
+                onClick={setting.onClick}
+              >
                 <ListItemIcon
                   sx={{
                     color: 'primary.main',
@@ -360,7 +362,7 @@ function MainMenuLayout() {
                 ) : null}
               </MenuItem>
             ))}
-            <LogoutButton showText={drawer} margin={getIconMargin(drawer)} />
+            <LogoutButton showText={drawer} />
           </List>
         </Drawer>
       </Box>

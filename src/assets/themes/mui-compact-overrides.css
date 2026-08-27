@@ -43,6 +43,11 @@
   min-height: var(--density-row-height);
 }
 
+.app-container.compact-mode .MuiButtonBase-root.MuiTab-root {
+  min-width: var(--density-tab-min-width);
+  padding: var(--density-spacing-sm) var(--density-spacing-lg);
+}
+
 .app-container.compact-mode .MuiTabs-scroller {
   height: var(--density-row-height);
 }

@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable } from 'primereact/datatable';
@@ -108,11 +109,12 @@ export function HorizontalModeTable({
               <Column
                 key="footer_total_records"
                 footer={
-                  pivotConfig.groupByFields.length === 0
-                    ? `Total (${horizontalColumnTotals[TOTAL_FIELD] ?? 0})`
-                    : (horizontalColumnTotals[TOTAL_FIELD] ?? 0)
+                  <Typography fontWeight="bold">
+                    {pivotConfig.groupByFields.length === 0
+                      ? `Total (${horizontalColumnTotals[TOTAL_FIELD] ?? 0})`
+                      : (horizontalColumnTotals[TOTAL_FIELD] ?? 0)}
+                  </Typography>
                 }
-                footerStyle={{ fontWeight: 'bold' }}
                 className="flexible-column"
               />
               {pivotConfig.displayFields.flatMap((col) =>

@@ -35,4 +35,6 @@
 
   --density-table-row-height: 28px;
   --density-small-chip-height: 20px;
+
+  --density-tab-min-width: 50px;
 }

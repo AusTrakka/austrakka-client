@@ -153,6 +153,7 @@ function ActivityFilters(props: ActivityFiltersProps) {
   return (
     <Box
       sx={{
+        margin: 0.5,
         boxShadow: 1,
         borderRadius: 1,
         padding: 1,
