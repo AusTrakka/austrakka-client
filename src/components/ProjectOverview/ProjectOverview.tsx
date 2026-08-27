@@ -200,7 +200,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
         />
       </TabPanel>
       <TabPanel value={tabValue} index={PROJ_TABS.samples.index}>
-        <ProjectSamplesTable projectAbbrev={projectAbbrev!} key={location.search} />
+        <ProjectSamplesTable projectAbbrev={projectAbbrev!} />
       </TabPanel>
       <TabPanel
         value={tabValue}

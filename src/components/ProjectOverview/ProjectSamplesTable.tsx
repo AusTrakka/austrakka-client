@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './Samples.css';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -30,18 +30,28 @@ import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataL
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { ProjectField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitionsPVF,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import DataSummaries from '../DataSummaries/DataSummaries';
+import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import sortIcon from '../TableComponents/SortIcon';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
+
+export enum TableType {
+  RawMetadata = 'RawMetadata',
+  SummaryMetadata = 'SummaryMetadata',
+}
 
 interface SamplesProps {
   projectAbbrev: string;
@@ -55,7 +65,6 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [isDataFiltersOpen, setIsDataFiltersOpen] = useState(true);
@@ -64,6 +73,8 @@ function ProjectSamplesTable(props: SamplesProps) {
   const [verticalHeaders, setVerticalHeaders] = useState<boolean>(false);
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   const [colourBySource, setColourBySource] = useState<boolean>(true);
+
+  const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
 
   const metadata: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
@@ -94,6 +105,20 @@ function ProjectSamplesTable(props: SamplesProps) {
     }
   };
 
+  const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
+    'view',
+    TableType.RawMetadata,
+    true, // View state is pushed to history for back/forward navigation
+  );
+
+  const setActiveTable = (table: TableType) => {
+    setActiveTableState(table);
+  };
+
+  useEffect(() => {
+    if (activeTable === TableType.SummaryMetadata) setShownSummaryMetadata(true);
+  }, [activeTable]);
+
   const getFieldSource = (field: string) => {
     const fieldObj = metadata?.fields?.find((f) => f.columnName === field);
     // Field Object returned from the server ideally shouldn't include "Source From" string
@@ -110,11 +135,12 @@ function ProjectSamplesTable(props: SamplesProps) {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         height: '100%',
       }}
     >
+      <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <HeaderColourToggle colourBySource={colourBySource} setColourBySource={setColourBySource} />
         <KeyValuePopOver
@@ -245,61 +271,73 @@ function ProjectSamplesTable(props: SamplesProps) {
         primeReactFilters={currentFilters}
       />
       {/* TODO: Make a function for the table so that a different sort is used per column type */}
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-        <DataTable
-          value={metadata?.metadata ?? []}
-          onValueChange={(e) => {
-            setLoadingState(false);
-            setFilteredData(e);
-          }}
-          size="small"
-          removableSort
-          showGridlines
-          scrollable
-          scrollHeight="flex"
-          paginator
-          loading={loadingState}
-          rows={25}
-          columnResizeMode="expand"
-          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-          paginatorPosition="bottom"
-          paginatorRight
-          header={header}
-          onRowClick={rowClickHandler}
-          selectionMode="single"
-          className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
-          filters={dataTableFilters}
-          reorderableColumns
-          resizableColumns
-          sortIcon={sortIcon}
-          emptyMessage={
-            <Typography variant="subtitle1" color="textSecondary" align="center">
-              No samples found
-            </Typography>
-          }
-        >
-          {metadata?.metadata
-            ? sampleTableColumns.map((col: any, index: any) => (
-                <Column
-                  key={col.field}
-                  field={col.field}
-                  header={getColumnHeader(col, index, verticalHeaders)}
-                  body={col.body}
-                  hidden={col.hidden}
-                  sortable
-                  resizeable
-                  headerStyle={getColumnHeaderStyle(verticalHeaders, col)}
-                  headerClassName="custom-title"
-                  className="flexible-column"
-                  bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
-                />
-              ))
-            : null}
-        </DataTable>
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 0 }}>
+        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+          <DataTable
+            value={metadata?.metadata ?? []}
+            onValueChange={(e) => {
+              setLoadingState(false);
+              setFilteredData(e);
+            }}
+            size="small"
+            removableSort
+            showGridlines
+            scrollable
+            scrollHeight="flex"
+            paginator
+            loading={loadingState}
+            rows={25}
+            columnResizeMode="expand"
+            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            paginatorPosition="bottom"
+            paginatorRight
+            header={header}
+            onRowClick={rowClickHandler}
+            selectionMode="single"
+            className={verticalHeaders ? 'vertical-table-mode' : 'my-flexible-table'}
+            filters={dataTableFilters}
+            reorderableColumns
+            resizableColumns
+            sortIcon={sortIcon}
+            emptyMessage={
+              <Typography variant="subtitle1" color="textSecondary" align="center">
+                No samples found
+              </Typography>
+            }
+          >
+            {metadata?.metadata
+              ? sampleTableColumns.map((col: any, index: any) => (
+                  <Column
+                    key={col.field}
+                    field={col.field}
+                    header={getColumnHeader(col, index, verticalHeaders)}
+                    body={col.body}
+                    hidden={col.hidden}
+                    sortable
+                    resizeable
+                    headerStyle={getColumnHeaderStyle(verticalHeaders, col)}
+                    headerClassName="custom-title"
+                    className="flexible-column"
+                    bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+                  />
+                ))
+              : null}
+          </DataTable>
+        </div>
+        {shownSummaryMetadata && (
+          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+            <DataSummaries
+              data={metadata}
+              metadata={filteredData}
+              activeTable={activeTable}
+              setActiveTable={setActiveTable}
+            />
+          </div>
+        )}
       </Paper>
     </div>
   );
 }
-export default memo(ProjectSamplesTable);
+export default ProjectSamplesTable;

@@ -29,7 +29,7 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -43,13 +43,19 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
+// import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import DataSummaries from '../DataSummaries/DataSummaries';
+import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
 import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
@@ -57,6 +63,11 @@ import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
+
+export enum TableType {
+  RawMetadata = 'RawMetadata',
+  SummaryMetadata = 'SummaryMetadata',
+}
 
 interface SamplesProps {
   canShare: boolean;
@@ -77,7 +88,6 @@ function OrgSamplesTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   // Table row selection/display
@@ -94,6 +104,21 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
+  const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
+
+  const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
+    'view',
+    TableType.RawMetadata,
+    true, // pushHistory
+  );
+
+  const setActiveTable = (table: TableType) => {
+    setActiveTableState(table);
+  };
+
+  useEffect(() => {
+    if (activeTable === TableType.SummaryMetadata) setShownSummaryMetadata(true);
+  }, [activeTable]);
 
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
@@ -215,20 +240,21 @@ function OrgSamplesTable(props: SamplesProps) {
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Tooltip
-          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
-          placement="top"
-        >
-          <IconButton
-            onClick={toggleShowSelectedRowsOnly}
-            color={showSelectedRowsOnly ? 'success' : 'default'}
-            disabled={selectedSamples.length === 0}
-            size="small"
-          >
-            {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
-          </IconButton>
-        </Tooltip>
+        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Tooltip
+            title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+            placement="top"
+          >
+            <IconButton
+              onClick={toggleShowSelectedRowsOnly}
+              color={showSelectedRowsOnly ? 'success' : 'default'}
+              disabled={selectedSamples.length === 0}
+              size="small"
+            >
+              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+            </IconButton>
+          </Tooltip>
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
               <IconButton onClick={handleChangeOwnerClick}>
@@ -441,62 +467,74 @@ function OrgSamplesTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-        <DataTable
-          value={displayRows}
-          onValueChange={(e) => {
-            setFilteredSampleList(e);
-            setFormattedData(e);
-          }}
-          filters={dataTableFilters}
-          size="small"
-          columnResizeMode="expand"
-          resizableColumns
-          showGridlines
-          reorderableColumns
-          removableSort
-          header={header}
-          scrollable
-          scrollHeight="flex"
-          sortIcon={sortIcon}
-          paginator
-          onRowClick={rowClickHandler}
-          selectionMode="multiple"
-          rows={25}
-          loading={filtering || isSamplesLoading}
-          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-          paginatorPosition="bottom"
-          paginatorRight
-          className="my-flexible-table"
-          selection={selectedSamples}
-          selectAll={selectAll}
-          onSelectAllChange={onSelectAllChange}
-          onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
-            setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
-          }}
-        >
-          <Column selectionMode="multiple" style={{ width: '3em' }} />
-          {sampleTableColumns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              hidden={col.hidden ?? false}
-              sortable
-              resizeable
-              style={{ minWidth: '150px' }}
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1 }}>
+        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+          <DataTable
+            value={displayRows}
+            onValueChange={(e) => {
+              setFilteredSampleList(e);
+              setFormattedData(e);
+            }}
+            filters={dataTableFilters}
+            size="small"
+            columnResizeMode="expand"
+            resizableColumns
+            showGridlines
+            reorderableColumns
+            removableSort
+            header={header}
+            scrollable
+            scrollHeight="flex"
+            sortIcon={sortIcon}
+            paginator
+            onRowClick={rowClickHandler}
+            selectionMode="multiple"
+            rows={25}
+            loading={filtering || isSamplesLoading}
+            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            paginatorPosition="bottom"
+            paginatorRight
+            className="my-flexible-table"
+            selection={selectedSamples}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
+            onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
+              setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
+            }}
+          >
+            <Column selectionMode="multiple" style={{ width: '3em' }} />
+            {sampleTableColumns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                hidden={col.hidden ?? false}
+                sortable
+                resizeable
+                style={{ minWidth: '150px' }}
+                headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+              />
+            ))}
+          </DataTable>
+        </div>
+        {shownSummaryMetadata && (
+          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+            <DataSummaries
+              data={metadata}
+              metadata={filteredSampleList}
+              activeTable={activeTable}
+              setActiveTable={setActiveTable}
             />
-          ))}
-        </DataTable>
+          </div>
+        )}
       </Paper>
     </div>
   );
 }
 
-export default memo(OrgSamplesTable);
+export default OrgSamplesTable;
