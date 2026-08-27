@@ -12,7 +12,7 @@ import { useMemo, useState } from 'react';
 import type { OrgMetadataState } from '../../app/orgMetadataSlice';
 import type { ProjectMetadataState } from '../../app/projectMetadataSlice';
 import { Theme } from '../../assets/themes/theme';
-import FieldTypes from '../../constants/fieldTypes';
+import { FieldTypes } from '../../constants/fieldTypes';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import type { MetaDataColumn, ProjectViewField } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';

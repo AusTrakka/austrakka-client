@@ -320,7 +320,7 @@ export const postProformaPrivilege = (
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
   clientSessionId?: string,
-) => callPost(`/api/ProFormaV2/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+) => callPost(`/api/ProForma/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
 
 export const deleteProformaPrivilege = (
   recordGlobalId: string,
@@ -330,7 +330,7 @@ export const deleteProformaPrivilege = (
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
+    `/api/ProForma/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );

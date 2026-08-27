@@ -247,24 +247,22 @@ function OrgSamplesTable(props: SamplesProps) {
     <div
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Tooltip
-          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
-          placement="top"
-        >
-          <IconButton
-            onClick={toggleShowSelectedRowsOnly}
-            color={showSelectedRowsOnly ? 'success' : 'default'}
-            disabled={selectedSamples.length === 0}
-            size="small"
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Tooltip
+            title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+            placement="top"
           >
-            {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
-          </IconButton>
-        </Tooltip>
-        <div
-          style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '4px' }}
-        >
-          <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
+            <IconButton
+              onClick={toggleShowSelectedRowsOnly}
+              color={showSelectedRowsOnly ? 'success' : 'default'}
+              disabled={selectedSamples.length === 0}
+              size="small"
+            >
+              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+            </IconButton>
+          </Tooltip>
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
               <IconButton onClick={handleChangeOwnerClick} size="small">

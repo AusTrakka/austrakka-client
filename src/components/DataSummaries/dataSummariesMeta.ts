@@ -1,4 +1,4 @@
-import FieldTypes from '../../constants/fieldTypes';
+import { FieldTypes } from '../../constants/fieldTypes';
 
 export enum TableOrientation {
   FieldsHorizontal = 'fieldsHorizontal',
@@ -96,7 +96,7 @@ export type FieldTypeMap = Record<string, FieldTypes>;
 // Group-by configuration maps
 export type GroupByGranularityMap = Record<string, DateGranularity>; // DATE
 export type GroupByBinSizeMap = Record<string, number>; // NUMBER/DOUBLE
-export type GroupByTopNMap = Record<string, number>; // STRING (can extend to BOOLEAN/DATE/NUMBER/DOUBLE)
+export type GroupByTopNMap = Record<string, number>; // STRING/DATE/NUMBER/DOUBLE)
 
 // Initial pivot config state
 export interface PivotConfig {

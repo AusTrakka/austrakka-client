@@ -1,7 +1,7 @@
 import type { SvgIconComponent } from '@mui/icons-material';
 import { CalendarToday, Numbers, TextFields, ToggleOn } from '@mui/icons-material';
 import { Theme } from '../../assets/themes/theme';
-import FieldTypes from '../../constants/fieldTypes';
+import { FieldTypes } from '../../constants/fieldTypes';
 
 export const FIELD_TYPE_COLOURS: { [key: string]: string } = {
   string: Theme.SecondaryBlue,

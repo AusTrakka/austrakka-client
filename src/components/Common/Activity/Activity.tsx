@@ -9,7 +9,7 @@ import {
   type TreeTableToggleEvent,
 } from 'primereact/treetable';
 import { Theme } from '../../../assets/themes/theme';
-import useActivityLogs from '../../../hooks/useActivityLogs';
+import useActivityLogs, { type ActivityLogsResponse } from '../../../hooks/useActivityLogs';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
@@ -32,6 +32,7 @@ import React, {
 } from 'react';
 import { useCompactMode } from '../../../app/CompactModeContext';
 import RecordTypes from '../../../constants/record-type.enum';
+import { ResponseType } from '../../../constants/responseType';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -82,7 +83,7 @@ function resolveUrlDate(value: string, defaultValue: Date): Date | null {
   return new Date(value);
 }
 
-function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
+function Activity({ recordType, rGuid }: ActivityProps): React.JSX.Element {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
@@ -155,16 +156,16 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     [filters, setUrlFilters],
   );
 
-  const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
-    recordType,
-    filters,
-    rGuid,
-  );
+  const activityRes: ActivityLogsResponse = useActivityLogs({
+    recordType: recordType,
+    filters: filters,
+    rguid: rGuid,
+  });
 
   const [processingData, setProcessingData] = useState<boolean>(true);
   const isTableLoading = React.useMemo(
-    () => dataLoading || processingData,
-    [dataLoading, processingData],
+    () => activityRes.dataLoading || processingData,
+    [activityRes.dataLoading, processingData],
   );
 
   useEffect(() => {
@@ -363,15 +364,15 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setProcessingData(true);
     setNodes([]);
     setExpandedKeys({});
-    if (!dataLoading) {
-      const aggregatedNodes = aggregateLogsToTree(refinedLogs);
+    if (!activityRes.dataLoading) {
+      const aggregatedNodes = aggregateLogsToTree(activityRes.refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
       const defaultSortedNodes = defaultNodeSort(processedNodes);
       const splitNodes = defaultSortedNodes.flatMap((node) => splitLargeChildrenGroups(node, 500));
       setNodes(splitNodes);
       setProcessingData(false);
     }
-  }, [dataLoading, refinedLogs]);
+  }, [activityRes.dataLoading, activityRes.refinedLogs]);
 
   const header = (
     <div
@@ -400,12 +401,24 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         filters={filters}
         setFilters={setFilters}
       />
-      {httpStatusCode >= 400 && httpStatusCode !== 413 ? (
+      {activityRes.httpStatusCode >= 400 ? (
         <Alert severity="error" style={{ marginBottom: '20px' }}>
           <AlertTitle>Error</AlertTitle>
-          {isLoadingErrorMsg || 'An error occurred while fetching the activity log.'}
+          {activityRes.isLoadingErrorMsg || 'An error occurred while fetching the activity log.'}
         </Alert>
       ) : (
+ <>
+          {activityRes.apiMessages.map((rm) =>
+            rm.ResponseType === ResponseType.Warning ? (
+              <Alert
+                key={rm.ResponseMessage}
+                severity="warning"
+                style={{ whiteSpace: 'normal', wordBreak: 'break-word', marginBottom: '10px' }}
+              >
+                {rm.ResponseMessage}
+              </Alert>
+            ) : null,
+          )}
         <Paper
           elevation={2}
           sx={{
@@ -447,17 +460,9 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
               rowHover
               selectionMode="single"
               emptyMessage={
-                httpStatusCode === 413 ? (
-                  <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                    <AlertTitle>Error</AlertTitle>
-                    {isLoadingErrorMsg ||
-                      'The activity log is too large to display. Please narrow your filters.'}
-                  </Alert>
-                ) : (
                   <Typography variant="subtitle1" color="textSecondary" align="center">
                     No activity found
                   </Typography>
-                )
               }
             >
               <Column
@@ -505,19 +510,19 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                           }}
                           sortable
                         />
-                      );
-                    })
-                : null}
-            </TreeTable>
-          )}
-        </Paper>
+                      ))
+                  : null}
+              </TreeTable>
+            )}
+          </Paper>
+        </>
       )}
     </Box>
   );
 
   // TODO: Need to fix this, this can be refactored differently
   let contentPane = <></>;
-  if (httpStatusCode === 401 || httpStatusCode === 403) {
+  if (activityRes.httpStatusCode === 401 || activityRes.httpStatusCode === 403) {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Permission Denied</AlertTitle>

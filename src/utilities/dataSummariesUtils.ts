@@ -16,7 +16,7 @@ import {
   ROW_COUNT_AGGREGATION_TYPES,
   type RowRecord,
 } from '../components/DataSummaries/dataSummariesMeta';
-import FieldTypes from '../constants/fieldTypes';
+import { FieldTypes } from '../constants/fieldTypes';
 
 // Buckets a date value into a string representation of the bucket based on the specified granularity
 function bucketDateValue(value: unknown, granularity: DateGranularity): string {
@@ -365,16 +365,17 @@ export function buildPivotGroups(
   if (options.showRelativePercentages) {
     // Single global denominator across all metrics
     const visibleTotalRows = pivotGroups.reduce((sum, g) => sum + g.rowCount, 0);
+    const newPivotGroups: PivotGroup[] = [];
 
     for (const group of pivotGroups) {
       // Group row count %
-      group.rowCountPercentage =
+      const rowCountPercentage =
         visibleTotalRows > 0 ? Number(((group.rowCount / visibleTotalRows) * 100).toFixed(2)) : 0;
 
       // Aggregation field % (relative to total dataset)
-      group.percentages = {};
+      const percentages: Record<string, Partial<Record<AggregationType, number | null>>> = {};
       for (const col of displayFields) {
-        group.percentages[col] = {};
+        percentages[col] = {};
         for (const agg of selectedAggregations[col] ?? []) {
           const groupVal = group.counts[col]?.[agg];
 
@@ -384,14 +385,16 @@ export function buildPivotGroups(
             typeof groupVal === 'number' &&
             visibleTotalRows > 0
           ) {
-            group.percentages[col][agg] = Number(((groupVal / visibleTotalRows) * 100).toFixed(2));
+            percentages[col][agg] = Number(((groupVal / visibleTotalRows) * 100).toFixed(2));
           } else {
             // Remaining aggregation types are not relative to total dataset, so we set them to null
-            group.percentages[col][agg] = null;
+            percentages[col][agg] = null;
           }
         }
       }
+      newPivotGroups.push({ ...group, rowCountPercentage, percentages });
     }
+    pivotGroups = newPivotGroups;
   }
 
   return pivotGroups;
