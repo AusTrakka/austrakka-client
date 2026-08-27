@@ -11,7 +11,7 @@ import {
 import { type Dispatch, type MouseEvent, type SetStateAction, useState } from 'react';
 import type { PivotConfig } from '../dataSummariesMeta';
 
-interface Option {
+interface OptionProps {
   id: string;
   label: string;
   checked: boolean;
@@ -19,7 +19,8 @@ interface Option {
   description?: string;
 }
 
-function OptionCheckboxItem({ option }: { option: Option }) {
+function OptionCheckboxItem(props: OptionProps) {
+  const { label, checked, onChange, description } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
@@ -38,16 +39,12 @@ function OptionCheckboxItem({ option }: { option: Option }) {
       <FormControlLabel
         sx={{ my: -0.5, mx: 0.25 }}
         control={
-          <Checkbox
-            size="small"
-            checked={option.checked}
-            onChange={(e) => option.onChange(e.target.checked)}
-          />
+          <Checkbox size="small" checked={checked} onChange={(e) => onChange(e.target.checked)} />
         }
         label={
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="body2">{option.label}</Typography>
-            {option.description && (
+            <Typography variant="body2">{label}</Typography>
+            {description && (
               <IconButton
                 size="small"
                 onClick={handleOpenPopover}
@@ -79,9 +76,9 @@ function OptionCheckboxItem({ option }: { option: Option }) {
         }}
       >
         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
-          {option.label}
+          {label}
         </Typography>
-        <Typography variant="body2">{option.description}</Typography>
+        <Typography variant="body2">{description}</Typography>
       </Popover>
     </>
   );
@@ -113,7 +110,7 @@ export function GlobalOptions({ pivotConfig, setPivotConfig }: GlobalOptionsProp
       hideEmptyNullGroups: hide,
     }));
   }
-  const options: Option[] = [
+  const options: OptionProps[] = [
     {
       id: 'showTotalCountFooter',
       label: 'Show total count footer',
@@ -144,7 +141,7 @@ export function GlobalOptions({ pivotConfig, setPivotConfig }: GlobalOptionsProp
       </Typography>
       <FormGroup sx={{ alignItems: 'flex-start', mb: 1.5 }}>
         {options.map((opt) => (
-          <OptionCheckboxItem key={opt.id} option={opt} />
+          <OptionCheckboxItem key={opt.id} {...opt} />
         ))}
       </FormGroup>
     </>

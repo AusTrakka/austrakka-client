@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { type Dispatch, type MouseEvent, type SetStateAction, useState } from 'react';
 import { Theme } from '../../../assets/themes/theme';
-import FieldTypes from '../../../constants/fieldTypes';
+import { FieldTypes } from '../../../components/Fields/fieldsMeta';
 import { computeSuggestedBinSize } from '../../../utilities/dataSummariesUtils';
 import {
   DATE_GRANULARITY_LABELS,
@@ -230,7 +230,16 @@ function TopNOptions({
           </Popover>
 
           <FormControl>
-            <FormLabel sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+            <FormLabel
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                mb: 0.5,
+                color: 'text.primary',
+                '&.Mui-focused': { color: 'text.primary' },
+              }}
+            >
               <Typography variant="body2">Calculation level</Typography>
               <IconButton onClick={handleInfoOpen} size="small" sx={{ p: 0.25 }}>
                 <InfoOutlined sx={{ fontSize: 16 }} />

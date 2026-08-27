@@ -6,7 +6,7 @@ import { Autocomplete, Box, Checkbox, Stack, TextField, Tooltip, Typography } fr
 import { alpha } from '@mui/material/styles';
 import { type KeyboardEvent, type MouseEvent, useMemo } from 'react';
 import { Theme } from '../../../assets/themes/theme';
-import FieldTypes from '../../../constants/fieldTypes';
+import { FieldTypes } from '../../../components/Fields/fieldsMeta';
 import type { Field } from '../../../types/dtos';
 import { FIELD_TYPE_COLOURS, FIELD_TYPE_ICONS } from '../../Fields/fieldsMeta';
 
@@ -162,7 +162,7 @@ export function SortableFieldList({
       <Autocomplete
         multiple
         size="small"
-        limitTags={1}
+        renderTags={() => null}
         disableCloseOnSelect
         options={allColumnNames}
         value={selectedFieldNames}

@@ -26,13 +26,15 @@ import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import type React from 'react';
 import { type SetStateAction, useEffect, useState } from 'react';
-import FieldTypes from '../../constants/fieldTypes';
+import { FieldTypes } from '../../components/Fields/fieldsMeta';
 import type { Field } from '../../types/dtos';
 import {
   getConditionName,
   getDisplayValue,
   isDataTableFiltersEqual,
+  isEqualValues,
   isOperatorFilterMetaData,
+  isValueEmpty,
 } from '../../utilities/filterUtils';
 import {
   booleanConditions,
@@ -68,22 +70,6 @@ interface InternalFormProperties {
   operator: string;
   condition: string | CustomFilterOperators | FilterMatchMode;
   value: any;
-}
-
-function isValueEmpty(val: any): boolean {
-  if (val === null || val === undefined || val === '') return true;
-  if (Array.isArray(val) && val.length === 0) return true;
-  return false;
-}
-
-function isEqualValues(val1: any, val2: any, ignoreArrayOrder = false): boolean {
-  if (Array.isArray(val1) && Array.isArray(val2)) {
-    if (val1.length !== val2.length) return false;
-    const a = ignoreArrayOrder ? [...val1].sort() : val1;
-    const b = ignoreArrayOrder ? [...val2].sort() : val2;
-    return a.every((v, i) => v === b[i]);
-  }
-  return val1 === val2;
 }
 
 function isEmptyFilter(value: any, filters: boolean | null) {

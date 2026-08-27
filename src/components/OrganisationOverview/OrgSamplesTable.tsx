@@ -240,21 +240,21 @@ function OrgSamplesTable(props: SamplesProps) {
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Tooltip
-          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
-          placement="top"
-        >
-          <IconButton
-            onClick={toggleShowSelectedRowsOnly}
-            color={showSelectedRowsOnly ? 'success' : 'default'}
-            disabled={selectedSamples.length === 0}
-            size="small"
-          >
-            {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
-          </IconButton>
-        </Tooltip>
+        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
+          <Tooltip
+            title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+            placement="top"
+          >
+            <IconButton
+              onClick={toggleShowSelectedRowsOnly}
+              color={showSelectedRowsOnly ? 'success' : 'default'}
+              disabled={selectedSamples.length === 0}
+              size="small"
+            >
+              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+            </IconButton>
+          </Tooltip>
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
               <IconButton onClick={handleChangeOwnerClick}>
