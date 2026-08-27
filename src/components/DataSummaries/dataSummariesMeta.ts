@@ -1,4 +1,4 @@
-import { FieldTypes } from '../../components/Fields/fieldsMeta';
+import { FieldTypes } from '../../constants/fieldTypes';
 
 export enum TableOrientation {
   FieldsHorizontal = 'fieldsHorizontal',

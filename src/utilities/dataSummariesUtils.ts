@@ -16,7 +16,7 @@ import {
   ROW_COUNT_AGGREGATION_TYPES,
   type RowRecord,
 } from '../components/DataSummaries/dataSummariesMeta';
-import { FieldTypes } from '../components/Fields/fieldsMeta';
+import { FieldTypes } from '../constants/fieldTypes';
 
 // Buckets a date value into a string representation of the bucket based on the specified granularity
 function bucketDateValue(value: unknown, granularity: DateGranularity): string {

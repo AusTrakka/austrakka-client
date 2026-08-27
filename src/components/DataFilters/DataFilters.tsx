@@ -26,7 +26,7 @@ import { FilterMatchMode, FilterOperator, FilterService } from 'primereact/api';
 import type { DataTableFilterMeta, DataTableOperatorFilterMetaData } from 'primereact/datatable';
 import type React from 'react';
 import { type SetStateAction, useEffect, useState } from 'react';
-import { FieldTypes } from '../../components/Fields/fieldsMeta';
+import { FieldTypes } from '../../constants/fieldTypes';
 import type { Field } from '../../types/dtos';
 import {
   getConditionName,

@@ -6,7 +6,7 @@ import { Autocomplete, Box, Checkbox, Stack, TextField, Tooltip, Typography } fr
 import { alpha } from '@mui/material/styles';
 import { type KeyboardEvent, type MouseEvent, useMemo } from 'react';
 import { Theme } from '../../../assets/themes/theme';
-import { FieldTypes } from '../../../components/Fields/fieldsMeta';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import type { Field } from '../../../types/dtos';
 import { FIELD_TYPE_COLOURS, FIELD_TYPE_ICONS } from '../../Fields/fieldsMeta';
 

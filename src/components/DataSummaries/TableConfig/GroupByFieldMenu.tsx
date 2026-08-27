@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { type Dispatch, type MouseEvent, type SetStateAction, useState } from 'react';
 import { Theme } from '../../../assets/themes/theme';
-import { FieldTypes } from '../../../components/Fields/fieldsMeta';
+import { FieldTypes } from '../../../constants/fieldTypes';
 import { computeSuggestedBinSize } from '../../../utilities/dataSummariesUtils';
 import {
   DATE_GRANULARITY_LABELS,

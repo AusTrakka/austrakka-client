@@ -2,7 +2,7 @@ import { DeleteOutline } from '@mui/icons-material';
 import { Checkbox, Divider, Menu, MenuItem, Typography } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 import { Theme } from '../../../assets/themes/theme';
-import type { FieldTypes } from '../../../components/Fields/fieldsMeta';
+import type { FieldTypes } from '../../../constants/fieldTypes';
 import type { PivotConfig } from '../dataSummariesMeta';
 import {
   AGG_TYPE_LABELS,
