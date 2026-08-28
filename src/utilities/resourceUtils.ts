@@ -9,7 +9,7 @@ import type {
   PlotListing,
   Project,
   ProjectDashboardDetails,
-  ProjectDocument,
+  ProjectDocument, ProjectOrganisationsPatch,
   ProjectPut,
   ProjectSummary,
   ProjectView,
@@ -27,8 +27,8 @@ import {
   callDELETE,
   callGET,
   callPATCH,
-  callPOSTForm,
   callPost,
+  callPOSTForm,
   callPostMultipart,
   callPUT,
   callSimpleGET,
@@ -36,11 +36,17 @@ import {
   previewFile,
 } from './api';
 
+// todo: consider defining the root paths (e.g /api/Projects)
+//  as variables to shorten the code in this file and make refactor more flexible
+
+// todo: should we also consider grouping methods under namespace objects? feels a bit messy in here
+
 // Definition of endpoints
 
 // Project endpoints
 export const getProjectList = (token: string): Promise<ResponseObject<Project[]>> =>
   callGET('/api/Projects', token);
+
 export const getProjectDetails = (
   abbrev: string,
   token: string,
@@ -52,7 +58,7 @@ export const putProjectDetails = (
   token: string,
 ): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
 
-export const pathchProjectIsActive = (
+export const patchProjectIsActive = (
   isActive: boolean,
   identifier: string,
   token: string,
@@ -72,6 +78,7 @@ export const getPlots = (
   projectId: number,
   token: string,
 ): Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+
 export const getPlotDetails = (abbrev: string, token: string): Promise<ResponseObject<Plot>> =>
   callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
@@ -82,15 +89,18 @@ export const getTrees = (
   token: string,
 ): Promise<ResponseObject<Tree[]>> =>
   callGET(`/api/Trees/project/${projectAbbrev}?includeall=${includeAll}`, token);
+
 export const getTreeData = (
   treeVersionId: number,
   token: string,
 ): Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
+
 export const getLatestTreeData = (
   treeId: number,
   token: string,
 ): Promise<ResponseObject<TreeVersion>> =>
   callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
+
 export const getTreeVersions = (
   treeId: number,
   token: string,
@@ -102,11 +112,15 @@ export const getTreeVersions = (
 // and we don't need to do anything
 export const getGroupProFormaVersions = (groupId: number, token: string) =>
   callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
+
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
+
 export const getProformaDetails = (proFormaAbbrev: string, token: string) =>
   callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
+
 export const getProformaVersions = (proFormaAbbrev: string, token: string) =>
   callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
   const response =
     id != null
@@ -167,6 +181,7 @@ export const validateSubmissions = (
     customHeaders,
   );
 };
+
 export const uploadSubmissions = (
   formData: FormData,
   params: string,
@@ -182,6 +197,7 @@ export const uploadSubmissions = (
     customHeaders,
   );
 };
+
 export const createSample = (
   token: string,
   name: string,
@@ -202,8 +218,10 @@ export const uploadSequence = (
 
 // User endpoints
 export const getMe = (token: string) => callGET('/api/Users/Me', token);
+
 export const getUser = (identifier: string, token: string) =>
   callGET(`/api/Users/${identifier}`, token);
+
 export const getUserList = (includeAll: boolean, token: string) =>
   callGET(`/api/Users?includeall=${includeAll}`, token);
 
@@ -214,12 +232,14 @@ export const getRoles = (token: string): Promise<ResponseObject<Role[]>> =>
 // Dataset endpoints
 export const getDatasets = (projectAbbrev: string, token: string) =>
   callGET(`/api/Projects/${projectAbbrev}/active-dataset-entry-list`, token);
+
 export const disableDataset = (projectAbbrev: string, datasetId: number, token: string) =>
   callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
 export const getSampleGroups = (sampleName: string, token: string) =>
   callGET(`/api/Sample/${sampleName}/Groups`, token);
+
 export const shareSamples = (
   token: string,
   groupName: string,
@@ -227,6 +247,7 @@ export const shareSamples = (
   clientSessionId?: string,
 ) =>
   callPATCH('/api/Sample/Share', token, { groupName: groupName, seqIds: samples }, clientSessionId);
+
 export const unshareSamples = (
   token: string,
   groupName: string,
@@ -251,12 +272,15 @@ export const getOrganisation = (
   abbrev: string,
   token: string,
 ): Promise<ResponseObject<Organisation>> => callGET(`/api/Organisations/${abbrev}`, token);
+
 export const getOrgMembers = (identifier: string, token: string) =>
   callGET(`/api/Organisations/${identifier}/Members`, token);
+
 export const getOrgFields = (identifier: string, token: string) =>
   callGET(`/api/Organisations/${identifier}/Fields`, token) as Promise<
     ResponseObject<MetaDataColumn[]>
   >;
+
 export const getOrgMetadataByField = (identifier: string, fields: string[], token: string) => {
   const fieldsQuery: string = `?${fields.map((field) => `fields=${field}`).join('&')}`;
   return callGET(
@@ -264,6 +288,7 @@ export const getOrgMetadataByField = (identifier: string, fields: string[], toke
     token,
   ) as Promise<ResponseObject<Sample[]>>;
 };
+
 export const getOrgMetadata = (
   identifier: string,
   token: string,
@@ -406,6 +431,7 @@ export const deleteOrgPrivilege = (
 
 // Tenant
 export const getFieldsV2 = (token: string) => callGET('/api/MetaDataColumnsV2', token);
+
 export const patchFieldV2 = (metaDataColumnName: string, token: string, field: any) =>
   callPATCH(`/api/MetaDataColumnsV2/${metaDataColumnName}`, token, field);
 
@@ -451,6 +477,7 @@ export const getDocuments = (
   token: string,
 ): Promise<ResponseObject<ProjectDocument[]>> =>
   callGET(`/api/Projects/${projectAbbrev}/documents`, token);
+
 export const getDocument = (
   projectAbbrev: string,
   documentStringId: string,
@@ -473,10 +500,13 @@ export const uploadDocument = (
     customHeaders,
   );
 };
+
 export const disableDocument = (projectAbbrev: string, documentStringId: string, token: string) =>
   callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/disable`, token);
+
 export const enableDocument = (projectAbbrev: string, documentStringId: string, token: string) =>
   callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/enable`, token);
+
 export const updateDocument = (
   projectAbbrev: string,
   documentStringId: string,
@@ -488,25 +518,37 @@ export const updateDocument = (
     filename,
     description,
   });
+
 export const downloadDocument = async (
   projectAbbrev: string,
   documentStringId: string,
   token: string,
 ) => {
-  const response = await downloadFile(
-    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/download`,
-    token,
+  return await downloadFile(
+      `/api/Projects/${projectAbbrev}/documents/${documentStringId}/download`,
+      token,
   );
-  return response;
 };
+
 export const previewDocument = async (
   projectAbbrev: string,
   documentStringId: string,
   token: string,
 ) => {
-  const response = await previewFile(
-    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/preview`,
-    token,
+  return await previewFile(
+      `/api/Projects/${projectAbbrev}/documents/${documentStringId}/preview`,
+      token,
   );
-  return response;
 };
+
+// Project Organisations Endpoints
+const projectRoot = "/api/Projects"
+
+export const getProjectOrganisations = async (identifier: string, token: string):
+    Promise<ResponseObject<Organisation[]>> => await callGET(`${projectRoot}/${identifier}/Organisations`, token)
+
+export const addProjectOrganisations = async (identifier: string, data: ProjectOrganisationsPatch, token: string):
+  Promise<ResponseObject> => await callPATCH(`${projectRoot}/${identifier}/Organisations/Add`, token, data)
+
+export const removeProjectOrganisations = async (identifier: string, data: ProjectOrganisationsPatch, token: string):
+    Promise<ResponseObject> => await callPATCH(`${projectRoot}/${identifier}/Organisations/Remove`, token, data)

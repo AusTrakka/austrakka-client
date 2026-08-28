@@ -469,3 +469,7 @@ export interface ProjectDocument {
   lastUpdated: Date;
   lastUpdatedBy: string;
 }
+
+export interface ProjectOrganisationsPatch {
+  organisationNames: string[];
+}

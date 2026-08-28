@@ -23,6 +23,7 @@ import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
 import { useProjectDetails } from './useProjectDetails';
+import ProjectOrgsPropertiesSection from './ProjectOrganisations/ProjectOrgsPropertiesSection';
 
 function ProjectSettingsOverview() {
   const { projectAbbrev } = useParams();
@@ -65,7 +66,7 @@ function ProjectSettingsOverview() {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableDashboards();
+      fetchAvailableDashboards().catch((e) => console.error(e));
     }
   }, [token, tokenLoading, isAdmin]);
 
@@ -76,12 +77,12 @@ function ProjectSettingsOverview() {
         setOrganisationErrorMessage(response.message);
         return;
       }
-      const organsiations = response.data ?? [];
-      setOrganisations(organsiations);
+      const organisations = response.data ?? [];
+      setOrganisations(organisations);
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableOrganisations();
+      fetchAvailableOrganisations().catch((e) => console.error(e));
     }
   }, [token, tokenLoading, isAdmin]);
 
@@ -223,7 +224,12 @@ function ProjectSettingsOverview() {
         dashboards={dashboards}
         editable={isAdmin}
       />
-      <Snackbar
+        <ProjectOrgsPropertiesSection
+            projectAbbrev={projectAbbrev}
+            editable={isAdmin}
+            onSaveResult={() => null} // todo: this needs to do something
+        />
+        <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={closeSnackbar}

@@ -16,7 +16,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
 
   return (
     <Autocomplete
-      options={records?.filter((r) => !selectedRecords?.some((sr) => sr.id === r.id)) || []}
+      options={records.filter((r) => !selectedRecords?.some((sr) => sr.id === r.id)) || []}
       multiple
       disabled={recordType === RecordTypes.SYSTEM}
       limitTags={1}
@@ -64,6 +64,7 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
           placeholder={selectedRecords?.length ? '' : 'Select Record'}
           variant="filled"
           size="small"
+          // todo: address deprecated attribute
           InputProps={{
             ...params.InputProps,
             inputProps: {
