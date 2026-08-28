@@ -244,6 +244,10 @@ function MetadataCounts({
         itemWidth: 10,
         itemHeight: 10,
         data: ['Available', 'Missing'],
+        selected: {
+          Available: false,
+          Missing: true,
+        },
       },
       grid: { right: 90, bottom: 60, top: 16, left: 90 }, // increased bottom to make room
       xAxis: { type: 'value', name: 'Count', nameLocation: 'middle', nameGap: 20 },
