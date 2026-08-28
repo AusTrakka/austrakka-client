@@ -28,9 +28,19 @@ export function HorizontalModeTable({
 }: HorizontalModeTableProps) {
   const tableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
 
-  // Key needs to be updated when any configuration or underlying data changes (including filtering, stale data refresh, etc.)
-  // Otherwise DataTable does not handle all rendering changes correctly (row spans not updating correctly)
+  // Key needs to be updated when configuration or underlying data changes
   const tableKey = useMemo(() => `horizontal_${JSON.stringify(pivotConfig)}`, [pivotConfig]);
+
+  // Determine if there are active sub-header columns (aggregations)
+  const hasSubHeaders = useMemo(() => {
+    return pivotConfig.displayFields.some((col) => {
+      const aggs = pivotConfig.selectedAggregations[col];
+      return Array.isArray(aggs) && aggs.length > 0;
+    });
+  }, [pivotConfig.displayFields, pivotConfig.selectedAggregations]);
+
+  // If there are no sub-headers, rowSpan must be 1 to prevent Chrome from rendering phantom row height
+  const headerRowSpan = hasSubHeaders ? 2 : 1;
 
   return (
     <DataTable
@@ -42,9 +52,7 @@ export function HorizontalModeTable({
       className="my-flexible-table"
       scrollable
       scrollHeight="flex"
-      rowGroupMode="rowspan" // Requires pre-sorting of rows by group-by fields
-      // Limitation of the current implementation: DataTable is designed for single-level grouping only
-      // This means that if the user selects multiple group-by fields, only the first one will be used for grouping in the table display
+      rowGroupMode="rowspan"
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : undefined}
       emptyMessage={emptyStateMessage}
       header={headerControls}
@@ -55,14 +63,14 @@ export function HorizontalModeTable({
               <Column
                 key={col}
                 header={fieldLabelByKey[col] ?? col}
-                rowSpan={2}
+                rowSpan={headerRowSpan}
                 className="flexible-column"
                 bodyClassName="value-cells"
               />
             ))}
             <Column
               header="Total records"
-              rowSpan={2}
+              rowSpan={headerRowSpan}
               className="flexible-column"
               bodyClassName="value-cells"
             />
@@ -80,18 +88,22 @@ export function HorizontalModeTable({
               );
             })}
           </Row>
-          <Row>
-            {pivotConfig.displayFields.flatMap((col) =>
-              (pivotConfig.selectedAggregations[col] ?? []).map((agg) => (
-                <Column
-                  key={`${col}__${agg}`}
-                  header={AGG_TYPE_LABELS[agg]}
-                  className="flexible-column"
-                  bodyClassName="value-cells"
-                />
-              )),
-            )}
-          </Row>
+
+          {/* Only render the second header row if sub-headers actually exist */}
+          {hasSubHeaders && (
+            <Row>
+              {pivotConfig.displayFields.flatMap((col) =>
+                (pivotConfig.selectedAggregations[col] ?? []).map((agg) => (
+                  <Column
+                    key={`${col}__${agg}`}
+                    header={AGG_TYPE_LABELS[agg]}
+                    className="flexible-column"
+                    bodyClassName="value-cells"
+                  />
+                )),
+              )}
+            </Row>
+          )}
         </ColumnGroup>
       }
       footerColumnGroup={
