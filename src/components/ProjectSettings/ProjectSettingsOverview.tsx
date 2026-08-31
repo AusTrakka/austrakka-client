@@ -23,7 +23,7 @@ import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
 import { useProjectDetails } from './useProjectDetails';
-import ProjectOrgsPropertiesSection from './ProjectOrganisations/ProjectOrgsPropertiesSection';
+import ProjectOrgsPropertiesSection from './ProjectOrgsPropertiesSection';
 
 function ProjectSettingsOverview() {
   const { projectAbbrev } = useParams();

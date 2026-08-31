@@ -4,18 +4,18 @@ import { Column } from 'primereact/column';
 import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData } from 'primereact/datatable';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useApi } from '../../../app/ApiContext';
-import { ResponseType } from '../../../constants/responseType';
-import type { Organisation, ProjectOrganisationsPatch } from '../../../types/dtos';
+import { useApi } from '../../app/ApiContext';
+import { ResponseType } from '../../constants/responseType';
+import type { Organisation, ProjectOrganisationsPatch } from '../../types/dtos';
 import {
     addProjectOrganisations,
     getOrganisations,
     getProjectOrganisations,
     removeProjectOrganisations
-} from '../../../utilities/resourceUtils';
-import SearchInput from '../../TableComponents/SearchInput';
-import sortIcon from '../../TableComponents/SortIcon';
-import EditButtons from '../../Users/EditButtons';
+} from '../../utilities/resourceUtils';
+import SearchInput from '../TableComponents/SearchInput';
+import sortIcon from '../TableComponents/SortIcon';
+import EditButtons from '../Users/EditButtons';
 
 interface ProjectOrgsSectionProps {
     projectAbbrev: string | undefined;
@@ -25,8 +25,7 @@ interface ProjectOrgsSectionProps {
 
 const columns = [
     { field: 'abbreviation', header: 'Abbrev' },
-    { field: 'state', header: 'State' },
-    { field: 'country', header: 'Country' },
+    { field: 'name', header: 'Name' }
 ];
 
 export default function ProjectOrgsPropertiesSection({ projectAbbrev, editable, onSaveResult }: ProjectOrgsSectionProps): React.JSX.Element {
@@ -76,6 +75,10 @@ export default function ProjectOrgsPropertiesSection({ projectAbbrev, editable, 
             setIsLoading(false);
             setErrorMessage(projOrgRes.message);
             return;
+        }
+
+        if (projOrgRes.data) {
+            projOrgRes.data.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation));
         }
 
         setProjectOrgs(projOrgRes.data || []);
