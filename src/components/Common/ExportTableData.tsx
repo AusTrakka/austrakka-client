@@ -13,10 +13,11 @@ interface ExportTableDataProps {
   disabled: boolean;
   fileNamePrefix: string;
   headers?: string[];
+  formatFields?: boolean;
 }
 
 function ExportTableData(props: ExportTableDataProps) {
-  const { dataToExport, disabled, fileNamePrefix, headers } = props;
+  const { dataToExport, disabled, fileNamePrefix, headers, formatFields = true } = props;
   const [exportCSVStatus, setExportCSVStatus] = useState<LoadingState>(LoadingState.IDLE);
 
   const exportData = async () => {
@@ -29,12 +30,12 @@ function ExportTableData(props: ExportTableDataProps) {
 
     try {
       const fileName = generateFilename(fileNamePrefix);
-      const filesize = estimateCSVSize(dataToExport);
+      const filesize = estimateCSVSize(dataToExport, formatFields);
       const fileStream = streamSaver.createWriteStream(`${fileName}.csv`, {
         size: filesize,
       });
 
-      const readable = generateCSVStream(dataToExport, headers); // ReadableStream<Uint8Array>
+      const readable = generateCSVStream(dataToExport, formatFields, headers); // ReadableStream<Uint8Array>
 
       await readable.pipeTo(fileStream);
       setExportCSVStatus(LoadingState.IDLE);

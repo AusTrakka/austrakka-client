@@ -1,5 +1,4 @@
 import RecordTypes from '../constants/record-type.enum';
-import { ScopeDefinitions } from '../constants/scopes';
 import type { Roles } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordTypeWithScopes,
@@ -13,12 +12,7 @@ export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWith
   }
 
   return targetGroup.recordRoles.some((recordRole) =>
-    recordRole.roles?.some((roleWithScopes) =>
-      // TODO: This is not how you check for super user role.
-      // Instead of looking at the method pattern, check for
-      // privilegeLevel === 1.
-      roleWithScopes.scopes.includes(ScopeDefinitions.Everything),
-    ),
+    recordRole.roles?.some((roleWithScopes) => roleWithScopes.privilegeLevel === 'Root'),
   );
 }
 

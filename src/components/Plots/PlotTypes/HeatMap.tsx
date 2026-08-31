@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ColorScheme } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
@@ -61,27 +60,19 @@ function HeatMap(props: PlotTypeProps) {
     selectProjectMetadataFields(state, projectAbbrev),
   );
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const navigate = useNavigate();
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    navigate,
   );
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
-    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultContinuousColorScheme,
-    navigate,
   );
-  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
-    'fontSize',
-    11,
-    navigate,
-  );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>('fontSize', 11);
 
   // Set spec on load
   useEffect(() => {
@@ -214,7 +205,7 @@ function HeatMap(props: PlotTypeProps) {
       <ColorSchemeSelector
         selectedScheme={colourScheme}
         onColourChange={(newColor) => setColourScheme(newColor)}
-        variant="standard"
+        variant="outlined"
         size="small"
       />
     </Box>

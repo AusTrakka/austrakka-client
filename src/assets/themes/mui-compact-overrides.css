@@ -1,0 +1,153 @@
+/* --- MUI Compact Typography Overrides --- */
+.app-container.compact-mode .MuiTypography-h1 {
+  font-size: var(--density-font-size-h1);
+}
+
+.app-container.compact-mode .MuiTypography-h2 {
+  font-size: var(--density-font-size-h2);
+}
+
+.app-container.compact-mode .MuiTypography-h3 {
+  font-size: var(--density-font-size-h3);
+}
+
+.app-container.compact-mode .MuiTypography-h4 {
+  font-size: var(--density-font-size-h4);
+}
+
+.app-container.compact-mode .MuiTypography-h5 {
+  font-size: var(--density-font-size-h5);
+}
+
+.app-container.compact-mode .MuiTypography-h6 {
+  font-size: var(--density-font-size-h6);
+}
+
+.app-container.compact-mode .MuiIconButton-sizeMedium {
+  padding: var(--density-spacing-sm);
+}
+
+.app-container.compact-mode .MuiSvgIcon-fontSizeMedium {
+  font-size: var(--density-icon-size-md);
+}
+
+.app-container.compact-mode .MuiTypography-body1 {
+  font-size: var(--density-font-size-body1);
+}
+
+.app-container.compact-mode .MuiTypography-body2 {
+  font-size: var(--density-font-size-body2);
+}
+
+.app-container.compact-mode .MuiTabs-root {
+  min-height: var(--density-row-height);
+}
+
+.app-container.compact-mode .MuiButtonBase-root.MuiTab-root {
+  min-width: var(--density-tab-min-width);
+  padding: var(--density-spacing-sm) var(--density-spacing-lg);
+}
+
+.app-container.compact-mode .MuiTabs-scroller {
+  height: var(--density-row-height);
+}
+
+.app-container.compact-mode .MuiTab-root {
+  padding: var(--density-spacing-sm) var(--density-spacing-sm);
+  font-size: var(--density-font-size-body1);
+  min-height: 32px;
+}
+
+.app-container.compact-mode .MuiBreadcrumbs-root a,
+.app-container.compact-mode .MuiBreadcrumbs-root p,
+.app-container.compact-mode .MuiBreadcrumbs-root span {
+  font-size: var(--density-font-size-body1);
+}
+
+.app-container.compact-mode .MuiBreadcrumbs-root svg {
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}
+
+.app-container.compact-mode .MuiTypography-subtitle1 {
+  font-size: var(--density-font-size-subtitle1);
+}
+
+.app-container.compact-mode .MuiTypography-subtitle2 {
+  font-size: var(--density-font-size-subtitle2);
+}
+
+.app-container.compact-mode div > span[data-mui-internal-clone-element="true"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Autocomplete and Textbox */
+
+/* 1. Inputs, Selects, and Autocomplete text fields */
+.app-container.compact-mode .MuiInputBase-input,
+.app-container.compact-mode .MuiSelect-select,
+.app-container.compact-mode .MuiAutocomplete-input {
+  font-size: var(--density-font-size-body1);
+  padding-top: var(--density-spacing-null);
+  padding-bottom: var(--density-spacing-null);
+  padding-left: var(--density-spacing-md);
+}
+
+.app-container.compact-mode .MuiInputBase-input[type="number"] {
+  height: var(--density-input-height);
+  padding-top: var(--density-spacing-xs);
+  padding-bottom: var(--density-spacing-xs);
+  padding-right: var(--density-spacing-md);
+  box-sizing: border-box;
+}
+
+/* Ensure the parent wrapper matches the row height constraint */
+.app-container.compact-mode .MuiInputBase-root:has(input[type="number"]) {
+  height: var(--density-row-height);
+  min-height: var(--density-row-height);
+}
+
+/* 2. Labels */
+.app-container.compact-mode .MuiInputLabel-root {
+  font-size: var(--density-font-size-body1);
+  top: -1px;
+}
+
+/* 3. Root containers for Standard, Outlined, and Autocomplete fields */
+.app-container.compact-mode .MuiInput-root,
+.app-container.compact-mode .MuiOutlinedInput-root,
+.app-container.compact-mode .MuiAutocomplete-inputRoot,
+.app-container.compact-mode .MuiSelect-root {
+  height: var(--density-row-height);
+  min-height: var(--density-row-height);
+}
+
+/* Chip Overrides */
+.app-container.compact-mode .MuiChip-root {
+  height: var(--density-small-chip-height);
+  font-size: var(--density-font-size-body2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-container.compact-mode .MuiChip-label {
+  line-height: 1;
+}
+
+/* Buttons */
+.app-container.compact-mode .MuiButton-root {
+  font-size: var(--density-font-size-body1);
+  padding: var(--density-spacing-sm) var(--density-spacing-sm);
+  min-height: var(--density-input-height);
+}
+
+/* Badges - using your caption font size token */
+.app-container.compact-mode .MuiBadge-badge {
+  height: var(--density-icon-size-sm);
+  min-width: var(--density-icon-size-sm);
+  font-size: var(--density-font-size-superscript);
+  padding: var(--density-spacing-null);
+  margin: var(--density-spacing-sm);
+}
