@@ -1,11 +1,13 @@
 import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
+import '../TreeDetail.css';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import type React from 'react';
+import { useCompactMode } from '../../../app/CompactModeContext';
 import InputSlider from './Slider';
 import getStyles, { MenuProps } from './utils';
 
@@ -26,6 +28,7 @@ export default function MetadataControls({
   state: MetadataState;
   onChange: (event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent<string[]>) => void;
 }) {
+  const { compact } = useCompactMode();
   const theme = useTheme();
 
   return (
@@ -52,8 +55,10 @@ export default function MetadataControls({
       <FormControl fullWidth>
         <FormGroup>
           <FormControlLabel
+            className="tree-control-switch"
             control={
               <Switch
+                size={compact ? 'small' : 'medium'}
                 checked={state.showBlockHeaders}
                 onChange={onChange}
                 name="showBlockHeaders"
@@ -69,6 +74,7 @@ export default function MetadataControls({
           label="Font size"
           value={state.blockHeaderFontSize}
           onChange={onChange}
+          compact={compact}
           min={1}
           max={24}
         />
@@ -79,6 +85,7 @@ export default function MetadataControls({
           label="Block size"
           value={state.blockSize}
           onChange={onChange}
+          compact={compact}
           min={1}
           max={50}
         />
@@ -89,6 +96,7 @@ export default function MetadataControls({
           label="Padding"
           value={state.blockPadding}
           onChange={onChange}
+          compact={compact}
           min={1}
           max={20}
         />

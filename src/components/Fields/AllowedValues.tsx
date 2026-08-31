@@ -144,14 +144,16 @@ export default function AllowedValues(props: AllowedValuesProps) {
             </Box>
           ))}
           {remainingCount > 0 && (
-            <Tooltip title="View all" arrow>
-              <Chip
-                key="more"
-                label={`+${remainingCount} more`}
-                onClick={handleMoreClick}
-                sx={{ marginRight: '0.1rem', marginTop: '0.1rem' }}
-              />
-            </Tooltip>
+            <Box className={columnStyleRules[field]}>
+              <Tooltip title="View all" arrow>
+                <Chip
+                  key="more"
+                  label={`+${remainingCount} more`}
+                  onClick={handleMoreClick}
+                  sx={{ marginRight: '0.1rem', marginTop: '0.1rem' }}
+                />
+              </Tooltip>
+            </Box>
           )}
         </Box>
         <Box sx={{ position: 'absolute', top: 0, right: 0 }}>
