@@ -392,6 +392,9 @@ function UploadMetadata() {
     );
   };
 
+  const formControlStyles = { minWidth: 200, maxWidth: 400, marginBottom: 3 };
+  const sectionHeaderStyles = { color: 'primary', paddingBottom: 2 };
+
   return (
     <>
       <Typography variant="h3" paddingBottom={1} color="primary">
@@ -437,14 +440,11 @@ function UploadMetadata() {
       <Grid container spacing={6} alignItems="stretch" sx={{ paddingBottom: 1 }}>
         {/* Left column: org, projects, proforma */}
         <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary" paddingBottom={2}>
+          {/* Data Ownership */}
+          <Typography variant="h4" sx={sectionHeaderStyles}>
             Data ownership and validation
           </Typography>
-          <FormControl
-            size="small"
-            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
-            variant="standard"
-          >
+          <FormControl size="small" sx={formControlStyles} variant="standard">
             <InputLabel
               id="select-data-owner-label"
               sx={{ color: selectedDataOwner ? 'inherit' : theme.palette.error.main }}
@@ -457,7 +457,7 @@ function UploadMetadata() {
               value={selectedDataOwner || ''}
               onChange={(e) => setSelectedDataOwner(e.target.value)}
             >
-              {availableDataOwners.map((org: string) => (
+              {availableDataOwners.map((org) => (
                 <MenuItem value={org} key={org}>
                   {org}
                 </MenuItem>
@@ -465,14 +465,16 @@ function UploadMetadata() {
             </Select>
             <FormHelperText>Required</FormHelperText>
           </FormControl>
-          <Typography variant="h4" color="primary">
+
+          {/* Proforma Selection */}
+          <Typography variant="h4" sx={sectionHeaderStyles}>
             Select proforma
           </Typography>
           <Tooltip title={proformaStatusMessage} placement="left" arrow>
             <FormControl
               error={proformaStatus === LoadingState.ERROR}
               size="small"
-              sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
+              sx={formControlStyles}
               variant="standard"
             >
               <InputLabel
@@ -483,55 +485,54 @@ function UploadMetadata() {
               </InputLabel>
               <Select
                 labelId="proforma-simple-select-label"
-                id="proforma-simple-select-label"
+                id="proforma-simple-select"
                 label="Proforma"
                 name="proforma"
                 value={selectedProforma?.abbreviation || ''}
                 onChange={(e) => handleSelectProforma(e.target.value)}
               >
-                {proformas.map((proforma: Proforma) => (
-                  <MenuItem value={proforma.abbreviation} key={proforma.abbreviation}>
-                    {`${proforma.abbreviation} : ${proforma.name}`}
-                  </MenuItem>
-                ))}
                 {proformas.length === 0 ? (
                   <MenuItem disabled>No proformas available</MenuItem>
-                ) : null}
+                ) : (
+                  proformas.map((proforma) => (
+                    <MenuItem value={proforma.abbreviation} key={proforma.abbreviation}>
+                      {`${proforma.abbreviation} : ${proforma.name}`}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
-              {proformaStatus === LoadingState.LOADING ? (
-                <LinearProgress color="secondary" />
-              ) : null}
+              {proformaStatus === LoadingState.LOADING && <LinearProgress color="secondary" />}
               <FormHelperText>Required</FormHelperText>
             </FormControl>
           </Tooltip>
-          <Typography variant="h4" color="primary">
+
+          {/* Sharing */}
+          <Typography variant="h4" sx={sectionHeaderStyles}>
             Sharing
           </Typography>
-          <FormControl
-            size="small"
-            sx={{ minWidth: 200, maxWidth: 400, marginBottom: 3 }}
-            variant="standard"
-          >
+          <FormControl size="small" sx={formControlStyles} variant="standard">
             <InputLabel id="select-project-share-label">Share with Projects</InputLabel>
             {renderProjectShareListSelect()}
           </FormControl>
-          {selectedProforma ? (
+
+          {/* Proforma Details */}
+          {selectedProforma && (
             <List>
-              <Link href={`/proformas/${selectedProforma?.abbreviation}`} color="secondary.dark">
+              <Link href={`/proformas/${selectedProforma.abbreviation}`} color="secondary.dark">
                 View or download proforma
               </Link>
-              <ListItemText primary="Proforma name" secondary={selectedProforma?.name} key="name" />
+              <ListItemText primary="Proforma name" secondary={selectedProforma.name} key="name" />
               <ListItemText
                 primary="Proforma abbreviation"
-                secondary={selectedProforma?.abbreviation}
+                secondary={selectedProforma.abbreviation}
                 key="abbrev"
               />
             </List>
-          ) : null}
+          )}
         </Grid>
         {/* Right column: upload options */}
         <Grid size={{ lg: 6, md: 6, xs: 12 }} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h4" color="primary">
+          <Typography variant="h4" sx={sectionHeaderStyles}>
             Select upload options
           </Typography>
           <FormGroup>

@@ -8,9 +8,8 @@ import {
   type TreeTableExpandedKeysType,
   type TreeTableToggleEvent,
 } from 'primereact/treetable';
-import { useNavigate } from 'react-router-dom';
 import { Theme } from '../../../assets/themes/theme';
-import useActivityLogs from '../../../hooks/useActivityLogs';
+import useActivityLogs, { type ActivityLogsResponse } from '../../../hooks/useActivityLogs';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
@@ -31,7 +30,9 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useCompactMode } from '../../../app/CompactModeContext';
 import RecordTypes from '../../../constants/record-type.enum';
+import { ResponseType } from '../../../constants/responseType';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -39,6 +40,7 @@ import {
   splitLargeChildrenGroups,
 } from '../../../utilities/activityTreeUtils';
 import { useStateFromSearchParamsForObject } from '../../../utilities/stateUtils';
+import { useViewportClampedHeight } from '../../TableComponents/useViewportClampedHeight';
 
 interface ActivityProps {
   recordType: string;
@@ -81,15 +83,20 @@ function resolveUrlDate(value: string, defaultValue: Date): Date | null {
   return new Date(value);
 }
 
-function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
+function Activity({ recordType, rGuid }: ActivityProps): React.JSX.Element {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(true);
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>({});
+  const { compact } = useCompactMode();
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
+
   const MAX_VISIBLE_CHILDREN = 600;
-  const navigate = useNavigate();
 
   const defaultDateRange = useMemo(
     () => ({
@@ -99,10 +106,8 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     [],
   );
 
-  const [urlFilters, setUrlFilters] = useStateFromSearchParamsForObject<UrlFilters>(
-    defaultUrlFilters,
-    navigate,
-  );
+  const [urlFilters, setUrlFilters] =
+    useStateFromSearchParamsForObject<UrlFilters>(defaultUrlFilters);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: seed default range once on mount only
   useEffect(() => {
@@ -151,16 +156,16 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     [filters, setUrlFilters],
   );
 
-  const { refinedLogs, httpStatusCode, isLoadingErrorMsg, dataLoading } = useActivityLogs(
-    recordType,
-    filters,
-    rGuid,
-  );
+  const activityRes: ActivityLogsResponse = useActivityLogs({
+    recordType: recordType,
+    filters: filters,
+    rguid: rGuid,
+  });
 
   const [processingData, setProcessingData] = useState<boolean>(true);
   const isTableLoading = React.useMemo(
-    () => dataLoading || processingData,
-    [dataLoading, processingData],
+    () => activityRes.dataLoading || processingData,
+    [activityRes.dataLoading, processingData],
   );
 
   useEffect(() => {
@@ -278,16 +283,22 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
 
       if (data[countKey] && data[countKey] > 1) {
         return (
-          <span>
+          <Typography
+            component="span"
+            variant={'inherit'}
+            sx={{ display: 'inline-flex', alignItems: 'center' }}
+          >
             {data[previewKey]}
             <Chip
               variant="outlined"
               color="primary"
               size="small"
               label={`+${data[countKey] - 1} more`}
-              sx={{ marginLeft: '8px' }}
+              sx={{
+                marginLeft: '8px',
+              }}
             />
-          </span>
+          </Typography>
         );
       }
       return data[valueKey] || '-';
@@ -353,15 +364,15 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
     setProcessingData(true);
     setNodes([]);
     setExpandedKeys({});
-    if (!dataLoading) {
-      const aggregatedNodes = aggregateLogsToTree(refinedLogs);
+    if (!activityRes.dataLoading) {
+      const aggregatedNodes = aggregateLogsToTree(activityRes.refinedLogs);
       const processedNodes = processTreeNodes(aggregatedNodes);
       const defaultSortedNodes = defaultNodeSort(processedNodes);
       const splitNodes = defaultSortedNodes.flatMap((node) => splitLargeChildrenGroups(node, 500));
       setNodes(splitNodes);
       setProcessingData(false);
     }
-  }, [dataLoading, refinedLogs]);
+  }, [activityRes.dataLoading, activityRes.refinedLogs]);
 
   const header = (
     <div
@@ -374,7 +385,10 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
   );
 
   const tableContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', maxHeight: tableHeight, overflow: 'hidden' }}
+      ref={tableAreaRef}
+    >
       <ActivityDetails
         drawerOpen={openDetails}
         setDrawerOpen={setOpenDetails}
@@ -387,70 +401,78 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
         filters={filters}
         setFilters={setFilters}
       />
-      {httpStatusCode >= 400 && httpStatusCode !== 413 ? (
-        <Alert severity="error" style={{ marginBottom: '20px' }}>
-          <AlertTitle>Error</AlertTitle>
-          {isLoadingErrorMsg || 'An error occurred while fetching the activity log.'}
-        </Alert>
-      ) : (
-        <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-          {isTableLoading ? (
-            <Box sx={{ p: 4 }}>
-              <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
-            </Box>
-          ) : (
-            <TreeTable
-              className="tree-table-custom"
-              header={header}
-              rowClassName={rowClassName}
-              value={nodes || []}
-              expandedKeys={expandedKeys}
-              onToggle={(e) => handleToggleClick(e)}
-              onRowClick={handleTreeRowClick}
-              showGridlines
-              removableSort
-              sortIcon={sortIcon}
-              paginator
-              rows={500}
-              rowsPerPageOptions={[500, 1000, 1500, 2000]}
-              paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-              currentPageReportTemplate={`Viewing: {first} to {last} of {totalRecords} groups (${refinedLogs.length} total events)`}
-              paginatorPosition="bottom"
-              paginatorRight
-              rowHover
-              selectionMode="single"
-              emptyMessage={
-                httpStatusCode === 413 ? (
-                  <Alert severity="error" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                    <AlertTitle>Error</AlertTitle>
-                    {isLoadingErrorMsg ||
-                      'The activity log is too large to display. Please narrow your filters.'}
-                  </Alert>
-                ) : (
-                  <Typography variant="subtitle1" color="textSecondary" align="center">
-                    No activity found
-                  </Typography>
-                )
-              }
-            >
-              <Column
-                key={EVENT_NAME_COLUMN}
-                field={EVENT_NAME_COLUMN}
-                header="Event"
-                hidden={false}
-                body={firstColumnTemplate}
-                sortable
-                expander
-              />
-              {columns
-                ? columns
-                    .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
-                    .map((col: any) => (
+      <Paper
+        elevation={2}
+        sx={{
+          margin: 0.5,
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {isTableLoading ? (
+          <Box sx={{ p: 4 }}>
+            <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
+          </Box>
+        ) : (
+          <TreeTable
+            className="tree-table-custom"
+            header={header}
+            rowClassName={rowClassName}
+            value={nodes || []}
+            expandedKeys={expandedKeys}
+            onToggle={(e) => handleToggleClick(e)}
+            onRowClick={handleTreeRowClick}
+            showGridlines
+            resizableColumns
+            columnResizeMode="expand"
+            removableSort
+            scrollable
+            scrollHeight="flex"
+            sortIcon={sortIcon}
+            paginator
+            rows={500}
+            rowsPerPageOptions={[500, 1000, 1500, 2000]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate={`Viewing: {first} to {last} of {totalRecords} groups (${activityRes.refinedLogs.length} total events)`}
+            paginatorPosition="bottom"
+            paginatorRight
+            rowHover
+            selectionMode="single"
+            emptyMessage={
+              <Typography variant="subtitle1" color="textSecondary" align="center">
+                No activity found
+              </Typography>
+            }
+          >
+            <Column
+              key={EVENT_NAME_COLUMN}
+              field={EVENT_NAME_COLUMN}
+              header="Event"
+              hidden={false}
+              body={firstColumnTemplate}
+              sortable
+              expander
+              style={{ width: '220px' }} // Give the main tree column a fixed/min width
+            />
+            {columns
+              ? columns
+                  .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                  .map((col: any, index, array) => {
+                    const isLast = index === array.length - 1;
+                    return (
                       <Column
                         key={col.field}
                         field={col.field}
                         header={col.header}
                         hidden={false}
+                        style={
+                          isLast
+                            ? { minWidth: '150px', width: 'auto' } // Let the last column fill the remaining space
+                            : { minWidth: '160px', width: '180px' } // Give middle columns a stable width
+                        }
                         body={(node: TreeNode) => {
                           if (col.field === 'resourceUniqueString') {
                             return aggregatedCellTemplate(node, {
@@ -470,18 +492,18 @@ function Activity({ recordType, rGuid }: ActivityProps): JSX.Element {
                         }}
                         sortable
                       />
-                    ))
-                : null}
-            </TreeTable>
-          )}
-        </Paper>
-      )}
+                    );
+                  })
+              : null}
+          </TreeTable>
+        )}
+      </Paper>
     </Box>
   );
 
   // TODO: Need to fix this, this can be refactored differently
   let contentPane = <></>;
-  if (httpStatusCode === 401 || httpStatusCode === 403) {
+  if (activityRes.httpStatusCode === 401 || activityRes.httpStatusCode === 403) {
     contentPane = (
       <Alert severity="error">
         <AlertTitle>Permission Denied</AlertTitle>

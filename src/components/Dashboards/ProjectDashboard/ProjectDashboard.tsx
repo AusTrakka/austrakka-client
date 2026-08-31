@@ -133,43 +133,41 @@ function ProjectDashboard(props: ProjectDashboardProps) {
 
   return (
     <Box>
-      <Grid container direction="row" spacing={2}>
-        {dashboardName && hasCompleteData(data?.loadingState) && (
-          <>
-            <Grid container size={12} justifyContent="space-between">
-              <Stack
-                direction="row"
-                width="100%"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <DashboardFilter
-                    data={data}
-                    dateField={dateField}
-                    setDateField={setDateField}
-                    setTimeFilterObject={setTimeFilterObject}
-                    setFilteredData={setFilteredData}
-                  />
-                </Stack>
-              </Stack>
-            </Grid>
-            <Grid
-              container
-              size={12}
-              sx={{
-                marginTop: 1,
-                padding: 2,
-                backgroundColor: Theme.PrimaryMainBackground,
-              }}
-            >
-              {dashBoardElements}
-            </Grid>
-          </>
-        )}
-        {DashboardStatusAlert(errorMessage, dashboardName, data?.loadingState)}
-      </Grid>
+      {dashboardName && hasCompleteData(data?.loadingState) && (
+        <>
+          <Stack
+            direction="row"
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            height="auto"
+            sx={{ paddingLeft: 0.5, paddingRight: 0.5 }}
+          >
+            <Typography sx={{ maxWidth: '90%' }}>{projectDesc}</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <DashboardFilter
+                data={data}
+                dateField={dateField}
+                setDateField={setDateField}
+                setTimeFilterObject={setTimeFilterObject}
+                setFilteredData={setFilteredData}
+              />
+            </Stack>
+          </Stack>
+          <Grid
+            container
+            size={12}
+            sx={{
+              marginTop: 1,
+              padding: 2,
+              backgroundColor: Theme.PrimaryMainBackground,
+            }}
+          >
+            {dashBoardElements}
+          </Grid>
+        </>
+      )}
+      {DashboardStatusAlert(errorMessage, dashboardName, data?.loadingState)}
     </Box>
   );
 }

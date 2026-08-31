@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
 import { useEffect, useState } from 'react';
-import type { NavigateFunction } from 'react-router-dom';
 import {
   type ProjectMetadataState,
   selectProjectMetadata,
@@ -31,12 +30,11 @@ import MapChart from './MapChart';
 import { type MapKey, MapLabels } from './mapMeta';
 
 interface MapDetailProps {
-  navigateFunction: NavigateFunction;
   projectAbbrev: string;
 }
 
 function MapDetail(props: MapDetailProps) {
-  const { navigateFunction, projectAbbrev } = props;
+  const { projectAbbrev } = props;
 
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
@@ -54,22 +52,18 @@ function MapDetail(props: MapDetailProps) {
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultContinuousColorScheme,
-    navigateFunction,
   );
   const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey | null>(
     'map',
     null,
-    navigateFunction,
   );
   const [selectedField, setSelectedField] = useStateFromSearchParamsForPrimitive<string>(
     'field',
     '',
-    navigateFunction,
   );
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigateFunction,
   );
 
   // This use effect will set the state of the region toggle and also if it's disabled

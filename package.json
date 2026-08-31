@@ -19,6 +19,8 @@
   "dependencies": {
     "@azure/msal-browser": "^2.30.0",
     "@azure/msal-react": "^1.4.9",
+    "@dnd-kit/helpers": "^0.5.0",
+    "@dnd-kit/react": "^0.5.0",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@mui/icons-material": "^6.1.8",
@@ -34,7 +36,7 @@
     "echarts": "^6.0.0",
     "html2canvas": "^1.4.1",
     "notistack": "^3.0.2",
-    "primereact": "^10.5.1",
+    "primereact": "^10.9.8",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
     "react-csv": "^2.2.2",

@@ -85,7 +85,9 @@ function EditableRow(props: EditableRowProps) {
       if (nonEditableFields.includes(field)) {
         return (
           <TableRow key={field}>
-            <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+            <TableCell className="key-cell-editing">
+              <Typography variant="body2">{readableNames[field] || field}</Typography>
+            </TableCell>
             <TableCell className="value-cell-editing">
               {(() => {
                 switch (true) {
@@ -94,7 +96,9 @@ function EditableRow(props: EditableRowProps) {
                   case immutableGuids.includes(field):
                     return (
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginRight: '8px' }}>{detailValue}</span>
+                        <Typography variant="body2" style={{ marginRight: '8px' }}>
+                          {detailValue}
+                        </Typography>
                         <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
                           <IconButton size="small" onClick={() => handleCopy(detailValue)}>
                             <ContentCopy style={{ fontSize: '1rem' }} />
@@ -121,11 +125,11 @@ function EditableRow(props: EditableRowProps) {
               style={{ padding: '0px' }}
               value={editedValues?.[field] || ''}
               onChange={handleChange}
+              hiddenLabel
               variant="filled"
               fullWidth
-              size="small"
-              hiddenLabel
               inputProps={{ style: { fontSize: '.9em' } }}
+              size="small"
             />
           </TableCell>
         </TableRow>
@@ -133,7 +137,9 @@ function EditableRow(props: EditableRowProps) {
     case 'boolean':
       return (
         <TableRow key={field}>
-          <TableCell className="key-cell-editing">{readableNames[field] || field}</TableCell>
+          <TableCell className="key-cell-editing">
+            <Typography variant="body2">{readableNames[field] || field}</Typography>
+          </TableCell>
           <TableCell className="value-cell-editing">
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Switch
@@ -168,11 +174,13 @@ function EditableRow(props: EditableRowProps) {
             </TableCell>
             <TableCell className="value-cell-editing">
               <TextField
+                style={{ padding: '0px' }}
                 value={(editedValues?.[field] as string) || ''}
                 onChange={handleChange}
+                hiddenLabel
                 variant="filled"
                 fullWidth
-                inputProps={{ style: { padding: '9px 10px', fontSize: '.9rem' } }}
+                inputProps={{ style: { fontSize: '.9rem' } }}
                 size="small"
               />
             </TableCell>

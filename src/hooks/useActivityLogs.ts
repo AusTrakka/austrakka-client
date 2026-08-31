@@ -3,18 +3,39 @@ import { useApi } from '../app/ApiContext';
 import type { Filters } from '../components/Common/Activity/ActivityFilters';
 import LoadingState from '../constants/loadingState';
 import { ResponseType } from '../constants/responseType';
+import type { ResponseMessage } from '../types/apiResponse.interface';
 import type { DerivedLog } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
 import { getActivities } from '../utilities/resourceUtils';
 
+export interface ActivityLogsProps {
+  recordType: string;
+  filters: Filters;
+  rguid?: string;
+}
+
+export type ActivityLogsResponse = {
+  refinedLogs: DerivedLog[];
+  exportData: DerivedLog[];
+  dataLoading: boolean;
+  httpStatusCode: number;
+  isLoadingErrorMsg: string;
+  apiMessages: ResponseMessage[];
+};
+
 // TODO look at this structure; it mimics a hook but is not one
-export default function useActivityLogs(recordType: string, filters: Filters, rguid?: string) {
+export default function useActivityLogs({
+  recordType,
+  filters,
+  rguid,
+}: ActivityLogsProps): ActivityLogsResponse {
   const [refinedLogs, setRefinedLogs] = useState<DerivedLog[]>([]);
   const { token, tokenLoading } = useApi();
   const [exportData, setExportData] = useState<DerivedLog[]>([]);
   const [httpStatusCode, setHttpStatusCode] = useState<number>(-1);
   const [isLoadingErrorMsg, setIsLoadingErrorMsg] = useState<string>('');
   const [dataLoading, setDataLoading] = useState<boolean>(true);
+  const [apiMessages, setApiMessages] = useState<ResponseMessage[]>([]);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -40,6 +61,7 @@ export default function useActivityLogs(recordType: string, filters: Filters, rg
         setRefinedLogs(resp.data ?? []);
         setExportData(resp.data ?? []);
         setHttpStatusCode(resp.httpStatusCode || -1);
+        setApiMessages(resp.messages || []);
       } else {
         setRefinedLogs([]);
         setHttpStatusCode(resp.httpStatusCode || -1);
@@ -53,11 +75,18 @@ export default function useActivityLogs(recordType: string, filters: Filters, rg
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      debounceRef.current = setTimeout(() => {
-        getData();
+      debounceRef.current = setTimeout(async () => {
+        await getData();
       }, 600);
     }
   }, [filters, recordType, rguid, token, tokenLoading]);
 
-  return { refinedLogs, exportData, dataLoading, httpStatusCode, isLoadingErrorMsg };
+  return {
+    refinedLogs: refinedLogs,
+    exportData: exportData,
+    dataLoading: dataLoading,
+    httpStatusCode: httpStatusCode,
+    isLoadingErrorMsg: isLoadingErrorMsg,
+    apiMessages: apiMessages,
+  };
 }
