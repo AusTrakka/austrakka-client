@@ -47,7 +47,7 @@ function ProjectSettingsOverview() {
 
   const isAdmin = admin || superUser;
 
-  const handleBasicPropertiesSaved = (severity: AlertColor, message: string) => {
+  const handleChangesSaved = (severity: AlertColor, message: string) => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -66,7 +66,7 @@ function ProjectSettingsOverview() {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableDashboards().catch((e) => console.error(e));
+      void fetchAvailableDashboards();
     }
   }, [token, tokenLoading, isAdmin]);
 
@@ -82,7 +82,7 @@ function ProjectSettingsOverview() {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableOrganisations().catch((e) => console.error(e));
+      void fetchAvailableOrganisations();
     }
   }, [token, tokenLoading, isAdmin]);
 
@@ -215,20 +215,23 @@ function ProjectSettingsOverview() {
           </Stack>
         </Paper>
       </Box>
-      <BasicPropertiesSection
-        projectAbbrev={projectAbbrev}
-        canonical={projectDetails}
-        onSaved={refetchProject}
-        onSaveResult={handleBasicPropertiesSaved}
-        organisations={organisations}
-        dashboards={dashboards}
-        editable={isAdmin}
-      />
+      <Box>
+        <BasicPropertiesSection
+            projectAbbrev={projectAbbrev}
+            canonical={projectDetails}
+            onSaved={refetchProject}
+            onSaveResult={handleChangesSaved}
+            organisations={organisations}
+            dashboards={dashboards}
+            editable={isAdmin}
+        />
         <ProjectOrgsPropertiesSection
             projectAbbrev={projectAbbrev}
             editable={isAdmin}
-            onSaveResult={() => null} // todo: this needs to do something
+            onSaveResult={handleChangesSaved}
         />
+      </Box>
+
         <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

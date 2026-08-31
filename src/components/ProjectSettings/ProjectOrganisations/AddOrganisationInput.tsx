@@ -10,7 +10,7 @@ interface OrganisationListProps {
     onChange: (selections: string[]) => void
 }
 
-export default function OrganisationList({available, selected, onChange}: OrganisationListProps) {
+export default function AddOrganisationInput({available, selected, onChange}: OrganisationListProps) {
 
     const columnNames = useMemo(() => {
         const orgs = new Set([
