@@ -1,4 +1,4 @@
-import { type AlertColor, Paper, Stack, Typography } from '@mui/material';
+import { type AlertColor, Box, Paper, Stack, Typography } from '@mui/material';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableFilterMeta, type DataTableFilterMetaData } from 'primereact/datatable';
@@ -158,90 +158,97 @@ export default function ProjectOrgsPropertiesSection({ projectAbbrev, editable, 
     };
 
     const header = () => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            style={{ padding: '10px', width: '100%' }}>
+            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                Participating Organisations
+            </Typography>
             <SearchInput
                 value={(filter.global as DataTableFilterMetaData).value || ''}
                 onChange={onGlobalFilterChange}
             />
-            {isEditing && (
-                <Typography variant="caption" sx={{ marginLeft: 'auto', color: 'text.secondary' }}>
-                    Check organisations to share with
-                </Typography>
-            )}
-        </div>
+            <Box sx={{ marginLeft: 'auto' }}>
+                <EditButtons
+                    editing={isEditing}
+                    setEditing={startEditing}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    hasPendingChanges={hasPendingChanges}
+                    canSee={() => editable}
+                    onSaveLoading={isSaving}
+                />
+            </Box>
+        </Stack>
     );
 
     return (
-        <Paper elevation={1} className="basic-project-info-table">
+        <Paper
+            elevation={1}
+            sx={{
+                maxWidth: '900px',
+                padding: '10px 20px 20px 20px',
+                height: '450px',
+                display: 'flex',
+                flexDirection: 'column',
+                // overflow: 'hidden',
+                '& .p-datatable-header': {
+                    border: 'none',
+                    borderBottom: 'none',
+                    padding: 0,
+                },
+            }}
+        >
             {isLoading ? <Typography variant="body1" color="primary">Loading project organisations</Typography> :
-                <div>
-                    <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        style={{ padding: '10px' }}>
-                        <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                            Sharing
-                        </Typography>
-                        <EditButtons
-                            editing={isEditing}
-                            setEditing={startEditing}
-                            onSave={handleSave}
-                            onCancel={handleCancel}
-                            hasPendingChanges={hasPendingChanges}
-                            canSee={() => editable}
-                            onSaveLoading={isSaving}
-                        />
-                    </Stack>
-                    <div style={{ padding: '10px' }}>
-                        {isError ?
-                            <Typography variant="body1" color="error">Error fetching project organisations</Typography> :
-                            <DataTable
-                                value={isEditing ? orgs : projectOrgs}
-                                dataKey="abbreviation"
-                                selectionMode="checkbox"
-                                selection={isEditing ? pendingOrgs : []}
-                                onSelectionChange={(e) => {
-                                    if (isEditing) {
-                                        setPendingOrgs(e.value as Organisation[]);
-                                    }
-                                }}
-                                showGridlines
-                                resizableColumns
-                                scrollable
-                                filters={filter}
-                                header={header}
-                                globalFilterFields={columns.map((col) => col.field)}
-                                size="small"
-                                scrollHeight="calc(50vh - 300px)"
-                                columnResizeMode="expand"
-                                removableSort
-                                className="my-flexible-table"
-                                sortIcon={sortIcon}
-                                style={{ marginTop: '10px' }}
-                            >
-                                {isEditing && (
-                                    <Column
-                                        selectionMode="multiple"
-                                        headerStyle={{ width: '3rem' }}
-                                        style={{ width: '3rem' }}
-                                    />
-                                )}
-                                {columns.map((col) => (
-                                    <Column
-                                        key={col.field}
-                                        field={col.field}
-                                        header={col.header}
-                                        resizeable
-                                        style={{ minWidth: '150px' }}
-                                        headerClassName="custom-title"
-                                        className="flexible-column"
-                                    />
-                                ))}
-                            </DataTable>
-                        }
-                    </div>
-                </div>
+                <Box style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                    {isError ?
+                        <Typography variant="body1" color="error">Error fetching project organisations</Typography> :
+                        <DataTable
+                            value={isEditing ? orgs : projectOrgs}
+                            dataKey="abbreviation"
+                            selectionMode="checkbox"
+                            selection={isEditing ? pendingOrgs : []}
+                            onSelectionChange={(e) => {
+                                if (isEditing) {
+                                    setPendingOrgs(e.value as Organisation[]);
+                                }
+                            }}
+                            resizableColumns
+                            scrollable
+                            filters={filter}
+                            header={header}
+                            globalFilterFields={columns.map((col) => col.field)}
+                            size="small"
+                            scrollHeight="flex"
+                            columnResizeMode="expand"
+                            removableSort
+                            className="project-orgs-table"
+                            sortIcon={sortIcon}
+                            style={{ flex: 1, minHeight: 0 }}
+                        >
+                            {isEditing && (
+                                <Column
+                                    selectionMode="multiple"
+                                    headerStyle={{ width: '3rem' }}
+                                    style={{ width: '3rem' }}
+                                />
+                            )}
+                            {columns.map((col) => (
+                                <Column
+                                    key={col.field}
+                                    field={col.field}
+                                    header={col.header}
+                                    resizeable
+                                    style={{ minWidth: '150px' }}
+                                    headerClassName="custom-title"
+                                    className="flexible-column"
+                                />
+                            ))}
+                        </DataTable>
+                    }
+                </Box>
             }
         </Paper>
     );

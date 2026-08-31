@@ -215,7 +215,13 @@ function ProjectSettingsOverview() {
           </Stack>
         </Paper>
       </Box>
-      <Box>
+      <Box className={"project-properties-box"}
+           display="flex"
+           flexDirection={"column"}
+           justifyContent="space-between"
+           // alignItems="center"
+           gap={3}
+           sx={{ mb: 4 }}>
         <BasicPropertiesSection
             projectAbbrev={projectAbbrev}
             canonical={projectDetails}
@@ -231,8 +237,7 @@ function ProjectSettingsOverview() {
             onSaveResult={handleChangesSaved}
         />
       </Box>
-
-        <Snackbar
+      <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={closeSnackbar}
