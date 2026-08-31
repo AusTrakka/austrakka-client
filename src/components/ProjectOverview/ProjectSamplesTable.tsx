@@ -19,8 +19,10 @@ import {
 } from '@mui/material';
 import { Column } from 'primereact/column';
 import { DataTable, type DataTableRowClickEvent } from 'primereact/datatable';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import './Samples.css';
+import { memo } from 'react';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
@@ -47,6 +49,7 @@ import HeaderColourToggle from '../TableComponents/HeaderColourToggle';
 import KeyValuePopOver from '../TableComponents/KeyValuePopOver';
 import sortIcon from '../TableComponents/SortIcon';
 import useMaxHeaderHeight from '../TableComponents/UseMaxHeight';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 
 export enum TableType {
   RawMetadata = 'RawMetadata',
@@ -60,8 +63,10 @@ interface SamplesProps {
 function ProjectSamplesTable(props: SamplesProps) {
   const { projectAbbrev } = props;
   const { navigate } = useStableNavigate();
+  const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
+
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
@@ -82,6 +87,12 @@ function ProjectSamplesTable(props: SamplesProps) {
   const { maxHeight, getHeaderRef } = useMaxHeaderHeight(
     metadata?.loadingState ?? MetadataLoadingState.IDLE,
   );
+
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
+
   // Set column headers from metadata state
   useEffect(() => {
     if (!metadata?.fields) return;
@@ -183,63 +194,69 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 
-  const getColumnHeader = (column: any, index: number, vertical: boolean) => {
-    const source = getFieldSource(column.field).toLowerCase();
-    const iconColour = Theme.PrimaryGrey500;
-
-    const icon = (() => {
-      switch (source?.toLowerCase()) {
-        case 'sample record':
-          return <Description fontSize="inherit" sx={{ color: iconColour }} />;
-
-        case 'dataset':
-          return <Insights fontSize="inherit" sx={{ color: iconColour }} />;
-
-        case 'both':
-          return <MergeType fontSize="inherit" sx={{ color: iconColour }} />;
-
-        default:
-          return <InfoOutlined fontSize="inherit" sx={{ color: iconColour }} />;
-      }
-    })();
-
-    return !vertical ? (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {column.header}
-        <Tooltip title={`Source from ${source}`} placement="top" arrow>
-          {icon}
-        </Tooltip>
-      </div>
-    ) : (
-      <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
-        <span className="vertical-text">{column.header}</span>
-        <Tooltip title={`Source from ${source}`} placement="top" arrow>
-          {icon}
-        </Tooltip>
-      </div>
-    );
-  };
-
-  const getColumnHeaderStyle = (vertical: boolean, column: any) => {
-    const source = getFieldSource(column.field);
-    let headerColour: string | undefined;
-    if (colourBySource) {
-      if (source.includes('Dataset')) {
-        headerColour = alpha(Theme.SecondaryTeal, 0.3);
-      } else if (source.includes('Both')) {
-        headerColour = alpha(Theme.SecondaryMain, 0.3);
-      }
+  const getSourceIcon = (source: string, color: string) => {
+    switch (source?.toLowerCase()) {
+      case 'sample record':
+        return <Description fontSize="inherit" sx={{ color }} />;
+      case 'dataset':
+        return <Insights fontSize="inherit" sx={{ color }} />;
+      case 'both':
+        return <MergeType fontSize="inherit" sx={{ color }} />;
+      default:
+        return <InfoOutlined fontSize="inherit" sx={{ color }} />;
     }
-
-    const headerStyle = vertical
-      ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
-      : { width: `${maxHeight}px`, backgroundColor: headerColour };
-
-    return headerStyle;
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const getColumnHeader = useCallback(
+    (column: any, index: number, vertical: boolean) => {
+      const source = getFieldSource(column.field).toLowerCase();
+      const icon = getSourceIcon(source, Theme.PrimaryGrey500);
+
+      if (!vertical) {
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {column.header}
+            <Tooltip title={`Source from ${source}`} placement="top" arrow>
+              {icon}
+            </Tooltip>
+          </div>
+        );
+      }
+
+      return (
+        <div ref={(ref) => getHeaderRef(ref, index)} className="custom-vertical-header">
+          <span className="vertical-text">{column.header}</span>
+          <Tooltip title={`Source from ${source}`} placement="top" arrow>
+            {icon}
+          </Tooltip>
+        </div>
+      );
+    },
+    [getHeaderRef, metadata?.fields],
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: force new filters reference on data refresh
+  const getColumnHeaderStyle = useCallback(
+    (vertical: boolean, column: any) => {
+      const source = getFieldSource(column.field);
+      let headerColour: string | undefined;
+      if (colourBySource) {
+        if (source.includes('Dataset')) {
+          headerColour = alpha(Theme.SecondaryTeal, 0.3);
+        } else if (source.includes('Both')) {
+          headerColour = alpha(Theme.SecondaryMain, 0.3);
+        }
+      }
+      return vertical
+        ? { maxHeight: `${maxHeight}px`, width: `${maxHeight}px`, backgroundColor: headerColour }
+        : { width: `${maxHeight}px`, backgroundColor: headerColour };
+    },
+    [colourBySource, maxHeight, metadata?.fields],
+  );
 
   return (
-    <div className="datatable-container-proj">
+    <div ref={tableAreaRef} className="datatable-container-proj" style={{ maxHeight: tableHeight }}>
       <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <Alert severity="error" sx={{ padding: 3 }}>
           <IconButton
@@ -271,8 +288,25 @@ function ProjectSamplesTable(props: SamplesProps) {
         primeReactFilters={currentFilters}
       />
       {/* TODO: Make a function for the table so that a different sort is used per column type */}
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 0 }}>
-        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: activeTable === TableType.RawMetadata ? 'flex' : 'none',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <DataTable
             value={metadata?.metadata ?? []}
             onValueChange={(e) => {
@@ -286,9 +320,9 @@ function ProjectSamplesTable(props: SamplesProps) {
             scrollHeight="flex"
             paginator
             loading={loadingState}
-            rows={25}
+            rows={100}
             columnResizeMode="expand"
-            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            rowsPerPageOptions={[100, 500, 1000, 2000]}
             paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
             currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
             paginatorPosition="bottom"
@@ -327,7 +361,14 @@ function ProjectSamplesTable(props: SamplesProps) {
           </DataTable>
         </div>
         {shownSummaryMetadata && (
-          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+          <div
+            style={{
+              display: activeTable === TableType.SummaryMetadata ? 'flex' : 'none',
+              flexDirection: 'column',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
             <DataSummaries
               data={metadata}
               metadata={filteredData}
@@ -340,4 +381,5 @@ function ProjectSamplesTable(props: SamplesProps) {
     </div>
   );
 }
-export default ProjectSamplesTable;
+
+export default memo(ProjectSamplesTable);
