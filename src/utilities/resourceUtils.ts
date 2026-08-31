@@ -110,10 +110,7 @@ export const getProformaVersions = (proFormaAbbrev: string, token: string) =>
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
   const response =
     id != null
-      ? await downloadFile(
-        `/api/ProFormas/${abbrev}/download?proformaVersionId=${id}`,
-        token,
-      )
+      ? await downloadFile(`/api/ProFormas/${abbrev}/download?proformaVersionId=${id}`, token)
       : await downloadFile(`/api/ProFormas/${abbrev}/download`, token);
   return response;
 };
