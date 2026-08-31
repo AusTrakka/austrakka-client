@@ -1,6 +1,6 @@
 import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
-import FieldTypes from '../constants/fieldTypes';
+import { FieldTypes } from '../constants/fieldTypes';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import type { Field, ProjectField } from '../types/dtos';
@@ -9,7 +9,6 @@ import type { Sample } from '../types/sample.interface';
 export function getCountryCode(code: string): string | null {
   if (!code) return null;
   const upperCaseIso = code.trim().toUpperCase();
-
   // Subdivision like AU-NSW → keep prefix
   if (/^[A-Z]{2}-/.test(upperCaseIso)) {
     return upperCaseIso.slice(0, 2);

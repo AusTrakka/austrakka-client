@@ -17,9 +17,15 @@
 }
 
 .value-cell-editing {
-  border-bottom: none;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.app-container.compact-mode .value-cell-editing .MuiInputBase-root {
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
 }
 
 .basic-user-info-table {

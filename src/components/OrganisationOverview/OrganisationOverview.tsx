@@ -177,23 +177,22 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         </Alert>
       )}
       <CustomTabs value={tabValue} setValue={setTabValue} tabContent={Object.values(ORG_TABS)} />
-      <TabPanel value={tabValue} index={0}>
+      <TabPanel value={tabValue} index={ORG_TABS.dashboard.index}>
         <OrgDashboard orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={ORG_TABS.samples.index}>
         <OrganisationSamples
           canShare={canShare}
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
           orgName={organisation.name}
-          key={location.search}
         />
       </TabPanel>
-      <TabPanel value={tabValue} index={2}>
+      <TabPanel value={tabValue} index={ORG_TABS.members.index}>
         <OrgMembers orgAbbrev={orgAbbrev} />
       </TabPanel>
-      <TabPanel value={tabValue} index={3}>
-        <Activity recordType="Organisation" rGuid={organisation.globalId} />
+      <TabPanel value={tabValue} index={ORG_TABS.activity.index}>
+        <Activity recordType={RecordTypes.ORGANISATION} rGuid={organisation.globalId} />
       </TabPanel>
     </>
   );
