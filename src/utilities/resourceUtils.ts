@@ -7,6 +7,7 @@ import type {
   Organisation,
   Plot,
   PlotListing,
+  ProformaSharedEntity,
   Project,
   ProjectDashboardDetails,
   ProjectDocument,
@@ -100,25 +101,25 @@ export const getTreeVersions = (
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
 // and we don't need to do anything
-export const getGroupProFormaVersions = (groupId: number, token: string) =>
-  callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
+export const getProjectProFormaVersions = (projectAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/project/${projectAbbrev}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
+  callGET(`/api/ProFormas/${proFormaAbbrev}`, token);
 export const getProformaVersions = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+  callGET(`/api/ProFormas/${proFormaAbbrev}/versions`, token);
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
   const response =
     id != null
-      ? await downloadFile(
-          `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
-          token,
-        )
-      : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
+      ? await downloadFile(`/api/ProFormas/${abbrev}/download?proformaVersionId=${id}`, token)
+      : await downloadFile(`/api/ProFormas/${abbrev}/download`, token);
   return response;
 };
-export const getProformaGroups = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/${proFormaAbbrev}/listgroups`, token);
+export const getProformaProjects = (
+  proFormaAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProformaSharedEntity[]>> =>
+  callGET(`/api/ProFormas/${proFormaAbbrev}/projects`, token);
 
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
