@@ -1,4 +1,5 @@
 import { CustomFilterOperators } from '../components/DataFilters/fieldTypeOperators';
+import type { Sample } from '../types/sample.interface';
 
 export function isNullOrEmpty(value: any) {
   // null, undefined, empty; but not false or 0
@@ -75,6 +76,20 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
   return [
     { status: 'Present', sampleCount: presentCount },
     { status: 'Missing', sampleCount: array.length - presentCount },
+  ];
+}
+
+export function countHasSequence(data: Sample[]) {
+  let trueCount = 0;
+  data.forEach((item) => {
+    if (item?.Has_sequence === true) {
+      trueCount += 1;
+    }
+  });
+
+  return [
+    { status: 'Present', sampleCount: trueCount },
+    { status: 'Missing', sampleCount: data.length - trueCount },
   ];
 }
 

@@ -340,7 +340,7 @@ function MetadataCounts({
       >
         {title ?? `${field} counts`}
         <ChartInfoTooltip
-          text={`Samples with populated ${field} values \n Click legend items to show/hide · Hover for details`}
+          text={`Samples with or without populated ${field} values \n Click legend items to show/hide · Hover for details`}
         />
       </Typography>
       {errorMessage ? (
