@@ -25,7 +25,9 @@ import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
 import MetadataCountsByProject from '../../Widgets/OrganisationWidgets/MetadataCountsByProject';
 import ProjectCounts from '../../Widgets/OrganisationWidgets/ProjectCounts';
 import RecentActivityChart from '../../Widgets/OrganisationWidgets/RecentActivityChart';
-import SimpleMetadataBarChart from '../../Widgets/OrganisationWidgets/SimpleMetadataBarChart';
+import SimpleMetadataCount, {
+  CountMetric,
+} from '../../Widgets/OrganisationWidgets/SimpleMetadataCount';
 import HasSeq from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
 import ChartInfoTooltip from '../../Widgets/ProjectWidgets/EChartsWidgets/InfoToolTip';
 import MetadataCounts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';
@@ -121,7 +123,7 @@ function OrgDashboard(props: OrgDashboardProps) {
             spacing={2}
             sx={{ height: '100%', display: 'flex', minHeight: 0, overflow: 'hidden' }}
           >
-            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 3 }}>
+            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 4 }}>
               <Card sx={{ ...cardStyle, height: '100%' }}>
                 <CardContent
                   sx={{
@@ -132,20 +134,24 @@ function OrgDashboard(props: OrgDashboardProps) {
                     overflow: 'hidden',
                   }}
                 >
-                  <Grid size={12} container sx={{ height: '100%', display: 'flex' }}>
-                    <Grid
-                      size={12}
-                      container
-                      direction="column"
-                      sx={{ minHeight: 0, height: '100%' }}
-                    >
-                      <Typography variant="h5" paddingBottom={1} color="primary">
+                  <Grid
+                    size={12}
+                    container
+                    direction="column"
+                    justifyContent="space-evenly"
+                    sx={{ display: 'flex', height: '100%', minHeight: 0 }}
+                  >
+                    <Grid size={12}>
+                      <Typography variant="h5" color="primary" paddingBottom={1}>
                         Total samples
                       </Typography>
-                      <Typography variant="h2" paddingBottom={3} color="primary">
+                      <Typography variant="h2" color="primary">
                         {totalSampleCount ?? 'N/A'}
                       </Typography>
-                      <Typography variant="h5" paddingBottom={1} color="primary">
+                    </Grid>
+
+                    <Grid size={12}>
+                      <Typography variant="h5" color="primary" paddingBottom={1}>
                         Latest sample upload
                       </Typography>
                       {latestUploadDate ? (
@@ -153,46 +159,52 @@ function OrgDashboard(props: OrgDashboardProps) {
                           <Typography variant="h2" paddingBottom={1} color="primary">
                             {latestUploadDate[0]}
                           </Typography>
-                          <Typography variant="subtitle2" paddingBottom={3} color="primary">
+                          <Typography variant="subtitle2" color="textSecondary">
                             {latestUploadDate[1]}
                           </Typography>
                         </>
                       ) : (
-                        <Typography variant="h2" paddingBottom={3} color="primary">
+                        <Typography variant="h2" color="primary">
                           N/A
                         </Typography>
                       )}
-                      <Grid size={12} sx={{ minHeight: 0 }}>
-                        <SimpleMetadataBarChart
-                          widgetType={WidgetType.Organisation}
-                          identifier={orgAbbrev}
-                          filteredData={data?.metadata ?? []}
-                          field="Shared_groups"
-                          title="Sharing status"
-                          colorMapping={{
-                            Shared: Theme.SecondaryMain,
-                            'Not shared': Theme.SecondaryYellow,
-                          }}
-                        />
-                        <br />
-                        <SimpleMetadataBarChart
-                          widgetType={WidgetType.Organisation}
-                          identifier={orgAbbrev}
-                          filteredData={data?.metadata ?? []}
-                          field="Has_sequences"
-                          title="Sequence status"
-                          colorMapping={{
-                            Available: Theme.SecondaryMain,
-                            Missing: Theme.SecondaryYellow,
-                          }}
-                        />
-                      </Grid>
+                    </Grid>
+
+                    <Grid size={12} container direction="row" spacing={1} alignItems="center">
+                      <SimpleMetadataCount
+                        widgetType={WidgetType.Organisation}
+                        identifier={orgAbbrev}
+                        filteredData={data?.metadata ?? []}
+                        label="Unshared samples"
+                        countWarningLimit={0}
+                        field={'Shared_groups'}
+                        countMetric={CountMetric.MISSING}
+                      />
+                      <SimpleMetadataCount
+                        widgetType={WidgetType.Organisation}
+                        identifier={orgAbbrev}
+                        filteredData={data?.metadata ?? []}
+                        label="Missing sequences"
+                        countWarningLimit={0}
+                        field={'Has_sequences'}
+                        countMetric={CountMetric.MISSING}
+                      />
+                      <SimpleMetadataCount
+                        widgetType={WidgetType.Organisation}
+                        identifier={orgAbbrev}
+                        filteredData={data?.metadata ?? []}
+                        label="Missing metadata"
+                        infoText="Samples without populated Date_coll values"
+                        countWarningLimit={0}
+                        field={'Date_coll'}
+                        countMetric={CountMetric.MISSING}
+                      />
                     </Grid>
                   </Grid>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 4 }}>
+            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6, xl: 3 }}>
               <Card
                 sx={{
                   ...cardStyle,
@@ -203,7 +215,12 @@ function OrgDashboard(props: OrgDashboardProps) {
                 }}
               >
                 <CardContent
-                  sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
+                  }}
                 >
                   <ProjectCounts
                     widgetType={WidgetType.Organisation}
@@ -287,6 +304,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           field="Species_in_silico"
                           title=""
                           filteredData={data?.metadata ?? []}
+                          categoryLimit={5}
                         />
                       </Box>
                     </Grid>
