@@ -209,7 +209,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                 sx={{
                   ...cardStyle,
                   height: '100%',
-                  maxHeight: 520,
+                  maxHeight: 400,
                   display: 'flex',
                   flexDirection: 'column',
                 }}
