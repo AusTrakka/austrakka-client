@@ -135,8 +135,9 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     }
 
     if (categoryLimit) {
-      const categories = topCategories(widgetData, field, categoryLimit);
-      uniqueValues = uniqueValues.filter((val) => categories.includes(val));
+      const result = topCategories(widgetData, field, categoryLimit);
+      const topCategoryNames = result.categories.map((c) => c.category);
+      uniqueValues = uniqueValues.filter((val) => topCategoryNames.includes(val));
     }
 
     if (colourMapping) {
@@ -192,12 +193,14 @@ export default function MetadataValueBarChart(props: MetadataValueWidgetProps) {
     if (exclude && exclude.length > 0) {
       data = filterExcluded(data, exclude);
     }
-    const categories = topCategories(data, field, categoryLimit);
+    const result = topCategories(data, field, categoryLimit);
+    const topCategoryNames = result.categories.map((c) => c.category);
+
     // Filter data to only include items in the top categories
     return data.filter((item) => {
       if (categoryLimit && isNullOrEmpty(item[field])) return false;
       const value = item[field];
-      return categories.includes(value);
+      return topCategoryNames.includes(value);
     });
   };
 

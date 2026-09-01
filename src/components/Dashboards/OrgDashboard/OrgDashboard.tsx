@@ -304,6 +304,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           field="Species_in_silico"
                           title=""
                           filteredData={data?.metadata ?? []}
+                          categoryLimit={5}
                         />
                       </Box>
                     </Grid>

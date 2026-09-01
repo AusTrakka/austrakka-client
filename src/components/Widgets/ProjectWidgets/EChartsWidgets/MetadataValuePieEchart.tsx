@@ -27,11 +27,19 @@ import ChartInfoTooltip from './InfoToolTip';
 
 const UNKNOWN_VALUE_LABEL = 'unknown'; // label for samples with no value for the category field
 
+interface PieDataItem {
+  name: string;
+  value: number;
+  otherCategories?: string[];
+}
+
 interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
   title?: string | undefined;
   colorScheme?: string | undefined;
   colorMapping?: Record<string, string> | undefined;
+  categoryLimit?: number | undefined; // Optional limit for number of top categories to show
+  hideOtherCategory?: boolean; // If category limit is set, choose to hide or show other category
 }
 
 function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
@@ -44,6 +52,8 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     title,
     colorScheme,
     colorMapping,
+    categoryLimit,
+    hideOtherCategory,
   } = props;
 
   const { navigate } = useStableNavigate();
@@ -80,17 +90,42 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     return null;
   }, [data, field, widgetType]);
 
-  const pieData = useMemo(() => {
+  const pieData = useMemo((): PieDataItem[] => {
     const countMap = new Map<string, number>();
     for (const sample of filteredData) {
       const raw = sample[field as keyof Sample] as string | null | undefined;
       const key = isNullOrEmpty(raw) ? '' : (raw as string);
       countMap.set(key, (countMap.get(key) ?? 0) + 1);
     }
-    return [...countMap.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name, value }));
-  }, [filteredData, field]);
+
+    const sorted = [...countMap.entries()].sort((a, b) => b[1] - a[1]);
+
+    // No limit, or nothing to trim — behave exactly as before, same shape as grouped path
+    if (!categoryLimit || sorted.length <= categoryLimit) {
+      return sorted.map(([name, value]) => ({
+        name,
+        value,
+        otherCategories: undefined as string[] | undefined,
+      }));
+    }
+
+    const top = sorted.slice(0, categoryLimit);
+    const rest = sorted.slice(categoryLimit);
+
+    const result = top.map(([name, value]) => ({
+      name,
+      value,
+      otherCategories: undefined as string[] | undefined,
+    }));
+
+    if (!hideOtherCategory) {
+      const otherCount = rest.reduce((sum, [, value]) => sum + value, 0);
+      const otherCategories = rest.map(([name]) => name);
+      result.push({ name: 'Other', value: otherCount, otherCategories });
+    }
+
+    return result;
+  }, [filteredData, field, categoryLimit, hideOtherCategory]);
 
   const colorMap = useMemo(() => {
     if (errorMessage) return {};
@@ -107,14 +142,25 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     (params: ECElementEvent) => {
       if (params.name === undefined) return;
       const isNull = params.name === UNKNOWN_VALUE_LABEL || params.name === '';
+      const isOther = params.name === 'Other';
+
+      const clickedItem =
+        pieData.find((d) => d.name === (isNull ? '' : params.name)) ??
+        pieData.find((d) => d.name === 'Other');
+
+      let constraint: { matchMode: FilterMatchMode; value: unknown };
+      if (isOther) {
+        constraint = { matchMode: FilterMatchMode.IN, value: clickedItem?.otherCategories ?? [] };
+      } else if (isNull) {
+        constraint = { matchMode: FilterMatchMode.CUSTOM, value: true };
+      } else {
+        constraint = { matchMode: FilterMatchMode.EQUALS, value: params.name };
+      }
+
       const filters: DataTableFilterMeta = {
         [field]: {
           operator: FilterOperator.AND,
-          constraints: [
-            isNull
-              ? { matchMode: FilterMatchMode.CUSTOM, value: true }
-              : { matchMode: FilterMatchMode.EQUALS, value: params.name },
-          ],
+          constraints: [constraint],
         },
       };
       const combined =
@@ -123,7 +169,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
           : filters;
       updateTabUrlWithSearch(navigate, '/samples', combined);
     },
-    [field, timeFilterObject, navigate],
+    [field, timeFilterObject, navigate, pieData],
   );
 
   useEffect(() => {

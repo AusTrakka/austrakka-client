@@ -117,8 +117,26 @@ export function compareProperties(
   return 0;
 }
 
-// Function to get top X categories based on categoryLimit prop
-export function topCategories(data: any, field: string, categoryLimit?: number) {
+interface CategoryResult {
+  category: string;
+  count: number;
+}
+
+interface TopCategoriesResult {
+  categories: CategoryResult[];
+  other?: {
+    count: number;
+    categories: string[]; // which original categories were grouped into "Other"
+  };
+}
+
+// Function to get top X categories based on categoryLimit prop,
+// grouping the remainder into an "Other" bucket
+export function topCategories(
+  data: any[],
+  field: string,
+  categoryLimit?: number,
+): TopCategoriesResult {
   const categoryCounts: Record<string, number> = {};
   for (const item of data) {
     // Only ignore empty values if categoryLimit is set
@@ -129,14 +147,29 @@ export function topCategories(data: any, field: string, categoryLimit?: number) 
 
   const sortedCategories = Object.entries(categoryCounts)
     .sort(([, countA], [, countB]) => countB - countA)
-    .map(([category]) => category);
+    .map(([category, count]) => ({ category, count }));
 
-  if (categoryLimit) {
-    return sortedCategories.slice(0, categoryLimit);
-  } else {
-    // Just in case of no category limit, return all categories sorted by count
-    return sortedCategories;
+  if (!categoryLimit) {
+    return { categories: sortedCategories };
   }
+
+  const topCategories = sortedCategories.slice(0, categoryLimit);
+  const remaining = sortedCategories.slice(categoryLimit);
+
+  if (remaining.length === 0) {
+    return { categories: topCategories };
+  }
+
+  const otherCount = remaining.reduce((sum, c) => sum + c.count, 0);
+  const otherCategoryNames = remaining.map((c) => c.category);
+
+  return {
+    categories: topCategories,
+    other: {
+      count: otherCount,
+      categories: otherCategoryNames,
+    },
+  };
 }
 
 // Filter data based on array of field/value pairs to exclude
