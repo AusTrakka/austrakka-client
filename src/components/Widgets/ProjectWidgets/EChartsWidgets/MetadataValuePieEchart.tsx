@@ -17,10 +17,9 @@ import { type RootState, useAppSelector } from '../../../../app/store';
 import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import { columnStyleRules, styleRules } from '../../../../styles/metadataFieldStyles';
-import type { Sample } from '../../../../types/sample.interface';
 import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
 import { resolveColourMap } from '../../../../utilities/colourUtils';
-import { isNullOrEmpty } from '../../../../utilities/dataProcessingUtils';
+import { topCategories } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
 import ChartInfoTooltip from './InfoToolTip';
@@ -91,40 +90,22 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   }, [data, field, widgetType]);
 
   const pieData = useMemo((): PieDataItem[] => {
-    const countMap = new Map<string, number>();
-    for (const sample of filteredData) {
-      const raw = sample[field as keyof Sample] as string | null | undefined;
-      const key = isNullOrEmpty(raw) ? '' : (raw as string);
-      countMap.set(key, (countMap.get(key) ?? 0) + 1);
-    }
+    const result = topCategories(filteredData, field, categoryLimit, true);
 
-    const sorted = [...countMap.entries()].sort((a, b) => b[1] - a[1]);
-
-    // No limit, or nothing to trim — behave exactly as before, same shape as grouped path
-    if (!categoryLimit || sorted.length <= categoryLimit) {
-      return sorted.map(([name, value]) => ({
-        name,
-        value,
-        otherCategories: undefined as string[] | undefined,
-      }));
-    }
-
-    const top = sorted.slice(0, categoryLimit);
-    const rest = sorted.slice(categoryLimit);
-
-    const result = top.map(([name, value]) => ({
-      name,
-      value,
-      otherCategories: undefined as string[] | undefined,
+    const items: PieDataItem[] = result.categories.map(({ category, count }) => ({
+      name: category,
+      value: count,
     }));
 
-    if (!hideOtherCategory) {
-      const otherCount = rest.reduce((sum, [, value]) => sum + value, 0);
-      const otherCategories = rest.map(([name]) => name);
-      result.push({ name: 'Other', value: otherCount, otherCategories });
+    if (result.other && !hideOtherCategory) {
+      items.push({
+        name: 'Other',
+        value: result.other.count,
+        otherCategories: result.other.categories,
+      });
     }
 
-    return result;
+    return items;
   }, [filteredData, field, categoryLimit, hideOtherCategory]);
 
   const colorMap = useMemo(() => {

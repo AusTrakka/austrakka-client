@@ -136,12 +136,13 @@ export function topCategories(
   data: any[],
   field: string,
   categoryLimit?: number,
+  keepEmpty = false,
 ): TopCategoriesResult {
   const categoryCounts: Record<string, number> = {};
   for (const item of data) {
-    // Only ignore empty values if categoryLimit is set
-    if (categoryLimit && isNullOrEmpty(item[field])) continue;
-    const value = item[field];
+    const isEmpty = isNullOrEmpty(item[field]);
+    if (categoryLimit && isEmpty && !keepEmpty) continue;
+    const value = isEmpty ? '' : item[field];
     categoryCounts[value] = (categoryCounts[value] || 0) + 1;
   }
 
