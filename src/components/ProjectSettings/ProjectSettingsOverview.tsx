@@ -22,8 +22,8 @@ import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
+import ParticipatingOrgsPropertiesSection from './ParticipatingOrgsPropertiesSection';
 import { useProjectDetails } from './useProjectDetails';
-import ProjectOrgsPropertiesSection from './ProjectOrgsPropertiesSection';
 
 function ProjectSettingsOverview() {
   const { projectAbbrev } = useParams();
@@ -215,26 +215,28 @@ function ProjectSettingsOverview() {
           </Stack>
         </Paper>
       </Box>
-      <Box className={"project-properties-box"}
-           display="flex"
-           flexDirection={"column"}
-           justifyContent="space-between"
-           // alignItems="center"
-           gap={3}
-           sx={{ mb: 4 }}>
+      <Box
+        className={'project-properties-box'}
+        display="flex"
+        flexDirection={'column'}
+        justifyContent="space-between"
+        // alignItems="center"
+        gap={3}
+        sx={{ mb: 4 }}
+      >
         <BasicPropertiesSection
-            projectAbbrev={projectAbbrev}
-            canonical={projectDetails}
-            onSaved={refetchProject}
-            onSaveResult={handleChangesSaved}
-            organisations={organisations}
-            dashboards={dashboards}
-            editable={isAdmin}
+          projectAbbrev={projectAbbrev}
+          canonical={projectDetails}
+          onSaved={refetchProject}
+          onSaveResult={handleChangesSaved}
+          organisations={organisations}
+          dashboards={dashboards}
+          editable={isAdmin}
         />
-        <ProjectOrgsPropertiesSection
-            projectAbbrev={projectAbbrev}
-            editable={isAdmin}
-            onSaveResult={handleChangesSaved}
+        <ParticipatingOrgsPropertiesSection
+          projectAbbrev={projectAbbrev}
+          editable={isAdmin}
+          onSaveResult={handleChangesSaved}
         />
       </Box>
       <Snackbar

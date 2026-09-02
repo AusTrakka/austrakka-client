@@ -1,5 +1,14 @@
 import { ManageSearch } from '@mui/icons-material';
-import { Box, IconButton, type IconButtonProps, styled, TextField, Tooltip } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  type IconButtonProps,
+  type SxProps,
+  styled,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import React, { memo, useRef } from 'react';
 
 interface SearchInputProps {
@@ -7,6 +16,8 @@ interface SearchInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label?: string;
   placeholder?: string;
+  forceExpanded?: boolean;
+  iconSx?: SxProps<Theme>;
 }
 
 // Define interface for our custom props
@@ -23,7 +34,14 @@ const HoverableIconButton = styled(IconButton, {
   }),
 }));
 
-function SearchInput({ placeholder = '', label = 'Search', value, onChange }: SearchInputProps) {
+function SearchInput({
+  placeholder = '',
+  label = 'Search',
+  value,
+  onChange,
+  forceExpanded = true,
+  iconSx,
+}: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isHovered, setIsHovered] = React.useState(false);
   return (
@@ -61,14 +79,14 @@ function SearchInput({ placeholder = '', label = 'Search', value, onChange }: Se
             style={{ pointerEvents: 'none' }}
             isHovered={isHovered.toString()}
           >
-            <ManageSearch />
+            <ManageSearch sx={iconSx} />
           </HoverableIconButton>
         </Tooltip>
         <TextField
           inputRef={inputRef}
           sx={{
             marginBottom: 1,
-            width: value ? '200px' : '0',
+            width: forceExpanded || value ? '200px' : '0',
             '&:focus-within': {
               width: 200,
             },

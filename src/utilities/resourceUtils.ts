@@ -9,7 +9,8 @@ import type {
   PlotListing,
   Project,
   ProjectDashboardDetails,
-  ProjectDocument, ProjectOrganisationsPatch,
+  ProjectDocument,
+  ProjectOrganisationsPatch,
   ProjectPut,
   ProjectSummary,
   ProjectView,
@@ -27,8 +28,8 @@ import {
   callDELETE,
   callGET,
   callPATCH,
-  callPost,
   callPOSTForm,
+  callPost,
   callPostMultipart,
   callPUT,
   callSimpleGET,
@@ -525,8 +526,8 @@ export const downloadDocument = async (
   token: string,
 ) => {
   return await downloadFile(
-      `/api/Projects/${projectAbbrev}/documents/${documentStringId}/download`,
-      token,
+    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/download`,
+    token,
   );
 };
 
@@ -536,19 +537,30 @@ export const previewDocument = async (
   token: string,
 ) => {
   return await previewFile(
-      `/api/Projects/${projectAbbrev}/documents/${documentStringId}/preview`,
-      token,
+    `/api/Projects/${projectAbbrev}/documents/${documentStringId}/preview`,
+    token,
   );
 };
 
 // Project Organisations Endpoints
-const projectRoot = "/api/Projects"
+const projectRoot = '/api/Projects';
 
-export const getProjectOrganisations = async (identifier: string, token: string):
-    Promise<ResponseObject<Organisation[]>> => await callGET(`${projectRoot}/${identifier}/Organisations`, token)
+export const getProjectOrganisations = async (
+  identifier: string,
+  token: string,
+): Promise<ResponseObject<Organisation[]>> =>
+  await callGET(`${projectRoot}/${identifier}/Organisations`, token);
 
-export const addProjectOrganisations = async (identifier: string, data: ProjectOrganisationsPatch, token: string):
-  Promise<ResponseObject> => await callPATCH(`${projectRoot}/${identifier}/Organisations/Add`, token, data)
+export const addProjectOrganisations = async (
+  identifier: string,
+  data: ProjectOrganisationsPatch,
+  token: string,
+): Promise<ResponseObject> =>
+  await callPATCH(`${projectRoot}/${identifier}/Organisations/Add`, token, data);
 
-export const removeProjectOrganisations = async (identifier: string, data: ProjectOrganisationsPatch, token: string):
-    Promise<ResponseObject> => await callPATCH(`${projectRoot}/${identifier}/Organisations/Remove`, token, data)
+export const removeProjectOrganisations = async (
+  identifier: string,
+  data: ProjectOrganisationsPatch,
+  token: string,
+): Promise<ResponseObject> =>
+  await callPATCH(`${projectRoot}/${identifier}/Organisations/Remove`, token, data);
