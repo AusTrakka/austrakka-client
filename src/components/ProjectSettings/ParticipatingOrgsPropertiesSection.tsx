@@ -127,7 +127,7 @@ export default function ParticipatingOrgsPropertiesSection({
       const rmRes = await removeProjectOrganisations(projectAbbrev, rmPatch, token);
       if (rmRes.type === ResponseType.Error) {
         setIsSaving(false);
-        onSaveResult('error', rmRes.message ?? 'Could not remove organisations.');
+        onSaveResult('error', rmRes.message ?? 'Could not remove organisations');
         return;
       }
     }
@@ -139,7 +139,7 @@ export default function ParticipatingOrgsPropertiesSection({
       const addRes = await addProjectOrganisations(projectAbbrev, addPatch, token);
       if (addRes.type === ResponseType.Error) {
         setIsSaving(false);
-        onSaveResult('error', addRes.message ?? 'Could not add organisations.');
+        onSaveResult('error', addRes.message ?? 'Could not add organisations');
         return;
       }
     }
@@ -148,7 +148,7 @@ export default function ParticipatingOrgsPropertiesSection({
     setPendingOrgs([]);
     setIsEditing(false);
     setIsSaving(false);
-    onSaveResult('success', 'Project organisations updated successfully');
+    onSaveResult('success', 'Participating organisations updated');
   };
 
   const handleCancel = () => {
@@ -208,7 +208,7 @@ export default function ParticipatingOrgsPropertiesSection({
     >
       {isLoading ? (
         <Typography variant="body1" color="primary">
-          Loading project organisations
+          Loading participating organisations
         </Typography>
       ) : (
         <Box style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
