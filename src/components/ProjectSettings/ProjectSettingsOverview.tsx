@@ -220,7 +220,6 @@ function ProjectSettingsOverview() {
         display="flex"
         flexDirection={'column'}
         justifyContent="space-between"
-        // alignItems="center"
         gap={3}
         sx={{ mb: 4 }}
       >
