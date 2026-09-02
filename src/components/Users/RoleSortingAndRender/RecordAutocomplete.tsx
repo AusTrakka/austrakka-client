@@ -64,13 +64,14 @@ export function RecordAutocomplete(props: RecordAutocompleteProps) {
           placeholder={selectedRecords?.length ? '' : 'Select Record'}
           variant="filled"
           size="small"
-          // todo: address deprecated attribute
-          InputProps={{
-            ...params.InputProps,
-            inputProps: {
-              ...params.inputProps,
-              style: {
-                fontSize: '0.9em',
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              inputProps: {
+                ...params.inputProps,
+                style: {
+                  fontSize: '0.9em',
+                },
               },
             },
           }}
