@@ -218,8 +218,8 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
   callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
-export const getSampleGroups = (sampleName: string, token: string) =>
-  callGET(`/api/Sample/${sampleName}/Groups`, token);
+export const getSampleProperties = (seqId: string, token: string) =>
+  callGET(`/api/Sample/${seqId}`, token);
 export const shareSamples = (
   token: string,
   groupName: string,
