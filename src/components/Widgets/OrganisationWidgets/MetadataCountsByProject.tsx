@@ -11,6 +11,7 @@ import MetadataLoadingState, { hasCompleteData } from '../../../constants/metada
 import { columnStyleRules, combineClasses } from '../../../styles/metadataFieldStyles';
 import type { Sample } from '../../../types/sample.interface';
 import { WidgetType } from '../../../types/widget.props';
+import { getSharedProjectNames, stripOwnerSuffix } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import type { PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 
@@ -33,20 +34,6 @@ interface SharedGroupsMatrixRow {
   project: string;
   [categoryName: string]: string | number;
   Total: number;
-}
-
-function stripOwnerSuffix(value: string): string {
-  return value.split('-Owner')[0];
-}
-
-function isGroupName(name: string): boolean {
-  return name.endsWith('-Group');
-}
-
-function getSharedProjectNames(raw: string | undefined): string[] {
-  if (!raw) return [];
-  const groups: string[] = JSON.parse(raw).filter(isGroupName);
-  return groups.map((g) => g.slice(0, -'-Group'.length));
 }
 
 function buildSharedGroupsMatrix(
