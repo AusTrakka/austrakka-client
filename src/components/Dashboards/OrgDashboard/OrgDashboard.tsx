@@ -4,6 +4,7 @@ import {
   Box,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Typography,
 } from '@mui/material';
@@ -23,6 +24,7 @@ import { WidgetType } from '../../../types/widget.props';
 import { maxObj } from '../../../utilities/dataProcessingUtils';
 import { formatDateAsTwoStrings } from '../../../utilities/dateUtils';
 import MetadataCountsByProject from '../../Widgets/OrganisationWidgets/MetadataCountsByProject';
+import MetadataCountsByProjectHeatMap from '../../Widgets/OrganisationWidgets/MetadataCountsByProjectHeatMap';
 import ProjectCounts from '../../Widgets/OrganisationWidgets/ProjectCounts';
 import RecentActivityChart from '../../Widgets/OrganisationWidgets/RecentActivityChart';
 import SimpleMetadataCount, {
@@ -34,6 +36,10 @@ import MetadataCounts from '../../Widgets/ProjectWidgets/EChartsWidgets/Metadata
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataValuePieEchart';
 
 const UPLOAD_DATE_FIELD = 'Date_created';
+enum SpeciesByProjectView {
+  Heatmap = 'heatmap',
+  RawCounts = 'rawCounts',
+}
 
 interface OrgDashboardProps {
   orgAbbrev: string;
@@ -50,6 +56,7 @@ function OrgDashboard(props: OrgDashboardProps) {
   const [totalSampleCount, setTotalSampleCount] = useState<number | null>(null);
   const [latestUploadDate, setLatestUploadDate] = useState<string[] | null>(null);
   const loaded = hasCompleteData(data?.loadingState);
+  const speciesByProjectView = useState<SpeciesByProjectView>(SpeciesByProjectView.Heatmap);
 
   useEffect(() => {
     if (!data?.fields) return;
@@ -255,8 +262,7 @@ function OrgDashboard(props: OrgDashboardProps) {
               <Card
                 sx={{
                   ...tallCardStyle,
-                  height: { xs: 'auto', md: '100%' },
-                  maxHeight: { xs: 'none', md: 450 },
+                  height: { xs: 'auto', md: 450 },
                   display: 'flex',
                   flexDirection: 'column',
                 }}
@@ -311,20 +317,57 @@ function OrgDashboard(props: OrgDashboardProps) {
                     <Grid
                       size={{ xs: 12, sm: 12, md: 8 }}
                       sx={{
-                        height: { xs: 'auto', md: '100%' },
+                        height: { xs: '450px', md: '100%' },
                         display: 'flex',
                         flexDirection: 'column',
                         minHeight: 0,
                         overflow: { xs: 'auto', md: 'hidden' },
                       }}
                     >
-                      <MetadataCountsByProject
-                        widgetType={WidgetType.Organisation}
-                        identifier={orgAbbrev}
-                        title=""
-                        categoryField="Species_in_silico"
-                        filteredData={data?.metadata ?? []}
-                      />
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 1,
+                          marginBottom: 1,
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <Chip
+                          label="Heatmap"
+                          color={
+                            speciesByProjectView[0] === SpeciesByProjectView.Heatmap
+                              ? 'primary'
+                              : 'default'
+                          }
+                          onClick={() => speciesByProjectView[1](SpeciesByProjectView.Heatmap)}
+                        />
+                        <Chip
+                          label="Raw counts"
+                          color={
+                            speciesByProjectView[0] === SpeciesByProjectView.RawCounts
+                              ? 'primary'
+                              : 'default'
+                          }
+                          onClick={() => speciesByProjectView[1](SpeciesByProjectView.RawCounts)}
+                        />
+                      </Box>
+                      {speciesByProjectView[0] === SpeciesByProjectView.RawCounts ? (
+                        <MetadataCountsByProject
+                          widgetType={WidgetType.Organisation}
+                          identifier={orgAbbrev}
+                          title=""
+                          categoryField="Species_realistic"
+                          filteredData={data?.metadata ?? []}
+                        />
+                      ) : (
+                        <MetadataCountsByProjectHeatMap
+                          widgetType={WidgetType.Organisation}
+                          identifier={orgAbbrev}
+                          title=""
+                          categoryField="Species_realistic"
+                          filteredData={data?.metadata ?? []}
+                        />
+                      )}
                     </Grid>
                   </Grid>
                 </CardContent>

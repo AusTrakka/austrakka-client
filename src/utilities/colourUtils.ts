@@ -132,3 +132,20 @@ export function generateColorSchemeThumbnail(schemeName: string): string[] {
 
   return d3.quantize(rangeColorSchemes[schemeName], 5);
 }
+
+export function interpolateRgb(
+  start: [number, number, number],
+  end: [number, number, number],
+  t: number,
+): string {
+  const r = Math.round(start[0] + (end[0] - start[0]) * t);
+  const g = Math.round(start[1] + (end[1] - start[1]) * t);
+  const b = Math.round(start[2] + (end[2] - start[2]) * t);
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
+export function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace('#', '');
+  const bigint = parseInt(clean, 16);
+  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+}
