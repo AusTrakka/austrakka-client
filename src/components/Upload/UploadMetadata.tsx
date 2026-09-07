@@ -37,7 +37,7 @@ import type { Proforma, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { OrgDescriptor } from '../../types/sequploadtypes';
 import {
-  getProformaGroups,
+  getProformaProjects,
   getProjectList,
   getUserProformas,
   uploadSubmissions,
@@ -195,21 +195,14 @@ function UploadMetadata() {
 
   useEffect(() => {
     const getProformaGroupList = async () => {
-      const proformaGroupsResponse: ResponseObject = await getProformaGroups(
-        selectedProforma!.abbreviation,
-        token,
-      );
-      if (proformaGroupsResponse.status === ResponseType.Success) {
-        const sharedGroupNames = new Set(
-          proformaGroupsResponse.data.map((g: any) => g.name.replace(/-Group$/, '')),
-        );
-
+      const proformaProjects = await getProformaProjects(selectedProforma!.abbreviation, token);
+      if (proformaProjects.status === ResponseType.Success) {
+        const abbrevs = proformaProjects.data?.map((x) => x.abbreviation) ?? [];
         const sharedProjects = availableProjects.filter((project: Project) =>
-          sharedGroupNames.has(project.abbreviation),
+          abbrevs.includes(project.abbreviation),
         );
-
         const otherProjects = availableProjects.filter(
-          (project: Project) => !sharedGroupNames.has(project.abbreviation),
+          (project: Project) => !abbrevs.includes(project.abbreviation),
         );
 
         setProformaProjects({

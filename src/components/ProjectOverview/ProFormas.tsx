@@ -7,7 +7,7 @@ import { Theme } from '../../assets/themes/theme';
 import { ResponseType } from '../../constants/responseType';
 import type { ProFormaVersion, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
-import { getGroupProFormaVersions } from '../../utilities/resourceUtils';
+import { getProjectProFormaVersions } from '../../utilities/resourceUtils';
 import GenerateCards, { CardType } from '../ProForma/CardGenerator';
 import { handleProformaDownload } from '../ProForma/proformaUtils';
 
@@ -31,8 +31,8 @@ function ProFormaList(props: ProFormasListProps) {
 
   useEffect(() => {
     async function getProFormaList() {
-      const proformaListResponse: ResponseObject = await getGroupProFormaVersions(
-        projectDetails!.projectMembers.id,
+      const proformaListResponse: ResponseObject = await getProjectProFormaVersions(
+        projectDetails!.abbreviation,
         token,
       );
       if (proformaListResponse.status === ResponseType.Success) {
