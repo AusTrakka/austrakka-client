@@ -65,7 +65,7 @@ function ProjectSettingsOverview() {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableDashboards();
+      void fetchAvailableDashboards();
     }
   }, [token, tokenLoading, isAdmin]);
 
@@ -81,7 +81,7 @@ function ProjectSettingsOverview() {
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
-      fetchAvailableOrganisations();
+      void fetchAvailableOrganisations();
     }
   }, [token, tokenLoading, isAdmin]);
 
