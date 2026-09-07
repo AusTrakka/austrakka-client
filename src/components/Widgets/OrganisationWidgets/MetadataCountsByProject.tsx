@@ -19,7 +19,7 @@ import type { PrimeReactColumnDefinition } from '../../../utilities/tableUtils';
 
 const SHARED_GROUPS_FIELD = 'Shared_groups';
 const UNKNOWN_VALUE_LABEL = 'unknown'; // label for samples with no value for the category field
-const UNSHARED_COLUMN = 'Unshared';
+const UNSHARED_ROW = 'Unshared';
 
 interface MetadataCountsByProjectProps {
   widgetType: WidgetType;
@@ -30,8 +30,8 @@ interface MetadataCountsByProjectProps {
 }
 
 interface SharedGroupsMatrixRow {
-  category: string;
-  [projectName: string]: string | number;
+  project: string;
+  [categoryName: string]: string | number;
   Total: number;
 }
 
@@ -52,10 +52,9 @@ function getSharedProjectNames(raw: string | undefined): string[] {
 function buildSharedGroupsMatrix(
   data: Sample[],
   categoryField: string,
-): { rows: SharedGroupsMatrixRow[]; projectColumns: PrimeReactColumnDefinition[] } {
-  const matrix = new Map<string, Map<string, number>>();
-  const allProjects = new Set<string>();
-  let hasUnshared = false;
+): { rows: SharedGroupsMatrixRow[]; categoryColumns: PrimeReactColumnDefinition[] } {
+  const matrix = new Map<string, Map<string, number>>(); // project -> category -> count
+  const allCategories = new Set<string>();
 
   for (const sample of data) {
     const projects = getSharedProjectNames(
@@ -66,36 +65,37 @@ function buildSharedGroupsMatrix(
     const strippedCategory =
       categoryField === 'Owner_group' ? stripOwnerSuffix(rawCategory) : rawCategory;
     const category = strippedCategory === '' ? UNKNOWN_VALUE_LABEL : strippedCategory;
-
-    if (!matrix.has(category)) matrix.set(category, new Map());
-    const projectCounts = matrix.get(category)!;
+    allCategories.add(category);
 
     if (projects.length === 0) {
-      hasUnshared = true;
-      projectCounts.set(UNSHARED_COLUMN, (projectCounts.get(UNSHARED_COLUMN) ?? 0) + 1);
+      if (!matrix.has(UNSHARED_ROW)) matrix.set(UNSHARED_ROW, new Map());
+      const categoryCounts = matrix.get(UNSHARED_ROW)!;
+      categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
       continue;
     }
 
     projects.forEach((project) => {
-      allProjects.add(project);
-      projectCounts.set(project, (projectCounts.get(project) ?? 0) + 1);
+      if (!matrix.has(project)) matrix.set(project, new Map());
+      const categoryCounts = matrix.get(project)!;
+      categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
     });
   }
 
-  const projectColumns: PrimeReactColumnDefinition[] = [...allProjects]
-    .sort()
-    .map((project) => ({ field: project, header: project }));
-
-  if (hasUnshared) {
-    projectColumns.push({ field: UNSHARED_COLUMN, header: UNSHARED_COLUMN });
-  }
+  const categoryColumns: PrimeReactColumnDefinition[] = [...allCategories]
+    .sort((a, b) => {
+      // unknown always sorts last, like it did as a row before
+      if (a === UNKNOWN_VALUE_LABEL) return 1;
+      if (b === UNKNOWN_VALUE_LABEL) return -1;
+      return a.localeCompare(b);
+    })
+    .map((category) => ({ field: category, header: category }));
 
   const rows: SharedGroupsMatrixRow[] = [...matrix.entries()]
-    .map(([category, projectCounts]) => {
-      const row: SharedGroupsMatrixRow = { category, Total: 0 };
+    .map(([project, categoryCounts]) => {
+      const row: SharedGroupsMatrixRow = { project, Total: 0 };
       let total = 0;
-      projectColumns.forEach(({ field }) => {
-        const count = projectCounts.get(field) ?? 0;
+      categoryColumns.forEach(({ field }) => {
+        const count = categoryCounts.get(field) ?? 0;
         row[field] = count;
         total += count;
       });
@@ -103,16 +103,15 @@ function buildSharedGroupsMatrix(
       return row;
     })
     .sort((a, b) => {
-      const aIsUnknown = a.category === UNKNOWN_VALUE_LABEL;
-      const bIsUnknown = b.category === UNKNOWN_VALUE_LABEL;
-
-      if (aIsUnknown && !bIsUnknown) return 1;
-      if (!aIsUnknown && bIsUnknown) return -1;
-
+      // Unshared always sorts first, like it did as a column before
+      const aIsUnshared = a.project === UNSHARED_ROW;
+      const bIsUnshared = b.project === UNSHARED_ROW;
+      if (aIsUnshared && !bIsUnshared) return -1;
+      if (!aIsUnshared && bIsUnshared) return 1;
       return b.Total - a.Total; // Sort rows by total count descending
     });
 
-  return { rows, projectColumns };
+  return { rows, categoryColumns };
 }
 
 function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
@@ -157,26 +156,26 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
     if (!data?.fields || errorMessage) return;
     if (data.loadingState === MetadataLoadingState.DATA_LOADED) {
       // Get counts of samples for each value of categoryField and Shared_groups
-      const { rows, projectColumns } = buildSharedGroupsMatrix(
+      const { rows, categoryColumns } = buildSharedGroupsMatrix(
         data.metadata as Sample[],
         categoryField,
       );
       setRows(rows);
-      setColumns(projectColumns);
+      setColumns(categoryColumns);
     }
   }, [data?.metadata, data?.fields, data?.loadingState, categoryField, errorMessage]);
 
-  // Metadata value drilldown
-  const handleCategoryClick = (categoryValue: string) => {
-    const unknownFlag = categoryValue === UNKNOWN_VALUE_LABEL;
+  // Project drilldown (row label click)
+  const handleProjectClick = (project: string) => {
+    const unsharedFlag = project === UNSHARED_ROW;
 
     const filters: DataTableFilterMeta = {
-      [categoryField]: {
+      [SHARED_GROUPS_FIELD]: {
         operator: FilterOperator.AND,
         constraints: [
           {
-            matchMode: unknownFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.EQUALS,
-            value: unknownFlag ? 'true' : categoryValue,
+            matchMode: unsharedFlag ? FilterMatchMode.CUSTOM : FilterMatchMode.CONTAINS,
+            value: unsharedFlag ? 'true' : project,
           },
         ],
       },
@@ -184,9 +183,9 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
     updateTabUrlWithSearch(navigate, '/samples', filters);
   };
 
-  // Combined metadata value and project drilldown
+  // Combined project and metadata value drilldown (cell click)
   const handleCellClick = (project: string, categoryValue: string) => {
-    const unsharedFlag = project === UNSHARED_COLUMN;
+    const unsharedFlag = project === UNSHARED_ROW;
     const unknownFlag = categoryValue === UNKNOWN_VALUE_LABEL;
 
     const filters: DataTableFilterMeta = {
@@ -214,6 +213,11 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      {/* Small scoped style for the "Unshared" row, since PrimeReact bodyStyle only targets columns */}
+      <style>{`
+        .unshared-row > td { background-color: ${Theme.PrimaryGrey100}; }
+      `}</style>
+
       {title !== '' && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography
@@ -267,10 +271,13 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
             scrollHeight="flex"
             className="my-flexible-table"
             emptyMessage="No data available"
+            rowClassName={(row: SharedGroupsMatrixRow) =>
+              row.project === UNSHARED_ROW ? 'unshared-row' : ''
+            }
           >
             <Column
-              field="category"
-              header={categoryField}
+              field="project"
+              header="Project"
               className="flexible-column"
               bodyClassName="value-cells"
               align="left"
@@ -279,12 +286,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
               body={(row: SharedGroupsMatrixRow) => (
                 <Box
                   component="span"
-                  className={
-                    row.category !== UNKNOWN_VALUE_LABEL
-                      ? combineClasses(columnStyleRules[categoryField])
-                      : undefined
-                  }
-                  onClick={() => handleCategoryClick(row.category)}
+                  onClick={() => handleProjectClick(row.project)}
                   sx={{
                     cursor: 'pointer',
                     display: 'inline-block',
@@ -293,11 +295,14 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                     borderRadius: 16,
                     transition: 'background-color 0.15s ease, color 0.15s ease',
                     '&:hover': {
-                      backgroundColor: Theme.SecondaryMain50,
+                      backgroundColor:
+                        row.project === UNSHARED_ROW
+                          ? Theme.SecondaryMain100
+                          : Theme.SecondaryMain50,
                     },
                   }}
                 >
-                  {row.category}
+                  {row.project}
                 </Box>
               )}
             />
@@ -305,19 +310,34 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
               <Column
                 key={field}
                 field={field}
-                header={header}
+                header={() => (
+                  <Box
+                    component="span"
+                    className={
+                      field !== UNKNOWN_VALUE_LABEL
+                        ? combineClasses(columnStyleRules[categoryField])
+                        : undefined
+                    }
+                  >
+                    {header}
+                  </Box>
+                )}
                 className="flexible-column"
                 bodyClassName="value-cells"
                 bodyStyle={
-                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey100 } : undefined
+                  field === UNKNOWN_VALUE_LABEL
+                    ? { backgroundColor: Theme.PrimaryGrey100 }
+                    : undefined
                 }
                 headerStyle={
-                  field === UNSHARED_COLUMN ? { backgroundColor: Theme.PrimaryGrey100 } : undefined
+                  field === UNKNOWN_VALUE_LABEL
+                    ? { backgroundColor: Theme.PrimaryGrey100 }
+                    : undefined
                 }
                 body={(row: SharedGroupsMatrixRow) => (
                   <Box
                     component="span"
-                    onClick={() => handleCellClick(header, row.category)}
+                    onClick={() => handleCellClick(row.project, field)}
                     sx={{
                       cursor: 'pointer',
                       display: 'inline-block',
@@ -327,7 +347,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
                       transition: 'background-color 0.15s ease, color 0.15s ease',
                       '&:hover': {
                         backgroundColor:
-                          field === UNSHARED_COLUMN
+                          field === UNKNOWN_VALUE_LABEL
                             ? Theme.SecondaryMain100
                             : Theme.SecondaryMain50,
                       },
