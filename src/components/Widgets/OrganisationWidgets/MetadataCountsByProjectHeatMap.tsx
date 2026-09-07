@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { type EChartsOption, init } from 'echarts';
+import { type ECharts, type EChartsOption, init } from 'echarts';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import type { DataTableFilterMeta } from 'primereact/datatable';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -137,7 +137,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
   const { identifier, title, categoryField, widgetType, filteredData } = props;
   const { navigate } = useStableNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<echarts.ECharts | null>(null);
+  const chartRef = useRef<ECharts | null>(null);
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
