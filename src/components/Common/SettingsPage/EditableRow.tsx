@@ -221,7 +221,9 @@ function EditableRow(props: EditableRowProps) {
                   },
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Typography fontSize="0.9em">{BYTES_EDIT_UNIT} per month</Typography>
+                      <Typography fontSize="0.9em !important">
+                        {BYTES_EDIT_UNIT} per month
+                      </Typography>
                     </InputAdornment>
                   ),
                 },
@@ -236,7 +238,9 @@ function EditableRow(props: EditableRowProps) {
           <TableCell className="key-cell-editing" style={{ borderBottom: 'none' }}>
             <FieldLabelWithTooltip field={field} readableNames={readableNames} />
           </TableCell>
-          <TableCell className="value-cell-editing">{detailValue}</TableCell>
+          <TableCell className="value-cell-editing">
+            <Typography>{detailValue}</Typography>
+          </TableCell>
         </TableRow>
       );
   }
