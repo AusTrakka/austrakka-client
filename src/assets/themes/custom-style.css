@@ -132,3 +132,23 @@ th:has(.p-checkbox) .p-checkbox {
 th:has(.p-checkbox) .p-column-title:empty {
   display: none;
 }
+
+/* --- Selected Row Highlight Overrides --- */
+
+/* Standard selected row */
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+  background: var(--primary-50);
+  color: var(--primary-main);
+}
+
+/* Selected row on hover */
+.p-datatable .p-datatable-tbody > tr.p-highlight:hover {
+  background: color-mix(in srgb, var(--primary-50) 50%, var(--primary-100));
+  color: var(--primary-main);
+}
+
+/* Ensures individual cells inside a selected row maintain transparent backgrounds */
+.p-datatable .p-datatable-tbody > tr.p-highlight > td {
+  background: inherit;
+  color: inherit;
+}
