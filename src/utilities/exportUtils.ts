@@ -8,9 +8,9 @@ type ColumnMeta = {
   type: string;
 };
 
-const buildColumnMeta = (data: any[], headers: string[]): ColumnMeta[] =>
+const buildColumnMeta = (data: any[], headers: string[], formatFields: boolean): ColumnMeta[] =>
   headers.map((key) => {
-    if (key in fieldRenderFunctions) return { key, isField: true, type: '' };
+    if (formatFields && key in fieldRenderFunctions) return { key, isField: true, type: '' };
     const sample = data.find((row) => row[key] != null)?.[key];
     const type = sample instanceof Date ? 'date' : typeof sample;
     return { key, isField: false, type };
@@ -41,10 +41,11 @@ export const formatCSVValues = (row: any, columnMeta?: ColumnMeta[]): any => {
 
 export const formatCsvBody = (
   data: any[],
+  formatFields: boolean,
   headerString: string[],
   columnMeta?: ColumnMeta[],
 ): string[] => {
-  const meta = columnMeta ?? buildColumnMeta(data, headerString);
+  const meta = columnMeta ?? buildColumnMeta(data, headerString, formatFields);
   const buffer = new Array(headerString.length);
   const lines = new Array(data.length);
 
@@ -61,11 +62,11 @@ export const formatCsvBody = (
   return lines;
 };
 
-export const estimateCSVSize = (data: any[], headers?: string[]): number => {
+export const estimateCSVSize = (data: any[], formatFields: boolean, headers?: string[]): number => {
   if (data.length === 0) return 0;
 
   const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
-  const meta = buildColumnMeta(data, resolvedHeaders);
+  const meta = buildColumnMeta(data, resolvedHeaders, formatFields);
 
   const sampleSize = Math.min(20, data.length);
   const encoder = new TextEncoder();
@@ -97,12 +98,16 @@ const yieldToMain =
     ? () => (globalThis as any).scheduler.yield()
     : () => new Promise<void>((r) => setTimeout(r, 0));
 
-export const generateCSVStream = (data: any[], headers?: string[]): ReadableStream<Uint8Array> => {
+export const generateCSVStream = (
+  data: any[],
+  formatFields: boolean,
+  headers?: string[],
+): ReadableStream<Uint8Array> => {
   const encoder = new TextEncoder();
   if (data.length === 0 && !headers) throw new Error('Cannot generate CSV: no headers resolved');
 
   const resolvedHeaders: string[] = headers ?? Object.keys(formatCSVValues(data[0]));
-  const columnMeta = buildColumnMeta(data, resolvedHeaders);
+  const columnMeta = buildColumnMeta(data, resolvedHeaders, formatFields);
 
   let index = 0;
   let headerWritten = false;
@@ -119,7 +124,12 @@ export const generateCSVStream = (data: any[], headers?: string[]): ReadableStre
       }
       const end = Math.min(index + CHUNK_SIZE, data.length);
       try {
-        const lines = formatCsvBody(data.slice(index, end), resolvedHeaders, columnMeta);
+        const lines = formatCsvBody(
+          data.slice(index, end),
+          formatFields,
+          resolvedHeaders,
+          columnMeta,
+        );
         controller.enqueue(encoder.encode(`${lines.join('\n')}\n`));
       } catch (error) {
         controller.error(error);

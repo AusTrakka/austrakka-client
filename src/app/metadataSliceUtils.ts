@@ -1,5 +1,6 @@
 import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
+import { FieldTypes } from '../constants/fieldTypes';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import type { Field, ProjectField } from '../types/dtos';
@@ -8,7 +9,6 @@ import type { Sample } from '../types/sample.interface';
 export function getCountryCode(code: string): string | null {
   if (!code) return null;
   const upperCaseIso = code.trim().toUpperCase();
-
   // Subdivision like AU-NSW → keep prefix
   if (/^[A-Z]{2}-/.test(upperCaseIso)) {
     return upperCaseIso.slice(0, 2);
@@ -104,6 +104,26 @@ export function normaliseHasSequencesTrueBoolWithString(data: Sample[]) {
   });
 
   return data;
+}
+
+// Given sample data and field details, replace int strings with int values
+export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
+  const fieldDetails = getFieldDetails(fieldNames, fields);
+  const intFields = fieldDetails.filter(
+    (field) =>
+      field.primitiveType === FieldTypes.NUMBER || field.primitiveType === FieldTypes.DOUBLE,
+  );
+  intFields.forEach((field) => {
+    data.forEach((sample) => {
+      const intString = sample[field.columnName];
+      if (intString !== null && intString !== undefined && intString !== '') {
+        const num = Number(intString);
+        sample[field.columnName] = Number.isNaN(num) ? null : num;
+      } else {
+        sample[field.columnName] = null;
+      }
+    });
+  });
 }
 
 // Given sample data and field details, replace date strings with Date objects

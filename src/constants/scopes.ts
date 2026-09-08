@@ -1,5 +1,4 @@
 export const ScopeDefinitions = {
-  Everything: 'Everything',
   ListPrivilegesTenant: 'ListPrivilegesTenant',
   GrantAccessTenant: 'GrantAccessTenant',
   DeleteAccessTenant: 'DeleteAccessTenant',

@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { TopLevelSpec } from 'vega-lite';
 import {
   type ProjectMetadataState,
@@ -62,7 +61,6 @@ const defaultSpec: TopLevelSpec = {
 function EpiCurve(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
     selectProjectMetadataFields(state, projectAbbrev),
   );
@@ -72,61 +70,41 @@ function EpiCurve(props: PlotTypeProps) {
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
   const [categoricalFields, setCategoricalFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
-    'dateField',
-    '',
-    navigate,
-  );
+  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>('dateField', '');
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     '',
-    navigate,
   );
   const [dateBinStep, setDateBinStep] = useStateFromSearchParamsForPrimitive<number>(
     'dateBinStep',
     1,
-    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    navigate,
   );
-  const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>(
-    'rowField',
-    'none',
-    navigate,
-  );
+  const [rowField, setRowField] = useStateFromSearchParamsForPrimitive<string>('rowField', 'none');
   const [facetYAxisMode, setFacetYAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetYAxisMode',
     'shared',
-    navigate,
   );
   const [facetXAxisMode, setFacetXAxisMode] = useStateFromSearchParamsForPrimitive<string>(
     'facetXAxisMode',
     'shared',
-    navigate,
   );
   const [axisLabelAngle, setAxisLabelAngle] = useStateFromSearchParamsForPrimitive<number>(
     'axisLabelAngle',
     0,
-    navigate,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
     'stackType',
     'zero',
-    navigate,
   );
-  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
-    'fontSize',
-    11,
-    navigate,
-  );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>('fontSize', 11);
 
   // Set spec on load
   useEffect(() => {

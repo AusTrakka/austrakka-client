@@ -12,7 +12,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useStableNavigate } from '../../../app/NavigationContext';
 import { Theme } from '../../../assets/themes/theme';
 import type RecordTypes from '../../../constants/record-type.enum';
-import useActivityLogs from '../../../hooks/useActivityLogs';
+import useActivityLogs, { type ActivityLogsResponse } from '../../../hooks/useActivityLogs';
 import type { WidgetType } from '../../../types/widget.props';
 import { getWidgetExportName } from '../../../utilities/fileUtils';
 import { updateActivityTabUrlWithFilters } from '../../../utilities/navigationUtils';
@@ -62,11 +62,11 @@ function RecentActivityChart(props: RecentActivityChartProps) {
   });
   const { navigate } = useStableNavigate();
 
-  const { refinedLogs, dataLoading, isLoadingErrorMsg } = useActivityLogs(
-    recordType,
-    filters,
-    identifier,
-  );
+  const activityRes: ActivityLogsResponse = useActivityLogs({
+    recordType: recordType,
+    filters: filters,
+    rguid: identifier,
+  });
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -74,7 +74,8 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     return () => chart.dispose();
   }, []);
 
-  const showChart = !dataLoading && !isLoadingErrorMsg && !!refinedLogs?.length;
+  const showChart =
+    !activityRes.dataLoading && !activityRes.isLoadingErrorMsg && !!activityRes.refinedLogs?.length;
 
   const handleClick = useCallback(
     (params: ECElementEvent) => {
@@ -91,12 +92,12 @@ function RecentActivityChart(props: RecentActivityChartProps) {
   );
 
   useEffect(() => {
-    if (!chartRef.current || dataLoading) return;
+    if (!chartRef.current || activityRes.dataLoading) return;
     const chart: ECharts = getInstanceByDom(chartRef.current) ?? init(chartRef.current);
     chart.off('click');
     chart.on('click', handleClick);
 
-    const { days, countsByType } = buildChartData(refinedLogs);
+    const { days, countsByType } = buildChartData(activityRes.refinedLogs);
 
     const series: EChartsOption['series'] = Object.entries(countsByType).map(
       ([eventType, dayCounts]) => ({
@@ -169,7 +170,7 @@ function RecentActivityChart(props: RecentActivityChartProps) {
     };
 
     chart.setOption(option, true);
-  }, [refinedLogs, dataLoading, handleClick]);
+  }, [activityRes.refinedLogs, activityRes.dataLoading, handleClick]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -199,14 +200,14 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         />
       </Box>
 
-      {isLoadingErrorMsg && (
+      {activityRes.isLoadingErrorMsg && (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {isLoadingErrorMsg}
+          {activityRes.isLoadingErrorMsg}
         </Alert>
       )}
 
-      {!isLoadingErrorMsg && dataLoading && (
+      {!activityRes.isLoadingErrorMsg && activityRes.dataLoading && (
         <Box
           sx={{
             display: 'flex',
@@ -220,23 +221,25 @@ function RecentActivityChart(props: RecentActivityChartProps) {
         </Box>
       )}
 
-      {!isLoadingErrorMsg && !dataLoading && !refinedLogs?.length && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            flexDirection: 'column',
-            minHeight: 0,
-          }}
-        >
-          <SearchOffIcon sx={{ color: Theme.PrimaryGrey500, fontSize: 40 }} />
-          <Typography variant="body2" color={Theme.PrimaryGrey500}>
-            No activity in the last 7 days
-          </Typography>
-        </Box>
-      )}
+      {!activityRes.isLoadingErrorMsg &&
+        !activityRes.dataLoading &&
+        !activityRes.refinedLogs?.length && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 1,
+              flexDirection: 'column',
+              minHeight: 0,
+            }}
+          >
+            <SearchOffIcon sx={{ color: Theme.PrimaryGrey500, fontSize: 40 }} />
+            <Typography variant="body2" color={Theme.PrimaryGrey500}>
+              No activity in the last 7 days
+            </Typography>
+          </Box>
+        )}
 
       <div
         ref={chartRef}

@@ -157,16 +157,13 @@ function ProjectOverview(props: ProjectOverviewProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {projectDetails ? projectDetails.name : ''}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '8px' }}>
           <Chip
             className={getProjectStatusStyle(projectDetails?.status as ProjectStatus)}
             label={`Status: ${projectDetails?.status}`}
             sx={{
-              display: 'flex',
-              marginLeft: 'auto',
               fontWeight: 'bold',
-              borderRadius: 5,
-              padding: '5px 10px 5px 10px',
+              padding: '5px',
               color: 'white',
               backgroundColor:
                 PROJECT_STATUS_TYPE_COLOURS[projectDetails?.status as ProjectStatusType] ??
@@ -200,7 +197,7 @@ function ProjectOverview(props: ProjectOverviewProps) {
         />
       </TabPanel>
       <TabPanel value={tabValue} index={PROJ_TABS.samples.index}>
-        <ProjectSamplesTable projectAbbrev={projectAbbrev!} key={location.search} />
+        <ProjectSamplesTable projectAbbrev={projectAbbrev!} />
       </TabPanel>
       <TabPanel
         value={tabValue}

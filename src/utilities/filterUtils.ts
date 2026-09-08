@@ -164,3 +164,19 @@ export function getDisplayValue(
 
   return String(raw);
 }
+
+export function isValueEmpty(val: any): boolean {
+  if (val === null || val === undefined || val === '') return true;
+  if (Array.isArray(val) && val.length === 0) return true;
+  return false;
+}
+
+export function isEqualValues(val1: any, val2: any, ignoreArrayOrder = false): boolean {
+  if (Array.isArray(val1) && Array.isArray(val2)) {
+    if (val1.length !== val2.length) return false;
+    const a = ignoreArrayOrder ? [...val1].sort() : val1;
+    const b = ignoreArrayOrder ? [...val2].sort() : val2;
+    return a.every((v, i) => v === b[i]);
+  }
+  return val1 === val2;
+}

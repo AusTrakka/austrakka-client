@@ -21,6 +21,7 @@ import {
   normaliseHasSequencesTrueBoolWithString,
   replaceDateStrings,
   replaceHasSequencesNullsWithFalse,
+  replaceIntStrings,
   replaceNullsWithEmpty,
 } from './metadataSliceUtils';
 import type { RootState } from './store';
@@ -381,6 +382,7 @@ export const orgMetadataSlice = createSlice({
 
       state.data[orgAbbrev].emptyColumns = getEmptyStringColumns(data, fieldNames);
       replaceDateStrings(data, fields, fieldNames);
+      replaceIntStrings(data, fields, fieldNames);
       state.data[orgAbbrev].metadata = data;
 
       // Default sort by Date_updated, fallback to SEQID

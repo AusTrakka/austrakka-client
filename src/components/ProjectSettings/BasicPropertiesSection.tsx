@@ -1,6 +1,7 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
   type AlertColor,
+  Box,
   Paper,
   Stack,
   Switch,
@@ -113,6 +114,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
         direction="row"
         justifyContent="space-between"
         alignItems="center"
+        display="flex"
         style={{ padding: '10px' }}
       >
         <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
@@ -128,7 +130,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           onSaveLoading={isSaving}
         />
       </Stack>
-      <TableContainer>
+      <TableContainer component={Box}>
         <Table sx={{ borderBottom: 'none' }}>
           <TableBody>
             {readonlyFields.map((field) => (
@@ -137,7 +139,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
                   <FieldLabelWithTooltip field={field} readableNames={readableNames} />
                 </TableCell>
                 <TableCell className="project-value-cell">
-                  {formatValue(canonical[field])}
+                  <Typography variant="body2">{formatValue(canonical[field])}</Typography>
                 </TableCell>
               </TableRow>
             ))}
@@ -161,7 +163,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
                       }))}
                     />
                   ) : (
-                    formatValue(draft[field])
+                    <Typography variant="body2">{formatValue(draft[field])}</Typography>
                   )}
                 </TableCell>
               </TableRow>

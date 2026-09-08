@@ -1,6 +1,6 @@
 import { Alert, Button } from '@mui/material';
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import {
   fetchProjectMetadata,
@@ -13,7 +13,6 @@ import MapDetail from './MapDetail';
 function MapPage() {
   const { projectAbbrev } = useParams();
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { token, tokenLoading } = useApi();
 
   useEffect(() => {
@@ -53,7 +52,7 @@ function MapPage() {
         </Alert>
       )}
 
-      <MapDetail navigateFunction={navigate} projectAbbrev={projectAbbrev} />
+      <MapDetail projectAbbrev={projectAbbrev} />
     </>
   );
 }

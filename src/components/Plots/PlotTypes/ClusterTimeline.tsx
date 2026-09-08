@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ColorScheme } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
@@ -77,7 +76,6 @@ const defaultSpec: TopLevelSpec = {
 
 function ClusterTimeline(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
-  const navigate = useNavigate();
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
     selectProjectMetadataFields(state, projectAbbrev),
@@ -87,39 +85,26 @@ function ClusterTimeline(props: PlotTypeProps) {
   const [yAxisField, setYAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'yAxisField',
     '',
-    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    navigate,
   );
   const [dateFields, setDateFields] = useState<string[]>([]);
-  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>(
-    'xAxisField',
-    '',
-    navigate,
-  );
+  const [dateField, setDateField] = useStateFromSearchParamsForPrimitive<string>('xAxisField', '');
   const [axisLabelAngle, setAxisLabelAngle] = useStateFromSearchParamsForPrimitive<number>(
     'axisLabelAngle',
     0,
-    navigate,
   );
   const [dateBinUnit, setDateBinUnit] = useStateFromSearchParamsForPrimitive<string>(
     'dateBinUnit',
     'yearmonthdate',
-    navigate,
   );
-  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
-    'fontSize',
-    11,
-    navigate,
-  );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>('fontSize', 11);
 
   // Set spec on load
   useEffect(() => {

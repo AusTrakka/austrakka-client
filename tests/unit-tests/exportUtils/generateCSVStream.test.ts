@@ -15,7 +15,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
     test('expect correct number of columns', async () => {
@@ -30,7 +30,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -48,7 +48,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
     test('given data to export contains a null date object', async () => {
@@ -63,7 +63,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1",""\n' + '"value3",""\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
 
@@ -79,7 +79,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","2022-01-01"\n' + '"value3","2022-01-02"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -96,7 +96,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
 
@@ -113,7 +113,7 @@ describe('generateCSV', () => {
       ];
       const expectedOutput =
         'key1,key2\n' + '"""value1""","""value2"""\n' + '"""value3""","""value4"""\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
 
@@ -129,7 +129,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"""value1","value2"\n' + '"value3""","v""alue4"\n';
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -148,7 +148,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key1,key2\n' + '"value1","value2"\n' + '"value3","value4"\n';
-      const actualOutput = await streamToString(generateCSVStream(data, ['key1', 'key2']));
+      const actualOutput = await streamToString(generateCSVStream(data, true, ['key1', 'key2']));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -166,7 +166,7 @@ describe('generateCSV', () => {
         },
       ];
       const expectedOutput = 'key2,key1\n' + '"value2","value1"\n' + '"value4","value3"\n';
-      const actualOutput = await streamToString(generateCSVStream(data, ['key2', 'key1']));
+      const actualOutput = await streamToString(generateCSVStream(data, true, ['key2', 'key1']));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -191,7 +191,7 @@ describe('generateCSV', () => {
         '"!DDS-*&^%$#@!","dsi29-}*&^%$#@!"\n' +
         '"\'DDS-*&^%$#@![}[]po-=><<>","""\\`{}[]()<>.,;:|/?=!+-*/&@%#&&||==!=<=>= \t\n\r\0~^"\n';
 
-      const actualOutput = await streamToString(generateCSVStream(data));
+      const actualOutput = await streamToString(generateCSVStream(data, true));
       expect(actualOutput).toEqual(expectedOutput);
     });
   });
@@ -210,7 +210,7 @@ describe('generateCSV', () => {
         .join('\n')}\n`;
 
       // Call the function under test
-      const actualOutput = await streamToString(generateCSVStream(largeData));
+      const actualOutput = await streamToString(generateCSVStream(largeData, true));
 
       // Compare the actual output with the expected output
       expect(actualOutput).toEqual(expectedOutput);
@@ -245,7 +245,7 @@ describe('generateCSV', () => {
         '\n';
 
       // Call the function under test
-      const actualOutput = await streamToString(generateCSVStream(largeData));
+      const actualOutput = await streamToString(generateCSVStream(largeData, true));
       // Compare the actual output with the expected output
       expect(actualOutput).toEqual(expectedOutput);
     });

@@ -69,14 +69,14 @@ export function FieldLabelWithTooltip({ field, readableNames }: FieldLabelWithTo
 
   // If there is no helper data at all, just return the plain name
   if (!helper) {
-    return <span>{displayName}</span>;
+    return <Typography variant="body2">{displayName}</Typography>;
   }
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <span className="label-text" style={{ fontWeight: 500 }}>
+      <Typography variant="body2" fontWeight={200}>
         {displayName}
-      </span>
+      </Typography>
 
       <IconButton onClick={handleOpen} size="small" sx={{ p: 0.25 }}>
         <InfoOutlined color="secondary" sx={{ fontSize: '1rem' }} />

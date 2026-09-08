@@ -104,17 +104,14 @@ export const getGroupProFormaVersions = (groupId: number, token: string) =>
   callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 export const getProformaDetails = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}`, token);
+  callGET(`/api/ProFormas/${proFormaAbbrev}`, token);
 export const getProformaVersions = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/abbrev/${proFormaAbbrev}/versions`, token);
+  callGET(`/api/ProFormas/${proFormaAbbrev}/versions`, token);
 export const getProFormaDownload = async (abbrev: string, id: number | null, token: string) => {
   const response =
     id != null
-      ? await downloadFile(
-          `/api/ProFormas/download/proforma/${abbrev}?proformaVersionId=${id}`,
-          token,
-        )
-      : await downloadFile(`/api/ProFormas/download/proforma/${abbrev}`, token);
+      ? await downloadFile(`/api/ProFormas/${abbrev}/download?proformaVersionId=${id}`, token)
+      : await downloadFile(`/api/ProFormas/${abbrev}/download`, token);
   return response;
 };
 export const getProformaGroups = (proFormaAbbrev: string, token: string) =>
@@ -320,7 +317,7 @@ export const postProformaPrivilege = (
   privilegeBody: UserRoleRecordPrivilegePost,
   token: string,
   clientSessionId?: string,
-) => callPost(`/api/ProFormaV2/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
+) => callPost(`/api/ProForma/${recordGlobalId}/Privilege`, token, privilegeBody, clientSessionId);
 
 export const deleteProformaPrivilege = (
   recordGlobalId: string,
@@ -330,7 +327,7 @@ export const deleteProformaPrivilege = (
   clientSessionId?: string,
 ) =>
   callDELETE(
-    `/api/ProFormaV2/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
+    `/api/ProForma/${recordGlobalId}/Privilege?roleIdentifier=${roleIdentifier}&userIdentifier=${assigneeIdentifier}`,
     token,
     clientSessionId,
   );

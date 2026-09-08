@@ -2,6 +2,8 @@ import {
   AccountCircle,
   AccountTree,
   Dashboard,
+  DensityMedium,
+  DensitySmall,
   Description,
   Domain,
   Help,
@@ -31,6 +33,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
@@ -57,23 +60,31 @@ function MainMenuLayout() {
   const [drawer, setDrawer] = useState(true);
   const [help, setHelp] = useState(false);
   const [cli, setCli] = useState(false);
+  const { compact, toggleCompact } = useCompactMode();
+
   const settings = [
     {
       title: 'Documentation',
-      icon: <Description fontSize="small" />,
+      icon: <Description />,
       onClick: () => {
         window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
     },
     {
       title: 'CLI',
-      icon: <Terminal fontSize="small" />,
+      icon: <Terminal />,
       disabled: false,
       onClick: () => setCli((prev) => !prev),
     },
     {
+      title: compact ? 'Comfortable' : 'Compact',
+      icon: compact ? <DensityMedium /> : <DensitySmall />,
+      disabled: false,
+      onClick: toggleCompact,
+    },
+    {
       title: 'Support',
-      icon: <Help fontSize="small" />,
+      icon: <Help />,
       disabled: false,
       onClick: () => setHelp((prev) => !prev),
     },
@@ -97,6 +108,7 @@ function MainMenuLayout() {
     share: 'Share',
     documents: 'Documents',
     plots: 'Plots',
+    summaries: 'Summaries',
     map: 'Map',
     settings: 'Settings',
   };
@@ -116,6 +128,7 @@ function MainMenuLayout() {
     'samples',
     'trees',
     'plots',
+    'summaries',
     'members',
     'proformas',
     'datasets',
@@ -203,15 +216,21 @@ function MainMenuLayout() {
     setDrawer(!drawer);
     handlePadding(!drawer);
   };
+
+  const getIconMargin = (drawer: boolean): number | 'auto' => {
+    if (!drawer) return 'auto';
+    return compact ? 0.5 : 1;
+  };
+
   return (
     <>
       <Box sx={{ display: 'flex' }}>
         <Drawer
+          className="pageDrawer"
           open={drawer}
           variant="permanent"
           PaperProps={{
             sx: {
-              boxShadow: '0px 0px 8px var(--primary-grey-300)',
               maxWidth: 190,
               minWidth: 70,
             },
@@ -222,6 +241,7 @@ function MainMenuLayout() {
               display: 'flex',
               flexDirection: drawer ? 'row' : 'column',
               justifyContent: 'center',
+              flexGrow: compact ? 0 : undefined,
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
@@ -269,9 +289,6 @@ function MainMenuLayout() {
                     <MenuItem
                       key={page.title}
                       sx={{
-                        '&:hover': {
-                          backgroundColor: Theme.PrimaryGrey300,
-                        },
                         width: '100%',
                       }}
                     >
@@ -279,7 +296,7 @@ function MainMenuLayout() {
                         sx={{
                           color: 'primary.main',
                           minWidth: 0,
-                          mr: drawer ? 1 : 'auto',
+                          mr: getIconMargin(drawer),
                           justifyContent: 'center',
                         }}
                       >
@@ -324,12 +341,17 @@ function MainMenuLayout() {
           <Divider />
           <List>
             {settings.map((setting) => (
-              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
+              <MenuItem
+                sx={{ width: '100%', paddingTop: '10px', paddingBottom: '10px' }}
+                key={setting.title}
+                disabled={setting.disabled}
+                onClick={setting.onClick}
+              >
                 <ListItemIcon
                   sx={{
                     color: 'primary.main',
                     minWidth: 0,
-                    mr: drawer ? 1 : 'auto',
+                    mr: getIconMargin(drawer),
                     justifyContent: 'center',
                   }}
                 >

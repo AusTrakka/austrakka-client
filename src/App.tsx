@@ -11,6 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en-gb';
+import { AppContainer, CompactModeProvider } from './app/CompactModeContext';
 import muiTheme from './assets/themes/theme';
 import Users from './components/Admin/Users';
 import UserDashboard from './components/Dashboards/UserDashboard/UserDashboard';
@@ -45,68 +46,72 @@ function App() {
 
   return (
     <ThemeProvider theme={muiTheme}>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-        <UserProvider>
-          <AuthenticatedTemplate>
-            <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
-              <Routes>
-                {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
-                <Route element={<MainMenuLayout />}>
-                  <Route path="/" element={<UserDashboard />} />
-                  <Route path="platform/:tab?" element={<Platform />} />
-                  <Route path="organisations" element={<OrganisationsList />} />
-                  <Route
-                    path="organisations/:orgAbbrev/:tab?"
-                    element={<OrganisationOverviewWrapper />}
-                  />
-                  <Route path="upload" element={<Upload />} />
-                  <Route path="users" element={<Users />} />
-                  <Route path="upload/metadata" element={<UploadMetadata />} />
-                  <Route path="upload/sequences" element={<UploadSequences />} />
-                  <Route path="projects" element={<ProjectsList />} />
-                  {/* TODO may be able to remove and unify map and plot handling - desirable though? */}
-                  <Route path="projects/:projectAbbrev/plots/Map" element={<MapPage />} />
-                  <Route
-                    path="projects/:projectAbbrev/plots/:plotAbbrev"
-                    element={<PlotDetail />}
-                  />
-                  <Route
-                    path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId"
-                    element={<TreeDetail />}
-                  />
-                  <Route
-                    path="projects/:projectAbbrev/records/:seqId"
-                    element={<ProjectSampleDetail />}
-                  />
-                  <Route
-                    path="projects/:projectAbbrev/:tab?"
-                    element={<ProjectOverviewWrapper />}
-                  />
-                  <Route
-                    path="projects/:projectAbbrev/settings"
-                    element={<ProjectSettingsOverview />}
-                  />
-                  <Route path="records/:seqId" element={<OrgSampleDetail />} />
-                  <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
-                  <Route path="fields" element={<Fields />} />
-                  <Route path="users/:username" element={<UserDetailOverview />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/" />} />
-                {/* Document preview to sit outside main layout */}
-                <Route
-                  path="/projects/:abbreviation/documents/:documentStringId/preview"
-                  element={<DocumentPreview />}
-                />
-              </Routes>
-            </MsalAuthenticationTemplate>
-          </AuthenticatedTemplate>
-          <UnauthenticatedTemplate>
-            <Routes>
-              <Route path="*" element={<Login />} />
-            </Routes>
-          </UnauthenticatedTemplate>
-        </UserProvider>
-      </LocalizationProvider>
+      <CompactModeProvider>
+        <AppContainer>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
+            <UserProvider>
+              <AuthenticatedTemplate>
+                <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
+                  <Routes>
+                    {/* <Route path="dashboard" element={<Navigate to="projects" />} /> */}
+                    <Route element={<MainMenuLayout />}>
+                      <Route path="/" element={<UserDashboard />} />
+                      <Route path="platform/:tab?" element={<Platform />} />
+                      <Route path="organisations" element={<OrganisationsList />} />
+                      <Route
+                        path="organisations/:orgAbbrev/:tab?"
+                        element={<OrganisationOverviewWrapper />}
+                      />
+                      <Route path="upload" element={<Upload />} />
+                      <Route path="users" element={<Users />} />
+                      <Route path="upload/metadata" element={<UploadMetadata />} />
+                      <Route path="upload/sequences" element={<UploadSequences />} />
+                      <Route path="projects" element={<ProjectsList />} />
+                      {/* TODO may be able to remove and unify map and plot handling - desirable though? */}
+                      <Route path="projects/:projectAbbrev/plots/Map" element={<MapPage />} />
+                      <Route
+                        path="projects/:projectAbbrev/plots/:plotAbbrev"
+                        element={<PlotDetail />}
+                      />
+                      <Route
+                        path="projects/:projectAbbrev/trees/:treeId/versions/:treeVersionId"
+                        element={<TreeDetail />}
+                      />
+                      <Route
+                        path="projects/:projectAbbrev/records/:seqId"
+                        element={<ProjectSampleDetail />}
+                      />
+                      <Route
+                        path="projects/:projectAbbrev/:tab?"
+                        element={<ProjectOverviewWrapper />}
+                      />
+                      <Route
+                        path="projects/:projectAbbrev/settings"
+                        element={<ProjectSettingsOverview />}
+                      />
+                      <Route path="records/:seqId" element={<OrgSampleDetail />} />
+                      <Route path="proformas/:proformaAbbrev" element={<ProFormaDetail />} />
+                      <Route path="fields" element={<Fields />} />
+                      <Route path="users/:username" element={<UserDetailOverview />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/" />} />
+                    {/* Document preview to sit outside main layout */}
+                    <Route
+                      path="/projects/:abbreviation/documents/:documentStringId/preview"
+                      element={<DocumentPreview />}
+                    />
+                  </Routes>
+                </MsalAuthenticationTemplate>
+              </AuthenticatedTemplate>
+              <UnauthenticatedTemplate>
+                <Routes>
+                  <Route path="*" element={<Login />} />
+                </Routes>
+              </UnauthenticatedTemplate>
+            </UserProvider>
+          </LocalizationProvider>
+        </AppContainer>
+      </CompactModeProvider>
     </ThemeProvider>
   );
 }

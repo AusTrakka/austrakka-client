@@ -1,20 +1,14 @@
-.logocontainer {
-  flex-grow: 1;
-}
-
 .logo {
   height: 45px;
   margin: 8px;
   /* padding: 5px; */
 }
 
-.drawer {
-  z-index: 10;
+:global(.app-container.compact-mode) .logo {
+  height: 40px;
+  margin: 4px;
 }
-.drawerpaper {
-  width: 160px;
-  justify-content: center;
-}
+
 .pagelist {
   height: 100vh;
 }

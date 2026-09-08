@@ -1,0 +1,40 @@
+.app-container.compact-mode {
+  --density-spacing-null: 0px;
+  --density-spacing-xs: 2px;
+  --density-spacing-sm: 4px;
+  --density-spacing-md: 8px;
+  --density-spacing-lg: 12px;
+  --density-spacing-xl: 16px;
+
+  --density-font-size-body: 0.8125rem;
+  --density-font-size-caption: 0.6875rem;
+
+  --density-font-size-h6: 1rem;
+  --density-font-size-h5: 1rem;
+  --density-font-size-h4: 1.1rem;
+  --density-font-size-h3: 1.4rem;
+  --density-font-size-h2: 1.75rem;
+  --density-font-size-h1: 3rem;
+  --density-font-size-body1: 0.8125rem;
+  --density-font-size-body2: 0.75rem;
+  --density-font-size-subtitle1: 0.875rem;
+  --density-font-size-subtitle2: 0.8125rem;
+  --density-font-size-superscript: 0.6rem;
+
+  --density-line-height: 1.35;
+  --density-row-height: 32px;
+  --density-input-height: 28px;
+  --density-button-padding-y: 4px;
+  --density-button-padding-x: 10px;
+
+  --density-icon-size-md: 18px;
+  --density-icon-size-sm: 14px;
+  --density-icon-size-xs: 10px;
+
+  --density-border-radius: 4px;
+
+  --density-table-row-height: 28px;
+  --density-small-chip-height: 20px;
+
+  --density-tab-min-width: 50px;
+}

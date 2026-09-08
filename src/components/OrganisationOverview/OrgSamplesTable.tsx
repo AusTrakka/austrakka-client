@@ -29,7 +29,8 @@ import {
   type DataTableSelectAllChangeEvent,
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -43,20 +44,32 @@ import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules, combineClasses } from '../../styles/metadataFieldStyles';
 import type { Sample } from '../../types/sample.interface';
-import { useStateFromSearchParamsForFilterObject } from '../../utilities/stateUtils';
+import {
+  useStateFromSearchParamsForFilterObject,
+  useStateFromSearchParamsForPrimitive,
+} from '../../utilities/stateUtils';
 import {
   buildPrimeReactColumnDefinitions,
   type PrimeReactColumnDefinition,
 } from '../../utilities/tableUtils';
+// import { updateSearchParamInUrl } from '../../utilities/urlUtils';
 import ExportTableData from '../Common/ExportTableData';
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
+import DataSummaries from '../DataSummaries/DataSummaries';
+import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
 import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
 import OrgSampleUnshare from './OrgSampleShare/OrgSampleUnshare';
 import { ShareBlocked } from './OrgSampleShare/ShareBlocked';
+
+export enum TableType {
+  RawMetadata = 'RawMetadata',
+  SummaryMetadata = 'SummaryMetadata',
+}
 
 interface SamplesProps {
   canShare: boolean;
@@ -68,6 +81,7 @@ interface SamplesProps {
 function OrgSamplesTable(props: SamplesProps) {
   const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
   const { navigate } = useStableNavigate();
+  const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -77,7 +91,6 @@ function OrgSamplesTable(props: SamplesProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [allFieldsLoaded, setAllFieldsLoaded] = useState<boolean>(false);
   // Table row selection/display
@@ -94,6 +107,26 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openShareBlocked, setOpenShareBlocked] = useState(false);
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
+  const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
+
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
+
+  const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
+    'view',
+    TableType.RawMetadata,
+    true, // pushHistory
+  );
+
+  const setActiveTable = (table: TableType) => {
+    setActiveTableState(table);
+  };
+
+  useEffect(() => {
+    if (activeTable === TableType.SummaryMetadata) setShownSummaryMetadata(true);
+  }, [activeTable]);
 
   const metadata: OrgMetadataState | null = useAppSelector((state) =>
     selectOrgMetadata(state, orgAbbrev),
@@ -215,38 +248,48 @@ function OrgSamplesTable(props: SamplesProps) {
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Tooltip
-          title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
-          placement="top"
-        >
-          <IconButton
-            onClick={toggleShowSelectedRowsOnly}
-            color={showSelectedRowsOnly ? 'success' : 'default'}
-            disabled={selectedSamples.length === 0}
-            size="small"
-          >
-            {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
-          </IconButton>
-        </Tooltip>
+        <ViewSummariesToggle activeTable={activeTable} setActiveTable={setActiveTable} />
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Tooltip
+            title={showSelectedRowsOnly ? 'Show Unselected' : 'Hide Unselected'}
+            placement="top"
+          >
+            <IconButton
+              onClick={toggleShowSelectedRowsOnly}
+              color={showSelectedRowsOnly ? 'success' : 'default'}
+              disabled={selectedSamples.length === 0}
+              size="small"
+            >
+              {showSelectedRowsOnly ? <Visibility /> : <VisibilityOffOutlined />}
+            </IconButton>
+          </Tooltip>
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
-              <IconButton onClick={handleChangeOwnerClick}>
-                <SwapHorizontalCircle />
+              <IconButton onClick={handleChangeOwnerClick} size="small">
+                <SwapHorizontalCircle fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
           <>
             <Tooltip title="Share or unshare samples" placement="top" arrow>
-              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                  <IosShare sx={{ fontSize: 24 }} />
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="small">
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 20,
+                    height: 20,
+                  }}
+                >
+                  <IosShare sx={{ fontSize: 20 }} />
                   <Settings
                     sx={{
                       position: 'absolute',
-                      bottom: -5,
-                      right: -5,
-                      fontSize: 16,
+                      bottom: -4,
+                      right: -4,
+                      fontSize: 13,
                       backgroundColor: 'white',
                       borderRadius: '50%',
                     }}
@@ -275,14 +318,23 @@ function OrgSamplesTable(props: SamplesProps) {
                   }}
                 >
                   <ListItemIcon>
-                    <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                      <IosShare sx={{ fontSize: 24 }} />
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 20,
+                        height: 20,
+                      }}
+                    >
+                      <IosShare sx={{ fontSize: 20 }} />
                       <RemoveCircleOutline
                         sx={{
                           position: 'absolute',
-                          bottom: -5,
-                          right: -5,
-                          transform: 'scale(0.7)',
+                          bottom: -4,
+                          right: -4,
+                          fontSize: 13,
                           backgroundColor: 'white',
                           borderRadius: '50%',
                         }}
@@ -341,7 +393,7 @@ function OrgSamplesTable(props: SamplesProps) {
   );
 
   return (
-    <div className="datatable-container-org">
+    <div ref={tableAreaRef} className="datatable-container-org" style={{ maxHeight: tableHeight }}>
       <Backdrop
         sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
@@ -441,62 +493,98 @@ function OrgSamplesTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1, minHeight: 0 }}>
-        <DataTable
-          value={displayRows}
-          onValueChange={(e) => {
-            setFilteredSampleList(e);
-            setFormattedData(e);
-          }}
-          filters={dataTableFilters}
-          size="small"
-          columnResizeMode="expand"
-          resizableColumns
-          showGridlines
-          reorderableColumns
-          removableSort
-          header={header}
-          scrollable
-          scrollHeight="flex"
-          sortIcon={sortIcon}
-          paginator
-          onRowClick={rowClickHandler}
-          selectionMode="multiple"
-          rows={25}
-          loading={filtering || isSamplesLoading}
-          rowsPerPageOptions={[25, 50, 100, 500, 2000]}
-          paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-          currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
-          paginatorPosition="bottom"
-          paginatorRight
-          className="my-flexible-table"
-          selection={selectedSamples}
-          selectAll={selectAll}
-          onSelectAllChange={onSelectAllChange}
-          onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
-            setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: activeTable === TableType.RawMetadata ? 'flex' : 'none',
+            flexDirection: `column`,
+            flex: 1,
+            minHeight: 0,
           }}
         >
-          <Column selectionMode="multiple" style={{ width: '3em' }} />
-          {sampleTableColumns.map((col: any) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              body={col.body}
-              hidden={col.hidden ?? false}
-              sortable
-              resizeable
-              style={{ minWidth: '150px' }}
-              headerClassName="custom-title"
-              className="flexible-column"
-              bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+          <DataTable
+            value={displayRows}
+            onValueChange={(e) => {
+              setFilteredSampleList(e);
+              setFormattedData(e);
+            }}
+            filters={dataTableFilters}
+            size="small"
+            columnResizeMode="expand"
+            resizableColumns
+            showGridlines
+            reorderableColumns
+            removableSort
+            header={header}
+            scrollable
+            scrollHeight="flex"
+            sortIcon={sortIcon}
+            paginator
+            onRowClick={rowClickHandler}
+            selectionMode="multiple"
+            rows={25}
+            loading={filtering || isSamplesLoading}
+            rowsPerPageOptions={[25, 50, 100, 500, 2000]}
+            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+            currentPageReportTemplate=" Viewing: {first} to {last} of {totalRecords}"
+            paginatorPosition="bottom"
+            paginatorRight
+            className="my-flexible-table"
+            selection={selectedSamples}
+            selectAll={selectAll}
+            onSelectAllChange={onSelectAllChange}
+            onSelectionChange={(e: DataTableSelectionMultipleChangeEvent<Sample[]>) => {
+              setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
+            }}
+          >
+            <Column selectionMode="multiple" style={{ width: '3rem' }} />
+            {sampleTableColumns.map((col: any) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.body}
+                hidden={col.hidden ?? false}
+                sortable
+                resizeable
+                style={{ minWidth: '150px' }}
+                headerClassName="custom-title"
+                className="flexible-column"
+                bodyClassName={combineClasses('value-cells', columnStyleRules[col.field])}
+              />
+            ))}
+          </DataTable>
+        </div>
+        {shownSummaryMetadata && (
+          <div
+            style={{
+              display: activeTable === TableType.SummaryMetadata ? 'flex' : 'none',
+              flexDirection: `column`,
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            <DataSummaries
+              data={metadata}
+              metadata={filteredSampleList}
+              activeTable={activeTable}
+              setActiveTable={setActiveTable}
             />
-          ))}
-        </DataTable>
+          </div>
+        )}
       </Paper>
     </div>
   );
 }
 
-export default memo(OrgSamplesTable);
+export default OrgSamplesTable;
