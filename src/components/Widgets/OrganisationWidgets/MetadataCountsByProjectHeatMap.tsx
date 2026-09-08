@@ -23,6 +23,7 @@ import { WidgetType } from '../../../types/widget.props';
 import { hexToRgb, interpolateRgb } from '../../../utilities/colourUtils';
 import { getSharedProjectNames, stripOwnerSuffix } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
+import { insertEChartBreakOpportunities } from '../../../utilities/renderUtils';
 
 const SHARED_GROUPS_FIELD = 'Shared_groups';
 const UNKNOWN_VALUE_LABEL = 'unknown';
@@ -73,6 +74,7 @@ function buildSharedGroupsMatrix(data: Sample[], categoryField: string): MatrixR
   }
 
   const categories = [...allCategories].sort((a, b) => {
+    // Sort unknown last
     if (a === UNKNOWN_VALUE_LABEL) return 1;
     if (b === UNKNOWN_VALUE_LABEL) return -1;
     return a.localeCompare(b);
@@ -101,18 +103,7 @@ function buildSharedGroupsMatrix(data: Sample[], categoryField: string): MatrixR
   return { projects, categories, counts, totals };
 }
 
-function buildPlaceholderMatrix(): MatrixResult {
-  const projects = Array.from({ length: 6 }, (_, i) => `row-${i}`);
-  const categories = Array.from({ length: 10 }, (_, i) => `col-${i}`);
-
-  const counts = projects.map((_, r) =>
-    categories.map((_, c) => Math.abs(Math.sin(r * 3 + c * 7)) * 10),
-  );
-
-  return { projects, categories, counts, totals: [] };
-}
-
-function computeIdealZoom(container: HTMLDivElement, matrix: MatrixResult) {
+function estimateZoom(container: HTMLDivElement, matrix: MatrixResult) {
   const { projects, categories } = matrix;
   const maxCategoryCharLength = categories.reduce((max, cat) => Math.max(max, cat.length), 0);
   const MIN_CATEGORY_CELL_WIDTH = Math.min(85, Math.max(45, maxCategoryCharLength * 8));
@@ -183,7 +174,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
     const container = containerRef.current;
     if (!chart || !container || !matrix) return;
 
-    const { maxCategoryIdx, maxProjectIdx } = computeIdealZoom(container, matrix);
+    const { maxCategoryIdx, maxProjectIdx } = estimateZoom(container, matrix);
 
     chart.dispatchAction({
       type: 'dataZoom',
@@ -244,7 +235,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
       const container = containerRef.current;
       if (!container) return;
 
-      const { visibleCols, visibleRows } = computeIdealZoom(container, matrix);
+      const { visibleCols, visibleRows } = estimateZoom(container, matrix);
 
       const option = chart.getOption() as any;
       const xZoom = option?.dataZoom?.find((z: any) => z.id === 'x-slider');
@@ -284,7 +275,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
     const { projects, categories, counts } = matrix;
     const maxCount = counts.reduce((max, row) => Math.max(max, ...row), 0);
 
-    const { maxCategoryIdx, maxProjectIdx } = computeIdealZoom(container, matrix);
+    const { maxCategoryIdx, maxProjectIdx } = estimateZoom(container, matrix);
 
     // Parse gradient endpoints once instead of per-cell
     const startRgb = hexToRgb(Theme.SecondaryMain300);
@@ -300,7 +291,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
 
         return {
           value: [categoryIndex, projectIndex, value],
-          itemStyle: { color, borderColor: '#fff', borderWidth: 2 },
+          itemStyle: { color, borderColor: 'white', borderWidth: 2 },
           label: { show: false },
           project,
           category,
@@ -393,6 +384,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
           overflow: 'break',
           width: 85,
           fontStyle: isCategoryItalic ? 'italic' : 'normal',
+          formatter: insertEChartBreakOpportunities,
         },
         axisLine: { show: false },
         axisTick: {
@@ -411,6 +403,13 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
         inverse: true,
         splitArea: { show: false },
         axisLine: { show: false },
+        axisLabel: {
+          interval: 0,
+          hideOverlap: false,
+          overflow: 'break',
+          width: 100,
+          formatter: insertEChartBreakOpportunities,
+        },
         axisTick: {
           show: true,
           alignWithLabel: true,
@@ -446,78 +445,63 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
     });
   }, [matrix, isCategoryItalic, filteredData.length, handleCellClick]);
 
+  // Custom wheel handling for zooming
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !matrix) return;
 
-    let accumulatedX = 0;
-    let accumulatedY = 0;
-    const STEP_THRESHOLD = 50;
+    const accumulated = { x: 0, y: 0 };
+    const STEP_THRESHOLD = 50; // Manual debounce for smoother scrolling
 
-    const handleWheel = (e: WheelEvent) => {
+    const panAxis = (
+      axis: 'x' | 'y',
+      rawDelta: number,
+      total: number,
+      sliderId: string,
+      insideId: string,
+    ) => {
       const chart = chartRef.current;
       if (!chart) return;
 
+      accumulated[axis] += rawDelta;
+      if (Math.abs(accumulated[axis]) < STEP_THRESHOLD) return;
+
+      const step = Math.sign(accumulated[axis]);
+      accumulated[axis] = 0;
+
+      const option = chart.getOption() as any;
+      const zoom = option?.dataZoom?.find((z: any) => z.id === sliderId);
+      if (!zoom) return;
+
+      const windowSize = zoom.endValue - zoom.startValue;
+      const maxStart = total - 1 - windowSize;
+
+      const start = Math.max(0, Math.min(maxStart, zoom.startValue + step));
+      if (start === zoom.startValue) return false;
+
+      const end = start + windowSize;
+
+      chart.dispatchAction({
+        type: 'dataZoom',
+        batch: [
+          { dataZoomId: sliderId, startValue: start, endValue: end },
+          { dataZoomId: insideId, startValue: start, endValue: end },
+        ],
+      });
+
+      return true;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
       const rawDelta = e.shiftKey ? e.deltaX : e.deltaY;
       if (rawDelta === 0) return;
 
-      if (e.shiftKey) {
-        accumulatedX += rawDelta;
-        if (Math.abs(accumulatedX) < STEP_THRESHOLD) return;
+      // Enable horizontal scroll with shift key, and vertical without
+      const moved = e.shiftKey
+        ? panAxis('x', rawDelta, matrix.categories.length, 'x-slider', 'x-inside')
+        : panAxis('y', rawDelta, matrix.projects.length, 'y-slider', 'y-inside');
 
-        const step = Math.sign(accumulatedX);
-        accumulatedX = 0;
-
-        const option = chart.getOption() as any;
-        const xZoom = option?.dataZoom?.find((z: any) => z.id === 'x-slider');
-        if (!xZoom) return;
-
-        const total = matrix.categories.length;
-        const windowSize = xZoom.endValue - xZoom.startValue;
-        const maxStart = total - 1 - windowSize;
-
-        const start = Math.max(0, Math.min(maxStart, xZoom.startValue + step));
-        if (start === xZoom.startValue) return;
-
-        e.preventDefault();
-        const end = start + windowSize;
-
-        chart.dispatchAction({
-          type: 'dataZoom',
-          batch: [
-            { dataZoomId: 'x-slider', startValue: start, endValue: end },
-            { dataZoomId: 'x-inside', startValue: start, endValue: end },
-          ],
-        });
-      } else {
-        accumulatedY += rawDelta;
-        if (Math.abs(accumulatedY) < STEP_THRESHOLD) return;
-
-        const step = Math.sign(accumulatedY);
-        accumulatedY = 0;
-
-        const option = chart.getOption() as any;
-        const yZoom = option?.dataZoom?.find((z: any) => z.id === 'y-slider');
-        if (!yZoom) return;
-
-        const total = matrix.projects.length;
-        const windowSize = yZoom.endValue - yZoom.startValue;
-        const maxStart = total - 1 - windowSize;
-
-        const start = Math.max(0, Math.min(maxStart, yZoom.startValue + step));
-        if (start === yZoom.startValue) return;
-
-        e.preventDefault();
-        const end = start + windowSize;
-
-        chart.dispatchAction({
-          type: 'dataZoom',
-          batch: [
-            { dataZoomId: 'y-slider', startValue: start, endValue: end },
-            { dataZoomId: 'y-inside', startValue: start, endValue: end },
-          ],
-        });
-      }
+      if (moved) e.preventDefault();
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false, capture: true });
@@ -526,19 +510,18 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
     };
   }, [matrix]);
 
+  // Render placeholder heatmap when there is no data
   const renderPlaceholder = useCallback(() => {
     const chart = chartRef.current;
     if (!chart) return;
 
-    const placeholder = buildPlaceholderMatrix();
-    const { projects, categories, counts } = placeholder;
+    const projects = Array.from({ length: 4 }, (_, i) => `row-${i}`);
+    const categories = Array.from({ length: 6 }, (_, i) => `col-${i}`);
 
-    const maxCount = counts.reduce((max, row) => Math.max(max, ...row), 0);
-
-    const seriesData = projects.flatMap((_, r) =>
-      categories.map((_, c) => ({
-        value: [c, r, counts[r][c]],
-        itemStyle: { color: Theme.PrimaryGrey200, borderColor: '#fff', borderWidth: 2 },
+    const seriesData = projects.flatMap((_, row) =>
+      categories.map((_, cat) => ({
+        value: [cat, row, 1],
+        itemStyle: { color: Theme.PrimaryGrey200, borderColor: 'white', borderWidth: 2 },
       })),
     );
 
@@ -550,7 +533,7 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
         visualMap: {
           show: false,
           min: 0,
-          max: Math.max(1, maxCount),
+          max: 1,
           calculable: false,
         },
         dataZoom: [],
@@ -616,24 +599,25 @@ function MetadataCountsByProjectHeatMap(props: MetadataCountsByProjectProps) {
 
       {loaded && !errorMessage && !infoMessage && (
         <Box flex={1} minHeight={0} width="100%" sx={{ position: 'relative', overflow: 'hidden' }}>
-          <Tooltip title="Reset zoom" arrow>
-            <IconButton
-              size="small"
-              disabled={isEmpty}
-              onClick={handleResetZoom}
-              sx={{
-                position: 'absolute',
-                padding: 0.5,
-                bottom: 10,
-                right: 0,
-                zIndex: 1,
-                backgroundColor: 'transparent',
-                '&:hover': { backgroundColor: Theme.SecondaryMain50 },
-              }}
-            >
-              <RestartAltIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <Box display={isEmpty ? 'none' : 'block'}>
+            <Tooltip title="Reset zoom" arrow>
+              <IconButton
+                size="small"
+                onClick={handleResetZoom}
+                sx={{
+                  position: 'absolute',
+                  padding: 0.5,
+                  bottom: 10,
+                  right: 0,
+                  zIndex: 1,
+                  backgroundColor: 'transparent',
+                  '&:hover': { backgroundColor: Theme.SecondaryMain50 },
+                }}
+              >
+                <RestartAltIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
         </Box>
       )}

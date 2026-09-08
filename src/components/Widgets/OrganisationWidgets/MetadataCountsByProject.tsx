@@ -70,7 +70,7 @@ function buildSharedGroupsMatrix(
 
   const categoryColumns: PrimeReactColumnDefinition[] = [...allCategories]
     .sort((a, b) => {
-      // unknown always sorts last, like it did as a row before
+      // Sort unknown last
       if (a === UNKNOWN_VALUE_LABEL) return 1;
       if (b === UNKNOWN_VALUE_LABEL) return -1;
       return a.localeCompare(b);
@@ -90,7 +90,7 @@ function buildSharedGroupsMatrix(
       return row;
     })
     .sort((a, b) => {
-      // Unshared always sorts first, like it did as a column before
+      // Unshared sorts first
       const aIsUnshared = a.project === UNSHARED_ROW;
       const bIsUnshared = b.project === UNSHARED_ROW;
       if (aIsUnshared && !bIsUnshared) return -1;
@@ -170,7 +170,7 @@ function MetadataCountsByProject(props: MetadataCountsByProjectProps) {
     updateTabUrlWithSearch(navigate, '/samples', filters);
   };
 
-  // Combined project and metadata value drilldown (cell click)
+  // Combined project and metadata value drilldown
   const handleCellClick = (project: string, categoryValue: string) => {
     const unsharedFlag = project === UNSHARED_ROW;
     const unknownFlag = categoryValue === UNKNOWN_VALUE_LABEL;
