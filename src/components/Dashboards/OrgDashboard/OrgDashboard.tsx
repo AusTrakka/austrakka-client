@@ -278,7 +278,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                 >
                   <Grid container spacing={1} sx={{ width: '100%', flex: 1, minHeight: 0 }}>
                     <Grid
-                      size={{ xs: 12, sm: 12, md: 4 }}
+                      size={{ xs: 12, sm: 12, md: 6, lg: 4 }}
                       sx={{
                         height: { xs: 'auto', md: '100%' },
                         display: 'flex',
@@ -294,11 +294,12 @@ function OrgDashboard(props: OrgDashboardProps) {
                           title="Species summary"
                           filteredData={data?.metadata ?? []}
                           categoryLimit={10}
+                          categoryLimitOptions={[5, 10, 15, 20, 25]}
                         />
                       </Box>
                     </Grid>
                     <Grid
-                      size={{ xs: 12, sm: 12, md: 8 }}
+                      size={{ xs: 12, sm: 12, md: 6, lg: 8 }}
                       sx={{
                         height: { xs: '450px', md: '100%' },
                         display: 'flex',

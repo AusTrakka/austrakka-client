@@ -1,4 +1,5 @@
-import { Alert, AlertTitle, Box, Chip, Tooltip, Typography } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Alert, AlertTitle, Box, Chip, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -8,7 +9,7 @@ import {
 } from 'echarts';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import type { DataTableFilterMeta } from 'primereact/datatable';
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useStableNavigate } from '../../../../app/NavigationContext';
 import { selectOrgMetadata } from '../../../../app/orgMetadataSlice';
@@ -32,14 +33,13 @@ interface PieDataItem {
   otherCategories?: string[];
 }
 
-// TODO: If category limit is set add a visual indicator that only Top X are being shown
-
 interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
   title?: string | undefined;
   colorScheme?: string | undefined;
   colorMapping?: Record<string, string> | undefined;
   categoryLimit?: number | undefined; // Optional limit for number of top categories to show
+  categoryLimitOptions?: number[] | undefined; // For rendering user changeable limit
   hideOtherCategory?: boolean; // If category limit is set, choose to hide or show other category
 }
 
@@ -54,10 +54,14 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     colorScheme,
     colorMapping,
     categoryLimit,
+    categoryLimitOptions,
     hideOtherCategory,
   } = props;
 
   const { navigate } = useStableNavigate();
+  const [limitMenuAnchor, setLimitMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const [categoryLimitState, setCategoryLimitState] = useState(categoryLimit ?? undefined);
 
   const metadataSelector = useMemo(
     () => (state: RootState) => {
@@ -92,7 +96,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   }, [data, field, widgetType]);
 
   const { pieData, isTruncated } = useMemo((): { pieData: PieDataItem[]; isTruncated: boolean } => {
-    const result = topCategories(filteredData, field, categoryLimit, true);
+    const result = topCategories(filteredData, field, categoryLimitState, true);
 
     const items: PieDataItem[] = result.categories.map(({ category, count }) => ({
       name: category,
@@ -108,7 +112,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     }
 
     return { pieData: items, isTruncated: Boolean(result.other) };
-  }, [filteredData, field, categoryLimit, hideOtherCategory]);
+  }, [filteredData, field, categoryLimitState, hideOtherCategory]);
 
   const colorMap = useMemo(() => {
     if (errorMessage) return {};
@@ -249,6 +253,19 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
 
   const canRender = !errorMessage && !infoMessage && hasCompleteData(data?.loadingState);
 
+  const handleLimitChipClick = (event: React.MouseEvent<HTMLElement>) => {
+    setLimitMenuAnchor(event.currentTarget);
+  };
+
+  const handleLimitMenuClose = () => {
+    setLimitMenuAnchor(null);
+  };
+
+  const handleSelectLimit = (limit: number) => {
+    setCategoryLimitState(limit);
+    setLimitMenuAnchor(null);
+  };
+
   return (
     <>
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -270,17 +287,57 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
               />
             </Typography>
           )}
-          {canRender && categoryLimit && isTruncated && (
-            <Tooltip
-              title={`This chart is only showing the top ${categoryLimit} values of ${field}. The remaining values are ${hideOtherCategory ? 'hidden' : 'grouped into the "Other" category'}.`}
-              arrow
-            >
-              <Chip
-                label={`Top ${categoryLimit}`}
-                variant="outlined"
-                sx={{ ml: 'auto', borderColor: 'primary.main' }}
-              />
-            </Tooltip>
+          {canRender && categoryLimitState && (
+            <>
+              <Tooltip
+                title={
+                  isTruncated
+                    ? `This pie chart is only showing the top ${categoryLimitState} values of ${field}. The remaining values are ${hideOtherCategory ? 'hidden' : 'grouped into the "Other" category'}.`
+                    : `Showing all values of ${field} (Top ${categoryLimitState} is selected but there are no more values to show).`
+                }
+                arrow
+              >
+                <Chip
+                  label={
+                    categoryLimitOptions ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                        {`Top ${categoryLimitState}`}
+                        <ArrowDropDownIcon fontSize="small" sx={{ ml: -0.25 }} />
+                      </Box>
+                    ) : (
+                      `Top ${categoryLimitState}`
+                    )
+                  }
+                  variant="outlined"
+                  clickable={Boolean(categoryLimitOptions)}
+                  onClick={categoryLimitOptions ? handleLimitChipClick : undefined}
+                  sx={{ ml: 'auto', borderColor: 'primary.main' }}
+                />
+              </Tooltip>
+
+              {categoryLimitOptions && (
+                <Menu
+                  anchorEl={limitMenuAnchor}
+                  open={Boolean(limitMenuAnchor)}
+                  onClose={handleLimitMenuClose}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                  {categoryLimitOptions.map((option) => {
+                    const isSelected = option === categoryLimitState;
+                    return (
+                      <MenuItem
+                        key={option}
+                        selected={isSelected}
+                        onClick={() => handleSelectLimit(option)}
+                      >
+                        {`Top ${option}`}
+                      </MenuItem>
+                    );
+                  })}
+                </Menu>
+              )}
+            </>
           )}
         </Box>
 
