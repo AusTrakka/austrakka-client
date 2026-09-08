@@ -293,7 +293,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           field="Species_in_silico"
                           title="Species summary"
                           filteredData={data?.metadata ?? []}
-                          categoryLimit={5}
+                          categoryLimit={10}
                         />
                       </Box>
                     </Grid>
@@ -339,7 +339,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
                           title=""
-                          categoryField="Species_realistic"
+                          categoryField="Species_in_silico"
                           filteredData={data?.metadata ?? []}
                         />
                       ) : (
@@ -347,7 +347,7 @@ function OrgDashboard(props: OrgDashboardProps) {
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
                           title=""
-                          categoryField="Species_realistic"
+                          categoryField="Species_in_silico"
                           filteredData={data?.metadata ?? []}
                         />
                       )}
