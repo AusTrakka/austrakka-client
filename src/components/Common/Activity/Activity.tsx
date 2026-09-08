@@ -32,7 +32,6 @@ import React, {
 } from 'react';
 import { useCompactMode } from '../../../app/CompactModeContext';
 import RecordTypes from '../../../constants/record-type.enum';
-import { ResponseType } from '../../../constants/responseType';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
