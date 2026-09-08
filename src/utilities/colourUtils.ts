@@ -10,6 +10,7 @@ import type { Legend } from '../types/phylocanvas.interface';
 import { isNullOrEmpty } from './dataProcessingUtils';
 
 export const NULL_COLOUR = Theme.PrimaryGrey500;
+export const OTHER_COLOUR = Theme.SecondaryMain200;
 
 function getPaletteForRangeColorScheme(schemeName: string, values: string[]): Legend {
   const colorScale = rangeColorSchemes[schemeName];

@@ -19,7 +19,7 @@ import { Theme } from '../../../../assets/themes/theme';
 import MetadataLoadingState, { hasCompleteData } from '../../../../constants/metadataLoadingState';
 import { columnStyleRules, styleRules } from '../../../../styles/metadataFieldStyles';
 import { type GenericMetadataWidgetProps, WidgetType } from '../../../../types/widget.props';
-import { resolveColourMap } from '../../../../utilities/colourUtils';
+import { OTHER_COLOUR, resolveColourMap } from '../../../../utilities/colourUtils';
 import { topCategories } from '../../../../utilities/dataProcessingUtils';
 import { getWidgetExportName } from '../../../../utilities/fileUtils';
 import { updateTabUrlWithSearch } from '../../../../utilities/navigationUtils';
@@ -114,15 +114,15 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     return { pieData: items, isTruncated: Boolean(result.other) };
   }, [filteredData, field, categoryLimitState, hideOtherCategory]);
 
-  const colorMap = useMemo(() => {
+  const colorMap = useMemo((): Record<string, string> => {
     if (errorMessage) return {};
     const values = pieData.map((item) => item.name);
 
-    if (colorMapping) {
-      return resolveColourMap(values, 'tableau10', colorMapping);
-    }
+    const baseMap = colorMapping
+      ? resolveColourMap(values, 'tableau10', colorMapping)
+      : resolveColourMap(values, colorScheme ?? 'tableau10');
 
-    return resolveColourMap(values, colorScheme ?? 'tableau10');
+    return { ...baseMap, Other: OTHER_COLOUR };
   }, [pieData, colorScheme, colorMapping, errorMessage]);
 
   const handleClick = useCallback(
