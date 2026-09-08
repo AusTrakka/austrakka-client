@@ -55,7 +55,9 @@ function OrgDashboard(props: OrgDashboardProps) {
   const [totalSampleCount, setTotalSampleCount] = useState<number | null>(null);
   const [latestUploadDate, setLatestUploadDate] = useState<string[] | null>(null);
   const loaded = hasCompleteData(data?.loadingState);
-  const speciesByProjectView = useState<SpeciesByProjectView>(SpeciesByProjectView.Heatmap);
+  const [speciesByProjectView, setSpeciesByProjectView] = useState<SpeciesByProjectView>(
+    SpeciesByProjectView.Heatmap,
+  );
 
   useEffect(() => {
     if (!data?.fields) return;
@@ -319,23 +321,23 @@ function OrgDashboard(props: OrgDashboardProps) {
                         <Chip
                           label="Heatmap"
                           color={
-                            speciesByProjectView[0] === SpeciesByProjectView.Heatmap
+                            speciesByProjectView === SpeciesByProjectView.Heatmap
                               ? 'primary'
                               : 'default'
                           }
-                          onClick={() => speciesByProjectView[1](SpeciesByProjectView.Heatmap)}
+                          onClick={() => setSpeciesByProjectView(SpeciesByProjectView.Heatmap)}
                         />
                         <Chip
                           label="Raw counts"
                           color={
-                            speciesByProjectView[0] === SpeciesByProjectView.RawCounts
+                            speciesByProjectView === SpeciesByProjectView.RawCounts
                               ? 'primary'
                               : 'default'
                           }
-                          onClick={() => speciesByProjectView[1](SpeciesByProjectView.RawCounts)}
+                          onClick={() => setSpeciesByProjectView(SpeciesByProjectView.RawCounts)}
                         />
                       </Box>
-                      {speciesByProjectView[0] === SpeciesByProjectView.RawCounts ? (
+                      {speciesByProjectView === SpeciesByProjectView.RawCounts ? (
                         <MetadataCountsByProject
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}

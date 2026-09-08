@@ -40,7 +40,7 @@ function buildSharedGroupsMatrix(
   data: Sample[],
   categoryField: string,
 ): { rows: SharedGroupsMatrixRow[]; categoryColumns: PrimeReactColumnDefinition[] } {
-  const matrix = new Map<string, Map<string, number>>(); // project -> category -> count
+  const matrix = new Map<string, Map<string, number>>();
   const allCategories = new Set<string>();
 
   for (const sample of data) {
