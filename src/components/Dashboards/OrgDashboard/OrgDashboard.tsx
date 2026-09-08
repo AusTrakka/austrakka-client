@@ -31,7 +31,6 @@ import SimpleMetadataCount, {
   CountMetric,
 } from '../../Widgets/OrganisationWidgets/SimpleMetadataCount';
 import HasSeq from '../../Widgets/ProjectWidgets/EChartsWidgets/HasSeqEchart';
-import ChartInfoTooltip from '../../Widgets/ProjectWidgets/EChartsWidgets/InfoToolTip';
 import MetadataCounts from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataCountsEcharts';
 import MetadataValuePieChart from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataValuePieEchart';
 
@@ -287,28 +286,12 @@ function OrgDashboard(props: OrgDashboardProps) {
                         minHeight: 0,
                       }}
                     >
-                      <Box sx={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-start' }}>
-                        <Typography
-                          variant="h5"
-                          paddingBottom={2}
-                          color="primary"
-                          sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            paddingRight: 1,
-                          }}
-                        >
-                          Species summary
-                        </Typography>
-                        <ChartInfoTooltip text="Click legend items to show/hide · Hover for details" />
-                      </Box>
                       <Box sx={{ flex: 1, minHeight: 0 }}>
                         <MetadataValuePieChart
                           widgetType={WidgetType.Organisation}
                           identifier={orgAbbrev}
                           field="Species_in_silico"
-                          title=""
+                          title="Species summary"
                           filteredData={data?.metadata ?? []}
                           categoryLimit={5}
                         />

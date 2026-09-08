@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Chip, Tooltip, Typography } from '@mui/material';
 import {
   type ECElementEvent,
   type ECharts,
@@ -31,6 +31,8 @@ interface PieDataItem {
   value: number;
   otherCategories?: string[];
 }
+
+// TODO: If category limit is set add a visual indicator that only Top X are being shown
 
 interface MetadataValueEchartWidgetProps extends GenericMetadataWidgetProps {
   field: string;
@@ -89,7 +91,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
     return null;
   }, [data, field, widgetType]);
 
-  const pieData = useMemo((): PieDataItem[] => {
+  const { pieData, isTruncated } = useMemo((): { pieData: PieDataItem[]; isTruncated: boolean } => {
     const result = topCategories(filteredData, field, categoryLimit, true);
 
     const items: PieDataItem[] = result.categories.map(({ category, count }) => ({
@@ -105,7 +107,7 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
       });
     }
 
-    return items;
+    return { pieData: items, isTruncated: Boolean(result.other) };
   }, [filteredData, field, categoryLimit, hideOtherCategory]);
 
   const colorMap = useMemo(() => {
@@ -248,40 +250,56 @@ function MetadataValuePieEchart(props: MetadataValueEchartWidgetProps) {
   const canRender = !errorMessage && !infoMessage && hasCompleteData(data?.loadingState);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {title !== '' && (
-        <Typography
-          variant="h5"
-          paddingBottom={3}
-          color="primary"
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-          }}
-        >
-          {title ?? `${field} counts`}
-          <ChartInfoTooltip
-            text={`${field} values \n Click legend items to show/hide · Hover for details`}
-          />
-        </Typography>
-      )}
+    <>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+          {title !== '' && (
+            <Typography
+              variant="h5"
+              paddingBottom={2}
+              color="primary"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              {title ?? `${field} counts`}
+              <ChartInfoTooltip
+                text={`${field} values \n Click legend items to show/hide · Hover for details`}
+              />
+            </Typography>
+          )}
+          {canRender && categoryLimit && isTruncated && (
+            <Tooltip
+              title={`This chart is only showing the top ${categoryLimit} values of ${field}. The remaining values are ${hideOtherCategory ? 'hidden' : 'grouped into the "Other" category'}.`}
+              arrow
+            >
+              <Chip
+                label={`Top ${categoryLimit}`}
+                variant="outlined"
+                sx={{ ml: 'auto', borderColor: 'primary.main' }}
+              />
+            </Tooltip>
+          )}
+        </Box>
 
-      {errorMessage && (
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          {errorMessage}
-        </Alert>
-      )}
+        {errorMessage && (
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {errorMessage}
+          </Alert>
+        )}
 
-      {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
+        {infoMessage && <Alert severity="info">{infoMessage}</Alert>}
 
-      {!hasCompleteData(data?.loadingState) && !errorMessage && <div>Loading...</div>}
+        {!hasCompleteData(data?.loadingState) && !errorMessage && <div>Loading...</div>}
 
-      {canRender && (
-        <div ref={chartRef} style={{ width: '100%', height: '100%', minHeight: '280px' }} />
-      )}
-    </Box>
+        {canRender && (
+          <div ref={chartRef} style={{ width: '100%', height: '100%', minHeight: '280px' }} />
+        )}
+      </Box>
+    </>
   );
 }
 
