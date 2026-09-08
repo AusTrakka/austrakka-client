@@ -28,7 +28,7 @@ interface ParticipatingOrgsPropertiesSection {
 }
 
 const columns = [
-  { field: 'abbreviation', header: 'Abbrev' },
+  { field: 'abbreviation', header: 'Abbreviation' },
   { field: 'name', header: 'Name' },
 ];
 
@@ -36,7 +36,7 @@ export default function ParticipatingOrgsPropertiesSection({
   projectAbbrev,
   editable,
   onSaveResult,
-}: ParticipatingOrgsPropertiesSection): React.JSX.Element {
+}: ParticipatingOrgsPropertiesSection) {
   const { token } = useApi();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -227,7 +227,6 @@ export default function ParticipatingOrgsPropertiesSection({
                   setPendingOrgs(e.value as Organisation[]);
                 }
               }}
-              resizableColumns
               scrollable
               filters={filter}
               header={header}
@@ -236,7 +235,7 @@ export default function ParticipatingOrgsPropertiesSection({
               scrollHeight="flex"
               columnResizeMode="expand"
               removableSort
-              className="project-orgs-table"
+              className="my-flexible-table"
               sortIcon={sortIcon}
               style={{ flex: 1, minHeight: 0, padding: '0.5rem' }}
             >
@@ -252,7 +251,6 @@ export default function ParticipatingOrgsPropertiesSection({
                   key={col.field}
                   field={col.field}
                   header={col.header}
-                  resizeable
                   style={{ minWidth: '150px' }}
                   headerClassName="custom-title"
                   className="flexible-column"

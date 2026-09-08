@@ -39,7 +39,7 @@ function SearchInput({
   label = 'Search',
   value,
   onChange,
-  forceExpanded = true,
+  forceExpanded = false,
   iconSx,
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
