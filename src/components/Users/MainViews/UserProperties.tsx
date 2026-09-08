@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
-import type { User } from '../../../types/dtos';
+import type { Organisation, User } from '../../../types/dtos';
 import BasicRow from '../../Common/SettingsPage/BasicRow';
 import EditableRow from '../../Common/SettingsPage/EditableRow';
 import EditButtons from '../EditButtons';
@@ -28,6 +28,7 @@ interface UserPropertiesProps {
   onSaveLoading: boolean;
   errMsg: string | null;
   nonDisplayFields: string[];
+  organisations: Organisation[];
 }
 
 export default function UserProperties(props: UserPropertiesProps) {
@@ -45,6 +46,7 @@ export default function UserProperties(props: UserPropertiesProps) {
     readableNames,
     editedValues,
     setEditedValues,
+    organisations,
   } = props;
 
   const renderRow = (field: keyof User, value: any) => {
@@ -57,6 +59,7 @@ export default function UserProperties(props: UserPropertiesProps) {
           editedValues={editedValues}
           setEditedValues={setEditedValues}
           readableNames={readableNames}
+          organisations={organisations}
         />
       );
     }

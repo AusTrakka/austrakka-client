@@ -11,15 +11,25 @@ import LoadingState from '../../../constants/loadingState';
 import { ResponseType } from '../../../constants/responseType';
 import type {
   GroupedPrivilegesByRecordType,
+  Organisation,
   RecordRole,
   User,
   UserPatchV2,
 } from '../../../types/dtos';
 import type { ResponseObject } from '../../../types/responseObject.interface';
-import { disableUser, enableUser, getUser, patchUser } from '../../../utilities/resourceUtils';
+import {
+  disableUser,
+  enableUser,
+  getOrganisations,
+  getUser,
+  patchUser,
+  updateUserOrganisation,
+} from '../../../utilities/resourceUtils';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../../Common/SettingsPage/RowAndCell.css';
 import { Theme } from '../../../assets/themes/theme';
+import { hasPermissionV2ByRole } from '../../../permissions/accessTable';
+import { Roles } from '../../../permissions/roles';
 import type { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
 import {
@@ -44,6 +54,7 @@ function UserDetailOverview() {
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingPrivileges, setEditingPrivileges] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [organisations, setOrganisations] = useState<Organisation[] | null>(null);
   const [editedValues, setEditedValues] = useState<User | null>(null);
   const [onSaveLoading, setOnSaveLoading] = useState<boolean>(false);
   const [editedPrivileges, setEditedPrivileges] = useState<GroupedPrivilegesByRecordType[] | null>(
@@ -60,7 +71,7 @@ function UserDetailOverview() {
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
   const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
-  const { loading, superUser, scopes } = useAppSelector(selectUserState);
+  const submitter = useAppSelector(selectUserState);
 
   const readableNames: Record<string, string> = {
     objectId: 'Object ID',
@@ -100,12 +111,16 @@ function UserDetailOverview() {
   // Instead, the visibility and editability of the page should be checked separately
   // based on the required scopes.
 
-  const canFetch = checkFetchUserScope(scopes);
-  const canEdit = checkEditUserScopes(scopes);
+  const canFetch = checkFetchUserScope(submitter.scopes);
+  const canEdit = checkEditUserScopes(submitter.scopes);
+  const hasAdminRights: boolean = hasPermissionV2ByRole(submitter, Roles.Admin);
 
   // this should check if it has loaded then if its super user and
   // lastly if they have the scope for fetching the user
-  if (loading === LoadingState.SUCCESS && (superUser || canFetch)) {
+  if (
+    submitter.loading === LoadingState.SUCCESS &&
+    (submitter.superUser || canFetch || hasAdminRights)
+  ) {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
@@ -174,12 +189,32 @@ function UserDetailOverview() {
     if (
       tokenLoading !== LoadingState.IDLE &&
       tokenLoading !== LoadingState.LOADING &&
-      loading === LoadingState.SUCCESS &&
+      submitter.loading === LoadingState.SUCCESS &&
       username
     ) {
-      updateUser();
+      void updateUser();
     }
-  }, [loading, token, tokenLoading, username]);
+  }, [submitter, token, tokenLoading, username]);
+
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      const orgRes: ResponseObject = await getOrganisations(false, token);
+
+      if (orgRes.status === ResponseType.Success) {
+        setOrganisations(orgRes.data);
+      } else {
+        setErrMsg(orgRes.message);
+      }
+    };
+
+    if (
+      tokenLoading !== LoadingState.IDLE &&
+      tokenLoading !== LoadingState.LOADING &&
+      submitter.loading === LoadingState.SUCCESS
+    ) {
+      void fetchOrgs();
+    }
+  }, [submitter, token, tokenLoading]);
 
   async function fetchUserDto(): Promise<User> {
     const userFetchResponse: ResponseObject = await getUser(username!, token);
@@ -221,7 +256,7 @@ function UserDetailOverview() {
   };
 
   const editUserDetails = async () => {
-    const { orgGlobalId, isActive, ...otherValues } = editedValues as User;
+    const { orgAbbrev, isActive, ...otherValues } = editedValues as User;
 
     // Creating editedValuesDtoFormat object
     const editedValuesDtoFormat: UserPatchV2 = {
@@ -234,6 +269,8 @@ function UserDetailOverview() {
     };
 
     const editedActiveState = user?.isActive !== isActive;
+    const editedHomeOrg = user?.orgAbbrev !== orgAbbrev;
+
     try {
       const clientSessionId: string = crypto.randomUUID();
       // basic patch
@@ -243,6 +280,10 @@ function UserDetailOverview() {
         token,
         clientSessionId,
       );
+
+      if (userResponse.status !== ResponseType.Success) {
+        throw new Error('User could not be accessed/changed');
+      }
 
       // enable user
       if (editedActiveState) {
@@ -257,11 +298,23 @@ function UserDetailOverview() {
         }
       }
 
-      if (userResponse.status !== ResponseType.Success) {
-        throw new Error('User could not be accessed/changed');
+      if (editedHomeOrg) {
+        if (!user?.orgAbbrev) {
+          throw new Error('Organisation Abbreviation not found');
+        }
+        const userOrgUpdateResponse: ResponseObject = await updateUserOrganisation(
+          token,
+          user?.orgAbbrev,
+          orgAbbrev,
+          user?.username,
+        );
+        if (userOrgUpdateResponse.status !== ResponseType.Success) {
+          throw new Error(userOrgUpdateResponse.message);
+        }
       }
 
       const userDto = await fetchUserDto();
+
       setUser(userDto);
       setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
       setPatchMsg(userResponse.message);
@@ -311,7 +364,9 @@ function UserDetailOverview() {
 
   const hasChanges = !deepEqual(user, editedValues);
   const privHasChanges = pendingChanges.length > 0;
-  const canSeeEditButtons = () => loading === LoadingState.SUCCESS && (superUser || canEdit);
+  const canSeeEditButtons = () =>
+    submitter.loading === LoadingState.SUCCESS &&
+    (submitter.superUser || canEdit || hasAdminRights);
   return user ? (
     <div>
       <Stack direction="column" justifyContent="space-between">
@@ -394,6 +449,7 @@ function UserDetailOverview() {
             readableNames={readableNames}
             editedValues={editedValues}
             setEditedValues={setEditedValues}
+            organisations={organisations ?? []}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 12, lg: 12, xl: 7.5 }}>

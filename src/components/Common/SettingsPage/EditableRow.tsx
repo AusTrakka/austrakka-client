@@ -2,6 +2,9 @@ import { CancelOutlined, CheckCircleOutlined, ContentCopy } from '@mui/icons-mat
 import {
   IconButton,
   InputAdornment,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
   Switch,
   TableCell,
   TableRow,
@@ -11,7 +14,7 @@ import {
 } from '@mui/material';
 import type React from 'react';
 import { type Dispatch, type SetStateAction, useState } from 'react';
-import type { User } from '../../../types/dtos';
+import type { Organisation, User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import './RowAndCell.css';
@@ -26,10 +29,11 @@ interface EditableRowProps {
   editedValues: User | null;
   setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
+  organisations?: Organisation[];
 }
 
 function EditableRow(props: EditableRowProps) {
-  const { field, detailValue, editedValues, setEditedValues, readableNames } = props;
+  const { field, detailValue, editedValues, setEditedValues, readableNames, organisations } = props;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -38,14 +42,7 @@ function EditableRow(props: EditableRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
-  const nonEditableFields = [
-    'created',
-    'objectId',
-    'username',
-    'globalId',
-    'orgName',
-    'monthlyBytesUsed',
-  ];
+  const nonEditableFields = ['created', 'objectId', 'username', 'globalId', 'monthlyBytesUsed'];
 
   const immutableGuids = ['objectId', 'globalId'];
 
@@ -70,6 +67,22 @@ function EditableRow(props: EditableRowProps) {
     });
   };
 
+  const handleOrgChange = (e: SelectChangeEvent) => {
+    if (!organisations) {
+      throw new Error('Organisations cannot be null');
+    }
+    const selectedOrg = organisations?.find((o) => o.abbreviation === e.target.value);
+    setEditedValues((prevValues) => {
+      if (!prevValues) return null;
+      return {
+        ...prevValues,
+        orgName: selectedOrg!.name,
+        orgAbbrev: selectedOrg!.abbreviation,
+        orgGlobalId: selectedOrg!.globalId,
+      };
+    });
+  };
+
   const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     setEditedValues((prevValues) => {
@@ -80,6 +93,7 @@ function EditableRow(props: EditableRowProps) {
       };
     });
   };
+
   switch (typeof detailValue) {
     case 'string':
       if (nonEditableFields.includes(field)) {
@@ -114,7 +128,40 @@ function EditableRow(props: EditableRowProps) {
           </TableRow>
         );
       }
-
+      if (field === 'orgName') {
+        if (!organisations) {
+          throw new Error('Organisations cannot be null');
+        }
+        return (
+          <TableRow key={field}>
+            <TableCell className="key-cell-editing">
+              <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+            </TableCell>
+            <TableCell className="value-cell-editing">
+              <Select
+                fullWidth
+                size="small"
+                variant="filled"
+                hiddenLabel
+                value={editedValues?.orgAbbrev ?? ''}
+                onChange={(e) => handleOrgChange(e)}
+                displayEmpty
+                sx={{ '& .MuiSelect-select': { fontSize: '.9rem' } }}
+              >
+                {organisations.map((org) => (
+                  <MenuItem
+                    key={org.abbreviation}
+                    value={org.abbreviation}
+                    style={{ fontSize: '.9em' }}
+                  >
+                    {org.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </TableCell>
+          </TableRow>
+        );
+      }
       return (
         <TableRow key={field}>
           <TableCell className="key-cell-editing">
