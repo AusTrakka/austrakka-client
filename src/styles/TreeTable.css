@@ -4,7 +4,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Ensure column headers and icons are properly aligned */
@@ -14,31 +15,48 @@
   justify-content: space-between;
 }
 
-/* Ensure table layout is automatic */
-.tree-table-custom .p-treetable-table {
-  table-layout: auto;
+/* Force both header and body tables to share identical fixed sizing and layout, with a min-width to trigger horizontal scroll on zoom */
+.tree-table-custom .p-treetable-table,
+.tree-table-custom .p-treetable-scrollable-header-table,
+.tree-table-custom .p-treetable-scrollable-body-table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  min-width: 900px;
 }
 
-/* Container that hold sort icon */
-.custom-icon-container {
+/* Correctly target PrimeReact's combined wrapper element */
+.tree-table-custom .p-treetable-wrapper.p-treetable-scrollable-wrapper {
   display: flex;
-  align-items: center;
-  padding: 5px;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* Ensure table cells do not wrap */
-.p-treetable td,
-.p-treetable th {
-  white-space: nowrap;
+/* Ensure the scrollable view container fills the wrapper space */
+.tree-table-custom .p-treetable-scrollable-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
-.p-treetable-scrollable-header-table,
-.p-treetable-scrollable-body-table {
-  min-width: max-content;
-  table-layout: auto;
+/* Lock the header view so it never shrinks or scrolls away */
+.tree-table-custom .p-treetable-scrollable-header {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background-color: white;
 }
 
-/* Ensure the header row is sticky and above other elements */
+/* Constrain the body view to fill remaining space and handle both vertical and horizontal scrolling internally */
+.tree-table-custom .p-treetable-scrollable-body {
+  flex: 1 1 auto;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  min-height: 0;
+}
+
+/* Ensure the header row stays pinned at the top of its wrapper */
 .tree-table-custom thead th {
   position: sticky;
   top: 0;
@@ -46,17 +64,13 @@
   z-index: 10;
 }
 
-/* Decrease the default, wide padding of TreeTable cells */
+/* Force cells to stay strictly on one line, hiding overflow and showing ellipses */
 .tree-table-custom td,
 .tree-table-custom th {
-  padding: 6px 6px;
-  padding-right: 15px;
-}
-
-/* Ensure the last column takes up remaining space white space */
-.tree-table-custom td:last-child,
-.tree-table-custom th:last-child {
-  width: 100%;
+  padding: 6px 15px 6px 6px;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Colour the children rows slightly darker */

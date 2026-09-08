@@ -23,6 +23,7 @@ import {
 import Grid from '@mui/material/Grid2';
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
@@ -102,6 +103,7 @@ function UploadSequences() {
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
   const fileDragDropRef = useRef<any>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
+  const { compact } = useCompactMode();
   const { token, tokenLoading } = useApi();
 
   const updateRow = (newSur: SeqUploadRow) => {
@@ -424,6 +426,7 @@ function UploadSequences() {
               id="create-sample-records-toggle"
               control={
                 <Switch
+                  size={compact ? 'small' : 'medium'}
                   checked={selectedCreateSampleRecords}
                   onChange={(e) => setSelectedCreateSampleRecords(e.target.checked)}
                   disabled={uploadInProgress()}

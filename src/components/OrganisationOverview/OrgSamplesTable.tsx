@@ -30,6 +30,7 @@ import {
   type DataTableSelectionMultipleChangeEvent,
 } from 'primereact/datatable';
 import { useEffect, useMemo, useState } from 'react';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useStableNavigate } from '../../app/NavigationContext';
 import {
   type OrgMetadataState,
@@ -58,6 +59,7 @@ import DataSummaries from '../DataSummaries/DataSummaries';
 import ViewSummariesToggle from '../DataSummaries/ViewSummariesToggle';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import sortIcon from '../TableComponents/SortIcon';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 import { ChangeOwnershipBlocked } from './OrgSampleOwnership/ChangeOwnershipBlocked';
 import OrgSampleOwnership from './OrgSampleOwnership/OrgSampleOwnership';
 import OrgSampleShare from './OrgSampleShare/OrgSampleShare';
@@ -79,6 +81,7 @@ interface SamplesProps {
 function OrgSamplesTable(props: SamplesProps) {
   const { canShare, canChangeOwnership, orgAbbrev, orgName } = props;
   const { navigate } = useStableNavigate();
+  const { compact } = useCompactMode();
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [filteredSampleList, setFilteredSampleList] = useState<Sample[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -105,6 +108,11 @@ function OrgSamplesTable(props: SamplesProps) {
   const [openOwnershipDialog, setOpenOwnershipDialog] = useState<boolean>(false);
   const [openChangeOwnerBlocked, setOpenChangeOwnerBlocked] = useState(false);
   const [shownSummaryMetadata, setShownSummaryMetadata] = useState(false);
+
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
 
   const [activeTable, setActiveTableState] = useStateFromSearchParamsForPrimitive<TableType>(
     'view',
@@ -257,22 +265,31 @@ function OrgSamplesTable(props: SamplesProps) {
           </Tooltip>
           {true && (
             <Tooltip title="Transfer samples" placement="top" arrow>
-              <IconButton onClick={handleChangeOwnerClick}>
-                <SwapHorizontalCircle />
+              <IconButton onClick={handleChangeOwnerClick} size="small">
+                <SwapHorizontalCircle fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
           <>
             <Tooltip title="Share or unshare samples" placement="top" arrow>
-              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                  <IosShare sx={{ fontSize: 24 }} />
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="small">
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 20,
+                    height: 20,
+                  }}
+                >
+                  <IosShare sx={{ fontSize: 20 }} />
                   <Settings
                     sx={{
                       position: 'absolute',
-                      bottom: -5,
-                      right: -5,
-                      fontSize: 16,
+                      bottom: -4,
+                      right: -4,
+                      fontSize: 13,
                       backgroundColor: 'white',
                       borderRadius: '50%',
                     }}
@@ -301,14 +318,23 @@ function OrgSamplesTable(props: SamplesProps) {
                   }}
                 >
                   <ListItemIcon>
-                    <Box sx={{ position: 'relative', width: 24, height: 24 }}>
-                      <IosShare sx={{ fontSize: 24 }} />
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 20,
+                        height: 20,
+                      }}
+                    >
+                      <IosShare sx={{ fontSize: 20 }} />
                       <RemoveCircleOutline
                         sx={{
                           position: 'absolute',
-                          bottom: -5,
-                          right: -5,
-                          transform: 'scale(0.7)',
+                          bottom: -4,
+                          right: -4,
+                          fontSize: 13,
                           backgroundColor: 'white',
                           borderRadius: '50%',
                         }}
@@ -367,7 +393,7 @@ function OrgSamplesTable(props: SamplesProps) {
   );
 
   return (
-    <div className="datatable-container-org">
+    <div ref={tableAreaRef} className="datatable-container-org" style={{ maxHeight: tableHeight }}>
       <Backdrop
         sx={{ color: Theme.Background, zIndex: 2000 }}
         open={exportCSVStatus === LoadingState.LOADING}
@@ -467,8 +493,25 @@ function OrgSamplesTable(props: SamplesProps) {
         setLoadingState={setFiltering}
         dataLoaded={allFieldsLoaded}
       />
-      <Paper elevation={2} sx={{ marginBottom: 1, flex: 1 }}>
-        <div style={{ display: activeTable === TableType.RawMetadata ? 'block' : 'none' }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: activeTable === TableType.RawMetadata ? 'flex' : 'none',
+            flexDirection: `column`,
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <DataTable
             value={displayRows}
             onValueChange={(e) => {
@@ -504,7 +547,7 @@ function OrgSamplesTable(props: SamplesProps) {
               setSelectedIds(e.value.map((sample: any) => sample.Seq_ID));
             }}
           >
-            <Column selectionMode="multiple" style={{ width: '3em' }} />
+            <Column selectionMode="multiple" style={{ width: '3rem' }} />
             {sampleTableColumns.map((col: any) => (
               <Column
                 key={col.field}
@@ -523,7 +566,14 @@ function OrgSamplesTable(props: SamplesProps) {
           </DataTable>
         </div>
         {shownSummaryMetadata && (
-          <div style={{ display: activeTable === TableType.SummaryMetadata ? 'block' : 'none' }}>
+          <div
+            style={{
+              display: activeTable === TableType.SummaryMetadata ? 'flex' : 'none',
+              flexDirection: `column`,
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
             <DataSummaries
               data={metadata}
               metadata={filteredSampleList}

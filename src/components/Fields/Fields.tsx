@@ -10,6 +10,7 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
@@ -22,6 +23,7 @@ import { getFieldsV2, patchFieldV2 } from '../../utilities/resourceUtils';
 import ColumnVisibilityMenu from '../TableComponents/ColumnVisibilityMenu';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 import AllowedValues from './AllowedValues';
 import { NumericEditable, TextEditable } from './EditableFields';
 import { FIELD_TYPE_COLOURS, type FieldType } from './fieldsMeta';
@@ -141,6 +143,11 @@ function Fields() {
   const [columns, setColumns] = useState<any[]>(
     interactionPermission ? interactiveColumns : nonInteractiveColumns,
   );
+  const { compact } = useCompactMode();
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
   const { token, tokenLoading } = useApi();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
@@ -273,11 +280,29 @@ function Fields() {
   };
 
   return (
-    <>
+    <div
+      ref={tableAreaRef}
+      style={{
+        maxHeight: tableHeight,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <Typography className="pageTitle">Fields</Typography>
       {error && <Alert severity="error">{error}</Alert>}
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <DataTable
+          className="my-flexible-table"
           value={fields}
           size="small"
           columnResizeMode="expand"
@@ -287,7 +312,7 @@ function Fields() {
           removableSort
           header={header}
           scrollable
-          scrollHeight="calc(100vh - 300px)"
+          scrollHeight="flex"
           sortIcon={sortIcon}
           paginator
           rows={25}
@@ -321,7 +346,7 @@ function Fields() {
           ))}
         </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
 

@@ -660,7 +660,7 @@ function DataFilters(props: DataFiltersProps) {
   );
 
   return (
-    <div style={{ paddingTop: 5 }}>
+    <div style={{ paddingTop: 5, margin: 0.5 }}>
       {!dataLoaded ? (
         <LinearProgress
           style={{ margin: 0, padding: 0, height: 5, borderRadius: 3 }}
@@ -688,7 +688,9 @@ function DataFilters(props: DataFiltersProps) {
                   </Stack>
                 </Grid>
                 <Grid item sx={{ paddingLeft: 8 }}>
-                  {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
+                  <Typography variant="body2" color="textSecondary">
+                    {`Showing ${rowCount} of ${totalRows} ${contentType ?? 'samples'}.`}
+                  </Typography>
                 </Grid>
               </Grid>
             </Button>

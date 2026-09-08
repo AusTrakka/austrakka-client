@@ -1,0 +1,121 @@
+/* --- DataTable --- */
+
+.app-container.compact-mode .p-datatable .p-datatable-thead > tr,
+.app-container.compact-mode .p-datatable .p-datatable-tbody > tr {
+  height: var(--density-table-row-height) !important;
+}
+
+.app-container.compact-mode .p-datatable .p-datatable-thead > tr > th,
+.app-container.compact-mode .p-datatable .p-datatable-tbody > tr > td {
+  padding: var(--density-spacing-null) var(--density-spacing-sm);
+  font-size: var(--density-font-size-body);
+}
+
+.app-container.compact-mode .p-datatable-header {
+  padding: var(--density-spacing-xs) var(--density-spacing-md);
+}
+
+.app-container.compact-mode .p-datatable .p-datatable-tbody > tr {
+  height: var(--density-table-row-height);
+}
+
+.app-container.compact-mode .p-paginator {
+  padding: var(--density-spacing-xs) var(--density-spacing-sm);
+}
+
+.app-container.compact-mode .p-paginator .p-paginator-element {
+  width: var(--density-input-height);
+  height: var(--density-input-height);
+  min-width: var(--density-input-height);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-container.compact-mode .p-paginator-current {
+  font-size: var(--density-font-size-body);
+  height: var(--density-row-height);
+  line-height: var(--density-row-height);
+}
+
+/* --- TreeTable --- */
+
+.app-container.compact-mode .p-treetable .p-treetable-thead > tr,
+.app-container.compact-mode .p-treetable .p-treetable-tbody > tr {
+  height: var(--density-table-row-height) !important;
+}
+
+.app-container.compact-mode .p-treetable .p-treetable-thead > tr > th,
+.app-container.compact-mode .p-treetable .p-treetable-tbody > tr > td {
+  padding: var(--density-spacing-null) var(--density-spacing-sm);
+  font-size: var(--density-font-size-body);
+}
+
+.app-container.compact-mode .p-treetable-header {
+  padding: var(--density-spacing-xs) var(--density-spacing-md);
+}
+
+/* Tighten the node toggler button/icon inside tree table cells */
+.app-container.compact-mode .p-treetable .p-treetable-toggler {
+  width: var(--density-icon-size-md);
+  height: var(--density-icon-size-md);
+  margin-right: var(--density-spacing-xs);
+}
+
+.app-container.compact-mode .p-treetable .p-treetable-toggler svg {
+  width: var(--density-icon-size-xs);
+  height: var(--density-icon-size-xs);
+}
+
+/* --- Inputs --- */
+.app-container.compact-mode .p-inputtext,
+.app-container.compact-mode .p-inputnumber-input,
+.app-container.compact-mode .p-password input {
+  padding: var(--density-spacing-sm) var(--density-spacing-sm);
+  font-size: var(--density-font-size-body);
+  height: var(--density-input-height);
+}
+
+.app-container.compact-mode .p-dropdown,
+.app-container.compact-mode .p-multiselect {
+  height: var(--density-row-height);
+}
+
+.app-container.compact-mode .p-dropdown .p-dropdown-label,
+.app-container.compact-mode .p-multiselect .p-multiselect-label {
+  padding: var(--density-spacing-sm) var(--density-spacing-md);
+  font-size: var(--density-font-size-body);
+}
+
+.app-container.compact-mode .p-dropdown-trigger-icon,
+.app-container.compact-mode .p-multiselect .p-multiselect-trigger .p-multiselect-trigger-icon {
+  font-size: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+  width: var(--density-icon-size-sm);
+}
+
+/* --- Buttons --- */
+.app-container.compact-mode .p-button {
+  padding: var(--density-button-padding-y) var(--density-button-padding-x);
+  font-size: var(--density-font-size-body);
+}
+
+.app-container.compact-mode .p-button.p-button-icon-only {
+  width: var(--density-input-height);
+  height: var(--density-input-height);
+  padding: 0;
+}
+
+/* --- Checkbox --- */
+
+.app-container.compact-mode .p-checkbox .p-checkbox-box {
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}
+
+.app-container.compact-mode .p-checkbox .p-checkbox-box .p-checkbox-icon {
+  font-size: var(--density-icon-size-sm);
+  width: var(--density-icon-size-sm);
+  height: var(--density-icon-size-sm);
+}

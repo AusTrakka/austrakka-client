@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
 import { TableChart, Tune } from '@mui/icons-material';
+import './TreeDetail.css';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -439,57 +440,62 @@ function TreeDetail() {
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px', margin: 0.5 }}>
-          <Grid item sx={{ marginBottom: 1 }}>
+          <Grid item sx={{ marginBottom: 1, marginTop: 1 }}>
             <Search options={ids} selectedIds={selectedIds} onChange={handleSearch} />
           </Grid>
-          <Accordion expanded={expanded === 'treeNav'} onChange={handleAccordionChange('treeNav')}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Tree & Navigation</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TreeNavigation
-                state={state}
-                rootId={rootId}
-                currentVersion={tree.version}
-                versions={versions}
-                selectedIds={selectedIds}
-                onChange={handleStateChange}
-                onJumpToSubtree={handleJumpToSubtree}
-                phylocanvasRef={treeRef}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion
-            expanded={expanded === 'nodesLabels'}
-            onChange={handleAccordionChange('nodesLabels')}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Nodes & Labels</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <NodeAndLabelControls
-                columns={allColumns}
-                visualColumns={visualisableColumns}
-                state={state}
-                onChange={handleStateChange}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion
-            expanded={expanded === 'metadataBlocks'}
-            onChange={handleAccordionChange('metadataBlocks')}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Metadata blocks</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <MetadataControls
-                columns={visualisableColumns}
-                state={state}
-                onChange={handleStateChange}
-              />
-            </AccordionDetails>
-          </Accordion>
+          <div className="tree-controls-divider">
+            <Accordion
+              expanded={expanded === 'treeNav'}
+              onChange={handleAccordionChange('treeNav')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Tree & Navigation</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TreeNavigation
+                  state={state}
+                  rootId={rootId}
+                  currentVersion={tree.version}
+                  versions={versions}
+                  selectedIds={selectedIds}
+                  onChange={handleStateChange}
+                  onJumpToSubtree={handleJumpToSubtree}
+                  phylocanvasRef={treeRef}
+                />
+              </AccordionDetails>
+            </Accordion>
+            <Accordion
+              expanded={expanded === 'nodesLabels'}
+              onChange={handleAccordionChange('nodesLabels')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Nodes & Labels</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <NodeAndLabelControls
+                  columns={allColumns}
+                  visualColumns={visualisableColumns}
+                  state={state}
+                  onChange={handleStateChange}
+                />
+              </AccordionDetails>
+            </Accordion>
+            <Accordion
+              expanded={expanded === 'metadataBlocks'}
+              onChange={handleAccordionChange('metadataBlocks')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Metadata blocks</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <MetadataControls
+                  columns={visualisableColumns}
+                  state={state}
+                  onChange={handleStateChange}
+                />
+              </AccordionDetails>
+            </Accordion>
+          </div>
         </Grid>
       );
     }

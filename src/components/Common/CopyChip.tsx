@@ -20,7 +20,10 @@ export default function CopyChip({ value }: { value: string }) {
           clickable
           onClick={handleCopy}
           variant="outlined"
-          sx={{ marginRight: '0.1rem', marginTop: '0.1rem' }}
+          sx={{
+            marginRight: '0.1rem',
+            marginTop: '0.1rem',
+          }}
         />
       </Tooltip>
     </Box>

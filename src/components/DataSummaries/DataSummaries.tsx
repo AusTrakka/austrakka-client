@@ -249,7 +249,7 @@ function DataSummaries(props: DataSummariesProps) {
   }
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" minHeight={0} flex={1} overflow="hidden">
       <CustomDrawer drawerOpen={configDrawerOpen} setDrawerOpen={setConfigDrawerOpen}>
         <TableConfig
           rows={rows}

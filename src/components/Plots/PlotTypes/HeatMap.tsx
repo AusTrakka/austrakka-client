@@ -205,7 +205,7 @@ function HeatMap(props: PlotTypeProps) {
       <ColorSchemeSelector
         selectedScheme={colourScheme}
         onColourChange={(newColor) => setColourScheme(newColor)}
-        variant="standard"
+        variant="outlined"
         size="small"
       />
     </Box>

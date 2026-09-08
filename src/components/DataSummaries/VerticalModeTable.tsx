@@ -34,8 +34,7 @@ function VerticalModeTable({
 }: VerticalModeTableProps) {
   const tableRef = useRef<DataTable<Record<string, unknown>[]>>(null);
 
-  // Key needs to be updated when any configuration or underlying data changes (including filtering, stale data refresh, etc.)
-  // Otherwise DataTable does not handle all rendering changes correctly (row spans not updating correctly)
+  // Key needs to be updated when any configuration or underlying data changes
   const tableKey = useMemo(() => `vertical_${JSON.stringify(pivotConfig)}`, [pivotConfig]);
 
   return (
@@ -46,10 +45,40 @@ function VerticalModeTable({
       size="small"
       className="my-flexible-table"
       scrollable
+      showGridlines
+      scrollHeight="flex"
       rowGroupMode="rowspan"
       groupRowsBy={pivotConfig.groupByFields.length > 0 ? pivotConfig.groupByFields[0] : 'field'}
       emptyMessage={emptyStateMessage}
       header={headerControls}
+      headerColumnGroup={
+        <ColumnGroup>
+          <Row>
+            <Column header="Field" className="flexible-column" bodyClassName="value-cells" />
+            {pivotConfig.groupByFields.map((col) => (
+              <Column
+                key={col}
+                header={fieldLabelByKey[col] ?? col}
+                className="flexible-column"
+                bodyClassName="value-cells"
+              />
+            ))}
+            <Column
+              header="Total records"
+              className="flexible-column"
+              bodyClassName="value-cells"
+            />
+            {verticalAggregationColumns.map((agg) => (
+              <Column
+                key={agg}
+                header={AGG_TYPE_LABELS[agg]}
+                className="flexible-column"
+                bodyClassName="value-cells"
+              />
+            ))}
+          </Row>
+        </ColumnGroup>
+      }
       footerColumnGroup={
         pivotConfig.showTotalCountFooter ? (
           <ColumnGroup>
@@ -80,24 +109,12 @@ function VerticalModeTable({
         ) : null
       }
     >
-      <Column
-        field="field"
-        header="Field"
-        className="flexible-column"
-        bodyClassName="value-cells"
-      />
+      <Column field="field" className="flexible-column" bodyClassName="value-cells" />
       {pivotConfig.groupByFields.map((col) => (
-        <Column
-          key={col}
-          field={col}
-          header={fieldLabelByKey[col] ?? col}
-          className="flexible-column"
-          bodyClassName="value-cells"
-        />
+        <Column key={col} field={col} className="flexible-column" bodyClassName="value-cells" />
       ))}
       <Column
         field={TOTAL_FIELD}
-        header="Total records"
         className="flexible-column"
         bodyClassName="value-cells"
         body={(rowData: Record<string, unknown>) => (
@@ -112,7 +129,6 @@ function VerticalModeTable({
         <Column
           key={agg}
           field={agg}
-          header={AGG_TYPE_LABELS[agg]}
           className="flexible-column"
           bodyClassName="value-cells"
           body={(rowData: Record<string, unknown>) => (

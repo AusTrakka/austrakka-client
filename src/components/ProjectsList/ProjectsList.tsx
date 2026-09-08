@@ -12,6 +12,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
+import { useCompactMode } from '../../app/CompactModeContext';
 import LoadingState from '../../constants/loadingState';
 import ProjectStatus from '../../constants/projectStatus';
 import { ResponseType } from '../../constants/responseType';
@@ -22,6 +23,7 @@ import { getProjectList } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import LabelFilterSelect from '../TableComponents/TypeFilterSelect';
+import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
 import styles from './ProjectsList.module.css';
 
 const statusSortOrder: Record<ProjectStatus, number> = {
@@ -60,6 +62,11 @@ function ProjectsList() {
   const [allLabels, setAllLabels] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const navigate = useNavigate();
+  const compact = useCompactMode();
+  const { ref: tableAreaRef, tableHeight } = useViewportClampedHeight<HTMLDivElement>({
+    bottomPadding: compact ? 6 : undefined,
+    recalcDeps: [compact],
+  });
   const { token, tokenLoading } = useApi();
   const [filters, setFilters] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -190,9 +197,26 @@ function ProjectsList() {
   return isError ? (
     <Alert severity="error">{errorMessage}</Alert>
   ) : (
-    <>
+    <div
+      ref={tableAreaRef}
+      style={{
+        maxHeight: tableHeight,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Typography className="pageTitle">Projects</Typography>
-      <Paper elevation={2} sx={{ marginBottom: 10 }}>
+      <Paper
+        elevation={2}
+        sx={{
+          marginBottom: 1,
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <DataTable
           value={projectsList}
           className="my-flexible-table"
@@ -207,11 +231,11 @@ function ProjectsList() {
           size="small"
           removableSort
           scrollable
+          scrollHeight="flex"
           rows={25}
           rowClassName={(rowData) =>
             (rowData.status as ProjectStatus) === ProjectStatus.CLOSED ? styles['closed-row'] : ''
           }
-          scrollHeight="calc(100vh - 300px)"
           onRowClick={rowClickHandler}
           selectionMode="single"
           paginator
@@ -237,7 +261,7 @@ function ProjectsList() {
           ))}
         </DataTable>
       </Paper>
-    </>
+    </div>
   );
 }
 export default ProjectsList;

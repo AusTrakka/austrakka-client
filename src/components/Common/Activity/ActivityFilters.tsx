@@ -8,6 +8,7 @@ import {
   Stack,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -152,6 +153,7 @@ function ActivityFilters(props: ActivityFiltersProps) {
   return (
     <Box
       sx={{
+        margin: 0.5,
         boxShadow: 1,
         borderRadius: 1,
         padding: 1,
@@ -165,7 +167,7 @@ function ActivityFilters(props: ActivityFiltersProps) {
           <Grid container width="100%" justifyContent="space-between">
             <Stack direction="row" alignItems="center" gap={1}>
               {isOpen ? <IndeterminateCheckBox /> : <AddBox />}
-              <Box sx={{ fontWeight: 'bold' }}>Filters</Box>
+              <Typography sx={{ fontWeight: 'bold' }}>Filters</Typography>
             </Stack>
           </Grid>
         </Button>

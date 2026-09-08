@@ -1,5 +1,5 @@
 import { Cancel, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
-import { IconButton, Switch, TableCell, TableRow, Tooltip } from '@mui/material';
+import { IconButton, Switch, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import type { User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
@@ -40,7 +40,9 @@ function BasicRow(props: BasicRowProps) {
             case immutableGuids.includes(field):
               return (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '8px' }}>{value}</span>
+                  <Typography variant="body2" style={{ marginRight: '8px' }}>
+                    {value}
+                  </Typography>
                   <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'} placement="top">
                     <IconButton size="small" onClick={() => handleCopy(value)}>
                       <ContentCopy style={{ fontSize: '1rem' }} />
@@ -65,7 +67,9 @@ function BasicRow(props: BasicRowProps) {
                 </div>
               );
             case typeof value === 'number':
-              return `${formatBytes(value, true)} per month`;
+              return (
+                <Typography variant="body2">{`${formatBytes(value, true)} per month`}</Typography>
+              );
             default:
               return value;
           }
