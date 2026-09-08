@@ -14,7 +14,6 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { Type } from 'vega-lite/types_unstable/type.js';
 import { useApi } from '../../app/ApiContext';
 import { Theme } from '../../assets/themes/theme';
 import { ResponseType } from '../../constants/responseType';
