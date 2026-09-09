@@ -54,21 +54,7 @@ export default function ParticipatingOrgsSection({
 
   const [projectOrgs, setProjectOrgs] = useState<Organisation[]>([]);
   const [pendingOrgs, setPendingOrgs] = useState<Organisation[]>([]);
-
-  const globalFilterValue = String(
-    (filter.global as DataTableFilterMetaData).value ?? '',
-  ).toLowerCase();
-
-  const visibleOrgs = useMemo(() => {
-    if (!globalFilterValue) return organisations;
-    return organisations.filter((org) =>
-      columns.some((col) =>
-        String(org[col.field as keyof Organisation] ?? '')
-          .toLowerCase()
-          .includes(globalFilterValue),
-      ),
-    );
-  }, [organisations, globalFilterValue]);
+  const [visibleOrgs, setVisibleOrgs] = useState<Organisation[]>([]);
 
   const orgsToAdd = useMemo(() => {
     return pendingOrgs.filter((o) => !projectOrgs.find((p) => p.abbreviation === o.abbreviation));
@@ -82,8 +68,9 @@ export default function ParticipatingOrgsSection({
 
   const startEditing = useCallback(() => {
     setPendingOrgs(projectOrgs);
+    setVisibleOrgs(organisations);
     setIsEditing(true);
-  }, [projectOrgs]);
+  }, [projectOrgs, organisations]);
 
   const fetchProjectOrganisations = useCallback(async () => {
     if (!projectAbbrev) return;
@@ -218,13 +205,14 @@ export default function ParticipatingOrgsSection({
               selectionMode="checkbox"
               emptyMessage="No participating organisations found"
               selection={isEditing ? pendingOrgs : []}
+              onValueChange={(value) => setVisibleOrgs(value as Organisation[])}
               onSelectionChange={(e) => {
                 if (!isEditing) return;
 
                 const selectedInFilter = (e.value as Organisation[]) || [];
                 const visibleKeys = new Set(visibleOrgs.map((o) => o.abbreviation));
                 const hiddenSelections = pendingOrgs.filter(
-                  (o) => !visibleKeys.has(o.abbreviation),
+                    (o) => !visibleKeys.has(o.abbreviation),
                 );
                 setPendingOrgs([...hiddenSelections, ...selectedInFilter]);
               }}
