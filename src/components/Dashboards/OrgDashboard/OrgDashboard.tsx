@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
   type OrgMetadataState,
   selectOrgMetadata,
@@ -394,4 +394,4 @@ function OrgDashboard(props: OrgDashboardProps) {
     </Grid>
   );
 }
-export default OrgDashboard;
+export default memo(OrgDashboard);
