@@ -212,7 +212,7 @@ export default function ParticipatingOrgsSection({
                 const selectedInFilter = (e.value as Organisation[]) || [];
                 const visibleKeys = new Set(visibleOrgs.map((o) => o.abbreviation));
                 const hiddenSelections = pendingOrgs.filter(
-                    (o) => !visibleKeys.has(o.abbreviation),
+                  (o) => !visibleKeys.has(o.abbreviation),
                 );
                 setPendingOrgs([...hiddenSelections, ...selectedInFilter]);
               }}
