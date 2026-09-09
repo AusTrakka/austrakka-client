@@ -32,6 +32,7 @@ import React, {
 } from 'react';
 import { useCompactMode } from '../../../app/CompactModeContext';
 import RecordTypes from '../../../constants/record-type.enum';
+import { ResponseType } from '../../../constants/responseType';
 import {
   aggregateLogsToTree,
   defaultNodeSort,
@@ -82,7 +83,7 @@ function resolveUrlDate(value: string, defaultValue: Date): Date | null {
   return new Date(value);
 }
 
-function Activity({ recordType, rGuid }: ActivityProps): React.JSX.Element {
+function Activity({ recordType, rGuid }: ActivityProps) {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
@@ -400,103 +401,130 @@ function Activity({ recordType, rGuid }: ActivityProps): React.JSX.Element {
         filters={filters}
         setFilters={setFilters}
       />
-      <Paper
-        elevation={2}
-        sx={{
-          margin: 0.5,
-          marginBottom: 1,
-          flex: 1,
-          minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {isTableLoading ? (
-          <Box sx={{ p: 4 }}>
-            <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
-          </Box>
-        ) : (
-          <TreeTable
-            className="tree-table-custom"
-            header={header}
-            rowClassName={rowClassName}
-            value={nodes || []}
-            expandedKeys={expandedKeys}
-            onToggle={(e) => handleToggleClick(e)}
-            onRowClick={handleTreeRowClick}
-            showGridlines
-            resizableColumns
-            columnResizeMode="expand"
-            removableSort
-            scrollable
-            scrollHeight="flex"
-            sortIcon={sortIcon}
-            paginator
-            rows={500}
-            rowsPerPageOptions={[500, 1000, 1500, 2000]}
-            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
-            currentPageReportTemplate={`Viewing: {first} to {last} of {totalRecords} groups (${activityRes.refinedLogs.length} total events)`}
-            paginatorPosition="bottom"
-            paginatorRight
-            rowHover
-            selectionMode="single"
-            emptyMessage={
-              <Typography variant="subtitle1" color="textSecondary" align="center">
-                No activity found
-              </Typography>
-            }
+      {/* todo: as mentioned in another comment, we should handle status codes in one place, and cleaner */}
+      {activityRes.httpStatusCode >= 400 ? (
+        <Alert severity="error" style={{ marginBottom: '20px' }}>
+          <AlertTitle>Error</AlertTitle>
+          {activityRes.isLoadingErrorMsg || 'An error occurred while fetching the activity log.'}
+        </Alert>
+      ) : (
+        <>
+          {activityRes.apiMessages.map((rm) =>
+            rm.ResponseType === ResponseType.Warning ? (
+              <Alert
+                key={rm.ResponseMessage}
+                severity="warning"
+                style={{
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  marginBottom: '10px',
+                  marginLeft: '3px',
+                  marginRight: '3px',
+                }}
+              >
+                <Typography sx={{ fontSize: '0.9rem' }}>{rm.ResponseMessage}</Typography>
+              </Alert>
+            ) : null,
+          )}
+          <Paper
+            elevation={2}
+            sx={{
+              margin: 0.5,
+              marginBottom: 1,
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <Column
-              key={EVENT_NAME_COLUMN}
-              field={EVENT_NAME_COLUMN}
-              header="Event"
-              hidden={false}
-              body={firstColumnTemplate}
-              sortable
-              expander
-              style={{ width: '220px' }} // Give the main tree column a fixed/min width
-            />
-            {columns
-              ? columns
-                  .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
-                  .map((col: any, index, array) => {
-                    const isLast = index === array.length - 1;
-                    return (
-                      <Column
-                        key={col.field}
-                        field={col.field}
-                        header={col.header}
-                        hidden={false}
-                        style={
-                          isLast
-                            ? { minWidth: '150px', width: 'auto' } // Let the last column fill the remaining space
-                            : { minWidth: '160px', width: '180px' } // Give middle columns a stable width
-                        }
-                        body={(node: TreeNode) => {
-                          if (col.field === 'resourceUniqueString') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceCount',
-                              previewKey: 'resourcePreview',
-                              valueKey: 'resourceUniqueString',
-                            });
-                          }
-                          if (col.field === 'resourceType') {
-                            return aggregatedCellTemplate(node, {
-                              countKey: 'resourceTypeCount',
-                              previewKey: 'resourceTypePreview',
-                              valueKey: 'resourceType',
-                            });
-                          }
-                          return unaggregatedCellTemplate(node, col);
-                        }}
-                        sortable
-                      />
-                    );
-                  })
-              : null}
-          </TreeTable>
-        )}
-      </Paper>
+            {isTableLoading ? (
+              <Box sx={{ p: 4 }}>
+                <EmptyContentPane message="Loading activity logs." icon={ContentIcon.Loading} />
+              </Box>
+            ) : (
+              <TreeTable
+                className="tree-table-custom"
+                header={header}
+                rowClassName={rowClassName}
+                value={nodes || []}
+                expandedKeys={expandedKeys}
+                onToggle={(e) => handleToggleClick(e)}
+                onRowClick={handleTreeRowClick}
+                showGridlines
+                resizableColumns
+                columnResizeMode="expand"
+                removableSort
+                scrollable
+                scrollHeight="flex"
+                sortIcon={sortIcon}
+                paginator
+                rows={500}
+                rowsPerPageOptions={[500, 1000, 1500, 2000]}
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink JumpToPageDropDown"
+                currentPageReportTemplate={`Viewing: {first} to {last} of {totalRecords} groups (${activityRes.refinedLogs.length} total events)`}
+                paginatorPosition="bottom"
+                paginatorRight
+                rowHover
+                selectionMode="single"
+                emptyMessage={
+                  <Typography variant="subtitle1" color="textSecondary" align="center">
+                    No activity found
+                  </Typography>
+                }
+              >
+                <Column
+                  key={EVENT_NAME_COLUMN}
+                  field={EVENT_NAME_COLUMN}
+                  header="Event"
+                  hidden={false}
+                  body={firstColumnTemplate}
+                  sortable
+                  expander
+                  style={{ width: '220px' }} // Give the main tree column a fixed/min width
+                />
+                {columns
+                  ? columns
+                      .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                      .map((col: any, index, array) => {
+                        const isLast = index === array.length - 1;
+                        return (
+                          <Column
+                            key={col.field}
+                            field={col.field}
+                            header={col.header}
+                            hidden={false}
+                            style={
+                              isLast
+                                ? { minWidth: '150px', width: 'auto' } // Let the last column fill the remaining space
+                                : { minWidth: '160px', width: '180px' } // Give middle columns a stable width
+                            }
+                            body={(node: TreeNode) => {
+                              if (col.field === 'resourceUniqueString') {
+                                return aggregatedCellTemplate(node, {
+                                  countKey: 'resourceCount',
+                                  previewKey: 'resourcePreview',
+                                  valueKey: 'resourceUniqueString',
+                                });
+                              }
+                              if (col.field === 'resourceType') {
+                                return aggregatedCellTemplate(node, {
+                                  countKey: 'resourceTypeCount',
+                                  previewKey: 'resourceTypePreview',
+                                  valueKey: 'resourceType',
+                                });
+                              }
+                              return unaggregatedCellTemplate(node, col);
+                            }}
+                            sortable
+                          />
+                        );
+                      })
+                  : null}
+              </TreeTable>
+            )}
+          </Paper>
+        </>
+      )}
     </Box>
   );
 
