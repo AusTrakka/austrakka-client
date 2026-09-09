@@ -38,7 +38,7 @@ function MapChart(props: MapTestProps) {
 
     return {
       ...mapJson,
-      features: mapJson.features.filter((f) => regionView || !f.properties?.is_region),
+      features: mapJson.features.filter((f) => Boolean(f.properties?.is_region) === regionView),
     };
   }, [mapSpec, regionView]);
 
