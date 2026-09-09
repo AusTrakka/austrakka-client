@@ -77,3 +77,7 @@ export function formatBytes(bytes: number, useBinary: boolean = false, unit?: st
 
   return `${size.toFixed(2)} ${units[i]}`;
 }
+
+// Inserts a zero-width space after hyphen characters
+// This allows echarts to break on hyphens within labels where by default it would not
+export const insertEChartBreakOpportunities = (value: string) => value.replace(/-/g, '-\u200B');
