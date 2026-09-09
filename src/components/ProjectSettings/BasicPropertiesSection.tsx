@@ -19,7 +19,7 @@ import { Theme } from '../../assets/themes/theme';
 import { ResponseType } from '../../constants/responseType';
 import type { Organisation, Project } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
+import { patchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
 import { FieldLabelWithTooltip } from '../Common/SettingsPage/FieldLabelWithToolTip';
 import EditButtons from '../Users/EditButtons';
 import { EditableFieldInput } from './EditableFieldInput';
@@ -82,7 +82,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           ? putProjectDetails(projectAbbrev, putPayload, token)
           : Promise.resolve({ status: ResponseType.Success }),
         isActive !== undefined
-          ? pathchProjectIsActive(isActive, projectAbbrev, token)
+          ? patchProjectIsActive(isActive, projectAbbrev, token)
           : Promise.resolve({ status: ResponseType.Success }),
       ]);
 
@@ -125,7 +125,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           setEditing={setIsEditing}
           onSave={handleSave}
           onCancel={handleCancel}
-          hasSavedChanges={isDirty}
+          hasPendingChanges={isDirty}
           canSee={() => editable}
           onSaveLoading={isSaving}
         />
