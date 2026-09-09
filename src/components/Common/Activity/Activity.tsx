@@ -395,13 +395,6 @@ function Activity({ recordType, rGuid }: ActivityProps) {
         detailInfo={detailInfo}
         recordType={recordType}
       />
-      <ActivityFilters
-        isOpen={filtersOpen}
-        setIsOpen={setFiltersOpen}
-        filters={filters}
-        setFilters={setFilters}
-      />
-      {/* todo: as mentioned in another comment, we should handle status codes in one place, and cleaner */}
       {activityRes.httpStatusCode >= 400 ? (
         <Alert severity="error" style={{ marginBottom: '20px' }}>
           <AlertTitle>Error</AlertTitle>
@@ -409,6 +402,12 @@ function Activity({ recordType, rGuid }: ActivityProps) {
         </Alert>
       ) : (
         <>
+          <ActivityFilters
+            isOpen={filtersOpen}
+            setIsOpen={setFiltersOpen}
+            filters={filters}
+            setFilters={setFilters}
+          />
           {activityRes.apiMessages.map((rm) =>
             rm.ResponseType === ResponseType.Warning ? (
               <Alert
