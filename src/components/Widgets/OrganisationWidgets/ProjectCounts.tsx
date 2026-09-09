@@ -75,7 +75,7 @@ function calculateSharedGroups(data: Sample[]): ProjectSharingCount[] {
   const sorted = results.sort((a, b) => a.project.localeCompare(b.project));
 
   if (unsharedCount > 0) {
-    sorted.push({
+    sorted.unshift({
       project: UNSHARED_COLUMN,
       total: unsharedCount,
       sharedWithOthers: 0,
