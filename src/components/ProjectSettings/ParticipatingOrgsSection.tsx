@@ -13,7 +13,6 @@ import { ResponseType } from '../../constants/responseType';
 import type { Organisation, ProjectOrganisationsPatch } from '../../types/dtos';
 import {
   addProjectOrganisations,
-  getOrganisations,
   getProjectOrganisations,
   removeProjectOrganisations,
 } from '../../utilities/resourceUtils';
@@ -21,10 +20,11 @@ import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import EditButtons from '../Users/EditButtons';
 
-interface ParticipatingOrgsPropertiesSection {
+interface ParticipatingOrgsSection {
   projectAbbrev: string | undefined;
   editable: boolean;
   onSaveResult: (severity: AlertColor, message: string) => void;
+  organisations: Organisation[];
 }
 
 const columns = [
@@ -32,11 +32,12 @@ const columns = [
   { field: 'name', header: 'Name' },
 ];
 
-export default function ParticipatingOrgsPropertiesSection({
+export default function ParticipatingOrgsSection({
   projectAbbrev,
   editable,
   onSaveResult,
-}: ParticipatingOrgsPropertiesSection) {
+  organisations,
+}: ParticipatingOrgsSection) {
   const { token } = useApi();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -51,9 +52,23 @@ export default function ParticipatingOrgsPropertiesSection({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
 
-  const [orgs, setOrgs] = useState<Organisation[]>([]);
   const [projectOrgs, setProjectOrgs] = useState<Organisation[]>([]);
   const [pendingOrgs, setPendingOrgs] = useState<Organisation[]>([]);
+
+  const globalFilterValue = String(
+    (filter.global as DataTableFilterMetaData).value ?? '',
+  ).toLowerCase();
+
+  const visibleOrgs = useMemo(() => {
+    if (!globalFilterValue) return organisations;
+    return organisations.filter((org) =>
+      columns.some((col) =>
+        String(org[col.field as keyof Organisation] ?? '')
+          .toLowerCase()
+          .includes(globalFilterValue),
+      ),
+    );
+  }, [organisations, globalFilterValue]);
 
   const orgsToAdd = useMemo(() => {
     return pendingOrgs.filter((o) => !projectOrgs.find((p) => p.abbreviation === o.abbreviation));
@@ -91,26 +106,6 @@ export default function ParticipatingOrgsPropertiesSection({
     setIsLoading(false);
     setIsError(false);
   }, [token, projectAbbrev]);
-
-  const fetchOrganisations = useCallback(async () => {
-    const orgRes = await getOrganisations(false, token);
-
-    if (orgRes.type === ResponseType.Error) {
-      setOrgs([]);
-      setIsError(true);
-      setIsLoading(false);
-      setErrorMessage(orgRes.message);
-      return;
-    }
-
-    setOrgs(orgRes.data || []);
-    setIsLoading(false);
-    setIsError(false);
-  }, [token]);
-
-  useEffect(() => {
-    void fetchOrganisations();
-  }, [fetchOrganisations]);
 
   useEffect(() => {
     void fetchProjectOrganisations();
@@ -218,14 +213,20 @@ export default function ParticipatingOrgsPropertiesSection({
             </Typography>
           ) : (
             <DataTable
-              value={isEditing ? orgs : projectOrgs}
+              value={isEditing ? organisations : projectOrgs}
               dataKey="abbreviation"
               selectionMode="checkbox"
+              emptyMessage="No participating organisations found"
               selection={isEditing ? pendingOrgs : []}
               onSelectionChange={(e) => {
-                if (isEditing) {
-                  setPendingOrgs(e.value as Organisation[]);
-                }
+                if (!isEditing) return;
+
+                const selectedInFilter = (e.value as Organisation[]) || [];
+                const visibleKeys = new Set(visibleOrgs.map((o) => o.abbreviation));
+                const hiddenSelections = pendingOrgs.filter(
+                  (o) => !visibleKeys.has(o.abbreviation),
+                );
+                setPendingOrgs([...hiddenSelections, ...selectedInFilter]);
               }}
               scrollable
               filters={filter}
