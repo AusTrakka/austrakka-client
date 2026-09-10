@@ -22,6 +22,7 @@ import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
 import { getAvailableProjectDashboards, getOrganisations } from '../../utilities/resourceUtils';
 import BasicPropertiesSection from './BasicPropertiesSection';
+import ParticipatingOrgsSection from './ParticipatingOrgsSection';
 import { useProjectDetails } from './useProjectDetails';
 
 function ProjectSettingsOverview() {
@@ -46,7 +47,7 @@ function ProjectSettingsOverview() {
 
   const isAdmin = admin || superUser;
 
-  const handleBasicPropertiesSaved = (severity: AlertColor, message: string) => {
+  const handleChangesSaved = (severity: AlertColor, message: string) => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -76,8 +77,8 @@ function ProjectSettingsOverview() {
         setOrganisationErrorMessage(response.message);
         return;
       }
-      const organsiations = response.data ?? [];
-      setOrganisations(organsiations);
+      const organisations = response.data ?? [];
+      setOrganisations(organisations);
     }
 
     if (tokenLoading !== LoadingState.IDLE && tokenLoading !== LoadingState.LOADING && isAdmin) {
@@ -214,15 +215,23 @@ function ProjectSettingsOverview() {
           </Stack>
         </Paper>
       </Box>
-      <BasicPropertiesSection
-        projectAbbrev={projectAbbrev}
-        canonical={projectDetails}
-        onSaved={refetchProject}
-        onSaveResult={handleBasicPropertiesSaved}
-        organisations={organisations}
-        dashboards={dashboards}
-        editable={isAdmin}
-      />
+      <Stack spacing={3}>
+        <BasicPropertiesSection
+          projectAbbrev={projectAbbrev}
+          canonical={projectDetails}
+          onSaved={refetchProject}
+          onSaveResult={handleChangesSaved}
+          organisations={organisations}
+          dashboards={dashboards}
+          editable={isAdmin}
+        />
+        <ParticipatingOrgsSection
+          projectAbbrev={projectAbbrev}
+          editable={isAdmin}
+          onSaveResult={handleChangesSaved}
+          organisations={organisations}
+        />
+      </Stack>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

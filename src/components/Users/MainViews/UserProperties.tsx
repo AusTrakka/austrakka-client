@@ -83,7 +83,7 @@ export default function UserProperties(props: UserPropertiesProps) {
           setEditing={setEditingBasic}
           onSave={onSave}
           onCancel={handleCancel}
-          hasSavedChanges={hasChanges}
+          hasPendingChanges={hasChanges}
           canSee={canSee}
           onSaveLoading={onSaveLoading}
         />
