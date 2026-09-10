@@ -99,7 +99,7 @@ function OFNDashboard(props: ProjectDashboardTemplateProps) {
               sx={{
                 ...tallCardStyle,
                 height: '100%',
-                maxHeight: 500,
+                maxHeight: 425,
                 display: 'flex',
                 flexDirection: 'column',
               }}
