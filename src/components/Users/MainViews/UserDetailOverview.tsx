@@ -1,4 +1,15 @@
-import { Alert, type AlertColor, Paper, Snackbar, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  type AlertColor,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -27,6 +38,7 @@ import {
 } from '../../../utilities/resourceUtils';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../../Common/SettingsPage/RowAndCell.css';
+import { CheckCircle, Report } from '@mui/icons-material';
 import { Theme } from '../../../assets/themes/theme';
 import { hasPermissionV2ByRole } from '../../../permissions/accessTable';
 import { Roles } from '../../../permissions/roles';
@@ -42,9 +54,10 @@ import {
   updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
 import { formatBytes } from '../../../utilities/renderUtils';
+import ChangesDialogue from '../../Common/SettingsPage/ChangesDialogue';
 import { processPrivilegeChanges } from '../privilegeBulkApiCall';
-import { ChangesDialog } from './ChangesDialog';
 import { FailedChangesDialog } from './FailedChangesDialog';
+import { PrivilegesChangeDialogue } from './PrivilegesChangeDialogue';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
@@ -66,7 +79,8 @@ function UserDetailOverview() {
   const [openGroupRoles, setOpenGroupRoles] = useState<string[]>([]);
   const [openDupSnackbar, setOpenDupSnackbar] = useState(false);
   const [patchSeverity, setPatchSeverity] = useState<string>('success');
-  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [showPrivConfirmationDialogue, setShowPrivConfirmationDialogue] = useState(false);
+  const [showOrgConfirmationDialogue, setShowOrgConfirmationDialogue] = useState(false);
   const [failedChanges, setFailedChanges] = useState<[string | null, PendingChange][]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
@@ -124,13 +138,9 @@ function UserDetailOverview() {
     nonDisplayFields = nonDisplayFields.filter((field) => field !== 'objectId');
   }
 
-  const handleCloseDialog = () => {
-    setShowConfirmationDialog(false);
-  };
-
   const onPrivSave = () => {
     if (pendingChanges.length > 0) {
-      setShowConfirmationDialog(true);
+      setShowPrivConfirmationDialogue(true);
     }
   };
 
@@ -248,7 +258,7 @@ function UserDetailOverview() {
     setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
     setPendingChanges([]);
     setEditingPrivileges(false);
-    setShowConfirmationDialog(false);
+    setShowPrivConfirmationDialogue(false);
   };
 
   const handleConfirmPrivileges = async () => {
@@ -320,6 +330,7 @@ function UserDetailOverview() {
       setPatchMsg(userResponse.message);
       setPatchSeverity('success');
     } catch (error: any) {
+      setEditedValues(JSON.parse(JSON.stringify(user)));
       setPatchMsg(error.message);
       setPatchSeverity('error');
     } finally {
@@ -327,14 +338,24 @@ function UserDetailOverview() {
     }
   };
 
-  const onSave = async () => {
-    if (editedValues === null) return;
+  const saveChanges = async () => {
     setOnSaveLoading(true);
 
     await editUserDetails();
 
     setOnSaveLoading(false);
     setEditingBasic(false);
+    setShowOrgConfirmationDialogue(false);
+  };
+
+  const onSave = async () => {
+    if (editedValues === null) return;
+
+    if (editedValues.orgAbbrev !== user?.orgAbbrev) {
+      setShowOrgConfirmationDialogue(true);
+    } else {
+      await saveChanges();
+    }
   };
 
   const onSelectionAdd = (recordType: string, assignedRoles: RoleAssignments[]) => {
@@ -361,6 +382,38 @@ function UserDetailOverview() {
     );
     setPendingChanges((prev) =>
       updatePendingChangesForRemoval(prev, recordType, recordGlobalId, recordName, role),
+    );
+  };
+
+  const getOrgChangeDialogueMessage = () => {
+    const infoItems = [
+      `Existing privileges on "${user?.orgAbbrev}" will remain active`,
+      `Existing privileges on "${editedValues?.orgAbbrev}" will be respected`,
+    ];
+    const warningItems = [
+      `"${user?.displayName}" will no longer be a member of "${user?.orgAbbrev}"`,
+      `User privileges on "${user?.orgAbbrev}" will not be transferred to "${editedValues?.orgAbbrev}"`,
+    ];
+
+    return (
+      <List sx={{ paddingTop: '20px', paddingBottom: '20px' }} dense>
+        {warningItems.map((warningItem) => (
+          <ListItem key={warningItem}>
+            <ListItemIcon>
+              <Report color="error" />
+            </ListItemIcon>
+            <ListItemText secondary={warningItem} />
+          </ListItem>
+        ))}
+        {infoItems.map((item) => (
+          <ListItem key={item}>
+            <ListItemIcon>
+              <CheckCircle color="success" />
+            </ListItemIcon>
+            <ListItemText secondary={item} />
+          </ListItem>
+        ))}
+      </List>
     );
   };
 
@@ -471,9 +524,26 @@ function UserDetailOverview() {
           />
         </Grid>
       </Grid>
-      <ChangesDialog
-        open={showConfirmationDialog}
-        onClose={handleCloseDialog}
+      <ChangesDialogue
+        severity={'warning'}
+        title={'Updating Home organisation'}
+        isOpen={showOrgConfirmationDialogue}
+        onClose={() => setShowOrgConfirmationDialogue(false)}
+        onCancel={() => setShowOrgConfirmationDialogue(false)}
+        confirmLoading={onSaveLoading}
+        onConfirm={saveChanges}
+      >
+        <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
+          Changing the Organisation for "{user.displayName}" will result in the following:
+        </Typography>
+        {getOrgChangeDialogueMessage()}
+        <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
+          Are you sure you want to continue? All additional changes will also be saved!
+        </Typography>
+      </ChangesDialogue>
+      <PrivilegesChangeDialogue
+        open={showPrivConfirmationDialogue}
+        onClose={() => setShowPrivConfirmationDialogue(false)}
         pendingChanges={pendingChanges}
         onConfirm={handleConfirmPrivileges}
       />
