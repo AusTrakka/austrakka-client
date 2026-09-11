@@ -15,14 +15,19 @@ import {
 import type { PendingChange } from '../../../types/userDetailEdit.interface';
 import { groupPendingChangesByType } from '../../../utilities/privilegeUtils';
 
-interface ChangesDialogProps {
+interface PrivilegesChangeProps {
   open: boolean;
   onClose: () => void;
   pendingChanges: PendingChange[];
   onConfirm: () => void;
 }
 
-export function ChangesDialog({ open, onClose, pendingChanges, onConfirm }: ChangesDialogProps) {
+export function PrivilegesChangeDialogue({
+  open,
+  onClose,
+  pendingChanges,
+  onConfirm,
+}: PrivilegesChangeProps) {
   const groupedChanges = groupPendingChangesByType(pendingChanges);
 
   return (

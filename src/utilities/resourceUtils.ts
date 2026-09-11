@@ -17,6 +17,7 @@ import type {
   Role,
   Tree,
   TreeVersion,
+  User,
   UserPatchV2,
   UserRoleRecordPrivilegePost,
 } from '../types/dtos';
@@ -307,6 +308,18 @@ export const changeSampleOwner = (
     token,
     { seqIds, newOwnerAbbrev },
     clientSessionId,
+  );
+
+export const updateUserOrganisation = (
+  token: string,
+  currentOrgIdentifier: string,
+  targetOrgIdentifier: string,
+  targetUserIdentifier: string,
+): Promise<ResponseObject<User>> =>
+  callPATCH(
+    `/api/Organisations/${currentOrgIdentifier}/User/${targetUserIdentifier}`,
+    token,
+    targetOrgIdentifier,
   );
 
 export const postFeedback = (

@@ -1,5 +1,7 @@
 import { CancelOutlined, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import {
+  Autocomplete,
+  Box,
   IconButton,
   InputAdornment,
   Switch,
@@ -11,7 +13,7 @@ import {
 } from '@mui/material';
 import type React from 'react';
 import { type Dispatch, type SetStateAction, useState } from 'react';
-import type { User } from '../../../types/dtos';
+import type { Organisation, User } from '../../../types/dtos';
 import { isoDateLocalDate } from '../../../utilities/dateUtils';
 import { FieldLabelWithTooltip } from './FieldLabelWithToolTip';
 import './RowAndCell.css';
@@ -26,10 +28,11 @@ interface EditableRowProps {
   editedValues: User | null;
   setEditedValues: Dispatch<SetStateAction<User | null>>;
   readableNames: Record<string, string>;
+  organisations?: Organisation[];
 }
 
 function EditableRow(props: EditableRowProps) {
-  const { field, detailValue, editedValues, setEditedValues, readableNames } = props;
+  const { field, detailValue, editedValues, setEditedValues, readableNames, organisations } = props;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -38,14 +41,7 @@ function EditableRow(props: EditableRowProps) {
     setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
-  const nonEditableFields = [
-    'created',
-    'objectId',
-    'username',
-    'globalId',
-    'orgName',
-    'monthlyBytesUsed',
-  ];
+  const nonEditableFields = ['created', 'objectId', 'username', 'globalId', 'monthlyBytesUsed'];
 
   const immutableGuids = ['objectId', 'globalId'];
 
@@ -70,6 +66,25 @@ function EditableRow(props: EditableRowProps) {
     });
   };
 
+  const handleOrgChange = (selectedOrg: Organisation | null) => {
+    if (!organisations) {
+      throw new Error('Organisations cannot be null');
+    }
+    if (!selectedOrg) {
+      // Not an error, the user can clear the autocomplete field and cause this
+      return;
+    }
+    setEditedValues((prevValues) => {
+      if (!prevValues) return null;
+      return {
+        ...prevValues,
+        orgName: selectedOrg.name,
+        orgAbbrev: selectedOrg.abbreviation,
+        orgGlobalId: selectedOrg.globalId,
+      };
+    });
+  };
+
   const handleChangeBoolean = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     setEditedValues((prevValues) => {
@@ -80,6 +95,7 @@ function EditableRow(props: EditableRowProps) {
       };
     });
   };
+
   switch (typeof detailValue) {
     case 'string':
       if (nonEditableFields.includes(field)) {
@@ -114,7 +130,63 @@ function EditableRow(props: EditableRowProps) {
           </TableRow>
         );
       }
-
+      if (field === 'orgName') {
+        if (!organisations) {
+          throw new Error('Organisations cannot be null');
+        }
+        return (
+          <TableRow key={field}>
+            <TableCell className="key-cell-editing">
+              <FieldLabelWithTooltip field={field} readableNames={readableNames} />
+            </TableCell>
+            <TableCell className="value-cell-editing">
+              <Autocomplete<Organisation>
+                fullWidth
+                size="small"
+                options={organisations || []}
+                getOptionLabel={(option) => option.name || ''}
+                renderOption={(props, option) => {
+                  const { key, ...optionProps } = props;
+                  return (
+                    <Box
+                      component="li"
+                      key={key || option.globalId || option.abbreviation}
+                      {...optionProps}
+                      sx={{ fontSize: '.9rem' }}
+                    >
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {option.abbreviation}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        — {option.name}
+                      </Typography>
+                    </Box>
+                  );
+                }}
+                isOptionEqualToValue={(option, value) => option.abbreviation === value.abbreviation}
+                value={
+                  organisations?.find((o) => o.abbreviation === editedValues?.orgAbbrev) || null
+                }
+                onChange={(_, selectedOrg) => handleOrgChange(selectedOrg)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="filled"
+                    hiddenLabel
+                    placeholder="Select org"
+                    slotProps={{
+                      htmlInput: {
+                        ...params.inputProps,
+                        style: { fontSize: '.9rem' },
+                      },
+                    }}
+                  />
+                )}
+              />
+            </TableCell>
+          </TableRow>
+        );
+      }
       return (
         <TableRow key={field}>
           <TableCell className="key-cell-editing">
