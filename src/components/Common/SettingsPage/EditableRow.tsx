@@ -1,10 +1,9 @@
 import { CancelOutlined, CheckCircleOutlined, ContentCopy } from '@mui/icons-material';
 import {
+  Autocomplete,
+  Box,
   IconButton,
   InputAdornment,
-  MenuItem,
-  Select,
-  type SelectChangeEvent,
   Switch,
   TableCell,
   TableRow,
@@ -67,18 +66,20 @@ function EditableRow(props: EditableRowProps) {
     });
   };
 
-  const handleOrgChange = (e: SelectChangeEvent) => {
+  const handleOrgChange = (selectedOrg: Organisation | null) => {
     if (!organisations) {
       throw new Error('Organisations cannot be null');
     }
-    const selectedOrg = organisations?.find((o) => o.abbreviation === e.target.value);
+    if (!selectedOrg) {
+      throw new Error('Selected Organisation cannot be null');
+    }
     setEditedValues((prevValues) => {
       if (!prevValues) return null;
       return {
         ...prevValues,
-        orgName: selectedOrg!.name,
-        orgAbbrev: selectedOrg!.abbreviation,
-        orgGlobalId: selectedOrg!.globalId,
+        orgName: selectedOrg.name,
+        orgAbbrev: selectedOrg.abbreviation,
+        orgGlobalId: selectedOrg.globalId,
       };
     });
   };
@@ -138,26 +139,49 @@ function EditableRow(props: EditableRowProps) {
               <FieldLabelWithTooltip field={field} readableNames={readableNames} />
             </TableCell>
             <TableCell className="value-cell-editing">
-              <Select
+              <Autocomplete<Organisation>
                 fullWidth
                 size="small"
-                variant="filled"
-                hiddenLabel
-                value={editedValues?.orgAbbrev ?? ''}
-                onChange={(e) => handleOrgChange(e)}
-                displayEmpty
-                sx={{ '& .MuiSelect-select': { fontSize: '.9rem' } }}
-              >
-                {organisations.map((org) => (
-                  <MenuItem
-                    key={org.abbreviation}
-                    value={org.abbreviation}
-                    style={{ fontSize: '.9em' }}
-                  >
-                    {org.name}
-                  </MenuItem>
-                ))}
-              </Select>
+                options={organisations || []}
+                getOptionLabel={(option) => option.name || ''}
+                renderOption={(props, option) => {
+                  const { key, ...optionProps } = props;
+                  return (
+                    <Box
+                      component="li"
+                      key={key || option.globalId || option.abbreviation}
+                      {...optionProps}
+                      sx={{ fontSize: '.9rem' }}
+                    >
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {option.abbreviation}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        — {option.name}
+                      </Typography>
+                    </Box>
+                  );
+                }}
+                isOptionEqualToValue={(option, value) => option.abbreviation === value.abbreviation}
+                value={
+                  organisations?.find((o) => o.abbreviation === editedValues?.orgAbbrev) || null
+                }
+                onChange={(_, selectedOrg) => handleOrgChange(selectedOrg)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="filled"
+                    hiddenLabel
+                    placeholder="Select org"
+                    slotProps={{
+                      htmlInput: {
+                        ...params.inputProps,
+                        style: { fontSize: '.9rem' },
+                      },
+                    }}
+                  />
+                )}
+              />
             </TableCell>
           </TableRow>
         );

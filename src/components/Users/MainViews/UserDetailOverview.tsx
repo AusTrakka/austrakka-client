@@ -330,7 +330,9 @@ function UserDetailOverview() {
   const onSave = async () => {
     if (editedValues === null) return;
     setOnSaveLoading(true);
+
     await editUserDetails();
+
     setOnSaveLoading(false);
     setEditingBasic(false);
   };
