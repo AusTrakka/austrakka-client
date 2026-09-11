@@ -146,11 +146,11 @@ function UserDetailOverview() {
 
   const handleCancel = () => {
     setEditingBasic(false);
-    setEditedValues(JSON.parse(JSON.stringify(user!)));
+    setEditedValues(structuredClone(user!));
   };
 
   const handlePrivCancel = () => {
-    setEditedPrivileges(JSON.parse(JSON.stringify(user?.privileges)));
+    setEditedPrivileges(structuredClone(user!.privileges));
     setPendingChanges([]);
     setEditingPrivileges(false);
   };
@@ -189,7 +189,7 @@ function UserDetailOverview() {
       if (userResponse.status === ResponseType.Success) {
         const userDto = userResponse.data as User;
         setUser(userDto);
-        setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
+        setEditedPrivileges(structuredClone(userDto.privileges));
         setEditedValues({ ...userDto });
       } else {
         setErrMsg('User could not be accessed');
@@ -255,7 +255,7 @@ function UserDetailOverview() {
 
     const userDto = await fetchUserDto();
     setUser(userDto);
-    setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
+    setEditedPrivileges(structuredClone(userDto.privileges));
     setPendingChanges([]);
     setEditingPrivileges(false);
     setShowPrivConfirmationDialogue(false);
@@ -326,11 +326,11 @@ function UserDetailOverview() {
       const userDto = await fetchUserDto();
 
       setUser(userDto);
-      setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
+      setEditedPrivileges(structuredClone(userDto.privileges));
       setPatchMsg(userResponse.message);
       setPatchSeverity('success');
     } catch (error: any) {
-      setEditedValues(JSON.parse(JSON.stringify(user)));
+      setEditedValues(structuredClone(user));
       setPatchMsg(error.message);
       setPatchSeverity('error');
     } finally {
@@ -556,7 +556,7 @@ function UserDetailOverview() {
           setFailedChangesDialogOpen(false);
           const userDto = await fetchUserDto();
           setUser(userDto);
-          setEditedPrivileges(JSON.parse(JSON.stringify(userDto.privileges)));
+          setEditedPrivileges(structuredClone(userDto.privileges));
         }}
       />
       <Snackbar

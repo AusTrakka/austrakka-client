@@ -71,7 +71,8 @@ function EditableRow(props: EditableRowProps) {
       throw new Error('Organisations cannot be null');
     }
     if (!selectedOrg) {
-      throw new Error('Selected Organisation cannot be null');
+        // Not an error, the user can clear the autocomplete field and cause this
+        return;
     }
     setEditedValues((prevValues) => {
       if (!prevValues) return null;
