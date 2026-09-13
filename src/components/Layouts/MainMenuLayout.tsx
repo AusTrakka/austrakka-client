@@ -28,6 +28,7 @@ import {
   ListItemText,
   MenuItem,
   Link as MuiLink,
+  Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -217,9 +218,9 @@ function MainMenuLayout() {
     handlePadding(!drawer);
   };
 
-  const getIconMargin = (drawer: boolean): number | 'auto' => {
-    if (!drawer) return 'auto';
-    return compact ? 0.5 : 1;
+  const getIconMargin = (drawer: boolean): number => {
+    if (!drawer) return 0;
+    return compact ? 0 : 1;
   };
 
   return (
@@ -231,8 +232,8 @@ function MainMenuLayout() {
           variant="permanent"
           PaperProps={{
             sx: {
-              maxWidth: 190,
-              minWidth: 70,
+              maxWidth: compact ? 150 : 190,
+              minWidth: compact && !drawer ? 45 : 70,
             },
           }}
         >
@@ -248,7 +249,7 @@ function MainMenuLayout() {
               {drawer ? (
                 <img src={logoUrl} alt="logo" className={styles.logo} />
               ) : (
-                <img src={logoOnlyUrl} alt="logo" className={styles.logo} />
+                <img src={logoOnlyUrl} alt="logo" className={styles.logosmall} />
               )}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -298,6 +299,7 @@ function MainMenuLayout() {
                           minWidth: 0,
                           mr: getIconMargin(drawer),
                           justifyContent: 'center',
+                          width: drawer ? 'auto' : '100%',
                         }}
                       >
                         {page.icon}
@@ -310,42 +312,27 @@ function MainMenuLayout() {
             ))}
           </List>
           <Divider />
-          <Link to={`/users/${user.username}`} style={{ textDecoration: 'none' }}>
+          <Link
+            to={`/users/${user.username}`}
+            style={{ padding: '5px 0px', textDecoration: 'none', color: 'inherit', width: '100%' }}
+          >
             <Tooltip
-              title={drawer ? user.username : `${user.displayName} - ${user.username}`}
+              title={drawer ? `${user.displayName} - ${user.username}` : user.username}
               arrow
               placement="right"
             >
-              <Grid
-                container
-                direction="column"
-                alignContent="center"
-                alignItems="center"
-                sx={{ padding: 2 }}
-              >
-                <Grid item>
-                  <IconButton color="primary">
-                    <AccountCircle />
-                  </IconButton>
-                </Grid>
-                {drawer ? (
-                  <Grid item width="100%" textAlign="center">
-                    <Typography noWrap color="primary.main">
-                      {user.displayName}
-                    </Typography>
-                  </Grid>
-                ) : null}
-              </Grid>
-            </Tooltip>
-          </Link>
-          <Divider />
-          <List>
-            {settings.map((setting) => (
               <MenuItem
-                sx={{ width: '100%', paddingTop: '10px', paddingBottom: '10px' }}
-                key={setting.title}
-                disabled={setting.disabled}
-                onClick={setting.onClick}
+                className={styles.userlink}
+                sx={{
+                  display: 'flex',
+                  flexDirection: drawer ? 'column' : 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  px: 1,
+                  padding: compact ? undefined : 2,
+                }}
+                key={user.username}
               >
                 <ListItemIcon
                   sx={{
@@ -353,6 +340,45 @@ function MainMenuLayout() {
                     minWidth: 0,
                     mr: getIconMargin(drawer),
                     justifyContent: 'center',
+                    width: drawer ? 'auto' : '100%',
+                    padding: compact ? 0 : 1,
+                  }}
+                >
+                  <AccountCircle />
+                </ListItemIcon>
+
+                {drawer ? (
+                  <ListItemText
+                    primary={user.displayName || user.username}
+                    primaryTypographyProps={{
+                      noWrap: true,
+                      sx: {
+                        width: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      },
+                    }}
+                    sx={{
+                      color: 'primary.main',
+                      my: 0,
+                      width: '85%',
+                    }}
+                  />
+                ) : null}
+              </MenuItem>
+            </Tooltip>
+          </Link>
+          <Divider />
+          <List className={styles.pagefooter}>
+            {settings.map((setting) => (
+              <MenuItem key={setting.title} disabled={setting.disabled} onClick={setting.onClick}>
+                <ListItemIcon
+                  sx={{
+                    color: 'primary.main',
+                    minWidth: 0,
+                    mr: getIconMargin(drawer),
+                    justifyContent: 'center',
+                    width: drawer ? 'auto' : '100%',
                   }}
                 >
                   {setting.icon}
@@ -362,7 +388,7 @@ function MainMenuLayout() {
                 ) : null}
               </MenuItem>
             ))}
-            <LogoutButton showText={drawer} />
+            <LogoutButton showText={drawer} margin={getIconMargin(drawer)} drawer />
           </List>
         </Drawer>
       </Box>

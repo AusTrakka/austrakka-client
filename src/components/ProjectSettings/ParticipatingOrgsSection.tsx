@@ -146,19 +146,18 @@ export default function ParticipatingOrgsSection({
   };
 
   const header = () => (
-    <Stack direction="row" alignItems="center" gap={1} style={{ width: '100%' }}>
-      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+    <Stack paddingBottom={2} direction="row" alignItems="baseline" gap={1.5} sx={{ width: '100%' }}>
+      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
         Participating Organisations
       </Typography>
-      <Box>
-        <SearchInput
-          value={(filter.global as DataTableFilterMetaData).value || ''}
-          forceExpanded
-          iconSx={{ fontSize: '2rem' }}
-          onChange={onGlobalFilterChange}
-        />
-      </Box>
-      <Box sx={{ marginLeft: 'auto' }}>
+
+      <SearchInput
+        value={(filter.global as DataTableFilterMetaData).value || ''}
+        forceExpanded
+        onChange={onGlobalFilterChange}
+      />
+
+      <Stack sx={{ marginLeft: 'auto', alignSelf: 'center' }}>
         <EditButtons
           editing={isEditing}
           setEditing={startEditing}
@@ -168,7 +167,7 @@ export default function ParticipatingOrgsSection({
           canSee={() => editable}
           onSaveLoading={isSaving}
         />
-      </Box>
+      </Stack>
     </Stack>
   );
 
