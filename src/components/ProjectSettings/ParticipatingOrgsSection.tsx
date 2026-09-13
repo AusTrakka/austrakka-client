@@ -146,7 +146,7 @@ export default function ParticipatingOrgsSection({
   };
 
   const header = () => (
-    <Stack paddingBottom={2} direction="row" alignItems="baseline" gap={1.5} sx={{ width: '100%' }}>
+    <Stack paddingBottom={2} direction="row" alignItems="center" gap={1.5} sx={{ width: '100%' }}>
       <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
         Participating Organisations
       </Typography>
@@ -157,7 +157,7 @@ export default function ParticipatingOrgsSection({
         onChange={onGlobalFilterChange}
       />
 
-      <Stack sx={{ marginLeft: 'auto', alignSelf: 'center' }}>
+      <Box sx={{ marginLeft: 'auto', alignSelf: 'center' }}>
         <EditButtons
           editing={isEditing}
           setEditing={startEditing}
@@ -167,7 +167,7 @@ export default function ParticipatingOrgsSection({
           canSee={() => editable}
           onSaveLoading={isSaving}
         />
-      </Stack>
+      </Box>
     </Stack>
   );
 

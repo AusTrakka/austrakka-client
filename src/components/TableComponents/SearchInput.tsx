@@ -35,7 +35,6 @@ function SearchInput({
         id="global-filter"
         type="search"
         variant="standard"
-        color="success"
         size="small"
         value={value}
         onChange={onChange}
