@@ -1,0 +1,13 @@
+.app-container.compact-mode .table-search-input .MuiInputBase-input {
+  font-size: var(--density-font-size-body2) !important;
+}
+
+.app-container.compact-mode .table-search-input .MuiInputBase-input::placeholder {
+  font-size: var(--density-font-size-body2) !important;
+}
+
+.app-container.compact-mode .table-search-input .MuiInput-root {
+  height: var(--density-input-height) !important;
+  line-height: var(--density-table-row-height) !important;
+  min-height: var(--density-table-row-height) !important;
+}
