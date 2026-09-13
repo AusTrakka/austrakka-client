@@ -1,0 +1,19 @@
+.data-filter-div {
+  padding-top: 5px;
+  margin: 0.5px;
+}
+
+.data-filter-box {
+  padding: 8px;
+  margin-bottom: 16px;
+}
+
+/* Compact Mode Overrides */
+.app-container.compact-mode .data-filter-div {
+  padding-top: var(--density-spacing-xs);
+}
+
+.app-container.compact-mode .data-filter-box {
+  padding: var(--density-spacing-sm);
+  margin-bottom: var(--density-spacing-md);
+}
