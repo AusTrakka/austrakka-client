@@ -40,6 +40,8 @@
   order: 2;
   margin-left: 6px;
   margin-right: 6px;
+  background: var(--primary-100);
+  color: var(--primary-900);
 }
 
 /* 3. Sort section / custom icon container is forced to the far right */
