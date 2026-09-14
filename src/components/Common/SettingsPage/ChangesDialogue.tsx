@@ -20,8 +20,9 @@ import {
 } from '@mui/material';
 import type { ReactNode } from 'react';
 import { Theme } from '../../../assets/themes/theme';
+import type { BaseComponent } from '../../../types/components.interface';
 
-interface ChangesDialogueProps {
+interface ChangesDialogueProps extends BaseComponent {
   title: string;
   children?: ReactNode;
   isOpen: boolean;
@@ -32,6 +33,8 @@ interface ChangesDialogueProps {
   closeText?: string;
   confirmLoading?: boolean;
   disableConfirm?: boolean;
+  confirmIcon?: ReactNode;
+  cancelIcon?: ReactNode;
   onClose: () => void;
   onCancel?: () => void;
   onConfirm: () => void;
@@ -45,8 +48,12 @@ const severityIcon: Record<AlertColor, ReactNode> = {
 };
 
 export default function ChangesDialogue(props: ChangesDialogueProps) {
+  const confirmIcon = props.confirmIcon ?? <Save />;
+
   return (
     <Dialog
+      id={props.id || 'changes-dialog'}
+      className={props.className || 'changes-dialogue'}
       open={props.isOpen}
       onClose={props.onClose}
       maxWidth={props.size}
@@ -61,7 +68,7 @@ export default function ChangesDialogue(props: ChangesDialogueProps) {
         },
       }}
     >
-      <DialogTitle id="changes-dialogue-title">
+      <DialogTitle id={'changes-dialog-title'}>
         <Stack direction="row" spacing={1} alignItems="center">
           {props.severity && severityIcon[props.severity]}
           <Typography variant="h6" component="span">
@@ -84,6 +91,7 @@ export default function ChangesDialogue(props: ChangesDialogueProps) {
             onClick={props.onCancel}
             disabled={props.confirmLoading}
             variant={'contained'}
+            startIcon={props.cancelIcon}
             sx={{
               backgroundColor: Theme.PrimaryGrey500,
             }}
@@ -96,7 +104,7 @@ export default function ChangesDialogue(props: ChangesDialogueProps) {
           variant="contained"
           disabled={props.disableConfirm || props.confirmLoading}
           startIcon={
-            props.confirmLoading ? <CircularProgress size={16} color="inherit" /> : <Save />
+            props.confirmLoading ? <CircularProgress size={16} color="inherit" /> : confirmIcon
           }
           sx={{
             color: 'white', // todo: do we not have a constant for this?

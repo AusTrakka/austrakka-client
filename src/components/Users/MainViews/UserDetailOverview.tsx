@@ -1,6 +1,7 @@
 import {
   Alert,
   type AlertColor,
+  Box,
   List,
   ListItem,
   ListItemIcon,
@@ -38,7 +39,7 @@ import {
 } from '../../../utilities/resourceUtils';
 import renderIcon from '../../Admin/UserIconRenderer';
 import '../../Common/SettingsPage/RowAndCell.css';
-import { CheckCircle, Report } from '@mui/icons-material';
+import { CheckCircle, ErrorOutline, RemoveCircle, Report } from '@mui/icons-material';
 import { Theme } from '../../../assets/themes/theme';
 import { hasPermissionV2ByRole } from '../../../permissions/accessTable';
 import { Roles } from '../../../permissions/roles';
@@ -48,6 +49,8 @@ import {
   checkEditUserScopes,
   checkFetchUserScope,
   filterAssignedRoles,
+  groupFailedChangesByType,
+  groupPendingChangesByType,
   removeSelectionFromPrivileges,
   updateEditedPrivileges,
   updatePendingChanges,
@@ -56,8 +59,6 @@ import {
 import { formatBytes } from '../../../utilities/renderUtils';
 import ChangesDialogue from '../../Common/SettingsPage/ChangesDialogue';
 import { processPrivilegeChanges } from '../privilegeBulkApiCall';
-import { FailedChangesDialog } from './FailedChangesDialog';
-import { PrivilegesChangeDialogue } from './PrivilegesChangeDialogue';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
@@ -86,6 +87,8 @@ function UserDetailOverview() {
   const [failedChangesDialogOpen, setFailedChangesDialogOpen] = useState(false);
   const [openSuccessPrivAssignmentSnackbar, setOpenSuccessPrivAssignmentSnackbar] = useState(false);
   const submitter = useAppSelector(selectUserState);
+  const privilegeChangesGrouped = groupPendingChangesByType(pendingChanges);
+  const failedChangesGrouped = groupFailedChangesByType(failedChanges);
 
   const readableNames: Record<string, string> = {
     objectId: 'Object ID',
@@ -236,8 +239,9 @@ function UserDetailOverview() {
     return userFetchResponse.data as User;
   }
 
-  const processPendingChanges = async () => {
+  const saveUserPermissionsChanges = async () => {
     const clientSessionId: string = crypto.randomUUID();
+    setOnSaveLoading(true);
 
     const failedRequests = await processPrivilegeChanges(
       pendingChanges,
@@ -256,13 +260,21 @@ function UserDetailOverview() {
     const userDto = await fetchUserDto();
     setUser(userDto);
     setEditedPrivileges(structuredClone(userDto.privileges));
+
     setPendingChanges([]);
     setEditingPrivileges(false);
+    setOnSaveLoading(false);
     setShowPrivConfirmationDialogue(false);
   };
 
-  const handleConfirmPrivileges = async () => {
-    await processPendingChanges();
+  const onFailedChangesConfirm = async () => {
+    setOnSaveLoading(true);
+    setFailedChanges([]);
+    setFailedChangesDialogOpen(false);
+    const userDto = await fetchUserDto();
+    setUser(userDto);
+    setEditedPrivileges(structuredClone(userDto.privileges));
+    setOnSaveLoading(false);
   };
 
   const editUserDetails = async () => {
@@ -338,7 +350,7 @@ function UserDetailOverview() {
     }
   };
 
-  const saveChanges = async () => {
+  const saveUserPropertiesChanges = async () => {
     setOnSaveLoading(true);
 
     await editUserDetails();
@@ -348,13 +360,13 @@ function UserDetailOverview() {
     setShowOrgConfirmationDialogue(false);
   };
 
-  const onSave = async () => {
+  const onUserSettingsSave = async () => {
     if (editedValues === null) return;
 
     if (editedValues.orgAbbrev !== user?.orgAbbrev) {
       setShowOrgConfirmationDialogue(true);
     } else {
-      await saveChanges();
+      await saveUserPropertiesChanges();
     }
   };
 
@@ -367,7 +379,6 @@ function UserDetailOverview() {
     );
 
     setEditedPrivileges((prev) => updateEditedPrivileges(prev, recordType, filteredAssignedRoles));
-
     setPendingChanges((prev) => updatePendingChanges(prev, recordType, filteredAssignedRoles));
   };
 
@@ -433,9 +444,7 @@ function UserDetailOverview() {
               {user.displayName}
             </Typography>
           </div>
-
           {/* Right: Quota + Dates */}
-
           <Paper elevation={0} variant="outlined" sx={{ padding: '10px' }}>
             <Stack direction="row" spacing={3}>
               {/* Left Column: Quota Info */}
@@ -459,7 +468,6 @@ function UserDetailOverview() {
                   </Stack>
                 </Stack>
               )}
-
               {/* Right Column: Dates */}
               <Stack direction="column" spacing={0.2} minWidth={200}>
                 <Stack direction="row" justifyContent="space-between">
@@ -494,7 +502,7 @@ function UserDetailOverview() {
             user={user}
             editingBasic={editingBasic}
             setEditingBasic={setEditingBasic}
-            onSave={onSave}
+            onSave={onUserSettingsSave}
             handleCancel={handleCancel}
             hasChanges={hasChanges}
             canSee={canSeeEditButtons}
@@ -525,13 +533,14 @@ function UserDetailOverview() {
         </Grid>
       </Grid>
       <ChangesDialogue
+        id={'user-organisation-change-dialog'}
         severity={'warning'}
         title={'Updating Home organisation'}
         isOpen={showOrgConfirmationDialogue}
         onClose={() => setShowOrgConfirmationDialogue(false)}
         onCancel={() => setShowOrgConfirmationDialogue(false)}
         confirmLoading={onSaveLoading}
-        onConfirm={saveChanges}
+        onConfirm={saveUserPropertiesChanges}
       >
         <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
           Changing the Organisation for "{user.displayName}" will result in the following:
@@ -541,24 +550,161 @@ function UserDetailOverview() {
           Are you sure you want to continue? All additional changes will also be saved!
         </Typography>
       </ChangesDialogue>
-      <PrivilegesChangeDialogue
-        open={showPrivConfirmationDialogue}
+      <ChangesDialogue
+        id={'user-privileges-change-dialog'}
+        title={'You are about to make the following changes'}
+        isOpen={showPrivConfirmationDialogue}
         onClose={() => setShowPrivConfirmationDialogue(false)}
-        pendingChanges={pendingChanges}
-        onConfirm={handleConfirmPrivileges}
-      />
-      <FailedChangesDialog
-        open={failedChangesDialogOpen}
-        onClose={() => setFailedChangesDialogOpen(false)}
-        failedChanges={failedChanges}
-        onClear={async () => {
-          setFailedChanges([]);
-          setFailedChangesDialogOpen(false);
-          const userDto = await fetchUserDto();
-          setUser(userDto);
-          setEditedPrivileges(structuredClone(userDto.privileges));
-        }}
-      />
+        onCancel={() => setShowPrivConfirmationDialogue(false)}
+        confirmLoading={onSaveLoading}
+        onConfirm={saveUserPermissionsChanges}
+      >
+        {/* Additions Section */}
+        {privilegeChangesGrouped.POST && Object.keys(privilegeChangesGrouped.POST).length > 0 && (
+          <>
+            <Typography variant="h6" fontSize="1rem" gutterBottom>
+              Additions:
+            </Typography>
+            {Object.entries(privilegeChangesGrouped.POST).map(([recordType, changes]) => (
+              <Box key={`post-${recordType}`} sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ ml: 2 }}>
+                  {recordType}:
+                </Typography>
+                <List dense>
+                  {changes.map((change) => (
+                    <ListItem key={change.payload.recordName + change.payload.roleName}>
+                      <ListItemIcon>
+                        <CheckCircle color="success" />
+                      </ListItemIcon>
+                      <ListItemText
+                        secondary={`Record: ${change.payload.recordName}, Role: ${change.payload.roleName}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            ))}
+          </>
+        )}
+        {/* Removals Section */}
+        {privilegeChangesGrouped.DELETE &&
+          Object.keys(privilegeChangesGrouped.DELETE).length > 0 && (
+            <>
+              <Typography variant="h6" fontSize="1rem" gutterBottom>
+                Removals:
+              </Typography>
+              {Object.entries(privilegeChangesGrouped.DELETE).map(([recordType, changes]) => (
+                <Box key={`delete-${recordType}`} sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" sx={{ ml: 2 }}>
+                    {recordType}:
+                  </Typography>
+                  <List dense>
+                    {changes.map((change) => (
+                      <ListItem key={change.payload.recordName + change.payload.roleName}>
+                        <ListItemIcon>
+                          <RemoveCircle color="error" />
+                        </ListItemIcon>
+                        <ListItemText
+                          secondary={`Record: ${change.payload.recordName}, Role: ${change.payload.roleName}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              ))}
+            </>
+          )}
+      </ChangesDialogue>
+      <ChangesDialogue
+        id={'failed-changes-dialog'}
+        title={'The following privilege updates failed'}
+        confirmText={'OK'}
+        isOpen={failedChangesDialogOpen}
+        onClose={onFailedChangesConfirm}
+        onConfirm={onFailedChangesConfirm}
+        confirmIcon={<></>}
+      >
+        {/* Failed Additions */}
+        {failedChangesGrouped.POST && Object.keys(failedChangesGrouped.POST).length > 0 && (
+          <>
+            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+              Failed Additions:
+            </Typography>
+            {Object.entries(failedChangesGrouped.POST).map(([recordType, changes]) => (
+              <Box key={`post-${recordType}`} sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ ml: 2 }}>
+                  {recordType}:
+                </Typography>
+                <List dense>
+                  {changes.map(([errorMessage, change]) => (
+                    <ListItem key={change.payload.recordName + change.payload.roleName}>
+                      <ListItemIcon>
+                        <ErrorOutline color="error" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`Failed to add to ${change.recordType}`}
+                        secondary={
+                          <>
+                            <Typography component="span" display="block">
+                              Record: {change.payload.recordName}
+                            </Typography>
+                            <Typography component="span" display="block">
+                              Role: {change.payload.roleName}
+                            </Typography>
+                            <Typography component="span" display="block" color="error">
+                              Error: {errorMessage}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            ))}
+          </>
+        )}
+        {/* Failed Removals */}
+        {failedChangesGrouped.DELETE && Object.keys(failedChangesGrouped.DELETE).length > 0 && (
+          <>
+            <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+              Failed Removals:
+            </Typography>
+            {Object.entries(failedChangesGrouped.DELETE).map(([recordType, changes]) => (
+              <Box key={`delete-${recordType}`} sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ ml: 2 }}>
+                  {recordType}:
+                </Typography>
+                <List dense>
+                  {changes.map(([errorMessage, change]) => (
+                    <ListItem key={change.payload.recordName + change.payload.roleName}>
+                      <ListItemIcon>
+                        <ErrorOutline color="error" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`Failed to remove from ${change.recordType}`}
+                        secondary={
+                          <>
+                            <Typography component="span" display="block">
+                              Record: {change.payload.recordName}
+                            </Typography>
+                            <Typography component="span" display="block">
+                              Role: {change.payload.roleName}
+                            </Typography>
+                            <Typography component="span" display="block" color="error">
+                              Error: {errorMessage}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            ))}
+          </>
+        )}
+      </ChangesDialogue>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
