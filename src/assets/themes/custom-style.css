@@ -40,6 +40,8 @@
   order: 2;
   margin-left: 6px;
   margin-right: 6px;
+  background: var(--primary-100);
+  color: var(--primary-900);
 }
 
 /* 3. Sort section / custom icon container is forced to the far right */
@@ -151,4 +153,14 @@ th:has(.p-checkbox) .p-column-title:empty {
 .p-datatable .p-datatable-tbody > tr.p-highlight > td {
   background: inherit;
   color: inherit;
+}
+
+/*Tab Content Area*/
+
+.main-tab-content-container {
+  margin-top: 16px;
+}
+
+.app-container.compact-mode .main-tab-content-container {
+  margin-top: var(--density-spacing-md);
 }
