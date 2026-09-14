@@ -57,8 +57,8 @@ import {
   updatePendingChangesForRemoval,
 } from '../../../utilities/privilegeUtils';
 import { formatBytes } from '../../../utilities/renderUtils';
-import ChangesDialogue from '../../Common/SettingsPage/ChangesDialogue';
 import { processPrivilegeChanges } from '../privilegeBulkApiCall';
+import ChangesDialogue from './ChangesDialogue';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
@@ -552,13 +552,16 @@ function UserDetailOverview() {
       </ChangesDialogue>
       <ChangesDialogue
         id={'user-privileges-change-dialog'}
-        title={'You are about to make the following changes'}
+        title={'Confirm Privilege Changes'}
         isOpen={showPrivConfirmationDialogue}
         onClose={() => setShowPrivConfirmationDialogue(false)}
         onCancel={() => setShowPrivConfirmationDialogue(false)}
         confirmLoading={onSaveLoading}
         onConfirm={saveUserPermissionsChanges}
       >
+        <Typography variant="body2" fontSize=".9rem" textAlign={'left'} gutterBottom>
+          You are about to make the following changes:
+        </Typography>
         {/* Additions Section */}
         {privilegeChangesGrouped.POST && Object.keys(privilegeChangesGrouped.POST).length > 0 && (
           <>
@@ -617,13 +620,16 @@ function UserDetailOverview() {
       </ChangesDialogue>
       <ChangesDialogue
         id={'failed-changes-dialog'}
-        title={'The following privilege updates failed'}
+        title={'Failed Privilege Changes'}
         confirmText={'OK'}
         isOpen={failedChangesDialogOpen}
         onClose={onFailedChangesConfirm}
         onConfirm={onFailedChangesConfirm}
         confirmIcon={<></>}
       >
+        <Typography variant="body2" fontSize=".9rem" textAlign={'left'} gutterBottom>
+          The following privilege updates failed:
+        </Typography>
         {/* Failed Additions */}
         {failedChangesGrouped.POST && Object.keys(failedChangesGrouped.POST).length > 0 && (
           <>
