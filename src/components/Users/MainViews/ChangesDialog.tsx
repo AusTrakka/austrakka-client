@@ -47,7 +47,7 @@ const severityIcon: Record<AlertColor, ReactNode> = {
   info: <InfoOutlined color="info" />,
 };
 
-export default function ChangesDialogue(props: ChangesDialogueProps) {
+export default function ChangesDialog(props: ChangesDialogueProps) {
   const confirmIcon = props.confirmIcon ?? <Save />;
 
   return (

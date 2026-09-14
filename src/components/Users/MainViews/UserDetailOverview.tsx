@@ -58,7 +58,7 @@ import {
 } from '../../../utilities/privilegeUtils';
 import { formatBytes } from '../../../utilities/renderUtils';
 import { processPrivilegeChanges } from '../privilegeBulkApiCall';
-import ChangesDialogue from './ChangesDialogue';
+import ChangesDialog from './ChangesDialog';
 import UserPrivileges from './UserPrivileges';
 import UserProperties from './UserProperties';
 
@@ -532,7 +532,7 @@ function UserDetailOverview() {
           />
         </Grid>
       </Grid>
-      <ChangesDialogue
+      <ChangesDialog
         id={'user-organisation-change-dialog'}
         severity={'warning'}
         title={'Updating Home organisation'}
@@ -549,8 +549,8 @@ function UserDetailOverview() {
         <Typography variant="body2" fontSize=".9rem" textAlign={'center'}>
           Are you sure you want to continue? All additional changes will also be saved!
         </Typography>
-      </ChangesDialogue>
-      <ChangesDialogue
+      </ChangesDialog>
+      <ChangesDialog
         id={'user-privileges-change-dialog'}
         title={'Confirm Privilege Changes'}
         isOpen={showPrivConfirmationDialogue}
@@ -617,8 +617,8 @@ function UserDetailOverview() {
               ))}
             </>
           )}
-      </ChangesDialogue>
-      <ChangesDialogue
+      </ChangesDialog>
+      <ChangesDialog
         id={'failed-changes-dialog'}
         title={'Failed Privilege Changes'}
         confirmText={'OK'}
@@ -710,7 +710,7 @@ function UserDetailOverview() {
             ))}
           </>
         )}
-      </ChangesDialogue>
+      </ChangesDialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
