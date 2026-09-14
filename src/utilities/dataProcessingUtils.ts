@@ -82,7 +82,7 @@ export function countPresentOrMissing(property: string, array: Array<any>) {
 export function countHasSequence(data: Sample[]) {
   let trueCount = 0;
   data.forEach((item) => {
-    if (item?.Has_sequence === true) {
+    if (String(item?.Has_sequences).toLowerCase() === 'true') {
       trueCount += 1;
     }
   });
