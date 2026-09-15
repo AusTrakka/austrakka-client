@@ -35,41 +35,17 @@ span {
 }
 
 .app-container.compact-mode .pagePadded {
-  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-md);
-  margin-left: 165px;
+  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-xs);
+  margin-left: 156px;
 }
 
 .app-container.compact-mode .page {
-  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-xl);
+  padding: 0px var(--density-spacing-md) 0px var(--density-spacing-xs);
+  margin-left: 58px;
 }
 
 .pageDrawer {
   z-index: 10;
-}
-
-.app-container.compact-mode .MuiDrawer- .pageDrawer .MuiMenuItem-root {
-  padding: var(--density-spacing-md) var(--density-spacing-md) var(--density-spacing-md)
-    var(--density-spacing-sm);
-}
-
-.warningBannerPadded {
-  transition: all 330ms ease-in-out;
-  padding: 0px 20px 0px 35px;
-  margin-left: 190px;
-  background-color: var(--secondary-yellow);
-  top: 0;
-  position: sticky;
-  z-index: 9999;
-  /* width: calc(100vw - 240px);  */
-}
-
-.warningBanner {
-  margin-left: 70px;
-  padding: 0px 35px 0px 35px;
-  background-color: var(--secondary-yellow);
-  top: 0;
-  position: sticky;
-  z-index: 9999;
 }
 
 .pageHeader {
@@ -99,7 +75,7 @@ span {
 }
 
 .app-container.compact-mode .pageTitle {
-  font-size: 1.4rem !important;
+  font-size: 1.2rem !important;
 }
 
 /* Metadata column styles */

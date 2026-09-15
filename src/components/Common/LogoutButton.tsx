@@ -27,6 +27,7 @@ export default function LogoutButton(props: any) {
             minWidth: 0,
             mr: margin,
             justifyContent: 'center',
+            width: showText ? 'auto' : '100%',
           }}
         >
           <Logout />

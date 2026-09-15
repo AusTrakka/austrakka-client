@@ -1,41 +1,20 @@
 import { ManageSearch } from '@mui/icons-material';
-import {
-  Box,
-  IconButton,
-  type IconButtonProps,
-  type SxProps,
-  styled,
-  TextField,
-  Tooltip,
-} from '@mui/material';
+import { Box, IconButton, type SxProps, TextField, Tooltip } from '@mui/material';
+import './SearchInput.css';
 import type { Theme } from '@mui/material/styles';
-import React, { memo, useRef } from 'react';
+import { type ChangeEvent, memo, useRef } from 'react';
 
 interface SearchInputProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   label?: string;
   placeholder?: string;
   forceExpanded?: boolean;
   iconSx?: SxProps<Theme>;
 }
 
-// Define interface for our custom props
-interface HoverableIconButtonProps extends IconButtonProps {
-  isHovered?: string;
-}
-
-// Create a styled version with proper typing
-const HoverableIconButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== 'isHovered',
-})<HoverableIconButtonProps>(({ theme, isHovered }) => ({
-  ...(isHovered === 'true' && {
-    backgroundColor: theme.palette.action.hover,
-  }),
-}));
-
 function SearchInput({
-  placeholder = '',
+  placeholder = 'Search...',
   label = 'Search',
   value,
   onChange,
@@ -43,74 +22,38 @@ function SearchInput({
   iconSx,
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isHovered, setIsHovered] = React.useState(false);
-  return (
-    <Box style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Invisible Clickable Area */}
-      <Box
-        style={{
-          position: 'absolute',
-          top: '-10px',
-          bottom: '-10px',
-          left: '-10px',
-          right: '-10px',
-          width: '70%',
-          height: '100%',
-          zIndex: 3,
-          cursor: 'pointer',
-        }}
-        onClick={() => inputRef.current?.focus()}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      />
 
-      <Box
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-          zIndex: 2,
-          pointerEvents: 'none',
+  return (
+    <Box className="table-search-input" sx={{ display: 'flex', alignItems: 'center' }}>
+      <Tooltip title="Keyword Search" placement="top">
+        <IconButton size="small" onClick={() => inputRef.current?.focus()}>
+          <ManageSearch sx={iconSx} />
+        </IconButton>
+      </Tooltip>
+      <TextField
+        inputRef={inputRef}
+        id="global-filter"
+        type="search"
+        variant="standard"
+        size="small"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        slotProps={{ htmlInput: { 'aria-label': label } }}
+        sx={{
+          width: forceExpanded || value ? 200 : 0,
+          overflow: 'hidden',
+          transition: (theme) => theme.transitions.create('width'),
+          '&:focus-within': {
+            width: 200,
+          },
+          '& .MuiInputBase-input': {
+            minWidth: 0,
+          },
         }}
-      >
-        <Tooltip title="Keyword Search" placement="top">
-          <HoverableIconButton
-            onClick={() => inputRef.current?.focus()}
-            style={{ pointerEvents: 'none' }}
-            isHovered={isHovered.toString()}
-          >
-            <ManageSearch sx={iconSx} />
-          </HoverableIconButton>
-        </Tooltip>
-        <TextField
-          inputRef={inputRef}
-          sx={{
-            marginBottom: 1,
-            width: forceExpanded || value ? '200px' : '0',
-            '&:focus-within': {
-              width: 200,
-            },
-            transition: 'width 0.5s',
-            pointerEvents: 'auto',
-          }}
-          id="global-filter"
-          label={label}
-          type="search"
-          variant="standard"
-          color="success"
-          size="small"
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-        />
-      </Box>
+      />
     </Box>
   );
 }
-
-SearchInput.defaultProps = {
-  placeholder: 'Search...',
-  label: 'Search',
-};
 
 export default memo(SearchInput);
