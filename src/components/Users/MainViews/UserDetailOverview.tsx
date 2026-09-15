@@ -397,9 +397,7 @@ function UserDetailOverview() {
   };
 
   const getOrgChangeDialogueMessage = () => {
-    const infoItems = [
-      `Existing privileges on "${editedValues?.orgAbbrev}" will be respected`,
-    ];
+    const infoItems = [`Existing privileges on "${editedValues?.orgAbbrev}" will be respected`];
     const warningItems = [
       `"${user?.displayName}" will no longer be a member of "${user?.orgAbbrev}"`,
       `All privileges on "${user?.orgAbbrev}" will be removed`,
