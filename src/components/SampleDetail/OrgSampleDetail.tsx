@@ -17,11 +17,11 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { ResponseType } from '../../constants/responseType';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
-import type { Field, Group, MetaDataColumn } from '../../types/dtos';
+import type { Field, MetaDataColumn } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { Sample } from '../../types/sample.interface';
 import { renderValue } from '../../utilities/renderUtils';
-import { getOrgFields, getOrgMetadata, getSampleGroups } from '../../utilities/resourceUtils';
+import { getOrgFields, getOrgMetadata, getSampleProperties } from '../../utilities/resourceUtils';
 
 function SampleDetail() {
   const { seqId } = useParams();
@@ -44,14 +44,12 @@ function SampleDetail() {
   useEffect(() => {
     const updateProject = async () => {
       try {
-        const sampleResponse: ResponseObject = await getSampleGroups(seqId!, token);
+        const sampleResponse: ResponseObject = await getSampleProperties(seqId!, token);
         if (sampleResponse.status === ResponseType.Success) {
-          const groupsData = sampleResponse.data as Group[];
-          const ownerAbbrev = groupsData.find((g) => g.name.endsWith('-Owner'))?.organisation
-            .abbreviation;
+          const ownerAbbrev = sampleResponse.data.ownerOrganisation;
           if (ownerAbbrev === undefined) {
             // biome-ignore lint/suspicious/noConsole: historic
-            console.error('Organisation Owner group cannot be found for the current user');
+            console.error('Error finding sample owner organisation');
             return;
           }
           setOrgAbbrev(ownerAbbrev);
@@ -63,6 +61,7 @@ function SampleDetail() {
         console.error('Error updating project:', error);
       }
     };
+
     if (
       (seqId || orgAbbrev) &&
       tokenLoading !== LoadingState.LOADING &&
