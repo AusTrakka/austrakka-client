@@ -17,7 +17,7 @@ import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { ResponseType } from '../../constants/responseType';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
-import type { Field, Group, MetaDataColumn } from '../../types/dtos';
+import type { Field, MetaDataColumn } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { Sample } from '../../types/sample.interface';
 import { renderValue } from '../../utilities/renderUtils';
@@ -61,7 +61,7 @@ function SampleDetail() {
         console.error('Error updating project:', error);
       }
     };
-    
+
     if (
       (seqId || orgAbbrev) &&
       tokenLoading !== LoadingState.LOADING &&
