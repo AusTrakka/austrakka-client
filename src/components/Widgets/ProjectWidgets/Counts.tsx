@@ -129,9 +129,11 @@ export default function Counts(props: CountsWidgetProps) {
 
   return (
     <Box display="flex" flexDirection="column" height="100%">
-      <Typography variant="h5" paddingBottom={3} color="primary">
-        {title}
-      </Typography>
+      {title !== '' && (
+        <Typography variant="h5" paddingBottom={3} color="primary">
+          {title}
+        </Typography>
+      )}
       {hasCompleteData(data?.loadingState) && (
         <Box flex={1} minHeight={0}>
           <DataTable
