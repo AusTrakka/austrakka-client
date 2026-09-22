@@ -56,7 +56,7 @@ export default function UserPrivileges({
           setEditing={setEditingPrivileges}
           onSave={onPrivSave}
           onCancel={handlePrivCancel}
-          hasSavedChanges={privHasChanges}
+          hasPendingChanges={privHasChanges}
           canSee={canSee}
           onSaveLoading={onSaveLoading}
         />

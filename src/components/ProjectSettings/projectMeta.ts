@@ -35,7 +35,6 @@ export const desiredOrderingOfEditableFields: ReadonlyArray<keyof ProjectDraft> 
   'mergeAlgorithm',
   'requestingOrg',
   'watermarkTrees',
-  'isActive',
 ];
 
 export const readableNames: Record<string, string> = {
@@ -52,5 +51,4 @@ export const readableNames: Record<string, string> = {
   dashboardName: 'Dashboard Name',
   mergeAlgorithm: 'Merge Algorithm',
   watermarkTrees: 'Watermark Trees',
-  isActive: 'Active',
 };

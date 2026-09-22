@@ -473,3 +473,7 @@ export interface ProjectDocument {
 export interface ProformaSharedEntity {
   abbreviation: string;
 }
+
+export interface ProjectOrganisationsPatch {
+  organisationNames: string[];
+}
