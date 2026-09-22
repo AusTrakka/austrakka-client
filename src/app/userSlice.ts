@@ -9,7 +9,6 @@ import type { RootState } from './store';
 
 export interface UserSliceState {
   displayName: string;
-  admin: boolean;
   superUser: boolean;
   orgAbbrev: string;
   orgName: string;
@@ -21,10 +20,8 @@ export interface UserSliceState {
 }
 
 interface FetchUserRolesResponse {
-  groupRoles: GroupRole[];
   scopes: GroupedPrivilegesByRecordTypeWithScopes[];
   displayName: string;
-  isAusTrakkaAdmin: boolean;
   orgAbbrev: string;
   orgName: string;
   orgGlobalId: string;
@@ -42,14 +39,13 @@ const fetchUserRoles = createAsyncThunk(
       }
 
       // Destructure the response data
-      const { scopes, username, isAusTrakkaAdmin, displayName, orgAbbrev, orgName, orgGlobalId } =
+      const { scopes, username, displayName, orgAbbrev, orgName, orgGlobalId } =
         groupResponse.data as UserMe;
 
       // Fulfill with user role data
       return {
         scopes,
         displayName,
-        isAusTrakkaAdmin,
         orgAbbrev,
         orgName,
         orgGlobalId,
@@ -76,7 +72,6 @@ const userSlice = createSlice({
       .addCase(fetchUserRoles.fulfilled, (state, action) => {
         state.loading = LoadingState.SUCCESS;
         const holder = action.payload as FetchUserRolesResponse;
-        state.admin = holder.isAusTrakkaAdmin;
         state.superUser = hasSuperUserRoleInType(holder.scopes);
         state.displayName = holder.displayName;
         state.orgAbbrev = holder.orgAbbrev;
