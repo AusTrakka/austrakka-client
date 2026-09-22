@@ -1,4 +1,3 @@
-import type { UserSliceState } from '../app/userSlice';
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
 import { Roles } from '../permissions/roles';
@@ -6,7 +5,6 @@ import type {
   GroupedPrivilegesByRecordType,
   GroupedPrivilegesByRecordTypeWithScopes,
   PrivilegeWithRoles,
-  PrivilegeWithRolesWithScopes,
   RecordRole,
 } from '../types/dtos';
 import type { PendingChange, RoleAssignments } from '../types/userDetailEdit.interface';
@@ -273,16 +271,4 @@ export const updatePendingChangesForRemoval = (
       },
     },
   ];
-};
-
-export const privsOfTypeWithScope = (
-  user: UserSliceState,
-  recordType: RecordTypes,
-  scope: string,
-): PrivilegeWithRolesWithScopes[] => {
-  return user.scopes
-    .filter((x) => x.recordType === recordType)
-    .map((x) => x.recordRoles)
-    .reduce((x, y) => x.concat(y), [])
-    .filter((x) => user.superUser || x.roles.some((r) => r.scopes.some((s) => s === scope)));
 };

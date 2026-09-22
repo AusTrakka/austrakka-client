@@ -9,7 +9,7 @@ import {
   SeqType,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
-import { privsOfTypeWithScope } from './privilegeUtils';
+import { privsOfTypeWithScope } from './privCheck';
 
 // Uploads are active (queued, but not finalised) if in these states
 export const activeSeqUploadStates = [
@@ -107,7 +107,6 @@ export const getUploadableSampleOrgs = (user: UserSliceState): OrgDescriptor[] =
     (x) => {
       return {
         abbreviation: x.recordName,
-        name: x.recordName,
       } as OrgDescriptor;
     },
   );
@@ -121,7 +120,6 @@ export const getUploadableSeqOrgs = (user: UserSliceState): OrgDescriptor[] => {
   ).map((x) => {
     return {
       abbreviation: x.recordName,
-      name: x.recordName,
     } as OrgDescriptor;
   });
 };

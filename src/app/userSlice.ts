@@ -3,7 +3,7 @@ import LoadingState from '../constants/loadingState';
 import { ResponseType } from '../constants/responseType';
 import type { GroupedPrivilegesByRecordTypeWithScopes, GroupRole, UserMe } from '../types/dtos';
 import type { ResponseObject } from '../types/responseObject.interface';
-import { hasSuperUserRoleInType } from '../utilities/accessTableUtils';
+import { hasSuperUserRoleInType } from '../utilities/privCheck';
 import { getMe } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 

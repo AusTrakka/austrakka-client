@@ -25,10 +25,10 @@ import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
 import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
-import { Roles } from '../../../permissions/roles';
+import { ScopeDefinitions } from '../../../constants/scopes';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
-import { hasRoleInRecord } from '../../../utilities/accessTableUtils';
+import { hasPermissionV2ByScope } from '../../../utilities/privCheck';
 import { getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
 import { getSampleSharableProjects } from '../../../utilities/uploadUtils';
 
@@ -86,9 +86,9 @@ function OrgSampleShare(props: OrgSampleShareProps) {
     if (destAbbrev) {
       setDestination(destAbbrev);
 
-      const canViewPreview = hasRoleInRecord(
-        user.scopes,
-        Roles.ProjectViewer,
+      const canViewPreview = hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.LinkUnlinkSamplesToProject,
         destAbbrev,
         RecordTypes.PROJECT,
       );

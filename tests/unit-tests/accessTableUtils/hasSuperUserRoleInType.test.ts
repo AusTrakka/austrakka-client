@@ -1,5 +1,5 @@
 import type { GroupedPrivilegesByRecordTypeWithScopes } from '../../../src/types/dtos';
-import { hasSuperUserRoleInType } from '../../../src/utilities/accessTableUtils';
+import { hasSuperUserRoleInType } from '../../../src/utilities/privCheck';
 
 describe('hasSuperUserRoleInType', () => {
   describe('when given valid input with expected role types', () => {
