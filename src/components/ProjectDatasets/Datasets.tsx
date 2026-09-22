@@ -27,8 +27,10 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import { Theme } from '../../assets/themes/theme';
 import LoadingState from '../../constants/loadingState';
+import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
-import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
+import { ScopeDefinitions } from '../../constants/scopes';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
 import type { DataSetEntry, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
@@ -121,11 +123,11 @@ function Datasets(props: DatasetProps) {
 
   const canDelete = () => {
     if (user.loading === LoadingState.SUCCESS && projectDetails !== null) {
-      return hasPermission(
+      return hasPermissionV2ByScope(
         user,
-        `${projectDetails.abbreviation}-Group`,
-        'project/tabs/datasettab/datasettable',
-        PermissionLevel.CanClick,
+        ScopeDefinitions.ManageProjectDataset,
+        projectDetails.abbreviation,
+        RecordTypes.PROJECT,
       );
     }
     return false;

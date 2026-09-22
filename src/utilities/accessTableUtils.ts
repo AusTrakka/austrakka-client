@@ -1,19 +1,19 @@
 import RecordTypes from '../constants/record-type.enum';
-import type { Roles } from '../permissions/roles';
+import { Roles } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordTypeWithScopes,
   PrivilegeWithRolesWithScopes,
 } from '../types/dtos';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
-  const targetGroup = groups.find((group) => group.recordType === RecordTypes.SYSTEM);
-  if (!targetGroup) {
-    return false; // recordType not found
-  }
-
-  return targetGroup.recordRoles.some((recordRole) =>
-    recordRole.roles?.some((roleWithScopes) => roleWithScopes.privilegeLevel === 'Root'),
-  );
+  return groups
+    .filter((x) => x.recordType === RecordTypes.SYSTEM)
+    .map((x) => x.recordRoles)
+    .reduce((x, y) => x.concat(y), [])
+    .filter((x) => x.recordName === RecordTypes.SYSTEM)
+    .map((x) => x.roles)
+    .reduce((x, y) => x.concat(y), [])
+    .some((x) => x.roleName === Roles.SuperUser);
 }
 
 export function hasScopeInRecord(

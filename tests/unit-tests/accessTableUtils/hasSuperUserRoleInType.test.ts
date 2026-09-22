@@ -9,38 +9,12 @@ describe('hasSuperUserRoleInType', () => {
           recordType: 'System',
           recordRoles: [
             {
-              recordName: 'SomeTenant',
+              recordName: 'System',
               recordGlobalId: 'record-global-id-1',
               roles: [
                 {
                   roleName: 'SuperUser',
-                  privilegeLevel: 'Root',
-                  privilegeGlobalId: 'global-id-1',
                   scopes: [],
-                },
-              ],
-            },
-          ],
-        },
-      ];
-
-      expect(hasSuperUserRoleInType(groups)).toBe(true);
-    });
-
-    test('return true when user has Root privilegeLevel', () => {
-      const groups: GroupedPrivilegesByRecordTypeWithScopes[] = [
-        {
-          recordType: 'System',
-          recordRoles: [
-            {
-              recordName: 'SomeTenant',
-              recordGlobalId: 'record-global-id-1',
-              roles: [
-                {
-                  roleName: 'RegularUser',
-                  privilegeLevel: 'Root',
-                  privilegeGlobalId: 'global-id-1',
-                  scopes: ['some-other-scope'],
                 },
               ],
             },
@@ -62,8 +36,6 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'RegularUser',
-                  privilegeLevel: 'User',
-                  privilegeGlobalId: 'global-id-1',
                   scopes: ['some-other-scope'],
                 },
               ],
@@ -88,8 +60,6 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'SuperUser',
-                  privilegeLevel: '',
-                  privilegeGlobalId: 'global-id-1',
                   scopes: [],
                 },
               ],
@@ -148,20 +118,16 @@ describe('hasSuperUserRoleInType', () => {
               roles: [
                 {
                   roleName: 'RegularUser',
-                  privilegeLevel: 'User',
-                  privilegeGlobalId: 'global-id-1',
                   scopes: ['some-scope'],
                 },
               ],
             },
             {
-              recordName: 'Tenant2',
+              recordName: 'System',
               recordGlobalId: 'record-global-id-2',
               roles: [
                 {
                   roleName: 'SuperUser',
-                  privilegeLevel: 'Root',
-                  privilegeGlobalId: 'global-id-2',
                   scopes: [],
                 },
               ],

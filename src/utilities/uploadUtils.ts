@@ -1,5 +1,7 @@
+import type { UserSliceState } from '../app/userSlice';
+import RecordTypes from '../constants/record-type.enum';
+import { ScopeDefinitions } from '../constants/scopes';
 import type { DropFileUpload } from '../types/DropFileUpload';
-import type { GroupRole } from '../types/dtos';
 import {
   type OrgDescriptor,
   type SeqPairedUploadRow,
@@ -7,6 +9,7 @@ import {
   SeqType,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
+import { privsOfTypeWithScope } from './privilegeUtils';
 
 // Uploads are active (queued, but not finalised) if in these states
 export const activeSeqUploadStates = [
@@ -99,25 +102,36 @@ export const validateAllHaveSampleNamesWithOneFileOnly = {
   },
 } as CustomUploadValidator;
 
-// Logic of these two functions will need to change in perms V2; currently take in groupRoles
-// TODO ought to get group type in DTO rather than rely on group name structure -
-// however this is temporary anyway
-export const getUploadableOrgs = (groupRoles: GroupRole[]): OrgDescriptor[] => {
-  const orgs: OrgDescriptor[] = groupRoles
-    .filter((groupRole) => groupRole.role.name === 'Uploader')
-    .filter((groupRole) =>
-      ['Owner', 'Contributor'].includes(groupRole.group.name.split('-').pop()!),
-    )
-    .map((groupRole) => groupRole.group.organisation);
-  return orgs;
+export const getUploadableSampleOrgs = (user: UserSliceState): OrgDescriptor[] => {
+  return privsOfTypeWithScope(user, RecordTypes.ORGANISATION, ScopeDefinitions.CreateSamples).map(
+    (x) => {
+      return {
+        abbreviation: x.recordName,
+        name: x.recordName,
+      } as OrgDescriptor;
+    },
+  );
 };
 
-export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
-  const projectAbbrevs: string[] = groupRoles
-    .filter((groupRole) => groupRole.role.name === 'Uploader')
-    .filter((groupRole) => groupRole.group.name.split('-').pop()! === 'Group')
-    .map((groupRole) => groupRole.group.name.split('-').slice(0, -1).join('-'));
-  return projectAbbrevs;
+export const getUploadableSeqOrgs = (user: UserSliceState): OrgDescriptor[] => {
+  return privsOfTypeWithScope(
+    user,
+    RecordTypes.ORGANISATION,
+    ScopeDefinitions.UploadSequenceFiles,
+  ).map((x) => {
+    return {
+      abbreviation: x.recordName,
+      name: x.recordName,
+    } as OrgDescriptor;
+  });
+};
+
+export const getSampleSharableProjects = (user: UserSliceState): string[] => {
+  return privsOfTypeWithScope(
+    user,
+    RecordTypes.PROJECT,
+    ScopeDefinitions.LinkUnlinkSamplesToProject,
+  ).map((x) => x.recordName);
 };
 
 export const createPairedSeqUploadRows = (files: DropFileUpload[]): SeqPairedUploadRow[] => {

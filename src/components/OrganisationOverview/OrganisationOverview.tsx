@@ -12,12 +12,8 @@ import LoadingState from '../../constants/loadingState';
 import RecordTypes from '../../constants/record-type.enum';
 import { ResponseType } from '../../constants/responseType';
 import { ScopeDefinitions } from '../../constants/scopes';
-import {
-  hasPermission,
-  hasPermissionV2ByScope,
-  PermissionLevel,
-} from '../../permissions/accessTable';
-import type { GroupRole, Organisation } from '../../types/dtos';
+import { hasPermissionV2ByScope } from '../../permissions/accessTable';
+import type { Organisation } from '../../types/dtos';
 import { getOrganisation } from '../../utilities/resourceUtils';
 import Activity from '../Common/Activity/Activity';
 import CustomTabs from '../Common/CustomTabs';
@@ -46,14 +42,16 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const user: UserSliceState = useAppSelector(selectUserState);
 
   useEffect(() => {
-    const checkSharingPermissions = (ownerGroupName: string) =>
-      hasPermission(user, ownerGroupName, 'organisation/sample/share', PermissionLevel.CanShow);
-    const ownerOrgGroupName: string | undefined = user.groupRoles.find(
-      (groupRole: GroupRole) => groupRole.group.name === `${orgAbbrev}-Owner`,
-    )?.group.name;
-    if (user.loading === LoadingState.SUCCESS && (ownerOrgGroupName || user.admin)) {
+    const checkSharingPermissions = (ownerOrg: string) =>
+      hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.ShareUnshareSamples,
+        ownerOrg,
+        RecordTypes.ORGANISATION,
+      );
+    if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
       // give it an empty string if only the admin check passed in the or condition above
-      setCanShare(checkSharingPermissions(ownerOrgGroupName ?? ''));
+      setCanShare(checkSharingPermissions(orgAbbrev ?? ''));
     }
   }, [orgAbbrev, user]);
 

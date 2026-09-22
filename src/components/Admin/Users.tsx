@@ -15,7 +15,8 @@ import { useAppSelector } from '../../app/store';
 import { selectUserState, type UserSliceState } from '../../app/userSlice';
 import LoadingState from '../../constants/loadingState';
 import { ResponseType } from '../../constants/responseType';
-import { hasPermission, PermissionLevel } from '../../permissions/accessTable';
+import { hasPermissionV2ByRole } from '../../permissions/accessTable';
+import { Roles } from '../../permissions/roles';
 import type { UserList } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import { isoDateOrNotRecorded } from '../../utilities/dateUtils';
@@ -161,7 +162,7 @@ function Users() {
   );
 
   // need a ternary that opens a alert if the user is not allow here
-  return !hasPermission(user, 'Trakka-Owner', 'users', PermissionLevel.CanShow) ? (
+  return !hasPermissionV2ByRole(user, Roles.Admin) ? (
     <Alert severity="error">Admin Only Page: Unauthorized</Alert>
   ) : (
     <>

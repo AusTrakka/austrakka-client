@@ -227,22 +227,27 @@ export const getSampleProperties = (seqId: string, token: string) =>
   callGET(`/api/Sample/${seqId}`, token);
 export const shareSamples = (
   token: string,
-  groupName: string,
+  project: string,
   samples: string[],
   clientSessionId?: string,
 ) =>
-  callPATCH('/api/Sample/Share', token, { groupName: groupName, seqIds: samples }, clientSessionId);
+  callPATCH(
+    '/api/Sample/Share',
+    token,
+    { projectIdentifier: project, seqIds: samples },
+    clientSessionId,
+  );
 
 export const unshareSamples = (
   token: string,
-  groupName: string,
+  project: string,
   samples: string[],
   clientSessionId?: string,
 ) =>
   callPATCH(
     '/api/Sample/UnShare',
     token,
-    { groupName: groupName, seqIds: samples },
+    { projectIdentifier: project, seqIds: samples },
     clientSessionId,
   );
 

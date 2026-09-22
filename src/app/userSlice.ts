@@ -8,8 +8,6 @@ import { getMe } from '../utilities/resourceUtils';
 import type { RootState } from './store';
 
 export interface UserSliceState {
-  groupRolesByGroup: Record<string, string[]>;
-  groupRoles: GroupRole[];
   displayName: string;
   admin: boolean;
   superUser: boolean;
@@ -44,20 +42,11 @@ const fetchUserRoles = createAsyncThunk(
       }
 
       // Destructure the response data
-      const {
-        scopes,
-        username,
-        groupRoles,
-        isAusTrakkaAdmin,
-        displayName,
-        orgAbbrev,
-        orgName,
-        orgGlobalId,
-      } = groupResponse.data as UserMe;
+      const { scopes, username, isAusTrakkaAdmin, displayName, orgAbbrev, orgName, orgGlobalId } =
+        groupResponse.data as UserMe;
 
       // Fulfill with user role data
       return {
-        groupRoles,
         scopes,
         displayName,
         isAusTrakkaAdmin,
@@ -75,7 +64,6 @@ const fetchUserRoles = createAsyncThunk(
 const userSlice = createSlice({
   name: 'userSlice',
   initialState: {
-    groupRolesByGroup: {},
     errorMessage: '',
     loading: LoadingState.IDLE,
   } as UserSliceState,
@@ -88,16 +76,6 @@ const userSlice = createSlice({
       .addCase(fetchUserRoles.fulfilled, (state, action) => {
         state.loading = LoadingState.SUCCESS;
         const holder = action.payload as FetchUserRolesResponse;
-        const data: Record<string, string[]> = {};
-        holder.groupRoles.forEach((groupRole) => {
-          if (data[groupRole.group.name]) {
-            data[groupRole.group.name].push(groupRole.role.name);
-          } else {
-            data[groupRole.group.name] = [groupRole.role.name];
-          }
-        });
-        state.groupRolesByGroup = data;
-        state.groupRoles = holder.groupRoles;
         state.admin = holder.isAusTrakkaAdmin;
         state.superUser = hasSuperUserRoleInType(holder.scopes);
         state.displayName = holder.displayName;
