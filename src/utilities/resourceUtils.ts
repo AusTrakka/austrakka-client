@@ -11,12 +11,14 @@ import type {
   Project,
   ProjectDashboardDetails,
   ProjectDocument,
+  ProjectOrganisationsPatch,
   ProjectPut,
   ProjectSummary,
   ProjectView,
   Role,
   Tree,
   TreeVersion,
+  User,
   UserPatchV2,
   UserRoleRecordPrivilegePost,
 } from '../types/dtos';
@@ -37,6 +39,11 @@ import {
   previewFile,
 } from './api';
 
+// todo: consider defining the root paths (e.g /api/Projects)
+//  as variables to shorten the code in this file and make refactor more flexible
+
+// todo: should we also consider grouping methods under namespace objects? feels a bit messy in here
+
 // Definition of endpoints
 
 // Project endpoints
@@ -54,7 +61,7 @@ export const putProjectDetails = (
   token: string,
 ): Promise<ResponseObject<Project>> => callPUT(`/api/Projects/${identifer}`, token, putDto);
 
-export const pathchProjectIsActive = (
+export const patchProjectIsActive = (
   isActive: boolean,
   identifier: string,
   token: string,
@@ -74,6 +81,7 @@ export const getPlots = (
   projectId: number,
   token: string,
 ): Promise<ResponseObject<PlotListing[]>> => callGET(`/api/Plots/project/${projectId}`, token);
+
 export const getPlotDetails = (abbrev: string, token: string): Promise<ResponseObject<Plot>> =>
   callGET(`/api/Plots/abbrev/${abbrev}`, token);
 
@@ -303,6 +311,18 @@ export const changeSampleOwner = (
     clientSessionId,
   );
 
+export const updateUserOrganisation = (
+  token: string,
+  currentOrgIdentifier: string,
+  targetOrgIdentifier: string,
+  targetUserIdentifier: string,
+): Promise<ResponseObject<User>> =>
+  callPATCH(
+    `/api/Organisations/${currentOrgIdentifier}/User/${targetUserIdentifier}`,
+    token,
+    targetOrgIdentifier,
+  );
+
 export const postFeedback = (
   feedbackPostDto: FeedbackPost,
   token: string,
@@ -489,6 +509,7 @@ export const uploadDocument = (
     customHeaders,
   );
 };
+
 export const disableDocument = (projectAbbrev: string, documentStringId: string, token: string) =>
   callPATCH(`/api/Projects/${projectAbbrev}/documents/${documentStringId}/disable`, token);
 
@@ -528,3 +549,26 @@ export const previewDocument = async (
     token,
   );
 };
+
+// Project Organisations Endpoints
+const projectRoot = '/api/Projects';
+
+export const getProjectOrganisations = async (
+  identifier: string,
+  token: string,
+): Promise<ResponseObject<Organisation[]>> =>
+  await callGET(`${projectRoot}/${identifier}/Organisations`, token);
+
+export const addProjectOrganisations = async (
+  identifier: string,
+  data: ProjectOrganisationsPatch,
+  token: string,
+): Promise<ResponseObject> =>
+  await callPATCH(`${projectRoot}/${identifier}/Organisations/Add`, token, data);
+
+export const removeProjectOrganisations = async (
+  identifier: string,
+  data: ProjectOrganisationsPatch,
+  token: string,
+): Promise<ResponseObject> =>
+  await callPATCH(`${projectRoot}/${identifier}/Organisations/Remove`, token, data);

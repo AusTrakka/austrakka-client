@@ -1,6 +1,7 @@
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import {
   type AlertColor,
+  Box,
   Paper,
   Stack,
   Switch,
@@ -18,7 +19,7 @@ import { Theme } from '../../assets/themes/theme';
 import { ResponseType } from '../../constants/responseType';
 import type { Organisation, Project } from '../../types/dtos';
 import { isoDateLocalDate } from '../../utilities/dateUtils';
-import { pathchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
+import { patchProjectIsActive, putProjectDetails } from '../../utilities/resourceUtils';
 import { FieldLabelWithTooltip } from '../Common/SettingsPage/FieldLabelWithToolTip';
 import EditButtons from '../Users/EditButtons';
 import { EditableFieldInput } from './EditableFieldInput';
@@ -81,7 +82,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           ? putProjectDetails(projectAbbrev, putPayload, token)
           : Promise.resolve({ status: ResponseType.Success }),
         isActive !== undefined
-          ? pathchProjectIsActive(isActive, projectAbbrev, token)
+          ? patchProjectIsActive(isActive, projectAbbrev, token)
           : Promise.resolve({ status: ResponseType.Success }),
       ]);
 
@@ -113,6 +114,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
         direction="row"
         justifyContent="space-between"
         alignItems="center"
+        display="flex"
         style={{ padding: '10px' }}
       >
         <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
@@ -123,12 +125,12 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
           setEditing={setIsEditing}
           onSave={handleSave}
           onCancel={handleCancel}
-          hasSavedChanges={isDirty}
+          hasPendingChanges={isDirty}
           canSee={() => editable}
           onSaveLoading={isSaving}
         />
       </Stack>
-      <TableContainer>
+      <TableContainer component={Box}>
         <Table sx={{ borderBottom: 'none' }}>
           <TableBody>
             {readonlyFields.map((field) => (
@@ -137,7 +139,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
                   <FieldLabelWithTooltip field={field} readableNames={readableNames} />
                 </TableCell>
                 <TableCell className="project-value-cell">
-                  {formatValue(canonical[field])}
+                  <Typography variant="body2">{formatValue(canonical[field])}</Typography>
                 </TableCell>
               </TableRow>
             ))}
@@ -161,7 +163,7 @@ function BasicPropertiesSection(props: BasicPropertiesSectionProps) {
                       }))}
                     />
                   ) : (
-                    formatValue(draft[field])
+                    <Typography variant="body2">{formatValue(draft[field])}</Typography>
                   )}
                 </TableCell>
               </TableRow>
