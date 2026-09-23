@@ -196,8 +196,6 @@ export interface PrivilegeWithRolesWithScopes {
 
 export interface RecordRoleWithScopes {
   roleName: string;
-  privilegeLevel: string;
-  privilegeGlobalId: string;
   scopes: string[];
 }
 

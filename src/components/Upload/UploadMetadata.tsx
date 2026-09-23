@@ -43,7 +43,7 @@ import {
   uploadSubmissions,
   validateSubmissions,
 } from '../../utilities/resourceUtils';
-import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
+import { getSampleSharableProjects, getUploadableSampleOrgs } from '../../utilities/uploadUtils';
 import HelpSidebar from '../Help/HelpSidebar';
 import { Validation } from '../Validation/Validation';
 import FileDragDrop from './FileDragDrop';
@@ -126,7 +126,7 @@ function UploadMetadata() {
       setAvailableDataOwners([]);
       return;
     }
-    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    const orgs: OrgDescriptor[] = getUploadableSampleOrgs(user);
     setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
     if (orgs.some((org) => org.abbreviation === user.orgAbbrev)) {
       setSelectedDataOwner(user.orgAbbrev);
@@ -139,7 +139,7 @@ function UploadMetadata() {
           'could not be properly loaded. Please contact an admin.',
       );
     }
-  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [user, user.loading, user.orgAbbrev]);
 
   // Projects
   useEffect(() => {
@@ -147,9 +147,9 @@ function UploadMetadata() {
       setAvailableProjects([]);
       return;
     }
-    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    const abbrevs: string[] = getSampleSharableProjects(user);
     setProjectAbbrevs(abbrevs);
-  }, [user.groupRoles, user.loading]);
+  }, [user, user.loading]);
 
   useEffect(() => {
     async function getProjects() {

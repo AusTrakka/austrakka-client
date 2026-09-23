@@ -1,19 +1,18 @@
+import type { UserSliceState } from '../app/userSlice';
 import RecordTypes from '../constants/record-type.enum';
-import type { Roles } from '../permissions/roles';
+import { Roles } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordTypeWithScopes,
   PrivilegeWithRolesWithScopes,
 } from '../types/dtos';
 
 export function hasSuperUserRoleInType(groups: GroupedPrivilegesByRecordTypeWithScopes[]): boolean {
-  const targetGroup = groups.find((group) => group.recordType === RecordTypes.SYSTEM);
-  if (!targetGroup) {
-    return false; // recordType not found
-  }
-
-  return targetGroup.recordRoles.some((recordRole) =>
-    recordRole.roles?.some((roleWithScopes) => roleWithScopes.privilegeLevel === 'Root'),
-  );
+  return groups
+    .filter((group) => group.recordType === RecordTypes.SYSTEM)
+    .flatMap((group) => group.recordRoles)
+    .filter((recordRole) => recordRole.recordName === RecordTypes.SYSTEM)
+    .flatMap((recordRole) => recordRole.roles)
+    .some((role) => role.roleName === Roles.SuperUser);
 }
 
 export function hasScopeInRecord(
@@ -45,7 +44,7 @@ export function hasScopeInRecord(
   return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.scopes.includes(scope));
 }
 
-export function hasRoleInRecord(
+function hasRoleInRecord(
   privileges: GroupedPrivilegesByRecordTypeWithScopes[],
   role: Roles,
   recordName: string = '',
@@ -72,3 +71,62 @@ export function hasRoleInRecord(
 
   return targetRecordRole.roles.some((roleWithScopes) => roleWithScopes.roleName === role);
 }
+
+export function hasPermissionV2ByScope(
+  user: UserSliceState,
+  scope?: string,
+  recordName: string = '',
+  recordType = RecordTypes.SYSTEM,
+): boolean {
+  if (!user) return false;
+  if (!scope) return false;
+  // This is if they are admin
+  if (user.superUser) {
+    return true;
+  }
+
+  if (!user.scopes || user.scopes.length === 0) {
+    return false;
+  }
+
+  return hasScopeInRecord(user.scopes, scope, recordName, recordType);
+}
+
+export function hasPermissionV2ByRole(
+  user: UserSliceState,
+  role: Roles,
+  recordName: string = '',
+  recordType = RecordTypes.SYSTEM,
+): boolean {
+  if (!user) return false;
+  if (!role) return false;
+  if (user.superUser) return true;
+  if (!user.scopes || user.scopes.length === 0) return false;
+
+  return hasRoleInRecord(user.scopes, role, recordName, recordType);
+}
+
+export function getRecordNamesWithScope(
+  user: UserSliceState,
+  recordType: RecordTypes,
+  scope: string,
+  excludeName?: string,
+): string[] {
+  return privsOfTypeWithScope(user, recordType, scope)
+    .filter((recordRole) => recordRole.recordName !== excludeName)
+    .map((recordRole) => recordRole.recordName);
+}
+
+export const privsOfTypeWithScope = (
+  user: UserSliceState,
+  recordType: RecordTypes,
+  scope: string,
+): PrivilegeWithRolesWithScopes[] => {
+  return user.scopes
+    .filter((group) => group.recordType === recordType)
+    .flatMap((group) => group.recordRoles)
+    .filter(
+      (recordRole) =>
+        user.superUser || recordRole.roles.some((r) => r.scopes.some((s) => s === scope)),
+    );
+};
