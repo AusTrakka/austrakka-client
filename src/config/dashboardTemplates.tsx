@@ -7,7 +7,7 @@ import DemoEchartsDashboard from '../components/Dashboards/Templates/DemoEcharts
 import LabDataDashboard from '../components/Dashboards/Templates/LabDataDashboard';
 import OFNDashboard from '../components/Dashboards/Templates/OFNDashboard';
 import PublicHealthDefaultDashboard from '../components/Dashboards/Templates/PublicHealthDefaultDashboard';
-import PublicHealthInternationalDashboard from "../components/Dashboards/Templates/PublicHealthInternationalDashboard";
+import PublicHealthInternationalDashboard from '../components/Dashboards/Templates/PublicHealthInternationalDashboard';
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import SpeciesLabDataDashboard from '../components/Dashboards/Templates/SpeciesLabDataDashboard';

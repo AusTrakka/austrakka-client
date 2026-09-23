@@ -161,9 +161,12 @@ function EpiCurveChart(props: EpiCurveChartProps) {
     } else {
       for (const [field, colourScheme] of FIELDS_AND_COLOURS) {
         // Use first preferred field that is in the project AND has at least one non-null value
-        if (data!.fields!.map((fld) => fld.columnName).includes(field)
-             && data!.fieldUniqueValues![field]!.length > 0
-             && (data!.fieldUniqueValues![field]!.length > 1 || !isNullOrEmpty(data!.fieldUniqueValues![field]![0]))) {
+        if (
+          data!.fields!.map((fld) => fld.columnName).includes(field) &&
+          data!.fieldUniqueValues![field]!.length > 0 &&
+          (data!.fieldUniqueValues![field]!.length > 1 ||
+            !isNullOrEmpty(data!.fieldUniqueValues![field]![0]))
+        ) {
           setSpecFromField(field, colourScheme);
           break;
         }
