@@ -43,7 +43,6 @@ export const validFormats = (seqType: SeqType) => validFormatsPerClass[seqTypeCl
 
 export interface OrgDescriptor {
   abbreviation: string;
-  name: string;
 }
 
 export enum SkipForce {
