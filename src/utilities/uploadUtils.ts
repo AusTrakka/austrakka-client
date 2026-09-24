@@ -135,7 +135,10 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
-export const createPairedSeqUploadRows = (files: DropFileUpload[], suffixes: string[]): SeqPairedUploadRow[] => {
+export const createPairedSeqUploadRows = (
+  files: DropFileUpload[],
+  suffixes: string[],
+): SeqPairedUploadRow[] => {
   const pairedFiles = files
     .sort((a, b) => {
       if (a.file.name < b.file.name) {
@@ -170,7 +173,7 @@ export const createPairedSeqUploadRows = (files: DropFileUpload[], suffixes: str
 export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
-  suffixes: string[]
+  suffixes: string[],
 ): SeqSingleUploadRow[] => {
   const singleFiles = files.map((file) => {
     // For fasta-cns, we've returned the contig name as the whole filename minus .fa suffix.
