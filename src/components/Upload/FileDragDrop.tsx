@@ -148,7 +148,7 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
       const validateAndTransformUpload = () => {
         const validators = customValidators ?? [];
         for (const validator of [...getBuiltInValidators(), ...validators]) {
-          const validatorReturn = validator.func(originalFiles);
+          const validatorReturn = validator.func(originalFiles, Object.keys(validFormats));
           if (!validatorReturn.success) {
             enqueueSnackbar(validatorReturn.message, { variant: 'error', autoHideDuration: 8000 });
             clearFiles();
