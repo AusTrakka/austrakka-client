@@ -8,6 +8,7 @@ export enum RolesV1 {
 }
 
 export enum Roles {
+  SuperUser = 'SuperUser',
   Admin = 'Admin',
   ProjectViewer = 'ProjectViewer',
   ProjectContributor = 'ProjectContributor',

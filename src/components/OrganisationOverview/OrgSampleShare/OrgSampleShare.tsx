@@ -23,12 +23,14 @@ import { reloadOrgMetadata } from '../../../app/orgMetadataSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/store';
 import { selectUserState, type UserSliceState } from '../../../app/userSlice';
 import LoadingState from '../../../constants/loadingState';
+import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
-import { RolesV1 } from '../../../permissions/roles';
+import { ScopeDefinitions } from '../../../constants/scopes';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
+import { hasPermissionV2ByScope } from '../../../utilities/privCheck';
 import { getProjectFields, shareSamples } from '../../../utilities/resourceUtils';
-import { getSharableProjects } from '../../../utilities/uploadUtils';
+import { getSampleSharableProjects } from '../../../utilities/uploadUtils';
 
 type ShareStatusProps = {
   icon: ReactNode;
@@ -73,20 +75,22 @@ function OrgSampleShare(props: OrgSampleShareProps) {
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
-    if (user?.groupRoles) {
-      const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
+    if (user) {
+      const projectsThatCanBeSelected = getSampleSharableProjects(user);
 
       setSelectableProjects(projectsThatCanBeSelected);
     }
   }, [user]);
 
-  const handleDestinationChange = async (selectedDestination: string) => {
-    if (selectedDestination) {
-      setDestination(selectedDestination);
+  const handleDestinationChange = async (destAbbrev: string) => {
+    if (destAbbrev) {
+      setDestination(destAbbrev);
 
-      const canViewPreview = Object.entries(user.groupRolesByGroup).some(
-        ([groupName, roles]) =>
-          groupName === selectedDestination && roles.includes(RolesV1.GroupViewer),
+      const canViewPreview = hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.LinkUnlinkSamplesToProject,
+        destAbbrev,
+        RecordTypes.PROJECT,
       );
 
       setCanViewDestinationFields(canViewPreview);
@@ -96,7 +100,6 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         tokenLoading !== LoadingState.IDLE
       ) {
         // If destination is a project, get project fields
-        const destAbbrev = selectedDestination.replace(/-Group$/, '');
         const fieldsResp = await getProjectFields(destAbbrev, token);
         if (fieldsResp.status === ResponseType.Success) {
           setPreviewFields(fieldsResp.data);
@@ -230,9 +233,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
                     >
                       {options.length > 0 ? (
                         options.map((opt) => (
-                          // For projects, append "-Group" to match group naming convention
-                          // Prevents added complexity when checking perms for data preview/sharing
-                          <MenuItem key={opt} value={`${opt}-Group`}>
+                          <MenuItem key={opt} value={opt}>
                             {opt}
                           </MenuItem>
                         ))
