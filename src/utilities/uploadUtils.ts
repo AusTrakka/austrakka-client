@@ -22,11 +22,11 @@ export interface CustomUploadValidatorReturn {
 }
 
 export interface CustomUploadValidator {
-  func: (files: File[]) => CustomUploadValidatorReturn;
+  func: (files: File[], suffixes: string[]) => CustomUploadValidatorReturn;
 }
 
 export const validateEvenNumberOfFiles = {
-  func: (files: File[]) =>
+  func: (files: File[], _suffixes: string[]) =>
     ({
       success: files.length % 2 === 0,
       message: 'Must upload an even number of files for paired-end sequence data',
@@ -34,7 +34,7 @@ export const validateEvenNumberOfFiles = {
 } as CustomUploadValidator;
 
 export const validateNoDuplicateFilenames = {
-  func: (files: File[]) => {
+  func: (files: File[], _suffixes: string[]) => {
     const filenames = files.map((f) => f.name);
     const duplicates = filenames.filter((item, index) => filenames.indexOf(item) !== index);
     if (duplicates.length > 0) {
@@ -50,9 +50,24 @@ export const validateNoDuplicateFilenames = {
   },
 } as CustomUploadValidator;
 
-export const getSampleNameFromFile = (filename: string) => filename.split(/[_.|\s]+/)[0];
+function stripSuffix(filename: string, suffixes: string[]) {
+  const lowerFilename = filename.toLowerCase();
+  const sorted = [...suffixes].sort((a, b) => b.length - a.length);
 
-// Remove last .fa only, so that seq2.1.fa becomes seq2.1, not seq2
+  for (const suffix of sorted) {
+    if (lowerFilename.endsWith(suffix.toLowerCase())) {
+      return filename.slice(0, -suffix.length);
+    }
+  }
+
+  return filename; // no recognized suffix found
+}
+
+// strip off any suffix first, then split
+export const getSampleNameFromFile = (filename: string, suffixes: string[]) =>
+  stripSuffix(filename, suffixes).split(/[_|\s]+/)[0];
+
+// Special handling for artificially created "filenames" for fasta-cns
 export const getSampleNameFromFastaCns = (filename: string) => filename.split(/.fa$/)[0];
 
 function countElements(array: any[]): Record<string, number> {
@@ -64,8 +79,8 @@ function countElements(array: any[]): Record<string, number> {
 }
 
 export const validateAllHaveSampleNamesWithTwoFilesOnly = {
-  func: (files: File[]) => {
-    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name)));
+  func: (files: File[], suffixes: string[]) => {
+    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name, suffixes)));
     const problemSampleNames = Object.entries(sampleCounts)
       .filter(([_sample, count]) => count !== 2)
       .map(([sample, _count]) => sample);
@@ -82,8 +97,8 @@ export const validateAllHaveSampleNamesWithTwoFilesOnly = {
 } as CustomUploadValidator;
 
 export const validateAllHaveSampleNamesWithOneFileOnly = {
-  func: (files: File[]) => {
-    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name)));
+  func: (files: File[], suffixes: string[]) => {
+    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name, suffixes)));
     const problemSampleNames = Object.entries(sampleCounts)
       .filter(([_sample, count]) => count !== 1)
       .map(([sample, _count]) => sample);
@@ -120,7 +135,10 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
-export const createPairedSeqUploadRows = (files: DropFileUpload[]): SeqPairedUploadRow[] => {
+export const createPairedSeqUploadRows = (
+  files: DropFileUpload[],
+  suffixes: string[],
+): SeqPairedUploadRow[] => {
   const pairedFiles = files
     .sort((a, b) => {
       if (a.file.name < b.file.name) {
@@ -138,7 +156,7 @@ export const createPairedSeqUploadRows = (files: DropFileUpload[]): SeqPairedUpl
         if (index % 2 === 0) {
           result.push({
             id: crypto.randomUUID(),
-            seqId: getSampleNameFromFile(value.file.name),
+            seqId: getSampleNameFromFile(value.file.name, suffixes),
             read1: value,
             read2: array[index + 1],
             seqType: SeqType.FastqIllPe,
@@ -155,6 +173,7 @@ export const createPairedSeqUploadRows = (files: DropFileUpload[]): SeqPairedUpl
 export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
+  suffixes: string[],
 ): SeqSingleUploadRow[] => {
   const singleFiles = files.map((file) => {
     // For fasta-cns, we've returned the contig name as the whole filename minus .fa suffix.
@@ -162,7 +181,7 @@ export const createSingleSeqUploadRows = (
     const seqId =
       seqType === SeqType.FastaCns
         ? getSampleNameFromFastaCns(file.file.name)
-        : getSampleNameFromFile(file.file.name);
+        : getSampleNameFromFile(file.file.name, suffixes);
     return {
       id: crypto.randomUUID(),
       seqId,

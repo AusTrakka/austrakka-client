@@ -41,6 +41,7 @@ import {
   SkipForce,
   seqTypeNames,
   validFormats,
+  validSuffixes,
 } from '../../types/sequploadtypes';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
@@ -171,9 +172,9 @@ function UploadSequences() {
     const rowType = uploadRowTypes[selectedSeqType];
     let rows: SeqUploadRow[] = [];
     if (rowType === UploadPairedSequenceRow) {
-      rows = createPairedSeqUploadRows(files);
+      rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
     } else if (rowType === UploadSingleSequenceRow || rowType === UploadSingleFastaContigRow) {
-      rows = createSingleSeqUploadRows(files, selectedSeqType);
+      rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
     }
     setSeqUploadRows(rows);
   }, [files, selectedSeqType]);
