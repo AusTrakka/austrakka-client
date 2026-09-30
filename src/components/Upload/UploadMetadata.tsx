@@ -37,13 +37,13 @@ import type { Proforma, Project } from '../../types/dtos';
 import type { ResponseObject } from '../../types/responseObject.interface';
 import type { OrgDescriptor } from '../../types/sequploadtypes';
 import {
-  getProformaGroups,
+  getProformaProjects,
   getProjectList,
   getUserProformas,
   uploadSubmissions,
   validateSubmissions,
 } from '../../utilities/resourceUtils';
-import { getSharableProjects, getUploadableOrgs } from '../../utilities/uploadUtils';
+import { getSampleSharableProjects, getUploadableSampleOrgs } from '../../utilities/uploadUtils';
 import HelpSidebar from '../Help/HelpSidebar';
 import { Validation } from '../Validation/Validation';
 import FileDragDrop from './FileDragDrop';
@@ -126,7 +126,7 @@ function UploadMetadata() {
       setAvailableDataOwners([]);
       return;
     }
-    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    const orgs: OrgDescriptor[] = getUploadableSampleOrgs(user);
     setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
     if (orgs.some((org) => org.abbreviation === user.orgAbbrev)) {
       setSelectedDataOwner(user.orgAbbrev);
@@ -139,7 +139,7 @@ function UploadMetadata() {
           'could not be properly loaded. Please contact an admin.',
       );
     }
-  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [user, user.loading, user.orgAbbrev]);
 
   // Projects
   useEffect(() => {
@@ -147,9 +147,9 @@ function UploadMetadata() {
       setAvailableProjects([]);
       return;
     }
-    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    const abbrevs: string[] = getSampleSharableProjects(user);
     setProjectAbbrevs(abbrevs);
-  }, [user.groupRoles, user.loading]);
+  }, [user, user.loading]);
 
   useEffect(() => {
     async function getProjects() {
@@ -195,21 +195,14 @@ function UploadMetadata() {
 
   useEffect(() => {
     const getProformaGroupList = async () => {
-      const proformaGroupsResponse: ResponseObject = await getProformaGroups(
-        selectedProforma!.abbreviation,
-        token,
-      );
-      if (proformaGroupsResponse.status === ResponseType.Success) {
-        const sharedGroupNames = new Set(
-          proformaGroupsResponse.data.map((g: any) => g.name.replace(/-Group$/, '')),
-        );
-
+      const proformaProjects = await getProformaProjects(selectedProforma!.abbreviation, token);
+      if (proformaProjects.status === ResponseType.Success) {
+        const abbrevs = proformaProjects.data?.map((x) => x.abbreviation) ?? [];
         const sharedProjects = availableProjects.filter((project: Project) =>
-          sharedGroupNames.has(project.abbreviation),
+          abbrevs.includes(project.abbreviation),
         );
-
         const otherProjects = availableProjects.filter(
-          (project: Project) => !sharedGroupNames.has(project.abbreviation),
+          (project: Project) => !abbrevs.includes(project.abbreviation),
         );
 
         setProformaProjects({
