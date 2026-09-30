@@ -101,10 +101,14 @@ function MapDetail(props: MapDetailProps) {
       // this should be setting an error as we shouldn't be here with no geo fields
       if (!firstGeoField) return;
 
-      setSelectedField(firstGeoField);
+      // Only fall back to the first geo field when there's no valid selection yet —
+      // don't clobber a field the user picked or one restored from the URL.
+      if (!selectedField || !geoFieldNames.includes(selectedField)) {
+        setSelectedField(firstGeoField);
+      }
       setGeoFields(geoFieldNames);
     }
-  }, [data, setSelectedField]);
+  }, [data, selectedField, setSelectedField]);
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {

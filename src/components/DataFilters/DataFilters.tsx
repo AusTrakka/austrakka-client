@@ -19,6 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import './DataFilters.css';
 import type { DateValidationError } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
@@ -660,7 +661,7 @@ function DataFilters(props: DataFiltersProps) {
   );
 
   return (
-    <div style={{ paddingTop: 5, margin: 0.5 }}>
+    <div className="data-filter-div">
       {!dataLoaded ? (
         <LinearProgress
           style={{ margin: 0, padding: 0, height: 5, borderRadius: 3 }}
@@ -669,11 +670,10 @@ function DataFilters(props: DataFiltersProps) {
       ) : null}
       <Box>
         <Box
+          className="data-filter-box"
           sx={{
             boxShadow: 1,
             borderRadius: 1,
-            padding: 1,
-            marginBottom: 2,
             display: 'flex',
             backgroundColor: 'white',
           }}

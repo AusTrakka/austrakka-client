@@ -1,0 +1,17 @@
+.app-container.compact-mode .table-search-input .MuiInputBase-input {
+  font-size: var(--density-font-size-body2) !important;
+}
+
+.app-container.compact-mode .table-search-input .MuiInputBase-input::placeholder {
+  font-size: var(--density-font-size-body2) !important;
+}
+
+.app-container.compact-mode .table-search-input .MuiInput-root {
+  height: var(--density-input-height) !important;
+  line-height: var(--density-table-row-height) !important;
+  min-height: var(--density-table-row-height) !important;
+}
+
+.app-container.compact-mode .table-search-input .MuiInput-root::after {
+  border-bottom-color: var(--primary-400); /* or hardcode #4caf50 / your enum value */
+}

@@ -33,7 +33,7 @@ function TabPanel({ children, value, index, loadingState, setIsLoading }: TabPan
   return (
     <div role="tabpanel" id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`}>
       {loading && <LinearProgress color="secondary" />}
-      <Box hidden={!isActive || loading} sx={{ marginTop: 2 }}>
+      <Box className="main-tab-content-container" hidden={!isActive || loading}>
         {childElement}
       </Box>
     </div>

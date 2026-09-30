@@ -10,14 +10,14 @@ interface EditButtonsProps {
   setEditing: Dispatch<SetStateAction<boolean>>;
   onSave: () => void;
   onCancel: () => void;
-  hasSavedChanges: boolean;
+  hasPendingChanges: boolean;
   canSee: () => boolean;
   onSaveLoading: boolean;
 }
 
 // Define the EditButtons component outside the UserDetail component
 export default function EditButtons(props: EditButtonsProps) {
-  const { editing, setEditing, onSave, hasSavedChanges, onCancel, canSee, onSaveLoading } = props;
+  const { editing, setEditing, onSave, hasPendingChanges, onCancel, canSee, onSaveLoading } = props;
 
   if (editing) {
     return (
@@ -30,7 +30,7 @@ export default function EditButtons(props: EditButtonsProps) {
               <IconButton
                 size="small"
                 color="success"
-                disabled={!hasSavedChanges}
+                disabled={!hasPendingChanges}
                 onClick={() => {
                   onSave(); // Call the onSave function when saving
                 }}

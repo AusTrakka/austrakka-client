@@ -5,6 +5,7 @@ import DemoEchartsDashboard from '../components/Dashboards/Templates/DemoEcharts
 import LabDataDashboard from '../components/Dashboards/Templates/LabDataDashboard';
 import OFNEchartsDashboard from '../components/Dashboards/Templates/OFNEchartsDashboard';
 import PublicHealthDefaultEchartsDashboard from '../components/Dashboards/Templates/PublicHealthDefaultEchartsDashboard';
+import PublicHealthInternationalDashboard from '../components/Dashboards/Templates/PublicHealthInternationalDashboard';
 import SEDemoEchartsDashboard from '../components/Dashboards/Templates/SEDemoEchartsDashboard';
 import SnapEchartsDashboard from '../components/Dashboards/Templates/SnapEchartsDashboard';
 import SpeciesLabDataDashboard from '../components/Dashboards/Templates/SpeciesLabDataDashboard';
@@ -15,6 +16,7 @@ import type ProjectDashboardTemplateProps from '../types/projectdashboardtemplat
 
 const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>> = {
   'public-health-default': PublicHealthDefaultEchartsDashboard,
+  'public-health-international': PublicHealthInternationalDashboard,
   demo: DemoEchartsDashboard,
   default: DefaultEchartsDashboard,
   snap: SnapEchartsDashboard,
