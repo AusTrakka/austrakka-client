@@ -59,11 +59,9 @@ import {
   createPairedSeqUploadRows,
   createPairedSeqUploadRowsFromCsv,
   createSingleSeqUploadRows,
+  createSingleSeqUploadRowsFromCsv,
   getSampleSharableProjects,
   getUploadableSeqOrgs,
-  createSingleSeqUploadRowsFromCsv,
-  getSharableProjects,
-  getUploadableOrgs,
   parseSeqUploadCsvPairs,
   parseSeqUploadCsvSingles,
   splitFastaByContig,
@@ -80,6 +78,8 @@ import UploadPairedSequenceRow from './UploadPairedSequenceRow';
 import UploadSequencesHelp from './UploadSequencesHelp';
 import UploadSingleFastaContigRow from './UploadSingleFastaContigRow';
 import UploadSingleSequenceRow from './UploadSingleSequenceRow';
+import { ExclamationTriangleIcon } from 'primereact/icons/exclamationtriangle';
+import { Theme } from '../../assets/themes/theme';
 
 const csvFileValidFormats = {
   csv: 'text/csv',
@@ -136,6 +136,7 @@ function UploadSequences() {
   // }, []);
 
   const [showErrorsDialog, setShowErrorsDialog] = useState<boolean>(false);
+  const [useCsvFile, setUseCsvFile] = useState<boolean>(false);
 
   const flatCsvErrors = useMemo(() => {
     return csvErrors.flatMap((error) => {
@@ -209,9 +210,11 @@ function UploadSequences() {
         if (selectedSeqType === SeqType.FastqIllPe) {
           const pairingRecords = await parseSeqUploadCsvPairs(fileListingCsv[0].file);
           setcsvUploadPairs(pairingRecords);
+          setUseCsvFile(true);
         } else if (selectedSeqType !== SeqType.FastaCns) {
           const pairingRecords = await parseSeqUploadCsvSingles(fileListingCsv[0].file);
           setcsvUploadSingles(pairingRecords);
+          setUseCsvFile(true);
         }
       } catch (e: unknown) {
         if (e instanceof Error) {
@@ -220,6 +223,7 @@ function UploadSequences() {
           setPageErrorMsg(ErrorMessages.UNEXPECTED_ERROR);
         }
         setFileListingCsv([]);
+        setUseCsvFile(false);
       }
     }
 
@@ -252,10 +256,10 @@ function UploadSequences() {
 
   useEffect(() => {
     const rowType = uploadRowTypes[selectedSeqType];
-    let rows: SeqUploadRow[] = [];
+    let rows: SeqUploadRow[];
 
     if (rowType === UploadPairedSequenceRow) {
-      if (csvUploadPairs.length > 0) {
+      if (useCsvFile && csvUploadPairs.length > 0) {
         const { rows: csvRows, missing } = createPairedSeqUploadRowsFromCsv(files, csvUploadPairs);
         rows = csvRows;
 
@@ -268,7 +272,7 @@ function UploadSequences() {
         rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
       }
     } else if (rowType === UploadSingleSequenceRow) {
-      if (csvUploadSingles.length > 0) {
+      if (useCsvFile && csvUploadSingles.length > 0) {
         const { rows: csvRows, missing } = createSingleSeqUploadRowsFromCsv(
           files,
           csvUploadSingles,
@@ -289,7 +293,7 @@ function UploadSequences() {
       rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
     }
     setSeqUploadRows(rows);
-  }, [files, selectedSeqType, csvUploadPairs, csvUploadSingles]);
+  }, [files, selectedSeqType, csvUploadPairs, csvUploadSingles, useCsvFile]);
 
   const handleSelectSeqType = (seqTypeStr: string) => {
     const seqType = getEnumByValue(SeqType, seqTypeStr) as SeqType;
@@ -302,6 +306,16 @@ function UploadSequences() {
     if (event.target.checked) skipForce = getEnumByValue(SkipForce, skipForceStr) as SkipForce;
     setSelectedSkipForce(skipForce);
   };
+
+  const handleToggleCsvFile = (event: ChangeEvent<HTMLInputElement>) => {
+
+    if (event.target.checked) {
+      setUseCsvFile(true);
+    } else {
+      setUseCsvFile(false);
+      setCsvErrors([]);
+    }
+  }
 
   const handleClearCsvFile = useCallback(() => {
     setCsvErrors([]);
@@ -526,30 +540,6 @@ function UploadSequences() {
               <Alert severity="error">{pageErrorMsg}</Alert>
             </Grid>
           )}
-          {flatCsvErrors.length > 0 ? (
-            <Grid size={12}>
-              <Alert severity="error">
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant={'h5'}>CSV Errors</Typography>
-                  {flatCsvErrors.slice(0, maxVisibleCsvErrors).map(({ label, item }) => (
-                    <Typography key={item} fontSize="1rem">
-                      {label}
-                    </Typography>
-                  ))}
-                  {flatCsvErrors.length > maxVisibleCsvErrors && (
-                    <Button
-                      sx={{ mt: 1, alignSelf: 'flex-end' }}
-                      onClick={() => setShowErrorsDialog(true)}
-                    >
-                      <Typography variant="body2" fontSize="1rem" sx={{ textTransform: 'none' }}>
-                        ...and {flatCsvErrors.length - maxVisibleCsvErrors} more
-                      </Typography>
-                    </Button>
-                  )}
-                </Box>
-              </Alert>
-            </Grid>
-          ) : null}
           <Grid size={{ md: 12, lg: 9 }}>
             <Typography variant="subtitle2" paddingBottom={1}>
               Drag and drop files below, or click, to upload sequences.
@@ -703,6 +693,52 @@ function UploadSequences() {
                   </Typography>
                 </Box>
               </Box>
+              <Box key="option-use-csv">
+                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <FormControlLabel
+                      control={
+                        <Checkbox
+                            color={csvErrors.length > 0 ? "error" : "secondary"}
+                            checked={useCsvFile}
+                            onChange={(e) => handleToggleCsvFile(e)}
+                            name={"useCsvFile"}
+                            disabled={uploadInProgress()}
+                        />
+                      }
+                      label="Use file listing CSV"
+                  />
+                  {csvErrors.length > 0 ?
+                      <Box>
+                        <Button
+                            color={"error"}
+                            variant={"outlined"}
+                            size={"small"}
+                            onClick={() => setShowErrorsDialog(true)}
+                        >
+                          <ErrorOutline color="error" fontSize="small" />
+                          <Typography variant="body2" fontSize="1rem" sx={{ textTransform: 'none', marginLeft: 1}}>
+                          </Typography>
+                          Errors
+                        </Button>
+                      </Box>
+                      : null}
+                </Box>
+                <Box sx={{ paddingLeft: 4 }}>
+                  <Typography variant="body2">
+                    Use a CSV file to match any specified sample files against a sample name. When disabled, matches will be determined based on file names.
+                  </Typography>
+                  <Box sx={{ minWidth: 200, maxWidth: 600, maxHeight: 200, display: files.length > 0 ? 'none' : '' }}>
+                    <FileDragDrop
+                        disabled={uploadInProgress()}
+                        files={fileListingCsv}
+                        setFiles={setFileListingCsv}
+                        validFormats={csvFileValidFormats}
+                        multiple={false}
+                        onClear={handleClearCsvFile}
+                    />
+                  </Box>
+                </Box>
+              </Box>
             </FormGroup>
           </Grid>
         </Grid>
@@ -712,14 +748,6 @@ function UploadSequences() {
             <Typography variant="h4" color="primary" paddingBottom={2}>
               Select CSV file (optional)
             </Typography>
-            <FileDragDrop
-              disabled={uploadInProgress()}
-              files={fileListingCsv}
-              setFiles={setFileListingCsv}
-              validFormats={csvFileValidFormats}
-              multiple={false}
-              onClear={handleClearCsvFile}
-            />
           </Box>
           <Box sx={{ minWidth: 200, maxWidth: 600, display: files.length > 0 ? 'none' : '' }}>
             <Typography variant="h4" color="primary" paddingBottom={2}>
@@ -772,6 +800,7 @@ function UploadSequences() {
                   size={12}
                   paddingTop={2}
                   paddingBottom={6}
+                  gap={1}
                 >
                   <>
                     <Button
