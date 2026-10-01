@@ -1,21 +1,7 @@
 import { splitFastaByContig } from '../../../src/utilities/uploadUtils';
+import { mockFile, readFileAsText } from '../../test-utils/fileUtils';
 
-function mockFile(content: string, name: string = 'test.fasta'): File {
-  const blob = new Blob([content], { type: 'text/plain' });
-  const file = new File([blob], name);
-  file.text = () => Promise.resolve(content);
-  return file;
-}
-
-// jsdom File objects don't have text(), so a utility function
-function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
-}
+const defaultFileName = 'test.fasta';
 
 describe('splitFastaByContig', () => {
   test('should split a fasta file into separate files for each contig', async () => {
@@ -26,7 +12,7 @@ GGCATGCATGCA
 >contig3 description
 TTTTTTTTTTTT
 `;
-    const file = mockFile(testFileContent);
+    const file = mockFile(defaultFileName, testFileContent);
 
     // Act
     const result = await splitFastaByContig([file]);
@@ -49,7 +35,7 @@ GGCATGCATGCA
 >contig3 description
 TTTTTTTTTTTT
 `;
-    const file = mockFile(testFileContent);
+    const file = mockFile(defaultFileName, testFileContent);
 
     await expect(() => splitFastaByContig([file])).rejects.toThrow();
   });
@@ -65,8 +51,8 @@ TTTTTTTTTTTT
 >contig4 description
 CCCCCCCCCCCC
 `;
-    const file1 = mockFile(testFileContent1, 'file1.fasta');
-    const file2 = mockFile(testFileContent2, 'file2.fasta');
+    const file1 = mockFile('file1.fasta', testFileContent1);
+    const file2 = mockFile('file2.fasta', testFileContent2);
 
     const result = await splitFastaByContig([file1, file2]);
 
@@ -88,8 +74,8 @@ TTTTTTTTTTTT
 >contig3 description
 CCCCCCCCCCCC
 `;
-    const file1 = mockFile(testFileContent1, 'file1.fasta');
-    const file2 = mockFile(testFileContent2, 'file2.fasta');
+    const file1 = mockFile('file1.fasta', testFileContent1);
+    const file2 = mockFile('file2.fasta', testFileContent2);
 
     await expect(() => splitFastaByContig([file1, file2])).rejects.toThrow();
   });
@@ -102,7 +88,7 @@ GGCATGCATGCA
 >contig3|restofheader
 TTTTTTTTTTTT
 `;
-    const file = mockFile(testFileContent);
+    const file = mockFile(defaultFileName, testFileContent);
 
     // Act
     const result = await splitFastaByContig([file]);
@@ -125,7 +111,7 @@ GGCATGCATGCA
 >contig3|alternate description
 TTTTTTTTTTTT
 `;
-    const file = mockFile(testFileContent);
+    const file = mockFile(defaultFileName, testFileContent);
 
     await expect(() => splitFastaByContig([file])).rejects.toThrow();
   });

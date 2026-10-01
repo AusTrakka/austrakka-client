@@ -1,3 +1,5 @@
+import Papa from 'papaparse';
+import path from 'path-browserify';
 import type { DropFileUpload } from '../types/DropFileUpload';
 import type { GroupRole } from '../types/dtos';
 import {
@@ -5,10 +7,12 @@ import {
   type SeqPairedUploadRow,
   type SeqSingleUploadRow,
   SeqType,
+  type SeqUploadCsvPair,
+  type SeqUploadCsvSingle,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 
-// Uploads are active (queued, but not finalised) if in these states
+// Uploads are active (queued but not finalised) if in these states
 export const activeSeqUploadStates = [
   SeqUploadRowState.Queued,
   SeqUploadRowState.CalculatingHash,
@@ -135,10 +139,151 @@ export const getSharableProjects = (groupRoles: GroupRole[]): string[] => {
   return projectAbbrevs;
 };
 
+export interface CsvResult {
+  missing: CsvError[];
+}
+
+export interface PairedRowsFromCsvResult extends CsvResult {
+  rows: SeqPairedUploadRow[];
+}
+
+export interface SingleRowsFromCsvResult extends CsvResult {
+  rows: SeqSingleUploadRow[];
+}
+
+export enum CsvErrorType {
+  MISSING = 'MISSING',
+  ADDITIONAL = 'ADDITIONAL',
+}
+
+export interface CsvError {
+  errorType: CsvErrorType;
+  sampleName: string | undefined;
+  items: string[];
+}
+
+export const createSingleSeqUploadRowsFromCsv = (
+  files: DropFileUpload[],
+  records: SeqUploadCsvSingle[],
+  seqType: SeqType,
+): SingleRowsFromCsvResult => {
+  const filesByName = new Map(files.map((f) => [f.file.name, f]));
+  const matchedFileNames = new Set<string>();
+  const rows: SeqSingleUploadRow[] = [];
+  const errors: CsvError[] = [];
+
+  for (const record of records) {
+    const warning: CsvError = {
+      sampleName: record.Seq_ID,
+      errorType: CsvErrorType.MISSING,
+      items: [],
+    };
+
+    const read = filesByName.get(record.filepath);
+
+    if (!read) {
+      warning.items.push(record.filepath);
+    } else {
+      matchedFileNames.add(record.filepath);
+    }
+
+    if (warning.items.length > 0) {
+      errors.push(warning);
+      continue;
+    }
+
+    rows.push({
+      id: crypto.randomUUID(),
+      seqId: record.Seq_ID,
+      file: read,
+      seqType: seqType,
+      state: SeqUploadRowState.Waiting,
+    } as SeqSingleUploadRow);
+  }
+
+  const additionalFiles = files
+    .map((f) => f.file.name)
+    .filter((name) => !matchedFileNames.has(name));
+
+  if (additionalFiles.length > 0) {
+    errors.push({
+      sampleName: undefined,
+      errorType: CsvErrorType.ADDITIONAL,
+      items: additionalFiles,
+    });
+  }
+  return { rows, missing: errors };
+};
+
+export const createPairedSeqUploadRowsFromCsv = (
+  files: DropFileUpload[],
+  pairs: SeqUploadCsvPair[],
+): PairedRowsFromCsvResult => {
+  const filesByName = new Map(files.map((f) => [f.file.name, f]));
+  const matchedFileNames = new Set<string>();
+  const rows: SeqPairedUploadRow[] = [];
+  const errors: CsvError[] = [];
+
+  for (const pair of pairs) {
+    const warning: CsvError = {
+      sampleName: pair.Seq_ID,
+      errorType: CsvErrorType.MISSING,
+      items: [],
+    };
+
+    const read1 = filesByName.get(pair.filepath1);
+    const read2 = filesByName.get(pair.filepath2);
+
+    if (!read1) {
+      warning.items.push(pair.filepath1);
+    } else {
+      matchedFileNames.add(pair.filepath1);
+    }
+
+    if (!read2) {
+      warning.items.push(pair.filepath2);
+    } else {
+      matchedFileNames.add(pair.filepath2);
+    }
+
+    if (warning.items.length > 0) {
+      errors.push(warning);
+      continue;
+    }
+
+    rows.push({
+      id: crypto.randomUUID(),
+      seqId: pair.Seq_ID,
+      read1,
+      read2,
+      seqType: SeqType.FastqIllPe,
+      state: SeqUploadRowState.Waiting,
+    } as SeqPairedUploadRow);
+  }
+
+  const additionalFiles = files
+    .map((f) => f.file.name)
+    .filter((name) => !matchedFileNames.has(name));
+
+  if (additionalFiles.length > 0) {
+    errors.push({
+      sampleName: undefined,
+      errorType: CsvErrorType.ADDITIONAL,
+      items: additionalFiles,
+    });
+  }
+  return { rows, missing: errors };
+};
+
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
   suffixes: string[],
+  pairs?: SeqUploadCsvPair[],
 ): SeqPairedUploadRow[] => {
+  // If we already have a CSV
+  if (pairs && pairs.length > 0) {
+  }
+
   const pairedFiles = files
     .sort((a, b) => {
       if (a.file.name < b.file.name) {
@@ -246,4 +391,90 @@ export const sanitizeFilename = (input: string): string => {
 export const sanitizeFileDescription = (input: string): string => {
   // biome-ignore lint/suspicious/noControlCharactersInRegex: conflicting rules
   return input.replace(/[\u0000-\u001F]/g, '');
+};
+
+export const parseFileNameFromPath = (filepath: string) => {
+  const location = path.parse(filepath);
+  if (location.dir !== '') {
+    return location.base;
+  }
+  return filepath;
+};
+
+export const parseSeqUploadCsvSingles = async (pairingFile: File) => {
+  const fileContent = await pairingFile.text();
+
+  if (!fileContent || fileContent.length < 1) {
+    throw new Error('Pairing file content is invalid');
+  }
+
+  const parseConfig: Papa.ParseConfig<SeqUploadCsvSingle> = {
+    header: true,
+    skipEmptyLines: 'greedy',
+    transform: (value, field) => {
+      switch (field) {
+        case 'filepath':
+          // We want to ensure we only grab the filename, not the path
+          return parseFileNameFromPath(value).trim();
+        case 'Seq_ID':
+          return value.trim();
+        default:
+          return value;
+      }
+    },
+  };
+
+  const parsed = Papa.parse<SeqUploadCsvSingle>(fileContent, parseConfig).data;
+
+  parsed.forEach((row) => {
+    if (!row.Seq_ID || row.Seq_ID.trim() === '') {
+      throw new Error('Invalid Seq_ID');
+    }
+    if (!row.filepath || row.filepath.trim() === '') {
+      throw new Error('Unable to parse filepath');
+    }
+  });
+
+  return parsed;
+};
+
+export const parseSeqUploadCsvPairs = async (pairingFile: File) => {
+  const fileContent = await pairingFile.text();
+
+  if (!fileContent || fileContent.length < 1) {
+    throw new Error('Pairing file content is invalid');
+  }
+
+  const parseConfig: Papa.ParseConfig<SeqUploadCsvPair> = {
+    header: true,
+    skipEmptyLines: 'greedy',
+    transform: (value, field) => {
+      switch (field) {
+        case 'filepath1':
+        case 'filepath2':
+          // We want to ensure we only grab the filename, not the path
+          return parseFileNameFromPath(value).trim();
+        case 'Seq_ID':
+          return value.trim();
+        default:
+          return value;
+      }
+    },
+  };
+
+  const parsed = Papa.parse<SeqUploadCsvPair>(fileContent, parseConfig).data;
+
+  parsed.forEach((row) => {
+    if (!row.Seq_ID || row.Seq_ID.trim() === '') {
+      throw new Error('Invalid Seq_ID');
+    }
+    if (!row.filepath1 || row.filepath1.trim() === '') {
+      throw new Error('Unable to parse filepath 1');
+    }
+    if (!row.filepath2 || row.filepath2.trim() === '') {
+      throw new Error('Unable to parse filepath 2');
+    }
+  });
+
+  return parsed;
 };
