@@ -1,4 +1,7 @@
 import type { FeatureCollection } from 'geojson';
+import AU_LGA from '../../assets/maps/aus_lga_processed.json';
+import AUS_NZ from '../../assets/maps/aus_nz_processed.json';
+import AU_POA from '../../assets/maps/aus_poa_processed.json';
 import AUS_NZ from '../../assets/maps/aus-nz-processed.json';
 import AUSTRALIA from '../../assets/maps/aus-processed.json';
 import BANGLADESH from '../../assets/maps/bd-processed.json';
@@ -25,6 +28,8 @@ export const Maps = {
   VIETNAM: VIETNAM as FeatureCollection,
   BANGLADESH: BANGLADESH as FeatureCollection,
   TAIWAN: TAIWAN as FeatureCollection,
+  AU_LGA: AU_LGA as FeatureCollection,
+  AU_POA: AU_POA as FeatureCollection,
 };
 
 export const MapLabels: Record<MapKey, string> = {
@@ -40,6 +45,8 @@ export const MapLabels: Record<MapKey, string> = {
   VIETNAM: 'Vietnam',
   BANGLADESH: 'Bangladesh',
   TAIWAN: 'Taiwan',
+  AU_LGA: 'Australia (LGA)',
+  AU_POA: 'Australia (Postcode)',
 };
 
 export const MapCategory = {
@@ -48,6 +55,19 @@ export const MapCategory = {
 } as const;
 
 export type MapCategoryType = (typeof MapCategory)[keyof typeof MapCategory];
+
+export const MapGroups: Partial<Record<MapKey, MapKey>> = {
+  AU_LGA: 'AUS_NZ',
+  AU_POA: 'AUS_NZ',
+};
+
+export const MapFieldOverrides: Partial<Record<MapKey, Record<string, MapKey>>> = {
+  AUS_NZ: {
+    LGA: 'AU_LGA',
+    Postcode: 'AU_POA',
+  },
+};
+
 
 // Type that holds the correct values for the keys
 export type MapKey = keyof typeof Maps;
@@ -58,11 +78,17 @@ export type MapFeatureWithStringProps = {
   properties: { [x: string]: string };
 };
 
+export interface EffectiveMap {
+  mapKey: MapKey;
+  lookupField: FeatureLookupFieldType;
+}
+
 export const FeatureLookupField = {
   ISO_2: 'iso_2_char',
   ISO_3: 'iso_3_char',
   ISO_REGION: 'iso_region',
   NAME: 'name',
+  POA_CODE: 'poa_code',
 } as const;
 
 export type FeatureLookupFieldType = (typeof FeatureLookupField)[keyof typeof FeatureLookupField];
@@ -134,6 +160,8 @@ export const MapRegistry: MapRegistryEntry[] = [
     category: MapCategory.SOLO,
     supports: new Set(['TW', 'TWN']),
   },
+ { key: 'AU_LGA', supports: new Set(['AU', 'AUS']) },
+  { key: 'AU_POA', supports: new Set(['AU', 'AUS']) },
   {
     key: 'WORLD',
     category: MapCategory.GROUPED,
