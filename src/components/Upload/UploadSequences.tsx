@@ -59,6 +59,8 @@ import {
   createPairedSeqUploadRows,
   createPairedSeqUploadRowsFromCsv,
   createSingleSeqUploadRows,
+  getSampleSharableProjects,
+  getUploadableSeqOrgs,
   createSingleSeqUploadRowsFromCsv,
   getSharableProjects,
   getUploadableOrgs,
@@ -335,7 +337,7 @@ function UploadSequences() {
       setAvailableDataOwners([]);
       return;
     }
-    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    const orgs: OrgDescriptor[] = getUploadableSeqOrgs(user);
     setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
     if (orgs.some((org) => org.abbreviation === user.orgAbbrev)) {
       setSelectedDataOwner(user.orgAbbrev);
@@ -346,7 +348,7 @@ function UploadSequences() {
       // todo future cleanup: move to a constants file, as it's re-used
       setPageErrorMsg(ErrorMessages.PERMISSIONS_REQUIRED);
     }
-  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [user, user.loading, user.orgAbbrev]);
 
   // Projects
 
@@ -363,9 +365,9 @@ function UploadSequences() {
       setAvailableProjects([]);
       return;
     }
-    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    const abbrevs: string[] = getSampleSharableProjects(user);
     setProjectAbbrevs(abbrevs);
-  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [selectedCreateSampleRecords, user, user.loading, user.orgAbbrev]);
 
   // todo future cleanup: create a hook for this, identical code in the upload metadata component
   useEffect(() => {
