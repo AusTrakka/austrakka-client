@@ -27,7 +27,7 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import { MapGroups, type MapKey, MapLabels } from './mapMeta';
+import { MapFieldOverrides, MapGroups, type MapKey, MapLabels } from './mapMeta';
 
 interface MapDetailProps {
   projectAbbrev: string;
@@ -115,8 +115,15 @@ function MapDetail(props: MapDetailProps) {
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
-      const geoFieldNames =
-        data.fields.filter((field) => field.geoField).map((field) => field.columnName) ?? [];
+      const geoFieldNames = data.fields
+        .filter((field) => field.geoField)
+        .filter((field) => {
+          const isOverridden = field.columnName in MapFieldOverrides;
+          return !isOverridden || selectedMap === 'AUS_NZ';
+        })
+        .map((field) => field.columnName)
+        .sort((a, b) => Number(a in MapFieldOverrides) - Number(b in MapFieldOverrides));
+
       const [firstGeoField] = geoFieldNames;
 
       if (!firstGeoField) return;
@@ -126,7 +133,7 @@ function MapDetail(props: MapDetailProps) {
       }
       setGeoFields(geoFieldNames);
     }
-  }, [data, selectedField, setSelectedField]);
+  }, [data, selectedField, setSelectedField, selectedMap]);
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
@@ -199,6 +206,7 @@ function MapDetail(props: MapDetailProps) {
             {geoFields.map((field) => (
               <MenuItem key={field} value={field}>
                 {field}
+                {field in MapFieldOverrides && ' (AUS only)'}
               </MenuItem>
             ))}
           </Select>
