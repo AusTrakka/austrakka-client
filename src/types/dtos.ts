@@ -10,16 +10,11 @@ export interface Project {
   label: string;
   clientType: string;
   description: string;
-  projectMembers: {
-    id: number;
-    name: string;
-  };
   trees: {
     id: number;
     name: string;
   }[];
   isActive: boolean;
-  groupName: string;
   created: Date;
   lastUpdated: Date;
   createdBy: string;
@@ -73,7 +68,6 @@ export interface Plot {
   projectId: number;
   projectName: string;
   projectAbbreviation: string;
-  projectGroupId: number;
   isActive: boolean;
 }
 
@@ -103,7 +97,6 @@ export interface TreeVersion {
   treeId: number;
   treeName: string;
   projectId: number;
-  projectMembersGroupId: number;
   projectName: string;
   completedTime: string;
   wasScheduled: boolean;
@@ -148,8 +141,6 @@ export interface User {
   orgAbbrev: string;
   orgName: string;
   orgGlobalId: string;
-  isAusTrakkaAdmin: boolean;
-  groupRoles: GroupRole[];
   displayName: string;
   position: string;
   created: Date;
@@ -179,8 +170,6 @@ export interface UserMe {
   monthlyBytesUsed: number;
   monthlyBytesQuota: number;
   scopes: GroupedPrivilegesByRecordTypeWithScopes[];
-  groupRoles: GroupRole[];
-  isAusTrakkaAdmin: boolean;
 }
 
 export interface GroupedPrivilegesByRecordTypeWithScopes {
@@ -226,7 +215,6 @@ export interface UserList {
   createdBy: string;
   lastLogIn: Date;
   lastActive: Date;
-  isAusTrakkaAdmin: boolean;
   isAusTrakkaProcess: boolean;
   username: string;
 }

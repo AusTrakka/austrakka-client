@@ -43,9 +43,9 @@ function ProjectSettingsOverview() {
     message: string;
     severity: AlertColor;
   }>({ open: false, message: '', severity: 'success' });
-  const { superUser, admin } = useAppSelector(selectUserState);
+  const { superUser } = useAppSelector(selectUserState);
 
-  const isAdmin = admin || superUser;
+  const isAdmin = superUser;
 
   const handleChangesSaved = (severity: AlertColor, message: string) => {
     setSnackbar({ open: true, message, severity });
