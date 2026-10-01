@@ -41,9 +41,11 @@ const validFormatsPerClass: Record<string, Record<string, string>> = {
 
 export const validFormats = (seqType: SeqType) => validFormatsPerClass[seqTypeClasses[seqType]];
 
+// Just the keys of validFormats
+export const validSuffixes = (seqType: SeqType) => Object.keys(validFormats(seqType));
+
 export interface OrgDescriptor {
   abbreviation: string;
-  name: string;
 }
 
 export enum SkipForce {

@@ -41,6 +41,7 @@ import {
   SkipForce,
   seqTypeNames,
   validFormats,
+  validSuffixes,
 } from '../../types/sequploadtypes';
 import { getEnumByValue } from '../../utilities/enumUtils';
 import { getProjectList } from '../../utilities/resourceUtils';
@@ -48,8 +49,8 @@ import {
   activeSeqUploadStates,
   createPairedSeqUploadRows,
   createSingleSeqUploadRows,
-  getSharableProjects,
-  getUploadableOrgs,
+  getSampleSharableProjects,
+  getUploadableSeqOrgs,
   splitFastaByContig,
   validateAllHaveSampleNamesWithOneFileOnly,
   validateAllHaveSampleNamesWithTwoFilesOnly,
@@ -171,9 +172,9 @@ function UploadSequences() {
     const rowType = uploadRowTypes[selectedSeqType];
     let rows: SeqUploadRow[] = [];
     if (rowType === UploadPairedSequenceRow) {
-      rows = createPairedSeqUploadRows(files);
+      rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
     } else if (rowType === UploadSingleSequenceRow || rowType === UploadSingleFastaContigRow) {
-      rows = createSingleSeqUploadRows(files, selectedSeqType);
+      rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
     }
     setSeqUploadRows(rows);
   }, [files, selectedSeqType]);
@@ -215,7 +216,7 @@ function UploadSequences() {
       setAvailableDataOwners([]);
       return;
     }
-    const orgs: OrgDescriptor[] = getUploadableOrgs(user.groupRoles ?? []);
+    const orgs: OrgDescriptor[] = getUploadableSeqOrgs(user);
     setAvailableDataOwners(orgs.map((org: OrgDescriptor) => org.abbreviation));
     if (orgs.some((org) => org.abbreviation === user.orgAbbrev)) {
       setSelectedDataOwner(user.orgAbbrev);
@@ -228,11 +229,10 @@ function UploadSequences() {
           'could not be properly loaded. Please contact an admin.',
       );
     }
-  }, [user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [user, user.loading, user.orgAbbrev]);
 
   // Projects
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (!selectedCreateSampleRecords) {
       setAvailableProjects([]);
@@ -243,9 +243,9 @@ function UploadSequences() {
       setAvailableProjects([]);
       return;
     }
-    const abbrevs: string[] = getSharableProjects(user.groupRoles ?? []);
+    const abbrevs: string[] = getSampleSharableProjects(user);
     setProjectAbbrevs(abbrevs);
-  }, [selectedCreateSampleRecords, user.groupRoles, user.loading, user.orgAbbrev]);
+  }, [selectedCreateSampleRecords, user, user.loading, user.orgAbbrev]);
 
   useEffect(() => {
     async function getProjects() {

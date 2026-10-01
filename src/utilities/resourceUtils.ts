@@ -7,6 +7,7 @@ import type {
   Organisation,
   Plot,
   PlotListing,
+  ProformaSharedEntity,
   Project,
   ProjectDashboardDetails,
   ProjectDocument,
@@ -97,12 +98,6 @@ export const getTreeData = (
   token: string,
 ): Promise<ResponseObject<TreeVersion>> => callGET(`/api/TreeVersion/${treeVersionId}`, token);
 
-export const getLatestTreeData = (
-  treeId: number,
-  token: string,
-): Promise<ResponseObject<TreeVersion>> =>
-  callGET(`/api/TreeVersion/${treeId}/LatestVersion`, token);
-
 export const getTreeVersions = (
   treeId: number,
   token: string,
@@ -112,9 +107,8 @@ export const getTreeVersions = (
 // Proforma and field endpoints
 // if the condition is custom, then the value is going to be a string boolean
 // and we don't need to do anything
-export const getGroupProFormaVersions = (groupId: number, token: string) =>
-  callGET(`/api/ProFormas/GroupVersionInformation?groupContext=${groupId}`, token);
-
+export const getProjectProFormaVersions = (projectAbbrev: string, token: string) =>
+  callGET(`/api/ProFormas/project/${projectAbbrev}`, token);
 export const getUserProformas = (token: string) => callGET('/api/Proformas', token);
 
 export const getProformaDetails = (proFormaAbbrev: string, token: string) =>
@@ -128,8 +122,11 @@ export const getProFormaDownload = async (abbrev: string, id: number | null, tok
       : await downloadFile(`/api/ProFormas/${abbrev}/download`, token);
   return response;
 };
-export const getProformaGroups = (proFormaAbbrev: string, token: string) =>
-  callGET(`/api/ProFormas/${proFormaAbbrev}/listgroups`, token);
+export const getProformaProjects = (
+  proFormaAbbrev: string,
+  token: string,
+): Promise<ResponseObject<ProformaSharedEntity[]>> =>
+  callGET(`/api/ProFormas/${proFormaAbbrev}/projects`, token);
 
 // Project metadata
 export const getProjectFields = (projectAbbrev: string, token: string) =>
@@ -234,27 +231,31 @@ export const disableDataset = (projectAbbrev: string, datasetId: number, token: 
   callPATCH(`/api/Projects/${projectAbbrev}/disable-dataset/${datasetId}`, token);
 
 // Sample endpoints
-export const getSampleGroups = (sampleName: string, token: string) =>
-  callGET(`/api/Sample/${sampleName}/Groups`, token);
-
+export const getSampleProperties = (seqId: string, token: string) =>
+  callGET(`/api/Sample/${seqId}`, token);
 export const shareSamples = (
   token: string,
-  groupName: string,
+  project: string,
   samples: string[],
   clientSessionId?: string,
 ) =>
-  callPATCH('/api/Sample/Share', token, { groupName: groupName, seqIds: samples }, clientSessionId);
+  callPATCH(
+    '/api/Sample/Share',
+    token,
+    { projectIdentifier: project, seqIds: samples },
+    clientSessionId,
+  );
 
 export const unshareSamples = (
   token: string,
-  groupName: string,
+  project: string,
   samples: string[],
   clientSessionId?: string,
 ) =>
   callPATCH(
     '/api/Sample/UnShare',
     token,
-    { groupName: groupName, seqIds: samples },
+    { projectIdentifier: project, seqIds: samples },
     clientSessionId,
   );
 
@@ -404,7 +405,6 @@ export const enableUser = (userGlobalId: string, token: string, clientSessionId?
   callPATCH(`/api/Users/enable/${userGlobalId}`, token, clientSessionId);
 
 // Organisations
-
 export const patchUserOrganisationV2 = (
   userGlobalId: string,
   organisationGlobalId: string,
