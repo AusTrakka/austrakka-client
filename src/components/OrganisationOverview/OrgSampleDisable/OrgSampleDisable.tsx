@@ -1,7 +1,7 @@
-import { Block, CheckCircle, Error as ErrorIcon, Send } from '@mui/icons-material';
+import { Block, CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
 import {
-  Alert,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -10,7 +10,7 @@ import {
   Grid2,
   Typography,
 } from '@mui/material';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useApi } from '../../../app/ApiContext';
 import { reloadOrgMetadata } from '../../../app/orgMetadataSlice';
 import { useAppDispatch } from '../../../app/store';
@@ -20,9 +20,16 @@ import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
 import { disableSamples } from '../../../utilities/resourceUtils';
 
-// TODO:
-// - Consolidate the dialog in the parent component that renders if no samples have been selected
-// - Add a confirmation step before disabling samples
+const parseSharedGroups = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string' || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 
 type DisableStatusProps = {
   icon: ReactNode;
@@ -46,15 +53,22 @@ function OrgSampleDisable(props: OrgSampleDisableProps) {
   const { token, tokenLoading } = useApi();
   const [status, setStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const dispatch = useAppDispatch();
+
+  // Collect deduped list of projects these samples have been shared with (if shared_groups is available)
+  const sharedProjects = useMemo(
+    () => Array.from(new Set(selectedSamples.flatMap((s) => parseSharedGroups(s.Shared_groups)))),
+    [selectedSamples],
+  );
 
   // Handle disable samples
   const handleDisableSamples = async () => {
     if (token && tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
       try {
         setStatus(LoadingState.LOADING);
-        const disableResponse: ResponseObject = await disableSamples(token, selectedIds, undefined);
+        const disableResponse: ResponseObject = await disableSamples(token, selectedIds);
         if (disableResponse.status === ResponseType.Success) {
           setStatus(LoadingState.SUCCESS);
           setStatusMessage('Samples disabled successfully.');
@@ -105,7 +119,11 @@ function OrgSampleDisable(props: OrgSampleDisableProps) {
         open={open}
         onClose={status === LoadingState.LOADING ? undefined : onClose}
         disableEscapeKeyDown={status === LoadingState.LOADING}
-        maxWidth={status === LoadingState.IDLE || status === LoadingState.LOADING ? 'md' : 'xs'}
+        maxWidth={
+          (status === LoadingState.IDLE && !confirmOpen) || status === LoadingState.LOADING
+            ? 'md'
+            : 'xs'
+        }
         fullWidth
       >
         {status === LoadingState.ERROR &&
@@ -126,48 +144,93 @@ function OrgSampleDisable(props: OrgSampleDisableProps) {
           })}
         {(status === LoadingState.IDLE || status === LoadingState.LOADING) && (
           <>
-            <DialogTitle>
-              <Block fontSize="large" color="primary" />
-              <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
-                Disable Organisation Samples
-              </Typography>
-              <Alert severity="info">
-                Disabling these sample records will remove them from the organisation line list and
-                from any projects the sample(s) have been shared with. This action cannot yet be
-                undone easily in the user interface.
-              </Alert>
-            </DialogTitle>
-            <DialogContent>
-              <Grid2 container spacing={4}>
-                <Grid2 size={{ xs: 12, md: 5 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Samples for disabling
+            {!confirmOpen && (
+              <>
+                <DialogTitle>
+                  <Block fontSize="large" color="primary" />
+                  <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
+                    Disable Organisation Samples
                   </Typography>
-                  <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                    <b>{selectedSamples.length}</b> sample
-                    {selectedSamples.length !== 1 ? 's' : ''} selected for disabling
+                  <Typography variant="body2" sx={{ marginBottom: 2 }}>
+                    Disabling these sample records will remove them from the organisation line list
+                    and from any projects the sample records have been shared with.{' '}
+                    <b>This action cannot easily be undone in the user interface.</b>
                   </Typography>
-                </Grid2>
-              </Grid2>
-            </DialogContent>
+                </DialogTitle>
+                <DialogContent>
+                  <Grid2 container spacing={4}>
+                    <Grid2 size={{ xs: 12, md: 5 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Samples for disabling
+                      </Typography>
+                      <Typography variant="body1" sx={{ marginBottom: 2 }}>
+                        <b>{selectedSamples.length}</b> sample
+                        {selectedSamples.length !== 1 ? 's' : ''} selected for disabling
+                      </Typography>
+                    </Grid2>
+                    {sharedProjects.length > 0 && (
+                      <Grid2 size={{ xs: 12, md: 7 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Projects that may be affected
+                        </Typography>
+                        {/* Render list of shared projects - only show the first 5 if there are many and indicate if there are more */}
+                        <Typography variant="body1">
+                          {sharedProjects.slice(0, 5).map((project) => (
+                            <Chip
+                              key={project}
+                              label={project}
+                              sx={{ marginRight: 1, marginBottom: 1 }}
+                            />
+                          ))}
+                          {sharedProjects.length > 5 && (
+                            <Chip
+                              label={`+ ${sharedProjects.length - 5} more`}
+                              sx={{ marginRight: 1, marginBottom: 1 }}
+                            />
+                          )}
+                        </Typography>
+                      </Grid2>
+                    )}
+                  </Grid2>
+                </DialogContent>
+              </>
+            )}
+            {confirmOpen && (
+              <>
+                <DialogTitle>
+                  <Block fontSize="large" color="primary" />
+                  <Typography variant="h4" color="primary" sx={{ marginBottom: 1 }}>
+                    Are you sure?
+                  </Typography>
+                  <Typography variant="body2" sx={{ marginBottom: 2 }}>
+                    Are you sure you want to disable the <b>{selectedSamples.length}</b> selected
+                    sample{selectedSamples.length !== 1 ? 's' : ''}? This action cannot easily be
+                    undone in the user interface.
+                  </Typography>
+                </DialogTitle>
+              </>
+            )}
             <DialogActions sx={{ padding: 2 }}>
               <Button onClick={onClose} disabled={status === LoadingState.LOADING}>
                 Cancel
               </Button>
               <Button
                 variant="contained"
-                color="success"
-                onClick={handleDisableSamples}
-                disabled={status === LoadingState.LOADING}
+                color="error"
+                onClick={() => {
+                  if (!confirmOpen) setConfirmOpen(true);
+                  else handleDisableSamples();
+                }}
                 startIcon={
                   !(status === LoadingState.LOADING) ? (
-                    <Send />
+                    <></>
                   ) : (
                     <CircularProgress size={16} sx={{ color: 'inherit' }} />
                   )
                 }
+                disabled={status === LoadingState.LOADING}
               >
-                Disable
+                {confirmOpen ? 'Yes, disable samples' : 'Disable'}
               </Button>
             </DialogActions>
           </>
