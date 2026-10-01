@@ -10,6 +10,7 @@
       "**",
       "!src/assets/maps",
       "!dist",
+      "!src/assets/maps",
       "!**/dist",
       "!vite.config.ts",
       "!jest.config.js",
