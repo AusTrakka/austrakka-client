@@ -61,11 +61,9 @@ export const MapGroups: Partial<Record<MapKey, MapKey>> = {
   AU_POA: 'AUS_NZ',
 };
 
-export const MapFieldOverrides: Partial<Record<MapKey, Record<string, MapKey>>> = {
-  AUS_NZ: {
-    LGA: 'AU_LGA',
-    Postcode: 'AU_POA',
-  },
+export const MapFieldOverrides: Record<string, MapKey> = {
+  LGA: 'AU_LGA',
+  Postcode: 'AU_POA',
 };
 
 

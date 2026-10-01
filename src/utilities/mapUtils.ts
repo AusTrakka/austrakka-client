@@ -42,7 +42,7 @@ export function resolveEffectiveMap(
   fieldName: string,
   validValues: string[],
 ): EffectiveMap | null {
-  const overrideMapKey = MapFieldOverrides[primaryMap]?.[fieldName];
+  const overrideMapKey = MapFieldOverrides[fieldName];
   if (overrideMapKey) {
     const lookupField = CHILD_LOOKUP_FIELDS[overrideMapKey];
     if (lookupField) return { mapKey: overrideMapKey, lookupField };

@@ -30,6 +30,7 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
+import { MapFieldOverrides, MapGroups, type MapKey, MapLabels } from './mapMeta';
 import { MapGroups, type MapKey, MapLabels } from './mapMeta';
 import { MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
 
@@ -129,6 +130,16 @@ function MapDetail(props: MapDetailProps) {
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
+      const geoFieldNames = data.fields
+        .filter((field) => field.geoField)
+        .filter((field) => {
+          const isOverridden = field.columnName in MapFieldOverrides;
+          return !isOverridden || selectedMap === 'AUS_NZ';
+        })
+        .map((field) => field.columnName)
+        .sort((a, b) => Number(a in MapFieldOverrides) - Number(b in MapFieldOverrides));
+
+      const [firstGeoField] = geoFieldNames;
       const mapGeoFields = getMapGeoFields(data.fields, selectedMap);
       const mapGeoFieldNames = mapGeoFields.map((field) => field.columnName);
 
