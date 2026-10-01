@@ -20,8 +20,8 @@ import {
 import { useAppSelector } from '../../app/store';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
-import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
+import { resolveEffectiveMap } from '../../utilities/mapUtils';
 import { detectIsoType, getGroupedSupportedMaps, getMapGeoFields } from '../../utilities/mapUtils';
 import {
   useStateFromSearchParamsForFilterObject,
@@ -30,6 +30,7 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
+import { MapGroups, type MapKey, MapLabels } from './mapMeta';
 import { MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
 
 interface MapDetailProps {
@@ -45,12 +46,12 @@ function MapDetail(props: MapDetailProps) {
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+
   const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
 
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
-  const [internalSelectedFieldObj, setInternalSelectedFieldObj] = useState<Field | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -58,18 +59,38 @@ function MapDetail(props: MapDetailProps) {
     'colourScheme',
     defaultContinuousColorScheme,
   );
+
   const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey | null>(
     'map',
     null,
   );
+
   const [selectedField, setSelectedField] = useStateFromSearchParamsForPrimitive<string>(
     'field',
     '',
   );
+
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
+
+  const internalSelectedFieldObj =
+    data?.fields && hasCompleteData(data.loadingState)
+      ? (data.fields.find((field) => field.columnName === selectedField) ?? null)
+      : null;
+
+  const supportedKeys = data?.supportedMaps.map(([key]) => key) ?? [];
+  const primaryKeys = [...new Set(supportedKeys.map((key) => MapGroups[key] ?? key))];
+
+  const selectedFieldValues = internalSelectedFieldObj?.metaDataColumnValidValues?.length
+    ? internalSelectedFieldObj.metaDataColumnValidValues
+    : (data?.fieldUniqueValues?.[selectedField] ?? []);
+
+  const resolvedMap =
+    selectedMap !== null
+      ? resolveEffectiveMap(selectedMap, selectedField, selectedFieldValues)
+      : null;
 
   const { solo, grouped } = getGroupedSupportedMaps(data?.supportedMaps ?? []);
 
@@ -82,7 +103,7 @@ function MapDetail(props: MapDetailProps) {
     if (data && hasCompleteData(data?.loadingState)) {
       setFilteredData(data.metadata ?? []);
     }
-  }, [data, selectedMap]);
+  }, [data]);
 
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
@@ -90,8 +111,6 @@ function MapDetail(props: MapDetailProps) {
     }
   }, [data]);
 
-  // If there are no maps to use, then we will show an error alert...
-  // If there is only one, auto select it
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       const { solo: visibleSolo, grouped: visibleGrouped } = getGroupedSupportedMaps(
@@ -168,11 +187,11 @@ function MapDetail(props: MapDetailProps) {
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
-      const selectedFieldObj =
-        data.fields.find((field) => field.columnName === selectedField) ?? null;
-      if (!selectedFieldObj) setNoSupportedMapsError(true);
+      const found = data.fields.some((field) => field.columnName === selectedField);
 
-      setInternalSelectedFieldObj(selectedFieldObj);
+      if (!found) {
+        setNoSupportedMapsError(true);
+      }
     }
   }, [data, selectedField]);
 
@@ -299,12 +318,26 @@ function MapDetail(props: MapDetailProps) {
       );
     }
 
+    if (resolvedMap === null) {
+      return (
+        <>
+          {renderControls()}
+
+          <Alert severity="info">
+            <Typography>This field isn't compatible with the selected map.</Typography>
+          </Alert>
+        </>
+      );
+    }
+
     return (
       <>
         {renderControls()}
+
         <MapChart
           colourScheme={colourScheme}
-          mapSpec={selectedMap!}
+          mapSpec={resolvedMap.mapKey}
+          lookupField={resolvedMap.lookupField}
           projAbbrev={projectAbbrev}
           data={filteredData ?? []}
           geoField={internalSelectedFieldObj}
