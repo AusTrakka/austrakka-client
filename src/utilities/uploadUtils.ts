@@ -443,7 +443,7 @@ export const parseSeqUploadCsvSingles = async (pairingFile: File) => {
       throw new Error('Invalid Seq_ID');
     }
     if (!row.filepath || row.filepath.trim() === '') {
-      throw new Error('Unable to parse filepath');
+      throw new Error('An error occurred while parsing filepath');
     }
   });
 
@@ -481,10 +481,10 @@ export const parseSeqUploadCsvPairs = async (pairingFile: File) => {
       throw new Error('Invalid Seq_ID');
     }
     if (!row.filepath1 || row.filepath1.trim() === '') {
-      throw new Error('Unable to parse filepath 1');
+      throw new Error('An error occurred while parsing filepath');
     }
     if (!row.filepath2 || row.filepath2.trim() === '') {
-      throw new Error('Unable to parse filepath 2');
+      throw new Error('An error occurred while parsing filepath');
     }
   });
 
