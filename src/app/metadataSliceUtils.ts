@@ -1,35 +1,11 @@
-import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
+import { type MapKey, MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
 import { FieldTypes } from '../constants/fieldTypes';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import type { Field, ProjectField } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
-
-export function getCountryCode(code: string): string | null {
-  if (!code) return null;
-  const upperCaseIso = code.trim().toUpperCase();
-  // Subdivision like AU-NSW → keep prefix
-  if (/^[A-Z]{2}-/.test(upperCaseIso)) {
-    return upperCaseIso.slice(0, 2);
-  }
-
-  // ISO2
-  if (/^[A-Z]{2}$/.test(upperCaseIso)) {
-    return upperCaseIso;
-  }
-
-  // ISO3
-  if (/^[A-Z]{3}$/.test(upperCaseIso)) {
-    return upperCaseIso;
-  }
-
-  return null; // unsupported/invalid
-}
-
-function isSubdivision(code: string): boolean {
-  return /^[A-Z]{2}-/.test(code.toUpperCase());
-}
+import { getCountryCode, isSubdivision } from '../utilities/mapUtils';
 
 export function getFieldDetails(fieldNames: string[], fields: Field[]): Field[] {
   return fieldNames.map((field) => {
@@ -215,48 +191,53 @@ export function calculateSupportedMaps(
   uniqueValues: Record<string, string[]>,
   geoFields: string[],
 ): MapSupportInfo[] {
-  if (Object.keys(uniqueValues).length === 0) return [];
-  if (geoFields.length === 0) return [];
+  const result: MapSupportInfo[] = [];
+  const addedKeys = new Set<MapKey>();
+
+  if (geoFields.includes('LGA')) {
+    result.push(['AU_LGA', false]);
+    addedKeys.add('AU_LGA');
+  }
+  if (geoFields.includes('Postcode')) {
+    result.push(['AU_POA', false]);
+    addedKeys.add('AU_POA');
+  }
+
+  if (Object.keys(uniqueValues).length === 0 || geoFields.length === 0) return result;
 
   const uniqueGeoValues = Object.fromEntries(
     Object.entries(uniqueValues).filter(([key]) => geoFields.includes(key)),
   );
-
-  if (Object.keys(uniqueGeoValues).length === 0) return [];
+  const allValues = Object.values(uniqueGeoValues)
+    .flat()
+    .filter((v) => v !== null && v !== '');
 
   const datasetKeys = new Set<string>();
   const datasetRegions = new Set<string>();
   let hasCountryValues = false;
 
-  for (const uniqueVals of Object.values(uniqueGeoValues)) {
-    for (const val of uniqueVals) {
-      if (val === null || val === '') continue;
-      if (isSubdivision(val)) {
-        datasetRegions.add(val.slice(0, 2)); // e.g. "AU" from "AU-NSW"
-      } else {
-        hasCountryValues = true; // found a top-level country
-      }
-
-      const standard = getCountryCode(val);
-      if (standard) datasetKeys.add(standard);
+  for (const val of allValues) {
+    const standard = getCountryCode(val);
+    if (!standard) continue;
+    datasetKeys.add(standard);
+    if (isSubdivision(val)) {
+      datasetRegions.add(val.slice(0, 2));
+    } else {
+      hasCountryValues = true;
     }
   }
 
-  if (datasetKeys.size === 0) return [];
-
-  const result: MapSupportInfo[] = [];
-
   for (const entry of MapRegistry) {
-    if (entry.key === 'WORLD') continue;
+    if (entry.key === 'WORLD' || addedKeys.has(entry.key)) continue;
 
     const intersects = [...datasetKeys].some((k) => entry.supports?.has(k));
     if (intersects) {
       const hasRegions = [...datasetRegions].some((r) => entry.supports?.has(r));
       result.push([entry.key, hasRegions]);
+      addedKeys.add(entry.key);
     }
   }
 
-  // Only add WORLD if there were actual country values
   if (hasCountryValues) {
     result.push(['WORLD', false]);
   }

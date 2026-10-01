@@ -1,5 +1,7 @@
 import type { FeatureCollection } from 'geojson';
+import AU_LGA from '../../assets/maps/aus_lga_processed.json';
 import AUS_NZ from '../../assets/maps/aus_nz_processed.json';
+import AU_POA from '../../assets/maps/aus_poa_processed.json';
 import MALAYSIA from '../../assets/maps/my_processed.json';
 import NEW_CALEDONIA from '../../assets/maps/nc-processed.json';
 import PAPUA_NEW_GUINEA from '../../assets/maps/png-processed.json';
@@ -11,10 +13,8 @@ export const Maps = {
   WORLD: WORLD as FeatureCollection,
   PAPUA_NEW_GUINEA: PAPUA_NEW_GUINEA as FeatureCollection,
   NEW_CALEDONIA: NEW_CALEDONIA as FeatureCollection,
-  // 1. Maybe an Australia only map?
-  // 2. I don't think New Zealand will need a standalone
-  // 3. Need to add a WorldMap [regions will not be hard to support with this one]
-  // 4. More to come...
+  AU_LGA: AU_LGA as FeatureCollection,
+  AU_POA: AU_POA as FeatureCollection,
 };
 
 export const MapLabels: Record<MapKey, string> = {
@@ -23,9 +23,22 @@ export const MapLabels: Record<MapKey, string> = {
   WORLD: 'World',
   PAPUA_NEW_GUINEA: 'Papua New Guinea',
   NEW_CALEDONIA: 'New Caledonia',
+  AU_LGA: 'Australia (LGA)',
+  AU_POA: 'Australia (Postcode)',
 };
 
-// Type that holds the correct values for the keys
+export const MapGroups: Partial<Record<MapKey, MapKey>> = {
+  AU_LGA: 'AUS_NZ',
+  AU_POA: 'AUS_NZ',
+};
+
+export const MapFieldOverrides: Partial<Record<MapKey, Record<string, MapKey>>> = {
+  AUS_NZ: {
+    LGA: 'AU_LGA',
+    Postcode: 'AU_POA',
+  },
+};
+
 export type MapKey = keyof typeof Maps;
 export type MapJson = (typeof Maps)[MapKey];
 export type MapSupportInfo = [MapKey, boolean];
@@ -34,11 +47,17 @@ export type MapFeatureWithStringProps = {
   properties: { [x: string]: string };
 };
 
+export interface EffectiveMap {
+  mapKey: MapKey;
+  lookupField: FeatureLookupFieldType;
+}
+
 export const FeatureLookupField = {
   ISO_2: 'iso_2_char',
   ISO_3: 'iso_3_char',
   ISO_REGION: 'iso_region',
   NAME: 'name',
+  POA_CODE: 'poa_code',
 } as const;
 
 export type FeatureLookupFieldType = (typeof FeatureLookupField)[keyof typeof FeatureLookupField];
@@ -50,27 +69,15 @@ export interface GeoCountRow {
 
 type MapRegistryEntry = {
   key: MapKey;
-  supports?: Set<string>; // country keys
+  supports?: Set<string>;
 };
 
 export const MapRegistry: MapRegistryEntry[] = [
-  {
-    key: 'MALAYSIA',
-    supports: new Set(['MY', 'MYS']),
-  },
-  {
-    key: 'PAPUA_NEW_GUINEA',
-    supports: new Set(['PG', 'PNG']),
-  },
-  {
-    key: 'NEW_CALEDONIA',
-    supports: new Set(['NC', 'NCL']),
-  },
-  {
-    key: 'AUS_NZ',
-    supports: new Set(['AU', 'NZ', 'AUS', 'NZL']),
-  },
-  {
-    key: 'WORLD', // no supports needed, always included
-  },
+  { key: 'MALAYSIA', supports: new Set(['MY', 'MYS']) },
+  { key: 'PAPUA_NEW_GUINEA', supports: new Set(['PG', 'PNG']) },
+  { key: 'NEW_CALEDONIA', supports: new Set(['NC', 'NCL']) },
+  { key: 'AUS_NZ', supports: new Set(['AU', 'NZ', 'AUS', 'NZL']) },
+  { key: 'AU_LGA', supports: new Set(['AU', 'AUS']) },
+  { key: 'AU_POA', supports: new Set(['AU', 'AUS']) },
+  { key: 'WORLD' },
 ];
