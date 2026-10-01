@@ -18,8 +18,8 @@ import {
 import { useAppSelector } from '../../app/store';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
-import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
+import { resolveEffectiveMap } from '../../utilities/mapUtils';
 import {
   useStateFromSearchParamsForFilterObject,
   useStateFromSearchParamsForPrimitive,
@@ -27,7 +27,7 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import { type MapKey, MapLabels } from './mapMeta';
+import { MapGroups, type MapKey, MapLabels } from './mapMeta';
 
 interface MapDetailProps {
   projectAbbrev: string;
@@ -39,13 +39,12 @@ function MapDetail(props: MapDetailProps) {
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+
   const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
 
-  // this I don't really needs to be in the url
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
-  const [internalSelectedFieldObj, setInternalSelectedFieldObj] = useState<Field | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -53,26 +52,44 @@ function MapDetail(props: MapDetailProps) {
     'colourScheme',
     defaultContinuousColorScheme,
   );
+
   const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey | null>(
     'map',
     null,
   );
+
   const [selectedField, setSelectedField] = useStateFromSearchParamsForPrimitive<string>(
     'field',
     '',
   );
+
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
 
-  // This use effect will set the state of the region toggle and also if it's disabled
-  // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
+  const internalSelectedFieldObj =
+    data?.fields && hasCompleteData(data.loadingState)
+      ? (data.fields.find((field) => field.columnName === selectedField) ?? null)
+      : null;
+
+  const supportedKeys = data?.supportedMaps.map(([key]) => key) ?? [];
+  const primaryKeys = [...new Set(supportedKeys.map((key) => MapGroups[key] ?? key))];
+
+  const selectedFieldValues = internalSelectedFieldObj?.metaDataColumnValidValues?.length
+    ? internalSelectedFieldObj.metaDataColumnValidValues
+    : (data?.fieldUniqueValues?.[selectedField] ?? []);
+
+  const resolvedMap =
+    selectedMap !== null
+      ? resolveEffectiveMap(selectedMap, selectedField, selectedFieldValues)
+      : null;
+
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       setFilteredData(data.metadata ?? []);
     }
-  }, [data, selectedMap]);
+  }, [data]);
 
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
@@ -80,14 +97,18 @@ function MapDetail(props: MapDetailProps) {
     }
   }, [data]);
 
-  // If there are no maps to use, then we will show an error alert...
-  // If there is only one, auto select it
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
-      if (data.supportedMaps.length === 0) setNoSupportedMapsError(true);
-      else {
-        setNoSupportedMapsError(false); // reset on valid data
-        if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
+      if (data.supportedMaps.length === 0) {
+        setNoSupportedMapsError(true);
+      } else {
+        setNoSupportedMapsError(false);
+
+        const primaries = [...new Set(data.supportedMaps.map(([key]) => MapGroups[key] ?? key))];
+
+        if (primaries.length === 1) {
+          setSelectedMap(primaries[0]);
+        }
       }
     }
   }, [data, setSelectedMap]);
@@ -98,11 +119,8 @@ function MapDetail(props: MapDetailProps) {
         data.fields.filter((field) => field.geoField).map((field) => field.columnName) ?? [];
       const [firstGeoField] = geoFieldNames;
 
-      // this should be setting an error as we shouldn't be here with no geo fields
       if (!firstGeoField) return;
 
-      // Only fall back to the first geo field when there's no valid selection yet —
-      // don't clobber a field the user picked or one restored from the URL.
       if (!selectedField || !geoFieldNames.includes(selectedField)) {
         setSelectedField(firstGeoField);
       }
@@ -112,11 +130,11 @@ function MapDetail(props: MapDetailProps) {
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
-      const selectedFieldObj =
-        data.fields.find((field) => field.columnName === selectedField) ?? null;
-      if (!selectedFieldObj) setNoSupportedMapsError(true);
+      const found = data.fields.some((field) => field.columnName === selectedField);
 
-      setInternalSelectedFieldObj(selectedFieldObj);
+      if (!found) {
+        setNoSupportedMapsError(true);
+      }
     }
   }, [data, selectedField]);
 
@@ -138,7 +156,6 @@ function MapDetail(props: MapDetailProps) {
         width: '100%',
       }}
     >
-      {/* Left group */}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FormControl size="small" sx={{ margin: 1, marginTop: 1 }}>
           <InputLabel id="map-select-label">Map</InputLabel>
@@ -152,7 +169,7 @@ function MapDetail(props: MapDetailProps) {
             }}
             label="Map"
           >
-            {data?.supportedMaps.map(([mapKey, _]) => (
+            {primaryKeys.map((mapKey) => (
               <MenuItem key={mapKey} value={mapKey}>
                 {MapLabels[mapKey]}
               </MenuItem>
@@ -176,8 +193,7 @@ function MapDetail(props: MapDetailProps) {
             sx={{ minWidth: '100px' }}
             value={selectedField}
             onChange={(e) => {
-              const field = e.target.value;
-              setSelectedField(field);
+              setSelectedField(e.target.value);
             }}
           >
             {geoFields.map((field) => (
@@ -227,12 +243,26 @@ function MapDetail(props: MapDetailProps) {
       );
     }
 
+    if (resolvedMap === null) {
+      return (
+        <>
+          {renderControls()}
+
+          <Alert severity="info">
+            <Typography>This field isn't compatible with the selected map.</Typography>
+          </Alert>
+        </>
+      );
+    }
+
     return (
       <>
         {renderControls()}
+
         <MapChart
           colourScheme={colourScheme}
-          mapSpec={selectedMap!}
+          mapSpec={resolvedMap.mapKey}
+          lookupField={resolvedMap.lookupField}
           projAbbrev={projectAbbrev}
           data={filteredData ?? []}
           geoField={internalSelectedFieldObj}

@@ -6,39 +6,49 @@ import { Theme } from '../../assets/themes/theme';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
-import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
-import { type FeatureLookupFieldType, type GeoCountRow, type MapKey, Maps } from './mapMeta';
+import { aggregateGeoData } from '../../utilities/mapUtils';
+import {
+  type FeatureLookupFieldType,
+  type GeoCountRow,
+  MapGroups,
+  type MapKey,
+  Maps,
+} from './mapMeta';
 
 interface MapTestProps {
   colourScheme: string;
   mapSpec: MapKey;
+  lookupField: FeatureLookupFieldType;
   projAbbrev: string;
   data: Sample[];
   geoField: Field | null;
 }
 
 function MapChart(props: MapTestProps) {
-  const { colourScheme, mapSpec, geoField, projAbbrev, data } = props;
+  const { colourScheme, mapSpec, lookupField, geoField, projAbbrev, data } = props;
+
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
-  const [regionView, setRegionView] = useState(false);
   const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
   const [missingData, setMissingData] = useState<GeoCountRow[]>([]);
-  const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
   const [showAlert, setShowAlert] = useState(true);
-  const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
+  const [mapRenderingError, setMapRenderingError] = useState(false);
+
+  const regionView = lookupField === 'iso_region';
 
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
     const mapJson = Maps[mapSpec];
     if (!mapJson) return null;
-    if (mapSpec === 'WORLD') {
+    if (mapSpec === 'WORLD' || mapSpec in MapGroups) {
       return mapJson;
     }
 
     return {
       ...mapJson,
-      features: mapJson.features.filter((f) => Boolean(f.properties?.is_region) === regionView),
+      features: mapJson.features.filter(
+        (feature) => Boolean(feature.properties?.is_region) === regionView,
+      ),
     };
   }, [mapSpec, regionView]);
 
@@ -48,38 +58,67 @@ function MapChart(props: MapTestProps) {
     chartInstance.current = echarts.init(chartRef.current);
 
     return () => {
-      if (chartInstance.current) {
-        chartInstance.current.dispose();
-        chartInstance.current = null;
-      }
+      chartInstance.current?.dispose();
+      chartInstance.current = null;
     };
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: explained below
+  // biome-ignore lint/correctness/useExhaustiveDependencies: resize when alert visibility changes container size
   useEffect(() => {
     if (!chartRef.current) return undefined;
 
-    // Resize handler for window events
     const handleResize = () => {
       chartInstance.current?.resize();
     };
 
     window.addEventListener('resize', handleResize);
 
-    // ResizeObserver for container size changes
     const observer = new ResizeObserver(() => {
       chartInstance.current?.resize();
     });
     observer.observe(chartRef.current);
 
-    // Force initial resize
     setTimeout(() => chartInstance.current?.resize(), 100);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       observer.disconnect();
     };
-  }, [showAlert]); // <— rerun effect whenever alert visibility changes
+  }, [showAlert]);
+
+  useEffect(() => {
+    if (!data || data.length === 0 || !geoField || !filteredMapSpec || !lookupField) {
+      setAggregateData([]);
+      setMissingData([]);
+      return;
+    }
+
+    try {
+      const { counts, missing } = aggregateGeoData(data, geoField, filteredMapSpec, lookupField);
+
+      setAggregateData(counts);
+      setMissingData(missing);
+      setShowAlert(true);
+      setMapRenderingError(false);
+    } catch (_err) {
+      setMapRenderingError(true);
+    }
+  }, [data, geoField, filteredMapSpec, lookupField]);
+
+  useEffect(() => {
+    if (!filteredMapSpec || !chartInstance.current) return;
+
+    try {
+      echarts.registerMap('currentMap', {
+        ...filteredMapSpec,
+        features: filteredMapSpec.features.filter(
+          (feature) => !feature.properties?.not_geographical,
+        ),
+      } as any);
+    } catch (_error) {
+      setMapRenderingError(true);
+    }
+  }, [filteredMapSpec]);
 
   const updateChart = useCallback(() => {
     if (!chartInstance.current || !aggregateData.length) return;
@@ -137,8 +176,11 @@ function MapChart(props: MapTestProps) {
           },
           roam: true,
           map: 'currentMap',
-          nameProperty: isoType,
-          data: aggregateData.map((item) => ({ name: item.geoFeature, value: item.count })),
+          nameProperty: lookupField,
+          data: aggregateData.map((item) => ({
+            name: item.geoFeature,
+            value: item.count,
+          })),
           encode: {
             name: 'name',
             value: 'value',
@@ -153,65 +195,8 @@ function MapChart(props: MapTestProps) {
     };
 
     chartInstance.current.setOption(option, true);
-  }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
+  }, [aggregateData, colourScheme, lookupField, geoField, projAbbrev]);
 
-  useEffect(() => {
-    if (!geoField) return;
-    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
-
-    if (!isoCode) {
-      setMapRenderingError(true); // set error if isoCode is missing
-      return;
-    }
-
-    setMapRenderingError(false); // clear error if valid
-    setIsoType(isoCode);
-    setRegionView(isoCode === 'iso_region');
-  }, [geoField]);
-
-  useEffect(() => {
-    if (!data || data.length === 0 || !geoField || !filteredMapSpec || !isoType) {
-      setAggregateData([]);
-      return;
-    }
-
-    try {
-      const { counts, missing } = aggregateGeoData(data, geoField, filteredMapSpec, isoType);
-      setAggregateData(counts);
-      setMissingData(missing);
-      setShowAlert(true);
-    } catch (_err) {
-      setMapRenderingError(true);
-    }
-  }, [data, geoField, filteredMapSpec, isoType]);
-
-  // Register map whenever filteredMapSpec changes
-  useEffect(() => {
-    if (!filteredMapSpec || !chartInstance.current) return; // Add chart check
-
-    // Clear existing map registration safely
-    try {
-      if (echarts.getMap('currentMap')) {
-        echarts.registerMap('currentMap', {
-          type: 'FeatureCollection',
-          features: [],
-        });
-      }
-    } catch (_error) {
-      setMapRenderingError(true);
-    }
-
-    // Register new map with validation
-    try {
-      if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
-        echarts.registerMap('currentMap', filteredMapSpec as any);
-      }
-    } catch (_error) {
-      setMapRenderingError(true);
-    }
-  }, [filteredMapSpec]);
-
-  // Update chart whenever data or styling changes
   useEffect(() => {
     if (!chartInstance.current || !aggregateData.length) return;
 
@@ -266,7 +251,7 @@ function MapChart(props: MapTestProps) {
         ref={chartRef}
         sx={{
           width: '100%',
-          height: '70vh', // chart itself has height, not the wrapper
+          height: '70vh',
           marginTop: '10px',
           display: regionView && mapSpec === 'WORLD' ? 'none' : 'block',
         }}
