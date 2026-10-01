@@ -29,6 +29,7 @@ interface FileDragDropProps {
   fileTransform?: (f: File[]) => Promise<File[]>;
   disabled?: boolean;
   maxFileSize?: number | undefined; // in bytes
+  onClear?: () => void;
 }
 
 const FileDragDrop = forwardRef<any, FileDragDropProps>(
@@ -42,6 +43,7 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
       fileTransform,
       disabled,
       maxFileSize,
+      onClear,
     },
     ref,
   ) => {
@@ -95,7 +97,8 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
     const clearFiles = useCallback(() => {
       setFiles([]);
       setOriginalFiles([]);
-    }, [setFiles]);
+      onClear?.();
+    }, [setFiles, onClear]);
 
     useImperativeHandle(ref, () => ({ clearFiles }));
 
@@ -205,10 +208,13 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
             border: dragActive ? 4 : 0,
             borderColor: Theme.PrimaryMainBackground,
             borderStyle: dragActive ? 'dashed' : 'solid',
-            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: historic
-            transition: muiTheme.transitions?.create!(['background-color', 'border'], {
-              duration: muiTheme.transitions.duration?.standard,
-            }),
+            transition: () => {
+              if (muiTheme.transitions?.create !== undefined) {
+                return muiTheme.transitions.create(['background-color', 'border'], {
+                  duration: muiTheme.transitions.duration?.standard,
+                });
+              }
+            },
           }}
         >
           <Stack spacing={1} justifyContent="center" alignItems="center">
