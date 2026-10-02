@@ -1,7 +1,7 @@
 export type VisChainEntry = {
-  GlobalId: string;
-  ResourceType: string;
-  UniqueStringId: string;
+  globalId: string;
+  resourceType: string;
+  uniqueStringId: string;
 };
 
 export interface ActivityDetailInfo {

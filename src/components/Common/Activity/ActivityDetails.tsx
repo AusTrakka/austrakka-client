@@ -20,9 +20,9 @@ function ActivityDetails(props: ActivityDetailProps): JSX.Element {
 
   useEffect(() => {
     const contextEntries = (detailInfo.Context || [])
-      .filter((chain) => chain.ResourceType !== 'System')
-      .filter((chain) => chain.ResourceType !== detailInfo['Resource Type'])
-      .filter((chain) => chain.ResourceType !== recordType);
+      .filter((chain) => chain.resourceType !== 'System')
+      .filter((chain) => chain.resourceType !== detailInfo['Resource Type'])
+      .filter((chain) => chain.resourceType !== recordType);
 
     setLogContext(contextEntries);
   }, [detailInfo.Context, recordType, detailInfo['Resource Type']]);
