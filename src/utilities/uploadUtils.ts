@@ -1,8 +1,9 @@
-import type { UserSliceState } from '../app/userSlice';
-import RecordTypes from '../constants/record-type.enum';
-import { ScopeDefinitions } from '../constants/scopes';
 import Papa from 'papaparse';
 import path from 'path-browserify';
+import type { UserSliceState } from '../app/userSlice';
+import { UploadErrorMessages } from '../components/Upload/Constants/UploadMessages';
+import RecordTypes from '../constants/record-type.enum';
+import { ScopeDefinitions } from '../constants/scopes';
 import type { DropFileUpload } from '../types/DropFileUpload';
 import {
   type OrgDescriptor,
@@ -23,40 +24,6 @@ export const activeSeqUploadStates = [
   SeqUploadRowState.Uploading,
 ];
 
-export interface CustomUploadValidatorReturn {
-  success: boolean;
-  message: string;
-}
-
-export interface CustomUploadValidator {
-  func: (files: File[], suffixes: string[]) => CustomUploadValidatorReturn;
-}
-
-export const validateEvenNumberOfFiles = {
-  func: (files: File[], _suffixes: string[]) =>
-    ({
-      success: files.length % 2 === 0,
-      message: 'Must upload an even number of files for paired-end sequence data',
-    }) as CustomUploadValidatorReturn,
-} as CustomUploadValidator;
-
-export const validateNoDuplicateFilenames = {
-  func: (files: File[], _suffixes: string[]) => {
-    const filenames = files.map((f) => f.name);
-    const duplicates = filenames.filter((item, index) => filenames.indexOf(item) !== index);
-    if (duplicates.length > 0) {
-      return {
-        success: false,
-        message: `The following files appear more than once: ${duplicates.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-      message: '',
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
-
 function stripSuffix(filename: string, suffixes: string[]) {
   const lowerFilename = filename.toLowerCase();
   const sorted = [...suffixes].sort((a, b) => b.length - a.length);
@@ -76,50 +43,6 @@ export const getSampleNameFromFile = (filename: string, suffixes: string[]) =>
 
 // Special handling for artificially created "filenames" for fasta-cns
 export const getSampleNameFromFastaCns = (filename: string) => filename.split(/.fa$/)[0];
-
-function countElements(array: any[]): Record<string, number> {
-  const count: Record<string, number> = {};
-  array.forEach((val) => {
-    count[val] = (count[val] || 0) + 1;
-  });
-  return count;
-}
-
-export const validateAllHaveSampleNamesWithTwoFilesOnly = {
-  func: (files: File[], suffixes: string[]) => {
-    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name, suffixes)));
-    const problemSampleNames = Object.entries(sampleCounts)
-      .filter(([_sample, count]) => count !== 2)
-      .map(([sample, _count]) => sample);
-    if (problemSampleNames.length > 0) {
-      return {
-        success: false,
-        message: `Unable to parse file pairs for the following samples: ${problemSampleNames.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
-
-export const validateAllHaveSampleNamesWithOneFileOnly = {
-  func: (files: File[], suffixes: string[]) => {
-    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name, suffixes)));
-    const problemSampleNames = Object.entries(sampleCounts)
-      .filter(([_sample, count]) => count !== 1)
-      .map(([sample, _count]) => sample);
-    if (problemSampleNames.length > 0) {
-      return {
-        success: false,
-        message: `Found too many files for the following samples: ${problemSampleNames.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
 
 export const getUploadableSampleOrgs = (user: UserSliceState): OrgDescriptor[] => {
   return privsOfTypeWithScope(user, RecordTypes.ORGANISATION, ScopeDefinitions.CreateSamples).map(
@@ -417,7 +340,7 @@ export const parseSeqUploadCsvSingles = async (pairingFile: File) => {
   const fileContent = await pairingFile.text();
 
   if (!fileContent || fileContent.length < 1) {
-    throw new Error('Pairing file content is invalid');
+    throw new Error(UploadErrorMessages.INVALID_FILE_CONTENT);
   }
 
   const parseConfig: Papa.ParseConfig<SeqUploadCsvSingle> = {
@@ -440,10 +363,10 @@ export const parseSeqUploadCsvSingles = async (pairingFile: File) => {
 
   parsed.forEach((row) => {
     if (!row.Seq_ID || row.Seq_ID.trim() === '') {
-      throw new Error('Invalid Seq_ID');
+      throw new Error(UploadErrorMessages.INVALID_SEQ_ID);
     }
     if (!row.filepath || row.filepath.trim() === '') {
-      throw new Error('An error occurred while parsing filepath');
+      throw new Error(UploadErrorMessages.FILEPATH_PARSING_FAILED);
     }
   });
 
@@ -454,7 +377,7 @@ export const parseSeqUploadCsvPairs = async (pairingFile: File) => {
   const fileContent = await pairingFile.text();
 
   if (!fileContent || fileContent.length < 1) {
-    throw new Error('Pairing file content is invalid');
+    throw new Error(UploadErrorMessages.INVALID_FILE_CONTENT);
   }
 
   const parseConfig: Papa.ParseConfig<SeqUploadCsvPair> = {
@@ -478,13 +401,13 @@ export const parseSeqUploadCsvPairs = async (pairingFile: File) => {
 
   parsed.forEach((row) => {
     if (!row.Seq_ID || row.Seq_ID.trim() === '') {
-      throw new Error('Invalid Seq_ID');
+      throw new Error(UploadErrorMessages.INVALID_SEQ_ID);
     }
     if (!row.filepath1 || row.filepath1.trim() === '') {
-      throw new Error('An error occurred while parsing filepath');
+      throw new Error(UploadErrorMessages.FILEPATH_PARSING_FAILED);
     }
     if (!row.filepath2 || row.filepath2.trim() === '') {
-      throw new Error('An error occurred while parsing filepath');
+      throw new Error(UploadErrorMessages.FILEPATH_PARSING_FAILED);
     }
   });
 
