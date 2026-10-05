@@ -354,7 +354,6 @@ function UploadSequences() {
       setSelectedDataOwner(orgs[0].abbreviation);
     }
     if (orgs.length === 0) {
-      // todo future cleanup: move to a constants file, as it's re-used
       setPageErrorMsg(UploadErrorMessages.PERMISSIONS_REQUIRED);
     }
   }, [user, user.loading, user.orgAbbrev]);
