@@ -74,8 +74,6 @@ export default function FileUploadButton({
     [customValidators, enqueueSnackbar, maxFileSize, onChange, validFormats, validators],
   );
 
-  useEffect(() => {}, []);
-
   return (
     <Box display={'flex'} flexDirection={'row'} gap={1}>
       <Button variant="outlined" component="label" disabled={disabled} size={sx?.size ?? 'small'}>
