@@ -1,7 +1,7 @@
 import { AttachFile } from '@mui/icons-material';
 import { Box, Button, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
-import { type ChangeEvent, useCallback, useEffect, useRef } from 'react';
+import { type ChangeEvent, useCallback, useRef } from 'react';
 import {
   type CustomUploadValidator,
   validateFileSizeLimit,
