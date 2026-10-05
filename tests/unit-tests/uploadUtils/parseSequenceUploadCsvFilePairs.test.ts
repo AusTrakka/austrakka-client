@@ -1,5 +1,6 @@
 // noinspection DuplicatedCode
 
+import { UploadErrorMessages } from '../../../src/components/Upload/Constants/UploadMessages';
 import { parseSeqUploadCsvPairs } from '../../../src/utilities/uploadUtils';
 import { mockFile } from '../../test-utils/fileUtils';
 
@@ -8,7 +9,7 @@ import { mockFile } from '../../test-utils/fileUtils';
 const defaultFileName = 'default.csv';
 const validHeaders = ['Seq_ID', 'filepath1', 'filepath2'];
 
-const getPairFile = (rows: string[]) => {
+const getCsvFile = (rows: string[]) => {
   let contents = validHeaders.join(',');
   rows.forEach((row) => {
     contents += `\n${row}`;
@@ -16,7 +17,7 @@ const getPairFile = (rows: string[]) => {
   return mockFile(defaultFileName, contents, 'csv');
 };
 
-describe('parsePairingFile', () => {
+describe('parseSeqUploadCsvPairs', () => {
   it('should parse single pair', async () => {
     // Arrange
     const seqId = 'Sample1';
@@ -25,7 +26,7 @@ describe('parsePairingFile', () => {
 
     const rows = [`${seqId},${fp1},${fp2}`];
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const result = await parseSeqUploadCsvPairs(pairFile);
@@ -50,7 +51,7 @@ describe('parsePairingFile', () => {
       rows.push(`${seqIdBase}${i},${i}${fp1Base},${i}${fp2Base}`);
     }
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const result = await parseSeqUploadCsvPairs(pairFile);
@@ -73,7 +74,7 @@ describe('parsePairingFile', () => {
 
     const rows = [`${seqId},${fp1},${fp2},`];
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const result = await parseSeqUploadCsvPairs(pairFile);
@@ -95,13 +96,13 @@ describe('parsePairingFile', () => {
 
     const rows = [`${seqId},${fp1},${fp2},`];
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const promise = parseSeqUploadCsvPairs(pairFile);
 
     // Assert
-    await expect(promise).rejects.toThrow('Invalid Seq_ID');
+    await expect(promise).rejects.toThrow(UploadErrorMessages.INVALID_SEQ_ID);
   });
 
   it.each([
@@ -113,13 +114,13 @@ describe('parsePairingFile', () => {
 
     const rows = [`${seqId},${filepath},${filepath},`];
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const promise = parseSeqUploadCsvPairs(pairFile);
 
     // Assert
-    await expect(promise).rejects.toThrow('Unable to parse filepath');
+    await expect(promise).rejects.toThrow(UploadErrorMessages.FILEPATH_PARSING_FAILED);
   });
 
   it('should ignore empty lines', async () => {
@@ -134,7 +135,7 @@ describe('parsePairingFile', () => {
 
     const rows = [`${seqId1},${yin1},${yang1}`, ',,', `${seqId2},${yin2},${yang2}`];
 
-    const pairFile = getPairFile(rows);
+    const pairFile = getCsvFile(rows);
 
     // Act
     const result = await parseSeqUploadCsvPairs(pairFile);
