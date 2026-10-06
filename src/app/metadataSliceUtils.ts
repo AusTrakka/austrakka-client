@@ -210,7 +210,6 @@ export function calculateUniqueValues(
 }
 
 // Calculate what Maps this project has access too
-
 export function calculateSupportedMaps(
   uniqueValues: Record<string, string[]>,
   geoFields: string[],

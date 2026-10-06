@@ -236,28 +236,32 @@ function MapChart(props: MapTestProps) {
 
       {showAlert && missingData.length > 0 && (
         <Alert severity="info" onClose={() => setShowAlert(false)}>
-          <Typography fontSize="small" gutterBottom>
-            Some data values are not shown on the map because they don’t match any map regions:
+          <Typography fontSize="small">
+            {missingData.reduce((sum, item) => sum + item.count, 0)} data values are not shown on
+            this map because they don’t match any map regions.
           </Typography>
+
           <Box
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: 1,
-              maxHeight: 120,
+              gap: 0.5,
+              mt: 1,
+              maxHeight: 80,
               overflowY: 'auto',
-              p: 1,
-              borderRadius: 1,
-              backgroundColor: 'rgba(0, 0, 0, 0.05)',
             }}
           >
-            {missingData.map((item) => (
+            {missingData.slice(0, 20).map((item) => (
               <Chip
                 key={item.geoFeature}
                 label={`${item.geoFeature} (${item.count})`}
                 size="small"
               />
             ))}
+
+            {missingData.length > 20 && (
+              <Chip label={`+${missingData.length - 20} more`} size="small" variant="outlined" />
+            )}
           </Box>
         </Alert>
       )}

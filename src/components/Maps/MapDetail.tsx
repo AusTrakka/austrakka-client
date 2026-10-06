@@ -1,15 +1,17 @@
 import {
   Alert,
   Box,
+  Divider,
   FormControl,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   Stack,
   Typography,
 } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   type ProjectMetadataState,
   selectProjectMetadata,
@@ -20,6 +22,7 @@ import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
+import { detectIsoType, getGroupedSupportedMaps, getMapGeoFields } from '../../utilities/mapUtils';
 import {
   useStateFromSearchParamsForFilterObject,
   useStateFromSearchParamsForPrimitive,
@@ -27,11 +30,14 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import { type MapKey, MapLabels } from './mapMeta';
+import { MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
 
 interface MapDetailProps {
   projectAbbrev: string;
 }
+
+const isIso3Field = (field: Field) =>
+  detectIsoType(field.metaDataColumnValidValues ?? []) === 'iso_3_char';
 
 function MapDetail(props: MapDetailProps) {
   const { projectAbbrev } = props;
@@ -41,7 +47,6 @@ function MapDetail(props: MapDetailProps) {
   );
   const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
 
-  // this I don't really needs to be in the url
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
@@ -66,6 +71,11 @@ function MapDetail(props: MapDetailProps) {
     defaultState,
   );
 
+  const { solo, grouped } = getGroupedSupportedMaps(data?.supportedMaps ?? []);
+
+  // Track previous map to safely handle Map transitions without breaking user selections
+  const prevMapRef = useRef<MapKey | null>(null);
+
   // This use effect will set the state of the region toggle and also if it's disabled
   // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
   useEffect(() => {
@@ -84,31 +94,77 @@ function MapDetail(props: MapDetailProps) {
   // If there is only one, auto select it
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
-      if (data.supportedMaps.length === 0) setNoSupportedMapsError(true);
-      else {
+      const { solo: visibleSolo, grouped: visibleGrouped } = getGroupedSupportedMaps(
+        data.supportedMaps,
+      );
+      const visibleKeys = [...visibleSolo, ...visibleGrouped];
+
+      if (visibleKeys.length === 0) {
+        setNoSupportedMapsError(true);
+      } else {
         setNoSupportedMapsError(false); // reset on valid data
-        if (data.supportedMaps.length === 1) setSelectedMap(data.supportedMaps[0][0]);
+        if (visibleKeys.length === 1) setSelectedMap(visibleKeys[0]);
       }
     }
   }, [data, setSelectedMap]);
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
-      const geoFieldNames =
-        data.fields.filter((field) => field.geoField).map((field) => field.columnName) ?? [];
-      const [firstGeoField] = geoFieldNames;
+      const mapGeoFields = getMapGeoFields(data.fields, selectedMap);
+      const mapGeoFieldNames = mapGeoFields.map((field) => field.columnName);
 
-      // this should be setting an error as we shouldn't be here with no geo fields
-      if (!firstGeoField) return;
+      if (mapGeoFields.length === 0) return;
 
-      // Only fall back to the first geo field when there's no valid selection yet —
-      // don't clobber a field the user picked or one restored from the URL.
-      if (!selectedField || !geoFieldNames.includes(selectedField)) {
-        setSelectedField(firstGeoField);
+      // 1. Update the available fields dropdown (preserves original order)
+      setGeoFields(mapGeoFieldNames);
+
+      const mapEntry = MapRegistry.find((entry) => entry.key === selectedMap);
+      const isSolo = mapEntry?.category === MapCategory.SOLO;
+
+      // 2. Check transition state to satisfy the GROUPED -> SOLO requirement
+      const prevMap = prevMapRef.current;
+      const prevMapEntry = prevMap ? MapRegistry.find((e) => e.key === prevMap) : null;
+      const prevIsSolo = prevMapEntry?.category === MapCategory.SOLO;
+
+      const mapChanged = prevMap !== selectedMap;
+      const switchedToSolo = mapChanged && !prevIsSolo && isSolo;
+
+      // 3. Evaluate the selected field
+      const selectedFieldIsValid = mapGeoFieldNames.includes(selectedField);
+      let nextSelectedField = selectedField;
+
+      if (!selectedFieldIsValid) {
+        // SCENARIO A: The current field is completely invalid for the new map
+        const firstAvailableField = mapGeoFields[0].columnName;
+
+        if (isSolo) {
+          const nonIsoField = mapGeoFields.find((f) => !isIso3Field(f));
+          nextSelectedField = nonIsoField ? nonIsoField.columnName : firstAvailableField;
+        } else {
+          nextSelectedField = firstAvailableField;
+        }
+      } else if (switchedToSolo) {
+        // SCENARIO B: The field is technically valid, but we just switched to a SOLO map.
+        // If we are currently holding an ISO3 field, try to swap to a non-ISO3 field.
+        const currentFieldDef = mapGeoFields.find((f) => f.columnName === selectedField);
+
+        if (currentFieldDef && isIso3Field(currentFieldDef)) {
+          const nonIsoField = mapGeoFields.find((f) => !isIso3Field(f));
+          if (nonIsoField) {
+            nextSelectedField = nonIsoField.columnName;
+          }
+        }
       }
-      setGeoFields(geoFieldNames);
+
+      // 4. Apply changes only if necessary (prevents resets on unrelated data updates)
+      if (nextSelectedField !== selectedField) {
+        setSelectedField(nextSelectedField);
+      }
+
+      // 5. Update the ref for the next render cycle
+      prevMapRef.current = selectedMap;
     }
-  }, [data, selectedField, setSelectedField]);
+  }, [data, selectedMap, selectedField, setSelectedField]);
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
@@ -128,68 +184,84 @@ function MapDetail(props: MapDetailProps) {
     </div>
   );
 
-  const renderControls = () => (
-    <Box
-      sx={{
-        float: 'right',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-      }}
-    >
-      {/* Left group */}
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <FormControl size="small" sx={{ margin: 1, marginTop: 1 }}>
-          <InputLabel id="map-select-label">Map</InputLabel>
-          <Select
-            labelId="map-select-label"
-            id="map-select"
-            sx={{ minWidth: '100px' }}
-            value={selectedMap}
-            onChange={(e) => {
-              setSelectedMap(e.target.value as MapKey);
-            }}
-            label="Map"
-          >
-            {data?.supportedMaps.map(([mapKey, _]) => (
-              <MenuItem key={mapKey} value={mapKey}>
-                {MapLabels[mapKey]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+  const renderMapSection = (label: string, keys: MapKey[]) => [
+    <ListSubheader key={`${label}-header`} sx={{ fontWeight: 600, lineHeight: '32px' }}>
+      <Typography variant="overline" color="text.secondary">
+        {label}
+      </Typography>
+    </ListSubheader>,
+    ...keys.map((mapKey) => (
+      <MenuItem key={mapKey} value={mapKey}>
+        {MapLabels[mapKey]}
+      </MenuItem>
+    )),
+  ];
 
-        <ColorSchemeSelector
-          selectedScheme={colourScheme}
-          onColourChange={(newColor) => setColourScheme(newColor)}
-          variant="outlined"
-          size="small"
-        />
-        <FormControl size="small" sx={{ margin: 1 }}>
-          <InputLabel id="map-select-geo-field">Field</InputLabel>
-          <Select
-            labelId="map-field-select-label"
-            id="field-select"
-            label="Field"
-            defaultValue={selectedField}
-            sx={{ minWidth: '100px' }}
-            value={selectedField}
-            onChange={(e) => {
-              const field = e.target.value;
-              setSelectedField(field);
-            }}
-          >
-            {geoFields.map((field) => (
-              <MenuItem key={field} value={field}>
-                {field}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+  const renderControls = () => {
+    const hasGrouped = grouped.length > 0;
+    const hasSolo = solo.length > 0;
+
+    return (
+      <Box
+        sx={{
+          float: 'right',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}
+      >
+        {/* Left group */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <FormControl size="small" sx={{ margin: 1, marginTop: 1 }}>
+            <InputLabel id="map-select-label">Map</InputLabel>
+            <Select
+              labelId="map-select-label"
+              id="map-select"
+              sx={{ minWidth: '100px' }}
+              value={selectedMap}
+              onChange={(e) => {
+                setSelectedMap(e.target.value as MapKey);
+              }}
+              label="Map"
+            >
+              {hasGrouped && renderMapSection('Multi-country', grouped)}
+              {hasSolo && hasGrouped && <Divider />}
+              {hasSolo && renderMapSection('Country', solo)}
+            </Select>
+          </FormControl>
+
+          <ColorSchemeSelector
+            selectedScheme={colourScheme}
+            onColourChange={(newColor) => setColourScheme(newColor)}
+            variant="outlined"
+            size="small"
+          />
+          <FormControl size="small" sx={{ margin: 1 }}>
+            <InputLabel id="map-select-geo-field">Field</InputLabel>
+            <Select
+              labelId="map-field-select-label"
+              id="field-select"
+              label="Field"
+              defaultValue={selectedField}
+              sx={{ minWidth: '100px' }}
+              value={selectedField}
+              onChange={(e) => {
+                const field = e.target.value;
+                setSelectedField(field);
+              }}
+            >
+              {geoFields.map((field) => (
+                <MenuItem key={field} value={field}>
+                  {field}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
-    </Box>
-  );
+    );
+  };
 
   const renderMap = () => {
     if (errorMessage) {
