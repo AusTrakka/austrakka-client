@@ -8,6 +8,7 @@ import NEW_CALEDONIA from '../../assets/maps/nc-processed.json';
 import NZ from '../../assets/maps/nz-processed.json';
 import PHILIPPINES from '../../assets/maps/ph-processed.json';
 import PAPUA_NEW_GUINEA from '../../assets/maps/png-processed.json';
+import TAIWAN from '../../assets/maps/tw-processed.json';
 import VIETNAM from '../../assets/maps/vn-processed.json';
 import WORLD from '../../assets/maps/world_map.json';
 
@@ -23,6 +24,7 @@ export const Maps = {
   PHILIPPINES: PHILIPPINES as FeatureCollection,
   VIETNAM: VIETNAM as FeatureCollection,
   BANGLADESH: BANGLADESH as FeatureCollection,
+  TAIWAN: TAIWAN as FeatureCollection,
 };
 
 export const MapLabels: Record<MapKey, string> = {
@@ -37,6 +39,7 @@ export const MapLabels: Record<MapKey, string> = {
   PHILIPPINES: 'Philippines',
   VIETNAM: 'Vietnam',
   BANGLADESH: 'Bangladesh',
+  TAIWAN: 'Taiwan',
 };
 
 export const MapCategory = {
@@ -125,6 +128,11 @@ export const MapRegistry: MapRegistryEntry[] = [
     key: 'BANGLADESH',
     category: MapCategory.SOLO,
     supports: new Set(['BD', 'BGD']),
+  },
+  {
+    key: 'TAIWAN',
+    category: MapCategory.SOLO,
+    supports: new Set(['TW', 'TWN']),
   },
   {
     key: 'WORLD',

@@ -1,5 +1,13 @@
 import { getCountryCode } from '../app/metadataSliceUtils';
-import type { FeatureLookupFieldType, GeoCountRow, MapJson } from '../components/Maps/mapMeta';
+import {
+  type FeatureLookupFieldType,
+  type GeoCountRow,
+  MapCategory,
+  type MapJson,
+  type MapKey,
+  MapRegistry,
+  type MapSupportInfo,
+} from '../components/Maps/mapMeta';
 import type { Field } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
 
@@ -63,3 +71,36 @@ export const aggregateGeoData = (
     })),
   };
 };
+
+export function getGroupedSupportedMaps(supportedMaps: MapSupportInfo[]): {
+  solo: MapKey[];
+  grouped: MapKey[];
+} {
+  const solo: MapKey[] = [];
+  const grouped: MapKey[] = [];
+
+  for (const [key, hasRegions] of supportedMaps) {
+    const entry = MapRegistry.find((e) => e.key === key);
+    if (entry?.category === MapCategory.SOLO) {
+      if (hasRegions) solo.push(key);
+    } else {
+      grouped.push(key);
+    }
+  }
+
+  return { solo, grouped };
+}
+
+export function getMapGeoFields(fields: Field[], mapKey: MapKey | null): Field[] {
+  const geoFields = fields
+    .filter((field) => field.geoField)
+    .filter((field) => detectIsoType(field.metaDataColumnValidValues ?? []) !== null);
+
+  if (mapKey === 'WORLD') {
+    return geoFields.filter(
+      (field) => detectIsoType(field.metaDataColumnValidValues ?? []) === 'iso_3_char',
+    );
+  }
+
+  return geoFields;
+}
