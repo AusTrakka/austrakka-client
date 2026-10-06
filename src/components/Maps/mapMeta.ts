@@ -4,6 +4,8 @@ import MALAYSIA from '../../assets/maps/my_processed.json';
 import NEW_CALEDONIA from '../../assets/maps/nc-processed.json';
 import PAPUA_NEW_GUINEA from '../../assets/maps/png-processed.json';
 import WORLD from '../../assets/maps/world_map.json';
+import PHILIPPINES from '../../assets/maps/ph-processed.json';
+import VIETNAM from '../../assets/maps/vn-processed.json'
 
 export const Maps = {
   MALAYSIA: MALAYSIA as FeatureCollection,
@@ -11,10 +13,8 @@ export const Maps = {
   WORLD: WORLD as FeatureCollection,
   PAPUA_NEW_GUINEA: PAPUA_NEW_GUINEA as FeatureCollection,
   NEW_CALEDONIA: NEW_CALEDONIA as FeatureCollection,
-  // 1. Maybe an Australia only map?
-  // 2. I don't think New Zealand will need a standalone
-  // 3. Need to add a WorldMap [regions will not be hard to support with this one]
-  // 4. More to come...
+  PHILIPPINES: PHILIPPINES as FeatureCollection,
+  VIETNAM: VIETNAM as FeatureCollection,
 };
 
 export const MapLabels: Record<MapKey, string> = {
@@ -23,6 +23,8 @@ export const MapLabels: Record<MapKey, string> = {
   WORLD: 'World',
   PAPUA_NEW_GUINEA: 'Papua New Guinea',
   NEW_CALEDONIA: 'New Caledonia',
+  PHILIPPINES: 'Philippines',
+  VIETNAM: 'Vietnam',
 };
 
 // Type that holds the correct values for the keys
@@ -69,6 +71,14 @@ export const MapRegistry: MapRegistryEntry[] = [
   {
     key: 'AUS_NZ',
     supports: new Set(['AU', 'NZ', 'AUS', 'NZL']),
+  },
+  {
+    key: 'PHILIPPINES',
+    supports: new Set(['PH', 'PHL']),
+  },
+  {
+    key: 'VIETNAM',
+    supports: new Set(['VN', 'VNM']),
   },
   {
     key: 'WORLD', // no supports needed, always included
