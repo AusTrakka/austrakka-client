@@ -67,6 +67,17 @@ export enum SeqUploadRowState {
   Errored = 'Errored',
 }
 
+export interface SeqUploadCsvSingle {
+  Seq_ID: string; // must match csv style for simple parsing
+  filepath: string;
+}
+
+export interface SeqUploadCsvPair {
+  Seq_ID: string; // must match csv style for simple parsing
+  filepath1: string;
+  filepath2: string;
+}
+
 export interface SeqUploadRow {
   id: string;
   seqId: string;

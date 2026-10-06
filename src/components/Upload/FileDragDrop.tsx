@@ -15,10 +15,12 @@ import {
 } from 'react';
 import muiTheme, { Theme } from '../../assets/themes/theme';
 import type { DropFileUpload } from '../../types/DropFileUpload';
-import type {
-  CustomUploadValidator,
-  CustomUploadValidatorReturn,
-} from '../../utilities/uploadUtils';
+import {
+  type CustomUploadValidator,
+  validateFileSizeLimit,
+  validateFilesAreOfType,
+  validateSingleFile,
+} from './fileUploadValidators';
 
 interface FileDragDropProps {
   files: DropFileUpload[]; // is only set to non-empty after validation/transform
@@ -29,6 +31,7 @@ interface FileDragDropProps {
   fileTransform?: (f: File[]) => Promise<File[]>;
   disabled?: boolean;
   maxFileSize?: number | undefined; // in bytes
+  onClear?: () => void;
 }
 
 const FileDragDrop = forwardRef<any, FileDragDropProps>(
@@ -42,6 +45,7 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
       fileTransform,
       disabled,
       maxFileSize,
+      onClear,
     },
     ref,
   ) => {
@@ -95,42 +99,13 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
     const clearFiles = useCallback(() => {
       setFiles([]);
       setOriginalFiles([]);
-    }, [setFiles]);
+      onClear?.();
+    }, [setFiles, onClear]);
 
     useImperativeHandle(ref, () => ({ clearFiles }));
 
     // Validate files and apply transform whenever new files are added, or validation criteria change
     useEffect(() => {
-      const validateFilesAreOfType = {
-        func: (_files: File[]) =>
-          ({
-            success:
-              Object.entries(validFormats).length === 0 ||
-              _files.every((f) =>
-                Object.keys(validFormats).some((ex) =>
-                  f.name.toLowerCase().endsWith(ex.toLowerCase()),
-                ),
-              ),
-            message: `All files must be of a valid format: ${Object.keys(validFormats).join(', ')}`,
-          }) as CustomUploadValidatorReturn,
-      } as CustomUploadValidator;
-
-      const validateSingleFile = {
-        func: (_files: File[]) =>
-          ({
-            success: _files.length === 1,
-            message: 'Only one file can be selected',
-          }) as CustomUploadValidatorReturn,
-      } as CustomUploadValidator;
-
-      const validateFileSizeLimit = {
-        func: (_files: File[]) =>
-          ({
-            success: _files.every((f) => f.size <= maxFileSize!),
-            message: `All files must be smaller than ${(maxFileSize! / (1024 * 1024)).toFixed(2)}MB`,
-          }) as CustomUploadValidatorReturn,
-      } as CustomUploadValidator;
-
       const getBuiltInValidators = (): CustomUploadValidator[] => {
         const validators: CustomUploadValidator[] = [];
         if (!multiple) {
@@ -148,7 +123,11 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
       const validateAndTransformUpload = () => {
         const validators = customValidators ?? [];
         for (const validator of [...getBuiltInValidators(), ...validators]) {
-          const validatorReturn = validator.func(originalFiles, Object.keys(validFormats));
+          const validatorReturn = validator.func(
+            originalFiles,
+            Object.keys(validFormats),
+            maxFileSize,
+          );
           if (!validatorReturn.success) {
             enqueueSnackbar(validatorReturn.message, { variant: 'error', autoHideDuration: 8000 });
             clearFiles();
@@ -205,10 +184,13 @@ const FileDragDrop = forwardRef<any, FileDragDropProps>(
             border: dragActive ? 4 : 0,
             borderColor: Theme.PrimaryMainBackground,
             borderStyle: dragActive ? 'dashed' : 'solid',
-            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: historic
-            transition: muiTheme.transitions?.create!(['background-color', 'border'], {
-              duration: muiTheme.transitions.duration?.standard,
-            }),
+            transition: () => {
+              if (muiTheme.transitions?.create !== undefined) {
+                return muiTheme.transitions.create(['background-color', 'border'], {
+                  duration: muiTheme.transitions.duration?.standard,
+                });
+              }
+            },
           }}
         >
           <Stack spacing={1} justifyContent="center" alignItems="center">
