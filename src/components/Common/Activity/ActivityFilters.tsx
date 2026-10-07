@@ -1,5 +1,6 @@
 import { AddBox, IndeterminateCheckBox, Lock } from '@mui/icons-material';
 import {
+  Autocomplete,
   Box,
   Button,
   Grid2 as Grid,
@@ -13,12 +14,16 @@ import {
 import { ClearIcon, DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import type { Dispatch, SetStateAction } from 'react';
-import { supportedColumns } from './ActivityTableFields';
+import { EVENT_STATUS_COLUMN, supportedColumns } from './ActivityTableFields';
+
+// Event status type
+export type EventStatus = 'Success' | 'Failed';
 
 export type Filters = {
   resourceUniqueString?: string | null;
   resourceType?: string | null;
   eventType?: string | null;
+  eventStatus?: EventStatus | null;
   submitterDisplayName?: string | null;
   startDate?: Date | null;
   endDate?: Date | null;
@@ -37,11 +42,19 @@ interface FilterDateInputProps {
   onChange: (val: Date | null) => void;
 }
 
+interface FilterStatusInputProps {
+  label: string | undefined;
+  value: EventStatus | null;
+  onChange: (val: EventStatus) => void;
+  onClear: () => void;
+}
+
 interface ActivityFiltersProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   filters: Filters;
   setFilters: Dispatch<SetStateAction<Filters>>;
+  hideStatusParam?: boolean;
 }
 
 function FilterTextInput(props: FilterTextInputProps) {
@@ -123,8 +136,30 @@ function FilterDateInput(props: FilterDateInputProps) {
   );
 }
 
+const STATUS_OPTIONS: EventStatus[] = ['Success', 'Failed'];
+
+function FilterStatusInput(props: FilterStatusInputProps) {
+  const { label, value, onChange, onClear } = props;
+
+  return (
+    <Box sx={{ minWidth: 170, maxWidth: 180, flex: 1 }}>
+      <Autocomplete<EventStatus>
+        fullWidth
+        size="small"
+        options={STATUS_OPTIONS}
+        value={value}
+        onChange={(_, newValue) => {
+          if (newValue) onChange(newValue);
+          else onClear();
+        }}
+        renderInput={(params) => <TextField {...params} variant="outlined" label={label} />}
+      />
+    </Box>
+  );
+}
+
 function ActivityFilters(props: ActivityFiltersProps) {
-  const { isOpen, setIsOpen, filters, setFilters } = props;
+  const { isOpen, setIsOpen, filters, setFilters, hideStatusParam } = props;
 
   const handleFilterChange = (field: keyof Filters, value: string | Date | null) => {
     setFilters((prev) => ({
@@ -138,6 +173,7 @@ function ActivityFilters(props: ActivityFiltersProps) {
       resourceUniqueString: null,
       resourceType: null,
       eventType: null,
+      eventStatus: null,
       submitterDisplayName: null,
       startDate: null,
       endDate: null,
@@ -175,8 +211,21 @@ function ActivityFilters(props: ActivityFiltersProps) {
       <Grid container>
         {isOpen ? (
           <Box display="flex" gap={1} flexWrap="wrap" justifyContent="flex-start">
+            {!hideStatusParam && (
+              <FilterStatusInput
+                label="Status"
+                value={filters?.eventStatus ?? null}
+                onChange={(val) => {
+                  handleFilterChange('eventStatus', val);
+                }}
+                onClear={() => handleFilterChange('eventStatus', null)}
+              />
+            )}
             {supportedColumns
-              .filter((column) => column.columnName !== 'eventTime')
+              .filter(
+                (column) =>
+                  column.columnName !== 'eventTime' && column.columnName !== EVENT_STATUS_COLUMN,
+              )
               .map((column) => {
                 const value = getFilterValueString(
                   filters[column.columnName as keyof Filters] ?? '',
@@ -197,6 +246,7 @@ function ActivityFilters(props: ActivityFiltersProps) {
                   </Box>
                 );
               })}
+
             <FilterDateInput
               label="From date"
               value={filters?.startDate ?? null}
