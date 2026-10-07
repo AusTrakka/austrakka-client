@@ -1,6 +1,12 @@
 import type { TreeNode } from 'primereact/treenode';
 import type { DerivedLog } from '../types/dtos';
 
+// Derives a parent's status from its children's statuses
+export function deriveGroupStatus(statuses: string[]): string {
+  const unique = new Set(statuses);
+  return unique.size === 1 ? statuses[0] : 'Partial success';
+}
+
 // Aggregates logs into a tree structure
 export function aggregateLogsToTree(logs: DerivedLog[]): TreeNode[] {
   const usedLogIds = new Set<string>();
@@ -106,6 +112,11 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
         new Set(children.map((child) => (child.data as DerivedLog).resourceType)),
       );
 
+      // Calculate the group's overall event status based on its children's statuses
+      const eventStatus = deriveGroupStatus(
+        children.map((child) => (child.data as DerivedLog).eventStatus),
+      );
+
       return {
         ...node,
         label: `${node.data.eventType} (${childCount})`,
@@ -115,6 +126,7 @@ export function processTreeNodes(nodes: TreeNode[]): TreeNode[] {
           resourcePreview: firstChild.resourceUniqueString,
           resourceTypeCount: uniqueResourceTypes.length,
           resourceTypePreview: uniqueResourceTypes[0],
+          eventStatus,
         },
         children: children.map((child) => ({ ...child, data: { ...child.data } })),
       };
@@ -156,6 +168,7 @@ export function splitLargeChildrenGroups(parent: TreeNode, maxSize = 500): TreeN
         resourcePreview: firstChild?.resourceUniqueString,
         resourceTypeCount: uniqueResourceTypes.length,
         resourceTypePreview: uniqueResourceTypes[0],
+        eventStatus: deriveGroupStatus(chunkChildren.map((child) => child.data?.eventStatus)),
       },
       children: chunkChildren,
     });
