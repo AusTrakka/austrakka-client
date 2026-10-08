@@ -181,9 +181,12 @@ function MapChart(props: MapTestProps) {
         trigger: 'item',
         transitionDuration: isDenseMap ? 0 : 0.4,
         formatter: (params: any) => {
-          const line = `${params.name}: ${params.value ?? 'N/A'}`;
+          const name = params.name || 'Unknown';
+          const value = params.value ?? 'N/A';
           const extra = tooltipLabels.get(params.name);
-          return extra ? `${line}<br/>${extra}` : line;
+
+          const mainLine = `<strong>${name}</strong>: ${value}`;
+          return extra ? `${mainLine}<br/>${extra}` : mainLine;
         },
       },
       toolbox: {
@@ -236,11 +239,10 @@ function MapChart(props: MapTestProps) {
             name: 'name',
             value: 'value',
           },
-          // Ultra-lightweight emphasis for dense maps to prevent hover lag
           emphasis: isDenseMap
             ? {
                 label: { show: false },
-                itemStyle: { borderColor: '#111', borderWidth: 0.8 },
+                itemStyle: { borderColor: Theme.SecondaryDarkGrey, borderWidth: 0.8 },
               }
             : { label: { show: true } },
         },
