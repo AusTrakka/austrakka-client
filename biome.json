@@ -10,6 +10,7 @@
       "**",
       "!dist",
       "!**/dist",
+      "!src/assets/maps/*.json",
       "!vite.config.ts",
       "!jest.config.js",
       "!coverage",
@@ -77,13 +78,5 @@
         "organizeImports": "on"
       }
     }
-  },
-  "overrides": [
-    {
-      "includes": ["src/assets/maps/*.json"],
-      "files": {
-        "maxSize": 52428800
-      }
-    }
-  ]
+  }
 }

@@ -1,4 +1,4 @@
-import { type MapKey, MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
+import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
 import { FieldTypes } from '../constants/fieldTypes';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
