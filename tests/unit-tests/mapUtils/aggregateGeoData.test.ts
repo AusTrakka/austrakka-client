@@ -102,11 +102,14 @@ describe('aggregateGeoData', () => {
       const geoJSON = {
         type: 'FeatureCollection',
         features: [
-          { type: 'Feature', properties: { name: 'AUS' } },
-          { type: 'Feature', properties: { name: 'AUS' } }, // duplicate
+          { type: 'Feature', properties: { lga_name: 'Melbourne' } },
+          { type: 'Feature', properties: { lga_name: 'Melbourne' } }, // duplicate
         ],
       } as any;
-      const samples = [{ country: 'AUS' }];
+
+      const samples = [{ country: 'Melbourne' }];
+      const field = { columnName: 'country' } as any;
+
       expect(() =>
         aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME),
       ).toThrow();

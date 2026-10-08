@@ -51,7 +51,6 @@ export const aggregateGeoData = (
 
   const lookupTable: Record<string, number> = {};
   const missingTable: Record<string, number> = {};
-
   const nonGeoLabels: Record<string, string> = {};
 
   geoJSON.features.forEach((feature: any) => {
@@ -70,7 +69,7 @@ export const aggregateGeoData = (
     .filter(Boolean);
 
   expectedValues.forEach((value: string) => {
-    if (lookupTable[value] !== undefined) {
+    if (value in lookupTable) {
       throw new Error(`Duplicate geoLookupField value "${value}" found in GeoJSON features`);
     }
 
