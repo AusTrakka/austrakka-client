@@ -1,6 +1,5 @@
 import type { FeatureCollection } from 'geojson';
 import AU_LGA from '../../assets/maps/aus_lga_processed.json';
-import AUS_NZ from '../../assets/maps/aus_nz_processed.json';
 import AU_POA from '../../assets/maps/aus_poa_processed.json';
 import AUS_NZ from '../../assets/maps/aus-nz-processed.json';
 import AUSTRALIA from '../../assets/maps/aus-processed.json';
@@ -28,6 +27,8 @@ export const Maps = {
   VIETNAM: VIETNAM as FeatureCollection,
   BANGLADESH: BANGLADESH as FeatureCollection,
   TAIWAN: TAIWAN as FeatureCollection,
+
+  // Supplement maps. These are implementation maps and are not user-selectable.
   AU_LGA: AU_LGA as FeatureCollection,
   AU_POA: AU_POA as FeatureCollection,
 };
@@ -45,6 +46,8 @@ export const MapLabels: Record<MapKey, string> = {
   VIETNAM: 'Vietnam',
   BANGLADESH: 'Bangladesh',
   TAIWAN: 'Taiwan',
+
+  // Internal labels. These should never be rendered in the map selector.
   AU_LGA: 'Australia (LGA)',
   AU_POA: 'Australia (Postcode)',
 };
@@ -56,38 +59,33 @@ export const MapCategory = {
 
 export type MapCategoryType = (typeof MapCategory)[keyof typeof MapCategory];
 
-export const MapGroups: Partial<Record<MapKey, MapKey>> = {
-  AU_LGA: 'AUS_NZ',
-  AU_POA: 'AUS_NZ',
-};
-
-export const MapFieldOverrides: Record<string, MapKey> = {
-  LGA: 'AU_LGA',
-  Postcode: 'AU_POA',
-};
-
-
-// Type that holds the correct values for the keys
 export type MapKey = keyof typeof Maps;
 export type MapJson = (typeof Maps)[MapKey];
 export type MapSupportInfo = [MapKey, boolean];
+
+export interface EffectiveMap {
+  mapKey: MapKey;
+  primaryMapKey: MapKey;
+  lookupField: FeatureLookupFieldType;
+}
 
 export type MapFeatureWithStringProps = {
   properties: { [x: string]: string };
 };
 
-export interface EffectiveMap {
-  mapKey: MapKey;
-  lookupField: FeatureLookupFieldType;
-}
-
 export const FeatureLookupField = {
   ISO_2: 'iso_2_char',
   ISO_3: 'iso_3_char',
   ISO_REGION: 'iso_region',
-  NAME: 'name',
+  LGA_NAME: 'lga_name',
   POA_CODE: 'poa_code',
 } as const;
+
+export const DEFAULT_TOOLTIP_PROPERTY = 'name';
+
+export const MapTooltipProperty: Partial<Record<MapKey, string>> = {
+  AU_LGA: 'state',
+};
 
 export type FeatureLookupFieldType = (typeof FeatureLookupField)[keyof typeof FeatureLookupField];
 
@@ -96,11 +94,23 @@ export interface GeoCountRow {
   count: number;
 }
 
+export interface MapSupplement {
+  mapKey: MapKey;
+  fieldName: string;
+  lookupField: FeatureLookupFieldType;
+}
+
 type MapRegistryEntry = {
   key: MapKey;
   category: MapCategoryType;
-  supports?: Set<string>; // country keys
+  supports?: Set<string>;
+  supplements?: MapSupplement[];
 };
+
+const AU_SUPPLEMENTS: MapSupplement[] = [
+  { mapKey: 'AU_LGA', fieldName: 'LGA', lookupField: FeatureLookupField.LGA_NAME },
+  { mapKey: 'AU_POA', fieldName: 'Postcode', lookupField: FeatureLookupField.POA_CODE },
+];
 
 export const MapRegistry: MapRegistryEntry[] = [
   {
@@ -122,6 +132,7 @@ export const MapRegistry: MapRegistryEntry[] = [
     key: 'AUS_NZ',
     category: MapCategory.GROUPED,
     supports: new Set(['AU', 'NZ', 'AUS', 'NZL']),
+    supplements: AU_SUPPLEMENTS,
   },
   {
     key: 'PHILIPPINES',
@@ -137,6 +148,7 @@ export const MapRegistry: MapRegistryEntry[] = [
     key: 'AUSTRALIA',
     category: MapCategory.SOLO,
     supports: new Set(['AU', 'AUS']),
+    supplements: AU_SUPPLEMENTS,
   },
   {
     key: 'NZ',
@@ -158,8 +170,6 @@ export const MapRegistry: MapRegistryEntry[] = [
     category: MapCategory.SOLO,
     supports: new Set(['TW', 'TWN']),
   },
- { key: 'AU_LGA', supports: new Set(['AU', 'AUS']) },
-  { key: 'AU_POA', supports: new Set(['AU', 'AUS']) },
   {
     key: 'WORLD',
     category: MapCategory.GROUPED,

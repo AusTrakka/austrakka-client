@@ -5,7 +5,7 @@ import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import type { Field, ProjectField } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
-import { getCountryCode, isSubdivision } from '../utilities/mapUtils';
+import { findSupplement, getCountryCode, isSubdivision } from '../utilities/mapUtils';
 
 export function getFieldDetails(fieldNames: string[], fields: Field[]): Field[] {
   return fieldNames.map((field) => {
@@ -190,55 +190,42 @@ export function calculateSupportedMaps(
   uniqueValues: Record<string, string[]>,
   geoFields: string[],
 ): MapSupportInfo[] {
-  const result: MapSupportInfo[] = [];
-  const addedKeys = new Set<MapKey>();
-
-  if (geoFields.includes('LGA')) {
-    result.push(['AU_LGA', false]);
-    addedKeys.add('AU_LGA');
-  }
-  if (geoFields.includes('Postcode')) {
-    result.push(['AU_POA', false]);
-    addedKeys.add('AU_POA');
-  }
-
-  if (Object.keys(uniqueValues).length === 0 || geoFields.length === 0) return result;
-
-  const uniqueGeoValues = Object.fromEntries(
-    Object.entries(uniqueValues).filter(([key]) => geoFields.includes(key)),
-  );
-  const allValues = Object.values(uniqueGeoValues)
-    .flat()
-    .filter((v) => v !== null && v !== '');
+  if (geoFields.length === 0) return [];
 
   const datasetKeys = new Set<string>();
   const datasetRegions = new Set<string>();
   let hasCountryValues = false;
 
-  for (const val of allValues) {
-    const standard = getCountryCode(val);
-    if (!standard) continue;
-    datasetKeys.add(standard);
-    if (isSubdivision(val)) {
-      datasetRegions.add(val.slice(0, 2));
-    } else {
-      hasCountryValues = true;
+  for (const field of geoFields) {
+    for (const value of uniqueValues[field] ?? []) {
+      if (!value) continue;
+      const standard = getCountryCode(value);
+      if (!standard) continue;
+
+      datasetKeys.add(standard);
+      if (isSubdivision(value)) {
+        datasetRegions.add(value.slice(0, 2));
+      } else {
+        hasCountryValues = true;
+      }
     }
   }
+
+  const result: MapSupportInfo[] = [];
 
   for (const entry of MapRegistry) {
-    if (entry.key === 'WORLD' || addedKeys.has(entry.key)) continue;
-
-    const intersects = [...datasetKeys].some((k) => entry.supports?.has(k));
-    if (intersects) {
-      const hasRegions = [...datasetRegions].some((r) => entry.supports?.has(r));
-      result.push([entry.key, hasRegions]);
-      addedKeys.add(entry.key);
+    if (entry.key === 'WORLD') {
+      if (hasCountryValues) result.push([entry.key, false]);
+      continue;
     }
-  }
 
-  if (hasCountryValues) {
-    result.push(['WORLD', false]);
+    const hasSupplement = geoFields.some((field) => findSupplement(entry.key, field));
+    const intersects = [...datasetKeys].some((key) => entry.supports?.has(key));
+    if (!intersects && !hasSupplement) continue;
+
+    const hasRegions =
+      hasSupplement || [...datasetRegions].some((region) => entry.supports?.has(region));
+    result.push([entry.key, hasRegions]);
   }
 
   return result;

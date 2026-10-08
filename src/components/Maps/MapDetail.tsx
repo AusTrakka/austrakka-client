@@ -20,9 +20,14 @@ import {
 import { useAppSelector } from '../../app/store';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
+import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { resolveEffectiveMap } from '../../utilities/mapUtils';
-import { detectIsoType, getGroupedSupportedMaps, getMapGeoFields } from '../../utilities/mapUtils';
+import {
+  detectIsoType,
+  getGroupedSupportedMaps,
+  getMapGeoFields,
+  resolveEffectiveMap,
+} from '../../utilities/mapUtils';
 import {
   useStateFromSearchParamsForFilterObject,
   useStateFromSearchParamsForPrimitive,
@@ -30,16 +35,14 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import { MapFieldOverrides, MapGroups, type MapKey, MapLabels } from './mapMeta';
-import { MapGroups, type MapKey, MapLabels } from './mapMeta';
-import { MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
+import { FeatureLookupField, MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
 
 interface MapDetailProps {
   projectAbbrev: string;
 }
 
 const isIso3Field = (field: Field) =>
-  detectIsoType(field.metaDataColumnValidValues ?? []) === 'iso_3_char';
+  detectIsoType(field.metaDataColumnValidValues ?? []) === FeatureLookupField.ISO_3;
 
 function MapDetail(props: MapDetailProps) {
   const { projectAbbrev } = props;
@@ -81,9 +84,6 @@ function MapDetail(props: MapDetailProps) {
       ? (data.fields.find((field) => field.columnName === selectedField) ?? null)
       : null;
 
-  const supportedKeys = data?.supportedMaps.map(([key]) => key) ?? [];
-  const primaryKeys = [...new Set(supportedKeys.map((key) => MapGroups[key] ?? key))];
-
   const selectedFieldValues = internalSelectedFieldObj?.metaDataColumnValidValues?.length
     ? internalSelectedFieldObj.metaDataColumnValidValues
     : (data?.fieldUniqueValues?.[selectedField] ?? []);
@@ -98,8 +98,6 @@ function MapDetail(props: MapDetailProps) {
   // Track previous map to safely handle Map transitions without breaking user selections
   const prevMapRef = useRef<MapKey | null>(null);
 
-  // This use effect will set the state of the region toggle and also if it's disabled
-  // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       setFilteredData(data.metadata ?? []);
@@ -122,7 +120,7 @@ function MapDetail(props: MapDetailProps) {
       if (visibleKeys.length === 0) {
         setNoSupportedMapsError(true);
       } else {
-        setNoSupportedMapsError(false); // reset on valid data
+        setNoSupportedMapsError(false);
         if (visibleKeys.length === 1) setSelectedMap(visibleKeys[0]);
       }
     }
@@ -130,28 +128,16 @@ function MapDetail(props: MapDetailProps) {
 
   useEffect(() => {
     if (data && hasCompleteData(data.loadingState) && data.fields) {
-      const geoFieldNames = data.fields
-        .filter((field) => field.geoField)
-        .filter((field) => {
-          const isOverridden = field.columnName in MapFieldOverrides;
-          return !isOverridden || selectedMap === 'AUS_NZ';
-        })
-        .map((field) => field.columnName)
-        .sort((a, b) => Number(a in MapFieldOverrides) - Number(b in MapFieldOverrides));
-
-      const [firstGeoField] = geoFieldNames;
       const mapGeoFields = getMapGeoFields(data.fields, selectedMap);
       const mapGeoFieldNames = mapGeoFields.map((field) => field.columnName);
 
       if (mapGeoFields.length === 0) return;
 
-      // 1. Update the available fields dropdown (preserves original order)
       setGeoFields(mapGeoFieldNames);
 
       const mapEntry = MapRegistry.find((entry) => entry.key === selectedMap);
       const isSolo = mapEntry?.category === MapCategory.SOLO;
 
-      // 2. Check transition state to satisfy the GROUPED -> SOLO requirement
       const prevMap = prevMapRef.current;
       const prevMapEntry = prevMap ? MapRegistry.find((e) => e.key === prevMap) : null;
       const prevIsSolo = prevMapEntry?.category === MapCategory.SOLO;
@@ -159,12 +145,10 @@ function MapDetail(props: MapDetailProps) {
       const mapChanged = prevMap !== selectedMap;
       const switchedToSolo = mapChanged && !prevIsSolo && isSolo;
 
-      // 3. Evaluate the selected field
       const selectedFieldIsValid = mapGeoFieldNames.includes(selectedField);
       let nextSelectedField = selectedField;
 
       if (!selectedFieldIsValid) {
-        // SCENARIO A: The current field is completely invalid for the new map
         const firstAvailableField = mapGeoFields[0].columnName;
 
         if (isSolo) {
@@ -174,8 +158,6 @@ function MapDetail(props: MapDetailProps) {
           nextSelectedField = firstAvailableField;
         }
       } else if (switchedToSolo) {
-        // SCENARIO B: The field is technically valid, but we just switched to a SOLO map.
-        // If we are currently holding an ISO3 field, try to swap to a non-ISO3 field.
         const currentFieldDef = mapGeoFields.find((f) => f.columnName === selectedField);
 
         if (currentFieldDef && isIso3Field(currentFieldDef)) {
@@ -186,12 +168,10 @@ function MapDetail(props: MapDetailProps) {
         }
       }
 
-      // 4. Apply changes only if necessary (prevents resets on unrelated data updates)
       if (nextSelectedField !== selectedField) {
         setSelectedField(nextSelectedField);
       }
 
-      // 5. Update the ref for the next render cycle
       prevMapRef.current = selectedMap;
     }
   }, [data, selectedMap, selectedField, setSelectedField]);
@@ -241,7 +221,6 @@ function MapDetail(props: MapDetailProps) {
           width: '100%',
         }}
       >
-        {/* Left group */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <FormControl size="small" sx={{ margin: 1, marginTop: 1 }}>
             <InputLabel id="map-select-label">Map</InputLabel>
@@ -348,6 +327,7 @@ function MapDetail(props: MapDetailProps) {
         <MapChart
           colourScheme={colourScheme}
           mapSpec={resolvedMap.mapKey}
+          primaryMapKey={resolvedMap.primaryMapKey}
           lookupField={resolvedMap.lookupField}
           projAbbrev={projectAbbrev}
           data={filteredData ?? []}
