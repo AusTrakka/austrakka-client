@@ -31,20 +31,20 @@ describe('aggregateGeoData', () => {
         [{ country: 'AUS' }],
         field,
         null as any,
-        FeatureLookupField.NAME,
+        FeatureLookupField.LGA_NAME,
       );
       expect(result).toEqual({ counts: [], missing: [] });
     });
 
     test('returns empty when samples are null', () => {
-      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.NAME);
-      const result = aggregateGeoData(null as any, field, geoJSON, FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.LGA_NAME);
+      const result = aggregateGeoData(null as any, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result).toEqual({ counts: [], missing: [] });
     });
 
     test('returns empty when samples are empty array', () => {
-      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.NAME);
-      const result = aggregateGeoData([], field, geoJSON, FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.LGA_NAME);
+      const result = aggregateGeoData([], field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result).toEqual({ counts: [], missing: [] });
     });
 
@@ -54,7 +54,7 @@ describe('aggregateGeoData', () => {
         [{ country: 'AUS' }],
         field,
         geoJSON,
-        FeatureLookupField.NAME,
+        FeatureLookupField.LGA_NAME,
       );
       expect(result).toEqual({ counts: [], missing: [] });
     });
@@ -62,9 +62,9 @@ describe('aggregateGeoData', () => {
 
   describe('when all samples match expected values', () => {
     test('increments counts correctly', () => {
-      const geoJSON = makeGeoJSON(['AUS', 'NZ'], FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS', 'NZ'], FeatureLookupField.LGA_NAME);
       const samples = [{ country: 'AUS' }, { country: 'AUS' }, { country: 'NZ' }];
-      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME);
+      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result.counts).toEqual(
         expect.arrayContaining([
           { geoFeature: 'AUS', count: 2 },
@@ -77,9 +77,9 @@ describe('aggregateGeoData', () => {
 
   describe('when samples contain values not in geoJSON', () => {
     test('puts unexpected values into missing', () => {
-      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.LGA_NAME);
       const samples = [{ country: 'AUS' }, { country: 'XYZ' }];
-      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME);
+      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result.counts).toEqual(expect.arrayContaining([{ geoFeature: 'AUS', count: 1 }]));
       expect(result.missing).toEqual(expect.arrayContaining([{ geoFeature: 'XYZ', count: 1 }]));
     });
@@ -87,9 +87,9 @@ describe('aggregateGeoData', () => {
 
   describe('when samples have undefined or null values', () => {
     test('ignores missing keys', () => {
-      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS'], FeatureLookupField.LGA_NAME);
       const samples = [{ other: 'notCountry' }, { country: undefined }, { country: null }];
-      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME);
+      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result).toEqual({
         counts: [{ geoFeature: 'AUS', count: 0 }],
         missing: [],
@@ -107,15 +107,17 @@ describe('aggregateGeoData', () => {
         ],
       } as any;
       const samples = [{ country: 'AUS' }];
-      expect(() => aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME)).toThrow();
+      expect(() =>
+        aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME),
+      ).toThrow();
     });
   });
 
   describe('when mixing expected and unexpected values', () => {
     test('populates both counts and missing', () => {
-      const geoJSON = makeGeoJSON(['AUS', 'NZ'], FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['AUS', 'NZ'], FeatureLookupField.LGA_NAME);
       const samples = [{ country: 'AUS' }, { country: 'XYZ' }];
-      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME);
+      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result.counts).toEqual(
         expect.arrayContaining([
           { geoFeature: 'AUS', count: 1 },
@@ -128,9 +130,9 @@ describe('aggregateGeoData', () => {
 
   describe('when sample type mismatches geoJSON values', () => {
     test('treats string and number as different keys', () => {
-      const geoJSON = makeGeoJSON(['1'], FeatureLookupField.NAME);
+      const geoJSON = makeGeoJSON(['1'], FeatureLookupField.LGA_NAME);
       const samples = [{ country: 1 }];
-      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.NAME);
+      const result = aggregateGeoData(samples, field, geoJSON, FeatureLookupField.LGA_NAME);
       expect(result.counts).toEqual(expect.arrayContaining([{ geoFeature: '1', count: 1 }]));
       expect(result.missing).toEqual([]);
     });
