@@ -1,113 +1,204 @@
 import { Alert, Box, Chip, Stack, Typography } from '@mui/material';
 import * as echarts from 'echarts';
 import type { GeoJSON } from 'geojson';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Theme } from '../../assets/themes/theme';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
 import { getColorArrayFromScheme } from '../../utilities/colourUtils';
-import { aggregateGeoData, detectIsoType } from '../../utilities/mapUtils';
-import { type FeatureLookupFieldType, type GeoCountRow, type MapKey, Maps } from './mapMeta';
+import { aggregateGeoData, isSupplementMap } from '../../utilities/mapUtils';
+import {
+  DEFAULT_TOOLTIP_PROPERTY,
+  FeatureLookupField,
+  type FeatureLookupFieldType,
+  type MapKey,
+  MapLabels,
+  Maps,
+  MapTooltipProperty,
+} from './mapMeta';
+
+const MAP_BORDER_STYLE = { borderWidth: 0.2, borderColor: Theme.PrimaryGrey500 };
 
 interface MapTestProps {
   colourScheme: string;
   mapSpec: MapKey;
+  primaryMapKey: MapKey;
+  lookupField: FeatureLookupFieldType;
   projAbbrev: string;
   data: Sample[];
   geoField: Field | null;
 }
 
 function MapChart(props: MapTestProps) {
-  const { colourScheme, mapSpec, geoField, projAbbrev, data } = props;
+  const { colourScheme, mapSpec, primaryMapKey, lookupField, geoField, projAbbrev, data } = props;
+
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.EChartsType | null>(null);
-  const [regionView, setRegionView] = useState(false);
-  const [aggregateData, setAggregateData] = useState<GeoCountRow[]>([]);
-  const [missingData, setMissingData] = useState<GeoCountRow[]>([]);
-  const [isoType, setIsoType] = useState<FeatureLookupFieldType>('iso_2_char');
+  const registeredSpec = useRef<GeoJSON | null>(null);
+  const renderedMap = useRef<MapKey | null>(null);
+  const renderedPrimaryMap = useRef<MapKey | null>(null);
+  const roamState = useRef<{ zoom: number; center: [number, number] } | null>(null);
   const [showAlert, setShowAlert] = useState(true);
-  const [mapRenderingError, setMapRenderingError] = useState<boolean>(false);
+  const [mapRenderingError, setMapRenderingError] = useState(false);
 
+  const regionView = lookupField === FeatureLookupField.ISO_REGION;
+  const isDenseMap = isSupplementMap(mapSpec);
+
+  // Optimized & consolidated filtering for performance on dense maps
   const filteredMapSpec: GeoJSON | null = useMemo(() => {
     if (!mapSpec) return null;
     const mapJson = Maps[mapSpec];
     if (!mapJson) return null;
-    if (mapSpec === 'WORLD') {
-      return mapJson;
-    }
+
+    const filteredFeatures = mapJson.features.filter((feature) => {
+      // Filter out non-geographical features early
+      if (feature.properties?.not_geographical) return false;
+      // Filter by region view if applicable (skipped for world/dense maps)
+      if (mapSpec !== 'WORLD' && !isDenseMap) {
+        return Boolean(feature.properties?.is_region) === regionView;
+      }
+      return true;
+    });
 
     return {
       ...mapJson,
-      features: mapJson.features.filter((f) => Boolean(f.properties?.is_region) === regionView),
+      features: filteredFeatures,
     };
-  }, [mapSpec, regionView]);
+  }, [mapSpec, regionView, isDenseMap]);
+
+  const aggregated = useMemo(() => {
+    const empty = { counts: [], missing: [], failed: false };
+    if (!data || data.length === 0 || !geoField || !filteredMapSpec || !lookupField) {
+      return empty;
+    }
+
+    try {
+      return { ...aggregateGeoData(data, geoField, filteredMapSpec, lookupField), failed: false };
+    } catch (_err) {
+      return { ...empty, failed: true };
+    }
+  }, [data, geoField, filteredMapSpec, lookupField]);
+
+  const tooltipLabels = useMemo(() => {
+    const labelProperty = MapTooltipProperty[mapSpec] ?? DEFAULT_TOOLTIP_PROPERTY;
+    const labels = new Map<string, string>();
+
+    filteredMapSpec?.features.forEach((feature) => {
+      const key = feature.properties?.[lookupField];
+      const label = feature.properties?.[labelProperty];
+      if (key && label && label !== key) {
+        labels.set(String(key), String(label));
+      }
+    });
+
+    return labels;
+  }, [filteredMapSpec, mapSpec, lookupField]);
 
   useEffect(() => {
     if (!chartRef.current) return undefined;
 
-    chartInstance.current = echarts.init(chartRef.current);
+    // Explicitly use canvas renderer for high performance on dense polygon maps
+    chartInstance.current = echarts.init(chartRef.current, undefined, { renderer: 'canvas' });
 
     return () => {
-      if (chartInstance.current) {
-        chartInstance.current.dispose();
-        chartInstance.current = null;
-      }
+      chartInstance.current?.dispose();
+      chartInstance.current = null;
+      registeredSpec.current = null;
+      renderedMap.current = null;
     };
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: explained below
+  // biome-ignore lint/correctness/useExhaustiveDependencies: resize when alert visibility changes container size
   useEffect(() => {
     if (!chartRef.current) return undefined;
 
-    // Resize handler for window events
     const handleResize = () => {
       chartInstance.current?.resize();
     };
 
     window.addEventListener('resize', handleResize);
 
-    // ResizeObserver for container size changes
     const observer = new ResizeObserver(() => {
       chartInstance.current?.resize();
     });
     observer.observe(chartRef.current);
 
-    // Force initial resize
     setTimeout(() => chartInstance.current?.resize(), 100);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       observer.disconnect();
     };
-  }, [showAlert]); // <— rerun effect whenever alert visibility changes
+  }, [showAlert]);
 
-  const updateChart = useCallback(() => {
-    if (!chartInstance.current || !aggregateData.length) return;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only want to show alert on first render of new data
+  useEffect(() => {
+    setShowAlert(true);
+  }, [aggregated]);
 
-    const counts = aggregateData.map((item) => item.count);
-    const minValue = counts.length > 0 ? Math.min(...counts) : 0;
-    const maxValue = counts.length > 0 ? Math.max(...counts) : 1;
+  // Register the map and draw in one step
+  useEffect(() => {
+    const chart = chartInstance.current;
+    if (!chart || !filteredMapSpec || aggregated.failed || !aggregated.counts.length) return;
+
+    if (registeredSpec.current !== filteredMapSpec) {
+      try {
+        echarts.registerMap('currentMap', filteredMapSpec as any);
+        registeredSpec.current = filteredMapSpec;
+      } catch (_error) {
+        setMapRenderingError(true);
+        return;
+      }
+    }
+
+    const mapChanged = renderedMap.current !== mapSpec;
+    const isSamePrimaryMap =
+      renderedPrimaryMap.current !== null && renderedPrimaryMap.current === primaryMapKey;
+
+    if (!isSamePrimaryMap) {
+      roamState.current = null;
+    }
+
+    const preserveRoam = mapChanged && isSamePrimaryMap && roamState.current !== null;
+
+    renderedMap.current = mapSpec;
+    renderedPrimaryMap.current = primaryMapKey;
+
+    const counts = aggregated.counts.map((item) => item.count);
+    const minValue = Math.min(...counts);
+    const maxValue = Math.max(...counts);
+    const mappedTotal = aggregated.counts.reduce((sum, item) => sum + item.count, 0);
+    const missingTotal = aggregated.missing.reduce((sum, item) => sum + item.count, 0);
 
     const option: echarts.EChartsOption = {
       title: {
-        text: 'Choropleth Visualisation',
+        text: `${geoField?.columnName ?? 'Samples'} · ${MapLabels[mapSpec]}`,
+        subtext: `${mappedTotal} samples mapped${missingTotal ? ` · ${missingTotal} not matched` : ''}`,
       },
+      animation: !isDenseMap,
       backgroundColor: Theme.PrimaryGrey,
       tooltip: {
         trigger: 'item',
-        formatter: (params: any) => `${params.name}: ${params.value ?? 'N/A'}`,
+        transitionDuration: isDenseMap ? 0 : 0.4,
+        formatter: (params: any) => {
+          const name = params.name || 'Unknown';
+          const value = params.value ?? 'N/A';
+          const extra = tooltipLabels.get(params.name);
+
+          const mainLine = `<strong>${name}</strong>: ${value}`;
+          return extra ? `${mainLine}<br/>${extra}` : mainLine;
+        },
       },
       toolbox: {
         show: true,
         showTitle: true,
         feature: {
+          restore: { show: true, title: 'Reset zoom' },
           saveAsImage: {
             type: 'png',
             name: `choropleth_${geoField?.columnName}_${projAbbrev}_${Date.now()}`,
           },
-          dataView: {
-            readOnly: true,
-          },
+          ...(isDenseMap ? {} : { dataView: { readOnly: true } }),
         },
       },
       visualMap: {
@@ -137,94 +228,94 @@ function MapChart(props: MapTestProps) {
           },
           roam: true,
           map: 'currentMap',
-          nameProperty: isoType,
-          data: aggregateData.map((item) => ({ name: item.geoFeature, value: item.count })),
+          nameProperty: lookupField,
+          selectedMode: false,
+          itemStyle: MAP_BORDER_STYLE,
+          data: aggregated.counts.map((item) => ({
+            name: item.geoFeature,
+            value: item.count,
+          })),
           encode: {
             name: 'name',
             value: 'value',
           },
-          emphasis: {
-            label: {
-              show: true,
-            },
-          },
+          emphasis: isDenseMap
+            ? {
+                label: { show: false },
+                itemStyle: { borderColor: Theme.SecondaryDarkGrey, borderWidth: 0.8 },
+              }
+            : { label: { show: true } },
         },
       ],
     };
 
-    chartInstance.current.setOption(option, true);
-  }, [aggregateData, colourScheme, isoType, geoField, projAbbrev]);
+    setMapRenderingError(false);
+
+    // 1. Set base option first so the native "Reset zoom" button keeps the true default extent
+    chart.setOption(option, { notMerge: mapChanged });
+
+    // 2. Apply preserved zoom state afterward without overriding the default state
+    if (preserveRoam && roamState.current) {
+      chart.setOption({
+        series: [
+          {
+            zoom: roamState.current.zoom,
+            center: roamState.current.center,
+          },
+        ],
+      });
+    }
+  }, [
+    filteredMapSpec,
+    aggregated,
+    colourScheme,
+    lookupField,
+    geoField,
+    projAbbrev,
+    isDenseMap,
+    tooltipLabels,
+    mapSpec,
+    primaryMapKey,
+  ]);
 
   useEffect(() => {
-    if (!geoField) return;
-    const isoCode = detectIsoType(geoField.metaDataColumnValidValues ?? []);
+    const chart = chartInstance.current;
+    if (!chart) return undefined;
 
-    if (!isoCode) {
-      setMapRenderingError(true); // set error if isoCode is missing
-      return;
-    }
+    const handleGeoRoam = () => {
+      const option = chart.getOption() as any;
+      const series = Array.isArray(option.series) ? option.series[0] : option.series;
 
-    setMapRenderingError(false); // clear error if valid
-    setIsoType(isoCode);
-    setRegionView(isoCode === 'iso_region');
-  }, [geoField]);
+      if (!series) return;
 
-  useEffect(() => {
-    if (!data || data.length === 0 || !geoField || !filteredMapSpec || !isoType) {
-      setAggregateData([]);
-      return;
-    }
-
-    try {
-      const { counts, missing } = aggregateGeoData(data, geoField, filteredMapSpec, isoType);
-      setAggregateData(counts);
-      setMissingData(missing);
-      setShowAlert(true);
-    } catch (_err) {
-      setMapRenderingError(true);
-    }
-  }, [data, geoField, filteredMapSpec, isoType]);
-
-  // Register map whenever filteredMapSpec changes
-  useEffect(() => {
-    if (!filteredMapSpec || !chartInstance.current) return; // Add chart check
-
-    // Clear existing map registration safely
-    try {
-      if (echarts.getMap('currentMap')) {
-        echarts.registerMap('currentMap', {
-          type: 'FeatureCollection',
-          features: [],
-        });
+      if (
+        typeof series.zoom === 'number' &&
+        Array.isArray(series.center) &&
+        series.center.length === 2
+      ) {
+        roamState.current = {
+          zoom: series.zoom,
+          center: [series.center[0], series.center[1]],
+        };
       }
-    } catch (_error) {
-      setMapRenderingError(true);
-    }
+    };
 
-    // Register new map with validation
-    try {
-      if (filteredMapSpec.features && filteredMapSpec.features.length > 0) {
-        echarts.registerMap('currentMap', filteredMapSpec as any);
-      }
-    } catch (_error) {
-      setMapRenderingError(true);
-    }
-  }, [filteredMapSpec]);
+    chart.on('georoam', handleGeoRoam);
 
-  // Update chart whenever data or styling changes
-  useEffect(() => {
-    if (!chartInstance.current || !aggregateData.length) return;
+    return () => {
+      chart.off('georoam', handleGeoRoam);
+    };
+  }, []);
 
-    updateChart();
-  }, [aggregateData, updateChart]);
-
-  if (mapRenderingError) {
+  if (mapRenderingError || aggregated.failed) {
     return (
       <Alert severity="error">
         <Typography>There was an error rendering the map, please refresh.</Typography>
       </Alert>
     );
   }
+
+  const missingData = aggregated.missing;
 
   return (
     <Stack spacing={1}>
@@ -270,7 +361,7 @@ function MapChart(props: MapTestProps) {
         ref={chartRef}
         sx={{
           width: '100%',
-          height: '70vh', // chart itself has height, not the wrapper
+          height: '70vh',
           marginTop: '10px',
           display: regionView && mapSpec === 'WORLD' ? 'none' : 'block',
         }}

@@ -8,9 +8,9 @@
   "files": {
     "includes": [
       "**",
-      "!src/assets/maps",
       "!dist",
       "!**/dist",
+      "!src/assets/maps/*.json",
       "!vite.config.ts",
       "!jest.config.js",
       "!coverage",
