@@ -17,8 +17,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import type React from 'react';
-import { createRef, type SyntheticEvent, useEffect, useRef, useState } from 'react';
+import React, { createRef, type SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../app/ApiContext';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
@@ -45,7 +44,7 @@ import type { ResponseObject } from '../../types/responseObject.interface';
 import type { Sample } from '../../types/sample.interface';
 import type TreeState from '../../types/tree.interface';
 import { isoDateLocalDate, isoDateLocalDateNoTime } from '../../utilities/dateUtils';
-import { getLatestTreeData, getTreeData, getTreeVersions } from '../../utilities/resourceUtils';
+import { getTreeData, getTreeVersions } from '../../utilities/resourceUtils';
 import {
   useStateFromSearchParamsForObject,
   useStateFromSearchParamsForPrimitive,
@@ -135,6 +134,12 @@ function TreeDetail() {
   }; // Initial size that is updated on container resize
   const [expanded, setExpanded] = useState<string | false>('treeNav');
 
+  const latestVersionId = useMemo(() => {
+    if (versions.length === 0) return null;
+    return versions.reduce((max, v) => (v.treeVersionId > max.treeVersionId ? v : max))
+      .treeVersionId;
+  }, [versions]);
+
   // Request redux data if not loaded
   useEffect(() => {
     if (
@@ -211,7 +216,7 @@ function TreeDetail() {
     };
 
     if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      fetchVersions();
+      void fetchVersions();
     }
   }, [treeId, token, tokenLoading]);
 
@@ -320,7 +325,9 @@ function TreeDetail() {
     const getTree = async () => {
       let treeResponse: ResponseObject;
       if (treeVersionId === 'latest') {
-        treeResponse = await getLatestTreeData(Number(treeId), token);
+        // latestVersionId is null until fetchVersions returns data, effect will re-run once it resolves
+        if (latestVersionId === null) return;
+        treeResponse = await getTreeData(latestVersionId, token);
       } else {
         treeResponse = await getTreeData(Number(treeVersionId), token);
       }
@@ -337,9 +344,9 @@ function TreeDetail() {
       setIsTreeLoading(false);
     };
     if (tokenLoading !== LoadingState.LOADING && tokenLoading !== LoadingState.IDLE) {
-      getTree();
+      void getTree();
     }
-  }, [treeId, treeVersionId, token, tokenLoading]);
+  }, [treeVersionId, token, tokenLoading, latestVersionId]);
 
   const renderTree = () => {
     if (isTreeLoading) {
