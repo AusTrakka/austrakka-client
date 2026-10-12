@@ -1,5 +1,6 @@
 import RecordTypes from '../constants/record-type.enum';
 import { ScopeDefinitions } from '../constants/scopes';
+import { Roles } from '../permissions/roles';
 import type {
   GroupedPrivilegesByRecordType,
   GroupedPrivilegesByRecordTypeWithScopes,
@@ -30,7 +31,7 @@ export const checkFetchUserScope = (scopes: GroupedPrivilegesByRecordTypeWithSco
       scope.recordRoles.some((record) =>
         record.roles.some(
           (role) =>
-            role.privilegeLevel === 'Root' ||
+            role.roleName === Roles.SuperUser ||
             role.scopes.includes(ScopeDefinitions.GetUserByGlobalId),
         ),
       ),
@@ -60,7 +61,7 @@ export const checkEditUserScopes = (scopes: GroupedPrivilegesByRecordTypeWithSco
       scope.recordType === RecordTypes.SYSTEM &&
       scope.recordRoles.some(
         (record) =>
-          record.roles.some((role) => role.privilegeLevel === 'Root') ||
+          record.roles.some((role) => role.roleName === Roles.SuperUser) ||
           record.roles.some(hasAllScopes),
       ),
   );

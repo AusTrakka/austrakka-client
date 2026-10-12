@@ -141,7 +141,7 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
 
     sampleSharePromises.push(
       ...sharedProjects.map((r) =>
-        shareSamples(token, `${r}-Group`, [seqUploadRow.seqId], seqUploadRow.clientSessionId),
+        shareSamples(token, r, [seqUploadRow.seqId], seqUploadRow.clientSessionId),
       ),
     );
 
