@@ -278,7 +278,9 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
           rotate: 0,
           hideOverlap: true,
         },
-        name: 'Sample collected date (Date_coll)',
+        name: alternateTimeAxisField
+          ? `${alternateTimeAxisField}`
+          : 'Sample collected date (Date_coll)',
         nameLocation: 'middle',
         nameGap: 30,
       },
@@ -303,7 +305,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         ...(!isGrouped && { large: true, largeThreshold: 500 }),
       })),
     };
-  }, [bucketResult, colorField, colorMap, timeBinSpec]);
+  }, [bucketResult, colorField, colorMap, timeBinSpec, alternateTimeAxisField]);
 
   // 7. Init
   useEffect(() => {
