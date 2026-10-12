@@ -1,4 +1,4 @@
-import { getCountryCode } from '../../../src/app/metadataSliceUtils';
+import { getCountryCode } from '../../../src/utilities/mapUtils';
 
 describe('standardise', () => {
   test('returns null for null or empty input', () => {

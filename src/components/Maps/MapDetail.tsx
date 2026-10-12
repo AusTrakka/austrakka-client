@@ -22,7 +22,12 @@ import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { defaultContinuousColorScheme } from '../../constants/schemes';
 import type { Field } from '../../types/dtos';
 import type { Sample } from '../../types/sample.interface';
-import { detectIsoType, getGroupedSupportedMaps, getMapGeoFields } from '../../utilities/mapUtils';
+import {
+  detectIsoType,
+  getGroupedSupportedMaps,
+  getMapGeoFields,
+  resolveEffectiveMap,
+} from '../../utilities/mapUtils';
 import {
   useStateFromSearchParamsForFilterObject,
   useStateFromSearchParamsForPrimitive,
@@ -30,14 +35,14 @@ import {
 import DataFilters, { defaultState } from '../DataFilters/DataFilters';
 import ColorSchemeSelector from '../Trees/TreeControls/SchemeSelector';
 import MapChart from './MapChart';
-import { MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
+import { FeatureLookupField, MapCategory, type MapKey, MapLabels, MapRegistry } from './mapMeta';
 
 interface MapDetailProps {
   projectAbbrev: string;
 }
 
 const isIso3Field = (field: Field) =>
-  detectIsoType(field.metaDataColumnValidValues ?? []) === 'iso_3_char';
+  detectIsoType(field.metaDataColumnValidValues ?? []) === FeatureLookupField.ISO_3;
 
 function MapDetail(props: MapDetailProps) {
   const { projectAbbrev } = props;
@@ -45,12 +50,12 @@ function MapDetail(props: MapDetailProps) {
   const data: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
   );
+
   const errorMessage = useAppSelector((state) => selectProjectMetadataError(state, projectAbbrev));
 
   const [noSupportedMapsError, setNoSupportedMapsError] = useState<boolean>(false);
   const [geoFields, setGeoFields] = useState<string[]>([]);
   const [isDataTableFilterOpen, setIsDataTableFilterOpen] = useState<boolean>(true);
-  const [internalSelectedFieldObj, setInternalSelectedFieldObj] = useState<Field | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -58,31 +63,46 @@ function MapDetail(props: MapDetailProps) {
     'colourScheme',
     defaultContinuousColorScheme,
   );
+
   const [selectedMap, setSelectedMap] = useStateFromSearchParamsForPrimitive<MapKey | null>(
     'map',
     null,
   );
+
   const [selectedField, setSelectedField] = useStateFromSearchParamsForPrimitive<string>(
     'field',
     '',
   );
+
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
   );
+
+  const internalSelectedFieldObj =
+    data?.fields && hasCompleteData(data.loadingState)
+      ? (data.fields.find((field) => field.columnName === selectedField) ?? null)
+      : null;
+
+  const selectedFieldValues = internalSelectedFieldObj?.metaDataColumnValidValues?.length
+    ? internalSelectedFieldObj.metaDataColumnValidValues
+    : (data?.fieldUniqueValues?.[selectedField] ?? []);
+
+  const resolvedMap =
+    selectedMap !== null
+      ? resolveEffectiveMap(selectedMap, selectedField, selectedFieldValues)
+      : null;
 
   const { solo, grouped } = getGroupedSupportedMaps(data?.supportedMaps ?? []);
 
   // Track previous map to safely handle Map transitions without breaking user selections
   const prevMapRef = useRef<MapKey | null>(null);
 
-  // This use effect will set the state of the region toggle and also if it's disabled
-  // biome-ignore lint/correctness/useExhaustiveDependencies: more dependencies
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       setFilteredData(data.metadata ?? []);
     }
-  }, [data, selectedMap]);
+  }, [data]);
 
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
@@ -90,8 +110,6 @@ function MapDetail(props: MapDetailProps) {
     }
   }, [data]);
 
-  // If there are no maps to use, then we will show an error alert...
-  // If there is only one, auto select it
   useEffect(() => {
     if (data && hasCompleteData(data?.loadingState)) {
       const { solo: visibleSolo, grouped: visibleGrouped } = getGroupedSupportedMaps(
@@ -102,7 +120,7 @@ function MapDetail(props: MapDetailProps) {
       if (visibleKeys.length === 0) {
         setNoSupportedMapsError(true);
       } else {
-        setNoSupportedMapsError(false); // reset on valid data
+        setNoSupportedMapsError(false);
         if (visibleKeys.length === 1) setSelectedMap(visibleKeys[0]);
       }
     }
@@ -115,13 +133,11 @@ function MapDetail(props: MapDetailProps) {
 
       if (mapGeoFields.length === 0) return;
 
-      // 1. Update the available fields dropdown (preserves original order)
       setGeoFields(mapGeoFieldNames);
 
       const mapEntry = MapRegistry.find((entry) => entry.key === selectedMap);
       const isSolo = mapEntry?.category === MapCategory.SOLO;
 
-      // 2. Check transition state to satisfy the GROUPED -> SOLO requirement
       const prevMap = prevMapRef.current;
       const prevMapEntry = prevMap ? MapRegistry.find((e) => e.key === prevMap) : null;
       const prevIsSolo = prevMapEntry?.category === MapCategory.SOLO;
@@ -129,12 +145,10 @@ function MapDetail(props: MapDetailProps) {
       const mapChanged = prevMap !== selectedMap;
       const switchedToSolo = mapChanged && !prevIsSolo && isSolo;
 
-      // 3. Evaluate the selected field
       const selectedFieldIsValid = mapGeoFieldNames.includes(selectedField);
       let nextSelectedField = selectedField;
 
       if (!selectedFieldIsValid) {
-        // SCENARIO A: The current field is completely invalid for the new map
         const firstAvailableField = mapGeoFields[0].columnName;
 
         if (isSolo) {
@@ -144,8 +158,6 @@ function MapDetail(props: MapDetailProps) {
           nextSelectedField = firstAvailableField;
         }
       } else if (switchedToSolo) {
-        // SCENARIO B: The field is technically valid, but we just switched to a SOLO map.
-        // If we are currently holding an ISO3 field, try to swap to a non-ISO3 field.
         const currentFieldDef = mapGeoFields.find((f) => f.columnName === selectedField);
 
         if (currentFieldDef && isIso3Field(currentFieldDef)) {
@@ -156,23 +168,21 @@ function MapDetail(props: MapDetailProps) {
         }
       }
 
-      // 4. Apply changes only if necessary (prevents resets on unrelated data updates)
       if (nextSelectedField !== selectedField) {
         setSelectedField(nextSelectedField);
       }
 
-      // 5. Update the ref for the next render cycle
       prevMapRef.current = selectedMap;
     }
   }, [data, selectedMap, selectedField, setSelectedField]);
 
   useEffect(() => {
     if (data?.fields && hasCompleteData(data.loadingState) && selectedField) {
-      const selectedFieldObj =
-        data.fields.find((field) => field.columnName === selectedField) ?? null;
-      if (!selectedFieldObj) setNoSupportedMapsError(true);
+      const found = data.fields.some((field) => field.columnName === selectedField);
 
-      setInternalSelectedFieldObj(selectedFieldObj);
+      if (!found) {
+        setNoSupportedMapsError(true);
+      }
     }
   }, [data, selectedField]);
 
@@ -211,7 +221,6 @@ function MapDetail(props: MapDetailProps) {
           width: '100%',
         }}
       >
-        {/* Left group */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <FormControl size="small" sx={{ margin: 1, marginTop: 1 }}>
             <InputLabel id="map-select-label">Map</InputLabel>
@@ -299,12 +308,27 @@ function MapDetail(props: MapDetailProps) {
       );
     }
 
+    if (resolvedMap === null) {
+      return (
+        <>
+          {renderControls()}
+
+          <Alert severity="info">
+            <Typography>This field isn't compatible with the selected map.</Typography>
+          </Alert>
+        </>
+      );
+    }
+
     return (
       <>
         {renderControls()}
+
         <MapChart
           colourScheme={colourScheme}
-          mapSpec={selectedMap!}
+          mapSpec={resolvedMap.mapKey}
+          primaryMapKey={resolvedMap.primaryMapKey}
+          lookupField={resolvedMap.lookupField}
           projAbbrev={projectAbbrev}
           data={filteredData ?? []}
           geoField={internalSelectedFieldObj}
