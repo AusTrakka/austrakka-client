@@ -5,7 +5,7 @@ import type ProjectDashboardTemplateProps from '../../../types/projectdashboardt
 import { WidgetType } from '../../../types/widget.props';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
 import MetadataValuePieEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataValuePieEchart';
-import SampleSummaryNoSeq from '../../Widgets/ProjectWidgets/SampleSummaryNoSeq';
+import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
 
 function VicDashboard(props: ProjectDashboardTemplateProps) {
   const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
@@ -16,10 +16,12 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
         <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={8}>
           <Card sx={cardStyle}>
             <CardContent>
-              <SampleSummaryNoSeq
+              <SampleSummary
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
+                includeSequenceCount={false}
+                dateLength="long"
               />
             </CardContent>
           </Card>
