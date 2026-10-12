@@ -17,7 +17,7 @@ import {
   MapTooltipProperty,
 } from './mapMeta';
 
-const MAP_BORDER_STYLE = { borderWidth: 0.2, borderColor: Theme.PrimaryGrey500 };
+const MAP_BORDER_STYLE = { borderWidth: 0.4, borderColor: Theme.PrimaryGrey500 };
 
 interface MapTestProps {
   colourScheme: string;
@@ -165,10 +165,13 @@ function MapChart(props: MapTestProps) {
     renderedPrimaryMap.current = primaryMapKey;
 
     const counts = aggregated.counts.map((item) => item.count);
-    const minValue = Math.min(...counts);
     const maxValue = Math.max(...counts);
+    const positive = counts.filter((c) => c > 0);
+    const minPositive = positive.length ? Math.min(...positive) : 1;
     const mappedTotal = aggregated.counts.reduce((sum, item) => sum + item.count, 0);
     const missingTotal = aggregated.missing.reduce((sum, item) => sum + item.count, 0);
+
+    const colors = getColorArrayFromScheme(colourScheme, 10);
 
     const option: echarts.EChartsOption = {
       title: {
@@ -176,13 +179,19 @@ function MapChart(props: MapTestProps) {
         subtext: `${mappedTotal} samples mapped${missingTotal ? ` · ${missingTotal} not matched` : ''}`,
       },
       animation: !isDenseMap,
-      backgroundColor: Theme.PrimaryGrey,
+      backgroundColor: '#DEE7E8', //!TODO: we need to replace this with a picker in the future.
       tooltip: {
         trigger: 'item',
-        transitionDuration: isDenseMap ? 0 : 0.4,
+        confine: true,
+        transitionDuration: 0.4,
+        position: (point: number[], _params: any, _dom: any, _rect: any, size: any) => [
+          point[0] - size.contentSize[0] / 2,
+          point[1] - size.contentSize[1] - 30,
+        ],
         formatter: (params: any) => {
           const name = params.name || 'Unknown';
-          const value = params.value ?? 'N/A';
+          const raw = params.value;
+          const value = typeof raw === 'number' && !Number.isNaN(raw) ? raw : 0;
           const extra = tooltipLabels.get(params.name);
 
           const mainLine = `<strong>${name}</strong>: ${value}`;
@@ -203,13 +212,13 @@ function MapChart(props: MapTestProps) {
       },
       visualMap: {
         left: 'left',
-        min: minValue,
-        max: maxValue,
+        min: minPositive,
+        max: Math.max(maxValue, minPositive + 1),
         bottom: 'bottom',
         text: ['High', 'Low'],
         calculable: true,
         inRange: {
-          color: getColorArrayFromScheme(colourScheme, 9),
+          color: colors.slice(1),
         },
       },
       series: [
@@ -230,11 +239,13 @@ function MapChart(props: MapTestProps) {
           map: 'currentMap',
           nameProperty: lookupField,
           selectedMode: false,
-          itemStyle: MAP_BORDER_STYLE,
-          data: aggregated.counts.map((item) => ({
-            name: item.geoFeature,
-            value: item.count,
-          })),
+          itemStyle: { ...MAP_BORDER_STYLE, areaColor: colors[0] },
+          data: aggregated.counts
+            .filter((item) => item.count > 0)
+            .map((item) => ({
+              name: item.geoFeature,
+              value: item.count,
+            })),
           encode: {
             name: 'name',
             value: 'value',
