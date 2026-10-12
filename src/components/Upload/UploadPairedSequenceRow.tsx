@@ -6,6 +6,7 @@ import {
   Select,
   TableCell,
   TextField,
+  Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
@@ -33,6 +34,8 @@ interface UploadSequenceRowProps {
   modeOption: SkipForce;
   owner: string | null;
   sharedProjects: string[];
+  isCsvMode: boolean;
+  isDuplicateSeqId: boolean;
 }
 
 export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
@@ -41,6 +44,8 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   const { modeOption } = props;
   const { owner } = props;
   const { sharedProjects } = props;
+  const { isCsvMode } = props;
+  const { isDuplicateSeqId } = props;
 
   const [seqSubmission, setSeqSubmission] = useState({
     status: LoadingState.IDLE,
@@ -220,13 +225,13 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
     if (seqUploadRow.state === SeqUploadRowState.CreateSample) {
-      handleSampleCreate();
+      void handleSampleCreate();
     }
     if (seqUploadRow.state === SeqUploadRowState.CalculatingHash) {
-      calculateHash();
+      void calculateHash();
     }
     if (seqUploadRow.state === SeqUploadRowState.Uploading) {
-      handleSubmit();
+      void handleSubmit();
     }
   }, [seqUploadRow.state]);
 
@@ -240,55 +245,74 @@ export default function UploadPairedSequenceRow(props: UploadSequenceRowProps) {
   return (
     <>
       <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <TextField
-            id={`seqid-select-${seqUploadRow.id}`}
-            name="seqid"
-            variant="standard"
-            slotProps={{ input: { disableUnderline: requestCompleted() } }}
-            value={seqUploadRow?.seqId ?? ''}
-            onChange={(e) => handleSeqId(e.target.value)}
-            disabled={requestCompleted()}
-          />
-        </FormControl>
+        {isCsvMode ? (
+          <Typography sx={{ paddingTop: '10px', paddingBottom: '10px', marginRight: '40px' }}>
+            {seqUploadRow?.seqId ?? ''}
+          </Typography>
+        ) : (
+          <FormControl size="small" sx={tableFormControlStyle} variant="standard">
+            <TextField
+              id={`seqid-select-${seqUploadRow.id}`}
+              name="seqid"
+              variant="standard"
+              slotProps={{ input: { disableUnderline: requestCompleted() } }}
+              value={seqUploadRow?.seqId ?? ''}
+              onChange={(e) => handleSeqId(e.target.value)}
+              disabled={requestCompleted()}
+              error={isDuplicateSeqId}
+            />
+          </FormControl>
+        )}
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <Select
-            id={`read1-select-${seqUploadRow.id}`}
-            name="read1"
-            disableUnderline
-            value={seqUploadRow?.read1?.file.name ?? ''}
-            onChange={(e) => handleSelectRead1(e.target.value)}
-            disabled={requestCompleted()}
-          >
-            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
-              {`${seqUploadRow?.read1?.file.name}`}
-            </MenuItem>
-            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
-              {`${seqUploadRow?.read2?.file.name}`}
-            </MenuItem>
-          </Select>
-        </FormControl>
+        {isCsvMode ? (
+          <Typography sx={{ paddingTop: '10px', paddingBottom: '10px', marginRight: '40px' }}>
+            {seqUploadRow.read1.file.name ?? ''}
+          </Typography>
+        ) : (
+          <FormControl size="small" sx={tableFormControlStyle} variant="standard">
+            <Select
+              id={`read1-select-${seqUploadRow.id}`}
+              name="read1"
+              disableUnderline
+              value={seqUploadRow?.read1?.file.name ?? ''}
+              onChange={(e) => handleSelectRead1(e.target.value)}
+              disabled={requestCompleted()}
+            >
+              <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
+                {`${seqUploadRow?.read1?.file.name}`}
+              </MenuItem>
+              <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
+                {`${seqUploadRow?.read2?.file.name}`}
+              </MenuItem>
+            </Select>
+          </FormControl>
+        )}
       </TableCell>
       <TableCell sx={tableCellStyle}>
-        <FormControl size="small" sx={tableFormControlStyle} variant="standard">
-          <Select
-            id={`read2-select-${seqUploadRow.id}`}
-            name="read2"
-            disableUnderline
-            value={seqUploadRow?.read2?.file.name ?? ''}
-            onChange={(e) => handleSelectRead2(e.target.value)}
-            disabled={requestCompleted()}
-          >
-            <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
-              {`${seqUploadRow?.read1?.file.name}`}
-            </MenuItem>
-            <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
-              {`${seqUploadRow?.read2?.file.name}`}
-            </MenuItem>
-          </Select>
-        </FormControl>
+        {isCsvMode ? (
+          <Typography sx={{ paddingTop: '10px', paddingBottom: '10px', marginRight: '40px' }}>
+            {seqUploadRow.read2.file.name ?? ''}
+          </Typography>
+        ) : (
+          <FormControl size="small" sx={tableFormControlStyle} variant="standard">
+            <Select
+              id={`read2-select-${seqUploadRow.id}`}
+              name="read2"
+              disableUnderline
+              value={seqUploadRow?.read2?.file.name ?? ''}
+              onChange={(e) => handleSelectRead2(e.target.value)}
+              disabled={requestCompleted()}
+            >
+              <MenuItem value={seqUploadRow?.read1?.file.name} key={seqUploadRow?.read1?.file.name}>
+                {`${seqUploadRow?.read1?.file.name}`}
+              </MenuItem>
+              <MenuItem value={seqUploadRow?.read2?.file.name} key={seqUploadRow?.read2?.file.name}>
+                {`${seqUploadRow?.read2?.file.name}`}
+              </MenuItem>
+            </Select>
+          </FormControl>
+        )}
       </TableCell>
       <TableCell sx={tableCellStyle}>
         {/* Would JoyUI LinearProgress be an option here? */}

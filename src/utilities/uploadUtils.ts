@@ -10,8 +10,10 @@ import {
   type SeqPairedUploadRow,
   type SeqSingleUploadRow,
   SeqType,
+  type SeqUploadCsv,
   type SeqUploadCsvPair,
   type SeqUploadCsvSingle,
+  type SeqUploadRow,
   SeqUploadRowState,
 } from '../types/sequploadtypes';
 import { privsOfTypeWithScope } from './privCheck';
@@ -92,6 +94,7 @@ export enum CsvErrorType {
 }
 
 export interface CsvError {
+  id: string;
   errorType: CsvErrorType;
   sampleName: string | undefined;
   items: string[];
@@ -109,6 +112,7 @@ export const createSingleSeqUploadRowsFromCsv = (
 
   for (const record of records) {
     const warning: CsvError = {
+      id: crypto.randomUUID(),
       sampleName: record.Seq_ID,
       errorType: CsvErrorType.MISSING,
       items: [],
@@ -142,6 +146,7 @@ export const createSingleSeqUploadRowsFromCsv = (
 
   if (additionalFiles.length > 0) {
     errors.push({
+      id: crypto.randomUUID(),
       sampleName: undefined,
       errorType: CsvErrorType.ADDITIONAL,
       items: additionalFiles,
@@ -161,6 +166,7 @@ export const createPairedSeqUploadRowsFromCsv = (
 
   for (const pair of pairs) {
     const warning: CsvError = {
+      id: crypto.randomUUID(),
       sampleName: pair.Seq_ID,
       errorType: CsvErrorType.MISSING,
       items: [],
@@ -196,12 +202,13 @@ export const createPairedSeqUploadRowsFromCsv = (
     } as SeqPairedUploadRow);
   }
 
-  const additionalFiles = files
-    .map((f) => f.file.name)
-    .filter((name) => !matchedFileNames.has(name));
+  const additionalFiles = [
+    ...new Set(files.map((f) => f.file.name).filter((name) => !matchedFileNames.has(name))),
+  ];
 
   if (additionalFiles.length > 0) {
     errors.push({
+      id: crypto.randomUUID(),
       sampleName: undefined,
       errorType: CsvErrorType.ADDITIONAL,
       items: additionalFiles,
@@ -370,6 +377,10 @@ export const parseSeqUploadCsvSingles = async (pairingFile: File) => {
     }
   });
 
+  if (!seqIdsAreUnique(parsed)) {
+    throw new Error(UploadErrorMessages.DUPLICATE_SEQ_ID);
+  }
+
   return parsed;
 };
 
@@ -411,5 +422,30 @@ export const parseSeqUploadCsvPairs = async (pairingFile: File) => {
     }
   });
 
+  if (!seqIdsAreUnique(parsed)) {
+    throw new Error(UploadErrorMessages.DUPLICATE_SEQ_ID);
+  }
+
   return parsed;
+};
+
+const seqIdsAreUnique = (seqRows: SeqUploadCsv[]) => {
+  const seqIds = seqRows.map((row) => row.Seq_ID);
+  return new Set(seqIds).size === seqIds.length;
+};
+
+export const findDuplicateSeqIds = (rows: SeqUploadRow[]): Set<string> => {
+  const counts = new Map<string, number>();
+
+  for (const row of rows) {
+    const seqId = row.seqId?.trim(); // todo: not sure we need to trim or not at this stage
+    if (!seqId) continue;
+    counts.set(seqId, (counts.get(seqId) ?? 0) + 1);
+  }
+
+  const duplicates = new Set<string>();
+  for (const [seqId, count] of counts) {
+    if (count > 1) duplicates.add(seqId);
+  }
+  return duplicates;
 };

@@ -151,4 +151,20 @@ describe('parseSeqUploadCsvPairs', () => {
     expect(result[1].filepath1).toBe(yin2);
     expect(result[1].filepath2).toBe(yang2);
   });
+
+  it('should reject duplicate Seq IDs', async () => {
+    // Arrange
+    const seqId = 'Sample1';
+    const yin = 'sample1_r1.fastq';
+    const yang = 'sample1_r2.fastq';
+
+    const rows = [`${seqId},${yin},${yang}`, ',,', `${seqId},${yin},${yang}`];
+    const pairFile = getCsvFile(rows);
+
+    // Act
+    const promise = parseSeqUploadCsvPairs(pairFile);
+
+    // Assert
+    await expect(promise).rejects.toThrow(UploadErrorMessages.DUPLICATE_SEQ_ID);
+  });
 });
