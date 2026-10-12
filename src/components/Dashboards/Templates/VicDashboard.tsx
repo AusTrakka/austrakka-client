@@ -4,8 +4,8 @@ import { cardStyle } from '../../../styles/dashboardStyles';
 import type ProjectDashboardTemplateProps from '../../../types/projectdashboardtemplate.props.interface';
 import { WidgetType } from '../../../types/widget.props';
 import EpiCurveEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/EpiCurveEchart';
-import MetadataValuePieChart from '../../Widgets/ProjectWidgets/MetadataValuePieChart';
-import SampleSummary from '../../Widgets/ProjectWidgets/SampleSummary';
+import MetadataValuePieEchart from '../../Widgets/ProjectWidgets/EChartsWidgets/MetadataValuePieEchart';
+import SampleSummaryNoSeq from '../../Widgets/ProjectWidgets/SampleSummaryNoSeq';
 
 function VicDashboard(props: ProjectDashboardTemplateProps) {
   const { projectAbbrev, filteredData, timeFilterObject, dateFilterField } = props;
@@ -16,7 +16,7 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
         <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={8}>
           <Card sx={cardStyle}>
             <CardContent>
-              <SampleSummary
+              <SampleSummaryNoSeq
                 projectAbbrev={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
@@ -51,23 +51,23 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
         <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={4}>
           <Card sx={cardStyle}>
             <CardContent>
-              <MetadataValuePieChart
-                projectAbbrev={projectAbbrev}
+              <MetadataValuePieEchart
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Gene_group"
-                legendColumns={3}
+                widgetType={WidgetType.Project}
               />
             </CardContent>
           </Card>
           <Card sx={cardStyle}>
             <CardContent>
-              <MetadataValuePieChart
-                projectAbbrev={projectAbbrev}
+              <MetadataValuePieEchart
+                identifier={projectAbbrev}
                 filteredData={filteredData}
                 timeFilterObject={timeFilterObject}
                 field="Suspected_acquisition_source"
-                legendColumns={3}
+                widgetType={WidgetType.Project}
               />
             </CardContent>
           </Card>
