@@ -56,24 +56,6 @@ export const validateNoDuplicateFilenames = {
   },
 } as CustomUploadValidator;
 
-export const validateAllHaveSampleNamesWithTwoFilesOnly = {
-  func: (files: File[], suffixes: string[]) => {
-    const sampleCounts = countElements(files.map((f) => getSampleNameFromFile(f.name, suffixes)));
-    const problemSampleNames = Object.entries(sampleCounts)
-      .filter(([_sample, count]) => count !== 2)
-      .map(([sample, _count]) => sample);
-    if (problemSampleNames.length > 0) {
-      return {
-        success: false,
-        message: `Unable to parse file pairs for the following samples: ${problemSampleNames.join(', ')}`,
-      } as CustomUploadValidatorReturn;
-    }
-    return {
-      success: true,
-    } as CustomUploadValidatorReturn;
-  },
-} as CustomUploadValidator;
-
 export const validateAllHaveSampleNamesWithOneFileOnly = {
   func: (_files: File[], _suffixes: string[]) => {
     const sampleCounts = countElements(_files.map((f) => getSampleNameFromFile(f.name, _suffixes)));

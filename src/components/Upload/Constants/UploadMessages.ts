@@ -9,4 +9,5 @@ export const UploadErrorMessages = {
   FILEPATH_PARSING_FAILED: 'An error occurred while parsing filepath',
   INVALID_SEQ_ID: 'Invalid Seq_ID',
   INVALID_FILE_CONTENT: 'Invalid File Content',
+  DUPLICATE_SEQ_ID: "One or more Seq_ID's are not unique.",
 };

@@ -1,4 +1,4 @@
-import { ErrorOutline } from '@mui/icons-material';
+import ErrorIcon from '@mui/icons-material/Error';
 import {
   Alert,
   Box,
@@ -8,10 +8,6 @@ import {
   FormControlLabel,
   FormGroup,
   InputLabel,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   MenuItem,
   Paper,
   Select,
@@ -26,7 +22,8 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useSnackbar } from 'notistack';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '../../app/ApiContext';
 import { useCompactMode } from '../../app/CompactModeContext';
 import { useAppSelector } from '../../app/store';
@@ -55,11 +52,11 @@ import { getProjectList } from '../../utilities/resourceUtils';
 import {
   activeSeqUploadStates,
   type CsvError,
-  CsvErrorType,
   createPairedSeqUploadRows,
   createPairedSeqUploadRowsFromCsv,
   createSingleSeqUploadRows,
   createSingleSeqUploadRowsFromCsv,
+  findDuplicateSeqIds,
   getSampleSharableProjects,
   getUploadableSeqOrgs,
   parseSeqUploadCsvPairs,
@@ -69,13 +66,12 @@ import {
   splitFastaByContig,
 } from '../../utilities/uploadUtils';
 import HelpSidebar from '../Help/HelpSidebar';
-import ChangesDialog from '../Users/MainViews/ChangesDialog';
 import { UploadErrorMessages } from './Constants/UploadMessages';
+import CsvErrorsTable from './CsvErrorsTable';
 import FileDragDrop from './FileDragDrop';
 import FileUploadButton from './FileUploadButton';
 import {
   validateAllHaveSampleNamesWithOneFileOnly,
-  validateAllHaveSampleNamesWithTwoFilesOnly,
   validateEvenNumberOfFiles,
   validateNoDuplicateFilenames,
 } from './fileUploadValidators';
@@ -98,21 +94,12 @@ const uploadRowTypes: Record<SeqType, Function> = {
 };
 
 const validatorsPerSeqType = {
-  [SeqType.FastqIllPe]: [
-    validateEvenNumberOfFiles,
-    validateNoDuplicateFilenames,
-    validateAllHaveSampleNamesWithTwoFilesOnly,
-  ],
+  [SeqType.FastqIllPe]: [validateEvenNumberOfFiles, validateNoDuplicateFilenames],
   [SeqType.FastqIllSe]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
   [SeqType.FastqOnt]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
   [SeqType.FastaAsm]: [validateNoDuplicateFilenames, validateAllHaveSampleNamesWithOneFileOnly],
   // FastaCns is a special case: validation is applied during file-splitting transform
   [SeqType.FastaCns]: [],
-};
-
-const csvErrorMessages: Record<CsvErrorType, string> = {
-  [CsvErrorType.ADDITIONAL]: UploadErrorMessages.ADDITIONAL_FILE_FOUND,
-  [CsvErrorType.MISSING]: UploadErrorMessages.FILE_NOT_FOUND,
 };
 
 const fileTransformPerSeqType = (seqType: SeqType) =>
@@ -133,22 +120,19 @@ function UploadSequences() {
 
   const [csvErrors, setCsvErrors] = useState<CsvError[]>([]);
   const [pageErrorMsg, setPageErrorMsg] = useState<string | null>(null);
+  const [dismissedCsvItems, setDismissedCsvItems] = useState<Set<string>>(new Set());
+  const visibleCsvErrors = useMemo(
+    () =>
+      csvErrors
+        .map((err) => ({ ...err, items: err.items.filter((item) => !dismissedCsvItems.has(item)) }))
+        .filter((err) => err.items.length > 0),
+    [csvErrors, dismissedCsvItems],
+  );
+  const hasBlockingCsvErrors = visibleCsvErrors.length > 0;
+  const duplicateSeqIds = useMemo(() => findDuplicateSeqIds(seqUploadRows), [seqUploadRows]);
+  const hasDuplicateSeqIds = duplicateSeqIds.size > 0;
 
-  const [showErrorsDialog, setShowErrorsDialog] = useState<boolean>(false);
   const [useCsvFile, setUseCsvFile] = useState<boolean>(false);
-
-  const flatCsvErrors = useMemo(() => {
-    return csvErrors.flatMap((error) => {
-      let prefix: string = '';
-      if (error.sampleName !== undefined && error.sampleName !== '') {
-        prefix = `(${error.sampleName})`;
-      }
-      return error.items.map((item) => ({
-        label: `${prefix} ${csvErrorMessages[error.errorType]}: "${item}"`,
-        item,
-      }));
-    });
-  }, [csvErrors]);
 
   const fileDragDropRef = useRef<any>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
@@ -159,6 +143,7 @@ function UploadSequences() {
 
   const { compact } = useCompactMode();
   const { token, tokenLoading } = useApi();
+  const { enqueueSnackbar } = useSnackbar();
 
   const updateRow = (newSur: SeqUploadRow) => {
     setSeqUploadRows((st) =>
@@ -197,8 +182,14 @@ function UploadSequences() {
         sur.state === SeqUploadRowState.Incomplete,
     );
 
+  const dismissCsvErrors = useCallback((filenames: string[]) => {
+    const toRemove = new Set(filenames);
+    setDismissedCsvItems((prev) => new Set([...prev, ...toRemove]));
+  }, []);
+
   useEffect(() => {
     async function processPairingFile() {
+      setDismissedCsvItems(new Set());
       if (fileListingCsv.length === 0) {
         setCsvUploadPairs([]);
         setCsvUploadSingles([]);
@@ -217,7 +208,7 @@ function UploadSequences() {
         }
       } catch (e: unknown) {
         if (e instanceof Error) {
-          setPageErrorMsg(e.message);
+          enqueueSnackbar(e.message, { variant: 'error', autoHideDuration: 8000 });
         } else {
           setPageErrorMsg(UploadErrorMessages.UNEXPECTED_ERROR);
         }
@@ -227,7 +218,7 @@ function UploadSequences() {
     }
 
     void processPairingFile();
-  }, [fileListingCsv, selectedSeqType]);
+  }, [fileListingCsv, selectedSeqType, enqueueSnackbar]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic
   useEffect(() => {
@@ -318,6 +309,10 @@ function UploadSequences() {
     }
   };
 
+  const fileDragDropOnClear = useCallback(() => {
+    setDismissedCsvItems(new Set());
+  }, []);
+
   const handleClearSampleFiles = () => {
     fileDragDropRef.current?.clearFiles();
   };
@@ -335,7 +330,7 @@ function UploadSequences() {
     if (!selectedDataOwner) return;
 
     // UI elements are also disabled to guard against this
-    if (uploadInProgress() || csvErrors.length > 0) return;
+    if (uploadInProgress() || hasBlockingCsvErrors) return;
 
     const clientSessionId: string = crypto.randomUUID();
 
@@ -465,6 +460,8 @@ function UploadSequences() {
           modeOption={selectedSkipForce}
           owner={selectedDataOwner}
           sharedProjects={selectedProjectShare}
+          isCsvMode={useCsvFile && fileListingCsv.length > 0}
+          isDuplicateSeqId={duplicateSeqIds.has(row.seqId?.trim())}
         />
       );
     }
@@ -476,6 +473,8 @@ function UploadSequences() {
           modeOption={selectedSkipForce}
           owner={selectedDataOwner}
           sharedProjects={selectedProjectShare}
+          isCsvMode={useCsvFile && fileListingCsv.length > 0}
+          isDuplicateSeqId={duplicateSeqIds.has(row.seqId?.trim())}
         />
       );
     }
@@ -507,26 +506,6 @@ function UploadSequences() {
           justifyContent="space-between"
           alignItems="center"
         >
-          <ChangesDialog
-            title={'Errors'}
-            severity={'error'}
-            isOpen={showErrorsDialog}
-            confirmText={'OK'}
-            confirmIcon={<></>}
-            onClose={() => setShowErrorsDialog(false)}
-            onConfirm={() => setShowErrorsDialog(false)}
-          >
-            <List dense>
-              {flatCsvErrors.map((err) => (
-                <ListItem key={err.item}>
-                  <ListItemIcon>
-                    <ErrorOutline color="error" fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText secondary={err.label} />
-                </ListItem>
-              ))}
-            </List>
-          </ChangesDialog>
           {pageErrorMsg && (
             <Grid size={12}>
               <Alert severity="error">{pageErrorMsg}</Alert>
@@ -685,79 +664,70 @@ function UploadSequences() {
                   </Typography>
                 </Box>
               </Box>
-              <Box key="option-use-csv" display={showCsvFileUpload() ? '' : 'none'}>
-                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        color={csvErrors.length > 0 ? 'error' : 'secondary'}
-                        checked={useCsvFile}
-                        onChange={(e) => handleToggleCsvFile(e)}
-                        name={'useCsvFile'}
-                        disabled={uploadInProgress()}
-                      />
-                    }
-                    label="Use file listing CSV"
-                  />
-                  <Box display={'flex'} flexDirection={'row'} gap={0.5}>
-                    <FileUploadButton
-                      onChange={(f) => setFileListingCsv(f)}
-                      disabled={uploadInProgress()}
-                      validFormats={csvFileValidFormats}
-                      multiple={false}
-                      sx={{ size: 'small' }}
+
+              {showCsvFileUpload() ? (
+                <Box key="option-use-csv">
+                  <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          color="secondary"
+                          checked={useCsvFile}
+                          onChange={(e) => handleToggleCsvFile(e)}
+                          name={'useCsvFile'}
+                          disabled={uploadInProgress()}
+                        />
+                      }
+                      label="Use file listing CSV"
                     />
-                    {csvErrors.length > 0 ? (
-                      <Button
-                        color={'error'}
-                        variant={'outlined'}
-                        size={'small'}
-                        onClick={() => setShowErrorsDialog(true)}
-                      >
-                        <ErrorOutline color="error" fontSize="small" />
-                        <Typography
-                          variant="body2"
-                          fontSize="1rem"
-                          sx={{ textTransform: 'none', marginLeft: 1 }}
+                    <Box display={'flex'} flexDirection={'row'} gap={0.5}>
+                      <FileUploadButton
+                        onChange={(f) => setFileListingCsv(f)}
+                        disabled={uploadInProgress()}
+                        validFormats={csvFileValidFormats}
+                        multiple={false}
+                        sx={{ size: 'small' }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ paddingLeft: 4 }}>
+                    <Typography variant="body2">
+                      Use a CSV file to match any specified sample files against a sample name. When
+                      disabled, matches will be determined based on file names.
+                    </Typography>
+                    <Box
+                      sx={{
+                        minWidth: 200,
+                        maxWidth: 600,
+                        maxHeight: 200,
+                        mt: 1,
+                        display: fileListingCsv.length > 0 ? undefined : 'none',
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center">
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          sx={{ flexGrow: 1, minWidth: 0 }}
                         >
-                          Errors
-                        </Typography>
-                      </Button>
-                    ) : null}
-                  </Box>
-                </Box>
-                <Box sx={{ paddingLeft: 4 }}>
-                  <Typography variant="body2">
-                    Use a CSV file to match any specified sample files against a sample name. When
-                    disabled, matches will be determined based on file names.
-                  </Typography>
-                  <Box
-                    sx={{
-                      minWidth: 200,
-                      maxWidth: 600,
-                      maxHeight: 200,
-                      mt: 1,
-                      display: fileListingCsv.length > 0 ? undefined : 'none',
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center">
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                        sx={{ flexGrow: 1, minWidth: 0 }}
-                      >
-                        <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
-                          {fileListingCsv[0]?.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          • {fileListingCsv[0]?.size} bytes
-                        </Typography>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            noWrap
+                            sx={{ maxWidth: 200 }}
+                          >
+                            {fileListingCsv[0]?.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            • {fileListingCsv[0]?.size} bytes
+                          </Typography>
+                        </Stack>
                       </Stack>
-                    </Stack>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
+              ) : null}
             </FormGroup>
           </Grid>
         </Grid>
@@ -783,6 +753,7 @@ function UploadSequences() {
               multiple
               customValidators={validatorsPerSeqType[selectedSeqType]}
               fileTransform={fileTransformPerSeqType(selectedSeqType)}
+              onClear={fileDragDropOnClear}
             />
           </Box>
           {files.length > 0 && (
@@ -795,24 +766,75 @@ function UploadSequences() {
                   </Typography>
                 </Alert>
               )}
-              <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
-                  <TableHead>
-                    {seqUploadRows.length > 0 && files.length > 0 && renderUploadHeader()}
-                  </TableHead>
-                  <TableBody>
-                    {files.length > 0 &&
-                      seqUploadRows.map((sur) => (
-                        <TableRow
-                          key={sur.id}
-                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                          {renderUploadRow(sur)}
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              {hasBlockingCsvErrors && files.length > 0 && (
+                <Box>
+                  <Paper>
+                    <Typography fontSize={'1rem'} variant={'h6'} sx={{ padding: '10px' }}>
+                      CSV File Errors
+                    </Typography>
+                    <CsvErrorsTable
+                      onChange={(f) => dismissCsvErrors(f)}
+                      errors={visibleCsvErrors}
+                    />
+                  </Paper>
+                  <Grid
+                    container
+                    alignItems="center"
+                    justifyContent="right"
+                    size={12}
+                    paddingTop={2}
+                    paddingBottom={4}
+                    gap={1}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => dismissCsvErrors(visibleCsvErrors.flatMap((err) => err.items))}
+                    >
+                      <Typography variant="button" fontSize=".8rem">
+                        Remove All
+                      </Typography>
+                    </Button>
+                  </Grid>
+                </Box>
+              )}
+
+              {seqUploadRows.length === 0 && files.length > 0 && useCsvFile ? (
+                <Paper sx={{ minWidth: 650 }}>
+                  <Box
+                    display={'flex'}
+                    flexDirection={'row'}
+                    gap={1}
+                    alignItems={'center'}
+                    sx={{ padding: '10px' }}
+                  >
+                    <ErrorIcon color="error" />
+                    <Typography variant={'body1'}>
+                      All added files are invalid, please see errors above.
+                    </Typography>
+                  </Box>
+                </Paper>
+              ) : (
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+                    <TableHead>
+                      {seqUploadRows.length > 0 && files.length > 0 && renderUploadHeader()}
+                    </TableHead>
+                    <TableBody>
+                      {files.length > 0 &&
+                        seqUploadRows.map((sur) => (
+                          <TableRow
+                            key={sur.id}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                          >
+                            {renderUploadRow(sur)}
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
               {files.length > 0 && (
                 <Grid
                   container
@@ -820,15 +842,28 @@ function UploadSequences() {
                   justifyContent="right"
                   size={12}
                   paddingTop={2}
-                  paddingBottom={6}
+                  paddingBottom={12}
                   gap={1}
                 >
+                  <Box sx={{ marginRight: 'auto' }}>
+                    {hasDuplicateSeqIds ? (
+                      <Box display={'flex'} flexDirection={'row'} gap={1} alignItems={'center'}>
+                        <ErrorIcon color="error" />
+                        <Typography variant={'subtitle2'}>Seq ID must be unique</Typography>
+                      </Box>
+                    ) : null}
+                  </Box>
                   <>
                     <Button
                       variant="outlined"
                       color="primary"
                       onClick={handleUpload}
-                      disabled={uploadInProgress() || uploadFinished() || csvErrors.length > 0}
+                      disabled={
+                        uploadInProgress() ||
+                        uploadFinished() ||
+                        hasBlockingCsvErrors ||
+                        hasDuplicateSeqIds
+                      }
                     >
                       Upload All
                     </Button>
