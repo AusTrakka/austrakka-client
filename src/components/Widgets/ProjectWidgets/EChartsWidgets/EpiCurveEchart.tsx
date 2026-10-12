@@ -78,10 +78,19 @@ interface EpiCurveChartProps extends GenericMetadataWidgetProps {
   dateFilterField: string;
   colourMapping?: Record<string, string> | undefined;
   tall?: boolean;
+  alternateTimeAxisField?: string;
 }
 
 function EpiCurveEchart(props: EpiCurveChartProps) {
-  const { widgetType, identifier, filteredData, timeFilterObject, dateFilterField, tall } = props;
+  const {
+    widgetType,
+    identifier,
+    filteredData,
+    timeFilterObject,
+    dateFilterField,
+    tall,
+    alternateTimeAxisField,
+  } = props;
   const metadataSelector = useMemo(
     () => (state: RootState) => {
       switch (widgetType) {
@@ -102,14 +111,17 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
   const errorMessage = useMemo(() => {
-    if (data?.fields && !data.fields.some((f) => f.columnName === TIME_AXIS_FIELD)) {
-      return `Field ${TIME_AXIS_FIELD} not found in ${widgetType}`;
+    if (
+      data?.fields &&
+      !data.fields.some((f) => f.columnName === (alternateTimeAxisField ?? TIME_AXIS_FIELD))
+    ) {
+      return `Field ${alternateTimeAxisField ?? TIME_AXIS_FIELD} not found in ${widgetType}`;
     }
     if (data?.loadingState === MetadataLoadingState.ERROR) {
       return data.errorMessage ?? 'Unknown error';
     }
     return null;
-  }, [data?.fields, data?.loadingState, data?.errorMessage, widgetType]);
+  }, [data?.fields, data?.loadingState, data?.errorMessage, widgetType, alternateTimeAxisField]);
 
   const timeFilterDescription = useMemo(() => {
     if (timeFilterObject && Object.keys(timeFilterObject).length > 0) {
@@ -122,11 +134,16 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
 
   // 4. Bin unit
   const timeBinSpec: { unit: string; step: number } = useMemo(() => {
-    if (filteredData?.length && data?.fields?.some((f) => f.columnName === TIME_AXIS_FIELD)) {
-      return selectGoodTimeBinUnitEchart(filteredData.map((row: Sample) => row[TIME_AXIS_FIELD]));
+    if (
+      filteredData?.length &&
+      data?.fields?.some((f) => f.columnName === (alternateTimeAxisField ?? TIME_AXIS_FIELD))
+    ) {
+      return selectGoodTimeBinUnitEchart(
+        filteredData.map((row: Sample) => row[alternateTimeAxisField ?? TIME_AXIS_FIELD]),
+      );
     }
     return { unit: 'week' as const, step: 1 };
-  }, [filteredData, data?.fields]);
+  }, [filteredData, data?.fields, alternateTimeAxisField]);
 
   const colorField = useMemo(() => {
     if (!data?.fields) return null;
@@ -153,7 +170,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
     const FLAT_KEY = '_total';
 
     for (const row of filteredData) {
-      const raw = row[TIME_AXIS_FIELD];
+      const raw = row[alternateTimeAxisField ?? TIME_AXIS_FIELD];
       if (!raw) continue;
 
       const d = new Date(raw);
@@ -183,7 +200,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
     );
 
     return { bucketKeys, fieldValues, countsByField };
-  }, [filteredData, timeBinSpec, colorField]);
+  }, [filteredData, timeBinSpec, colorField, alternateTimeAxisField]);
 
   const colorMap = useMemo(() => {
     if (!colorField || !colorSchemeName || !bucketResult) return null;
@@ -261,7 +278,9 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
           rotate: 0,
           hideOverlap: true,
         },
-        name: 'Sample collected date (Date_coll)',
+        name: alternateTimeAxisField
+          ? `${alternateTimeAxisField}`
+          : 'Sample collected date (Date_coll)',
         nameLocation: 'middle',
         nameGap: 30,
       },
@@ -286,7 +305,7 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         ...(!isGrouped && { large: true, largeThreshold: 500 }),
       })),
     };
-  }, [bucketResult, colorField, colorMap, timeBinSpec]);
+  }, [bucketResult, colorField, colorMap, timeBinSpec, alternateTimeAxisField]);
 
   // 7. Init
   useEffect(() => {
