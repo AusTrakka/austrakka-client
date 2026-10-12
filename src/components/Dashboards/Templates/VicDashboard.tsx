@@ -13,7 +13,7 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container sx={{ alignItems: 'flex-start' }} spacing={2}>
-        <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={8}>
+        <Grid container spacing={2} size={{ md: 12, lg: 8 }}>
           <Card sx={cardStyle}>
             <CardContent>
               <SampleSummary
@@ -50,7 +50,7 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid container sx={{ alignItems: 'flex-start' }} spacing={2} size={4}>
+        <Grid container spacing={2} size={{ md: 12, lg: 4 }}>
           <Card sx={cardStyle}>
             <CardContent>
               <MetadataValuePieEchart
