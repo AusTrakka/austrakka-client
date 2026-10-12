@@ -34,6 +34,7 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
                 timeFilterObject={timeFilterObject}
                 dateFilterField={dateFilterField}
                 preferredColourField="Genus_group"
+                alternateTimeAxisField="Notification_date"
               />
             </CardContent>
           </Card>
@@ -46,6 +47,7 @@ function VicDashboard(props: ProjectDashboardTemplateProps) {
                 timeFilterObject={timeFilterObject}
                 dateFilterField={dateFilterField}
                 preferredColourField="Gene_group"
+                alternateTimeAxisField="Notification_date"
               />
             </CardContent>
           </Card>
