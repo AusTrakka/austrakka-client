@@ -382,4 +382,4 @@ function ProjectSamplesTable(props: SamplesProps) {
   );
 }
 
-export default memo(ProjectSamplesTable);
+export default ProjectSamplesTable;
