@@ -51,7 +51,7 @@ function OrganisationsList() {
         if (rowData.abbreviation === user.orgAbbrev) {
           return (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <HomeIcon color="success" fontSize="small" sx={{ margin: '5px' }} />
+              <HomeIcon color="secondary" fontSize="small" sx={{ margin: '5px' }} />
               <span>{rowData.abbreviation}</span>
             </div>
           );
