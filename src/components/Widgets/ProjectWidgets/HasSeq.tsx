@@ -28,7 +28,7 @@ import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 const HAS_SEQ = 'Has_sequences';
 
 const CHART_COLORS = {
-  AVAILABLE: Theme.SecondaryMain,
+  AVAILABLE: Theme.SecondaryLightGreen,
   MISSING: Theme.SecondaryYellow,
 } as const;
 
