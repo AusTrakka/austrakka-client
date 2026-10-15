@@ -808,7 +808,11 @@ function UploadSequences() {
                   >
                     <ErrorIcon color="error" />
                     <Typography variant={'body1'}>
-                      All added files are invalid, please see errors above.
+                      {
+                        visibleCsvErrors.length > 0
+                            ? 'All added files are invalid, please see errors above.'
+                            : 'All added files are invalid. Remove or replace the CSV listing file, or clear all files and upload new ones.'
+                      }
                     </Typography>
                   </Box>
                 </Paper>

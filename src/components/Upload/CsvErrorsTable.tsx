@@ -33,7 +33,7 @@ export default function CsvErrorsTable({ onChange, errors }: CsvErrorsTableProps
     errors.map((err) => (
       <TableRow key={err.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
         <TableCell sx={{ padding: '6px' }}>
-          <Typography variant="body2" fontSize=".9rem">
+          <Typography variant="body2">
             {err.sampleName ?? <Chip label={'No Seq ID'} />}
           </Typography>
         </TableCell>
@@ -61,18 +61,18 @@ export default function CsvErrorsTable({ onChange, errors }: CsvErrorsTableProps
           })()}
         </TableCell>
         <TableCell sx={{ padding: '6px' }}>
-          <Typography variant="body2" fontSize=".9rem">
+          <Typography variant="body2">
             {`${csvErrorMessages[err.errorType]}`}
           </Typography>
         </TableCell>
         <TableCell sx={{ padding: '6px' }}>
           <Button
-            variant={'outlined'}
-            color={'error'}
-            size={'small'}
+            variant='outlined'
+            color='error'
+            size='small'
             onClick={() => onChange(err.items)}
           >
-            <Typography variant="button" fontSize=".8rem">
+            <Typography variant="button" fontSize="0.875rem">
               Remove
             </Typography>
           </Button>
@@ -85,16 +85,16 @@ export default function CsvErrorsTable({ onChange, errors }: CsvErrorsTableProps
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell key={'SeqIDHeader'} sx={{ padding: '6px' }}>
+              <TableCell key='SeqIDHeader' sx={{ padding: '6px' }}>
                 Seq ID
               </TableCell>
-              <TableCell key={'FilesHeader'} sx={{ padding: '6px' }}>
+              <TableCell key='FilesHeader' sx={{ padding: '6px' }}>
                 Files
               </TableCell>
-              <TableCell key={'ReasonHeader'} sx={{ padding: '6px' }}>
+              <TableCell key='ReasonHeader' sx={{ padding: '6px' }}>
                 Reason
               </TableCell>
-              <TableCell key={'ActionsHeader'} sx={{ padding: '6px' }}>
+              <TableCell key='ActionsHeader' sx={{ padding: '6px' }}>
                 Actions
               </TableCell>
             </TableRow>
@@ -104,14 +104,14 @@ export default function CsvErrorsTable({ onChange, errors }: CsvErrorsTableProps
       </TableContainer>
       <CustomDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
         <Box>
-          <Box display={'flex'} flexDirection={'row'} gap={2} alignItems={'center'}>
+          <Box sx={{display: 'flex', flexDirection: 'rows', gap: 2, alignItems: 'center'}}>
             <ErrorIcon fontSize="large" color="error" />
             <Typography variant="h4" color="primary">
-              {'CSV File Errors'}
+              CSV File Errors
             </Typography>
           </Box>
           <Typography sx={{ paddingTop: '20px' }} variant="subtitle2">
-            {'The following files did not match any Seq ID in the supplied CSV file'}
+            The following files did not match any Seq ID in the supplied CSV file
           </Typography>
           <TableContainer>
             <Table
