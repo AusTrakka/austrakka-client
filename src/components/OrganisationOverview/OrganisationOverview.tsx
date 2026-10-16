@@ -37,6 +37,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
   const [orgDetailsError, setOrgDetailsError] = useState(false);
   // canShare is used for share and unshare checks
   const [canShare, setCanShare] = useState(false);
+  const [canDisable, setCanDisable] = useState(false);
   const [canChangeOwnership, setCanChangeOwnership] = useState(false);
 
   const user: UserSliceState = useAppSelector(selectUserState);
@@ -49,9 +50,19 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
         ownerOrg,
         RecordTypes.ORGANISATION,
       );
+
+    const checkDisablePermissions = (ownerOrg: string) =>
+      hasPermissionV2ByScope(
+        user,
+        ScopeDefinitions.EnableDisableSamples,
+        ownerOrg,
+        RecordTypes.ORGANISATION,
+      );
+
     if (user.loading === LoadingState.SUCCESS && (orgAbbrev || user.admin)) {
       // give it an empty string if only the admin check passed in the or condition above
       setCanShare(checkSharingPermissions(orgAbbrev ?? ''));
+      setCanDisable(checkDisablePermissions(orgAbbrev ?? ''));
     }
   }, [orgAbbrev, user]);
 
@@ -180,6 +191,7 @@ function OrganisationOverview(props: OrganisationOverviewProps) {
       </TabPanel>
       <TabPanel value={tabValue} index={ORG_TABS.samples.index}>
         <OrganisationSamples
+          canDisable={canDisable}
           canShare={canShare}
           orgAbbrev={orgAbbrev}
           canChangeOwnership={canChangeOwnership}
