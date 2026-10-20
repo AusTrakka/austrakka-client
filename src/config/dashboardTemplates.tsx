@@ -11,6 +11,7 @@ import PublicHealthInternationalDashboard from '../components/Dashboards/Templat
 import SEDemoDashboard from '../components/Dashboards/Templates/SEDemoDashboard';
 import SnapDashboard from '../components/Dashboards/Templates/SnapDashboard';
 import SpeciesLabDataDashboard from '../components/Dashboards/Templates/SpeciesLabDataDashboard';
+import VicDashboard from '../components/Dashboards/Templates/VicDashboard';
 import VicDHAlertsDashboard from '../components/Dashboards/Templates/VicDHAlertsDashboard';
 import VicDHDashboard from '../components/Dashboards/Templates/VicDHDashboard';
 import WithQC from '../components/Dashboards/Templates/WithQC';
@@ -34,5 +35,6 @@ const DashboardTemplates: Record<string, React.FC<ProjectDashboardTemplateProps>
   ofn: OFNDashboard,
   'lab-data': LabDataDashboard,
   'species-lab-data': SpeciesLabDataDashboard,
+  vic: VicDashboard,
 };
 export default DashboardTemplates;
