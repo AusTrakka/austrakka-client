@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ColumnVisibilityMenuProps {
   columns: any[];
@@ -30,6 +30,11 @@ function ColumnVisibilityMenu(props: ColumnVisibilityMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedColumns, setSelectedColumns] = useState<any>(columns.filter((c) => c.hidden));
   const open = Boolean(anchorEl);
+
+  // Update selected columns when the columns prop changes
+  useEffect(() => {
+    setSelectedColumns(columns.filter((c) => c.hidden));
+  }, [columns]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
