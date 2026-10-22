@@ -32,7 +32,7 @@ const SHARED_GROUPS_FIELD = 'Shared_groups';
 const UNSHARED_VALUE = 'Not shared'; // label for samples with no value for the category field
 
 const CHART_COLORS = {
-  AVAILABLE: Theme.SecondaryMain,
+  AVAILABLE: Theme.SecondaryLightGreen,
   MISSING: Theme.SecondaryYellow,
 } as const;
 
