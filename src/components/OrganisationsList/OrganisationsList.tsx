@@ -21,7 +21,6 @@ import { getOrganisations } from '../../utilities/resourceUtils';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 import { useViewportClampedHeight } from '../TableComponents/useViewportClampedHeight';
-import styles from './OrganisationsList.module.css';
 
 function OrganisationsList() {
   const [homeOrg, setHomeOrg] = useState<Organisation[]>([]);
@@ -184,9 +183,6 @@ function OrganisationsList() {
           removableSort
           scrollable
           rows={25}
-          rowClassName={(rowData) =>
-            rowData.abbreviation === user.orgAbbrev ? styles['home-row'] : ''
-          }
           scrollHeight="flex"
           onRowClick={rowClickHandler}
           selectionMode="single"
