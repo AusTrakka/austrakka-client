@@ -7,7 +7,7 @@ export const LOCAL_PROJECT: Project = {
   abbreviation: 'local',
   name: 'Local',
   description: 'Local data',
-  type: 'Local',
+  label: 'Local',
   projectMembers: {
     id: 1,
     name: 'Local-Group',
