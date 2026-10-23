@@ -1,0 +1,47 @@
+resources:
+  repositories:
+    - repository: Client
+      type: github
+      name: AusTrakka/austrakka-client
+      ref: $(Build.SourceBranch) 
+      endpoint: AusTrakka
+    - repository: Pipelines
+      type: github
+      name: AusTrakka/austrakka-pipelines
+      ref: Development
+      endpoint: AusTrakka
+
+
+trigger:
+  branches:
+    include:
+      - standalone-client
+
+pr: none
+
+pool:
+  name: UAT-New
+
+variables:
+- template: variables/dev/azure/connection.yml@Pipelines
+- template: variables/devops/setup.yml@Pipelines
+
+stages:
+  - stage: DeployStandaloneClient
+    jobs:
+      - job: DeployStandaloneClient
+        steps:
+          - template: templates/checkout/client.yml@Pipelines
+            steps:
+            - task: Bash@3
+              displayName: DeployStandaloneClient
+              env:
+                SWA_CLI_DEPLOYMENT_TOKEN: $(swaToken)
+              inputs:
+                targetType: 'inline'
+                workingDirectory: $(sourceDir)/docs
+                script: |
+                  cat swa-cli.config.json | jq '.configurations."austrakka-client".appName = "$(appName)"' | jq '.configurations."austrakka-docs".resourceGroup = "$(rgName)"' > swa-cli.config.json
+                  npm ci
+                  npm run build
+                  swa deploy ./dist --env production
