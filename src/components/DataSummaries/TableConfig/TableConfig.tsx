@@ -1,5 +1,5 @@
-import { RestartAlt, Tune } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
+import { HelpOutline, RestartAlt, Tune } from '@mui/icons-material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import {
   type Dispatch,
   type KeyboardEvent,
@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { Theme } from '../../../assets/themes/theme';
 import type { MetaDataColumn, ProjectViewField } from '../../../types/dtos';
+import { DOCS_URL } from '../../DataSummaries/dataSummariesMeta';
 import {
   type AggregationType,
   FIELD_TYPE_AGGREGATION_TYPES,
@@ -128,10 +129,23 @@ function TableConfig(props: TableConfigProps) {
       }}
     >
       <Box>
-        <Tune fontSize="large" color="primary" />
-        <Typography variant="h4" color="primary" sx={{ mb: 1.5 }}>
-          Table configuration
-        </Typography>
+        <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between' }}>
+          <Box>
+            <Tune fontSize="large" color="primary" />
+            <Typography variant="h4" color="primary" sx={{ mb: 1.5 }}>
+              Table configuration
+            </Typography>
+          </Box>
+          <Box>
+            <Chip
+              icon={<HelpOutline />}
+              label="Help"
+              onClick={() =>
+                window.open(`${import.meta.env.VITE_DOCS_URL}${DOCS_URL}`, '_blank')?.focus()
+              }
+            />
+          </Box>
+        </Box>
         <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
         <Box sx={{ my: 2 }}>
           <SortableFieldList
