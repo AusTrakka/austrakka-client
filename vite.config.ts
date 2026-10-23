@@ -11,18 +11,6 @@ export default defineConfig({
   plugins: [
     react(),
     ValidateEnv({
-      VITE_AT_CLIENT_ID: Schema.string({
-        message: 'Client ID of the frontend Azure application'
-      }),
-      VITE_AT_TENANT_ID: Schema.string({
-        message: 'Tenant ID of the target Azure account'
-      }),
-      VITE_REACT_API_URL: Schema.string({
-        message: 'URL of the backend API'
-      }),
-      VITE_API_SCOPE: Schema.string({
-        message: "Scope URI for API application"
-      }),
       VITE_THEME_PRIMARY_MAIN: (key, value) => {
         return defaultConfigValue(key, value, ThemeDefaultValues.PrimaryMain)
       },
