@@ -23,9 +23,9 @@ import LoadingState from '../../../constants/loadingState';
 import RecordTypes from '../../../constants/record-type.enum';
 import { ResponseType } from '../../../constants/responseType';
 import { ScopeDefinitions } from '../../../constants/scopes';
-import { getRecordNamesWithScope } from '../../../permissions/accessTable';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
+import { getRecordNamesWithScope } from '../../../utilities/privCheck';
 import { changeSampleOwner } from '../../../utilities/resourceUtils';
 
 interface OrgSampleOwnershipProps {

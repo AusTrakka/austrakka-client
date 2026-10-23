@@ -301,7 +301,6 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         itemStyle: isGrouped
           ? { color: colorMap?.[fv] ?? NULL_COLOUR }
           : { color: Theme.SecondaryDarkGreen },
-        emphasis: { focus: isGrouped ? 'series' : 'self' },
         ...(!isGrouped && { large: true, largeThreshold: 500 }),
       })),
     };

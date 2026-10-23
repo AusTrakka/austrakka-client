@@ -31,7 +31,7 @@ import { ResponseType } from '../../../constants/responseType';
 import type { ResponseObject } from '../../../types/responseObject.interface';
 import type { Sample } from '../../../types/sample.interface';
 import { unshareSamples } from '../../../utilities/resourceUtils';
-import { getSharableProjects } from '../../../utilities/uploadUtils';
+import { getSampleSharableProjects } from '../../../utilities/uploadUtils';
 
 type ShareStatusProps = {
   icon: ReactNode;
@@ -72,8 +72,8 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
 
   // Get selectable projects/org groups from user permission details
   useEffect(() => {
-    if (user?.groupRoles) {
-      const projectsThatCanBeSelected = getSharableProjects(user.groupRoles);
+    if (user) {
+      const projectsThatCanBeSelected = getSampleSharableProjects(user);
 
       // Check if selected samples have Shared_groups configured
       const allHaveSharedGroups = selectedSamples.every(
@@ -256,9 +256,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
                     >
                       {options.length > 0 ? (
                         options.map((opt) => (
-                          // For projects, append "-Group" to match group naming convention
-                          // Prevents added complexity when checking perms for validation/unsharing
-                          <MenuItem key={opt} value={`${opt}-Group`}>
+                          <MenuItem key={opt} value={opt}>
                             {opt}
                           </MenuItem>
                         ))

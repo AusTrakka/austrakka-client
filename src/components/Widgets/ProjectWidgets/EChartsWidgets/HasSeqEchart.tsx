@@ -33,7 +33,7 @@ const MIN_HEIGHT = 240;
 const MAX_HEIGHT = 1200;
 
 const CHART_COLORS = {
-  AVAILABLE: Theme.SecondaryMain,
+  AVAILABLE: Theme.SecondaryLightGreen,
   MISSING: Theme.SecondaryYellow,
 } as const;
 
