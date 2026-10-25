@@ -46,6 +46,7 @@ export default function useActivityLogs({
         params.append('resourceIdentifier', filters.resourceUniqueString);
       if (filters.resourceType) params.append('resourceType', filters.resourceType);
       if (filters.eventType) params.append('eventType', filters.eventType);
+      if (filters.eventStatus) params.append('eventStatus', filters.eventStatus);
       if (filters.submitterDisplayName)
         params.append('submitterDisplayName', filters.submitterDisplayName);
       if (filters.startDate) params.append('startDateTime', filters.startDate.toISOString());

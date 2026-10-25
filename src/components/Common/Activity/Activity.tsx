@@ -1,5 +1,6 @@
-import { Cancel } from '@mui/icons-material';
-import { Alert, AlertTitle, Box, Chip, Paper, Typography } from '@mui/material';
+import { Cancel, CheckCircle } from '@mui/icons-material';
+import ErrorIcon from '@mui/icons-material/Error';
+import { Alert, AlertTitle, Box, Chip, Paper, Tooltip, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { Column } from 'primereact/column';
 import type { TreeNode } from 'primereact/treenode';
@@ -8,7 +9,6 @@ import {
   type TreeTableExpandedKeysType,
   type TreeTableToggleEvent,
 } from 'primereact/treetable';
-import { Theme } from '../../../assets/themes/theme';
 import useActivityLogs, { type ActivityLogsResponse } from '../../../hooks/useActivityLogs';
 import {
   buildPrimeReactColumnDefinitions,
@@ -17,8 +17,8 @@ import {
 import CollapseTreeNodes from '../../TableComponents/CollapseTreeNodes';
 import sortIcon from '../../TableComponents/SortIcon';
 import ActivityDetails from './ActivityDetails';
-import ActivityFilters, { type Filters } from './ActivityFilters';
-import { EVENT_NAME_COLUMN, supportedColumns } from './ActivityTableFields';
+import ActivityFilters, { type EventStatus, type Filters } from './ActivityFilters';
+import { EVENT_NAME_COLUMN, EVENT_STATUS_COLUMN, supportedColumns } from './ActivityTableFields';
 import type { ActivityDetailInfo } from './activityViewModels.interface';
 import EmptyContentPane, { ContentIcon } from './EmptyContentPane';
 import '../../../styles/TreeTable.css';
@@ -45,10 +45,12 @@ import { useViewportClampedHeight } from '../../TableComponents/useViewportClamp
 interface ActivityProps {
   recordType: string;
   rGuid?: string;
+  hideStatusParam?: boolean;
 }
 
 const emptyDetailInfo: ActivityDetailInfo = {
   Event: '',
+  Status: '',
   'Time stamp': '',
   'Event initiated by': '',
   Resource: '',
@@ -63,6 +65,7 @@ type UrlFilters = {
   resourceUniqueString: string | null;
   resourceType: string | null;
   eventType: string | null;
+  eventStatus: EventStatus | null;
   submitterDisplayName: string | null;
   startDate: string; // 'default' | 'none' | ISO string
   endDate: string; // 'default' | 'none' | ISO string
@@ -72,6 +75,7 @@ const defaultUrlFilters: UrlFilters = {
   resourceUniqueString: null,
   resourceType: null,
   eventType: null,
+  eventStatus: null,
   submitterDisplayName: null,
   startDate: 'default',
   endDate: 'default',
@@ -83,7 +87,13 @@ function resolveUrlDate(value: string, defaultValue: Date): Date | null {
   return new Date(value);
 }
 
-function Activity({ recordType, rGuid }: ActivityProps) {
+export const STATUS_DISPLAY = {
+  Success: { Icon: CheckCircle, color: 'success' },
+  Failed: { Icon: Cancel, color: 'error' },
+  'Partial success': { Icon: ErrorIcon, color: 'warning' },
+} as const;
+
+function Activity({ recordType, rGuid, hideStatusParam = true }: ActivityProps) {
   const [columns, setColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [detailInfo, setDetailInfo] = useState<ActivityDetailInfo>(emptyDetailInfo);
@@ -125,6 +135,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
       resourceUniqueString: urlFilters.resourceUniqueString,
       resourceType: urlFilters.resourceType,
       eventType: urlFilters.eventType,
+      eventStatus: urlFilters.eventStatus,
       submitterDisplayName: urlFilters.submitterDisplayName,
       startDate: resolveUrlDate(urlFilters.startDate, defaultDateRange.startDate),
       endDate: resolveUrlDate(urlFilters.endDate, defaultDateRange.endDate),
@@ -133,6 +144,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
       urlFilters.resourceUniqueString,
       urlFilters.resourceType,
       urlFilters.eventType,
+      urlFilters.eventStatus,
       urlFilters.submitterDisplayName,
       urlFilters.startDate,
       urlFilters.endDate,
@@ -148,6 +160,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
         resourceUniqueString: nextFilters.resourceUniqueString ?? null,
         resourceType: nextFilters.resourceType ?? null,
         eventType: nextFilters.eventType ?? null,
+        eventStatus: nextFilters.eventStatus ?? null,
         submitterDisplayName: nextFilters.submitterDisplayName ?? null,
         startDate: nextFilters.startDate ? nextFilters.startDate.toISOString() : 'none',
         endDate: nextFilters.endDate ? nextFilters.endDate.toISOString() : 'none',
@@ -184,6 +197,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
   const onLeafRowClick = (node: TreeNode) => {
     const info: ActivityDetailInfo = {
       Event: node.data[EVENT_NAME_COLUMN],
+      Status: node.data[EVENT_STATUS_COLUMN],
       'Time stamp': node.data.eventTime,
       'Event initiated by': node.data.submitterDisplayName,
       Resource: node.data.resourceUniqueString,
@@ -324,25 +338,29 @@ function Activity({ recordType, rGuid }: ActivityProps) {
     [expandedKeys],
   );
 
-  const firstColumnTemplate = useCallback((row: any) => {
-    if (row.data.eventStatus === 'Failed') {
+  const eventStatusColumnTemplate = useCallback(
+    (rowNode: TreeNode) => {
+      const { data, children, key } = rowNode;
+      const status = data.eventStatus as string | undefined;
+
+      const isExpanded = Boolean(key && expandedKeys[key]);
+      if (children?.length && isExpanded) return null;
+
+      if (!status) return '-';
+
+      const display = STATUS_DISPLAY[status as keyof typeof STATUS_DISPLAY];
+      if (!display) return status; // unknown value: show the raw text rather than a wrong icon
+
+      const { Icon, color } = display;
+
       return (
-        <span>
-          <Cancel
-            style={{
-              marginRight: '5px',
-              cursor: 'pointer',
-              color: Theme.SecondaryRed,
-              fontSize: '14px',
-              verticalAlign: 'middle',
-            }}
-          />
-          {row.data[EVENT_NAME_COLUMN]}
-        </span>
+        <Tooltip title={status} placement="top" arrow>
+          <Icon fontSize="small" color={color} sx={{ verticalAlign: 'middle' }} />
+        </Tooltip>
       );
-    }
-    return row.data[EVENT_NAME_COLUMN];
-  }, []);
+    },
+    [expandedKeys],
+  );
 
   const rowClassName = useCallback(
     (rowNode: TreeNode) => {
@@ -394,6 +412,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
         setDrawerOpen={setOpenDetails}
         detailInfo={detailInfo}
         recordType={recordType}
+        hideStatusParam={hideStatusParam}
       />
       {activityRes.httpStatusCode >= 400 ? (
         <Alert severity="error" style={{ marginBottom: '20px' }}>
@@ -407,6 +426,7 @@ function Activity({ recordType, rGuid }: ActivityProps) {
             setIsOpen={setFiltersOpen}
             filters={filters}
             setFilters={setFilters}
+            hideStatusParam={hideStatusParam}
           />
           {activityRes.apiMessages.map((rm) =>
             rm.ResponseType === ResponseType.Warning ? (
@@ -476,14 +496,28 @@ function Activity({ recordType, rGuid }: ActivityProps) {
                   field={EVENT_NAME_COLUMN}
                   header="Event"
                   hidden={false}
-                  body={firstColumnTemplate}
                   sortable
                   expander
                   style={{ width: '220px' }} // Give the main tree column a fixed/min width
                 />
+                {!hideStatusParam && (
+                  <Column
+                    key={EVENT_STATUS_COLUMN}
+                    field={EVENT_STATUS_COLUMN}
+                    header="Status"
+                    hidden={false}
+                    sortable
+                    headerStyle={{ width: '80px' }}
+                    bodyStyle={{ textAlign: 'center', justifyContent: 'center', width: '80px' }}
+                    body={(node: TreeNode) => eventStatusColumnTemplate(node)}
+                  />
+                )}
                 {columns
                   ? columns
                       .filter((col: PrimeReactColumnDefinition) => col.field !== EVENT_NAME_COLUMN)
+                      .filter(
+                        (col: PrimeReactColumnDefinition) => col.field !== EVENT_STATUS_COLUMN,
+                      )
                       .map((col: any, index, array) => {
                         const isLast = index === array.length - 1;
                         return (
