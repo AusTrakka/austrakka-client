@@ -132,7 +132,7 @@ function TableConfig(props: TableConfigProps) {
         <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between' }}>
           <Box>
             <Tune fontSize="large" color="primary" />
-            <Typography variant="h4" color="primary" sx={{ mb: 1.5 }}>
+            <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
               Table configuration
             </Typography>
           </Box>
@@ -146,10 +146,30 @@ function TableConfig(props: TableConfigProps) {
             />
           </Box>
         </Box>
-        <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
-        <Box sx={{ my: 2 }}>
+        <Box>
           <SortableFieldList
-            title="Display fields"
+            title="Group-by fields"
+            description="Select fields to group the table by"
+            fields={sortedFields}
+            selectedFieldNames={pivotConfig.groupByFields}
+            onChange={handleGroupByChange}
+            onOpenItemMenu={openGroupByFieldMenu}
+            unavailableFields={UNAVAILABLE_FIELDS}
+          />
+          <GroupByFieldMenu
+            setPivotConfig={setPivotConfig}
+            anchorEl={groupByAnchorEl}
+            activeCol={activeGroupByCol}
+            fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
+            pivotConfig={pivotConfig}
+            rows={rows}
+            onClose={() => setGroupByAnchorEl(null)}
+          />
+        </Box>
+        <Box sx={{ my: 3 }}>
+          <SortableFieldList
+            title="Aggregation fields"
+            description="Select fields to aggregate on in the table"
             fields={sortedFields}
             selectedFieldNames={pivotConfig.displayFields}
             onChange={handleDisplayFieldsChange}
@@ -167,25 +187,7 @@ function TableConfig(props: TableConfigProps) {
             setPivotConfig={setPivotConfig}
           />
         </Box>
-        <Box>
-          <SortableFieldList
-            title="Group-by fields"
-            fields={sortedFields}
-            selectedFieldNames={pivotConfig.groupByFields}
-            onChange={handleGroupByChange}
-            onOpenItemMenu={openGroupByFieldMenu}
-            unavailableFields={UNAVAILABLE_FIELDS}
-          />
-          <GroupByFieldMenu
-            setPivotConfig={setPivotConfig}
-            anchorEl={groupByAnchorEl}
-            activeCol={activeGroupByCol}
-            fieldType={activeGroupByCol ? fieldTypes[activeGroupByCol] : undefined}
-            pivotConfig={pivotConfig}
-            rows={rows}
-            onClose={() => setGroupByAnchorEl(null)}
-          />
-        </Box>
+        <GlobalOptions pivotConfig={pivotConfig} setPivotConfig={setPivotConfig} />
       </Box>
       <Box sx={{ mt: 'auto', mb: 1, display: 'flex', justifyContent: 'flex-start' }}>
         <Button
