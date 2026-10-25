@@ -1,5 +1,7 @@
 import { FieldTypes } from '../../constants/fieldTypes';
 
+export const DOCS_URL = `/docs/Web-Interface/DataViews/data-summary-table`;
+
 export enum TableOrientation {
   FieldsHorizontal = 'fieldsHorizontal',
   FieldsVertical = 'fieldsVertical',
