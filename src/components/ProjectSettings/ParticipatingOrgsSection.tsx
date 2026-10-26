@@ -153,7 +153,6 @@ export default function ParticipatingOrgsSection({
 
       <SearchInput
         value={(filter.global as DataTableFilterMetaData).value || ''}
-        forceExpanded
         onChange={onGlobalFilterChange}
       />
 
