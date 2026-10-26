@@ -41,10 +41,10 @@ import renderIcon from '../../Admin/UserIconRenderer';
 import '../../Common/SettingsPage/RowAndCell.css';
 import { CheckCircle, ErrorOutline, RemoveCircle, Report } from '@mui/icons-material';
 import { Theme } from '../../../assets/themes/theme';
-import { hasPermissionV2ByRole } from '../../../permissions/accessTable';
 import { Roles } from '../../../permissions/roles';
 import type { PendingChange, RoleAssignments } from '../../../types/userDetailEdit.interface';
 import { isoDateOrNotRecorded } from '../../../utilities/dateUtils';
+import { hasPermissionV2ByRole } from '../../../utilities/privCheck';
 import {
   checkEditUserScopes,
   checkFetchUserScope,

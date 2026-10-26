@@ -196,8 +196,6 @@ export interface PrivilegeWithRolesWithScopes {
 
 export interface RecordRoleWithScopes {
   roleName: string;
-  privilegeLevel: string;
-  privilegeGlobalId: string;
   scopes: string[];
 }
 
@@ -468,6 +466,10 @@ export interface ProjectDocument {
   created: Date;
   lastUpdated: Date;
   lastUpdatedBy: string;
+}
+
+export interface ProformaSharedEntity {
+  abbreviation: string;
 }
 
 export interface ProjectOrganisationsPatch {

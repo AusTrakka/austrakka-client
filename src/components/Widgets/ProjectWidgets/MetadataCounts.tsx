@@ -42,7 +42,7 @@ interface MetadataCountWidgetProps extends ProjectWidgetProps {
 }
 
 const CHART_COLORS = {
-  AVAILABLE: Theme.SecondaryMain,
+  AVAILABLE: Theme.SecondaryLightGreen,
   MISSING: Theme.SecondaryYellow,
 } as const;
 

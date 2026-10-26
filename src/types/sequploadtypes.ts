@@ -46,7 +46,6 @@ export const validSuffixes = (seqType: SeqType) => Object.keys(validFormats(seqT
 
 export interface OrgDescriptor {
   abbreviation: string;
-  name: string;
 }
 
 export enum SkipForce {
