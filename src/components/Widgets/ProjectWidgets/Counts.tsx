@@ -56,8 +56,7 @@ export default function Counts(props: CountsWidgetProps) {
     {
       field: 'value',
       header: fieldTitle,
-      body: (rowData: any) =>
-        field === 'Owner_group' ? rowData.value.split('-Owner') : rowData.value,
+      body: (rowData: any) => rowData.value,
     },
     {
       field: 'count',

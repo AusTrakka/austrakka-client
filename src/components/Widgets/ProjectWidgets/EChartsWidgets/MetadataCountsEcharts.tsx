@@ -28,7 +28,7 @@ interface MetadataCountWidgetProps extends GenericMetadataWidgetProps {
   title?: string;
 }
 
-const SHARED_GROUPS_FIELD = 'Shared_groups';
+const SHARED_GROUPS_FIELD = 'Projects';
 const UNSHARED_VALUE = 'Not shared'; // label for samples with no value for the category field
 
 const CHART_COLORS = {
@@ -36,19 +36,11 @@ const CHART_COLORS = {
   MISSING: Theme.SecondaryYellow,
 } as const;
 
-function stripOwnerSuffix(value: string): string {
-  return value.split('-Owner')[0];
-}
-
-function isGroupName(name: string): boolean {
-  return name.endsWith('-Group');
-}
-
 function getSharedProjectNames(raw: string | undefined): string[] {
   if (!raw) return [];
-  const groups: string[] = JSON.parse(raw).filter(isGroupName);
+  const groups: string[] = JSON.parse(raw);
   if (groups.length === 0) return []; // no groups at all = not shared
-  return groups.map((g) => g.slice(0, -'-Group'.length));
+  return groups;
 }
 
 const ROW_HEIGHT = 45;
@@ -65,7 +57,7 @@ function MetadataCounts({
   categoryField,
 }: MetadataCountWidgetProps) {
   const { navigate } = useStableNavigate();
-  const categoryFieldStable = categoryField ?? 'Owner_group';
+  const categoryFieldStable = categoryField ?? 'Organisation';
   const axisTitleStable = categoryField ?? 'Organisation';
 
   const metadataSelector = useMemo(
@@ -127,7 +119,7 @@ function MetadataCounts({
     } else {
       for (const sample of filteredData) {
         const raw = (sample[categoryFieldStable as keyof Sample] as string) ?? '';
-        const label = categoryFieldStable === 'Owner_group' ? stripOwnerSuffix(raw) : raw;
+        const label = raw;
         const isAvailable = Boolean(sample[field as keyof Sample]);
         if (isAvailable) {
           availableMap.set(label, (availableMap.get(label) ?? 0) + 1);
@@ -158,8 +150,7 @@ function MetadataCounts({
     (params: ECElementEvent) => {
       if (!params.seriesName || !params.name) return;
       const isAvailable = params.seriesName === 'Available';
-      const rawCategory =
-        categoryFieldStable === 'Owner_group' ? `${params.name}-Owner` : params.name;
+      const rawCategory = params.name;
 
       let categoryFilter: DataTableFilterMeta;
 
@@ -176,7 +167,7 @@ function MetadataCounts({
           categoryFilter = {
             [SHARED_GROUPS_FIELD]: {
               operator: FilterOperator.AND,
-              constraints: [{ matchMode: FilterMatchMode.CONTAINS, value: `${params.name}-Group` }],
+              constraints: [{ matchMode: FilterMatchMode.CONTAINS, value: params.name }],
             },
           };
         }
@@ -254,7 +245,7 @@ function MetadataCounts({
       yAxis: {
         type: 'category',
         axisLabel: { fontSize: 11 },
-        name: axisTitleStable === 'Shared_groups' ? 'Projects' : axisTitleStable,
+        name: axisTitleStable === 'Projects' ? 'Projects' : axisTitleStable,
         nameLocation: 'middle',
         nameRotate: 90,
         nameGap: 60,
