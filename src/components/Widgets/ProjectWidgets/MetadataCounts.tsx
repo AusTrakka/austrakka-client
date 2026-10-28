@@ -76,7 +76,7 @@ function MetadataCounts(props: MetadataCountWidgetProps) {
     if (!item || !item.datum) return;
 
     const status = item.datum[`${field}_status`];
-    let category = item.datum[categoryFieldStable];
+    const category = item.datum[categoryFieldStable];
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [field]: {

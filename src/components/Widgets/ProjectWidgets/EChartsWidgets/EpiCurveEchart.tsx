@@ -217,16 +217,16 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
     return {
       legend: isGrouped
         ? {
-          show: true,
-          orient: 'horizontal',
-          bottom: 0,
-          width: '80%',
-          icon: 'square',
-          itemWidth: 10,
-          itemHeight: 10,
-          textStyle: { fontSize: 11 },
-          itemGap: 6,
-        }
+            show: true,
+            orient: 'horizontal',
+            bottom: 0,
+            width: '80%',
+            icon: 'square',
+            itemWidth: 10,
+            itemHeight: 10,
+            textStyle: { fontSize: 11 },
+            itemGap: 6,
+          }
         : { show: false },
       toolbox: {
         feature: {

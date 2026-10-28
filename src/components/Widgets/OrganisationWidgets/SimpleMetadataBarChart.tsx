@@ -99,17 +99,14 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
           continue;
         }
 
-        let groups: string[] = [];
         try {
-          groups = JSON.parse(sharedGroups as string);
+          JSON.parse(sharedGroups as string);
         } catch {
           notShared += 1;
           continue;
         }
 
-        const hasGroup = true;
-        if (hasGroup) shared += 1;
-        else notShared += 1;
+        shared += 1;
       }
       return [
         { name: 'Shared', value: shared },

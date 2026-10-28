@@ -71,7 +71,7 @@ function HasSeq(props: HasSeqWidgetProps) {
     if (!item || !item.datum) return;
 
     const status = item.datum[`${HAS_SEQ}_status`];
-    let category = item.datum[categoryField!];
+    const category = item.datum[categoryField!];
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [HAS_SEQ]: {

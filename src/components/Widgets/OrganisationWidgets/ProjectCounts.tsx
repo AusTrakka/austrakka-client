@@ -43,12 +43,11 @@ function calculateSharedGroups(data: Sample[]): ProjectSharingCount[] {
       return;
     }
     const groups = JSON.parse(sample[SHARED_GROUPS_FIELD]);
-    groups
-      .forEach((group: string) => {
-        const name = group;
-        if (!groupMembers[name]) groupMembers[name] = new Set();
-        groupMembers[name].add(sample.Seq_ID);
-      });
+    groups.forEach((group: string) => {
+      const name = group;
+      if (!groupMembers[name]) groupMembers[name] = new Set();
+      groupMembers[name].add(sample.Seq_ID);
+    });
   });
 
   const projectNames = Object.keys(groupMembers);
