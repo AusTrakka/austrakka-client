@@ -13,7 +13,7 @@ export const renderValueOrEmptyString = (value: any): string => {
 // whether a field is a date or a datetime.
 // biome-ignore lint/complexity/noBannedTypes: historic
 export const fieldRenderFunctions: { [index: string]: Function } = {
-  Shared_groups: (value: any) => {
+  Projects: (value: any) => {
     if (value === null || value === undefined) return '';
 
     // 1. Remove unwanted characters (optional)

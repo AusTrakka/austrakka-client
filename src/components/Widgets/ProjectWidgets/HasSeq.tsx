@@ -23,7 +23,7 @@ import { ownerGroupVegaTransform } from '../../../utilities/plotUtils';
 import ExportVegaPlot from '../../Plots/ExportVegaPlot';
 
 // Takes y-axis field as an optional parameter;
-// defaults to Owner_group, which gets special handling
+// defaults to Organisation, which gets special handling
 
 const HAS_SEQ = 'Has_sequences';
 
@@ -44,7 +44,7 @@ function HasSeq(props: HasSeqWidgetProps) {
   let { categoryField } = props;
   let axisTitle = categoryField;
   if (!categoryField) {
-    categoryField = 'Owner_group';
+    categoryField = 'Organisation';
   }
   if (!axisTitle) {
     axisTitle = 'Organisation';
@@ -72,7 +72,6 @@ function HasSeq(props: HasSeqWidgetProps) {
 
     const status = item.datum[`${HAS_SEQ}_status`];
     let category = item.datum[categoryField!];
-    if (categoryField === 'Owner_group') category = `${category}-Owner`;
 
     const drillDownTableMetaFilters: DataTableFilterMeta = {
       [HAS_SEQ]: {

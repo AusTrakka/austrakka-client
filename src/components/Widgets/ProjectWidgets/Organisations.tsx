@@ -20,13 +20,13 @@ import { aggregateArrayObjects, type CountRow } from '../../../utilities/dataPro
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 
 // TODO This widget is really now obsolete; we could use the Counts widget
-const ORG_FIELD_NAME = 'Owner_group';
+const ORG_FIELD_NAME = 'Organisation';
 
 const columns = [
   {
     field: 'value',
     header: 'Owner organisation',
-    body: (rowData: any) => rowData.value.split('-Owner'),
+    body: (rowData: any) => rowData.value,
   },
   {
     field: 'count',

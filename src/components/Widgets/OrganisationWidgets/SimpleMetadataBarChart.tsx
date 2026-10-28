@@ -26,8 +26,7 @@ const NO_DATA_COLOR = Theme.PrimaryGrey300; // color for the "No data" segment
 
 // Fields that need bespoke bucketing instead of "count each distinct raw value"
 const HAS_SEQ = 'Has_sequences';
-const SHARED_GROUPS_FIELD = 'Shared_groups';
-const GROUP_SUFFIX = '-Group';
+const SHARED_GROUPS_FIELD = 'Projects';
 const UNSHARED_VALUE = 'Not shared'; // label for samples with no value for the category field
 
 interface SimpleMetadataBarChartProps extends GenericMetadataWidgetProps {
@@ -108,7 +107,7 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
           continue;
         }
 
-        const hasGroup = groups.some((group) => group.endsWith(GROUP_SUFFIX));
+        const hasGroup = true;
         if (hasGroup) shared += 1;
         else notShared += 1;
       }
@@ -150,7 +149,7 @@ function SimpleMetadataBarChart(props: SimpleMetadataBarChartProps) {
       if (segmentName === NO_DATA_LABEL) return; // Do not navigate if the user clicks on the "No data" segment
 
       let filters: DataTableFilterMeta;
-      // Special handling for Has_sequences/Shared_groups fields
+      // Special handling for Has_sequences/Projects fields
       if (isHasSeq || isSharedGroups) {
         const trueLabel = isHasSeq ? 'Available' : 'Not shared';
         filters = {
