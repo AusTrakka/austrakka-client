@@ -21,11 +21,11 @@ import { columnStyleRules } from '../../../styles/metadataFieldStyles';
 import type { Sample } from '../../../types/sample.interface';
 import { WidgetType } from '../../../types/widget.props';
 import { hexToRgb, interpolateRgb } from '../../../utilities/colourUtils';
-import { getSharedProjectNames, stripOwnerSuffix } from '../../../utilities/dataProcessingUtils';
+import { getSharedProjectNames } from '../../../utilities/dataProcessingUtils';
 import { updateTabUrlWithSearch } from '../../../utilities/navigationUtils';
 import { insertEChartBreakOpportunities } from '../../../utilities/renderUtils';
 
-const SHARED_GROUPS_FIELD = 'Shared_groups';
+const SHARED_GROUPS_FIELD = 'Projects';
 const UNKNOWN_VALUE_LABEL = 'unknown';
 const UNSHARED_ROW = 'Unshared';
 
@@ -54,8 +54,7 @@ function buildSharedGroupsMatrix(data: Sample[], categoryField: string): MatrixR
     );
 
     const rawCategory = (sample[categoryField as keyof Sample] as string) ?? '';
-    const strippedCategory =
-      categoryField === 'Owner_group' ? stripOwnerSuffix(rawCategory) : rawCategory;
+    const strippedCategory = rawCategory;
     const category = strippedCategory === '' ? UNKNOWN_VALUE_LABEL : strippedCategory;
     allCategories.add(category);
 

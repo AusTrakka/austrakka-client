@@ -26,12 +26,12 @@ describe('formatCSVValues', () => {
       expect(actualOutput).toStrictEqual(expectedOutput);
     });
 
-    test('Shared_groups should return a comma separated list of values', () => {
+    test('Projects should return a comma separated list of values', () => {
       const inputValue = {
-        Shared_groups: '["value1","value2","value3"]',
+        Projects: '["value1","value2","value3"]',
       };
       const expectedOutput = {
-        Shared_groups: 'value1, value2, value3',
+        Projects: 'value1, value2, value3',
       };
       const actualOutput = formatCSVValues(inputValue);
       expect(actualOutput).toStrictEqual(expectedOutput);

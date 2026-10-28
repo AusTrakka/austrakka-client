@@ -124,7 +124,7 @@ function OrgSampleShare(props: OrgSampleShareProps) {
         setStatus(LoadingState.SUCCESS);
         // TODO: Improve how success message is shown from shareResponse.messages array
         setStatusMessage('Samples shared successfully.');
-        // Refresh to get updated Shared_groups
+        // Refresh to get updated Projects
         // Delay to allow sampleFlat to update; required while sample sharing comes via sampleFlat
         await new Promise<void>((resolve) => {
           setTimeout(resolve, 500);
