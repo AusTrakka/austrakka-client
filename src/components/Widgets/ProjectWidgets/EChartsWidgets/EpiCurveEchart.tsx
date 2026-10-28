@@ -24,7 +24,7 @@ const FIELDS_AND_COLOURS: string[][] = [
   ['Jurisdiction', 'jurisdiction'],
   ['State', 'jurisdiction'],
   ['Country', 'tableau10'],
-  ['Owner_group', 'tableau10'],
+  ['Organisation', 'tableau10'],
 ];
 
 interface BucketResult {
@@ -301,7 +301,6 @@ function EpiCurveEchart(props: EpiCurveChartProps) {
         itemStyle: isGrouped
           ? { color: colorMap?.[fv] ?? NULL_COLOUR }
           : { color: Theme.SecondaryDarkGreen },
-        emphasis: { focus: isGrouped ? 'series' : 'self' },
         ...(!isGrouped && { large: true, largeThreshold: 500 }),
       })),
     };

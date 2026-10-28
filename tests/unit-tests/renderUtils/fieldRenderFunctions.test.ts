@@ -1,10 +1,10 @@
 import { fieldRenderFunctions } from '../../../src/utilities/renderUtils';
 
-describe('fieldRenderFunctions.Shared_groups', () => {
+describe('fieldRenderFunctions.Projects', () => {
   describe('when dealing with null or undefined', () => {
     test('return empty string', () => {
-      expect(fieldRenderFunctions.Shared_groups(null)).toBe('');
-      expect(fieldRenderFunctions.Shared_groups(undefined)).toBe('');
+      expect(fieldRenderFunctions.Projects(null)).toBe('');
+      expect(fieldRenderFunctions.Projects(undefined)).toBe('');
     });
   });
 
@@ -12,7 +12,7 @@ describe('fieldRenderFunctions.Shared_groups', () => {
     test('remove brackets and quotes', () => {
       const input = 'value1,"value2",[value3]';
       const expectedOutput = 'value1, value2, value3';
-      const result = fieldRenderFunctions.Shared_groups(input);
+      const result = fieldRenderFunctions.Projects(input);
       expect(result).toBe(expectedOutput);
     });
   });
@@ -21,7 +21,7 @@ describe('fieldRenderFunctions.Shared_groups', () => {
     test('space out values for readibility', () => {
       const input = 'value1,value2,value3';
       const expectedOutput = 'value1, value2, value3';
-      const result = fieldRenderFunctions.Shared_groups(input);
+      const result = fieldRenderFunctions.Projects(input);
       expect(result).toBe(expectedOutput);
     });
   });

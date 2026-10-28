@@ -75,16 +75,16 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     if (user) {
       const projectsThatCanBeSelected = getSampleSharableProjects(user);
 
-      // Check if selected samples have Shared_groups configured
+      // Check if selected samples have Projects configured
       const allHaveSharedGroups = selectedSamples.every(
-        (s) => s.Shared_groups !== null && s.Shared_groups !== undefined,
+        (s) => s.Projects !== null && s.Projects !== undefined,
       );
 
       if (!allHaveSharedGroups) {
-        // Cannot validate if samples don't have Shared_groups column
+        // Cannot validate if samples don't have Projects column
         setCanValidate(false);
         setValidationMessage(
-          'Cannot validate selection as shared groups are not configured in this view.',
+          'Cannot validate selection as Projects are not configured in this view.',
         );
         setSelectableProjects(projectsThatCanBeSelected);
         return;
@@ -93,7 +93,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
       const groupSet = new Set<string>();
       selectedSamples.forEach((sample) => {
         try {
-          JSON.parse(sample.Shared_groups || '[]').forEach((group: string) => {
+          JSON.parse(sample.Projects || '[]').forEach((group: string) => {
             groupSet.add(group);
           });
         } catch {
@@ -101,7 +101,7 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
         }
       });
       const unique = Array.from(groupSet);
-      const cleanUnique = unique.map((v) => v.replace(/-Group$/, '')); // Clean for projects
+      const cleanUnique = unique;
 
       // Intersection of shareable and shared (unique)
       const intersectProjects = projectsThatCanBeSelected.filter((opt) =>
@@ -115,18 +115,18 @@ function OrgSampleUnshare(props: OrgSampleUnshareProps) {
     // Check how many of selected samples exist in selected source
     if (canValidate && source) {
       const count = selectedSamples.reduce((acc, sample) => {
-        const groups: string[] = JSON.parse(sample.Shared_groups || '[]');
+        const groups: string[] = JSON.parse(sample.Projects || '[]');
         return acc + (groups.includes(source) ? 1 : 0);
       }, 0);
       if (count < selectedSamples.length) {
         setValidationMessage(
           `${count} out of ${selectedSamples.length} selected samples ` +
-            `are currently shared with "${source.replace(/-Group$/, '')}". ` +
+            `are currently shared with "${source}". ` +
             `No changes will be made to the other ${selectedSamples.length - count} sample${selectedSamples.length - count > 1 ? 's' : ''}.`,
         );
       } else {
         setValidationMessage(
-          `${count} out of ${selectedSamples.length} selected samples are currently shared with "${source.replace(/-Group$/, '')}".`,
+          `${count} out of ${selectedSamples.length} selected samples are currently shared with "${source}".`,
         );
       }
     }
