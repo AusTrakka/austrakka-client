@@ -13,14 +13,16 @@ import type { RootState } from './store';
 
 export interface TreeState {
   trees: TreeVersion[];
+  next_tree_index: number;
 }
 
 const initialState: TreeState = {
   trees: [],
+  next_tree_index: 1,
 };
 
 interface UploadedTree {
-  treeName: string;
+  //treeName: string;
   newickTree: string;
 }
 
@@ -35,7 +37,7 @@ const treeSlice = createSlice({
       const newTreeVersion = {
         treeId: nextTreeId,
         treeVersionId: nextTreeId,
-        treeName: action.payload.treeName,
+        treeName: `Tree ${state.next_tree_index}`,
         projectId: LOCAL_PROJECT.projectId,
         projectMembersGroupId: LOCAL_PROJECT.projectMembers.id,
         projectName: LOCAL_PROJECT.name,
@@ -50,6 +52,7 @@ const treeSlice = createSlice({
         createdBy: 'Local User', // TODO matches temporary hard-coding in userSlice
         lastUpdatedBy: 'Local User',
       };
+      state.next_tree_index += 1;
       state.trees.push(newTreeVersion);
     },
   },

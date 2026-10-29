@@ -176,7 +176,7 @@ function LocalUpload() {
       const newickString = event.target?.result as string;
       dispatch(
         addTree({
-          treeName: 'Loaded tree', // TODO ask user for tree name
+          // TODO optionally ask user for tree name and pass it here
           newickTree: newickString,
         }),
       );
