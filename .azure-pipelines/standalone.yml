@@ -38,7 +38,7 @@ stages:
               SWA_CLI_DEPLOYMENT_TOKEN: $(swaToken)
             inputs:
               targetType: 'inline'
-              workingDirectory: $(sourceDir)/docs
+              workingDirectory: $(sourceDir)/client
               script: |
                 cat swa-cli.config.json | jq '.configurations."austrakka-client".appName = "$(appName)"' | jq '.configurations."austrakka-docs".resourceGroup = "$(rgName)"' > swa-cli.config.json
                 npm ci
