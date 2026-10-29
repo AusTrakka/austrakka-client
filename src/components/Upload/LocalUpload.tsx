@@ -2,7 +2,7 @@ import { FileUpload } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
-import React, { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { addMetadata } from '../../app/projectMetadataSlice';
 import { useAppDispatch } from '../../app/store';
 import { addTree } from '../../app/treeSlice';
@@ -17,30 +17,9 @@ import { Validation } from '../Validation/Validation';
 import FieldUploadCheck from './FieldUploadCheck';
 import FileDragDrop from './FileDragDrop';
 
-interface Options {
-  validate: boolean;
-  blank: boolean;
-}
-
 // TODO add option to use local storage
 
 const getSuffix = (file: DropFileUpload) => `.${file.file.name.split('.').pop() ?? ''}`;
-
-const uploadOptions = [
-  {
-    name: 'validate',
-    label: 'Validate only',
-    description: 'Do not ingest metadata, just see validation errors and warnings.',
-  },
-  {
-    name: 'blank',
-    label: 'Blank cells will delete',
-    description:
-      'Use blank cells in your CSV / XLSX file to indicate that the current cell content should be deleted. If this is not selected, blank cells in the upload will be ignored.',
-  },
-];
-
-const validateMessage = `This was a validation only. Please uncheck the &quot;Validate only&quot; option and upload to load data into ${import.meta.env.VITE_BRANDING_NAME}.`;
 
 const METADATA_FORMATS: Record<string, string> = {
   '.csv': 'text/csv', // TODO tsv, maybe later excel
@@ -59,10 +38,6 @@ function LocalUpload() {
     status: LoadingState.IDLE,
     messages: [] as ResponseMessage[] | undefined,
   });
-  const [options, setOptions] = useState({
-    validate: false,
-    blank: false,
-  } as Options);
   const [files, setFiles] = useState<DropFileUpload[]>([]);
   const [showFieldsTable, setShowFieldsTable] = useState(false);
   const [parsedMetadata, setParsedMetadata] = useState<Sample[]>([]);
@@ -79,7 +54,7 @@ function LocalUpload() {
           variant="contained"
           disabled={!metadataReady}
           endIcon={<FileUpload />}
-          onClick={() => handleMetadataAdded(files[0].file)}
+          onClick={() => handleMetadataAdded()}
         >
           Add metadata
         </Button>
@@ -109,14 +84,6 @@ function LocalUpload() {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [submission.messages]);
-
-  // Handle upload option change
-  const handleOptionChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setOptions({
-      ...options,
-      [event.target.name]: event.target.checked,
-    });
-  };
 
   // When metadata file added, show and update fields table
   // When metadata file removed, hide fields table
@@ -151,7 +118,7 @@ function LocalUpload() {
     setShowFieldsTable(metadataFileAvailable);
   }, [files]);
 
-  const handleMetadataAdded = async (file: File) => {
+  const handleMetadataAdded = async () => {
     // Needs to validate, and insert data into project redux state
     dispatch(addMetadata({ uploadedData: parsedMetadata, uploadedFields: parsedFields }));
 
@@ -247,11 +214,7 @@ function LocalUpload() {
 
       <div ref={scrollRef}>
         {submission.status === LoadingState.SUCCESS || submission.status === LoadingState.ERROR ? (
-          <Validation
-            messages={submission.messages ?? []}
-            title={options.validate ? 'Validation status' : 'Upload status'}
-            showTitle
-          />
+          <Validation messages={submission.messages ?? []} title={'Upload status'} showTitle />
         ) : null}
       </div>
       <Backdrop
@@ -263,9 +226,7 @@ function LocalUpload() {
       >
         <Grid container spacing={2} direction="column" alignItems="center" justifyContent="center">
           <Grid>
-            <Typography>
-              {options.validate ? 'Validating metadata... ' : 'Adding metadata... '}
-            </Typography>
+            <Typography>{'Adding metadata... '}</Typography>
           </Grid>
           <Grid>
             <CircularProgress color="inherit" />

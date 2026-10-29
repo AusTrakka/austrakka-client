@@ -90,8 +90,6 @@ function MainMenuLayout() {
     'documents',
   ];
 
-  const exceptionBreadcrumbs: string[] = ['settings'];
-
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -274,7 +272,7 @@ function MainMenuLayout() {
             </Breadcrumbs>
           </div>
         </div>
-        {pathnames.map((value, index) => {
+        {pathnames.map((_value, index) => {
           const last = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
 

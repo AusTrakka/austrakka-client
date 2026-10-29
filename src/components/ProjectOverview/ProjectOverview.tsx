@@ -1,5 +1,5 @@
-import { Alert, Typography } from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Alert } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { selectAwaitingProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
@@ -43,7 +43,7 @@ function ProjectOverview() {
         <TreeList />
       </TabPanel>
       <TabPanel value={tabValue!} index={PROJ_TABS.plots.index}>
-        <PlotList projectDetails={LOCAL_PROJECT} />
+        <PlotList />
       </TabPanel>
     </>
   );

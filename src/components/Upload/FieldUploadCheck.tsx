@@ -22,6 +22,7 @@ function FieldUploadCheck(props: FieldUploadCheckProps) {
   const onTypeChange = (rowData: DeducedField, newType: string) => {
     setFields((prev) => {
       if (!prev) return prev;
+      // biome-ignore lint/nursery/useDestructuring: destructuring to the 3rd element is silly
       const typeCode = typesByName[newType][3];
       const metaDataColumnValidValues =
         typeCode === 'N' || typeCode === 'G'

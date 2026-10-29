@@ -10,7 +10,6 @@ import {
   Alert,
   AlertTitle,
   Box,
-  Button,
   Grid,
   IconButton,
   type SelectChangeEvent,
@@ -18,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { createRef, type SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createRef, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
@@ -184,7 +183,7 @@ function TreeDetail() {
   useEffect(() => {
     // For now, empty
     setVersions([]);
-  }, [treeId]);
+  }, []);
 
   // Set tree properties from metadata and selected fields
   // biome-ignore lint/correctness/useExhaustiveDependencies: historic

@@ -8,15 +8,10 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  type ProjectMetadataState,
-  selectAwaitingProjectMetadata,
-  selectProjectMetadata,
-} from '../../app/projectMetadataSlice';
+import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
-import LoadingState from '../../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
@@ -30,9 +25,6 @@ function SampleDetail() {
 
   const projectMetadata: ProjectMetadataState | null = useAppSelector((state) =>
     selectProjectMetadata(state, projectAbbrev),
-  );
-  const awaitingMetadata: boolean = useAppSelector((state) =>
-    selectAwaitingProjectMetadata(state, projectAbbrev),
   );
   // If not awaiting metadata, at least one view and therefore Seq_ID should be loaded
   const sample = hasCompleteData(projectMetadata?.loadingState)

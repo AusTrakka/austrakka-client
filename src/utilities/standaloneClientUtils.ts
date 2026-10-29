@@ -59,7 +59,7 @@ function makeField(data: Sample[], fieldName: string, idx: number, typeCode: str
     };
   }
   // TODO should be user-facing error message
-  console.error(`Ignoring unknown type code ${typeCode} on field ${fieldName}`);
+  // console.error(`Ignoring unknown type code ${typeCode} on field ${fieldName}`);
   return makeDeducedField(data, fieldName, idx);
 }
 
@@ -107,11 +107,11 @@ function deduceFieldType(data: Sample[], fieldName: string): string {
       continue; // skip null/undefined/empty values
     }
     // Check for numeric
-    if (isNumeric && isNaN(Number(value))) {
+    if (isNumeric && Number.isNaN(Number(value))) {
       isNumeric = false;
     }
     // Check for date (ISO 8601 format)
-    if (isDate && isNaN(Date.parse(value))) {
+    if (isDate && Number.isNaN(Date.parse(value))) {
       // TODO check, risky if American dates?
       isDate = false;
     }

@@ -11,15 +11,10 @@ import type React from 'react';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { plotTypeListing } from '../../config/plotTypes';
-import type { Project } from '../../types/dtos';
 import SearchInput from '../TableComponents/SearchInput';
 import sortIcon from '../TableComponents/SortIcon';
 
-interface PlotListProps {
-  projectDetails: Project | null;
-}
-
-function PlotList(props: PlotListProps) {
+function PlotList() {
   const navigate = useNavigate();
   const [globalFilter, setGlobalFilter] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
