@@ -32,16 +32,15 @@ stages:
       - job: DeployStandaloneClient
         steps:
           - template: templates/checkout/client.yml@Pipelines
-            steps:
-            - task: Bash@3
-              displayName: DeployStandaloneClient
-              env:
-                SWA_CLI_DEPLOYMENT_TOKEN: $(swaToken)
-              inputs:
-                targetType: 'inline'
-                workingDirectory: $(sourceDir)/docs
-                script: |
-                  cat swa-cli.config.json | jq '.configurations."austrakka-client".appName = "$(appName)"' | jq '.configurations."austrakka-docs".resourceGroup = "$(rgName)"' > swa-cli.config.json
-                  npm ci
-                  npm run build
-                  swa deploy ./dist --env production
+          - task: Bash@3
+            displayName: DeployStandaloneClient
+            env:
+              SWA_CLI_DEPLOYMENT_TOKEN: $(swaToken)
+            inputs:
+              targetType: 'inline'
+              workingDirectory: $(sourceDir)/docs
+              script: |
+                cat swa-cli.config.json | jq '.configurations."austrakka-client".appName = "$(appName)"' | jq '.configurations."austrakka-docs".resourceGroup = "$(rgName)"' > swa-cli.config.json
+                npm ci
+                npm run build
+                swa deploy ./dist --env production
