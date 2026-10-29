@@ -3,7 +3,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
-import LoadingState from '../constants/loadingState';
 import { SAMPLE_ID_FIELD } from '../constants/metadataConsts';
 import MetadataLoadingState from '../constants/metadataLoadingState';
 import { localProjectAbbrev } from '../constants/standaloneClientConstants';
@@ -20,36 +19,36 @@ import type { RootState } from './store';
 
 export interface ProjectMetadataState {
   projectAbbrev: string | null;
+  dataLoadTime: string | null;
   mergeAlgorithm: string | null;
   supportedMaps: MapSupportInfo[];
   loadingState: MetadataLoadingState;
   projectFields: ProjectField[] | null;
   fields: ProjectViewField[] | null;
   fieldUniqueValues: Record<string, string[] | null> | null;
-  views: Record<number, ProjectView>;
-  viewLoadingStates: Record<number, LoadingState>;
-  viewToFetch: number;
+  view: ProjectView | null;
   metadata: Sample[] | null;
   emptyColumns: string[];
-  fieldLoadingStates: Record<string, LoadingState>;
   errorMessage: string | null;
+  isDataStale: boolean;
+  watermarkTrees: boolean;
 }
 
 const projectMetadataInitialStateCreator = (projectAbbrev: string): ProjectMetadataState => ({
   projectAbbrev,
+  dataLoadTime: null,
   mergeAlgorithm: null,
   supportedMaps: [],
   loadingState: MetadataLoadingState.IDLE,
   projectFields: null,
   fields: null,
   fieldUniqueValues: null,
-  views: {},
-  viewLoadingStates: {},
-  viewToFetch: 0,
+  view: null,
   metadata: null,
   emptyColumns: [],
-  fieldLoadingStates: {},
   errorMessage: null,
+  isDataStale: false,
+  watermarkTrees: false,
 });
 
 interface ProjectMetadataSliceState {
@@ -105,16 +104,14 @@ export const projectMetadataSlice = createSlice({
 
       metadataState.projectFields = uploadedFields.map(fieldToProjectField);
       metadataState.fields = uploadedFields.map(fieldToProjectViewField);
-      metadataState.views = {
-        1: {
-          id: 1,
-          fileName: 'dummy.csv',
-          blobFilePath: 'dummy.csv',
-          originalFileName: 'dummy.csv', // should we use uploaded CSV name?
-          isBase: true,
-          fields: fieldNames,
-          viewFields: fieldNames,
-        },
+      metadataState.view = {
+        id: 1,
+        fileName: 'dummy.csv',
+        blobFilePath: 'dummy.csv',
+        originalFileName: 'dummy.csv', // should we use uploaded CSV name?
+        isBase: true,
+        fields: fieldNames,
+        viewFields: fieldNames,
       };
 
       replaceNullsWithEmpty(uploadedData);
@@ -149,10 +146,6 @@ export const projectMetadataSlice = createSlice({
 
       // Loading states
       metadataState.loadingState = MetadataLoadingState.DATA_LOADED;
-      metadataState.viewLoadingStates = { 1: LoadingState.SUCCESS };
-      fieldNames.forEach((fld) => {
-        metadataState.fieldLoadingStates[fld] = LoadingState.SUCCESS;
-      });
 
       // Might want to add in default sort data by Seq_ID, from deleted reducers
       // - but maybe better to respect order of user-added CSV file and let user sort
@@ -218,4 +211,3 @@ export const selectAwaitingProjectMetadata = (
     loadingState === MetadataLoadingState.AWAITING_DATA
   );
 };
-

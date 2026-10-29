@@ -17,9 +17,15 @@
 }
 
 .value-cell-editing {
-  border-bottom: none;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.app-container.compact-mode .value-cell-editing .MuiInputBase-root {
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
 }
 
 .basic-user-info-table {
@@ -57,26 +63,28 @@
   width: 250px;
   border-bottom: none;
   padding-left: 10px;
-  font-size: 1rem;
 }
 
 .project-key-cell-editing {
   width: 250px;
   border-bottom: none;
   padding-left: 10px;
-  font-size: 1rem;
 }
 
 .project-value-cell {
   border-bottom: none;
   padding-top: 5px;
   padding-bottom: 5px;
-  font-size: 1rem;
 }
 
 .project-value-cell-editing {
-  border-bottom: none;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  font-size: 1rem;
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.app-container.compact-mode .project-value-cell-editing .MuiInputBase-root {
+  border-bottom: none !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
 }

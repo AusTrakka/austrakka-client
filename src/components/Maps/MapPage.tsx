@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+// TODO remove if this does nothing
+
 import MapDetail from './MapDetail';
 
 function MapPage() {
-  const navigate = useNavigate();
   return (
     <>
-      <MapDetail navigateFunction={navigate} />
+      <MapDetail />
     </>
   );
 }

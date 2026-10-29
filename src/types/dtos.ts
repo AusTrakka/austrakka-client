@@ -19,6 +19,7 @@ export interface Project {
   created: Date;
   mergeAlgorithm: string;
   // could add auditable fields - created, createdBy
+  watermarkTrees: boolean;
 }
 
 export interface TreeVersion {

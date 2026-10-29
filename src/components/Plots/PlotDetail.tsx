@@ -43,9 +43,7 @@ function PlotDetail() {
 
   return (
     <>
-      <Typography className="pageTitle">
-        {plotType ? plotTypes[plotType].name : ''}
-      </Typography>
+      <Typography className="pageTitle">{plotType ? plotTypes[plotType].name : ''}</Typography>
       {renderPlot()}
     </>
   );

@@ -106,8 +106,8 @@ function hexToRgb(hex: string) {
 }
 
 export const globalStyles = {
-  ':root': {
-    // material-ui
+  // Doubling the pseudo-class increases specificity over standard external CSS
+  ':root:root': {
     '--primary-main': Theme.PrimaryMain,
     '--primary-main-rgb': hexToRgb(Theme.PrimaryMain),
     '--secondary-main': Theme.SecondaryMain,
@@ -125,7 +125,6 @@ export const globalStyles = {
     '--secondary-yellow': Theme.SecondaryYellow,
     colorScheme: 'light',
 
-    // primereact
     '--primary-50': Theme.SecondaryMain50,
     '--primary-100': Theme.SecondaryMain100,
     '--primary-200': Theme.SecondaryMain200,
@@ -137,7 +136,6 @@ export const globalStyles = {
     '--primary-800': Theme.SecondaryMain800,
     '--primary-900': Theme.SecondaryMain900,
 
-    // austrakka
     '--background-colour': Theme.Background,
     '--primary-grey-50': Theme.PrimaryGrey50,
     '--primary-grey-100': Theme.PrimaryGrey100,

@@ -5,8 +5,8 @@ import type React from 'react';
 import { SAMPLE_ID_FIELD } from '../../constants/metadataConsts';
 import { typesByName } from '../../constants/standaloneClientConstants';
 import type { DeducedField } from '../../types/dtos';
-import type {Sample} from "../../types/sample.interface";
-import {getUniqueValuesArray} from "../../utilities/standaloneClientUtils";
+import type { Sample } from '../../types/sample.interface';
+import { getUniqueValuesArray } from '../../utilities/standaloneClientUtils';
 
 const TYPE_OPTIONS = ['Categorical', 'Numeric', 'Date', 'Geo region (ISO)', 'Free text'];
 
@@ -23,9 +23,10 @@ function FieldUploadCheck(props: FieldUploadCheckProps) {
     setFields((prev) => {
       if (!prev) return prev;
       const typeCode = typesByName[newType][3];
-      const metaDataColumnValidValues = (typeCode === 'N' || typeCode === 'G')
-        ? getUniqueValuesArray(csvData, rowData.columnName)
-        : null;
+      const metaDataColumnValidValues =
+        typeCode === 'N' || typeCode === 'G'
+          ? getUniqueValuesArray(csvData, rowData.columnName)
+          : null;
       return prev.map((f) =>
         f.columnName === rowData.columnName
           ? {

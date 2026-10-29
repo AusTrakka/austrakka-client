@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/nursery/useDestructuring: not useful for this file */
 
 import { TableChart, Tune } from '@mui/icons-material';
+import './TreeDetail.css';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
@@ -17,9 +18,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import type React from 'react';
-import { createRef, type SyntheticEvent, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { createRef, type SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { calculateUniqueValues } from '../../app/metadataSliceUtils';
 import { type ProjectMetadataState, selectProjectMetadata } from '../../app/projectMetadataSlice';
 import { useAppSelector } from '../../app/store';
@@ -95,7 +95,6 @@ const treenameRegex = /[(,]+([^;:[\s,()]+)/g;
 
 function TreeDetail() {
   const { treeId } = useParams();
-  const navigate = useNavigate();
   const treeRef = createRef<TreeExportFunctions>();
   const legRef = createRef<HTMLDivElement>();
   const [treeSampleNames, setTreeSampleNames] = useState<string[]>([]);
@@ -105,15 +104,11 @@ function TreeDetail() {
   const [versions, setVersions] = useState<TreeVersion[]>([]);
   const [styles, setStyles] = useState<Record<string, Style>>({});
   const [colourSchemeMapping, setColourSchemeMapping] = useState<FieldAndColourScheme>({});
-  const [state, setState] = useStateFromSearchParamsForObject(defaultState, navigate);
+  const [state, setState] = useStateFromSearchParamsForObject(defaultState);
   const rootIdDefault: string = '0';
-  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive(
-    'rootId',
-    rootIdDefault,
-    navigate,
-  );
-  const projectMetadata: ProjectMetadataState | null = useAppSelector((state) =>
-    selectProjectMetadata(state, LOCAL_PROJECT.abbreviation),
+  const [rootId, setRootId] = useStateFromSearchParamsForPrimitive('rootId', rootIdDefault);
+  const projectMetadata: ProjectMetadataState | null = useAppSelector((st) =>
+    selectProjectMetadata(st, LOCAL_PROJECT.abbreviation),
   );
   const [tree, errorMsg]: [TreeVersion | null, string] = useAppSelector((state) =>
     selectTreeById(state, Number(treeId)),
@@ -382,57 +377,62 @@ function TreeDetail() {
     if (tree) {
       return (
         <Grid item xs={3} sx={{ minWidth: '250px', maxWidth: '300px', margin: 0.5 }}>
-          <Grid item sx={{ marginBottom: 1 }}>
+          <Grid item sx={{ marginBottom: 1, marginTop: 1 }}>
             <Search options={ids} selectedIds={selectedIds} onChange={handleSearch} />
           </Grid>
-          <Accordion expanded={expanded === 'treeNav'} onChange={handleAccordionChange('treeNav')}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Tree & Navigation</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TreeNavigation
-                state={state}
-                rootId={rootId}
-                currentVersion={tree.version}
-                versions={versions}
-                selectedIds={selectedIds}
-                onChange={handleStateChange}
-                onJumpToSubtree={handleJumpToSubtree}
-                phylocanvasRef={treeRef}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion
-            expanded={expanded === 'nodesLabels'}
-            onChange={handleAccordionChange('nodesLabels')}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Nodes & Labels</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <NodeAndLabelControls
-                columns={allColumns}
-                visualColumns={visualisableColumns}
-                state={state}
-                onChange={handleStateChange}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion
-            expanded={expanded === 'metadataBlocks'}
-            onChange={handleAccordionChange('metadataBlocks')}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Metadata blocks</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <MetadataControls
-                columns={visualisableColumns}
-                state={state}
-                onChange={handleStateChange}
-              />
-            </AccordionDetails>
-          </Accordion>
+          <div className="tree-controls-divider">
+            <Accordion
+              expanded={expanded === 'treeNav'}
+              onChange={handleAccordionChange('treeNav')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Tree & Navigation</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TreeNavigation
+                  state={state}
+                  rootId={rootId}
+                  currentVersion={tree.version}
+                  versions={versions}
+                  selectedIds={selectedIds}
+                  onChange={handleStateChange}
+                  onJumpToSubtree={handleJumpToSubtree}
+                  phylocanvasRef={treeRef}
+                />
+              </AccordionDetails>
+            </Accordion>
+            <Accordion
+              expanded={expanded === 'nodesLabels'}
+              onChange={handleAccordionChange('nodesLabels')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Nodes & Labels</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <NodeAndLabelControls
+                  columns={allColumns}
+                  visualColumns={visualisableColumns}
+                  state={state}
+                  onChange={handleStateChange}
+                />
+              </AccordionDetails>
+            </Accordion>
+            <Accordion
+              expanded={expanded === 'metadataBlocks'}
+              onChange={handleAccordionChange('metadataBlocks')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Metadata blocks</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <MetadataControls
+                  columns={visualisableColumns}
+                  state={state}
+                  onChange={handleStateChange}
+                />
+              </AccordionDetails>
+            </Accordion>
+          </div>
         </Grid>
       );
     }
@@ -603,6 +603,7 @@ function TreeDetail() {
                   treeName={tree.treeName}
                   phylocanvasRef={treeRef}
                   legendRef={legRef}
+                  watermarkTree={false}
                 />
               )}
             </Box>

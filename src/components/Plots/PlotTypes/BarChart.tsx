@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { TopLevelSpec } from 'vega-lite';
 import { selectProjectMetadataFields } from '../../../app/projectMetadataSlice';
 import { useAppSelector } from '../../../app/store';
@@ -48,7 +47,6 @@ const defaultSpec: TopLevelSpec = {
 function BarChart(props: PlotTypeProps) {
   const { customSpec, projectAbbrev, setPlotErrorMsg } = props;
   const [spec, setSpec] = useState<TopLevelSpec | null>(null);
-  const navigate = useNavigate();
   const { fields, fieldUniqueValues } = useAppSelector((state) =>
     selectProjectMetadataFields(state, projectAbbrev),
   );
@@ -56,28 +54,20 @@ function BarChart(props: PlotTypeProps) {
   const [xAxisField, setXAxisField] = useStateFromSearchParamsForPrimitive<string>(
     'xAxisField',
     '',
-    navigate,
   );
   const [colourField, setColourField] = useStateFromSearchParamsForPrimitive<string>(
     'colourField',
     'none',
-    navigate,
   );
   const [colourScheme, setColourScheme] = useStateFromSearchParamsForPrimitive<string>(
     'colourScheme',
     defaultDiscreteColorScheme,
-    navigate,
   );
   const [stackType, setStackType] = useStateFromSearchParamsForPrimitive<string>(
     'stackType',
     'zero',
-    navigate,
   );
-  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>(
-    'fontSize',
-    11,
-    navigate,
-  );
+  const [fontSize, setFontSize] = useStateFromSearchParamsForPrimitive<number>('fontSize', 11);
   // Set spec on load
   useEffect(() => {
     if (customSpec && customSpec.length > 0) {

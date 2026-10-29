@@ -1,35 +1,11 @@
 import { MapRegistry, type MapSupportInfo } from '../components/Maps/mapMeta';
 import { FieldSource } from '../constants/fieldSource';
+import { FieldTypes } from '../constants/fieldTypes';
 import { MergeAlgorithm } from '../constants/mergeAlgorithm';
 import { HAS_SEQUENCES } from '../constants/metadataConsts';
 import type { Field, ProjectField } from '../types/dtos';
 import type { Sample } from '../types/sample.interface';
-
-export function getCountryCode(code: string): string | null {
-  if (!code) return null;
-  const upperCaseIso = code.trim().toUpperCase();
-
-  // Subdivision like AU-NSW → keep prefix
-  if (/^[A-Z]{2}-/.test(upperCaseIso)) {
-    return upperCaseIso.slice(0, 2);
-  }
-
-  // ISO2
-  if (/^[A-Z]{2}$/.test(upperCaseIso)) {
-    return upperCaseIso;
-  }
-
-  // ISO3
-  if (/^[A-Z]{3}$/.test(upperCaseIso)) {
-    return upperCaseIso;
-  }
-
-  return null; // unsupported/invalid
-}
-
-function isSubdivision(code: string): boolean {
-  return /^[A-Z]{2}-/.test(code.toUpperCase());
-}
+import { findSupplement, getCountryCode, isSubdivision } from '../utilities/mapUtils';
 
 export function getFieldDetails(fieldNames: string[], fields: Field[]): Field[] {
   return fieldNames.map((field) => {
@@ -106,6 +82,26 @@ export function normaliseHasSequencesTrueBoolWithString(data: Sample[]) {
   return data;
 }
 
+// Given sample data and field details, replace int strings with int values
+export function replaceIntStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
+  const fieldDetails = getFieldDetails(fieldNames, fields);
+  const intFields = fieldDetails.filter(
+    (field) =>
+      field.primitiveType === FieldTypes.NUMBER || field.primitiveType === FieldTypes.DOUBLE,
+  );
+  intFields.forEach((field) => {
+    data.forEach((sample) => {
+      const intString = sample[field.columnName];
+      if (intString !== null && intString !== undefined && intString !== '') {
+        const num = Number(intString);
+        sample[field.columnName] = Number.isNaN(num) ? null : num;
+      } else {
+        sample[field.columnName] = null;
+      }
+    });
+  });
+}
+
 // Given sample data and field details, replace date strings with Date objects
 export function replaceDateStrings(data: Sample[], fields: Field[], fieldNames: string[]) {
   const fieldDetails = getFieldDetails(fieldNames, fields);
@@ -145,6 +141,7 @@ export function compareDatesDesc(aDate: Date | null, bDate: Date | null): number
 }
 
 // Given a list of field names, calculate or look up the unique values for the fields
+// Unique values of a field are the distinct non-null, non-empty string representations of the values present in the data for that field
 export function calculateUniqueValues(
   fieldNames: string[],
   fields: Field[],
@@ -176,69 +173,53 @@ export function calculateUniqueValues(
 
   visualisableFields.forEach((field) => {
     const values = Array.from(valueSets[field.columnName]);
-
-    // Remove a single [""] array case
-    if (values.length === 1 && values[0] === '') {
-      uniqueValues[field.columnName] = [];
-    } else {
-      // sort
-      uniqueValues[field.columnName] = values.sort(collator.compare);
-    }
+    uniqueValues[field.columnName] = values.sort(collator.compare);
   });
 
   return uniqueValues;
 }
 
 // Calculate what Maps this project has access too
-
 export function calculateSupportedMaps(
   uniqueValues: Record<string, string[]>,
   geoFields: string[],
 ): MapSupportInfo[] {
-  if (Object.keys(uniqueValues).length === 0) return [];
   if (geoFields.length === 0) return [];
-
-  const uniqueGeoValues = Object.fromEntries(
-    Object.entries(uniqueValues).filter(([key]) => geoFields.includes(key)),
-  );
-
-  if (Object.keys(uniqueGeoValues).length === 0) return [];
 
   const datasetKeys = new Set<string>();
   const datasetRegions = new Set<string>();
   let hasCountryValues = false;
 
-  for (const uniqueVals of Object.values(uniqueGeoValues)) {
-    for (const val of uniqueVals) {
-      if (val === null || val === '') continue;
-      if (isSubdivision(val)) {
-        datasetRegions.add(val.slice(0, 2)); // e.g. "AU" from "AU-NSW"
-      } else {
-        hasCountryValues = true; // found a top-level country
-      }
+  for (const field of geoFields) {
+    for (const value of uniqueValues[field] ?? []) {
+      if (!value) continue;
+      const standard = getCountryCode(value);
+      if (!standard) continue;
 
-      const standard = getCountryCode(val);
-      if (standard) datasetKeys.add(standard);
+      datasetKeys.add(standard);
+      if (isSubdivision(value)) {
+        datasetRegions.add(value.slice(0, 2));
+      } else {
+        hasCountryValues = true;
+      }
     }
   }
-
-  if (datasetKeys.size === 0) return [];
 
   const result: MapSupportInfo[] = [];
 
   for (const entry of MapRegistry) {
-    if (entry.key === 'WORLD') continue;
-
-    const intersects = [...datasetKeys].some((k) => entry.supports?.has(k));
-    if (intersects) {
-      const hasRegions = [...datasetRegions].some((r) => entry.supports?.has(r));
-      result.push([entry.key, hasRegions]);
+    if (entry.key === 'WORLD') {
+      if (hasCountryValues) result.push([entry.key, false]);
+      continue;
     }
-  }
 
-  // Only add WORLD if there were actual country values
-  if (hasCountryValues) {
-    result.push(['WORLD', false]);
+    const hasSupplement = geoFields.some((field) => findSupplement(entry.key, field));
+    const intersects = [...datasetKeys].some((key) => entry.supports?.has(key));
+    if (!intersects && !hasSupplement) continue;
+
+    const hasRegions =
+      hasSupplement || [...datasetRegions].some((region) => entry.supports?.has(region));
+    result.push([entry.key, hasRegions]);
   }
 
   return result;

@@ -1,31 +1,51 @@
-.logocontainer {
-  flex-grow: 1;
-}
-
-.logo {
+.logo,
+.logosmall {
   height: 45px;
   margin: 8px;
   /* padding: 5px; */
 }
 
-.drawer {
-  z-index: 10;
+:global(.app-container.compact-mode) .logo {
+  height: 40px;
+  margin: 4px;
 }
-.drawerpaper {
-  width: 160px;
-  justify-content: center;
+
+:global(.app-container.compact-mode) .logosmall {
+  height: 30px;
 }
+
 .pagelist {
   height: 100vh;
 }
 
+.pagefooter li,
 .pagelist li {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+:global(.app-container.compact-mode) .pagefooter li,
+:global(.app-container.compact-mode) .pagelist li {
+  padding-top: var(--density-spacing-sm);
+  padding-bottom: var(--density-spacing-sm);
+  padding-left: var(--density-spacing-sm);
+  padding-right: var(--density-spacing-md);
 }
 
 .pagelist a {
   text-decoration: none;
   color: var(--primary-main);
   display: flex;
+}
+
+.userlink {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+:global(.app-container.compact-mode) .userlink {
+  padding-top: var(--density-spacing-sm);
+  padding-bottom: var(--density-spacing-sm);
+  padding-left: var(--density-spacing-sm);
+  padding-right: var(--density-spacing-md);
 }

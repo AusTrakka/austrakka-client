@@ -17,6 +17,7 @@ export const LOCAL_PROJECT: Project = {
   trees: [],
   isActive: true,
   created: new Date(),
+  watermarkTrees: false,
 };
 
 export const localProjectAbbrev = LOCAL_PROJECT.abbreviation;
@@ -43,7 +44,9 @@ export const typeCodes: Record<string, [string, boolean, boolean, string]> = {
 };
 
 // gives displayedFieldType: (primitiveType, canVisualise, geoField)
-export const typesByName: Record<string, [string, boolean, boolean, string]> = Object.entries(typeCodes).reduce(
+export const typesByName: Record<string, [string, boolean, boolean, string]> = Object.entries(
+  typeCodes,
+).reduce(
   (acc, [typeCode, [primitiveType, canVisualise, geoField, typeName]]) => {
     acc[typeName] = [primitiveType, canVisualise, geoField, typeCode];
     return acc;

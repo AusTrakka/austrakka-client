@@ -14,7 +14,7 @@ import TreeList from './TreeList';
 function ProjectOverview() {
   const { tab } = useParams();
   const [tabValue, setTabValue] = useState<number | null>(0);
-  
+
   // Tab loading states
   const isSamplesLoading: boolean = useAppSelector((state) =>
     selectAwaitingProjectMetadata(state, LOCAL_PROJECT.abbreviation),

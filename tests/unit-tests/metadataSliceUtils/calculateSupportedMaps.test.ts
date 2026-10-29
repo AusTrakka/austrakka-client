@@ -1,4 +1,4 @@
-import { calculateSupportedMaps } from '../../../src/app/metadataSliceUtils'; // assume you export it
+import { calculateSupportedMaps } from '../../../src/app/metadataSliceUtils';
 
 describe('calculateSupportedMaps', () => {
   test('returns empty if uniqueValues is empty', () => {
@@ -18,6 +18,8 @@ describe('calculateSupportedMaps', () => {
     const result = calculateSupportedMaps(values, ['country']);
     expect(result).toEqual([
       ['AUS_NZ', true],
+      ['AUSTRALIA', true],
+      ['NZ', false],
       ['WORLD', false],
     ]);
   });
@@ -25,7 +27,11 @@ describe('calculateSupportedMaps', () => {
   test('does not add WORLD if no top-level country', () => {
     const values = { country: ['AU-NSW', 'NZ-OT'] };
     const result = calculateSupportedMaps(values, ['country']);
-    expect(result).toEqual([['AUS_NZ', true]]);
+    expect(result).toEqual([
+      ['AUS_NZ', true],
+      ['AUSTRALIA', true],
+      ['NZ', true],
+    ]);
   });
 
   test('handles multiple geoFields', () => {
@@ -37,6 +43,8 @@ describe('calculateSupportedMaps', () => {
     const result = calculateSupportedMaps(values, ['country', 'region']);
     expect(result).toEqual([
       ['AUS_NZ', true],
+      ['AUSTRALIA', true],
+      ['NZ', true],
       ['WORLD', false],
     ]);
   });

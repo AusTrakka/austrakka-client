@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { Schema, ValidateEnv } from '@julr/vite-plugin-validate-env'
+import { ValidateEnv } from '@julr/vite-plugin-validate-env'
 import fs from 'fs'
 import path from 'path'
 

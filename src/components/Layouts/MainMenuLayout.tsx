@@ -2,6 +2,8 @@
 
 import {
   AccountTree,
+  DensityMedium,
+  DensitySmall,
   Description,
   Home as HomeIcon,
   KeyboardDoubleArrowLeft,
@@ -13,7 +15,6 @@ import {
   Breadcrumbs,
   Divider,
   Drawer,
-  Grid,
   IconButton,
   List,
   ListItemIcon,
@@ -25,6 +26,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useCompactMode } from '../../app/CompactModeContext';
 import { logoOnlyUrl, logoUrl } from '../../constants/logoPaths';
 import styles from './MainMenuLayout.module.css';
 
@@ -32,6 +34,8 @@ function MainMenuLayout() {
   const navigate = useNavigate();
   const [pageStyling, updatePageStyling] = useState('pagePadded');
   const [drawer, setDrawer] = useState(true);
+  const { compact, toggleCompact } = useCompactMode();
+
   const settings = [
     {
       title: 'Documentation',
@@ -41,10 +45,15 @@ function MainMenuLayout() {
         window.open(`${import.meta.env.VITE_DOCS_URL}`, '_blank')?.focus();
       },
     },
+    {
+      title: compact ? 'Comfortable' : 'Compact',
+      icon: compact ? <DensityMedium /> : <DensitySmall />,
+      disabled: false,
+      onClick: toggleCompact,
+    },
   ];
   const breadcrumbNameMap: { [key: string]: any } = {
     data: 'Data',
-    plots: 'Plots',
     trees: 'Trees',
     records: 'Records',
     versions: 'Versions',
@@ -60,6 +69,8 @@ function MainMenuLayout() {
     datasets: 'Datasets',
     share: 'Share',
     documents: 'Documents',
+    plots: 'Plots',
+    summaries: 'Summaries',
     map: 'Map',
     settings: 'Settings',
   };
@@ -71,6 +82,7 @@ function MainMenuLayout() {
     'samples',
     'trees',
     'plots',
+    'summaries',
     'members',
     'proformas',
     'datasets',
@@ -107,10 +119,10 @@ function MainMenuLayout() {
       title: 'Visualise',
       link: '/data',
       icon: <AccountTree />,
-    }
+    },
   ];
   const visiblePages = pages;
-  
+
   const handlePadding = (drawerState: boolean | undefined) => {
     if (drawerState === true) {
       updatePageStyling('pagePadded');
@@ -124,17 +136,22 @@ function MainMenuLayout() {
     handlePadding(!drawer);
   };
 
+  const getIconMargin = (drawer: boolean): number => {
+    if (!drawer) return 0;
+    return compact ? 0 : 1;
+  };
+
   return (
     <>
       <Box sx={{ display: 'flex' }}>
         <Drawer
+          className="pageDrawer"
           open={drawer}
           variant="permanent"
           PaperProps={{
             sx: {
-              boxShadow: '0px 0px 8px var(--primary-grey-300)',
-              maxWidth: 190,
-              minWidth: 70,
+              maxWidth: compact ? 150 : 190,
+              minWidth: compact && !drawer ? 45 : 70,
             },
           }}
         >
@@ -143,13 +160,14 @@ function MainMenuLayout() {
               display: 'flex',
               flexDirection: drawer ? 'row' : 'column',
               justifyContent: 'center',
+              flexGrow: compact ? 0 : undefined,
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'center' }} onClick={() => navigate('/')}>
               {drawer ? (
                 <img src={logoUrl} alt="logo" className={styles.logo} />
               ) : (
-                <img src={logoOnlyUrl} alt="logo" className={styles.logo} />
+                <img src={logoOnlyUrl} alt="logo" className={styles.logosmall} />
               )}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -176,9 +194,6 @@ function MainMenuLayout() {
                     <MenuItem
                       key={page.title}
                       sx={{
-                        '&:hover': {
-                          backgroundColor: 'var(--primary-grey-300)',
-                        },
                         width: '100%',
                       }}
                     >
@@ -186,8 +201,9 @@ function MainMenuLayout() {
                         sx={{
                           color: 'primary.main',
                           minWidth: 0,
-                          mr: drawer ? 1 : 'auto',
+                          mr: getIconMargin(drawer),
                           justifyContent: 'center',
+                          width: drawer ? 'auto' : '100%',
                         }}
                       >
                         {page.icon}
@@ -207,8 +223,9 @@ function MainMenuLayout() {
                   sx={{
                     color: 'primary.main',
                     minWidth: 0,
-                    mr: drawer ? 1 : 'auto',
+                    mr: getIconMargin(drawer),
                     justifyContent: 'center',
+                    width: drawer ? 'auto' : '100%',
                   }}
                 >
                   {setting.icon}

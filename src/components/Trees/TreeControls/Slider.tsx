@@ -10,6 +10,7 @@ export default function InputSlider({
   onChange,
   min,
   max,
+  compact,
 }: {
   name: string;
   value: number;
@@ -17,6 +18,7 @@ export default function InputSlider({
   min: number;
   max: number;
   onChange: CallableFunction;
+  compact: boolean;
 }) {
   const handleSliderChange = (event: Event) => {
     onChange(event);
@@ -32,6 +34,7 @@ export default function InputSlider({
             value={typeof value === 'number' ? value : 0}
             onChange={handleSliderChange}
             aria-labelledby="input-slider"
+            size={compact ? 'small' : 'medium'}
             min={min}
             max={max}
           />

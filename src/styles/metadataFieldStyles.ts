@@ -9,6 +9,7 @@ export const styleRules: Record<string, string> = {
 export const columnStyleRules: Record<string, string> = {
   Species: styleRules.italic,
   Species_in_silico: styleRules.italic,
+  Species_realistic: styleRules.italic,
 };
 
 export function combineClasses(...classes: (string | undefined | null)[]) {

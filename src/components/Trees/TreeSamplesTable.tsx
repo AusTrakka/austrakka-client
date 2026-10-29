@@ -15,7 +15,6 @@ import {
 } from 'primereact/datatable';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import MetadataLoadingState, { hasCompleteData } from '../../constants/metadataLoadingState';
 import { columnStyleRules } from '../../styles/metadataFieldStyles';
 import type { ProjectViewField } from '../../types/dtos';
@@ -54,7 +53,6 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
     emptyColumns,
     treeName,
   } = props;
-  const navigate = useNavigate();
   const [formattedData, setFormattedData] = useState<Sample[]>([]);
   const [sampleTableColumns, setSampleTableColumns] = useState<PrimeReactColumnDefinition[]>([]);
   const [columnError, setColumnError] = useState(false);
@@ -67,7 +65,6 @@ export default function TreeSamplesTable(props: TreeSampleTableProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [filteredDataLength, setFilteredDataLength] = useState<number>(tableMetadata.length ?? 0);

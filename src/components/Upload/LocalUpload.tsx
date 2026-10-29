@@ -1,10 +1,5 @@
 import { FileUpload } from '@mui/icons-material';
-import {
-  Backdrop,
-  Button,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
+import { Backdrop, Button, CircularProgress, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Papa from 'papaparse';
 import React, { type ChangeEvent, useEffect, useRef, useState } from 'react';
@@ -149,8 +144,7 @@ function LocalUpload() {
     }
 
     const metadataFileAvailable: boolean =
-      files.length > 0 &&
-      Object.keys(METADATA_FORMATS).includes(getSuffix(files[0]))
+      files.length > 0 && Object.keys(METADATA_FORMATS).includes(getSuffix(files[0]));
     if (metadataFileAvailable) {
       parseCSV(files[0].file);
     }
@@ -242,7 +236,11 @@ function LocalUpload() {
         </Grid>
         <Grid size={{ md: 6, xs: 12 }}>
           {showFieldsTable && (
-            <FieldUploadCheck fields={parsedFields} setFields={setParsedFields} csvData={parsedMetadata} />
+            <FieldUploadCheck
+              fields={parsedFields}
+              setFields={setParsedFields}
+              csvData={parsedMetadata}
+            />
           )}
         </Grid>
       </Grid>

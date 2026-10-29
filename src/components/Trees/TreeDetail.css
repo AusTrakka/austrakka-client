@@ -1,0 +1,15 @@
+.tree-controls-divider .MuiAccordionSummary-root.Mui-expanded {
+  margin: 0;
+}
+
+.tree-controls-divider .MuiAccordionSummary-content.Mui-expanded {
+  margin: 0px;
+}
+
+.tree-controls-divider .MuiButtonBase-root.MuiAccordionSummary-root {
+  min-height: 50px;
+}
+
+.app-container.compact-mode .tree-control-switch {
+  padding: var(--density-spacing-md) var(--density-spacing-sm);
+}

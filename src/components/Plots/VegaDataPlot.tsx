@@ -3,7 +3,6 @@
 import { Alert, Grid } from '@mui/material';
 import { DataTable } from 'primereact/datatable';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { parse, type Spec, View as VegaView } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { InlineData } from 'vega-lite/types_unstable/data.js';
@@ -24,7 +23,6 @@ interface VegaDataPlotProps {
 // WIDGETS SHOULD NOT USE THIS
 function VegaDataPlot(props: VegaDataPlotProps) {
   const { spec, projectAbbrev } = props;
-  const navigate = useNavigate();
   const plotDiv = useRef<HTMLDivElement>(null);
   const [vegaView, setVegaView] = useState<VegaView | null>(null);
   const [filteredData, setFilteredData] = useState<Sample[]>([]);
@@ -34,7 +32,6 @@ function VegaDataPlot(props: VegaDataPlotProps) {
   const [currentFilters, setCurrentFilters] = useStateFromSearchParamsForFilterObject(
     'filters',
     defaultState,
-    navigate,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [mutableFilteredData, setMutableFilteredData] = useState<string>();

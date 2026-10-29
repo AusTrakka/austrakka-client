@@ -18,25 +18,34 @@ export const CharCountedTextField = ({
     size="small"
     fullWidth
     multiline={multiline}
-    rows={multiline ? 1 : undefined}
+    minRows={multiline ? 1 : undefined}
+    maxRows={multiline ? 10 : undefined}
     hiddenLabel
     value={value ?? ''}
     onChange={(e) => onChange(e.target.value)}
     sx={{
-      ...(multiline && {
-        '& .MuiInputBase-root': {
+      '& .MuiFilledInput-root': {
+        paddingLeft: '12px',
+        paddingRight: '8px',
+        paddingTop: '6px',
+        paddingBottom: '6px',
+        ...(multiline && {
           display: 'flex',
           alignItems: 'stretch',
           resize: 'vertical',
           overflow: 'auto',
-          minHeight: '45px',
-        },
-      }),
+          minHeight: '30px',
+        }),
+      },
       '& .MuiInputBase-input': {
         resize: 'none',
         flex: 1,
-        height: '100% !important',
+        height: '100%',
         boxSizing: 'border-box',
+        paddingLeft: '0px !important', // Removes the extra left indent
+        paddingRight: '0px !important',
+        paddingTop: '0px !important',
+        paddingBottom: '0px !important',
       },
     }}
     slotProps={{
@@ -51,7 +60,7 @@ export const CharCountedTextField = ({
               alignSelf: 'center',
               margin: 0,
               pl: 1,
-              '& .MuiTypography-root': { fontSize: '0.75rem', color: 'text.secondary' },
+              '& .MuiTypography-root': { fontSize: '0.75rem !important', color: 'text.secondary' },
             }}
           >
             {`${value?.length ?? 0}/${maxLength}`}

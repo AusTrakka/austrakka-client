@@ -22,9 +22,8 @@ function makeDeducedField(data: Sample[], fieldName: string, idx: number = 0): D
   }
   const typeCode = deduceFieldType(data, fieldName);
   const [primitiveType, canVisualise, geoField, displayedType] = typeCodes[typeCode];
-  const metaDataColumnValidValues = (typeCode === 'N' || typeCode === 'G')
-    ? getUniqueValuesArray(data, fieldName)
-    : null;
+  const metaDataColumnValidValues =
+    typeCode === 'N' || typeCode === 'G' ? getUniqueValuesArray(data, fieldName) : null;
   return {
     columnName: fieldName,
     primitiveType,
@@ -34,7 +33,7 @@ function makeDeducedField(data: Sample[], fieldName: string, idx: number = 0): D
     columnOrder: idx,
     displayedFieldType: displayedType,
     fieldTypeSource: 'Deduced',
-    geoField
+    geoField,
   };
 }
 
@@ -45,9 +44,8 @@ function makeField(data: Sample[], fieldName: string, idx: number, typeCode: str
   }
   if (typeCode in typeCodes) {
     const [primitiveType, canVisualise, geoField, displayedType] = typeCodes[typeCode];
-    const metaDataColumnValidValues = (typeCode === 'N' || typeCode === 'G')
-      ? getUniqueValuesArray(data, fieldName)
-      : null;
+    const metaDataColumnValidValues =
+      typeCode === 'N' || typeCode === 'G' ? getUniqueValuesArray(data, fieldName) : null;
     return {
       columnName: fieldName,
       primitiveType,

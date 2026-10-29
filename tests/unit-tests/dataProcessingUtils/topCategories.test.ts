@@ -16,17 +16,35 @@ describe('topCategories', () => {
 
   test('aggregates on field and returns top N categories based on count', () => {
     const result = topCategories(data, 'category', 2);
-    expect(result).toEqual(['D', 'B']);
+    expect(result.categories).toEqual([
+      { category: 'D', count: 4 },
+      { category: 'B', count: 3 },
+    ]);
   });
 
-  test('returns all categories if limit exceeds data length', () => {
+  test('groups remaining categories into "other" when limit is exceeded', () => {
+    const result = topCategories(data, 'category', 2);
+    expect(result.other).toEqual({
+      count: 3, // A: 2 + C: 1
+      categories: ['A', 'C'],
+    });
+  });
+
+  test('returns all categories with no "other" if limit exceeds data length', () => {
     const result = topCategories(data, 'colour', 10);
-    expect(result).toEqual(['yellow', 'blue', 'red', 'green']);
+    expect(result.categories).toEqual([
+      { category: 'yellow', count: 4 },
+      { category: 'blue', count: 3 },
+      { category: 'red', count: 2 },
+      { category: 'green', count: 1 },
+    ]);
+    expect(result.other).toBeUndefined();
   });
 
   test('handles empty input array', () => {
     const result = topCategories([], 'category', 2);
-    expect(result).toEqual([]);
+    expect(result.categories).toEqual([]);
+    expect(result.other).toBeUndefined();
   });
 
   test('handles ties in counts', () => {
@@ -37,11 +55,48 @@ describe('topCategories', () => {
       { id: 4, category: 'B' },
     ];
     const result = topCategories(tieData, 'category', 2);
-    expect(result).toEqual(['A', 'B']);
+    expect(result.categories).toEqual([
+      { category: 'A', count: 2 },
+      { category: 'B', count: 2 },
+    ]);
+    expect(result.other).toBeUndefined();
   });
 
   test('returns all categories sorted by count when no limit is provided', () => {
     const result = topCategories(data, 'type');
-    expect(result).toEqual(['two', 'four', 'one', 'three']);
+    expect(result.categories).toEqual([
+      { category: 'two', count: 3 },
+      { category: 'four', count: 3 },
+      { category: 'one', count: 2 },
+      { category: 'three', count: 2 },
+    ]);
+    expect(result.other).toBeUndefined();
+  });
+
+  test('ignores empty/null values when limit is set and keepEmpty is false', () => {
+    const dataWithEmpty = [
+      { id: 1, category: 'A' },
+      { id: 2, category: '' },
+      { id: 3, category: null },
+      { id: 4, category: 'A' },
+    ];
+    const result = topCategories(dataWithEmpty, 'category', 2);
+    expect(result.categories).toEqual([{ category: 'A', count: 2 }]);
+    expect(result.other).toBeUndefined();
+  });
+
+  test('keeps empty/null values as a single "" category when keepEmpty is true', () => {
+    const dataWithEmpty = [
+      { id: 1, category: 'A' },
+      { id: 2, category: '' },
+      { id: 3, category: null },
+      { id: 4, category: 'A' },
+    ];
+    const result = topCategories(dataWithEmpty, 'category', 2, true);
+    expect(result.categories).toEqual([
+      { category: 'A', count: 2 },
+      { category: '', count: 2 },
+    ]);
+    expect(result.other).toBeUndefined();
   });
 });
