@@ -61,8 +61,6 @@ import {
   getUploadableSeqOrgs,
   parseSeqUploadCsvPairs,
   parseSeqUploadCsvSingles,
-  getSampleSharableProjects,
-  getUploadableSeqOrgs,
   splitFastaByContig,
 } from '../../utilities/uploadUtils';
 import HelpSidebar from '../Help/HelpSidebar';
