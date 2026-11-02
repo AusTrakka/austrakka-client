@@ -223,7 +223,7 @@ export const createPairedSeqUploadRowsFromCsv = (
 //  [-_.]R?[12] - mandatory read number, e.g. _R1, -R1, _1, .R1, etc
 //  (_\d{3})? - optional like e.g. _001. Note nothing else may follow the read number in this format
 // Most parts are optional so this matches MySample_R1.fastq.gz as well as MySample_S17_L001_R1_001.fastq.gz
-const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{3})?[-_.]R?([12])(?:_\d{3})?$/];
+const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{3})?[-_.][rR]?([12])(?:_\d{3})?$/];
 
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
