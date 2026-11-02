@@ -56,8 +56,7 @@ function Datasets(props: DatasetProps) {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [columns, setColumns] = useState([
-    { field: 'dataSetId', header: 'Dataset ID' },
-    { field: 'fileName', header: 'File Name' },
+    { field: 'datasetId', header: 'Dataset ID' },
     { field: 'analysisLabel', header: 'Analysis Label' },
     { field: 'createdBy', header: 'Created By' },
     {
