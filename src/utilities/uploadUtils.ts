@@ -228,17 +228,20 @@ const fastq_ill_paired_regexes = [/^(.+?)(?:_S\d+)?(?:_L\d{3})?[-_.][rR]?([12])(
 export const createPairedSeqUploadRows = (
   files: DropFileUpload[],
   suffixes: string[],
+  splitOnUnderscores: boolean = false,
 ): SeqPairedUploadRow[] => {
   var pairedFiles: Record<string, Record<string, DropFileUpload[]>> = {};
   for (const fileUpload of files) {
     // apply each regex in fastq_ill_paired_regexes till one matches
+    // even in 'split on underscores' mode, paired-end data must match regex as we want reliable read pair
     const nameWithoutSuffix = stripSuffix(fileUpload.file.name, suffixes);
 
     let matched = false;
     for (const regex of fastq_ill_paired_regexes) {
       const match = nameWithoutSuffix.match(regex);
       if (match) {
-        const [, sampleName, readNum] = match;
+        const [, matchedSampleName, readNum] = match;
+        const sampleName = splitOnUnderscores ? matchedSampleName.split('_')[0] : matchedSampleName;
         pairedFiles[sampleName] ??= {};
         pairedFiles[sampleName][readNum] ??= [];
         pairedFiles[sampleName][readNum].push(fileUpload);
@@ -285,15 +288,17 @@ export const createSingleSeqUploadRows = (
   files: DropFileUpload[],
   seqType: SeqType,
   suffixes: string[],
+  splitOnUnderscores: boolean = false,
 ): SeqSingleUploadRow[] => {
   var sampleFiles: Record<string, DropFileUpload[]> = {};
   for (const fileUpload of files) {
     // For all single-end types, just take the filename (sans suffix) to be the Seq_ID
     // Note based on feedback we are not bothering to strip possible file parts for Illumina SE
     const nameWithoutSuffix = stripSuffix(fileUpload.file.name, suffixes);
+    const sampleName = splitOnUnderscores ? nameWithoutSuffix.split('_')[0]: nameWithoutSuffix;
 
-    sampleFiles[nameWithoutSuffix] ??= [];
-    sampleFiles[nameWithoutSuffix].push(fileUpload);
+    sampleFiles[sampleName] ??= [];
+    sampleFiles[sampleName].push(fileUpload);
   }
 
   var rows: SeqSingleUploadRow[] = [];

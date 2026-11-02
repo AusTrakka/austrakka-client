@@ -124,6 +124,7 @@ function UploadSequences() {
   const hasDuplicateSeqIds = duplicateSeqIds.size > 0;
 
   const [useCsvFile, setUseCsvFile] = useState<boolean>(false);
+  const [splitOnUnderscores, setSplitOnUnderscores] = useState<boolean>(false);
 
   const fileDragDropRef = useRef<any>(null);
   const user: UserSliceState = useAppSelector(selectUserState);
@@ -268,7 +269,7 @@ function UploadSequences() {
       } else {
         // If this throws an error, we've failed validation while parsing filenames / read pairs
         try {
-          rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType));
+          rows = createPairedSeqUploadRows(files, validSuffixes(selectedSeqType), splitOnUnderscores);
         } catch (e: unknown) {
           handleUploadError(e);
           handleClearFiles();
@@ -292,7 +293,7 @@ function UploadSequences() {
       } else {
         // If this throws an error, we've failed validation while parsing filenames / read pairs
         try {
-          rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+          rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType), splitOnUnderscores);
         } catch (e: unknown) {
           handleUploadError(e);
           handleClearFiles();
@@ -304,7 +305,7 @@ function UploadSequences() {
       // If this throws an error, we've failed validation while parsing generated filenames
       // It would be possible to remove the "transform" logic from FileDragDrop and do that here
       try {
-        rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType));
+        rows = createSingleSeqUploadRows(files, selectedSeqType, validSuffixes(selectedSeqType), splitOnUnderscores);
       } catch (e: unknown) {
         handleUploadError(e);
         handleClearFiles();
@@ -318,6 +319,7 @@ function UploadSequences() {
     csvUploadPairs,
     csvUploadSingles,
     useCsvFile,
+    splitOnUnderscores,
     handleUploadError,
     handleClearFiles,
   ]);
@@ -761,6 +763,27 @@ function UploadSequences() {
                   </Box>
                 </Box>
               ) : null}
+
+              <Box key="option-allow-underscores">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      color="secondary"
+                      checked={!splitOnUnderscores}
+                      onChange={(e) => setSplitOnUnderscores(!e.target.checked)}
+                      name={'allowUnderscoresInSeqIDs'}
+                      disabled={fileListingCsv.length > 0}
+                    />
+                  }
+                  label="Allow underscores in Seq_IDs"
+                />
+                <Box sx={{ paddingLeft: 4 }}>
+                  <Typography variant="body2" color={fileListingCsv.length > 0 ? 'text.disabled' : undefined}>
+                    If selected, will attempt to parse the correct Seq_ID from filename depending on type. 
+                    Deselect if you want to simply split the filename on the first underscore.
+                  </Typography>
+                </Box>
+              </Box>
             </FormGroup>
           </Grid>
         </Grid>
